@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.common;
@@ -25,15 +23,15 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 /**
  * Describes the relationship between two entities.
  *
- * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
-public class EntityRelationship extends PeriodRelationship {
+public class EntityRelationship extends SequencedRelationship {
 
     /**
      * Serialisation version identifier.
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     /**
      * A relationship may also have an associated entity identity
@@ -46,28 +44,20 @@ public class EntityRelationship extends PeriodRelationship {
     private String reason;
 
     /**
-     * An optional sequence for the relationship, used to order similar
-     * relationships.
-     */
-    private int sequence;
-
-    /**
      * Default constructor.
      */
     public EntityRelationship() {
-        // do nothing
+        super();
     }
 
     /**
-     * Creates a new <tt>EntityRelationship</tt>.
+     * Constructs an {@link EntityRelationship}.
      *
      * @param archetypeId the archetype id constraining this object
      * @param source      the relationship source
      * @param target      the relationship target
      */
-    public EntityRelationship(ArchetypeId archetypeId,
-                              IMObjectReference source,
-                              IMObjectReference target) {
+    public EntityRelationship(ArchetypeId archetypeId, IMObjectReference source, IMObjectReference target) {
         super(archetypeId);
         setSource(source);
         setTarget(target);
@@ -87,28 +77,6 @@ public class EntityRelationship extends PeriodRelationship {
     @Deprecated
     public String getReason() {
         return reason;
-    }
-
-    /**
-     * Returns the relationship sequence.
-     * <p/>
-     * This may be used to order relationships.
-     *
-     * @return the sequence
-     */
-    public int getSequence() {
-        return sequence;
-    }
-
-    /**
-     * Sets the relationship sequence.
-     * <p/>
-     * This may be used to order relationships.
-     *
-     * @param sequence the sequence
-     */
-    public void setSequence(int sequence) {
-        this.sequence = sequence;
     }
 
     /**

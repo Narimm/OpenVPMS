@@ -1,30 +1,29 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.party;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDO;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityDO;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.entity.EntityLinkDO;
+import org.openvpms.component.business.dao.hibernate.im.entity.EntityLinkDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDO;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDO;
@@ -34,9 +33,15 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 import java.util.Random;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 /**
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * Tests the {@link PartyDOImpl} class.
+ *
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 public class PartyDOTestCase extends AbstractPartyDOTest {
 
@@ -49,6 +54,11 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
      * The initial no. of relationships in the database.
      */
     private int relationships;
+
+    /**
+     * The initial no. of links in the database.
+     */
+    private int links;
 
     /**
      * The initial no. of party details in the database.
@@ -73,6 +83,11 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
      */
     private static final ArchetypeId RELATIONSHIP_ID = new ArchetypeId(
             "entityeRelationship.dummy.1.0");
+
+    /**
+     * Entity link archetype identifier.
+     */
+    private static final ArchetypeId LINK_ID = new ArchetypeId("entityLink.dummy.1.0");
 
 
     /**
@@ -391,6 +406,48 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
     }
 
     /**
+     * Tests the addition and removal of EntityLinks.
+     */
+    @Test
+    public void testEntityLinks() {
+        Session session = getSession();
+        Transaction tx = session.beginTransaction();
+
+        PartyDO source = createPerson();
+        PartyDO target = createPerson();
+        session.saveOrUpdate(source);
+        session.saveOrUpdate(target);
+        tx.commit();
+
+        // now add an entity link
+        tx = session.beginTransaction();
+        source = (PartyDO) session.load(PartyDOImpl.class, source.getId());
+        target = (PartyDO) session.load(PartyDOImpl.class, target.getId());
+
+        createEntityLink(source, target);
+        session.saveOrUpdate(source);
+        tx.commit();
+
+        assertEquals(links + 1, count(EntityLinkDOImpl.class));
+
+        source = (PartyDO) session.load(PartyDOImpl.class, source.getId());
+        assertEquals(1, source.getEntityLinks().size());
+        EntityLinkDO link = source.getEntityLinks().iterator().next();
+        assertEquals(source, link.getSource());
+        assertEquals(target, link.getTarget());
+
+        tx = session.beginTransaction();
+        source.removeEntityLink(link);
+        session.delete(link);
+        tx.commit();
+
+        assertEquals(links, count(EntityLinkDOImpl.class));
+
+        source = (PartyDO) session.load(PartyDOImpl.class, source.getId());
+        assertEquals(0, source.getEntityLinks().size());
+    }
+
+    /**
      * Sets up the test case.
      */
     @Override
@@ -398,6 +455,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         super.setUp();
         parties = count(PartyDOImpl.class);
         relationships = count(EntityRelationshipDOImpl.class);
+        links = count(EntityLinkDOImpl.class);
         details = countDetails(PartyDOImpl.class);
         lookups = count(LookupDOImpl.class);
     }
@@ -424,10 +482,23 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
      */
     private EntityRelationshipDO createEntityRelationship(EntityDO source,
                                                           EntityDO target) {
-        EntityRelationshipDO result = new EntityRelationshipDOImpl(
-                RELATIONSHIP_ID);
+        EntityRelationshipDO result = new EntityRelationshipDOImpl(RELATIONSHIP_ID);
         source.addSourceEntityRelationship(result);
         target.addTargetEntityRelationship(result);
+        return result;
+    }
+
+    /**
+     * Creates a link between two entities.
+     *
+     * @param source the source of the relationship
+     * @param target the target of the relationship
+     * @return the new relationship
+     */
+    private EntityLinkDO createEntityLink(EntityDO source, EntityDO target) {
+        EntityLinkDO result = new EntityLinkDOImpl(LINK_ID);
+        source.addEntityLink(result);
+        result.setTarget(target);
         return result;
     }
 

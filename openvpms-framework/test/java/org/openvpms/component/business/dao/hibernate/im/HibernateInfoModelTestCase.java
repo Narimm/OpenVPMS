@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -37,6 +35,7 @@ import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.dao.hibernate.im.document.DocumentDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.entity.EntityLinkDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.entity.ReflectingObjectLoader;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl;
@@ -109,6 +108,7 @@ public abstract class HibernateInfoModelTestCase {
         config.addClass(ParticipationDOImpl.class);
         config.addClass(EntityRelationshipDOImpl.class);
         config.addClass(EntityIdentityDOImpl.class);
+        config.addClass(EntityLinkDOImpl.class);
         config.addClass(LookupDOImpl.class);
         config.addClass(LookupRelationshipDOImpl.class);
         config.addClass(ArchetypeDescriptorDOImpl.class);

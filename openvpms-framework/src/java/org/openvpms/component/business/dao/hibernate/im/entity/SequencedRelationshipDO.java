@@ -16,29 +16,31 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-
+import org.openvpms.component.business.dao.hibernate.im.common.PeriodRelationshipDO;
+import org.openvpms.component.business.domain.im.common.SequencedRelationship;
 
 /**
- * Data object interface corresponding to the {@link EntityRelationship}
- * class.
+ * Data object corresponding to the {@link SequencedRelationship} class.
  *
  * @author Tim Anderson
  */
-public interface EntityRelationshipDO extends SequencedRelationshipDO {
+public interface SequencedRelationshipDO extends PeriodRelationshipDO {
 
     /**
-     * Returns the entity identity.
+     * Returns the relationship sequence.
+     * <p/>
+     * This may be used to help order relationships.
      *
-     * @return the entity identity. May be <tt>null</tt>.
+     * @return the relationship sequence
      */
-    EntityIdentityDO getIdentity();
+    int getSequence();
 
     /**
-     * Sets the entity identity.
+     * Sets the relationship sequence.
+     * <p/>
+     * This may be used to help order relationships.
      *
-     * @param identity the identity. May be <tt>null</tt>
+     * @param sequence the relationship sequence
      */
-    void setIdentity(EntityIdentityDO identity);
-
+    void setSequence(int sequence);
 }

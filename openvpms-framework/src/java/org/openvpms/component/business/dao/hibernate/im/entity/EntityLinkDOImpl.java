@@ -16,29 +16,29 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 /**
- * Data object interface corresponding to the {@link EntityRelationship}
- * class.
+ * Implementation of the {@link EntityLinkDO} interface.
  *
  * @author Tim Anderson
  */
-public interface EntityRelationshipDO extends SequencedRelationshipDO {
+public class EntityLinkDOImpl extends SequencedRelationshipDOImpl implements EntityLinkDO {
 
     /**
-     * Returns the entity identity.
-     *
-     * @return the entity identity. May be <tt>null</tt>.
+     * Default constructor.
      */
-    EntityIdentityDO getIdentity();
+    public EntityLinkDOImpl() {
+        super();
+    }
 
     /**
-     * Sets the entity identity.
+     * Constructs an {@link EntityLinkDOImpl}.
      *
-     * @param identity the identity. May be <tt>null</tt>
+     * @param archetypeId the archetype identifier
      */
-    void setIdentity(EntityIdentityDO identity);
+    public EntityLinkDOImpl(ArchetypeId archetypeId) {
+        super(archetypeId);
+    }
 
 }

@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
@@ -29,8 +27,7 @@ import java.util.Set;
 /**
  * Implementation of the {@link EntityDO} interface.
  *
- * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $LastChangedDate: 2008-05-22 15:14:34 +1000 (Thu, 22 May 2008) $
+ * @author Tim Anderson
  */
 public class EntityDOImpl extends IMObjectDOImpl implements EntityDO {
 
@@ -52,6 +49,11 @@ public class EntityDOImpl extends IMObjectDOImpl implements EntityDO {
             new HashSet<EntityRelationshipDO>();
 
     /**
+     * The entity links.
+     */
+    private Set<EntityLinkDO> links = new HashSet<EntityLinkDO>();
+
+    /**
      * The entity classifications.
      */
     private Set<LookupDO> classifications = new HashSet<LookupDO>();
@@ -65,7 +67,7 @@ public class EntityDOImpl extends IMObjectDOImpl implements EntityDO {
     }
 
     /**
-     * Creates a new <tt>EntityDOImpl</tt>.
+     * Constructs an {@link EntityDOImpl}.
      *
      * @param archetypeId the archetype id
      */
@@ -96,7 +98,7 @@ public class EntityDOImpl extends IMObjectDOImpl implements EntityDO {
      * Removes the identity.
      *
      * @param identity the identity to remove
-     * @return <tt>true</tt> if the identity existed
+     * @return {@code true} if the identity existed
      */
     public boolean removeIdentity(EntityIdentityDO identity) {
         identity.setEntity(null);
@@ -172,6 +174,37 @@ public class EntityDOImpl extends IMObjectDOImpl implements EntityDO {
     }
 
     /**
+     * Returns the links for this entity.
+     *
+     * @return the links
+     */
+    @Override
+    public Set<EntityLinkDO> getEntityLinks() {
+        return links;
+    }
+
+    /**
+     * Adds a link to another entity.
+     *
+     * @param link the link
+     */
+    @Override
+    public void addEntityLink(EntityLinkDO link) {
+        link.setSource(this);
+        links.add(link);
+    }
+
+    /**
+     * Removes a link to another entity.
+     *
+     * @param link the link
+     */
+    @Override
+    public void removeEntityLink(EntityLinkDO link) {
+        links.remove(link);
+    }
+
+    /**
      * Returns the classifications for this entity.
      *
      * @return the classifications
@@ -216,6 +249,15 @@ public class EntityDOImpl extends IMObjectDOImpl implements EntityDO {
     protected void setTargetEntityRelationships(
             Set<EntityRelationshipDO> relationships) {
         targetEntityRelationships = relationships;
+    }
+
+    /**
+     * Sets the entity links.
+     *
+     * @param links the links
+     */
+    protected void setEntityLinks(Set<EntityLinkDO> links) {
+        this.links = links;
     }
 
     /**

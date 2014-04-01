@@ -16,29 +16,13 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-
+import org.openvpms.component.business.domain.im.common.EntityLink;
 
 /**
- * Data object interface corresponding to the {@link EntityRelationship}
- * class.
+ * Data object interface corresponding to the {@link EntityLink} class.
  *
  * @author Tim Anderson
  */
-public interface EntityRelationshipDO extends SequencedRelationshipDO {
-
-    /**
-     * Returns the entity identity.
-     *
-     * @return the entity identity. May be <tt>null</tt>.
-     */
-    EntityIdentityDO getIdentity();
-
-    /**
-     * Sets the entity identity.
-     *
-     * @param identity the identity. May be <tt>null</tt>
-     */
-    void setIdentity(EntityIdentityDO identity);
+public interface EntityLinkDO extends SequencedRelationshipDO {
 
 }
