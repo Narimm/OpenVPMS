@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.reporting.reminder;
 
@@ -23,7 +23,9 @@ import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -45,7 +47,9 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import javax.mail.internet.MimeMessage;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.ReminderMissingDocTemplate;
@@ -65,19 +69,19 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
     private final JavaMailSender sender;
 
     /**
-     * The email address.
-     */
-    private final String emailAddress;
-
-    /**
-     * The email name.
-     */
-    private final String emailName;
-
-    /**
      * The document handlers.
      */
     private final DocumentHandlers handlers;
+
+    /**
+     * The default email address.
+     */
+    private final Email defaultAddress;
+
+    /**
+     * Email addresses keyed on practice/practice location reference.
+     */
+    private final Map<IMObjectReference, Email> addresses = new HashMap<IMObjectReference, Email>();
 
 
     /**
@@ -91,23 +95,20 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
     public ReminderEmailProcessor(JavaMailSender sender, Party practice, DocumentTemplate groupTemplate,
                                   Context context) {
         super(groupTemplate, context);
-        ReminderRules rules = new ReminderRules(ServiceHelper.getArchetypeService(),
-                                                new PatientRules(ServiceHelper.getArchetypeService(),
-                                                                 ServiceHelper.getLookupService()));
-        Contact email = rules.getEmailContact(practice.getContacts());
-        if (email == null) {
-            throw new ReportingException(ReportingException.ErrorCode.NoReminderContact, practice.getName());
-        }
-        IMObjectBean bean = new IMObjectBean(email);
-        emailAddress = bean.getString("emailAddress");
-        if (StringUtils.isEmpty(emailAddress)) {
-            throw new ReportingException(ReportingException.ErrorCode.InvalidEmailAddress, emailAddress,
-                                         practice.getName());
-        }
-
-        emailName = practice.getName();
         this.sender = sender;
         handlers = ServiceHelper.getDocumentHandlers();
+
+        ReminderRules rules = new ReminderRules(ServiceHelper.getArchetypeService(),
+                                                ServiceHelper.getBean(PatientRules.class));
+        defaultAddress = getEmail(practice, true, rules);
+
+        PracticeRules practiceRules = ServiceHelper.getBean(PracticeRules.class);
+        for (Party location : practiceRules.getLocations(practice)) {
+            Email address = getEmail(location, false, rules);
+            if (address != null) {
+                addresses.put(location.getObjectReference(), address);
+            }
+        }
     }
 
     /**
@@ -127,12 +128,14 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
         }
 
         try {
+            Email from = getFromAddress(event.getCustomer());
+            IMObjectBean bean = new IMObjectBean(contact);
+            String to = bean.getString("emailAddress");
+
             MimeMessage message = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setValidateAddresses(true);
-            IMObjectBean bean = new IMObjectBean(contact);
-            String to = bean.getString("emailAddress");
-            helper.setFrom(emailAddress, emailName);
+            helper.setFrom(from.address, from.name);
             helper.setTo(to);
 
             String subject = documentTemplate.getEmailSubject();
@@ -190,4 +193,66 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
         }
         return result;
     }
+
+    /**
+     * Returns the from address to use for a customer.
+     * <p/>
+     * If the customer has a practice location, any reminder
+     *
+     * @param customer the customer
+     * @return the from address
+     */
+    private Email getFromAddress(Party customer) {
+        IMObjectBean bean = new IMObjectBean(customer);
+        IMObjectReference locationRef = bean.getNodeTargetObjectRef("location");
+        Email result = addresses.get(locationRef);
+        if (result == null) {
+            result = defaultAddress;
+        }
+        return result;
+    }
+
+    /**
+     * Returns the email address for a practice/practice location.
+     *
+     * @param practice the practice/practice location
+     * @param fail     if {@code true} throw an exception if the address is invalid
+     * @param rules    the rules
+     * @return the address, or {@code null} if a valid address is not found and {@code fail} is {@code false}
+     */
+    private Email getEmail(Party practice, boolean fail, ReminderRules rules) {
+        Contact contact = rules.getEmailContact(practice.getContacts());
+        if (contact == null) {
+            if (fail) {
+                throw new ReportingException(ReportingException.ErrorCode.NoReminderContact, practice.getName());
+            }
+            return null;
+        }
+        IMObjectBean bean = new IMObjectBean(contact);
+        String address = bean.getString("emailAddress");
+        if (StringUtils.isEmpty(address)) {
+            if (fail) {
+                throw new ReportingException(ReportingException.ErrorCode.InvalidEmailAddress, address,
+                                             practice.getName());
+            }
+            return null;
+        }
+        return new Email(address, practice.getName());
+    }
+
+    /**
+     * Email address.
+     */
+    private static class Email {
+
+        public final String address;
+
+        public final String name;
+
+        public Email(String address, String name) {
+            this.address = address;
+            this.name = name;
+        }
+    }
+
 }

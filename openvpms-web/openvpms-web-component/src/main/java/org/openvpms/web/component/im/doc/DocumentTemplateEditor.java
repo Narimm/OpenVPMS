@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -31,6 +29,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -39,8 +38,7 @@ import org.openvpms.web.component.property.ModifiableListener;
  * <em>participation.document</em> which cannot be represented using archetypes,
  * as participations are typically navigated from an Act, not an Entity.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentTemplateEditor extends AbstractIMObjectEditor {
 
@@ -51,24 +49,22 @@ public class DocumentTemplateEditor extends AbstractIMObjectEditor {
 
 
     /**
-     * Construct a new <code>DocumentTemplateEditor</code>.
+     * Constructs a {@link DocumentTemplateEditor}.
      *
      * @param template the object to edit
-     * @param parent   the parent object. May be <code>null</code>
-     * @param context  the layout context. May be <code>null</code>
+     * @param parent   the parent object. May be {@code null}
+     * @param context  the layout context. May be {@code null}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public DocumentTemplateEditor(Entity template, IMObject parent,
                                   LayoutContext context) {
         super(template, parent, context);
-        TemplateHelper helper = new TemplateHelper();
+        TemplateHelper helper = new TemplateHelper(ServiceHelper.getArchetypeService());
         Participation participation = helper.getDocumentParticipation(template);
         if (participation == null) {
-            participation = (Participation) IMObjectCreator.create(
-                "participation.document");
+            participation = (Participation) IMObjectCreator.create("participation.document");
         }
-        participationEditor = IMObjectEditorFactory.create(participation,
-                                                           template, context);
+        participationEditor = IMObjectEditorFactory.create(participation, template, context);
         getEditors().add(participationEditor);
 
         if (participationEditor instanceof DocumentParticipationEditor) {
@@ -80,8 +76,7 @@ public class DocumentTemplateEditor extends AbstractIMObjectEditor {
 
             // get the participation editor to delete the associated act
             // when the template is deleted
-            ((DocumentParticipationEditor) participationEditor)
-                .setDeleteAct(true);
+            ((DocumentParticipationEditor) participationEditor).setDeleteAct(true);
         }
     }
 
@@ -93,8 +88,8 @@ public class DocumentTemplateEditor extends AbstractIMObjectEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new DocumentTemplateLayoutStrategy(
-            participationEditor.getComponent(),
-            participationEditor.getFocusGroup());
+                participationEditor.getComponent(),
+                participationEditor.getFocusGroup());
     }
 
     /**
@@ -104,7 +99,7 @@ public class DocumentTemplateEditor extends AbstractIMObjectEditor {
     private void onNameUpdated() {
         String name = (String) getProperty("name").getValue();
         DocumentParticipationEditor editor
-            = ((DocumentParticipationEditor) participationEditor);
+                = ((DocumentParticipationEditor) participationEditor);
         editor.setDescription(name);
     }
 }

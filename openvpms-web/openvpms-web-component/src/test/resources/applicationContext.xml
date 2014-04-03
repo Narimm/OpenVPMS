@@ -228,12 +228,15 @@
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
+    <bean id="medicalRecordRules" class="org.openvpms.archetype.rules.patient.MedicalRecordRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
     <bean id="productPriceRules" class="org.openvpms.archetype.rules.product.ProductPriceRules">
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="lookupService"/>
     </bean>
 
-    <bean id="medicalRecordRules" class="org.openvpms.archetype.rules.patient.MedicalRecordRules">
+    <bean id="productRules" class="org.openvpms.archetype.rules.product.ProductRules">
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
@@ -242,17 +245,17 @@
         <constructor-arg ref="lookupService"/>
     </bean>
 
-    <bean id="reminderRules" class="org.openvpms.archetype.rules.patient.reminder.ReminderRules">
-        <constructor-arg ref="archetypeRuleService"/>
-        <constructor-arg ref="patientRules"/>
-    </bean>
-
     <bean id="prescriptionRules" class="org.openvpms.archetype.rules.patient.prescription.PrescriptionRules">
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
     <bean id="practiceRules" class="org.openvpms.archetype.rules.practice.PracticeRules">
         <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="reminderRules" class="org.openvpms.archetype.rules.patient.reminder.ReminderRules">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="patientRules"/>
     </bean>
 
     <!-- ================================================================== -->

@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -25,13 +23,16 @@ import nextapp.echo2.app.list.ListModel;
 import org.openvpms.archetype.rules.patient.reminder.DueReminderQuery;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderQuery;
+import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.list.AllNoneListModel;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
 import org.openvpms.web.component.im.query.AbstractArchetypeQuery;
@@ -40,8 +41,11 @@ import org.openvpms.web.component.im.query.ListResultSet;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
+import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -54,8 +58,7 @@ import java.util.List;
 /**
  * Patient reminder query.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
 
@@ -69,12 +72,16 @@ public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
      */
     private DateRange dateRange;
 
+    /**
+     * The location filter.
+     */
+    private SelectField locationSelector;
+
 
     /**
-     * Constructs a new <tt>ReminderQuery</tt>.
+     * Constructs a {@link PatientReminderQuery}.
      *
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
     public PatientReminderQuery() {
         super(new String[]{ReminderArchetypes.REMINDER}, Act.class);
@@ -91,11 +98,14 @@ public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
         Entity entity = (obj instanceof Entity) ? (Entity) obj : null;
         Date from = dateRange.getFrom();
         Date to = dateRange.getTo();
-        DueReminderQuery query = new DueReminderQuery();
+        DueReminderQuery query = new DueReminderQuery(ServiceHelper.getArchetypeService());
         query.setReminderType(entity);
         query.setFrom(from);
         query.setTo(to);
         query.setCancelDate(new Date());
+        int selectedLocation = locationSelector.getSelectedIndex();
+        query.setLocation((Party) locationSelector.getSelectedItem());
+        query.setNoLocation(((AllNoneListModel) locationSelector.getModel()).getNoneIndex() == selectedLocation);
         return query;
     }
 
@@ -131,12 +141,19 @@ public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
         calendarTo.add(Calendar.MONTH, 2);
         calendarTo.add(Calendar.DAY_OF_MONTH, -1);
         dateRange.setTo(calendarTo.getTime());
+
+        locationSelector = SelectFieldFactory.create(createLocationModel());
+        locationSelector.setCellRenderer(IMObjectListCellRenderer.NAME);
+        Row locationRow = RowFactory.create(Styles.CELL_SPACING,
+                                            LabelFactory.create("reporting.reminder.customerLocation", Styles.BOLD),
+                                            locationSelector);
+        container.add(locationRow);
     }
 
     /**
      * Creates a new result set.
      *
-     * @param sort the sort constraint. May be <code>null</code>
+     * @param sort the sort constraint. May be {@code null}
      * @return a new result set
      */
     @Override
@@ -157,9 +174,21 @@ public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
      */
     private ListModel createReminderTypeModel() {
         ArchetypeQuery query = new ArchetypeQuery("entity.reminderType", true)
-            .add(Constraints.sort("name"))
-            .setMaxResults(ArchetypeQuery.ALL_RESULTS);
+                .add(Constraints.sort("name"))
+                .setMaxResults(ArchetypeQuery.ALL_RESULTS);
         return new IMObjectListModel(QueryHelper.query(query), true, false);
+    }
+
+    /**
+     * Creates the list model of locations.
+     *
+     * @return a new list model
+     */
+    private ListModel createLocationModel() {
+        ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.LOCATION, true)
+                .add(Constraints.sort("name"))
+                .setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        return new IMObjectListModel(QueryHelper.query(query), true, true);
     }
 
 }

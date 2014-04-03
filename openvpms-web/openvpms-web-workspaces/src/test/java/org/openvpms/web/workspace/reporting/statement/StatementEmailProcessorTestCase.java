@@ -13,6 +13,7 @@
  *
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.reporting.statement;
 
 import nextapp.echo2.app.ApplicationInstance;
@@ -73,7 +74,7 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         ApplicationInstance.setActive(app);
         app.doInit();
 
-        TemplateHelper helper = new TemplateHelper();
+        TemplateHelper helper = new TemplateHelper(ServiceHelper.getArchetypeService());
         Entity entity = helper.getTemplateForArchetype(CustomerAccountArchetypes.OPENING_BALANCE);
         if (entity == null) {
             entity = (Entity) create(DocumentArchetypes.DOCUMENT_TEMPLATE);
