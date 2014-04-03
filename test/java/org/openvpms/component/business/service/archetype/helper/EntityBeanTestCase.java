@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -19,8 +19,10 @@ package org.openvpms.component.business.service.archetype.helper;
 import org.apache.commons.collections.Predicate;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.functor.IsA;
 import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
@@ -883,6 +885,34 @@ public class EntityBeanTestCase extends AbstractIMObjectBeanTestCase {
     }
 
     /**
+     * Tests the {@link EntityBean#addNodeTarget(String, Entity)} method.
+     */
+    @Test
+    public void testAddNodeTarget() {
+        Party customer = createCustomer();
+        Party location = createLocation();
+        Party patient = createPatient();
+
+        EntityBean bean = new EntityBean(customer);
+        IMObjectRelationship rel1 = bean.addNodeTarget("location", location);
+        assertTrue(rel1 instanceof EntityLink);
+        bean.save();
+
+        IMObjectRelationship rel2 = bean.addNodeTarget("owns", patient);
+        assertTrue(rel2 instanceof EntityRelationship);
+        save(customer, patient);
+
+        customer = get(customer);
+        assertNotNull(customer);
+        bean = new EntityBean(customer);
+
+        assertEquals(location, bean.getNodeTargetEntity("location"));
+        assertEquals(location.getObjectReference(), bean.getNodeTargetObjectRef("location"));
+        assertEquals(patient, bean.getNodeTargetEntity("owns"));
+        assertEquals(patient.getObjectReference(), bean.getNodeTargetObjectRef("owns"));
+    }
+
+    /**
      * Verifies that an entity relationship matches that expected.
      *
      * @param relationship the relationship
@@ -915,7 +945,19 @@ public class EntityBeanTestCase extends AbstractIMObjectBeanTestCase {
      */
     private EntityBean createPerson() {
         return new EntityBean(createCustomer());
+    }
 
+    /**
+     * Creates a practice location.
+     *
+     * @return a new location
+     */
+    private Party createLocation() {
+        Party party = (Party) create("party.organisationLocation");
+        IMObjectBean bean = new IMObjectBean(party);
+        bean.setValue("name", "ZLocation" + System.currentTimeMillis());
+        bean.save();
+        return party;
     }
 
     /**

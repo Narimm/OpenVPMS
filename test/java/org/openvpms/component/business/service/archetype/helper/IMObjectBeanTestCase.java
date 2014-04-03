@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -716,5 +716,27 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         checkEquals(patients3, patient3, patient2);
     }
 
+    @Test
+    public void testGetNodeTargetObjectRef() {
+        Party customer = createCustomer();
+        Party patient1 = createPatient();
+        save(customer, patient1);
+
+        IMObjectBean bean = new IMObjectBean(customer);
+        assertNull(bean.getNodeTargetObjectRef("patients"));
+
+        EntityRelationship rel1 = addOwnerRelationship(customer, patient1);
+        assertEquals(patient1.getObjectReference(), bean.getNodeTargetObjectRef("patients"));
+
+        Date now = new Date();
+        Date start1 = new Date(now.getTime() - 60 * 1000);
+        Date end1 = new Date(now.getTime() - 50 * 1000);
+
+        // set the relationship times to the past verify it is filtered out
+        rel1.setActiveStartTime(start1);
+        rel1.setActiveEndTime(end1);
+
+        assertNull(bean.getNodeTargetObjectRef("patients"));
+    }
 }
 

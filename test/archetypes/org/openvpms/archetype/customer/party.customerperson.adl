@@ -1,30 +1,46 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <archetypes>
-	<archetype name="party.customerperson.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.party.Party" displayName="Customer(Person)">
-		<node name="id" path="/id" displayName="id" type="java.lang.Long" />
-		<node name="name" type="java.lang.String" path="/name"
-			hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat(/details/lastName, ',', /details/firstName)" />
-		<node name="description" type="java.lang.String"
-			path="/description" hidden="true" derived="true"
-			derivedValue="concat(openvpms:lookup(.,'title'), ' ', /details/firstName, ' ', /details/initials,' ',/details/lastName)" />
-		<node name="title" path="/details/title" type="java.lang.String"
-			  minCardinality="1" default="Mr">
-			<assertion name="lookup.local">
-				<propertyList name="entries">
+    <archetype name="party.customerperson.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.party.Party" displayName="Customer(Person)">
+        <node name="id" path="/id" displayName="id" type="java.lang.Long"/>
+        <node name="name" type="java.lang.String" path="/name"
+              hidden="true" minCardinality="1" derived="true"
+              derivedValue="concat(/details/lastName, ',', /details/firstName)"/>
+        <node name="description" type="java.lang.String"
+              path="/description" hidden="true" derived="true"
+              derivedValue="concat(openvpms:lookup(.,'title'), ' ', /details/firstName, ' ', /details/initials,' ',/details/lastName)"/>
+        <node name="title" path="/details/title" type="java.lang.String"
+              minCardinality="1" default="Mr">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
                     <property name="MR" value="Mr"/>
                     <property name="MS" value="Ms"/>
                     <property name="MRS" value="Mrs"/>
                     <property name="DR" value="Dr"/>
-				</propertyList>
-				<errorMessage>An error message</errorMessage>
-			</assertion>
-		</node>
-		<node name="firstName" path="/details/firstName" type="java.lang.String"
-				minCardinality="1" maxLength="30" />
-		<node name="initials" path="/details/initials" type="java.lang.String" />
-		<node name="lastName" path="/details/lastName" type="java.lang.String"
-		      minCardinality="1" maxLength="30" />
+                </propertyList>
+                <errorMessage>An error message</errorMessage>
+            </assertion>
+        </node>
+        <node name="firstName" path="/details/firstName" type="java.lang.String"
+              minCardinality="1" maxLength="30"/>
+        <node name="initials" path="/details/initials" type="java.lang.String"/>
+        <node name="lastName" path="/details/lastName" type="java.lang.String"
+              minCardinality="1" maxLength="30"/>
         <node name="patients" path="/sourceEntityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.patient*">
@@ -53,61 +69,64 @@
                 </propertyList>
             </assertion>
         </node>
-		<node name="contacts" path="/contacts"
-			type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="contact.location" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="contact.phoneNumber" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="contact.email" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
-		<node name="classifications" path="/classifications" parentChild="false"
-			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
-                defaultValue="openvpms:defaultLookup(.,'classifications')">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="lookup.personType" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="lookup.customerAccountType" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="lookup.staff" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
-		<node name="identities" path="/identities"
-			type="java.util.HashSet" baseName="Identity" minCardinality="0" maxCardinality="*">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="entityIdentity.Alias" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
+        <node name="contacts" path="/contacts"
+              type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="contact.location"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="contact.phoneNumber"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="contact.email"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+        <node name="classifications" path="/classifications" parentChild="false"
+              type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
+              defaultValue="openvpms:defaultLookup(.,'classifications')">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="lookup.personType"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="lookup.customerAccountType"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="lookup.staff"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+        <node name="identities" path="/identities"
+              type="java.util.HashSet" baseName="Identity" minCardinality="0" maxCardinality="*">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="entityIdentity.Alias"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
         <node name="sourceRelationships" path="/sourceEntityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship"
               minCardinality="0" maxCardinality="*" hidden="true"/>
-	</archetype>
+        <node name="location" path="/entityLinks"
+              type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="1"
+              filter="entityLink.customerLocation"/>
+    </archetype>
 </archetypes>
