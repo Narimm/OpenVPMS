@@ -119,7 +119,7 @@ public class ReminderProcessor
     public void process(Act reminder) {
         ActBean bean = new ActBean(reminder, service);
         int reminderCount = bean.getInt("reminderCount");
-        process(reminder, reminderCount, bean);
+        process(reminder, reminderCount, bean, false);
     }
 
     /**
@@ -133,7 +133,7 @@ public class ReminderProcessor
      */
     public ReminderEvent process(Act reminder, int reminderCount) {
         ActBean bean = new ActBean(reminder, service);
-        return process(reminder, reminderCount, bean);
+        return process(reminder, reminderCount, bean, true);
     }
 
     /**
@@ -356,17 +356,13 @@ public class ReminderProcessor
      * @param reminder      the reminder to process
      * @param reminderCount the reminder count
      * @param bean          contains the reminder
+     * @param ignoreDueDate if {@code true}, ignore the reminder due date
      * @return the reminder event
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    private ReminderEvent process(Act reminder, int reminderCount, ActBean bean) {
+    private ReminderEvent process(Act reminder, int reminderCount, ActBean bean, boolean ignoreDueDate) {
         ReminderEvent result;
-
-        // if the current reminderCount is not the same as that supplied, then a historical reminder event
-        // is being processed, and the isDue() check does not apply.
-        int currentReminderCount = bean.getInt("reminderCount");
-        boolean ignoreDueDate = (currentReminderCount != reminderCount);
 
         IMObjectReference ref = bean.getParticipantRef(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION);
         ReminderType reminderType = reminderTypes.get(ref);

@@ -95,7 +95,7 @@ public class SupplierRules {
     public List<ProductSupplier> getProductSuppliers(Party supplier) {
         List<ProductSupplier> result = new ArrayList<ProductSupplier>();
         EntityBean bean = new EntityBean(supplier, service);
-        List<EntityRelationship> relationships = bean.getNodeRelationships("products", isActiveNow());
+        List<EntityRelationship> relationships = bean.getValues("products", isActiveNow(), EntityRelationship.class);
         for (EntityRelationship relationship : relationships) {
             result.add(new ProductSupplier(relationship, service));
         }
@@ -126,7 +126,7 @@ public class SupplierRules {
     public EntityRelationship getSupplierStockLocation(Party supplier, Party stockLocation) {
         EntityBean bean = new EntityBean(supplier, service);
         Predicate active = AndPredicate.getInstance(isActiveNow(), RefEquals.getTargetEquals(stockLocation));
-        List<EntityRelationship> relationships = bean.getNodeRelationships("stockLocations", active);
+        List<EntityRelationship> relationships = bean.getValues("stockLocations", active, EntityRelationship.class);
         return (!relationships.isEmpty()) ? relationships.get(0) : null;
     }
 

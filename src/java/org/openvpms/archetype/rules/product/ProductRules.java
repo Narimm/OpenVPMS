@@ -21,10 +21,10 @@ import org.apache.commons.collections.functors.AndPredicate;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -38,8 +38,7 @@ import static org.openvpms.component.business.service.archetype.functor.IsActive
 /**
  * Product rules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z` $
+ * @author Tim Anderson
  */
 public class ProductRules {
 
@@ -50,14 +49,7 @@ public class ProductRules {
 
 
     /**
-     * Creates a new <tt>ProductRules</tt>.
-     */
-    public ProductRules() {
-        this(ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Creates a new <tt>ProductRules</tt>.
+     * Constructs a {@link ProductRules}.
      *
      * @param service the archetype service
      */
@@ -69,7 +61,7 @@ public class ProductRules {
      * Copies a product.
      *
      * @param product the product to copy
-     * @return a copy of <tt>product</tt>
+     * @return a copy of {@code product}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Product copy(Product product) {
@@ -81,7 +73,7 @@ public class ProductRules {
      *
      * @param product the product to copy
      * @param name    the new product name
-     * @return a copy of <tt>product</tt>
+     * @return a copy of {@code product}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Product copy(Product product, String name) {
@@ -102,8 +94,7 @@ public class ProductRules {
      * @param supplier the supplier
      * @return the relationships, wrapped in {@link ProductSupplier} instances
      */
-    public List<ProductSupplier> getProductSuppliers(Product product,
-                                                     Party supplier) {
+    public List<ProductSupplier> getProductSuppliers(Product product, Party supplier) {
         List<ProductSupplier> result = new ArrayList<ProductSupplier>();
         EntityBean bean = new EntityBean(product, service);
         Predicate predicate = AndPredicate.getInstance(isActiveNow(), RefEquals.getTargetEquals(supplier));
@@ -121,15 +112,15 @@ public class ProductRules {
      * <p/>
      * If there is a match on reorder code
      * If there is a match on supplier and product, but no match on package
-     * size, but there is a relationship where the size is <tt>0</tt>, then
+     * size, but there is a relationship where the size is {@code 0}, then
      * this will be returned.
      *
      * @param product      the product
      * @param supplier     the supplier
-     * @param reorderCode  the reorder code. May be <tt>null</tt>
+     * @param reorderCode  the reorder code. May be {@code null}
      * @param packageSize  the package size
-     * @param packageUnits the package units. May be <tt>null</tt>
-     * @return the relationship, wrapped in a {@link ProductSupplier}, or <tt>null</tt> if none is found
+     * @param packageUnits the package units. May be {@code null}
+     * @return the relationship, wrapped in a {@link ProductSupplier}, or {@code null} if none is found
      */
     public ProductSupplier getProductSupplier(Product product, Party supplier, String reorderCode,
                                               int packageSize, String packageUnits) {

@@ -33,8 +33,8 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.functor.SequenceComparator;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -53,7 +53,6 @@ import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -61,8 +60,7 @@ import java.util.List;
 /**
  * Appointment rules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class AppointmentRules {
 
@@ -73,14 +71,7 @@ public class AppointmentRules {
 
 
     /**
-     * Creates a new <tt>AppointmentRules</tt>.
-     */
-    public AppointmentRules() {
-        this(ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Creates a new <tt>AppointmentRules</tt>.
+     * Constructs an {@link AppointmentRules}.
      *
      * @param service the archetype service
      */
@@ -99,13 +90,8 @@ public class AppointmentRules {
     public List<Party> getSchedules(Entity scheduleView) {
         List<Party> result = new ArrayList<Party>();
         EntityBean bean = new EntityBean(scheduleView, service);
-        List<EntityRelationship> relationships
-                = bean.getNodeRelationships("schedules");
-        Collections.sort(relationships, new Comparator<EntityRelationship>() {
-            public int compare(EntityRelationship o1, EntityRelationship o2) {
-                return o1.getSequence() - o2.getSequence();
-            }
-        });
+        List<EntityRelationship> relationships = bean.getValues("schedules", EntityRelationship.class);
+        Collections.sort(relationships, SequenceComparator.INSTANCE);
         for (EntityRelationship relationship : relationships) {
             if (relationship.getTarget() != null) {
                 Party schedule = (Party) service.get(relationship.getTarget());

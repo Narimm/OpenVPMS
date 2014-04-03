@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -21,8 +19,8 @@ package org.openvpms.archetype.rules.patient.reminder;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 
@@ -34,8 +32,7 @@ import java.util.NoSuchElementException;
 /**
  * Query for due reminders.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DueReminderQuery {
 
@@ -60,6 +57,16 @@ public class DueReminderQuery {
     private Date cancel;
 
     /**
+     * The location. If {@code null} and {@link #noLocation} is {@code false}, matches all locations.
+     */
+    private Party location;
+
+    /**
+     * If {@code true}, only return those customers with no location.
+     */
+    private boolean noLocation;
+
+    /**
      * The archetype service.
      */
     private final IArchetypeService service;
@@ -71,14 +78,7 @@ public class DueReminderQuery {
 
 
     /**
-     * Constructs a new <tt>DueReminderQuery</tt>.
-     */
-    public DueReminderQuery() {
-        this(ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Constructs a new <tt>DueReminderQuery</tt>.
+     * Constructs a {@link DueReminderQuery}.
      *
      * @param service the archetype service
      */
@@ -90,8 +90,7 @@ public class DueReminderQuery {
     /**
      * Sets the reminder type.
      *
-     * @param reminderType an <em>entity.reminderType</em>. If <tt>null</tt>
-     *                     indicates to query all reminder types
+     * @param reminderType an <em>entity.reminderType</em>. If {@code null} indicates to query all reminder types
      */
     public void setReminderType(Entity reminderType) {
         this.reminderType = reminderType;
@@ -102,11 +101,9 @@ public class DueReminderQuery {
 
     /**
      * Sets the 'from' date.
-     * This excludes all reminders with a due date prior to the specified
-     * date.
+     * This excludes all reminders with a due date prior to the specified date.
      *
-     * @param from the from date. If <tt>null</tt> don't set a lower bound for
-     *             due dates
+     * @param from the from date. If {@code null} don't set a lower bound for due dates
      */
     public void setFrom(Date from) {
         this.from = from;
@@ -115,7 +112,7 @@ public class DueReminderQuery {
     /**
      * Returns the 'from' date.
      *
-     * @return the 'from' date. May be <tt>null</tt>
+     * @return the 'from' date. May be {@code null}
      */
     public Date getFrom() {
         return from;
@@ -126,8 +123,7 @@ public class DueReminderQuery {
      * This filters excludes reminders with a due date after the specified
      * date.
      *
-     * @param to the to date. If <tt>null</tt> don't set an upper bound for due
-     *           dates
+     * @param to the to date. If {@code null} don't set an upper bound for due dates
      */
     public void setTo(Date to) {
         this.to = to;
@@ -136,21 +132,41 @@ public class DueReminderQuery {
     /**
      * Returns the 'to' date.
      *
-     * @return the 'to' date. May be <tt>null</tt>
+     * @return the 'to' date. May be {@code null}
      */
     public Date getTo() {
         return to;
     }
 
     /**
-     * Sets the cancel date. Reminder's whose next due date is prior to this
-     * are returned for cancelling. If <tt>null</tt>, no reminder will be
-     * returned for cancelling.
+     * Sets the cancel date. Reminder's whose next due date is prior to this are returned for cancelling.
+     * If {@code null}, no reminder will be returned for cancelling.
      *
-     * @param cancel the cancel date. May be <tt>null</tt>
+     * @param cancel the cancel date. May be {@code null}
      */
     public void setCancelDate(Date cancel) {
         this.cancel = cancel;
+    }
+
+    /**
+     * Sets the practice location.
+     * <p/>
+     * If no location is specified, means to match on all locations.
+     *
+     * @param location the location. May be {@code null}
+     */
+    public void setLocation(Party location) {
+        this.location = location;
+    }
+
+    /**
+     * Determines if customers with no practice location should be returned.
+     *
+     * @param noLocation if {@code true}, customers with no practice location are returned, otherwise those matching
+     *                   with a location matching {@link #setLocation(Party)} will be returned
+     */
+    public void setNoLocation(boolean noLocation) {
+        this.noLocation = noLocation;
     }
 
     /**
@@ -168,6 +184,8 @@ public class DueReminderQuery {
                 ReminderQuery query = new ReminderQuery(service);
                 query.setTo(to);
                 query.setReminderType(reminderType);
+                query.setLocation(location);
+                query.setNoLocation(noLocation);
                 return new DueIterator(query.query().iterator());
             }
         };
@@ -197,9 +215,9 @@ public class DueReminderQuery {
         }
 
         /**
-         * Returns <tt>true</tt> if the iteration has more elements.
+         * Returns {@code true} if the iteration has more elements.
          *
-         * @return <tt>true</tt> if the iterator has more elements
+         * @return {@code true} if the iterator has more elements
          */
         public boolean hasNext() {
             if (next == null) {
@@ -238,7 +256,7 @@ public class DueReminderQuery {
         /**
          * Returns the next available act.
          *
-         * @return the next available act, or <tt>null</tt>
+         * @return the next available act, or {@code null}
          * @throws ArchetypeServiceException for any archetype service error
          */
         private Act getNext() {
@@ -250,7 +268,7 @@ public class DueReminderQuery {
                 ReminderType reminderType = reminderTypes.get(ref);
                 if (reminderType != null) {
                     if (shouldCancel(reminder, reminderType)
-                            || isDue(bean, reminderType)) {
+                        || isDue(bean, reminderType)) {
                         result = reminder;
                         break;
                     }
@@ -264,24 +282,22 @@ public class DueReminderQuery {
          *
          * @param reminder     the reminder
          * @param reminderType the reminder type
-         * @return <tt>true</tt> if the reminder should be cancelled
+         * @return {@code true} if the reminder should be cancelled
          */
         private boolean shouldCancel(Act reminder, ReminderType reminderType) {
             return cancel != null && reminderType.shouldCancel(reminder.getActivityEndTime(), cancel);
         }
 
         /**
-         * Determines if a reminder is due, relative to the 'from' and 'to'
-         * dates.
+         * Determines if a reminder is due, relative to the 'from' and 'to' dates.
          *
          * @param reminder     the reminder
          * @param reminderType the reminder type
-         * @return <tt>true</tt> if the reminder is due
+         * @return {@code true} if the reminder is due
          */
         private boolean isDue(ActBean reminder, ReminderType reminderType) {
             int reminderCount = reminder.getInt("reminderCount");
-            return reminderType.isDue(reminder.getAct().getActivityEndTime(),
-                                      reminderCount, from, to);
+            return reminderType.isDue(reminder.getAct().getActivityEndTime(), reminderCount, from, to);
         }
     }
 

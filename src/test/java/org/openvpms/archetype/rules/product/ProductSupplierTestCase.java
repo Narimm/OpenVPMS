@@ -43,7 +43,7 @@ public class ProductSupplierTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void test() {
-        ProductRules rules = new ProductRules();
+        ProductRules rules = new ProductRules(getArchetypeService());
         Party supplier = TestHelper.createSupplier();
         Product product = TestHelper.createProduct();
         ProductSupplier ps = rules.createProductSupplier(product, supplier);
