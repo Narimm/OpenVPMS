@@ -235,7 +235,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
      */
     @Before
     public void setUp() {
-        rules = new ProductRules();
+        rules = new ProductRules(getArchetypeService());
     }
 
     /**

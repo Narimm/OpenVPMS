@@ -55,6 +55,9 @@
     <cache name="org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
+    <cache name="org.openvpms.component.business.dao.hibernate.im.entity.EntityLinkDOImpl"
+           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+
     <cache name="org.openvpms.component.business.dao.hibernate.im.lookup.LookupRelationshipDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 

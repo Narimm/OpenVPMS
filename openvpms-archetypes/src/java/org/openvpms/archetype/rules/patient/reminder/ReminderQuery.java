@@ -12,12 +12,11 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -25,7 +24,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
@@ -39,13 +37,21 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import static org.openvpms.component.system.common.query.Constraints.eq;
+import static org.openvpms.component.system.common.query.Constraints.gte;
+import static org.openvpms.component.system.common.query.Constraints.idEq;
+import static org.openvpms.component.system.common.query.Constraints.join;
+import static org.openvpms.component.system.common.query.Constraints.notExists;
+import static org.openvpms.component.system.common.query.Constraints.shortName;
+import static org.openvpms.component.system.common.query.Constraints.sort;
+import static org.openvpms.component.system.common.query.Constraints.subQuery;
+
 
 /**
  * Queries <em>act.patientReminder</em> acts.
  * The acts are sorted on customer name, patient name and endTime.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ReminderQuery {
 
@@ -70,20 +76,23 @@ public class ReminderQuery {
     private Date to;
 
     /**
-     * The customer
+     * The customer.
      */
     private Party customer;
 
-
     /**
-     * Constructs a <tt>ReminderQuery</tt>.
+     * The location. If {@code null} and {@link #noLocation} is {@code false}, matches all locations.
      */
-    public ReminderQuery() {
-        this(ArchetypeServiceHelper.getArchetypeService());
-    }
+    private Party location;
 
     /**
-     * Constructs a <tt>ReminderQuery</tt>.
+     * If {@code true}, only return those customers with no location.
+     */
+    private boolean noLocation;
+
+
+    /**
+     * Constructs a {@link ReminderQuery}.
      *
      * @param service the archetype service
      */
@@ -94,8 +103,7 @@ public class ReminderQuery {
     /**
      * Sets the reminder type.
      *
-     * @param reminderType an <em>entity.reminderType</em>. If <tt>null</tt>
-     *                     indicates to query all reminder types
+     * @param reminderType an <em>entity.reminderType</em>. If {@code null} indicates to query all reminder types
      */
     public void setReminderType(Entity reminderType) {
         this.reminderType = reminderType;
@@ -104,13 +112,11 @@ public class ReminderQuery {
     /**
      * Sets the 'from' date.
      * <p/>
-     * This excludes all reminders with a due date prior to the specified
-     * date.
+     * This excludes all reminders with a due date prior to the specified date.
      * <p/>
      * Any time component is ignored.
      *
-     * @param from the from date. If <tt>null</tt> don't set a lower bound for
-     *             due dates
+     * @param from the from date. If {@code null} don't set a lower bound for due dates
      */
     public void setFrom(Date from) {
         this.from = from;
@@ -123,7 +129,7 @@ public class ReminderQuery {
      * <p/>
      * Any time component is ignored.
      *
-     * @param to the to date. If <tt>null</tt> don't set an upper bound for due
+     * @param to the to date. If {@code null} don't set an upper bound for due
      *           dates
      */
     public void setTo(Date to) {
@@ -133,10 +139,31 @@ public class ReminderQuery {
     /**
      * Sets the customer.
      *
-     * @param customer the customer. May be <tt>null</tt>
+     * @param customer the customer. May be {@code null}
      */
     public void setCustomer(Party customer) {
         this.customer = customer;
+    }
+
+    /**
+     * Sets the practice location.
+     * <p/>
+     * If no location is specified, means to match on all locations.
+     *
+     * @param location the location. May be {@code null}
+     */
+    public void setLocation(Party location) {
+        this.location = location;
+    }
+
+    /**
+     * Determines if customers with no practice location should be returned.
+     *
+     * @param noLocation if {@code true}, customers with no practice location are returned, otherwise those matching
+     *                   with a location matching {@link #setLocation(Party)} will be returned
+     */
+    public void setNoLocation(boolean noLocation) {
+        this.noLocation = noLocation;
     }
 
     /**
@@ -158,7 +185,7 @@ public class ReminderQuery {
 
     /**
      * Executes the query.
-     * 
+     *
      * @return a list of the reminder acts matching the query criteria
      */
     public List<Act> execute() {
@@ -175,42 +202,48 @@ public class ReminderQuery {
      * @return a new query
      */
     public ArchetypeQuery createQuery() {
-        ShortNameConstraint act = Constraints.shortName("act", ReminderArchetypes.REMINDER, true);
+        ShortNameConstraint act = shortName("act", ReminderArchetypes.REMINDER, true);
         ArchetypeQuery query = new ArchetypeQuery(act);
         query.setMaxResults(1000);
         query.setDistinct(true);
 
-        query.add(Constraints.eq("status", ReminderStatus.IN_PROGRESS));
+        query.add(eq("status", ReminderStatus.IN_PROGRESS));
 
-        query.add(Constraints.join("patient", Constraints.shortName("participation",
-                                                                    PatientArchetypes.PATIENT_PARTICIPATION, true)));
+        query.add(join("patient", shortName("participation", PatientArchetypes.PATIENT_PARTICIPATION, true)));
         query.add(new IdConstraint("act", "participation.act"));
-        query.add(Constraints.shortName("owner", PatientArchetypes.PATIENT_OWNER, false));
-        query.add(Constraints.shortName("patient", PatientArchetypes.PATIENT, true));
-        ShortNameConstraint cust = Constraints.shortName("customer", "party.customer*", true);
+        query.add(shortName("owner", PatientArchetypes.PATIENT_OWNER, false));
+        query.add(shortName("patient", PatientArchetypes.PATIENT, true));
+        ShortNameConstraint cust = shortName("customer", CustomerArchetypes.PERSON, true);
         if (customer != null) {
-            cust.add(Constraints.eq("id", customer.getId()));
+            cust.add(eq("id", customer.getId()));
+        }
+        if (!noLocation && location != null) {
+            cust.add(join("location", "l2").add(eq("target", location.getObjectReference())));
         }
         query.add(cust);
+
+        if (noLocation) {
+            query.add(notExists(subQuery(CustomerArchetypes.PERSON, "c2").add(
+                    join("location", "l2").add(idEq("customer", "c2")))));
+        }
 
         query.add(new IdConstraint("participation.entity", "patient"));
         query.add(new IdConstraint("patient", "owner.target"));
         query.add(new IdConstraint("customer", "owner.source"));
-        query.add(Constraints.sort("customer", "name"));
-        query.add(Constraints.sort("patient", "name"));
-        query.add(Constraints.sort("act", "endTime"));
+        query.add(sort("customer", "name"));
+        query.add(sort("patient", "name"));
+        query.add(sort("act", "endTime"));
 
-        ShortNameConstraint reminder
-                = Constraints.shortName("reminderType", ReminderArchetypes.REMINDER_TYPE_PARTICIPATION, true);
+        ShortNameConstraint reminder = shortName("reminderType", ReminderArchetypes.REMINDER_TYPE_PARTICIPATION, true);
         if (reminderType != null) {
-            ObjectRefNodeConstraint reminderTypeRef = Constraints.eq("entity", reminderType.getObjectReference());
-            query.add(Constraints.join("reminderType", reminder).add(reminderTypeRef));
+            ObjectRefNodeConstraint reminderTypeRef = eq("entity", reminderType.getObjectReference());
+            query.add(join("reminderType", reminder).add(reminderTypeRef));
         } else {
             query.add(reminder);
             query.add(new IdConstraint("reminderType.act", "act"));
         }
         if (from != null) {
-            query.add(Constraints.gte("endTime", DateRules.getDate(from)));
+            query.add(gte("endTime", DateRules.getDate(from)));
         }
         if (to != null) {
             // remove any time component and add 1 day

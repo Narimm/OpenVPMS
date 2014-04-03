@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -42,14 +40,12 @@ import static org.junit.Assert.assertNull;
 /**
  * Tests the {@link DeliveryProcessor} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DeliveryProcessorTestCase extends AbstractSupplierTest {
 
     /**
-     * Tests the {@link DeliveryProcessor} when invoked via
-     * the <em>archetypeService.save.act.supplierDelivery</em> and
+     * Tests the {@link DeliveryProcessor} when invoked via the <em>archetypeService.save.act.supplierDelivery</em> and
      * the <em>archetypeService.save.act.supplierReturn</em> rules.
      */
     @Test
@@ -355,7 +351,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
 
     private void checkPrice(Product product, BigDecimal cost,
                             BigDecimal price) {
-        product = get(getProduct()); // reload product
+        product = get(product); // reload product
         Set<ProductPrice> prices = product.getProductPrices();
         assertEquals(1, prices.size());
         ProductPrice p = prices.toArray(new ProductPrice[prices.size()])[0];
@@ -427,7 +423,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
      * @return the product supplier, or <tt>null</tt> if none is found
      */
     private ProductSupplier getProductSupplier(int packageSize) {
-        ProductRules rules = new ProductRules();
+        ProductRules rules = new ProductRules(getArchetypeService());
         Party supplier = get(getSupplier()); // make sure using the latest
         Product product = get(getProduct()); // instance of each
         return rules.getProductSupplier(product, supplier, null, packageSize, PACKAGE_UNITS);
@@ -439,7 +435,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
      * @return the new relationship
      */
     private ProductSupplier createProductSupplier() {
-        ProductRules rules = new ProductRules();
+        ProductRules rules = new ProductRules(getArchetypeService());
         Party supplier = get(getSupplier()); // make sure using the latest
         Product product = get(getProduct()); // instance of each
         ProductSupplier ps = rules.createProductSupplier(product, supplier);

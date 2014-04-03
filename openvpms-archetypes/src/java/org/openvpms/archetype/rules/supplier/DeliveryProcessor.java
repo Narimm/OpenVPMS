@@ -29,9 +29,9 @@ import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -244,12 +244,9 @@ public class DeliveryProcessor {
         EntityBean bean = new EntityBean(product, service);
         if (bean.hasNode("stockLocations")) {
             Predicate predicate = AndPredicate.getInstance(isActiveNow(), RefEquals.getTargetEquals(stockLocation));
-            EntityRelationship relationship = bean.getNodeRelationship(
-                    "stockLocations", predicate);
+            IMObjectRelationship relationship = bean.getNodeRelationship("stockLocations", predicate);
             if (relationship == null) {
-                relationship = bean.addRelationship(
-                        "entityRelationship.productStockLocation",
-                        stockLocation);
+                relationship = bean.addRelationship("entityRelationship.productStockLocation", stockLocation);
                 toSave.add(product);
                 toSave.add(stockLocation);
             } else {

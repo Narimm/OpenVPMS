@@ -177,7 +177,7 @@ public class SupplierRulesTestCase extends AbstractSupplierTest {
     public void setUp() {
         super.setUp();
         rules = new SupplierRules(getArchetypeService());
-        productRules = new ProductRules();
+        productRules = new ProductRules(getArchetypeService());
     }
 
     /**

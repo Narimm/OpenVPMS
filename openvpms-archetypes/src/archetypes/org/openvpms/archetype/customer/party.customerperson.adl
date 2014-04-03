@@ -187,5 +187,8 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
+        <node name="location" path="/entityLinks"
+              type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="1"
+              filter="entityLink.customerLocation"/>
     </archetype>
 </archetypes>

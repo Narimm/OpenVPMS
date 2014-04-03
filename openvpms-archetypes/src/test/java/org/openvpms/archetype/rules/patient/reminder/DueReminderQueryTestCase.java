@@ -24,6 +24,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -66,8 +67,8 @@ public class DueReminderQueryTestCase extends ArchetypeServiceTest {
         Entity reminderType = createReminderType();
         createReminders(10, reminderType); // create some reminders
 
-        ReminderQuery query = new ReminderQuery();
-        DueReminderQuery dueQuery = new DueReminderQuery();
+        ReminderQuery query = new ReminderQuery(getArchetypeService());
+        DueReminderQuery dueQuery = new DueReminderQuery(getArchetypeService());
         Set<Act> expected = getReminders(query.query());
         Set<Act> actual = getReminders(dueQuery.query());
         checkReminders(expected, actual);
@@ -104,7 +105,7 @@ public class DueReminderQueryTestCase extends ArchetypeServiceTest {
         assertEquals(dueDate3.getTime(), reminder3.getActivityEndTime().getTime());
 
         // check query constrained only by reminderType. All 3 reminders should be returned
-        DueReminderQuery query = new DueReminderQuery();
+        DueReminderQuery query = new DueReminderQuery(getArchetypeService());
         query.setReminderType(reminderType);
         checkReminders(query, reminder1, reminder2, reminder3);
 
@@ -148,7 +149,7 @@ public class DueReminderQueryTestCase extends ArchetypeServiceTest {
         assertEquals(expected1stDueDate.getTime(), dueDate.getTime());
 
         // query reminders with reminderType. As there is no date range specified, it should pick up all reminders
-        DueReminderQuery query = new DueReminderQuery();
+        DueReminderQuery query = new DueReminderQuery(getArchetypeService());
         query.setReminderType(reminderType);
 
         checkReminders(query, reminder);
@@ -170,6 +171,49 @@ public class DueReminderQueryTestCase extends ArchetypeServiceTest {
         query.setFrom(getDate("2010-02-01"));
         query.setTo(getDate("2010-03-01"));
         checkReminders(query, reminder); // verify the reminder is found
+    }
+
+    /**
+     * Tests the {@link DueReminderQuery#setLocation(Party)} and {@link DueReminderQuery#setNoLocation(boolean)}
+     * methods.
+     */
+    @Test
+    public void testQueryByLocation() {
+        Date startDate = getDate("2009-10-16");
+
+        // create a new reminder type with two templates:
+        // . reminderCount=0, 0 week overdue interval
+        // . reminderCount=1, 6 week overdue interval
+        Entity reminderType = createReminderType(3, DateUnits.MONTHS, 12, DateUnits.MONTHS);
+        addTemplate(reminderType, 0, 0, DateUnits.WEEKS);
+        addTemplate(reminderType, 1, 6, DateUnits.WEEKS);
+
+        // create a new reminder starting on startDate
+        Party customer1 = TestHelper.createCustomer();
+        Party customer2 = TestHelper.createCustomer();
+        Party customer3 = TestHelper.createCustomer();
+        Party patient1 = TestHelper.createPatient(customer1);
+        Party patient2 = TestHelper.createPatient(customer2);
+        Party patient3 = TestHelper.createPatient(customer3);
+        Act reminder1 = createReminder(patient1, reminderType, startDate);
+        Act reminder2 = createReminder(patient2, reminderType, startDate);
+        Act reminder3 = createReminder(patient3, reminderType, startDate);
+
+        // query reminders with reminderType. As there is no date range specified, it should pick up all reminders
+        DueReminderQuery query = new DueReminderQuery(getArchetypeService());
+        query.setReminderType(reminderType);
+        query.setNoLocation(true);
+
+        checkReminders(query, reminder1, reminder2, reminder3);
+
+        Party location1 = TestHelper.createLocation();
+        EntityBean bean = new EntityBean(customer1);
+        bean.addNodeTarget("location", location1);
+        bean.save();
+
+        query.setNoLocation(false);
+        query.setLocation(location1);
+        checkReminders(query, reminder1);
     }
 
     /**

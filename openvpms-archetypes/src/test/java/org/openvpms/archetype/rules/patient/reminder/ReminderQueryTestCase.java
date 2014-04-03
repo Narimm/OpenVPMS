@@ -12,17 +12,14 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -32,6 +29,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
@@ -44,12 +42,14 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * Tests the {@link ReminderQuery} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ReminderQueryTestCase extends ArchetypeServiceTest {
 
@@ -62,8 +62,8 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         Entity reminderType = ReminderTestHelper.createReminderType();
         ReminderTestHelper.createReminders(10, reminderType); // create some reminders
 
-        int initialCount = countReminders(null, null);
-        ReminderQuery query = new ReminderQuery();
+        int initialCount = countReminders(null, null, false);
+        ReminderQuery query = new ReminderQuery(getArchetypeService());
         List<Act> reminders = getReminders(query);
         assertEquals(initialCount, reminders.size());
         for (Act act : reminders) {
@@ -82,7 +82,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         Entity reminderType = ReminderTestHelper.createReminderType();
         ReminderTestHelper.createReminders(count, reminderType);
 
-        ReminderQuery query = new ReminderQuery();
+        ReminderQuery query = new ReminderQuery(getArchetypeService());
         query.setReminderType(reminderType);
         List<Act> reminders = getReminders(query);
         assertEquals(count, reminders.size());
@@ -100,7 +100,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         Party patient = TestHelper.createPatient(customer);
 
         Calendar calendar = new GregorianCalendar();
-        calendar.set(1980, 0, 1);
+        calendar.set(1980, Calendar.JANUARY, 1);
         Date dueFrom = calendar.getTime();
         calendar.add(Calendar.DAY_OF_YEAR, count);
         Date dueTo = calendar.getTime();
@@ -111,10 +111,10 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         }
 
         // now determine the no. of acts with a due date in the date range
-        int rangeCount = countReminders(dueFrom, dueTo);
+        int rangeCount = countReminders(dueFrom, dueTo, false);
 
         // now verify that the query gives the same count
-        ReminderQuery query = new ReminderQuery();
+        ReminderQuery query = new ReminderQuery(getArchetypeService());
         query.setFrom(dueFrom);
         query.setTo(dueTo);
         List<Act> reminders = getReminders(query);
@@ -131,7 +131,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         Entity reminderType = ReminderTestHelper.createReminderType();
 
         Calendar calendar = new GregorianCalendar();
-        calendar.set(1980, 0, 1);
+        calendar.set(1980, Calendar.JANUARY, 1);
         Date dueFrom = calendar.getTime();
 
         for (int i = 0; i < count; ++i) {
@@ -145,7 +145,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         calendar.set(Calendar.DAY_OF_MONTH, 5);
         Date dueTo = calendar.getTime();
 
-        ReminderQuery query = new ReminderQuery();
+        ReminderQuery query = new ReminderQuery(getArchetypeService());
         query.setReminderType(reminderType);
         query.setFrom(dueFrom);
         query.setTo(dueTo);
@@ -171,10 +171,69 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
             Party patient = TestHelper.createPatient(customer);
             ReminderTestHelper.createReminderWithDueDate(patient, reminderType, dueDate);
         }
-        ReminderQuery query = new ReminderQuery();
+        ReminderQuery query = new ReminderQuery(getArchetypeService());
         query.setCustomer(customer);
         List<Act> reminders = getReminders(query);
         assertEquals(count, reminders.size());
+    }
+
+    /**
+     * Verifies that reminders can be queried by customer location.
+     */
+    @Test
+    public void testQueryByLocation() {
+        Entity reminderType = ReminderTestHelper.createReminderType();
+        Party location1 = TestHelper.createLocation();
+        Party location2 = TestHelper.createLocation();
+
+        Party customer1 = createCustomer(location1);
+        Party customer2 = createCustomer(location2);
+
+        Party patient1 = TestHelper.createPatient(customer1);
+        Party patient2 = TestHelper.createPatient(customer2);
+
+        Act act1 = ReminderTestHelper.createReminder(patient1, reminderType);
+        Act act2 = ReminderTestHelper.createReminder(patient2, reminderType);
+        Act act3 = ReminderTestHelper.createReminder(patient2, reminderType);
+        save(act1, act2, act3);
+
+        ReminderQuery query = new ReminderQuery(getArchetypeService());
+        query.setLocation(location1);
+
+        List<Act> reminders = getReminders(query);
+        assertEquals(1, reminders.size());
+
+        query.setLocation(location2);
+        reminders = getReminders(query);
+        assertEquals(2, reminders.size());
+    }
+
+    /**
+     * Verifies that reminders can be queried for customers that have no location.
+     */
+    @Test
+    public void testQueryByNoLocation() {
+        Entity reminderType = ReminderTestHelper.createReminderType();
+        Party location = TestHelper.createLocation();
+
+        int initialCount = countReminders(null, null, true);
+
+        Party customer1 = createCustomer(location);
+        Party customer2 = TestHelper.createCustomer();
+
+        Party patient1 = TestHelper.createPatient(customer1);
+        Party patient2 = TestHelper.createPatient(customer2);
+
+        Act act1 = ReminderTestHelper.createReminder(patient1, reminderType);
+        Act act2 = ReminderTestHelper.createReminder(patient2, reminderType);
+        Act act3 = ReminderTestHelper.createReminder(patient2, reminderType);
+        save(act1, act2, act3);
+
+        ReminderQuery query = new ReminderQuery(getArchetypeService());
+        query.setNoLocation(true);
+
+        List<Act> reminders = getReminders(query);
+        assertEquals(initialCount + 2, reminders.size());
     }
 
     /**
@@ -196,34 +255,54 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
      * Counts IN_PROGRESS reminders for patients with patient-owner
      * relationships.
      *
-     * @param dueFrom the start due date. May be <code>null</code>
-     * @param dueTo   to end due date. May be <code>null</code>
+     * @param dueFrom    the start due date. May be {@code null}
+     * @param dueTo      to end due date. May be {@code null}
+     * @param noLocation if {@code true}, only count reminders for customers that have no location
      * @return a count of reminders in the specified date range
      */
-    private int countReminders(Date dueFrom, Date dueTo) {
+    private int countReminders(Date dueFrom, Date dueTo, boolean noLocation) {
         int result = 0;
-        ArchetypeQuery query = new ArchetypeQuery(ReminderArchetypes.REMINDER, false,
-                                                  true);
+        ArchetypeQuery query = new ArchetypeQuery(ReminderArchetypes.REMINDER, false, true);
         query.add(new NodeConstraint("status", ActStatus.IN_PROGRESS));
         if (dueFrom != null && dueTo != null) {
-            query.add(new NodeConstraint("endTime", RelationalOp.BTW, dueFrom,
-                                         dueTo));
+            query.add(new NodeConstraint("endTime", RelationalOp.BTW, DateRules.getDate(dueFrom),
+                                         DateRules.getDate(dueTo)));
         }
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
         IPage<IMObject> page = getArchetypeService().get(query);
         for (IMObject object : page.getResults()) {
             ActBean bean = new ActBean((Act) object);
-            Party patient = (Party) bean.getParticipant(
-                    "participation.patient");
+            Party patient = (Party) bean.getNodeParticipant("patient");
             if (patient != null) {
                 EntityBean entityBean = new EntityBean(patient);
-                if (entityBean.getSourceEntity(PatientArchetypes.PATIENT_OWNER)
-                    != null) {
-                    result++;
+                Party customer = (Party) entityBean.getSourceEntity(PatientArchetypes.PATIENT_OWNER);
+                if (customer != null) {
+                    if (noLocation) {
+                        IMObjectBean customerBean = new IMObjectBean(customer);
+                        if (customerBean.getNodeTargetObject("location") == null) {
+                            result++;
+                        }
+                    } else {
+                        result++;
+                    }
                 }
             }
         }
         return result;
+    }
+
+    /**
+     * Creates a customer linked to a location.
+     *
+     * @param location the location
+     * @return the customer
+     */
+    private Party createCustomer(Party location) {
+        Party customer = TestHelper.createCustomer();
+        EntityBean bean = new EntityBean(customer);
+        bean.addNodeTarget("location", location);
+        bean.save();
+        return customer;
     }
 
 }

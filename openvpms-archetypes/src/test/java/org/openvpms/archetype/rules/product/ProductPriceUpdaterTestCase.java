@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.archetype.rules.product;
@@ -34,8 +32,7 @@ import java.util.Set;
 /**
  * Tests the {@link ProductPriceUpdater} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ProductPriceUpdaterTestCase extends AbstractProductTest {
 
@@ -182,7 +179,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
 
         // create a product-supplier relationship.
         int packageSize = 30;
-        ProductRules rules = new ProductRules();
+        ProductRules rules = new ProductRules(getArchetypeService());
         ProductSupplier ps = rules.createProductSupplier(product, supplier);
         ps.setPackageUnits(PACKAGE_UNITS);
         ps.setPackageSize(packageSize);
@@ -294,7 +291,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      * @return the corresponding product supplier, or <tt>null</tt> if none is found
      */
     private ProductSupplier getProductSupplier(Product product, Party supplier, int packageSize) {
-        ProductRules rules = new ProductRules();
+        ProductRules rules = new ProductRules(getArchetypeService());
         return rules.getProductSupplier(product, supplier, null, packageSize, PACKAGE_UNITS);
     }
 
@@ -306,7 +303,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      * @return the new relationship
      */
     private ProductSupplier createProductSupplier(Product product, Party supplier) {
-        ProductRules rules = new ProductRules();
+        ProductRules rules = new ProductRules(getArchetypeService());
         supplier = get(supplier);         // make sure using the latest
         product = get(product);           // instance of each
         ProductSupplier ps = rules.createProductSupplier(product, supplier);

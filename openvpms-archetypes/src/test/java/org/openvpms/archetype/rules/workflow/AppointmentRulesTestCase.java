@@ -330,7 +330,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     @Before
     public void setUp() {
         removeActs();
-        rules = new AppointmentRules();
+        rules = new AppointmentRules(getArchetypeService());
         appointmentService = new AppointmentService(getArchetypeService(),
                                                     applicationContext.getBean(ILookupService.class),
                                                     ScheduleTestHelper.createCache(30));
