@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -1042,6 +1042,19 @@ public class IMObjectBean {
     }
 
     /**
+     * Returns the target object reference from the first active {@link IMObjectRelationship} for the specified node.
+     *
+     * @param node the relationship node
+     * @return the target reference, or {@code null} if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObjectReference getNodeTargetObjectRef(String node) {
+        List<IMObjectRelationship> relationships = getValues(node, IsActiveRelationship.isActiveNow(),
+                                                             IMObjectRelationship.class);
+        return getRelatedRef(relationships, null, TARGET);
+    }
+
+    /**
      * Returns the target object references from each {@link PeriodRelationship} that is active at the specified time,
      * for the specified node.
      *
@@ -1886,14 +1899,14 @@ public class IMObjectBean {
      * Returns the first object reference from the supplied relationship that matches the specified criteria.
      *
      * @param relationships the relationships
-     * @param predicate     the criteria
+     * @param predicate     the criteria. May be {@code null}
      * @param accessor      the relationship reference accessor
      * @return the matching reference, or {@code null}
      */
     protected <R extends IMObjectRelationship> IMObjectReference getRelatedRef(
             Collection<R> relationships, Predicate predicate, RelationshipRef accessor) {
         for (R relationship : relationships) {
-            if (predicate.evaluate(relationship)) {
+            if (predicate == null || predicate.evaluate(relationship)) {
                 IMObjectReference reference = accessor.transform(relationship);
                 if (reference != null) {
                     return reference;
