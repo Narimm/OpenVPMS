@@ -242,7 +242,8 @@ public class AppointmentBrowser extends ScheduleBrowser {
      * @return {@code true} if one or more events have overlapping times
      */
     private boolean hasOverlappingEvents(List<PropertySet> events, Party schedule) {
-        int slotSize = AbstractAppointmentGrid.getSlotSize(schedule, new AppointmentRules());
+        AppointmentRules rules = ServiceHelper.getBean(AppointmentRules.class);
+        int slotSize = AbstractAppointmentGrid.getSlotSize(schedule, rules);
         IntersectComparator comparator = new IntersectComparator(slotSize);
         List<PropertySet> list = new ArrayList<PropertySet>();
 

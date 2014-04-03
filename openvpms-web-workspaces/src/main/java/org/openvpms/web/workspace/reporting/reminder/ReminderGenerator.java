@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -236,7 +236,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         }
         this.context = context;
         this.help = help;
-        TemplateHelper helper = new TemplateHelper();
+        TemplateHelper helper = new TemplateHelper(ServiceHelper.getArchetypeService());
         groupTemplate = helper.getDocumentTemplate("GROUPED_REMINDERS");
         if (groupTemplate == null) {
             throw new ReportingException(ReportingException.ErrorCode.NoGroupedReminderTemplate);

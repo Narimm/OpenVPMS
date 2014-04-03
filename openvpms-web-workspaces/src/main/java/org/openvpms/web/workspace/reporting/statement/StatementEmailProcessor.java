@@ -111,7 +111,7 @@ public class StatementEmailProcessor
         this.emailAddress = emailAddress;
         this.emailName = emailName;
         handlers = ServiceHelper.getDocumentHandlers();
-        TemplateHelper helper = new TemplateHelper();
+        TemplateHelper helper = new TemplateHelper(ServiceHelper.getArchetypeService());
         Entity entity = helper.getTemplateForArchetype(CustomerAccountArchetypes.OPENING_BALANCE);
         if (entity == null) {
             throw new StatementProcessorException(InvalidConfiguration, "No document template configured");

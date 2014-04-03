@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -76,7 +76,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
 
 
     /**
-     * Constructs an {@code AppointmentCRUDWindow}.
+     * Constructs an {@link AppointmentCRUDWindow}.
      *
      * @param browser the browser
      * @param context the context
@@ -86,7 +86,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         super(Archetypes.create("act.customerAppointment", Act.class, Messages.get("workflow.scheduling.createtype")),
               context, help);
         this.browser = browser;
-        rules = new AppointmentRules();
+        rules = ServiceHelper.getBean(AppointmentRules.class);
     }
 
     /**
