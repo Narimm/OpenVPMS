@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.archetype.rules.practice;
@@ -37,8 +35,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 /**
  * Tests the {@link LocationRules} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class LocationRulesTestCase extends ArchetypeServiceTest {
 
@@ -168,7 +165,7 @@ public class LocationRulesTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        rules = new LocationRules();
+        rules = new LocationRules(getArchetypeService());
     }
 
     /**

@@ -17,6 +17,7 @@
 package org.openvpms.archetype.rules.product.io;
 
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 
 import java.util.Date;
@@ -36,9 +37,10 @@ public interface ProductWriter {
      * @param products            the products to write
      * @param latest              if {@code true}, output the latest price, else output all prices
      * @param includeLinkedPrices if {@code true} include prices linked from other products
+     * @param location             the pricing location. May be {@code null}
      * @return the document
      */
-    Document write(Iterator<Product> products, boolean latest, boolean includeLinkedPrices);
+    Document write(Iterator<Product> products, boolean latest, boolean includeLinkedPrices, Lookup location);
 
     /**
      * Writes product data to a document.
@@ -49,8 +51,9 @@ public interface ProductWriter {
      * @param from                the price start date. May be {@code null}
      * @param to                  the price end date. May be {@code null}
      * @param includeLinkedPrices if {@code true} include prices linked from other products
+     * @param location             the pricing location. May be {@code null}
      * @return the document
      */
-    Document write(Iterator<Product> products, Date from, Date to, boolean includeLinkedPrices);
+    Document write(Iterator<Product> products, Date from, Date to, boolean includeLinkedPrices, Lookup location);
 
 }
