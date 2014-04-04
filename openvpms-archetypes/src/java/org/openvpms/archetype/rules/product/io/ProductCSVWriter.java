@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -51,7 +52,7 @@ public class ProductCSVWriter implements ProductWriter {
             "Product Id", "Product Name", "Product Printed Name", "Fixed Price Id", "Fixed Price", "Fixed Cost",
             "Fixed Price Max Discount", "Fixed Price Start Date", "Fixed Price End Date", "Default Fixed Price",
             "Unit Price Id", "Unit Price", "Unit Cost", "Unit Price Max Discount", "Unit Price Start Date",
-            "Unit Price End Date", "Tax Rate", "Notes"};
+            "Unit Price End Date", "Tax Rate", "Pricing Location", "Notes"};
 
     /**
      * The archetype service.
@@ -112,12 +113,13 @@ public class ProductCSVWriter implements ProductWriter {
      * @param products            the products to write
      * @param latest              if {@code true}, output the latest price, else output all prices
      * @param includeLinkedPrices if {@code true} include prices linked from other products
+     * @param location            the pricing location. May be {@code null}
      * @return the document
      */
     @Override
-    public Document write(Iterator<Product> products, boolean latest, boolean includeLinkedPrices) {
+    public Document write(Iterator<Product> products, boolean latest, boolean includeLinkedPrices, Lookup location) {
         Prices prices = (latest) ? Prices.LATEST : Prices.ALL;
-        return write(products, prices, null, null, includeLinkedPrices);
+        return write(products, prices, null, null, includeLinkedPrices, location);
     }
 
     /**
@@ -129,11 +131,13 @@ public class ProductCSVWriter implements ProductWriter {
      * @param from                the price start date. May be {@code null}
      * @param to                  the price end date. May be {@code null}
      * @param includeLinkedPrices if {@code true} include prices linked from other products
+     * @param location            the pricing location. May be {@code null}
      * @return the document
      */
     @Override
-    public Document write(Iterator<Product> products, Date from, Date to, boolean includeLinkedPrices) {
-        return write(products, Prices.RANGE, from, to, includeLinkedPrices);
+    public Document write(Iterator<Product> products, Date from, Date to, boolean includeLinkedPrices,
+                          Lookup location) {
+        return write(products, Prices.RANGE, from, to, includeLinkedPrices, location);
     }
 
     /**
@@ -154,14 +158,16 @@ public class ProductCSVWriter implements ProductWriter {
      * @param from                the price start date. May be {@code null}
      * @param to                  the price end date. May be {@code null}
      * @param includeLinkedPrices if {@code true} include prices linked from other products
+     * @param location            the pricing location. May be {@code null}
      * @return the document
      */
-    private Document write(Iterator<Product> products, Prices prices, Date from, Date to, boolean includeLinkedPrices) {
+    private Document write(Iterator<Product> products, Prices prices, Date from, Date to, boolean includeLinkedPrices,
+                           Lookup location) {
         StringWriter writer = new StringWriter();
         CSVWriter csv = new CSVWriter(writer, SEPARATOR);
         csv.writeNext(HEADER);
         while (products.hasNext()) {
-            write(products.next(), prices, from, to, includeLinkedPrices, csv);
+            write(products.next(), prices, from, to, includeLinkedPrices, location, csv);
         }
         String name = "products-" + new java.sql.Date(System.currentTimeMillis()).toString() + ".csv";
 
@@ -178,19 +184,20 @@ public class ProductCSVWriter implements ProductWriter {
      * @param from                the from date. May be {@code null}
      * @param to                  the to date. May be {@code null}
      * @param includeLinkedPrices if {@code true} include prices linked from other products
+     * @param location            the pricing location. May be {@code null}
      * @param writer              the writer to write to
      */
     private void write(Product product, Prices prices, Date from, Date to, boolean includeLinkedPrices,
-                       CSVWriter writer) {
+                       Lookup location, CSVWriter writer) {
         IMObjectBean bean = new IMObjectBean(product);
 
         String productId = bean.getString("id");
         String name = bean.getString("name");
 
         List<ProductPrice> fixedPrices = getPrices(product, ProductArchetypes.FIXED_PRICE, prices, from, to,
-                                                   includeLinkedPrices);
+                                                   includeLinkedPrices, location);
         List<ProductPrice> unitPrices = getPrices(product, ProductArchetypes.UNIT_PRICE, prices, from, to,
-                                                  includeLinkedPrices);
+                                                  includeLinkedPrices, location);
         String printedName = bean.getString("printedName");
         String tax = taxRules.getTaxRate(product).toString();
 
@@ -256,20 +263,21 @@ public class ProductCSVWriter implements ProductWriter {
      * @param from                the start date range, if prices is {@link Prices#RANGE}. May be {@code null}
      * @param to                  the end date range, if prices is {@link Prices#RANGE}. May be {@code null}
      * @param includeLinkedPrices if {@code true} include prices linked from other products
+     * @param location            the pricing location. May be {@code null}
      * @return the matching prices
      */
     private List<ProductPrice> getPrices(Product product, String shortName, Prices prices, Date from, Date to,
-                                         boolean includeLinkedPrices) {
+                                         boolean includeLinkedPrices, Lookup location) {
         List<ProductPrice> result = new ArrayList<ProductPrice>();
         if (prices == Prices.LATEST) {
-            List<ProductPrice> list = rules.getProductPrices(product, shortName, includeLinkedPrices);
+            List<ProductPrice> list = rules.getProductPrices(product, shortName, includeLinkedPrices, location);
             if (!list.isEmpty()) {
                 result.add(list.get(0));
             }
         } else if (prices == Prices.ALL) {
-            result.addAll(rules.getProductPrices(product, shortName, includeLinkedPrices));
+            result.addAll(rules.getProductPrices(product, shortName, includeLinkedPrices, location));
         } else {
-            result.addAll(rules.getProductPrices(product, shortName, from, to, includeLinkedPrices));
+            result.addAll(rules.getProductPrices(product, shortName, from, to, includeLinkedPrices, location));
         }
         return result;
     }

@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -89,10 +90,11 @@ public class ProductPriceRules {
      * @param product   the product
      * @param shortName the price short name
      * @param date      the date
+     * @param location  the pricing location. May be {@code null}
      * @return the first matching price, or {@code null} if none is found
      */
-    public ProductPrice getProductPrice(Product product, String shortName, Date date) {
-        Predicate predicate = new ShortNameDatePredicate(shortName, date);
+    public ProductPrice getProductPrice(Product product, String shortName, Date date, Lookup location) {
+        Predicate predicate = new ShortNameDatePredicate(shortName, date, location);
         return getProductPrice(shortName, product, predicate, date);
     }
 
@@ -104,10 +106,12 @@ public class ProductPriceRules {
      * @param price     the price
      * @param shortName the price short name
      * @param date      the date
+     * @param location  the pricing location. May be {@code null}
      * @return the first matching price, or {@code null} if none is found
      */
-    public ProductPrice getProductPrice(Product product, BigDecimal price, String shortName, Date date) {
-        Predicate predicate = new PricePredicate(price, shortName, date);
+    public ProductPrice getProductPrice(Product product, BigDecimal price, String shortName, Date date,
+                                        Lookup location) {
+        Predicate predicate = new PricePredicate(price, shortName, date, location);
         return getProductPrice(shortName, product, predicate, date);
     }
 
@@ -118,10 +122,11 @@ public class ProductPriceRules {
      *
      * @param product   the product
      * @param shortName the price short name
+     * @param location  the pricing location. May be {@code null}
      * @return the matching prices, sorted on descending time
      */
-    public List<ProductPrice> getProductPrices(Product product, String shortName) {
-        return getProductPrices(product, shortName, true);
+    public List<ProductPrice> getProductPrices(Product product, String shortName, Lookup location) {
+        return getProductPrices(product, shortName, true, location);
     }
 
     /**
@@ -131,11 +136,13 @@ public class ProductPriceRules {
      * @param shortName     the price short name
      * @param includeLinked if {@code true} and the requested prices are <em>productPrice.fixedPrice</em>, linked
      *                      products will be searched
+     * @param location      the pricing location. May be {@code null}
      * @return the matching prices, sorted on descending time
      */
-    public List<ProductPrice> getProductPrices(Product product, String shortName, boolean includeLinked) {
+    public List<ProductPrice> getProductPrices(Product product, String shortName, boolean includeLinked,
+                                               Lookup location) {
         List<ProductPrice> result = new ArrayList<ProductPrice>();
-        ShortNamePredicate predicate = new ShortNamePredicate(shortName);
+        ShortNamePredicate predicate = new ShortNamePredicate(shortName, location);
         List<ProductPrice> prices = findPrices(product, predicate);
         result.addAll(prices);
         if (includeLinked && FIXED_PRICE.equals(shortName)) {
@@ -153,10 +160,11 @@ public class ProductPriceRules {
      * @param product   the product
      * @param shortName the price short name
      * @param date      the date
+     * @param location  the pricing location. May be {@code null}
      * @return all prices matching the criteria
      */
-    public List<ProductPrice> getProductPrices(Product product, String shortName, Date date) {
-        return getProductPrices(product, shortName, date, true);
+    public List<ProductPrice> getProductPrices(Product product, String shortName, Date date, Lookup location) {
+        return getProductPrices(product, shortName, date, true, location);
     }
 
     /**
@@ -167,11 +175,13 @@ public class ProductPriceRules {
      * @param date          the date
      * @param includeLinked if {@code true} and the requested prices are <em>productPrice.fixedPrice</em>, linked
      *                      products will be searched
+     * @param location      the pricing location. May be {@code null}
      * @return all prices matching the criteria
      */
-    public List<ProductPrice> getProductPrices(Product product, String shortName, Date date, boolean includeLinked) {
+    public List<ProductPrice> getProductPrices(Product product, String shortName, Date date, boolean includeLinked,
+                                               Lookup location) {
         List<ProductPrice> result = new ArrayList<ProductPrice>();
-        ShortNameDatePredicate predicate = new ShortNameDatePredicate(shortName, date);
+        ShortNameDatePredicate predicate = new ShortNameDatePredicate(shortName, date, location);
         List<ProductPrice> prices = findPrices(product, predicate);
         result.addAll(prices);
         if (includeLinked && FIXED_PRICE.equals(shortName)) {
@@ -190,10 +200,11 @@ public class ProductPriceRules {
      * @param shortName the price short name
      * @param from      the start of the date range. May be {@code null}
      * @param to        the end of the date range. May be {@code null}
+     * @param location  the pricing location. May be {@code null}
      * @return the matching prices, sorted on descending time
      */
-    public List<ProductPrice> getProductPrices(Product product, String shortName, Date from, Date to) {
-        return getProductPrices(product, shortName, from, to, true);
+    public List<ProductPrice> getProductPrices(Product product, String shortName, Date from, Date to, Lookup location) {
+        return getProductPrices(product, shortName, from, to, true, location);
     }
 
     /**
@@ -205,12 +216,13 @@ public class ProductPriceRules {
      * @param to            the end of the date range. May be {@code null}
      * @param includeLinked if {@code true} and the requested prices are <em>productPrice.fixedPrice</em>, linked
      *                      products will be searched
+     * @param location      the pricing location. May be {@code null}
      * @return the matching prices, sorted on descending time
      */
     public List<ProductPrice> getProductPrices(Product product, String shortName, Date from, Date to,
-                                               boolean includeLinked) {
+                                               boolean includeLinked, Lookup location) {
         List<ProductPrice> result = new ArrayList<ProductPrice>();
-        ShortNameDateRangePredicate predicate = new ShortNameDateRangePredicate(shortName, from, to);
+        ShortNameDateRangePredicate predicate = new ShortNameDateRangePredicate(shortName, from, to, location);
         List<ProductPrice> prices = findPrices(product, predicate);
         result.addAll(prices);
         if (includeLinked && FIXED_PRICE.equals(shortName)) {
@@ -322,6 +334,17 @@ public class ProductPriceRules {
     }
 
     /**
+     * Returns the pricing locations for a price.
+     *
+     * @param price the price
+     * @return the pricing locations
+     */
+    public List<Lookup> getPricingLocations(ProductPrice price) {
+        IMObjectBean bean = new IMObjectBean(price, service);
+        return bean.getValues("pricingLocations", Lookup.class);
+    }
+
+    /**
      * Sorts prices on descending time.
      * <p/>
      * NOTE: this modifies the input list.
@@ -427,8 +450,7 @@ public class ProductPriceRules {
      *                   {@code true} default node
      * @return the price matching the criteria, or {@code null} if none is found
      */
-    private ProductPrice findPrice(Product product, Predicate predicate,
-                                   boolean useDefault) {
+    private ProductPrice findPrice(Product product, Predicate predicate, boolean useDefault) {
         ProductPrice result = null;
         ProductPrice fallback = null;
         for (ProductPrice price : product.getProductPrices()) {
@@ -506,19 +528,27 @@ public class ProductPriceRules {
     }
 
     private static class ShortNamePredicate implements Predicate {
+
         /**
          * The price short name.
          */
         private final String shortName;
 
-        public ShortNamePredicate(String shortName) {
+        /**
+         * The pricing location. May be {@code null}
+         */
+        private final Lookup location;
+
+        public ShortNamePredicate(String shortName, Lookup location) {
             this.shortName = shortName;
+            this.location = location;
         }
 
         @Override
         public boolean evaluate(Object object) {
             ProductPrice price = (ProductPrice) object;
-            return TypeHelper.isA(price, shortName) && price.isActive();
+            return TypeHelper.isA(price, shortName) && price.isActive()
+                   && (location == null || price.getClassifications().contains(location));
         }
     }
 
@@ -532,8 +562,8 @@ public class ProductPriceRules {
          */
         private final Date date;
 
-        public ShortNameDatePredicate(String shortName, Date date) {
-            super(shortName);
+        public ShortNameDatePredicate(String shortName, Date date, Lookup location) {
+            super(shortName, location);
             this.date = date;
         }
 
@@ -564,8 +594,8 @@ public class ProductPriceRules {
          */
         private final Date to;
 
-        public ShortNameDateRangePredicate(String shortName, Date from, Date to) {
-            super(shortName);
+        public ShortNameDateRangePredicate(String shortName, Date from, Date to, Lookup location) {
+            super(shortName, location);
             this.from = from;
             this.to = to;
         }
@@ -591,8 +621,8 @@ public class ProductPriceRules {
          */
         private final BigDecimal price;
 
-        public PricePredicate(BigDecimal price, String shortName, Date date) {
-            super(shortName, date);
+        public PricePredicate(BigDecimal price, String shortName, Date date, Lookup location) {
+            super(shortName, date, location);
             this.price = price;
         }
 

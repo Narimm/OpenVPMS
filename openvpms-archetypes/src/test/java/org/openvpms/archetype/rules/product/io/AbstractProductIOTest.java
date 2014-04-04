@@ -84,13 +84,13 @@ public class AbstractProductIOTest extends ArchetypeServiceTest {
                                              1);
         result.setReference(product.getObjectReference());
         if (copyPrices) {
-            for (ProductPrice price : rules.getProductPrices(product, ProductArchetypes.FIXED_PRICE)) {
+            for (ProductPrice price : rules.getProductPrices(product, ProductArchetypes.FIXED_PRICE, null)) {
                 IMObjectBean priceBean = new IMObjectBean(price);
                 result.addFixedPrice(price.getId(), price.getPrice(), priceBean.getBigDecimal("cost"),
                                      priceBean.getBigDecimal("maxDiscount"), price.getFromDate(), price.getToDate(),
                                      priceBean.getBoolean("default"), 1);
             }
-            for (ProductPrice price : rules.getProductPrices(product, ProductArchetypes.UNIT_PRICE)) {
+            for (ProductPrice price : rules.getProductPrices(product, ProductArchetypes.UNIT_PRICE, null)) {
                 IMObjectBean priceBean = new IMObjectBean(price);
                 result.addUnitPrice(price.getId(), price.getPrice(), priceBean.getBigDecimal("cost"),
                                     priceBean.getBigDecimal("maxDiscount"),

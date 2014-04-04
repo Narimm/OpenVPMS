@@ -44,5 +44,16 @@
               defaultValue="java.util.Date.new()"/>
         <node displayName="To Date" name="toDate" path="/toDate"
               type="java.util.Date" minCardinality="0"/>
+        <node name="pricingLocations" path="/classifications" parentChild="false" type="java.util.HashSet"
+              baseName="Classification" minCardinality="0" maxCardinality="*"
+              filter="lookup.pricingLocation">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="lookup.pricingLocation"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
     </archetype>
 </archetypes>
