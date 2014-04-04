@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.app;
@@ -50,8 +50,7 @@ import java.util.Map;
  *
  * @author Tim Anderson
  */
-public abstract class ContextApplicationInstance
-        extends SpringApplicationInstance {
+public abstract class ContextApplicationInstance extends SpringApplicationInstance {
 
     /**
      * The context.
@@ -71,18 +70,25 @@ public abstract class ContextApplicationInstance
     /**
      * The practice rules.
      */
-    private final PracticeRules rules;
+    private final PracticeRules practiceRules;
+
+    /**
+     * The location rules.
+     */
+    private final LocationRules locationRules;
 
 
     /**
-     * Constructs a {@code ContextApplicationInstance}.
+     * Constructs a {@link ContextApplicationInstance}.
      *
-     * @param context the context
-     * @param rules   the practice rules
+     * @param context       the context
+     * @param practiceRules the practice rules
+     * @param locationRules the location rules
      */
-    public ContextApplicationInstance(GlobalContext context, PracticeRules rules) {
+    public ContextApplicationInstance(GlobalContext context, PracticeRules practiceRules, LocationRules locationRules) {
         this.context = context;
-        this.rules = rules;
+        this.practiceRules = practiceRules;
+        this.locationRules = locationRules;
         initUser();
         initPractice();
         initLocation();
@@ -265,7 +271,7 @@ public abstract class ContextApplicationInstance
      * @throws ArchetypeServiceException for any archetype service error
      */
     private void initPractice() {
-        context.setPractice(rules.getPractice());
+        context.setPractice(practiceRules.getPractice());
     }
 
     /**
@@ -293,7 +299,7 @@ public abstract class ContextApplicationInstance
         // If no locations defined for user find default location for Practice
         // or the first location if no default.
         if (location == null) {
-            location = rules.getDefaultLocation(practice);
+            location = practiceRules.getDefaultLocation(practice);
         }
 
         context.setLocation(location);
@@ -314,12 +320,11 @@ public abstract class ContextApplicationInstance
 
         if (location != null) {
             // initialise the defaults for the location
-            LocationRules rules = new LocationRules();
-            deposit = rules.getDefaultDepositAccount(location);
-            till = rules.getDefaultTill(location);
-            scheduleView = rules.getDefaultScheduleView(location);
-            workListView = rules.getDefaultWorkListView(location);
-            stockLocation = getStockLocation(rules, location);
+            deposit = locationRules.getDefaultDepositAccount(location);
+            till = locationRules.getDefaultTill(location);
+            scheduleView = locationRules.getDefaultScheduleView(location);
+            workListView = locationRules.getDefaultWorkListView(location);
+            stockLocation = getStockLocation(locationRules, location);
         }
         context.setDeposit(deposit);
         context.setTill(till);

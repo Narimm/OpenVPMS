@@ -76,13 +76,18 @@ class AppointmentQuery extends ScheduleQuery {
     private AppointmentRules rules;
 
     /**
+     * The location rules.
+     */
+    private final LocationRules locationRules;
+
+    /**
      * Time range selector.
      */
     private SelectField timeSelector;
 
 
     /**
-     * Constructs a {@code AppointmentQuery}.
+     * Constructs an {@link AppointmentQuery}.
      *
      * @param location the practice location. May be {@code null}
      */
@@ -90,6 +95,7 @@ class AppointmentQuery extends ScheduleQuery {
         super(ServiceHelper.getAppointmentService(), "entity.organisationScheduleView");
         this.location = location;
         rules = ServiceHelper.getBean(AppointmentRules.class);
+        locationRules = ServiceHelper.getBean(LocationRules.class);
     }
 
     /**
@@ -128,15 +134,13 @@ class AppointmentQuery extends ScheduleQuery {
     /**
      * Returns the schedule views.
      * <p/>
-     * This returns the <em>entity.organisationWorkListView</em> entities for
-     * the current location.
+     * This returns the <em>entity.organisationWorkListView</em> entities for the current location.
      *
      * @return the schedule views
      */
     protected List<Entity> getScheduleViews() {
         List<Entity> views;
         if (location != null) {
-            LocationRules locationRules = new LocationRules();
             views = locationRules.getScheduleViews(location);
         } else {
             views = Collections.emptyList();
@@ -151,7 +155,6 @@ class AppointmentQuery extends ScheduleQuery {
      */
     protected Entity getDefaultScheduleView() {
         if (location != null) {
-            LocationRules locationRules = new LocationRules();
             return locationRules.getDefaultScheduleView(location);
         }
         return null;

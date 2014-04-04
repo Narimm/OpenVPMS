@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.layout;
@@ -184,7 +184,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     protected void doLayout(IMObject object, PropertySet properties, IMObject parent, Component container,
                             LayoutContext context) {
         ArchetypeDescriptor archetype = context.getArchetypeDescriptor(object);
-        ArchetypeNodes nodes = getArchetypeNodes(object);
+        ArchetypeNodes nodes = getArchetypeNodes(object, context);
         NodeFilter filter = getNodeFilter(object, context);
 
         List<Property> simple = nodes.getSimpleNodes(properties, archetype, object, filter);
@@ -282,10 +282,11 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     /**
      * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
      *
-     * @param object the object to display
+     * @param object  the object to display
+     * @param context the layout context
      * @return the archetype nodes
      */
-    protected ArchetypeNodes getArchetypeNodes(IMObject object) {
+    protected ArchetypeNodes getArchetypeNodes(IMObject object, LayoutContext context) {
         return getArchetypeNodes();
     }
 

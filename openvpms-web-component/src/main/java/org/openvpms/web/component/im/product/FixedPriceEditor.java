@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -20,6 +20,7 @@ import echopointng.DropDown;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
@@ -63,8 +64,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     private Date date;
 
     /**
-     * The wrapper component, containing either the text field or the prices
-     * dropdown.
+     * The wrapper component, containing either the text field or the prices dropdown.
      */
     private Component container;
 
@@ -94,6 +94,11 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     private ProductPrice price;
 
     /**
+     * The pricing location. May be {@code null}
+     */
+    private Lookup pricingLocation;
+
+    /**
      * The layout context.
      */
     private final LayoutContext context;
@@ -101,11 +106,13 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     /**
      * Creates a new {@code FixedPriceEditor}.
      *
-     * @param property the fixed price property
-     * @param context  the layout context
+     * @param property        the fixed price property
+     * @param pricingLocation the pricing location. May be {@code null}
+     * @param context         the layout context
      */
-    public FixedPriceEditor(Property property, LayoutContext context) {
+    public FixedPriceEditor(Property property, Lookup pricingLocation, LayoutContext context) {
         super(property);
+        this.pricingLocation = pricingLocation;
         this.context = context;
 
         date = new Date();
@@ -207,7 +214,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
             if (rules == null) {
                 rules = ServiceHelper.getBean(ProductPriceRules.class);
             }
-            List<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, date);
+            List<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, date, pricingLocation);
             if (!prices.isEmpty()) {
                 table = createPriceTable(prices);
             }

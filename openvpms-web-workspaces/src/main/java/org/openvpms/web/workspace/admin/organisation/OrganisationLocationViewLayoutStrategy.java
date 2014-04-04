@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.organisation;
@@ -29,7 +29,8 @@ public class OrganisationLocationViewLayoutStrategy extends AbstractLayoutStrate
     /**
      * Exclude the mailPassword node from display.
      */
-    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude("mailPassword");
+    private static final ArchetypeNodes NODES
+            = new ArchetypeNodes().simple("pricingLocation").exclude("mailPassword");
 
     /**
      * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
