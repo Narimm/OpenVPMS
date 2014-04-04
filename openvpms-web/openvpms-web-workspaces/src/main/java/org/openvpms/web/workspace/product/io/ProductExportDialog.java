@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.product.io;
 
+import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.TableColumn;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
@@ -25,6 +26,7 @@ import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.rules.product.io.ProductCSVWriter;
 import org.openvpms.archetype.rules.product.io.ProductWriter;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -35,12 +37,17 @@ import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.component.im.query.ResultSetIterator;
 import org.openvpms.web.component.im.table.PagedIMTableModel;
+import org.openvpms.web.component.im.util.IMObjectSorter;
+import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.servlet.DownloadServlet;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -82,7 +89,7 @@ public class ProductExportDialog extends BrowserDialog<Product> {
         setStyleName("ProductImportExportDialog");
         rules = ServiceHelper.getBean(ProductPriceRules.class);
         taxRules = new TaxRules(context.getContext().getPractice());
-        ProductExportQuery query = new ProductExportQuery();
+        ProductExportQuery query = new ProductExportQuery(context);
         PagedProductPricesTableModel model = new PagedProductPricesTableModel();
         Browser<Product> browser = new DefaultIMObjectTableBrowser<Product>(query, model, context);
         init(browser, null);
@@ -118,15 +125,17 @@ public class ProductExportDialog extends BrowserDialog<Product> {
         Iterator<Product> iterator = new ResultSetIterator<Product>(query.query());
         Document document;
         boolean includeLinkedPrices = query.includeLinkedPrices();
+        Lookup pricingLocation = query.getPricingLocation();
         switch (query.getPrices()) {
             case CURRENT:
-                document = exporter.write(iterator, true, includeLinkedPrices);
+                document = exporter.write(iterator, true, includeLinkedPrices, pricingLocation);
                 break;
             case ALL:
-                document = exporter.write(iterator, false, includeLinkedPrices);
+                document = exporter.write(iterator, false, includeLinkedPrices, pricingLocation);
                 break;
             default:
-                document = exporter.write(iterator, query.getFrom(), query.getTo(), includeLinkedPrices);
+                document = exporter.write(iterator, query.getFrom(), query.getTo(), includeLinkedPrices,
+                                          pricingLocation);
         }
         DownloadServlet.startDownload(document);
     }
@@ -159,10 +168,13 @@ public class ProductExportDialog extends BrowserDialog<Product> {
         protected List<ProductPrices> convertTo(List<Product> list) {
             List<ProductPrices> result = new ArrayList<ProductPrices>();
             boolean includeLinkedPrices = getQuery().includeLinkedPrices();
+            Lookup pricingLocation = getQuery().getPricingLocation();
             for (Product product : list) {
 
-                List<ProductPrice> fixedPrices = getPrices(product, ProductArchetypes.FIXED_PRICE, includeLinkedPrices);
-                List<ProductPrice> unitPrices = getPrices(product, ProductArchetypes.UNIT_PRICE, includeLinkedPrices);
+                List<ProductPrice> fixedPrices = getPrices(product, ProductArchetypes.FIXED_PRICE, includeLinkedPrices,
+                                                           pricingLocation);
+                List<ProductPrice> unitPrices = getPrices(product, ProductArchetypes.UNIT_PRICE, includeLinkedPrices,
+                                                          pricingLocation);
                 int count = Math.max(fixedPrices.size(), unitPrices.size());
                 if (count == 0) {
                     count = 1;
@@ -183,29 +195,32 @@ public class ProductExportDialog extends BrowserDialog<Product> {
          * @param product             the product
          * @param shortName           the price archetype short name
          * @param includeLinkedPrices if {@code true}, include prices linked from price template products
+         * @param pricingLocation     the pricing location. May be {@code null}
          * @return the matching prices
          */
-        private List<ProductPrice> getPrices(Product product, String shortName, boolean includeLinkedPrices) {
+        private List<ProductPrice> getPrices(Product product, String shortName, boolean includeLinkedPrices,
+                                             Lookup pricingLocation) {
             List<ProductPrice> result = new ArrayList<ProductPrice>();
             ProductExportQuery query = getQuery();
             ProductExportQuery.Prices prices = query.getPrices();
             if (prices == ProductExportQuery.Prices.CURRENT) {
-                List<ProductPrice> list = rules.getProductPrices(product, shortName, includeLinkedPrices);
+                List<ProductPrice> list = rules.getProductPrices(product, shortName, includeLinkedPrices,
+                                                                 pricingLocation);
                 if (!list.isEmpty()) {
                     result.add(list.get(0));
                 }
             } else if (prices == ProductExportQuery.Prices.ALL) {
-                result.addAll(rules.getProductPrices(product, shortName, includeLinkedPrices));
+                result.addAll(rules.getProductPrices(product, shortName, includeLinkedPrices, pricingLocation));
             } else {
                 result.addAll(rules.getProductPrices(product, shortName, query.getFrom(), query.getTo(),
-                                                     includeLinkedPrices));
+                                                     includeLinkedPrices, pricingLocation));
             }
             return result;
         }
 
     }
 
-    private static class ProductPricesModel extends ProductImportExportTableModel<ProductPrices> {
+    private class ProductPricesModel extends ProductImportExportTableModel<ProductPrices> {
 
         /**
          * Returns the value found at the given coordinate within the table.
@@ -251,6 +266,9 @@ public class ProductExportDialog extends BrowserDialog<Product> {
                 case FIXED_END_DATE:
                     result = (fixedPrice != null) ? rightAlign(fixedPrice.getToDate()) : null;
                     break;
+                case FIXED_PRICING_LOCATIONS:
+                    result = getPricingLocations(fixedPrice);
+                    break;
                 case UNIT_PRICE:
                     result = (unitPrice != null) ? rightAlign(unitPrice.getPrice()) : null;
                     break;
@@ -266,8 +284,29 @@ public class ProductExportDialog extends BrowserDialog<Product> {
                 case UNIT_END_DATE:
                     result = (unitPrice != null) ? rightAlign(unitPrice.getToDate()) : null;
                     break;
+                case UNIT_PRICING_LOCATIONS:
+                    result = getPricingLocations(fixedPrice);
+                    break;
                 default:
                     result = null;
+            }
+            return result;
+        }
+
+        private Object getPricingLocations(ProductPrice price) {
+            Object result = null;
+            if (price != null) {
+                List<Lookup> locations = rules.getPricingLocations(price);
+                if (!locations.isEmpty()) {
+                    Collections.sort(locations, IMObjectSorter.getNameComparator(true));
+                    Column column = ColumnFactory.create(Styles.CELL_SPACING);
+                    for (Lookup location : locations) {
+                        Label label = LabelFactory.create();
+                        label.setText(location.getName());
+                        column.add(label);
+                    }
+                    result = column;
+                }
             }
             return result;
         }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -55,18 +55,18 @@ public abstract class PriceActItemEditor extends ActItemEditor {
 
 
     /**
-     * Creates a new {@code PriceActItemEditor}.
+     * Constructs a {@link PriceActItemEditor}.
      *
      * @param act     the act to edit
-     * @param parent  the parent act.
-     * @param context the layout context. May be {@code null}
+     * @param parent  the parent act. May be {@code null}
+     * @param context the layout context
      */
     public PriceActItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
         Property fixedPrice = getProperty("fixedPrice");
 
         Product product = getProduct();
-        fixedEditor = new FixedPriceEditor(fixedPrice, context);
+        fixedEditor = new FixedPriceEditor(fixedPrice, getPricingLocation(), context);
         fixedEditor.setProduct(product);
     }
 

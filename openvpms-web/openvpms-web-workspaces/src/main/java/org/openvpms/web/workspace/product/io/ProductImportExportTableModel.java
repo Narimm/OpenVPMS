@@ -77,29 +77,39 @@ abstract class ProductImportExportTableModel<T> extends AbstractIMTableModel<T> 
     protected static final int FIXED_END_DATE = 7;
 
     /**
+     * The fixed price pricing locations column.
+     */
+    protected static final int FIXED_PRICING_LOCATIONS = 8;
+
+    /**
      * The unit price column.
      */
-    protected static final int UNIT_PRICE = 8;
+    protected static final int UNIT_PRICE = 9;
 
     /**
      * The unit cost column.
      */
-    protected static final int UNIT_COST = 9;
+    protected static final int UNIT_COST = 10;
 
     /**
      * The unit price max discount column.
      */
-    protected static final int UNIT_MAX_DISCOUNT = 10;
+    protected static final int UNIT_MAX_DISCOUNT = 11;
 
     /**
      * The unit price start date column.
      */
-    protected static final int UNIT_START_DATE = 11;
+    protected static final int UNIT_START_DATE = 12;
 
     /**
      * The unit price end date column.
      */
-    protected static final int UNIT_END_DATE = 12;
+    protected static final int UNIT_END_DATE = 13;
+
+    /**
+     * The unit price pricing locations column.
+     */
+    protected static final int UNIT_PRICING_LOCATIONS = 14;
 
     /**
      * Constructs a {@link ProductImportExportTableModel}.
@@ -114,11 +124,13 @@ abstract class ProductImportExportTableModel<T> extends AbstractIMTableModel<T> 
         model.addColumn(createTableColumn(FIXED_MAX_DISCOUNT, "product.import.fixedPriceMaxDiscount"));
         model.addColumn(createTableColumn(FIXED_START_DATE, "product.import.fixedPriceStartDate"));
         model.addColumn(createTableColumn(FIXED_END_DATE, "product.import.fixedPriceEndDate"));
+        model.addColumn(createTableColumn(FIXED_PRICING_LOCATIONS, "product.import.fixedPriceLocations"));
         model.addColumn(createTableColumn(UNIT_PRICE, "product.import.unitPrice"));
         model.addColumn(createTableColumn(UNIT_COST, "product.import.unitCost"));
         model.addColumn(createTableColumn(UNIT_MAX_DISCOUNT, "product.import.unitPriceMaxDiscount"));
         model.addColumn(createTableColumn(UNIT_START_DATE, "product.import.unitPriceStartDate"));
         model.addColumn(createTableColumn(UNIT_END_DATE, "product.import.unitPriceEndDate"));
+        model.addColumn(createTableColumn(UNIT_PRICING_LOCATIONS, "product.import.unitPriceLocations"));
         setTableColumnModel(model);
     }
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace;
@@ -25,6 +25,7 @@ import nextapp.echo2.webcontainer.command.BrowserRedirectCommand;
 import nextapp.echo2.webrender.ClientConfiguration;
 import nextapp.echo2.webrender.Connection;
 import nextapp.echo2.webrender.WebRenderServlet;
+import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
@@ -74,12 +75,14 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     /**
      * Constructs an {@link OpenVPMSApp}.
      *
-     * @param context the context
-     * @param factory the workspaces factory
-     * @param rules   the practice rules
+     * @param context       the context
+     * @param factory       the workspaces factory
+     * @param practiceRules the practice rules
+     * @param locationRules the location rules
      */
-    public OpenVPMSApp(GlobalContext context, WorkspacesFactory factory, PracticeRules rules) {
-        super(context, rules);
+    public OpenVPMSApp(GlobalContext context, WorkspacesFactory factory, PracticeRules practiceRules,
+                       LocationRules locationRules) {
+        super(context, practiceRules, locationRules);
         this.factory = factory;
         location = getLocation(context.getLocation());
         customer = getCustomer(context.getCustomer());

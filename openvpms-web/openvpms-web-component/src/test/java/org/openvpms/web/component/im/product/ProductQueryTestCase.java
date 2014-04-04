@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010-2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.product;
 
@@ -23,8 +23,8 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.query.AbstractEntityQueryTest;
-import org.openvpms.web.component.im.query.Query;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -41,8 +41,8 @@ public class ProductQueryTestCase extends AbstractEntityQueryTest<Product> {
      * Product archetype short names.
      */
     private static final String[] SHORT_NAMES = new String[]{
-        ProductArchetypes.MEDICATION, ProductArchetypes.SERVICE, ProductArchetypes.MERCHANDISE,
-        ProductArchetypes.TEMPLATE, ProductArchetypes.PRICE_TEMPLATE};
+            ProductArchetypes.MEDICATION, ProductArchetypes.SERVICE, ProductArchetypes.MERCHANDISE,
+            ProductArchetypes.TEMPLATE, ProductArchetypes.PRICE_TEMPLATE};
 
     /**
      * Canine species lookup code.
@@ -78,7 +78,7 @@ public class ProductQueryTestCase extends AbstractEntityQueryTest<Product> {
         rules.updateStock(product2, stockLocation2, BigDecimal.ONE);
 
         // tests the query without constraints. All products should be returned
-        ProductQuery query = new ProductQuery(SHORT_NAMES);
+        ProductQuery query = createQuery();
         List<IMObjectReference> matches = getObjectRefs(query);
         checkExists(product1, query, matches, true);
         checkExists(product2, query, matches, true);
@@ -110,7 +110,7 @@ public class ProductQueryTestCase extends AbstractEntityQueryTest<Product> {
         Product universalProduct = createProduct(null, true);
 
         // tests the query without constraining to a particular species. All products should be returned
-        ProductQuery query = new ProductQuery(SHORT_NAMES);
+        ProductQuery query = createQuery();
         List<IMObjectReference> matches = getObjectRefs(query);
         checkExists(canineProduct1, query, matches, true);
         checkExists(canineProduct2, query, matches, true);
@@ -160,7 +160,7 @@ public class ProductQueryTestCase extends AbstractEntityQueryTest<Product> {
         rules.updateStock(universalStock2, stockLocation2, BigDecimal.ONE);
 
         // tests the query without constraints. All products should be returned
-        ProductQuery query = new ProductQuery(SHORT_NAMES);
+        ProductQuery query = createQuery();
         List<IMObjectReference> matches = getObjectRefs(query);
         checkExists(canineStock1, query, matches, true);
         checkExists(canineStock2, query, matches, true);
@@ -204,8 +204,9 @@ public class ProductQueryTestCase extends AbstractEntityQueryTest<Product> {
      *
      * @return a new query
      */
-    protected Query<Product> createQuery() {
-        return new ProductQuery(SHORT_NAMES);
+    @Override
+    protected ProductQuery createQuery() {
+        return new ProductQuery(SHORT_NAMES, new LocalContext());
     }
 
     /**

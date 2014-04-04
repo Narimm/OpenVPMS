@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.organisation;
@@ -25,6 +23,7 @@ import org.openvpms.web.component.bound.BoundSelectFieldFactory;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -40,17 +39,16 @@ import org.openvpms.web.component.property.Property;
  * <li>displays a list of a available printers for the "defaultPrinter" node
  * </ul>
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class OrganisationLocationEditor extends AbstractIMObjectEditor {
 
     /**
-     * Constructs an <tt>OrganisationLocationEditor</tt>
+     * Constructs an {@link OrganisationLocationEditor}
      *
      * @param object        the object to edit
-     * @param parent        the parent object. May be <tt>null</tt>
-     * @param layoutContext the layout context. May be <tt>null</tt>.
+     * @param parent        the parent object. May be {@code null}
+     * @param layoutContext the layout context. May be {@code null}.
      */
     public OrganisationLocationEditor(IMObject object, IMObject parent, LayoutContext layoutContext) {
         super(object, parent, layoutContext);
@@ -66,7 +64,12 @@ public class OrganisationLocationEditor extends AbstractIMObjectEditor {
         return new LocationLayoutStrategy();
     }
 
-    private class LocationLayoutStrategy extends AbstractLayoutStrategy {
+    private static class LocationLayoutStrategy extends AbstractLayoutStrategy {
+
+        /**
+         * The nodes.
+         */
+        private static final ArchetypeNodes NODES = new ArchetypeNodes().simple("pricingLocation");
 
         /**
          * Creates a component for a property.
@@ -74,7 +77,7 @@ public class OrganisationLocationEditor extends AbstractIMObjectEditor {
          * @param property the property
          * @param parent   the parent object
          * @param context  the layout context
-         * @return a component to display <tt>property</tt>
+         * @return a component to display {@code property}
          */
         @Override
         protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
@@ -89,6 +92,16 @@ public class OrganisationLocationEditor extends AbstractIMObjectEditor {
                 result = super.createComponent(property, parent, context);
             }
             return result;
+        }
+
+        /**
+         * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
+         *
+         * @return the archetype nodes
+         */
+        @Override
+        protected ArchetypeNodes getArchetypeNodes() {
+            return NODES;
         }
     }
 

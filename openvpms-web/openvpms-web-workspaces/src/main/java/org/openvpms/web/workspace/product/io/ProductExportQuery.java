@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.io;
@@ -29,6 +29,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
@@ -114,10 +115,11 @@ public class ProductExportQuery extends ProductQuery {
     /**
      * Constructs a {@link ProductExportQuery}.
      *
+     * @param context the layout context
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
-    public ProductExportQuery() {
-        super(SHORT_NAMES);
+    public ProductExportQuery(LayoutContext context) {
+        super(SHORT_NAMES, context.getContext());
     }
 
     /**
@@ -201,6 +203,7 @@ public class ProductExportQuery extends ProductQuery {
         addPriceSelector(container);
         addDateRange(container);
         addLinkedPrices(container);
+        addPricingLocationSelector(container);
     }
 
     /**
@@ -359,4 +362,5 @@ public class ProductExportQuery extends ProductQuery {
         container.add(includeLinkedPrices);
         getFocusGroup().add(includeLinkedPrices);
     }
+
 }
