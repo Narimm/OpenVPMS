@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.map.invoice;
 
@@ -80,8 +78,7 @@ import static org.junit.Assert.fail;
 /**
  * Tests the {@link InvoiceMapperImpl} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class InvoiceMapperTestCase extends AbstractInvoiceTest {
 
@@ -1153,7 +1150,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     /**
      * Checks the delivery status of an order.
      *
-     * @param order the order
+     * @param order  the order
      * @param status the expected status
      */
     private void checkDeliveryStatus(FinancialAct order, DeliveryStatus status) {
@@ -1219,7 +1216,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Adds a product/supplier relatiobship.
+     * Adds a product/supplier relationship.
      *
      * @param product      the product
      * @param supplier     the supplier
@@ -1229,7 +1226,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     private void addProductSupplierRelationship(Product product, Party supplier, int packageSize, String packageUnits,
                                                 BigDecimal listPrice) {
-        ProductRules rules = new ProductRules();
+        ProductRules rules = new ProductRules(getArchetypeService());
         ProductSupplier ps = rules.createProductSupplier(product, supplier);
         ps.setPackageSize(packageSize);
         ps.setPackageUnits(packageUnits);

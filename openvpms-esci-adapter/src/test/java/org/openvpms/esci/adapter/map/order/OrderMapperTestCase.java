@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.esci.adapter.map.order;
@@ -34,10 +34,12 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.esci.adapter.AbstractESCITest;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
@@ -326,13 +328,15 @@ public class OrderMapperTestCase extends AbstractESCITest {
      */
     private OrderMapper createMapper() {
         OrderMapperImpl mapper = new OrderMapperImpl();
-        mapper.setPracticeRules(new PracticeRules(getArchetypeService()));
-        mapper.setLocationRules(new LocationRules());
-        mapper.setPartyRules(new PartyRules(getArchetypeService()));
-        mapper.setSupplierRules(new SupplierRules(getArchetypeService()));
-        mapper.setLookupService(LookupServiceHelper.getLookupService());
-        mapper.setCurrencies(new Currencies());
-        mapper.setBeanFactory(new IMObjectBeanFactory(getArchetypeService()));
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = LookupServiceHelper.getLookupService();
+        mapper.setPracticeRules(new PracticeRules(service));
+        mapper.setLocationRules(new LocationRules(service));
+        mapper.setPartyRules(new PartyRules(service));
+        mapper.setSupplierRules(new SupplierRules(service));
+        mapper.setLookupService(lookups);
+        mapper.setCurrencies(new Currencies(service, lookups));
+        mapper.setBeanFactory(new IMObjectBeanFactory(service));
         return mapper;
     }
 
