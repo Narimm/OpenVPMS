@@ -17,6 +17,7 @@
         <mapping resource="org/openvpms/component/business/dao/hibernate/im/entity/EntityDOImpl.hbm.xml"/>
         <mapping resource="org/openvpms/component/business/dao/hibernate/im/entity/EntityIdentityDOImpl.hbm.xml"/>
         <mapping resource="org/openvpms/component/business/dao/hibernate/im/entity/EntityRelationshipDOImpl.hbm.xml"/>
+        <mapping resource="org/openvpms/component/business/dao/hibernate/im/entity/EntityLinkDOImpl.hbm.xml"/>
         <mapping resource="org/openvpms/component/business/dao/hibernate/im/lookup/LookupDOImpl.hbm.xml"/>
         <mapping resource="org/openvpms/component/business/dao/hibernate/im/lookup/LookupRelationshipDOImpl.hbm.xml"/>
         <mapping resource="org/openvpms/component/business/dao/hibernate/im/party/ContactDOImpl.hbm.xml"/>
