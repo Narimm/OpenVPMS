@@ -116,7 +116,7 @@
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
                         <property name="shortName"
-                                  value="entityIdentity.Alias"/>
+                                  value="entityIdentity.personAlias"/>
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>

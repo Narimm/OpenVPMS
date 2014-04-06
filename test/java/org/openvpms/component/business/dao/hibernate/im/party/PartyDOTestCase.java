@@ -18,6 +18,7 @@ package org.openvpms.component.business.dao.hibernate.im.party;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDO;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityDO;
@@ -34,8 +35,10 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests the {@link PartyDOImpl} class.
@@ -446,6 +449,63 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         source = (PartyDO) session.load(PartyDOImpl.class, source.getId());
         assertEquals(0, source.getEntityLinks().size());
     }
+
+    /**
+     * Verifies that deleting the source of an EntityLink doesn't delete the target.
+     */
+    @Test
+    public void testDeleteEntityLinkSource() {
+        Session session = getSession();
+        Transaction tx = session.beginTransaction();
+
+        PartyDO source = createPerson();
+        PartyDO target = createPerson();
+        EntityLinkDO link = createEntityLink(source, target);
+        session.saveOrUpdate(source);
+        session.saveOrUpdate(target);
+        tx.commit();
+
+        session.evict(source);
+        source = (PartyDO) session.load(PartyDOImpl.class, source.getId());
+        assertTrue(source.getEntityLinks().contains(link));
+        assertNotNull(session.load(EntityLinkDOImpl.class, link.getId()));
+
+        tx.begin();
+        session.delete(source);
+        tx.commit();
+
+        assertNull(session.get(PartyDOImpl.class, source.getId()));
+        assertNull(session.get(EntityLinkDOImpl.class, link.getId()));
+
+        target = (PartyDO) session.get(PartyDOImpl.class, target.getId());
+        assertNotNull(target);
+    }
+
+    /**
+     * Verifies that deleting the target of an EntityLink fails.
+     */
+    @Test
+    public void testDeleteEntityLinkTarget() {
+        Session session = getSession();
+        Transaction tx = session.beginTransaction();
+
+        PartyDO source = createPerson();
+        PartyDO target = createPerson();
+        createEntityLink(source, target);
+        session.saveOrUpdate(source);
+        session.saveOrUpdate(target);
+        tx.commit();
+
+        try {
+            tx.begin();
+            session.delete(target);
+            tx.commit();
+            fail("Expected delete to fail with a ConstraintViolationException");
+        } catch (ConstraintViolationException expected) {
+            // the expected error
+        }
+    }
+
 
     /**
      * Sets up the test case.
