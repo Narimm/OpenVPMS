@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.common;
@@ -19,6 +19,7 @@ package org.openvpms.component.business.domain.im.common;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -112,5 +113,27 @@ public class EntityTestCase {
 
         entity.removeTargetEntityRelationship(relationship);
         assertTrue(entity.getTargetEntityRelationships().isEmpty());
+    }
+
+    /**
+     * Tests the {@link Entity#addEntityLink(EntityLink)} and {@link Entity#removeEntityLink(EntityLink)}  methods.
+     */
+    @Test
+    public void testAddRemoveEntityLink() {
+        Entity entity = new Entity();
+        EntityLink link1 = new EntityLink();
+        EntityLink link2 = new EntityLink();
+        entity.addEntityLink(link1);
+        assertEquals(entity.getObjectReference(), link1.getSource());
+        assertNull(link1.getTarget());
+
+        assertTrue(entity.getEntityLinks().contains(link1));
+        assertFalse(entity.getEntityLinks().contains(link2));
+
+        entity.removeEntityLink(link2);
+        assertTrue(entity.getEntityLinks().contains(link1));
+
+        entity.removeEntityLink(link1);
+        assertTrue(entity.getEntityLinks().isEmpty());
     }
 }
