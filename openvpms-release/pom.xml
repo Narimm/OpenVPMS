@@ -298,7 +298,7 @@
 
     <properties>
         <jdbc.admin.url>jdbc:mysql://localhost:3306/</jdbc.admin.url>
-        <jdbc.admin.db>openvpms</jdbc.admin.db>
+        <jdbc.admin.db>openvpms-1.8</jdbc.admin.db>
         <jdbc.admin.username>root</jdbc.admin.username>
         <jdbc.admin.password>root</jdbc.admin.password>
     </properties>

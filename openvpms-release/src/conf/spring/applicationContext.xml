@@ -184,6 +184,7 @@
                     <bean class="org.openvpms.archetype.function.party.PartyFunctions">
                         <constructor-arg ref="archetypeService"/>
                         <constructor-arg ref="patientRules"/>
+                        <constructor-arg><null/></constructor-arg>
                     </bean>
                 </entry>
                 <entry key="math">
