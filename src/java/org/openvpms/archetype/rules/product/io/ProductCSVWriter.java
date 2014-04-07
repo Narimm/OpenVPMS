@@ -118,7 +118,8 @@ public class ProductCSVWriter implements ProductWriter {
      * @return the document
      */
     @Override
-    public Document write(Iterator<Product> products, boolean current, boolean includeLinkedPrices, PricingGroup group) {
+    public Document write(Iterator<Product> products, boolean current, boolean includeLinkedPrices,
+                          PricingGroup group) {
         Prices prices = (current) ? Prices.CURRENT : Prices.ALL;
         return write(products, prices, null, null, includeLinkedPrices, group);
     }
