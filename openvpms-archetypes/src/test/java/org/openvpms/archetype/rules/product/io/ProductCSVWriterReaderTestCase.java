@@ -26,6 +26,7 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -40,7 +41,10 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.PRICING_GROUP;
 import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createFixedPrice;
 import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createUnitPrice;
 import static org.openvpms.archetype.test.TestHelper.createTaxType;
@@ -74,29 +78,83 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
     private DocumentHandlers handlers;
 
     /**
-     * The first fixed price.
+     * The first fixed price, pricing group A.
      */
-    private ProductPrice fixed1;
+    private ProductPrice fixed1A;
 
     /**
-     * The second fixed price.
+     * The first fixed price, pricing group B.
      */
-    private ProductPrice fixed2;
+    private ProductPrice fixed1B;
 
     /**
-     * The first unit price.
+     * The first fixed price, no pricing group.
      */
-    private ProductPrice unit1;
+    private ProductPrice fixed1C;
+
+    /**
+     * The second fixed price, pricing group A.
+     */
+    private ProductPrice fixed2A;
+
+    /**
+     * The second fixed price, pricing group B.
+     */
+    private ProductPrice fixed2B;
+
+    /**
+     * The second fixed price, no pricing group.
+     */
+    private ProductPrice fixed2C;
+
+    /**
+     * The first unit price, pricing group A.
+     */
+    private ProductPrice unit1A;
+
+    /**
+     * The first unit price, pricing group B.
+     */
+    private ProductPrice unit1B;
+
+    /**
+     * The first unit price, no pricing group.
+     */
+    private ProductPrice unit1C;
 
     /**
      * The second unit price.
      */
-    private ProductPrice unit2;
+    private ProductPrice unit2A;
+
+    /**
+     * The second unit price.
+     */
+    private ProductPrice unit2B;
+
+    /**
+     * The second unit price.
+     */
+    private ProductPrice unit2C;
 
     /**
      * The product.
      */
     private Product product;
+
+    /**
+     * Pricing group A.
+     */
+    private Lookup groupA;
+
+    /**
+     * Pricing group B.
+     */
+    private Lookup groupB;
+
+    /**
+     * Current date - 2 months and 1 day.
+     */
     private Date monthsMinus21;
 
     /**
@@ -117,16 +175,55 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         Date monthsMinus2 = DateRules.getDate(today, -2, DateUnits.MONTHS);
         monthsMinus21 = DateRules.getDate(monthsMinus2, -1, DateUnits.DAYS);
 
+        groupA = TestHelper.getLookup(PRICING_GROUP, "A");
+        groupB = TestHelper.getLookup(PRICING_GROUP, "B");
+
         product = createProduct("Product A", "A");
         product.addClassification(createTaxType(new BigDecimal("5.0")));
-        fixed1 = createFixedPrice("1.0", "0.5", "100", "10", monthsMinus21, yesterday, false);
-        fixed2 = createFixedPrice("1.08", "0.6", "80", "10", today, months2, true);
-        unit1 = createUnitPrice("1.92", "1.2", "60", "10", monthsMinus2, today);
-        unit2 = createUnitPrice("2.55", "1.5", "70", "10", tomorrow, months21);
-        product.addProductPrice(fixed1);
-        product.addProductPrice(fixed2);
-        product.addProductPrice(unit1);
-        product.addProductPrice(unit2);
+        fixed1A = createFixedPrice("1.0", "0.5", "100", "10", monthsMinus21, yesterday, false);
+        fixed1A.addClassification(groupA);
+
+        fixed1B = createFixedPrice("1.0", "0.5", "100", "10", monthsMinus21, yesterday, false);
+        fixed1B.addClassification(groupB);
+
+        fixed1C = createFixedPrice("1.0", "0.5", "100", "10", monthsMinus21, yesterday, false);
+
+        fixed2A = createFixedPrice("1.08", "0.6", "80", "10", today, months2, true);
+        fixed2A.addClassification(groupA);
+
+        fixed2B = createFixedPrice("1.08", "0.6", "80", "10", today, months2, true);
+        fixed2B.addClassification(groupB);
+
+        fixed2C = createFixedPrice("1.08", "0.6", "80", "10", today, months2, true);
+
+        unit1A = createUnitPrice("1.92", "1.2", "60", "10", monthsMinus2, today);
+        unit1A.addClassification(groupA);
+
+        unit1B = createUnitPrice("1.92", "1.2", "60", "10", monthsMinus2, today);
+        unit1B.addClassification(groupB);
+
+        unit1C = createUnitPrice("1.92", "1.2", "60", "10", monthsMinus2, today);
+
+        unit2A = createUnitPrice("2.55", "1.5", "70", "10", tomorrow, months21);
+        unit2A.addClassification(groupA);
+
+        unit2B = createUnitPrice("2.55", "1.5", "70", "10", tomorrow, months21);
+        unit2B.addClassification(groupB);
+
+        unit2C = createUnitPrice("2.55", "1.5", "70", "10", tomorrow, months21);
+        product.addProductPrice(fixed1A);
+        product.addProductPrice(fixed1B);
+        product.addProductPrice(fixed1C);
+        product.addProductPrice(fixed2A);
+        product.addProductPrice(fixed2B);
+        product.addProductPrice(fixed2C);
+        product.addProductPrice(unit1A);
+        product.addProductPrice(unit1B);
+        product.addProductPrice(unit1C);
+        product.addProductPrice(unit2A);
+        product.addProductPrice(unit2B);
+        product.addProductPrice(unit2C);
+        save(product);
     }
 
     /**
@@ -135,7 +232,8 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
     @Test
     public void testWriteReadLatestPrices() {
         ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers);
-        Document document = writer.write(Arrays.asList(product).iterator(), true, true, PricingGroup.ALL);
+        Document document = writer.write(Arrays.asList(product).iterator(), true, true,
+                                         new PricingGroup(groupA, false)); // exclude prices with no group
 
         ProductCSVReader reader = new ProductCSVReader(handlers);
 
@@ -151,10 +249,36 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         ProductData data = products.getData().get(0);
         checkProduct(data, product);
         assertEquals(1, data.getFixedPrices().size());
-        checkPrice(data.getFixedPrices().get(0), fixed2);
+        checkPrice(data.getFixedPrices().get(0), fixed2A);
 
         assertEquals(1, data.getUnitPrices().size());
-        checkPrice(data.getUnitPrices().get(0), unit2);
+        checkPrice(data.getUnitPrices().get(0), unit2A);
+    }
+
+    /**
+     * Tests writing all prices for a pricing group, and reading them back again.
+     */
+    @Test
+    public void testWriteReadAllPricesForGroup() {
+        ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers);
+        Document document = writer.write(Arrays.asList(product).iterator(), false, true, new
+                PricingGroup(groupA, false));
+
+        ProductCSVReader reader = new ProductCSVReader(handlers);
+        reader.setDateFormats(Arrays.asList(ProductCSVReader.YEAR_MONTH_DAY_FORMATS));
+        ProductDataSet products = reader.read(document);
+        assertEquals(1, products.getData().size());
+        assertEquals(0, products.getErrors().size());
+
+        ProductData data = products.getData().get(0);
+        checkProduct(data, product);
+        assertEquals(2, data.getFixedPrices().size());
+        checkPrice(data.getFixedPrices().get(0), fixed2A);
+        checkPrice(data.getFixedPrices().get(1), fixed1A);
+
+        assertEquals(2, data.getUnitPrices().size());
+        checkPrice(data.getUnitPrices().get(0), unit2A);
+        checkPrice(data.getUnitPrices().get(1), unit1A);
     }
 
     /**
@@ -173,13 +297,8 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
 
         ProductData data = products.getData().get(0);
         checkProduct(data, product);
-        assertEquals(2, data.getFixedPrices().size());
-        checkPrice(data.getFixedPrices().get(0), fixed2);
-        checkPrice(data.getFixedPrices().get(1), fixed1);
-
-        assertEquals(2, data.getUnitPrices().size());
-        checkPrice(data.getUnitPrices().get(0), unit2);
-        checkPrice(data.getUnitPrices().get(1), unit1);
+        checkPrices(data.getFixedPrices(), fixed1A, fixed1B, fixed1C, fixed2A, fixed2B, fixed2C);
+        checkPrices(data.getUnitPrices(), unit1A, unit1B, unit1C, unit2A, unit2B, unit2C);
     }
 
     /**
@@ -190,7 +309,8 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers);
         Date from = monthsMinus21;
         Date to = DateRules.getDate(from, 1, DateUnits.MONTHS);
-        Document document = writer.write(Arrays.asList(product).iterator(), from, to, true, PricingGroup.ALL);
+        Document document = writer.write(Arrays.asList(product).iterator(), from, to, true,
+                                         new PricingGroup(groupB, false));
 
         ProductCSVReader reader = new ProductCSVReader(handlers);
         reader.setDateFormats(Arrays.asList(ProductCSVReader.YEAR_MONTH_DAY_FORMATS));
@@ -201,10 +321,10 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         ProductData data = products.getData().get(0);
         checkProduct(data, product);
         assertEquals(1, data.getFixedPrices().size());
-        checkPrice(data.getFixedPrices().get(0), fixed1);
+        checkPrice(data.getFixedPrices().get(0), fixed1B);
 
         assertEquals(1, data.getUnitPrices().size());
-        checkPrice(data.getUnitPrices().get(0), unit1);
+        checkPrice(data.getUnitPrices().get(0), unit1B);
     }
 
     /**
@@ -212,11 +332,16 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
      */
     @Test
     public void testWriteUnitPrices() {
-        product.removeProductPrice(fixed1);
-        product.removeProductPrice(fixed2);
+        product.removeProductPrice(fixed1A);
+        product.removeProductPrice(fixed1B);
+        product.removeProductPrice(fixed1C);
+        product.removeProductPrice(fixed2A);
+        product.removeProductPrice(fixed2B);
+        product.removeProductPrice(fixed2C);
         save(product);
         ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers);
-        Document document = writer.write(Arrays.asList(product).iterator(), false, true, PricingGroup.ALL);
+        Document document = writer.write(Arrays.asList(product).iterator(), false, true,
+                                         new PricingGroup(groupA, false));
 
         ProductCSVReader reader = new ProductCSVReader(handlers);
         reader.setDateFormats(Arrays.asList(ProductCSVReader.YEAR_MONTH_DAY_FORMATS));
@@ -228,8 +353,8 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         checkProduct(data, product);
         assertEquals(0, data.getFixedPrices().size());
         assertEquals(2, data.getUnitPrices().size());
-        checkPrice(data.getUnitPrices().get(0), unit2);
-        checkPrice(data.getUnitPrices().get(1), unit1);
+        checkPrice(data.getUnitPrices().get(0), unit2A);
+        checkPrice(data.getUnitPrices().get(1), unit1A);
     }
 
     /**
@@ -237,11 +362,16 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
      */
     @Test
     public void testWriteFixedPrices() {
-        product.removeProductPrice(unit1);
-        product.removeProductPrice(unit2);
+        product.removeProductPrice(unit1A);
+        product.removeProductPrice(unit1B);
+        product.removeProductPrice(unit1C);
+        product.removeProductPrice(unit2A);
+        product.removeProductPrice(unit2B);
+        product.removeProductPrice(unit2C);
         save(product);
         ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers);
-        Document document = writer.write(Arrays.asList(product).iterator(), false, true, PricingGroup.ALL);
+        Document document = writer.write(Arrays.asList(product).iterator(), false, true,
+                                         new PricingGroup(groupA, false));
 
         ProductCSVReader reader = new ProductCSVReader(handlers);
         reader.setDateFormats(Arrays.asList(ProductCSVReader.YEAR_MONTH_DAY_FORMATS));
@@ -253,8 +383,8 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         checkProduct(data, product);
         assertEquals(2, data.getFixedPrices().size());
         assertEquals(0, data.getUnitPrices().size());
-        checkPrice(data.getFixedPrices().get(0), fixed2);
-        checkPrice(data.getFixedPrices().get(1), fixed1);
+        checkPrice(data.getFixedPrices().get(0), fixed2A);
+        checkPrice(data.getFixedPrices().get(1), fixed1A);
     }
 
     /**
@@ -282,13 +412,8 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
 
         ProductData data = products.getData().get(0);
         checkProduct(data, product);
-        assertEquals(2, data.getFixedPrices().size());
-        checkPrice(data.getFixedPrices().get(0), fixed2);
-        checkPrice(data.getFixedPrices().get(1), fixed1);
-
-        assertEquals(2, data.getUnitPrices().size());
-        checkPrice(data.getUnitPrices().get(0), unit2);
-        checkPrice(data.getUnitPrices().get(1), unit1);
+        checkPrices(data.getFixedPrices(), fixed1A, fixed1B, fixed1C, fixed2A, fixed2B, fixed2C);
+        checkPrices(data.getUnitPrices(), unit1A, unit1B, unit1C, unit2A, unit2B, unit2C);
     }
 
     /**
@@ -318,6 +443,21 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         assertEquals(bean.getBigDecimal("maxDiscount"), data.getMaxDiscount());
         assertEquals(expected.getFromDate(), data.getFrom());
         assertEquals(expected.getToDate(), data.getTo());
+        String[] pricingGroups = ProductIOHelper.getPricingGroups(expected, getArchetypeService());
+        assertArrayEquals(pricingGroups, data.getPricingGroups());
+    }
+
+    private void checkPrices(List<PriceData> actual, ProductPrice... expected) {
+        assertEquals(actual.size(), expected.length);
+        for (ProductPrice price : expected) {
+            for (PriceData other : actual) {
+                if (other.getId() == price.getId()) {
+                    checkPrice(other, price);
+                    return;
+                }
+            }
+            fail("PriceData not found for id=" + price.getId());
+        }
     }
 
 }

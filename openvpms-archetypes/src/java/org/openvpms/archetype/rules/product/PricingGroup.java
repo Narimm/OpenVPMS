@@ -18,8 +18,6 @@ package org.openvpms.archetype.rules.product;
 
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 
-import java.util.List;
-
 /**
  * Pricing group.
  *
@@ -43,25 +41,53 @@ public class PricingGroup {
     private final Lookup group;
 
     /**
+     * If {@code true}, use prices with no pricing group.
+     */
+    private final boolean useFallback;
+
+    /**
      * Default constructor.
      */
     private PricingGroup() {
-        group = null;
-        all = true;
+        this(null, false, true);
     }
 
     /**
      * Constructs a {@link PricingGroup}.
      *
-     * @param group the group lookup. If {@code null} indicates no group
+     * @param group the pricing group lookup. If {@code null} indicates no pricing group
      */
     public PricingGroup(Lookup group) {
-        this.group = group;
-        all = false;
+        this(group, true);
     }
 
     /**
-     * Returns the price group to query.
+     * Constructs a {@link PricingGroup}.
+     *
+     * @param group       the pricing group lookup. If {@code null} indicates no pricing group
+     * @param useFallback if {@code true}, use prices that have no pricing group
+     */
+    public PricingGroup(Lookup group, boolean useFallback) {
+        this(group, useFallback, false);
+    }
+
+    /**
+     * Constructs an {@link PricingGroup}.
+     *
+     * @param group       the group lookup. If {@code null} indicates no group
+     * @param useFallback if {@code true}, use prices that have no pricing group
+     * @param all         if {@code true}, matches all pricing groups
+     */
+    private PricingGroup(Lookup group, boolean useFallback, boolean all) {
+        this.group = group;
+        this.useFallback = useFallback;
+        this.all = all;
+    }
+
+    /**
+     * Returns the pricing group to query.
+     * <p/>
+     * If there is no group and {@link #isAll()} is {@code false}, this matches prices that have no pricing group.
      *
      * @return the price group. May be {@code null}
      */
@@ -79,19 +105,12 @@ public class PricingGroup {
     }
 
     /**
-     * Determines if this group matches the specified groups.
+     * Determines if prices that don't have any pricing group should be used if there is no exact match.
      *
-     * @param groups the groups
-     * @return {@code true} if the groups match
+     * @return {@code true} if prices with no pricing group should be returned
      */
-    public boolean matches(List<Lookup> groups) {
-        if (all) {
-            return true;
-        } else if (group == null) {
-            return groups.isEmpty();
-        } else if (groups.isEmpty() || groups.contains(group)) {
-            return true;
-        }
-        return false;
+    public boolean useFallback() {
+        return useFallback;
     }
+
 }

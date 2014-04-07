@@ -613,7 +613,7 @@ public class ProductPriceRules {
                     Lookup lookup = group.getGroup();
                     if ((lookup == null && groups.isEmpty()) || (lookup != null && groups.contains(lookup))) {
                         result = EXACT_MATCH;
-                    } else if (lookup != null && groups.isEmpty()) {
+                    } else if (lookup != null && groups.isEmpty() && group.useFallback()) {
                         result = PARTIAL_MATCH;
                     }
                 }
