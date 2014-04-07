@@ -18,6 +18,7 @@ package org.openvpms.archetype.rules.product;
 
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -34,6 +35,22 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
  * @author Tim Anderson
  */
 public class ProductPriceTestHelper {
+
+    /**
+     * Helper to create a new fixed price.
+     *
+     * @param from         the active from date. May be {@code null}
+     * @param to           the active to date. May be {@code null}
+     * @param defaultPrice {@code true} if the price is the default
+     * @param pricingGroup the pricing group
+     * @return a new fixed price
+     */
+    public static ProductPrice createFixedPrice(Date from, Date to, boolean defaultPrice, Lookup pricingGroup) {
+        ProductPrice result = createFixedPrice(from, to, defaultPrice);
+        result.setName("Fixed Price - " + pricingGroup.getName());
+        result.addClassification(pricingGroup);
+        return result;
+    }
 
     /**
      * Helper to create a new fixed price.
@@ -110,6 +127,21 @@ public class ProductPriceTestHelper {
     /**
      * Helper to create a new unit price.
      *
+     * @param from         the active from date. May be {@code null}
+     * @param to           the active to date. May be {@code null}
+     * @param pricingGroup the pricing group
+     * @return a new fixed price
+     */
+    public static ProductPrice createUnitPrice(String from, String to, Lookup pricingGroup) {
+        ProductPrice price = createPrice(ProductArchetypes.UNIT_PRICE, from, to);
+        price.setName("Unit Price - " + pricingGroup.getName());
+        price.addClassification(pricingGroup);
+        return price;
+    }
+
+    /**
+     * Helper to create a new unit price.
+     *
      * @param from the active from date. May be {@code null}
      * @param to   the active to date. May be {@code null}
      * @return a new fixed price
@@ -158,6 +190,21 @@ public class ProductPriceTestHelper {
         bean.setValue("markup", markup);
         bean.setValue("maxDiscount", maxDiscount);
         return result;
+    }
+
+    /**
+     * Helper to create a new fixed price.
+     *
+     * @param from         the active from date. May be {@code null}
+     * @param to           the active to date. May be {@code null}
+     * @param defaultPrice {@code true} if the price is the default
+     * @param pricingGroup the pricing group
+     * @return a new fixed price
+     */
+    public static ProductPrice createFixedPrice(String from, String to, boolean defaultPrice, Lookup pricingGroup) {
+        ProductPrice fixedPrice = createFixedPrice(from, to, defaultPrice);
+        fixedPrice.addClassification(pricingGroup);
+        return fixedPrice;
     }
 
     /**
