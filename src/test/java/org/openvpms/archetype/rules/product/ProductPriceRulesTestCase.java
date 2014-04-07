@@ -199,6 +199,29 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link ProductPriceRules#getProductPrices} method for products with multiple pricing groups.
+     */
+    @Test
+    public void testGetProductPricesWithPriceGroups() {
+        checkGetProductPricesWithPriceGroups(createMedication());
+        checkGetProductPricesWithPriceGroups(createMerchandise());
+        checkGetProductPricesWithPriceGroups(createService());
+        checkGetProductPricesWithPriceGroups(createPriceTemplate());
+        checkGetProductPricesWithPriceGroups(createTemplate());
+    }
+
+    /**
+     * Tests the {@link ProductPriceRules#getProductPrices} method for products that may be associated with an
+     * <em>product.priceTemplate</em> product.
+     */
+    @Test
+    public void testGetProductPricesWithPriceGroupsForProductWithPriceTemplate() {
+        checkGetProductPricesWithPriceGroupsForProductWithPriceTemplate(createMedication());
+        checkGetProductPricesWithPriceGroupsForProductWithPriceTemplate(createMerchandise());
+        checkGetProductPricesWithPriceGroupsForProductWithPriceTemplate(createService());
+    }
+
+    /**
      * Tests the {@link ProductPriceRules#getPrice} method.
      */
     @Test
@@ -630,6 +653,72 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link ProductPriceRules#getProductPrices} method when a product has prices with different pricing
+     * groups.
+     *
+     * @param product the product
+     */
+    private void checkGetProductPricesWithPriceGroups(Product product) {
+        Lookup groupA = TestHelper.getLookup(PRICING_GROUP, "A");
+        Lookup groupB = TestHelper.getLookup(PRICING_GROUP, "B");
+        ProductPrice fixed1A = ProductPriceTestHelper.createFixedPrice("2008-01-01", "2008-01-31", false, groupA);
+        ProductPrice fixed1B = ProductPriceTestHelper.createFixedPrice("2008-01-01", "2008-01-31", false, groupB);
+        ProductPrice fixed1C = ProductPriceTestHelper.createFixedPrice("2008-01-01", "2008-01-31", false);
+        ProductPrice fixed2A = ProductPriceTestHelper.createFixedPrice("2008-01-01", "2008-12-31", false, groupA);
+        ProductPrice fixed2B = ProductPriceTestHelper.createFixedPrice("2008-01-01", "2008-12-31", false, groupB);
+        ProductPrice fixed2C = ProductPriceTestHelper.createFixedPrice("2008-01-01", "2008-12-31", false);
+
+        product.addProductPrice(fixed1A);
+        product.addProductPrice(fixed1B);
+        product.addProductPrice(fixed1C);
+        product.addProductPrice(fixed2A);
+        product.addProductPrice(fixed2B);
+        product.addProductPrice(fixed2C);
+        save(product);
+
+        product = get(product);
+
+        List<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2007-01-01"), ALL);
+        assertTrue(prices.isEmpty());
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-01-01"), ALL);
+        checkPrices(prices, fixed1A, fixed1B, fixed1C, fixed2A, fixed2B, fixed2C);
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-01-01"), new PricingGroup(groupA));
+        checkPrices(prices, fixed1A, fixed1C, fixed2A, fixed2C);
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-01-01"), new PricingGroup(groupB));
+        checkPrices(prices, fixed1B, fixed1C, fixed2B, fixed2C);
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-01-01"), new PricingGroup(null));
+        checkPrices(prices, fixed1C, fixed2C);
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-02-01"), ALL);
+        checkPrices(prices, fixed2A, fixed2B, fixed2C);
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-02-01"), new PricingGroup(groupA));
+        checkPrices(prices, fixed2A, fixed2C);
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-02-01"), new PricingGroup(groupB));
+        checkPrices(prices, fixed2B, fixed2C);
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-02-01"), new PricingGroup(null));
+        checkPrices(prices, fixed2C);
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2009-01-01"), ALL);
+        assertEquals(0, prices.size());
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2009-01-01"), new PricingGroup(groupA));
+        assertEquals(0, prices.size());
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2009-01-01"), new PricingGroup(groupB));
+        assertEquals(0, prices.size());
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2009-01-01"), new PricingGroup(null));
+        assertEquals(0, prices.size());
+    }
+
+    /**
      * Checks the {@link ProductPriceRules#getProductPrices(Product, String, Date, PricingGroup)} method for products
      * that may be linked to a price template.
      *
@@ -679,6 +768,90 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Checks the {@link ProductPriceRules#getProductPrices(Product, String, Date, PricingGroup)} method for products
+     * that may be linked to a price template.
+     *
+     * @param product the product. Either a medication, merchandise or service
+     */
+    private void checkGetProductPricesWithPriceGroupsForProductWithPriceTemplate(Product product) {
+        Lookup groupA = TestHelper.getLookup(PRICING_GROUP, "A");
+        Lookup groupB = TestHelper.getLookup(PRICING_GROUP, "B");
+
+        ProductPrice fixed1A = ProductPriceTestHelper.createFixedPrice("2008-01-01", "2008-01-31", false, groupA);
+        ProductPrice fixed1B = ProductPriceTestHelper.createFixedPrice("2008-01-01", "2008-01-31", false, groupB);
+        ProductPrice fixed1C = ProductPriceTestHelper.createFixedPrice("2008-01-01", "2008-01-31", false);
+
+        ProductPrice fixed2A = ProductPriceTestHelper.createFixedPrice("2008-01-01", "2008-12-31", false, groupA);
+        ProductPrice fixed2B = ProductPriceTestHelper.createFixedPrice("2008-01-01", "2008-12-31", false, groupB);
+        ProductPrice fixed2C = ProductPriceTestHelper.createFixedPrice("2008-01-01", "2008-12-31", false);
+
+        ProductPrice fixed3A = ProductPriceTestHelper.createFixedPrice("2008-02-01", null, false, groupA);
+        ProductPrice fixed3B = ProductPriceTestHelper.createFixedPrice("2008-02-01", null, false, groupB);
+        ProductPrice fixed3C = ProductPriceTestHelper.createFixedPrice("2008-02-01", null, false);
+
+        product.addProductPrice(fixed1A);
+        product.addProductPrice(fixed1B);
+        product.addProductPrice(fixed1C);
+        product.addProductPrice(fixed2A);
+        product.addProductPrice(fixed2B);
+        product.addProductPrice(fixed2C);
+
+        Product priceTemplate = createPriceTemplate();
+        priceTemplate.addProductPrice(fixed3A);
+        priceTemplate.addProductPrice(fixed3B);
+        priceTemplate.addProductPrice(fixed3C);
+        priceTemplate.setName("XPriceTemplate");
+        save(priceTemplate);
+
+        EntityBean bean = new EntityBean(product);
+        EntityRelationship relationship = bean.addRelationship(
+                ProductArchetypes.PRODUCT_LINK_RELATIONSHIP, priceTemplate);
+        relationship.setActiveStartTime(getDate("2008-01-01"));
+        bean.save();
+
+        product = get(product);
+
+        List<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2007-01-01"), ALL);
+        assertTrue(prices.isEmpty());
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-01-01"), ALL);
+        checkPrices(prices, fixed1A, fixed1B, fixed1C, fixed2A, fixed2B, fixed2C);
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-01-01"), new PricingGroup(groupA));
+        checkPrices(prices, fixed1A, fixed1C, fixed2A, fixed2C);
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-01-01"), new PricingGroup(groupB));
+        checkPrices(prices, fixed1B, fixed1C, fixed2B, fixed2C);
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-01-01"), new PricingGroup(null));
+        checkPrices(prices, fixed1C, fixed2C);
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-02-01"), ALL);
+        checkPrices(prices, fixed2A, fixed2B, fixed2C, fixed3A, fixed3B, fixed3C);
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-02-01"), new PricingGroup(groupA));
+        checkPrices(prices, fixed2A, fixed2C, fixed3A, fixed3C);
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-02-01"), new PricingGroup(groupB));
+        checkPrices(prices, fixed2B, fixed2C, fixed3B, fixed3C);
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-02-01"), new PricingGroup(null));
+        checkPrices(prices, fixed2C, fixed3C);
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2009-01-01"), ALL);
+        checkPrices(prices, fixed3A, fixed3B, fixed3C);
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2009-01-01"), new PricingGroup(groupA));
+        checkPrices(prices, fixed3A, fixed3C);
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2009-01-01"), new PricingGroup(groupB));
+        checkPrices(prices, fixed3B, fixed3C);
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2009-01-01"), new PricingGroup(null));
+        checkPrices(prices, fixed3C);
+    }
+
+    /**
      * Tests the {@link ProductPriceRules#getPrice(Product, BigDecimal, BigDecimal, Party, Currency)} method.
      *
      * @param product the product to test
@@ -700,6 +873,19 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         BigDecimal price = new BigDecimal("2.20");
         BigDecimal markup = rules.getMarkup(product, cost, price, practice);
         checkEquals(BigDecimal.valueOf(100), markup);
+    }
+
+    /**
+     * Checks prices against those expected.
+     *
+     * @param expected the expected prices
+     * @param prices   the actual prices
+     */
+    private void checkPrices(List<ProductPrice> expected, ProductPrice... prices) {
+        assertEquals(expected.size(), prices.length);
+        for (ProductPrice price : prices) {
+            assertTrue(expected.contains(price));
+        }
     }
 
     /**
