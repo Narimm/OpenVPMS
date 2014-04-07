@@ -199,12 +199,13 @@ public class ProductData {
      * @param from         the price start date. May be {@code null}
      * @param to           the price end date. May be {@code null}
      * @param defaultPrice {@code true} if the price is the default
+     * @param groups       the pricing group codes
      * @param line         the line the price was read from
      */
     public void addFixedPrice(long id, BigDecimal price, BigDecimal cost, BigDecimal maxDiscount, Date from, Date to,
-                              boolean defaultPrice, int line) {
+                              boolean defaultPrice, String[] groups, int line) {
         fixedPrices.add(new PriceData(id, ProductArchetypes.FIXED_PRICE, price, cost, maxDiscount, from, to,
-                                      defaultPrice, line));
+                                      defaultPrice, groups, line));
     }
 
     /**
@@ -216,11 +217,13 @@ public class ProductData {
      * @param maxDiscount the maximum discount
      * @param from        the price start date. May be {@code null}
      * @param to          the price end date. May be {@code null}
+     * @param groups      the pricing group codes
      * @param line        the line the price was read from
      */
     public void addUnitPrice(long id, BigDecimal price, BigDecimal cost, BigDecimal maxDiscount, Date from, Date to,
-                             int line) {
-        unitPrices.add(new PriceData(id, ProductArchetypes.UNIT_PRICE, price, cost, maxDiscount, from, to, line));
+                             String[] groups, int line) {
+        unitPrices.add(new PriceData(id, ProductArchetypes.UNIT_PRICE, price, cost, maxDiscount, from, to, groups,
+                                     line));
     }
 
     /**

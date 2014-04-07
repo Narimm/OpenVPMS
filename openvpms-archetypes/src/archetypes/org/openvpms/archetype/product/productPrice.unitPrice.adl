@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
     <archetype name="productPrice.unitPrice.1.0"
@@ -44,13 +44,13 @@
               defaultValue="java.util.Date.new()"/>
         <node displayName="To Date" name="toDate" path="/toDate"
               type="java.util.Date" minCardinality="0"/>
-        <node name="pricingLocations" path="/classifications" parentChild="false" type="java.util.HashSet"
+        <node name="pricingGroups" path="/classifications" parentChild="false" type="java.util.HashSet"
               baseName="Classification" minCardinality="0" maxCardinality="*"
-              filter="lookup.pricingLocation">
+              filter="lookup.pricingGroups">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName" value="lookup.pricingLocation"/>
+                        <property name="shortName" value="lookup.pricingGroup"/>
                     </propertyMap>
                 </propertyList>
             </assertion>

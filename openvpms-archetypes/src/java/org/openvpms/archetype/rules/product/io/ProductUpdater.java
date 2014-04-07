@@ -96,7 +96,7 @@ class ProductUpdater {
         for (PriceData price : prices) {
             if (price.getId() != -1) {
                 // existing price
-                ProductPrice match = ProductImportHelper.getPrice(price, existing);
+                ProductPrice match = ProductIOHelper.getPrice(price, existing);
                 updatePrice(match, price, product, practice);
             } else {
                 ProductPrice newPrice = (ProductPrice) service.create(price.getShortName());

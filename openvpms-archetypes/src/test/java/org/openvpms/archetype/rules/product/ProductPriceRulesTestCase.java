@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -41,6 +41,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.rules.product.PricingGroup.ALL;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.UNIT_PRICE;
 import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.addPriceTemplate;
@@ -339,26 +340,26 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
 
         product = get(product);
 
-        List<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2007-01-01"), null);
+        List<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2007-01-01"), ALL);
         assertTrue(prices.isEmpty());
 
-        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-01-01"), null);
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-01-01"), ALL);
         assertEquals(2, prices.size());
         assertTrue(prices.contains(fixed1));
         assertTrue(prices.contains(fixed2));
 
-        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-02-01"), null);
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-02-01"), ALL);
         assertEquals(1, prices.size());
         assertFalse(prices.contains(fixed1));
         assertTrue(prices.contains(fixed2));
 
-        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2009-01-01"), null);
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2009-01-01"), ALL);
         assertEquals(0, prices.size());
     }
 
     /**
-     * Checks the {@link ProductPriceRules#getProductPrices(Product, String, Date, Lookup)} method for products that 
-     * may be linked to a price template.
+     * Checks the {@link ProductPriceRules#getProductPrices(Product, String, Date, PricingGroup)} method for products
+     * that may be linked to a price template.
      *
      * @param product the product. Either a medication, merchandise or service
      */
@@ -383,22 +384,22 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
 
         product = get(product);
 
-        List<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2007-01-01"), null);
+        List<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2007-01-01"), ALL);
         assertTrue(prices.isEmpty());
 
-        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-01-01"), null);
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-01-01"), ALL);
         assertEquals(2, prices.size());
         assertTrue(prices.contains(fixed1));
         assertTrue(prices.contains(fixed2));
         assertFalse(prices.contains(fixed3));
 
-        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-02-01"), null);
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-02-01"), ALL);
         assertEquals(2, prices.size());
         assertFalse(prices.contains(fixed1));
         assertTrue(prices.contains(fixed2));
         assertTrue(prices.contains(fixed3));
 
-        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2009-01-01"), null);
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2009-01-01"), ALL);
         assertEquals(1, prices.size());
         assertFalse(prices.contains(fixed1));
         assertFalse(prices.contains(fixed2));

@@ -74,6 +74,11 @@ public class PriceData {
     private boolean defaultPrice;
 
     /**
+     * The pricing groups.
+     */
+    private String[] pricingGroups;
+
+    /**
      * The line that the price was read from.
      */
     private final int line;
@@ -81,35 +86,37 @@ public class PriceData {
     /**
      * Constructs a {@link PriceData}.
      *
-     * @param id          the price identifier, or {@code -1} if it is a new price
-     * @param shortName   the price archetype short name
-     * @param price       the price
-     * @param cost        the cost price
-     * @param maxDiscount the maximum discount
-     * @param from        the price start date. May be {@code null}
-     * @param to          the price end date. May be {@code null}
-     * @param line        the line that the price was read from
+     * @param id            the price identifier, or {@code -1} if it is a new price
+     * @param shortName     the price archetype short name
+     * @param price         the price
+     * @param cost          the cost price
+     * @param maxDiscount   the maximum discount
+     * @param from          the price start date. May be {@code null}
+     * @param to            the price end date. May be {@code null}
+     * @param pricingGroups the pricing groups
+     * @param line          the line that the price was read from
      */
     public PriceData(long id, String shortName, BigDecimal price, BigDecimal cost, BigDecimal maxDiscount, Date from,
-                     Date to, int line) {
-        this(id, shortName, price, cost, maxDiscount, from, to, false, line);
+                     Date to, String[] pricingGroups, int line) {
+        this(id, shortName, price, cost, maxDiscount, from, to, false, pricingGroups, line);
     }
 
     /**
      * Constructs a {@link PriceData}.
      *
-     * @param id           the price identifier, or {@code -1} if it is a new price
-     * @param shortName    the price archetype short name
-     * @param price        the price
-     * @param cost         the cost price
-     * @param maxDiscount  the maximum discount
-     * @param from         the price start date. May be {@code null}
-     * @param to           the price end date. May be {@code null}
-     * @param defaultPrice if {@code true}, indicates the price is the default price
-     * @param line         the line that the price was read from
+     * @param id            the price identifier, or {@code -1} if it is a new price
+     * @param shortName     the price archetype short name
+     * @param price         the price
+     * @param cost          the cost price
+     * @param maxDiscount   the maximum discount
+     * @param from          the price start date. May be {@code null}
+     * @param to            the price end date. May be {@code null}
+     * @param defaultPrice  if {@code true}, indicates the price is the default price
+     * @param pricingGroups the pricing groups
+     * @param line          the line that the price was read from
      */
     public PriceData(long id, String shortName, BigDecimal price, BigDecimal cost, BigDecimal maxDiscount, Date from,
-                     Date to, boolean defaultPrice, int line) {
+                     Date to, boolean defaultPrice, String[] pricingGroups, int line) {
         this.id = id;
         this.shortName = shortName;
         this.price = price;
@@ -118,6 +125,7 @@ public class PriceData {
         this.from = from;
         this.to = to;
         this.defaultPrice = defaultPrice;
+        this.pricingGroups = pricingGroups;
         this.line = line;
     }
 
@@ -136,7 +144,8 @@ public class PriceData {
         this.maxDiscount = bean.getBigDecimal("maxDiscount");
         this.from = source.getFromDate();
         this.to = source.getToDate();
-        this.defaultPrice = ProductImportHelper.isDefault(bean);
+        this.defaultPrice = ProductIOHelper.isDefault(bean);
+        this.pricingGroups = ProductIOHelper.getPricingGroups(source, service);
         this.line = -1;
     }
 
@@ -268,6 +277,15 @@ public class PriceData {
      */
     public void setDefault(boolean defaultPrice) {
         this.defaultPrice = defaultPrice;
+    }
+
+    /**
+     * Returns the pricing groups.
+     *
+     * @return the pricing groups
+     */
+    public String[] getPricingGroups() {
+        return pricingGroups;
     }
 
     /**

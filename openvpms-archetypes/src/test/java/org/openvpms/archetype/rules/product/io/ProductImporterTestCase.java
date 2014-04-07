@@ -189,9 +189,10 @@ public class ProductImporterTestCase extends AbstractProductIOTest {
         BigDecimal unitPrice = new BigDecimal("1.0");
         BigDecimal unitDiscount = new BigDecimal("25");
         BigDecimal unitCost = new BigDecimal("0.5");
+        String[] locations = {};
 
-        data.addFixedPrice(-1, fixedPrice, fixedCost, fixedDiscount, getDate("2013-06-02"), null, true, 1);
-        data.addUnitPrice(-1, unitPrice, unitCost, unitDiscount, getDate("2013-06-03"), null, 1);
+        data.addFixedPrice(-1, fixedPrice, fixedCost, fixedDiscount, getDate("2013-06-02"), null, true, locations, 1);
+        data.addUnitPrice(-1, unitPrice, unitCost, unitDiscount, getDate("2013-06-03"), null, locations, 1);
 
         importProducts(data);
 
@@ -222,9 +223,11 @@ public class ProductImporterTestCase extends AbstractProductIOTest {
         BigDecimal unitPrice = new BigDecimal("1.0");
         BigDecimal unitCost = new BigDecimal("0.5");
         BigDecimal unitDiscount = new BigDecimal("15");
+        String[] locations = {};
         data.addFixedPrice(-1, fixedPrice, fixedCost, fixedDiscount, getDate("2014-01-01"), getDate("2014-06-01"), true,
-                           1);
-        data.addUnitPrice(-1, unitPrice, unitCost, unitDiscount, getDate("2014-01-01"), getDate("2014-06-01"), 1);
+                           locations, 1);
+        data.addUnitPrice(-1, unitPrice, unitCost, unitDiscount, getDate("2014-01-01"), getDate("2014-06-01"),
+                          locations, 1);
 
         List<ProductData> input = Arrays.asList(data);
         ProductDataFilter filter = new ProductDataFilter(rules, getArchetypeService());
