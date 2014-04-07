@@ -18,13 +18,14 @@ package org.openvpms.archetype.rules.product.io;
 
 import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
+import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -51,8 +52,8 @@ public class ProductCSVWriter implements ProductWriter {
     public static final String[] HEADER = {
             "Product Id", "Product Name", "Product Printed Name", "Fixed Price Id", "Fixed Price", "Fixed Cost",
             "Fixed Price Max Discount", "Fixed Price Start Date", "Fixed Price End Date", "Default Fixed Price",
-            "Unit Price Id", "Unit Price", "Unit Cost", "Unit Price Max Discount", "Unit Price Start Date",
-            "Unit Price End Date", "Tax Rate", "Pricing Location", "Notes"};
+            "Fixed Price Groups", "Unit Price Id", "Unit Price", "Unit Cost", "Unit Price Max Discount",
+            "Unit Price Start Date", "Unit Price End Date", "Unit Price Groups", "Tax Rate", "Notes"};
 
     /**
      * The archetype service.
@@ -88,7 +89,7 @@ public class ProductCSVWriter implements ProductWriter {
      * The prices to write.
      */
     private enum Prices {
-        ALL, LATEST, RANGE
+        ALL, CURRENT, RANGE
     }
 
     /**
@@ -111,15 +112,15 @@ public class ProductCSVWriter implements ProductWriter {
      * Writes product data to a document.
      *
      * @param products            the products to write
-     * @param latest              if {@code true}, output the latest price, else output all prices
+     * @param current             if {@code true}, output the current price, else output all prices
      * @param includeLinkedPrices if {@code true} include prices linked from other products
-     * @param location            the pricing location. May be {@code null}
+     * @param group               the pricing group
      * @return the document
      */
     @Override
-    public Document write(Iterator<Product> products, boolean latest, boolean includeLinkedPrices, Lookup location) {
-        Prices prices = (latest) ? Prices.LATEST : Prices.ALL;
-        return write(products, prices, null, null, includeLinkedPrices, location);
+    public Document write(Iterator<Product> products, boolean current, boolean includeLinkedPrices, PricingGroup group) {
+        Prices prices = (current) ? Prices.CURRENT : Prices.ALL;
+        return write(products, prices, null, null, includeLinkedPrices, group);
     }
 
     /**
@@ -131,13 +132,13 @@ public class ProductCSVWriter implements ProductWriter {
      * @param from                the price start date. May be {@code null}
      * @param to                  the price end date. May be {@code null}
      * @param includeLinkedPrices if {@code true} include prices linked from other products
-     * @param location            the pricing location. May be {@code null}
+     * @param group               the pricing group. May be {@code null}
      * @return the document
      */
     @Override
     public Document write(Iterator<Product> products, Date from, Date to, boolean includeLinkedPrices,
-                          Lookup location) {
-        return write(products, Prices.RANGE, from, to, includeLinkedPrices, location);
+                          PricingGroup group) {
+        return write(products, Prices.RANGE, from, to, includeLinkedPrices, group);
     }
 
     /**
@@ -158,16 +159,16 @@ public class ProductCSVWriter implements ProductWriter {
      * @param from                the price start date. May be {@code null}
      * @param to                  the price end date. May be {@code null}
      * @param includeLinkedPrices if {@code true} include prices linked from other products
-     * @param location            the pricing location. May be {@code null}
+     * @param group               the pricing group
      * @return the document
      */
     private Document write(Iterator<Product> products, Prices prices, Date from, Date to, boolean includeLinkedPrices,
-                           Lookup location) {
+                           PricingGroup group) {
         StringWriter writer = new StringWriter();
         CSVWriter csv = new CSVWriter(writer, SEPARATOR);
         csv.writeNext(HEADER);
         while (products.hasNext()) {
-            write(products.next(), prices, from, to, includeLinkedPrices, location, csv);
+            write(products.next(), prices, from, to, includeLinkedPrices, group, csv);
         }
         String name = "products-" + new java.sql.Date(System.currentTimeMillis()).toString() + ".csv";
 
@@ -184,20 +185,20 @@ public class ProductCSVWriter implements ProductWriter {
      * @param from                the from date. May be {@code null}
      * @param to                  the to date. May be {@code null}
      * @param includeLinkedPrices if {@code true} include prices linked from other products
-     * @param location            the pricing location. May be {@code null}
+     * @param group               the pricing group. May be {@code null}
      * @param writer              the writer to write to
      */
     private void write(Product product, Prices prices, Date from, Date to, boolean includeLinkedPrices,
-                       Lookup location, CSVWriter writer) {
+                       PricingGroup group, CSVWriter writer) {
         IMObjectBean bean = new IMObjectBean(product);
 
         String productId = bean.getString("id");
         String name = bean.getString("name");
 
         List<ProductPrice> fixedPrices = getPrices(product, ProductArchetypes.FIXED_PRICE, prices, from, to,
-                                                   includeLinkedPrices, location);
+                                                   includeLinkedPrices, group);
         List<ProductPrice> unitPrices = getPrices(product, ProductArchetypes.UNIT_PRICE, prices, from, to,
-                                                  includeLinkedPrices, location);
+                                                  includeLinkedPrices, group);
         String printedName = bean.getString("printedName");
         String tax = taxRules.getTaxRate(product).toString();
 
@@ -215,6 +216,7 @@ public class ProductCSVWriter implements ProductWriter {
             String fixedStartDate = null;
             String fixedEndDate = null;
             String defaultFixedPrice = null;
+            String fixedPriceGroups = null;
             String notes = null;
             if (fixedPrice != null) {
                 IMObjectBean fixedBean = new IMObjectBean(fixedPrice, service);
@@ -225,6 +227,7 @@ public class ProductCSVWriter implements ProductWriter {
                 fixedStartDate = getDate(fixedPrice.getFromDate());
                 fixedEndDate = getDate(fixedPrice.getToDate());
                 defaultFixedPrice = fixedBean.getString("default", "false").toLowerCase();
+                fixedPriceGroups = getGroups(fixedPrice);
                 if (!ObjectUtils.equals(fixedPrice.getProduct(), product)) {
                     // TODO - hack to format message
                     notes = new ProductIOException(ProductIOException.ErrorCode.LinkedPrice, -1,
@@ -238,6 +241,7 @@ public class ProductCSVWriter implements ProductWriter {
             String unitMaxDiscount = null;
             String unitStartDate = null;
             String unitEndDate = null;
+            String unitPriceGroups = null;
             if (unitPrice != null) {
                 IMObjectBean unitBean = new IMObjectBean(unitPrice, service);
                 unitId = unitBean.getString("id");
@@ -246,10 +250,11 @@ public class ProductCSVWriter implements ProductWriter {
                 unitMaxDiscount = unitBean.getBigDecimal("maxDiscount").toString();
                 unitStartDate = getDate(unitPrice.getFromDate());
                 unitEndDate = getDate(unitPrice.getToDate());
+                unitPriceGroups = getGroups(unitPrice);
             }
             String[] line = {productId, name, printedName, fixedId, fixed, fixedCost, fixedMaxDiscount, fixedStartDate,
-                             fixedEndDate, defaultFixedPrice, unitId, unit, unitCost, unitMaxDiscount, unitStartDate,
-                             unitEndDate, tax, notes};
+                             fixedEndDate, defaultFixedPrice, fixedPriceGroups, unitId, unit, unitCost,
+                             unitMaxDiscount, unitStartDate, unitEndDate, unitPriceGroups, tax, notes};
             writer.writeNext(line);
         }
     }
@@ -263,24 +268,38 @@ public class ProductCSVWriter implements ProductWriter {
      * @param from                the start date range, if prices is {@link Prices#RANGE}. May be {@code null}
      * @param to                  the end date range, if prices is {@link Prices#RANGE}. May be {@code null}
      * @param includeLinkedPrices if {@code true} include prices linked from other products
-     * @param location            the pricing location. May be {@code null}
+     * @param group               the pricing group. May be {@code null}
      * @return the matching prices
      */
     private List<ProductPrice> getPrices(Product product, String shortName, Prices prices, Date from, Date to,
-                                         boolean includeLinkedPrices, Lookup location) {
+                                         boolean includeLinkedPrices, PricingGroup group) {
         List<ProductPrice> result = new ArrayList<ProductPrice>();
-        if (prices == Prices.LATEST) {
-            List<ProductPrice> list = rules.getProductPrices(product, shortName, includeLinkedPrices, location);
+        if (prices == Prices.CURRENT) {
+            List<ProductPrice> list = rules.getProductPrices(product, shortName, new Date(), null, includeLinkedPrices,
+                                                             group);
             if (!list.isEmpty()) {
-                result.add(list.get(0));
+                if (group.isAll()) {
+                    result.addAll(list);
+                } else {
+                    result.add(list.get(0));
+                }
             }
         } else if (prices == Prices.ALL) {
-            result.addAll(rules.getProductPrices(product, shortName, includeLinkedPrices, location));
+            result.addAll(rules.getProductPrices(product, shortName, includeLinkedPrices, group));
         } else {
-            result.addAll(rules.getProductPrices(product, shortName, from, to, includeLinkedPrices, location));
+            result.addAll(rules.getProductPrices(product, shortName, from, to, includeLinkedPrices, group));
         }
         return result;
     }
 
+    /**
+     * Returns the pricing group codes, as a space separated string
+     *
+     * @param price the product price
+     * @return the group codes
+     */
+    private String getGroups(ProductPrice price) {
+        return StringUtils.join(ProductIOHelper.getPricingGroups(price, service), ' ');
+    }
 
 }

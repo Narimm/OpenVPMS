@@ -17,6 +17,7 @@
 package org.openvpms.archetype.rules.product.io;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -138,7 +139,7 @@ public class ProductDataComparator {
         if (prices.isEmpty()) {
             result = Collections.emptyList();
         } else {
-            result = rules.getProductPrices(product, fixed ? FIXED_PRICE : UNIT_PRICE, null, null);
+            result = rules.getProductPrices(product, fixed ? FIXED_PRICE : UNIT_PRICE, PricingGroup.ALL);
         }
         return result;
     }
@@ -322,7 +323,7 @@ public class ProductDataComparator {
      */
     private PriceData getUpdatedPriceData(Product product, PriceData price, List<ProductPrice> prices) {
         PriceData result = null;
-        ProductPrice existing = ProductImportHelper.getPrice(price, prices);
+        ProductPrice existing = ProductIOHelper.getPrice(price, prices);
         if (isLinkedPrice(existing, product)) {
             if (!equals(price, existing)) {
                 throw new ProductIOException(CannotUpdateLinkedPrice, price.getLine());
@@ -525,7 +526,7 @@ public class ProductDataComparator {
         BigDecimal maxDiscount = bean.getBigDecimal("maxDiscount");
         return price.getPrice().compareTo(data.getPrice()) == 0 && cost.compareTo(data.getCost()) == 0
                && maxDiscount.compareTo(data.getMaxDiscount()) == 0
-               && (!FIXED_PRICE.equals(data.getShortName()) || data.isDefault() == ProductImportHelper.isDefault(bean));
+               && (!FIXED_PRICE.equals(data.getShortName()) || data.isDefault() == ProductIOHelper.isDefault(bean));
     }
 
 

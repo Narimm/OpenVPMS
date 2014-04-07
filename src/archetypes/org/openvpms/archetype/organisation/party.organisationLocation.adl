@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
     <archetype name="party.organisationLocation.1.0" latest="true"
@@ -61,13 +61,13 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node name="pricingLocation" path="/classifications" parentChild="false"
+        <node name="pricingGroup" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="1"
-              filter="lookup.pricingLocation">
+              filter="lookup.pricingGroup">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName" value="lookup.pricingLocation"/>
+                        <property name="shortName" value="lookup.pricingGroup"/>
                     </propertyMap>
                 </propertyList>
             </assertion>

@@ -384,7 +384,8 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
      */
     private PriceData createPriceData(long id, String shortName, String price, String cost, String maxDiscount,
                                       String from, String to, boolean isDefault) {
+        String[] locations = {};
         return new PriceData(id, shortName, new BigDecimal(price), new BigDecimal(cost), new BigDecimal(maxDiscount),
-                             getDate(from), getDate(to), isDefault, 1);
+                             getDate(from), getDate(to), isDefault, locations, 1);
     }
 }

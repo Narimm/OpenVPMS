@@ -126,39 +126,49 @@ public class ProductCSVReader implements ProductReader {
     private static final int DEFAULT_FIXED_PRICE = 9;
 
     /**
+     * The fixed price groups column.
+     */
+    private static final int FIXED_PRICE_GROUPS = 10;
+
+    /**
      * The product unit price id column.
      */
-    private static final int UNIT_PRICE_ID = 10;
+    private static final int UNIT_PRICE_ID = 11;
 
     /**
      * The product unit price column.
      */
-    private static final int UNIT_PRICE = 11;
+    private static final int UNIT_PRICE = 12;
 
     /**
      * The product unit cost column.
      */
-    private static final int UNIT_COST = 12;
+    private static final int UNIT_COST = 13;
 
     /**
      * The unit price max discount column.
      */
-    private static final int UNIT_PRICE_MAX_DISCOUNT = 13;
+    private static final int UNIT_PRICE_MAX_DISCOUNT = 14;
 
     /**
      * The product unit price start date column.
      */
-    private static final int UNIT_PRICE_START_DATE = 14;
+    private static final int UNIT_PRICE_START_DATE = 15;
 
     /**
      * The product unit price end date column.
      */
-    private static final int UNIT_PRICE_END_DATE = 15;
+    private static final int UNIT_PRICE_END_DATE = 16;
+
+    /**
+     * The unit price groups column.
+     */
+    private static final int UNIT_PRICE_GROUPS = 17;
 
     /**
      * The product tax rate column.
      */
-    private static final int TAX_RATE = 16;
+    private static final int TAX_RATE = 18;
 
     static {
         for (DateFormat format : DAY_MONTH_YEAR_FORMATS) {
@@ -288,18 +298,21 @@ public class ProductCSVReader implements ProductReader {
             Date fixedStartDate = getDate(line, FIXED_PRICE_START_DATE, lineNo, fixedPrice != null);
             Date fixedEndDate = getDate(line, FIXED_PRICE_END_DATE, lineNo, false);
             boolean defaultFixedPrice = getBoolean(line, DEFAULT_FIXED_PRICE, lineNo);
+            String[] fixedPriceGroups = getPricingGroups(line, FIXED_PRICE_GROUPS);
             long unitId = getId(line, UNIT_PRICE_ID, lineNo, false);
             BigDecimal unitPrice = getDecimal(line, UNIT_PRICE, lineNo);
             BigDecimal unitCost = getDecimal(line, UNIT_COST, lineNo);
             BigDecimal unitMaxDiscount = getDecimal(line, UNIT_PRICE_MAX_DISCOUNT, lineNo);
             Date unitStartDate = getDate(line, UNIT_PRICE_START_DATE, lineNo, unitCost != null);
             Date unitEndDate = getDate(line, UNIT_PRICE_END_DATE, lineNo, false);
+            String[] unitPriceGroups = getPricingGroups(line, UNIT_PRICE_GROUPS);
             if (fixedPrice != null) {
                 current.addFixedPrice(fixedId, fixedPrice, fixedCost, fixedMaxDiscount, fixedStartDate, fixedEndDate,
-                                      defaultFixedPrice, lineNo);
+                                      defaultFixedPrice, fixedPriceGroups, lineNo);
             }
             if (unitPrice != null) {
-                current.addUnitPrice(unitId, unitPrice, unitCost, unitMaxDiscount, unitStartDate, unitEndDate, lineNo);
+                current.addUnitPrice(unitId, unitPrice, unitCost, unitMaxDiscount, unitStartDate, unitEndDate,
+                                     unitPriceGroups, lineNo);
             }
         } catch (ProductIOException exception) {
             current.setError(exception.getMessage(), exception.getLine());
@@ -486,6 +499,15 @@ public class ProductCSVReader implements ProductReader {
                                          lineNo, ProductCSVWriter.HEADER[index]);
         }
         return value;
+    }
+
+    private String[] getPricingGroups(String[] line, int index) {
+        String[] result = {};
+        String value = StringUtils.trimToNull(line[index]);
+        if (value != null) {
+            result = value.split(" ");
+        }
+        return result;
     }
 
     /**

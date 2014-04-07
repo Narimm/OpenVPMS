@@ -11,24 +11,27 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
 
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.openvpms.archetype.rules.product.io.ProductIOException.ErrorCode.PriceNotFound;
 
 /**
- * Product import helper methods.
+ * Product I/O helper methods.
  *
  * @author Tim Anderson
  */
-class ProductImportHelper {
+class ProductIOHelper {
 
     /**
      * Returns the price with an identifier matching that in the data.
@@ -57,4 +60,22 @@ class ProductImportHelper {
     public static boolean isDefault(IMObjectBean bean) {
         return bean.hasNode("default") && bean.getBoolean("default");
     }
+
+    /**
+     * Returns the pricing group codes.
+     *
+     * @param price the product price
+     * @return the pricing group codes, sorted alphabetically
+     */
+    public static String[] getPricingGroups(ProductPrice price, IArchetypeService service) {
+        IMObjectBean bean = new IMObjectBean(price, service);
+        List<Lookup> groups = bean.getValues("pricingGroups", Lookup.class);
+        String[] codes = new String[groups.size()];
+        for (int i = 0; i < codes.length; ++i) {
+            codes[i] = groups.get(i).getCode();
+        }
+        Arrays.sort(codes);
+        return codes;
+    }
+
 }
