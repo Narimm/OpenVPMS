@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.product;
 import echopointng.DropDown;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -94,9 +95,9 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     private ProductPrice price;
 
     /**
-     * The pricing location. May be {@code null}
+     * The pricing group.
      */
-    private Lookup pricingLocation;
+    private final PricingGroup pricingGroup;
 
     /**
      * The layout context.
@@ -104,15 +105,15 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     private final LayoutContext context;
 
     /**
-     * Creates a new {@code FixedPriceEditor}.
+     * Constructs a {@link FixedPriceEditor}.
      *
-     * @param property        the fixed price property
-     * @param pricingLocation the pricing location. May be {@code null}
-     * @param context         the layout context
+     * @param property     the fixed price property
+     * @param pricingGroup the pricing group. May be {@code null}
+     * @param context      the layout context
      */
-    public FixedPriceEditor(Property property, Lookup pricingLocation, LayoutContext context) {
+    public FixedPriceEditor(Property property, Lookup pricingGroup, LayoutContext context) {
         super(property);
-        this.pricingLocation = pricingLocation;
+        this.pricingGroup = new PricingGroup(pricingGroup);
         this.context = context;
 
         date = new Date();
@@ -214,7 +215,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
             if (rules == null) {
                 rules = ServiceHelper.getBean(ProductPriceRules.class);
             }
-            List<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, date, pricingLocation);
+            List<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, date, pricingGroup);
             if (!prices.isEmpty()) {
                 table = createPriceTable(prices);
             }

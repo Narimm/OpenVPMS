@@ -203,7 +203,7 @@ public class ProductExportQuery extends ProductQuery {
         addPriceSelector(container);
         addDateRange(container);
         addLinkedPrices(container);
-        addPricingLocationSelector(container);
+        addPricingGroupSelector(container, true);
     }
 
     /**

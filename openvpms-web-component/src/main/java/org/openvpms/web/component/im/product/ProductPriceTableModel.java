@@ -42,14 +42,14 @@ import java.util.List;
 public class ProductPriceTableModel extends DescriptorTableModel<IMObject> {
 
     /**
-     * Determines if pricing locations should be displayed.
+     * Determines if pricing groups should be displayed.
      */
-    private boolean showPricingLocations;
+    private boolean showPricingGroups;
 
     /**
-     * The pricing location column index.
+     * The pricing group column index.
      */
-    private final int pricingLocationIndex;
+    private final int pricingGroupIndex;
 
     /**
      * The product price rules.
@@ -64,23 +64,23 @@ public class ProductPriceTableModel extends DescriptorTableModel<IMObject> {
      */
     public ProductPriceTableModel(String[] shortNames, LayoutContext context) {
         super(shortNames, context);
-        pricingLocationIndex = getNextModelIndex(getColumnModel());
+        pricingGroupIndex = getNextModelIndex(getColumnModel());
         rules = ServiceHelper.getBean(ProductPriceRules.class);
     }
 
     /**
-     * Determines if pricing locations should be displayed.
+     * Determines if pricing groups should be displayed.
      *
-     * @param show if {@code true}, adds a column to display pricing locations, else removes it
+     * @param show if {@code true}, adds a column to display pricing groups, else removes it
      */
-    public void setShowPricingLocations(boolean show) {
-        if (showPricingLocations != show) {
-            showPricingLocations = show;
+    public void setShowPricingGroups(boolean show) {
+        if (showPricingGroups != show) {
+            showPricingGroups = show;
             DefaultTableColumnModel model = (DefaultTableColumnModel) getColumnModel();
             if (show) {
-                model.addColumn(createTableColumn(pricingLocationIndex, "product.pricingLocation"));
+                model.addColumn(createTableColumn(pricingGroupIndex, "product.pricingGroup"));
             } else {
-                model.removeColumn(getColumn(pricingLocationIndex));
+                model.removeColumn(getColumn(pricingGroupIndex));
             }
             fireTableStructureChanged();
         }
@@ -96,15 +96,15 @@ public class ProductPriceTableModel extends DescriptorTableModel<IMObject> {
     @Override
     protected Object getValue(IMObject object, TableColumn column, int row) {
         Object result = null;
-        if (column.getModelIndex() == pricingLocationIndex) {
-            List<Lookup> pricingLocations = rules.getPricingLocations((ProductPrice) object);
-            int size = pricingLocations.size();
+        if (column.getModelIndex() == pricingGroupIndex) {
+            List<Lookup> pricingGroups = rules.getPricingGroups((ProductPrice) object);
+            int size = pricingGroups.size();
             if (size == 1) {
-                result = pricingLocations.get(0).getName();
+                result = pricingGroups.get(0).getName();
             } else if (size > 1) {
-                Collections.sort(pricingLocations, IMObjectSorter.getNameComparator(true));
+                Collections.sort(pricingGroups, IMObjectSorter.getNameComparator(true));
                 Column col = ColumnFactory.create();
-                for (Lookup lookup : pricingLocations) {
+                for (Lookup lookup : pricingGroups) {
                     Label label = LabelFactory.create();
                     label.setText(lookup.getName());
                     col.add(label);

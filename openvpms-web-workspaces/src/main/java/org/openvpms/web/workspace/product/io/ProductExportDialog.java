@@ -16,11 +16,15 @@
 
 package org.openvpms.web.workspace.product.io;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Column;
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.TableColumn;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
+import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.rules.product.io.ProductCSVWriter;
@@ -125,17 +129,16 @@ public class ProductExportDialog extends BrowserDialog<Product> {
         Iterator<Product> iterator = new ResultSetIterator<Product>(query.query());
         Document document;
         boolean includeLinkedPrices = query.includeLinkedPrices();
-        Lookup pricingLocation = query.getPricingLocation();
+        PricingGroup pricingGroup = query.getPricingGroup();
         switch (query.getPrices()) {
             case CURRENT:
-                document = exporter.write(iterator, true, includeLinkedPrices, pricingLocation);
+                document = exporter.write(iterator, true, includeLinkedPrices, pricingGroup);
                 break;
             case ALL:
-                document = exporter.write(iterator, false, includeLinkedPrices, pricingLocation);
+                document = exporter.write(iterator, false, includeLinkedPrices, pricingGroup);
                 break;
             default:
-                document = exporter.write(iterator, query.getFrom(), query.getTo(), includeLinkedPrices,
-                                          pricingLocation);
+                document = exporter.write(iterator, query.getFrom(), query.getTo(), includeLinkedPrices, pricingGroup);
         }
         DownloadServlet.startDownload(document);
     }
@@ -168,13 +171,12 @@ public class ProductExportDialog extends BrowserDialog<Product> {
         protected List<ProductPrices> convertTo(List<Product> list) {
             List<ProductPrices> result = new ArrayList<ProductPrices>();
             boolean includeLinkedPrices = getQuery().includeLinkedPrices();
-            Lookup pricingLocation = getQuery().getPricingLocation();
+            PricingGroup pricingGroup = getQuery().getPricingGroup();
             for (Product product : list) {
-
                 List<ProductPrice> fixedPrices = getPrices(product, ProductArchetypes.FIXED_PRICE, includeLinkedPrices,
-                                                           pricingLocation);
+                                                           pricingGroup);
                 List<ProductPrice> unitPrices = getPrices(product, ProductArchetypes.UNIT_PRICE, includeLinkedPrices,
-                                                          pricingLocation);
+                                                          pricingGroup);
                 int count = Math.max(fixedPrices.size(), unitPrices.size());
                 if (count == 0) {
                     count = 1;
@@ -195,25 +197,29 @@ public class ProductExportDialog extends BrowserDialog<Product> {
          * @param product             the product
          * @param shortName           the price archetype short name
          * @param includeLinkedPrices if {@code true}, include prices linked from price template products
-         * @param pricingLocation     the pricing location. May be {@code null}
+         * @param pricingGroup        the pricing group. May be {@code null}
          * @return the matching prices
          */
         private List<ProductPrice> getPrices(Product product, String shortName, boolean includeLinkedPrices,
-                                             Lookup pricingLocation) {
+                                             PricingGroup pricingGroup) {
             List<ProductPrice> result = new ArrayList<ProductPrice>();
             ProductExportQuery query = getQuery();
             ProductExportQuery.Prices prices = query.getPrices();
             if (prices == ProductExportQuery.Prices.CURRENT) {
-                List<ProductPrice> list = rules.getProductPrices(product, shortName, includeLinkedPrices,
-                                                                 pricingLocation);
-                if (!list.isEmpty()) {
-                    result.add(list.get(0));
+                if (pricingGroup.isAll()) {
+                    result.addAll(rules.getProductPrices(product, shortName, includeLinkedPrices, pricingGroup));
+                } else {
+                    List<ProductPrice> list = rules.getProductPrices(product, shortName, includeLinkedPrices,
+                                                                     pricingGroup);
+                    if (!list.isEmpty()) {
+                        result.add(list.get(0));
+                    }
                 }
             } else if (prices == ProductExportQuery.Prices.ALL) {
-                result.addAll(rules.getProductPrices(product, shortName, includeLinkedPrices, pricingLocation));
+                result.addAll(rules.getProductPrices(product, shortName, includeLinkedPrices, pricingGroup));
             } else {
                 result.addAll(rules.getProductPrices(product, shortName, query.getFrom(), query.getTo(),
-                                                     includeLinkedPrices, pricingLocation));
+                                                     includeLinkedPrices, pricingGroup));
             }
             return result;
         }
@@ -266,8 +272,8 @@ public class ProductExportDialog extends BrowserDialog<Product> {
                 case FIXED_END_DATE:
                     result = (fixedPrice != null) ? rightAlign(fixedPrice.getToDate()) : null;
                     break;
-                case FIXED_PRICING_LOCATIONS:
-                    result = getPricingLocations(fixedPrice);
+                case FIXED_PRICING_GROUPS:
+                    result = getPricingGroups(fixedPrice);
                     break;
                 case UNIT_PRICE:
                     result = (unitPrice != null) ? rightAlign(unitPrice.getPrice()) : null;
@@ -284,25 +290,33 @@ public class ProductExportDialog extends BrowserDialog<Product> {
                 case UNIT_END_DATE:
                     result = (unitPrice != null) ? rightAlign(unitPrice.getToDate()) : null;
                     break;
-                case UNIT_PRICING_LOCATIONS:
-                    result = getPricingLocations(fixedPrice);
+                case UNIT_PRICING_GROUPS:
+                    result = getPricingGroups(unitPrice);
                     break;
                 default:
                     result = null;
             }
+            if (result != null && !(result instanceof Component)) {
+                Label label = LabelFactory.create();
+                TableLayoutData layoutData = new TableLayoutData();
+                layoutData.setAlignment(Alignment.ALIGN_TOP);
+                label.setLayoutData(layoutData);
+                label.setText(result.toString());
+                result = label;
+            }
             return result;
         }
 
-        private Object getPricingLocations(ProductPrice price) {
+        private Object getPricingGroups(ProductPrice price) {
             Object result = null;
             if (price != null) {
-                List<Lookup> locations = rules.getPricingLocations(price);
-                if (!locations.isEmpty()) {
-                    Collections.sort(locations, IMObjectSorter.getNameComparator(true));
+                List<Lookup> groups = rules.getPricingGroups(price);
+                if (!groups.isEmpty()) {
+                    Collections.sort(groups, IMObjectSorter.getNameComparator(true));
                     Column column = ColumnFactory.create(Styles.CELL_SPACING);
-                    for (Lookup location : locations) {
+                    for (Lookup group : groups) {
                         Label label = LabelFactory.create();
-                        label.setText(location.getName());
+                        label.setText(group.getName());
                         column.add(label);
                     }
                     result = column;

@@ -47,7 +47,7 @@ public class ProductPriceCollectionEditor extends IMObjectTableCollectionEditor 
     /**
      * The pricing location filter.
      */
-    private PricingLocationFilter filter;
+    private PricingGroupFilter filter;
 
     /**
      * Constructs a {@link ProductPriceCollectionEditor}.
@@ -58,7 +58,7 @@ public class ProductPriceCollectionEditor extends IMObjectTableCollectionEditor 
      */
     public ProductPriceCollectionEditor(CollectionProperty property, IMObject object, LayoutContext context) {
         super(property, object, context);
-        filter = new PricingLocationFilter(context);
+        filter = new PricingGroupFilter(context);
     }
 
     /**
@@ -76,7 +76,7 @@ public class ProductPriceCollectionEditor extends IMObjectTableCollectionEditor 
                 @Override
                 public void onAction(ActionEvent event) {
                     ProductPriceTableModel model = (ProductPriceTableModel) getTable().getModel().getModel();
-                    model.setShowPricingLocations(filter.showAll());
+                    model.setShowPricingGroups(filter.showAll());
                     populateTable();
                 }
             });
@@ -94,9 +94,9 @@ public class ProductPriceCollectionEditor extends IMObjectTableCollectionEditor 
     @Override
     public IMObject create() {
         IMObject object = super.create();
-        if (object != null && filter.getPricingLocation() != null) {
+        if (object != null && filter.getPricingGroup() != null) {
             IMObjectBean bean = new IMObjectBean(object);
-            bean.addValue("pricingLocations", filter.getPricingLocation());
+            bean.addValue("pricingGroups", filter.getPricingGroup().getGroup());
         }
         return object;
     }

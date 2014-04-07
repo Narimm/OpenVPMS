@@ -17,20 +17,20 @@
 package org.openvpms.web.workspace.product;
 
 import nextapp.echo2.app.Component;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
+import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.product.PricingGroupHelper;
 import org.openvpms.web.component.im.product.ProductQuery;
 import org.openvpms.web.component.im.util.UserHelper;
 
 
 /**
- * An {@link ProductQuery} that allows the pricing location to be set if the current user is an administrator.
+ * An {@link ProductQuery} that allows the pricing group to be set if the current user is an administrator.
  *
  * @author Tim Anderson
  */
-public class PricingLocationProductQuery extends ProductQuery {
+public class PricingGroupProductQuery extends ProductQuery {
 
     /**
      * Determines if the current user is an administrator.
@@ -38,34 +38,34 @@ public class PricingLocationProductQuery extends ProductQuery {
     private final boolean admin;
 
     /**
-     * The pricing location listener. May be {@code null}
+     * The pricing group listener. May be {@code null}
      */
-    private PricingLocationListener pricingLocationListener;
+    private PricingGroupListener pricingGroupListener;
 
-    public interface PricingLocationListener {
+    public interface PricingGroupListener {
 
-        void onLocationChanged();
+        void onPricingGroupChanged();
     }
 
     /**
-     * Constructs a {@link PricingLocationProductQuery} that queries products with the specified short names.
+     * Constructs a {@link PricingGroupProductQuery} that queries products with the specified short names.
      *
      * @param shortNames the short names
      * @param context    the context
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
-    public PricingLocationProductQuery(String[] shortNames, Context context) {
+    public PricingGroupProductQuery(String[] shortNames, Context context) {
         super(shortNames, context);
         admin = UserHelper.isAdmin(context.getUser());
     }
 
     /**
-     * Registers a listener for pricing location changes.
+     * Registers a listener for pricing group changes.
      *
      * @param listener the listener. May be {@code null}
      */
-    public void setPricingLocationListener(PricingLocationListener listener) {
-        pricingLocationListener = listener;
+    public void setPricingGroupListener(PricingGroupListener listener) {
+        pricingGroupListener = listener;
     }
 
     /**
@@ -79,21 +79,21 @@ public class PricingLocationProductQuery extends ProductQuery {
     @Override
     protected void doLayout(Component container) {
         super.doLayout(container);
-        if (admin && LookupServiceHelper.getLookupService().getLookups("lookup.pricingLocation").size() != 0) {
-            addPricingLocationSelector(container);
+        if (admin && PricingGroupHelper.pricingGroupsConfigured()) {
+            addPricingGroupSelector(container, false);
         }
     }
 
     /**
-     * Invoked when the pricing location changes.
+     * Invoked when the pricing group changes.
      *
-     * @param location the selected pricing location
+     * @param pricingGroup the selected pricing group
      */
     @Override
-    protected void onPricingLocationChanged(Lookup location) {
-        super.onPricingLocationChanged(location);
-        if (pricingLocationListener != null) {
-            pricingLocationListener.onLocationChanged();
+    protected void onPricingGroupChanged(PricingGroup pricingGroup) {
+        super.onPricingGroupChanged(pricingGroup);
+        if (pricingGroupListener != null) {
+            pricingGroupListener.onPricingGroupChanged();
         }
     }
 }

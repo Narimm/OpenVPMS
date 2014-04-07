@@ -68,7 +68,7 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
     /**
      * The pricing location. May be {@code null}
      */
-    private Lookup pricingLocation;
+    private Lookup pricingGroup;
 
 
     /**
@@ -92,26 +92,26 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
         boolean active = (query == null) || query.getActive() == BaseArchetypeConstraint.State.BOTH;
         setTableColumnModel(createTableColumnModel(active));
         if (query != null) {
-            pricingLocation = query.getPricingLocation();
+            pricingGroup = query.getPricingGroup().getGroup();
         } else {
             Party location = context.getContext().getLocation();
             if (location != null) {
                 LocationRules locationRules = ServiceHelper.getBean(LocationRules.class);
-                pricingLocation = locationRules.getPricingLocation(location);
+                pricingGroup = locationRules.getPricingGroup(location);
             }
         }
     }
 
     /**
-     * Sets the pricing location.
+     * Sets the pricing group.
      * <p/>
      * This determines the fixed and unit prices displayed.
      *
-     * @param pricingLocation the pricing location. May be {@code null}
+     * @param pricingGroup the pricing group. May be {@code null}
      */
-    public void setPricingLocation(Lookup pricingLocation) {
-        if (!ObjectUtils.equals(this.pricingLocation, pricingLocation)) {
-            this.pricingLocation = pricingLocation;
+    public void setPricingGroup(Lookup pricingGroup) {
+        if (!ObjectUtils.equals(this.pricingGroup, pricingGroup)) {
+            this.pricingGroup = pricingGroup;
             fireTableDataChanged();
         }
     }
@@ -167,7 +167,7 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
      */
     private Component getPrice(String shortName, Product product) {
         Component result = null;
-        ProductPrice price = rules.getProductPrice(product, shortName, new Date(), pricingLocation);
+        ProductPrice price = rules.getProductPrice(product, shortName, new Date(), pricingGroup);
         if (price != null) {
             BigDecimal value = price.getPrice();
             if (value != null) {

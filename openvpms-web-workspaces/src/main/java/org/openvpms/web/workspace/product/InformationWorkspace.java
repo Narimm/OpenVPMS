@@ -83,7 +83,7 @@ public class InformationWorkspace extends ResultSetCRUDWorkspace<Product> {
      */
     @Override
     protected Query<Product> createQuery() {
-        return new PricingLocationProductQuery(getArchetypes().getShortNames(), getContext());
+        return new PricingGroupProductQuery(getArchetypes().getShortNames(), getContext());
     }
 
     /**
@@ -95,6 +95,6 @@ public class InformationWorkspace extends ResultSetCRUDWorkspace<Product> {
     @Override
     protected Browser<Product> createBrowser(Query<Product> query) {
         DefaultLayoutContext context = new DefaultLayoutContext(getContext(), getHelpContext());
-        return new PricingLocationProductBrowser((PricingLocationProductQuery) query, context);
+        return new PricingGroupProductBrowser((PricingGroupProductQuery) query, context);
     }
 }
