@@ -79,7 +79,7 @@ abstract class ProductImportExportTableModel<T> extends AbstractIMTableModel<T> 
     /**
      * The fixed price pricing locations column.
      */
-    protected static final int FIXED_PRICING_LOCATIONS = 8;
+    protected static final int FIXED_PRICING_GROUPS = 8;
 
     /**
      * The unit price column.
@@ -109,7 +109,12 @@ abstract class ProductImportExportTableModel<T> extends AbstractIMTableModel<T> 
     /**
      * The unit price pricing locations column.
      */
-    protected static final int UNIT_PRICING_LOCATIONS = 14;
+    protected static final int UNIT_PRICING_GROUPS = 14;
+
+    /**
+     * Top-right alignment.
+     */
+    private static final Alignment TOP_RIGHT = new Alignment(Alignment.RIGHT, Alignment.TOP);
 
     /**
      * Constructs a {@link ProductImportExportTableModel}.
@@ -124,13 +129,13 @@ abstract class ProductImportExportTableModel<T> extends AbstractIMTableModel<T> 
         model.addColumn(createTableColumn(FIXED_MAX_DISCOUNT, "product.import.fixedPriceMaxDiscount"));
         model.addColumn(createTableColumn(FIXED_START_DATE, "product.import.fixedPriceStartDate"));
         model.addColumn(createTableColumn(FIXED_END_DATE, "product.import.fixedPriceEndDate"));
-        model.addColumn(createTableColumn(FIXED_PRICING_LOCATIONS, "product.import.fixedPriceLocations"));
+        model.addColumn(createTableColumn(FIXED_PRICING_GROUPS, "product.import.unitPricingGroups"));
         model.addColumn(createTableColumn(UNIT_PRICE, "product.import.unitPrice"));
         model.addColumn(createTableColumn(UNIT_COST, "product.import.unitCost"));
         model.addColumn(createTableColumn(UNIT_MAX_DISCOUNT, "product.import.unitPriceMaxDiscount"));
         model.addColumn(createTableColumn(UNIT_START_DATE, "product.import.unitPriceStartDate"));
         model.addColumn(createTableColumn(UNIT_END_DATE, "product.import.unitPriceEndDate"));
-        model.addColumn(createTableColumn(UNIT_PRICING_LOCATIONS, "product.import.unitPriceLocations"));
+        model.addColumn(createTableColumn(UNIT_PRICING_GROUPS, "product.import.unitPricingGroups"));
         setTableColumnModel(model);
     }
 
@@ -193,7 +198,7 @@ abstract class ProductImportExportTableModel<T> extends AbstractIMTableModel<T> 
             result = LabelFactory.create();
             result.setText(value.toString());
             TableLayoutData layoutData = new TableLayoutData();
-            layoutData.setAlignment(Alignment.ALIGN_RIGHT);
+            layoutData.setAlignment(TOP_RIGHT);
             result.setLayoutData(layoutData);
         }
         return result;

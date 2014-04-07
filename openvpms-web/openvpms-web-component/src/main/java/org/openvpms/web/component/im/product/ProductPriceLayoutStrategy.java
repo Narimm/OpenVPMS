@@ -25,7 +25,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 /**
  * Layout strategy for {@link ProductPrice} instances.
  * <p/>
- * This suppresses the pricingLocations node if it is not required.
+ * This suppresses the pricingGroups node if it is not required.
  *
  * @author Tim Anderson
  */
@@ -41,10 +41,10 @@ public class ProductPriceLayoutStrategy extends AbstractLayoutStrategy {
     @Override
     protected ArchetypeNodes getArchetypeNodes(IMObject object, LayoutContext context) {
         ArchetypeNodes nodes;
-        if (PricingLocationHelper.hasPricingLocations((ProductPrice) object)) {
+        if (PricingGroupHelper.hasPricingGroups((ProductPrice) object)) {
             nodes = super.getArchetypeNodes(object, context);
-        } else if (!context.isEdit() || !PricingLocationHelper.pricingLocationsConfigured()) {
-            nodes = new ArchetypeNodes().exclude("pricingLocations");
+        } else if (!context.isEdit() || !PricingGroupHelper.pricingGroupsConfigured()) {
+            nodes = new ArchetypeNodes().exclude("pricingGroups");
         } else {
             nodes = super.getArchetypeNodes(object, context);
         }

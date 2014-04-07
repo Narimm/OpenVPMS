@@ -18,16 +18,14 @@ package org.openvpms.web.component.im.product;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.practice.LocationRules;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.query.AbstractEntityQuery;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.echo.event.ActionListener;
@@ -54,14 +52,13 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
     private Party location;
 
     /**
-     * The pricing location. May be {@code null}
+     * The pricing group.
      */
-    private Lookup pricingLocation;
+    private PricingGroup pricingGroup;
 
 
     /**
-     * Constructs a {@link ProductQuery} that queries products with the
-     * specified short names.
+     * Constructs a {@link ProductQuery} that queries products with the specified short names.
      *
      * @param shortNames the short names
      * @param context    the context
@@ -73,7 +70,9 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
         Party location = context.getLocation();
         if (location != null) {
             LocationRules rules = ServiceHelper.getBean(LocationRules.class);
-            pricingLocation = rules.getPricingLocation(location);
+            pricingGroup = new PricingGroup(rules.getPricingGroup(location));
+        } else {
+            pricingGroup = new PricingGroup(null);
         }
     }
 
@@ -114,12 +113,12 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
     }
 
     /**
-     * Returns the pricing location to filter prices on.
+     * Returns the pricing group.
      *
-     * @return the pricing location. May be {@code null}
+     * @return the pricing group
      */
-    public Lookup getPricingLocation() {
-        return pricingLocation;
+    public PricingGroup getPricingGroup() {
+        return pricingGroup;
     }
 
     /**
@@ -134,31 +133,32 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
     }
 
     /**
-     * Adds a selector to constrain the products by pricing location.
+     * Adds a selector to constrain prices by pricing group.
      *
      * @param container the container to add the component to
+     * @param all       if {@code true}, include an option to select 'All'
      */
-    protected void addPricingLocationSelector(Component container) {
-        final SelectField field = PricingLocationHelper.createPricingLocationSelector(pricingLocation);
+    protected void addPricingGroupSelector(Component container, boolean all) {
+        final PricingGroupSelectField field = new PricingGroupSelectField(pricingGroup.getGroup(), all);
         field.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
-                Lookup lookup = ((LookupListModel) field.getModel()).getLookup(field.getSelectedIndex());
-                onPricingLocationChanged(lookup);
+                PricingGroup group = (field.isAllSelected()) ? PricingGroup.ALL : field.getSelected();
+                onPricingGroupChanged(group);
             }
         });
 
-        Label label = LabelFactory.create("product.pricingLocation");
+        Label label = LabelFactory.create("product.pricingGroup");
         container.add(label);
         container.add(field);
         getFocusGroup().add(field);
     }
 
     /**
-     * Invoked when the pricing location changes.
+     * Invoked when the pricing group changes.
      *
-     * @param location the selected pricing location
+     * @param group the selected pricing group
      */
-    protected void onPricingLocationChanged(Lookup location) {
-        pricingLocation = location;
+    protected void onPricingGroupChanged(PricingGroup group) {
+        pricingGroup = group;
     }
 }

@@ -232,6 +232,10 @@
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
+    <bean id="locationRules" class="org.openvpms.archetype.rules.practice.LocationRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
     <bean id="productPriceRules" class="org.openvpms.archetype.rules.product.ProductPriceRules">
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="lookupService"/>
@@ -257,6 +261,7 @@
             <bean class="org.openvpms.web.workspace.DefaultWorkspacesFactory"/>
         </constructor-arg>
         <constructor-arg ref="practiceRules"/>
+        <constructor-arg ref="locationRules"/>
     </bean>
 
     <bean id="styleSheetCache" class="org.openvpms.web.echo.style.StyleSheetCache">

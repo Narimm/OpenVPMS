@@ -18,8 +18,8 @@ package org.openvpms.web.component.im.product;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -29,16 +29,16 @@ import org.openvpms.web.echo.style.Styles;
 import java.util.List;
 
 /**
- * Filters prices based on the selected pricing location.
+ * Filters prices based on the selected pricing group.
  *
  * @author Tim Anderson
  */
-public class PricingLocationFilter {
+public class PricingGroupFilter {
 
     /**
-     * The selected pricing location.
+     * The selected pricing group.
      */
-    private Lookup pricingLocation;
+    private PricingGroup pricingGroup;
 
     /**
      * Determines if filtering is required.
@@ -57,14 +57,14 @@ public class PricingLocationFilter {
 
 
     /**
-     * Constructs a {@link PricingLocationFilter}.
+     * Constructs a {@link PricingGroupFilter}.
      *
      * @param context the layout context
      */
-    public PricingLocationFilter(LayoutContext context) {
-        pricingLocation = PricingLocationHelper.getPricingLocation(context.getContext());
-        needsFilter = pricingLocation != null || PricingLocationHelper.pricingLocationsConfigured();
-        showAll = pricingLocation == null;
+    public PricingGroupFilter(LayoutContext context) {
+        pricingGroup = PricingGroupHelper.getPricingGroup(context.getContext());
+        needsFilter = pricingGroup != null || PricingGroupHelper.pricingGroupsConfigured();
+        showAll = pricingGroup == null;
     }
 
     /**
@@ -87,12 +87,12 @@ public class PricingLocationFilter {
     }
 
     /**
-     * Returns the selected pricing location.
+     * Returns the selected pricing group.
      *
-     * @return the selected pricing location. May be {@code null}
+     * @return the selected pricing group. May be {@code null}
      */
-    public Lookup getPricingLocation() {
-        return pricingLocation;
+    public PricingGroup getPricingGroup() {
+        return pricingGroup;
     }
 
     /**
@@ -105,14 +105,14 @@ public class PricingLocationFilter {
     }
 
     /**
-     * Filters the prices according to the selected pricing location.
+     * Filters the prices according to the selected pricing group.
      *
      * @param prices the prices to filter
      * @return the filtered prices
      */
     public List<IMObject> getPrices(List<IMObject> prices) {
         if (!showAll) {
-            return PricingLocationHelper.filterPrices(prices, pricingLocation);
+            return PricingGroupHelper.filterPrices(prices, pricingGroup);
         }
         return prices;
     }
@@ -123,18 +123,18 @@ public class PricingLocationFilter {
      * @return the filter component
      */
     public Component getComponent() {
-        final PricingLocationSelectField filter = new PricingLocationSelectField(pricingLocation, true);
+        final PricingGroupSelectField filter = new PricingGroupSelectField(pricingGroup.getGroup(), true);
         filter.addActionListener(new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
-                pricingLocation = filter.getSelected();
+                pricingGroup = filter.getSelected();
                 showAll = filter.isAllSelected();
                 if (listener != null) {
                     listener.onAction(new ActionEvent(this, null));
                 }
             }
         });
-        return RowFactory.create(Styles.CELL_SPACING, LabelFactory.create("product.pricingLocation"), filter);
+        return RowFactory.create(Styles.CELL_SPACING, LabelFactory.create("product.pricingGroup"), filter);
     }
 
 }

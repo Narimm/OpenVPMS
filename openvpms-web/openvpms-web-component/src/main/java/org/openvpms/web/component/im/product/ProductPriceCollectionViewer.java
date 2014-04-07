@@ -39,7 +39,7 @@ public class ProductPriceCollectionViewer extends IMObjectTableCollectionViewer 
     /**
      * The pricing location filter.
      */
-    private PricingLocationFilter filter;
+    private PricingGroupFilter filter;
 
     /**
      * Constructs a {@link ProductPriceCollectionViewer}.
@@ -50,7 +50,7 @@ public class ProductPriceCollectionViewer extends IMObjectTableCollectionViewer 
      */
     public ProductPriceCollectionViewer(CollectionProperty property, IMObject parent, LayoutContext layout) {
         super(property, parent, layout);
-        filter = new PricingLocationFilter(layout);
+        filter = new PricingGroupFilter(layout);
     }
 
     /**
@@ -67,7 +67,7 @@ public class ProductPriceCollectionViewer extends IMObjectTableCollectionViewer 
                 @Override
                 public void onAction(ActionEvent event) {
                     ProductPriceTableModel model = (ProductPriceTableModel) getTable().getModel().getModel();
-                    model.setShowPricingLocations(filter.showAll());
+                    model.setShowPricingGroups(filter.showAll());
                     populateTable();
                 }
             });

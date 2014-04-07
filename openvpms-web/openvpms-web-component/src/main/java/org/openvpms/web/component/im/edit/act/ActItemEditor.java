@@ -85,7 +85,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
             // default the act start time to that of the parent
             act.setActivityStartTime(parent.getActivityStartTime());
         }
-        pricingLocation = getPricingLocation(parent, context);
+        pricingLocation = getPricingGroup(parent, context);
     }
 
     /**
@@ -493,16 +493,16 @@ public abstract class ActItemEditor extends AbstractActEditor {
     }
 
     /**
-     * Determines the pricing location.
+     * Determines the pricing group.
      * <p/>
      * This uses the location of the parent act, if it defines a {@code location} node, otherwise it uses the
      * location from the context.
      *
      * @param parent  the parent act. May be {@code null}
      * @param context the layout context
-     * @return the pricing location. May be {@code null}
+     * @return the pricing group. May be {@code null}
      */
-    private Lookup getPricingLocation(Act parent, LayoutContext context) {
+    private Lookup getPricingGroup(Act parent, LayoutContext context) {
         Lookup result = null;
         Party location = null;
         if (parent != null) {
@@ -516,7 +516,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
         }
         if (location != null) {
             LocationRules locationRules = ServiceHelper.getBean(LocationRules.class);
-            result = locationRules.getPricingLocation(location);
+            result = locationRules.getPricingGroup(location);
         }
         return result;
     }

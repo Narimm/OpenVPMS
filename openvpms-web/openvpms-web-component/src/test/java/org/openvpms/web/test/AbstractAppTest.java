@@ -19,6 +19,7 @@ package org.openvpms.web.test;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Window;
 import org.junit.Before;
+import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -39,7 +40,8 @@ public abstract class AbstractAppTest extends ArchetypeServiceTest {
     @Before
     public void setUp() {
         PracticeRules rules = new PracticeRules(getArchetypeService());
-        ContextApplicationInstance app = new ContextApplicationInstance(new GlobalContext(), rules) {
+        LocationRules locationRules = new LocationRules(getArchetypeService());
+        ContextApplicationInstance app = new ContextApplicationInstance(new GlobalContext(), rules, locationRules) {
             /**
              * Switches the current workspace to display an object.
              *

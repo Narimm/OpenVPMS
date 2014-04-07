@@ -18,6 +18,7 @@ package org.openvpms.web.component.im.product;
 
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.list.ListModel;
+import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
@@ -26,19 +27,19 @@ import org.openvpms.web.component.im.lookup.LookupQuery;
 import org.openvpms.web.echo.factory.ComponentFactory;
 
 /**
- * Pricing location select field.
+ * Pricing group select field.
  *
  * @author Tim Anderson
  */
-public class PricingLocationSelectField extends SelectField {
+public class PricingGroupSelectField extends SelectField {
 
     /**
-     * Constructs a {@link PricingLocationSelectField}.
+     * Constructs a {@link PricingGroupSelectField}.
      *
      * @param initialSelection the initial selection. May be {@code null}
      * @param all              if {@code true}, include an option to select 'All'
      */
-    public PricingLocationSelectField(Lookup initialSelection, boolean all) {
+    public PricingGroupSelectField(Lookup initialSelection, boolean all) {
         super(createModel(all));
         ComponentFactory.setDefaultStyle(this);
         setCellRenderer(LookupListCellRenderer.INSTANCE);
@@ -57,13 +58,16 @@ public class PricingLocationSelectField extends SelectField {
     }
 
     /**
-     * Returns the selected pricing location.
+     * Returns the selected pricing group.
      *
-     * @return the selected pricing location. May be {@code null}
+     * @return the selected pricing group. May be {@code null}
      */
-    public Lookup getSelected() {
+    public PricingGroup getSelected() {
+        if (isAllSelected()) {
+            return PricingGroup.ALL;
+        }
         int index = getSelectedIndex();
-        return (index >= 0) ? getModel().getLookup(index) : null;
+        return (index >= 0) ? new PricingGroup(getModel().getLookup(index)) : null;
     }
 
     /**
@@ -83,7 +87,7 @@ public class PricingLocationSelectField extends SelectField {
      * @return a new list model
      */
     private static ListModel createModel(boolean all) {
-        LookupQuery query = new ArchetypeLookupQuery("lookup.pricingLocation");
+        LookupQuery query = new ArchetypeLookupQuery("lookup.pricingGroup");
         return new LookupListModel(query, all, true);
     }
 }

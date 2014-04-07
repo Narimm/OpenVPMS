@@ -22,26 +22,26 @@ import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.ResultSet;
 
 /**
- * Product browser that refreshes the product table when the pricing location changes.
+ * Product browser that refreshes the product table when the pricing group changes.
  *
  * @author Tim Anderson
  */
-public class PricingLocationProductBrowser extends IMObjectTableBrowser<Product> {
+public class PricingGroupProductBrowser extends IMObjectTableBrowser<Product> {
 
     /**
-     * Constructs a {@link PricingLocationProductBrowser} that queries IMObjects using the specified query.
+     * Constructs a {@link PricingGroupProductBrowser} that queries IMObjects using the specified query.
      *
      * @param query   the query
      * @param context the layout context
      */
-    public PricingLocationProductBrowser(final PricingLocationProductQuery query, LayoutContext context) {
+    public PricingGroupProductBrowser(final PricingGroupProductQuery query, LayoutContext context) {
         super(query, query.getDefaultSortConstraint(), new ProductTableModel(query, context), context);
 
-        query.setPricingLocationListener(new PricingLocationProductQuery.PricingLocationListener() {
+        query.setPricingGroupListener(new PricingGroupProductQuery.PricingGroupListener() {
             @Override
-            public void onLocationChanged() {
+            public void onPricingGroupChanged() {
                 ProductTableModel model = (ProductTableModel) getTableModel();
-                model.setPricingLocation(query.getPricingLocation());
+                model.setPricingGroup(query.getPricingGroup().getGroup());
             }
         });
     }
