@@ -43,6 +43,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.product.PricingGroup.ALL;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.PRICING_GROUP;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.UNIT_PRICE;
 import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.addPriceTemplate;
 import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createFixedPrice;
@@ -82,7 +83,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
 
 
     /**
-     * Tests the {@link ProductPriceRules#getProductPrice} method.
+     * Tests the {@link ProductPriceRules#getProductPrice(Product, String, Date, Lookup)} method.
      */
     @Test
     public void testGetProductPrice() {
@@ -94,6 +95,19 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link ProductPriceRules#getProductPrice(Product, String, Date, Lookup)} method for products
+     * with multiple pricing groups.
+     */
+    @Test
+    public void testGetProductPriceWithPriceGroups() {
+        checkProductPriceWithPriceGroups(createMedication(), false);
+        checkProductPriceWithPriceGroups(createMerchandise(), false);
+        checkProductPriceWithPriceGroups(createService(), false);
+        checkProductPriceWithPriceGroups(createPriceTemplate(), false);
+        checkProductPriceWithPriceGroups(createTemplate(), false);
+    }
+
+    /**
      * Tests the {@link ProductPriceRules#getProductPrice} method for products that support
      * <em>product.priceTemplate</em>.
      */
@@ -102,6 +116,17 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         checkProductPrice(createMedication(), true);
         checkProductPrice(createMerchandise(), true);
         checkProductPrice(createService(), true);
+    }
+
+    /**
+     * Tests the {@link ProductPriceRules#getProductPrice} method for products with multiple pricing groups that support
+     * <em>product.priceTemplate</em>.
+     */
+    @Test
+    public void testGetProductPriceWithPriceGroupsForProductWithPriceTemplate() {
+        checkProductPriceWithPriceGroups(createMedication(), true);
+        checkProductPriceWithPriceGroups(createMerchandise(), true);
+        checkProductPriceWithPriceGroups(createService(), true);
     }
 
     /**
@@ -125,6 +150,29 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         checkGetProductPriceForPrice(createMedication(), true);
         checkGetProductPriceForPrice(createMerchandise(), true);
         checkGetProductPriceForPrice(createService(), true);
+    }
+
+    /**
+     * Tests the {@link ProductPriceRules#getProductPrice(Product, BigDecimal, String, Date, Lookup)}  method.
+     */
+    @Test
+    public void testGetProductPriceForPriceWithPriceGroups() {
+        checkGetProductPriceForPriceWithPriceGroups(createMedication(), false);
+        checkGetProductPriceForPriceWithPriceGroups(createMerchandise(), false);
+        checkGetProductPriceForPriceWithPriceGroups(createService(), false);
+        checkGetProductPriceForPriceWithPriceGroups(createPriceTemplate(), false);
+        checkGetProductPriceForPriceWithPriceGroups(createTemplate(), false);
+    }
+
+    /**
+     * Tests the {@link ProductPriceRules#getProductPrice(Product, BigDecimal, String, Date, Lookup)}  method, for
+     * for products that support <em>product.priceTemplate</em>.
+     */
+    @Test
+    public void testGetProductPriceForPriceWithPriceGroupsForProductWithPriceTemplate() {
+        checkGetProductPriceForPriceWithPriceGroups(createMedication(), true);
+        checkGetProductPriceForPriceWithPriceGroups(createMerchandise(), true);
+        checkGetProductPriceForPriceWithPriceGroups(createService(), true);
     }
 
     /**
@@ -202,7 +250,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ProductPriceRules#getProductPrices} method.
+     * Tests the {@link ProductPriceRules#getProductPrice(Product, BigDecimal, String, Date, Lookup)} method.
      *
      * @param product          the product to use
      * @param usePriceTemplate if {@code true} attach an <em>product.priceTemplate</em> to the product
@@ -223,19 +271,19 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         product.addProductPrice(unit1);
         product.addProductPrice(unit2);
 
-        checkPrice(null, FIXED_PRICE, "2007-01-01", product);
-        checkPrice(fixed1, FIXED_PRICE, "2008-01-01", product);
-        checkPrice(fixed1, FIXED_PRICE, "2008-01-31", product);
-        checkPrice(fixed2, FIXED_PRICE, "2008-02-01", product);
-        checkPrice(fixed2, FIXED_PRICE, "2008-12-31", product);
-        checkPrice(null, FIXED_PRICE, "2009-01-01", product);
+        checkPrice(null, FIXED_PRICE, "2007-01-01", product, null);
+        checkPrice(fixed1, FIXED_PRICE, "2008-01-01", product, null);
+        checkPrice(fixed1, FIXED_PRICE, "2008-01-31", product, null);
+        checkPrice(fixed2, FIXED_PRICE, "2008-02-01", product, null);
+        checkPrice(fixed2, FIXED_PRICE, "2008-12-31", product, null);
+        checkPrice(null, FIXED_PRICE, "2009-01-01", product, null);
 
-        checkPrice(null, UNIT_PRICE, "2007-12-31", product);
-        checkPrice(unit1, UNIT_PRICE, "2008-01-01", product);
-        checkPrice(unit1, UNIT_PRICE, "2008-01-10", product);
-        checkPrice(null, UNIT_PRICE, "2008-01-11", product);
-        checkPrice(unit2, UNIT_PRICE, "2008-02-01", product);
-        checkPrice(unit2, UNIT_PRICE, "2010-02-01", product); // unbounded
+        checkPrice(null, UNIT_PRICE, "2007-12-31", product, null);
+        checkPrice(unit1, UNIT_PRICE, "2008-01-01", product, null);
+        checkPrice(unit1, UNIT_PRICE, "2008-01-10", product, null);
+        checkPrice(null, UNIT_PRICE, "2008-01-11", product, null);
+        checkPrice(unit2, UNIT_PRICE, "2008-02-01", product, null);
+        checkPrice(unit2, UNIT_PRICE, "2010-02-01", product, null); // unbounded
 
         if (usePriceTemplate) {
             // verify that linked products are used if there are no matching prices for the date
@@ -244,10 +292,99 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
 
             addPriceTemplate(product, priceTemplate, "2008-01-01", null);
 
-            checkPrice(fixed2, FIXED_PRICE, "2008-02-01", product);
+            checkPrice(fixed2, FIXED_PRICE, "2008-02-01", product, null);
 
             // fixed3 overrides fixed2 as it is the default
-            checkPrice(fixed3, FIXED_PRICE, "2008-03-01", product);
+            checkPrice(fixed3, FIXED_PRICE, "2008-03-01", product, null);
+        }
+    }
+
+    /**
+     * Tests the {@link ProductPriceRules#getProductPrice(Product, BigDecimal, String, Date, Lookup)} method
+     * when a product has prices with different pricing groups.
+     *
+     * @param product          the product to use
+     * @param usePriceTemplate if {@code true} attach an <em>product.priceTemplate</em> to the product
+     */
+    private void checkProductPriceWithPriceGroups(Product product, boolean usePriceTemplate) {
+        Lookup groupA = TestHelper.getLookup(PRICING_GROUP, "A");
+        Lookup groupB = TestHelper.getLookup(PRICING_GROUP, "B");
+
+        ProductPrice fixed1A = createFixedPrice("2008-01-01", "2008-01-31", false, groupA);
+        ProductPrice fixed1B = createFixedPrice("2008-01-01", "2008-01-31", false, groupB);
+        ProductPrice fixed1C = createFixedPrice("2008-01-01", "2008-01-31", false);
+
+        ProductPrice fixed2A = createFixedPrice("2008-02-01", "2008-12-31", false, groupA);
+        ProductPrice fixed2B = createFixedPrice("2008-02-01", "2008-12-31", false, groupB);
+        ProductPrice fixed2C = createFixedPrice("2008-02-01", "2008-12-31", false);
+
+        ProductPrice fixed3A = createFixedPrice("2008-03-01", null, true, groupA);
+        ProductPrice fixed3B = createFixedPrice("2008-03-01", null, true, groupB);
+        ProductPrice fixed3C = createFixedPrice("2008-03-01", null, true);
+
+        ProductPrice unit1A = createUnitPrice("2008-01-01", "2008-01-10", groupA);
+        ProductPrice unit1B = createUnitPrice("2008-01-01", "2008-01-10", groupB);
+        ProductPrice unit1C = createUnitPrice("2008-01-01", "2008-01-10");
+
+        ProductPrice unit2A = createUnitPrice("2008-02-01", null, groupA);
+        ProductPrice unit2B = createUnitPrice("2008-02-01", null, groupB);
+        ProductPrice unit2C = createUnitPrice("2008-02-01", null);
+
+        assertNull(rules.getProductPrice(product, FIXED_PRICE, new Date(), null));
+        assertNull(rules.getProductPrice(product, UNIT_PRICE, new Date(), null));
+
+        product.addProductPrice(fixed1A);
+        product.addProductPrice(fixed1B);
+        product.addProductPrice(fixed1C);
+        product.addProductPrice(fixed2A);
+        product.addProductPrice(fixed2B);
+        product.addProductPrice(fixed2C);
+        product.addProductPrice(unit1A);
+        product.addProductPrice(unit1B);
+        product.addProductPrice(unit1C);
+        product.addProductPrice(unit2A);
+        product.addProductPrice(unit2B);
+        product.addProductPrice(unit2C);
+
+        checkPrice(null, FIXED_PRICE, "2007-01-01", product, groupA);
+        checkPrice(null, FIXED_PRICE, "2007-01-01", product, groupB);
+        checkPrice(null, FIXED_PRICE, "2007-01-01", product, null);
+
+        checkPrice(fixed1A, FIXED_PRICE, "2008-01-01", product, groupA);
+        checkPrice(fixed1A, FIXED_PRICE, "2008-01-31", product, groupA);
+        checkPrice(fixed2A, FIXED_PRICE, "2008-02-01", product, groupA);
+        checkPrice(fixed2A, FIXED_PRICE, "2008-12-31", product, groupA);
+        checkPrice(null, FIXED_PRICE, "2009-01-01", product, null);
+
+        checkPrice(null, UNIT_PRICE, "2007-12-31", product, null);
+        checkPrice(unit1A, UNIT_PRICE, "2008-01-01", product, groupA);
+        checkPrice(unit1A, UNIT_PRICE, "2008-01-10", product, groupA);
+        checkPrice(unit1B, UNIT_PRICE, "2008-01-01", product, groupB);
+        checkPrice(unit1B, UNIT_PRICE, "2008-01-10", product, groupB);
+        checkPrice(unit1C, UNIT_PRICE, "2008-01-01", product, null);
+        checkPrice(unit1C, UNIT_PRICE, "2008-01-10", product, null);
+
+        checkPrice(null, UNIT_PRICE, "2008-01-11", product, null);
+        checkPrice(unit2A, UNIT_PRICE, "2008-02-01", product, groupA);
+        checkPrice(unit2A, UNIT_PRICE, "2010-02-01", product, groupA); // unbounded
+        checkPrice(unit2B, UNIT_PRICE, "2008-02-01", product, groupB);
+        checkPrice(unit2B, UNIT_PRICE, "2010-02-01", product, groupB); // unbounded
+        checkPrice(unit2C, UNIT_PRICE, "2008-02-01", product, null);
+        checkPrice(unit2C, UNIT_PRICE, "2010-02-01", product, null); // unbounded
+
+        if (usePriceTemplate) {
+            // verify that linked products are used if there are no matching prices for the date
+            Product priceTemplate = createPriceTemplate(fixed3A, fixed3B, fixed3C);
+            priceTemplate.setName("XPriceTemplate");
+
+            addPriceTemplate(product, priceTemplate, "2008-01-01", null);
+
+            checkPrice(fixed2A, FIXED_PRICE, "2008-02-01", product, groupA);
+
+            // fixed3 overrides fixed2 as it is the default
+            checkPrice(fixed3A, FIXED_PRICE, "2008-03-01", product, groupA);
+            checkPrice(fixed3B, FIXED_PRICE, "2008-03-01", product, groupB);
+            checkPrice(fixed3C, FIXED_PRICE, "2008-03-01", product, null);
         }
     }
 
@@ -286,24 +423,27 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         product.addProductPrice(unit1);
         product.addProductPrice(unit2);
 
-        checkPrice(null, two, FIXED_PRICE, "2008-01-01", product);
-        checkPrice(fixed1, one, FIXED_PRICE, "2008-01-01", product);
-        checkPrice(null, two, FIXED_PRICE, "2008-01-31", product);
-        checkPrice(fixed1, one, FIXED_PRICE, "2008-01-31", product);
-        checkPrice(null, one, FIXED_PRICE, "2008-02-01", product);
-        checkPrice(fixed2, two, FIXED_PRICE, getDatetime("2008-12-31 23:45:00"), product); // verify time is ignored
-        checkPrice(null, two, FIXED_PRICE, "2009-01-01", product);
+        checkPrice(null, two, FIXED_PRICE, "2008-01-01", product, null);
+        checkPrice(fixed1, one, FIXED_PRICE, "2008-01-01", product, null);
+        checkPrice(null, two, FIXED_PRICE, "2008-01-31", product, null);
+        checkPrice(fixed1, one, FIXED_PRICE, "2008-01-31", product, null);
+        checkPrice(null, one, FIXED_PRICE, "2008-02-01", product, null);
 
-        checkPrice(null, one, UNIT_PRICE, "2007-12-31", product);
-        checkPrice(null, two, UNIT_PRICE, "2008-01-01", product);
-        checkPrice(unit1, one, UNIT_PRICE, "2008-01-01", product);
-        checkPrice(null, two, UNIT_PRICE, "2008-01-10", product);
-        checkPrice(unit1, one, UNIT_PRICE, "2008-01-10", product);
-        checkPrice(null, two, UNIT_PRICE, "2008-01-11", product);
-        checkPrice(null, three, UNIT_PRICE, "2008-02-01", product);
-        checkPrice(unit2, two, UNIT_PRICE, "2008-02-01", product);
-        checkPrice(null, three, UNIT_PRICE, "2010-02-01", product);
-        checkPrice(unit2, two, UNIT_PRICE, "2010-02-01", product); // unbounded
+        // verify time is ignored
+        checkPrice(fixed2, two, FIXED_PRICE, getDatetime("2008-12-31 23:45:00"), product, null);
+
+        checkPrice(null, two, FIXED_PRICE, "2009-01-01", product, null);
+
+        checkPrice(null, one, UNIT_PRICE, "2007-12-31", product, null);
+        checkPrice(null, two, UNIT_PRICE, "2008-01-01", product, null);
+        checkPrice(unit1, one, UNIT_PRICE, "2008-01-01", product, null);
+        checkPrice(null, two, UNIT_PRICE, "2008-01-10", product, null);
+        checkPrice(unit1, one, UNIT_PRICE, "2008-01-10", product, null);
+        checkPrice(null, two, UNIT_PRICE, "2008-01-11", product, null);
+        checkPrice(null, three, UNIT_PRICE, "2008-02-01", product, null);
+        checkPrice(unit2, two, UNIT_PRICE, "2008-02-01", product, null);
+        checkPrice(null, three, UNIT_PRICE, "2010-02-01", product, null);
+        checkPrice(unit2, two, UNIT_PRICE, "2010-02-01", product, null); // unbounded
 
         if (usePriceTemplate) {
             // verify that linked products are used if there are no matching prices
@@ -319,9 +459,141 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
             relationship.setActiveStartTime(getDate("2008-01-01"));
             bean.save();
 
-            checkPrice(fixed2, two, FIXED_PRICE, "2008-02-01", product);
-            checkPrice(fixed3, three, FIXED_PRICE, "2008-03-01", product);
-            checkPrice(fixed2, two, FIXED_PRICE, "2008-03-01", product);
+            checkPrice(fixed2, two, FIXED_PRICE, "2008-02-01", product, null);
+            checkPrice(fixed3, three, FIXED_PRICE, "2008-03-01", product, null);
+            checkPrice(fixed2, two, FIXED_PRICE, "2008-03-01", product, null);
+        }
+    }
+
+    /**
+     * Tests the {@link ProductPriceRules#getProductPrice(Product, BigDecimal, String, Date, Lookup)}  method
+     * when a product has prices with different pricing groups.
+     *
+     * @param product          the product to test
+     * @param usePriceTemplate if {@code true} attach an <em>product.priceTemplate</em> to the product
+     */
+    private void checkGetProductPriceForPriceWithPriceGroups(Product product, boolean usePriceTemplate) {
+        Lookup groupA = TestHelper.getLookup(PRICING_GROUP, "A");
+        Lookup groupB = TestHelper.getLookup(PRICING_GROUP, "B");
+        BigDecimal one = BigDecimal.ONE;
+        BigDecimal two = new BigDecimal("2.0");
+        BigDecimal three = new BigDecimal("3.0");
+
+        ProductPrice fixed1A = createFixedPrice(getDate("2008-01-01"), getDatetime("2008-01-31 10:00:00"), false,
+                                                groupA);
+        ProductPrice fixed1B = createFixedPrice(getDate("2008-01-01"), getDatetime("2008-01-31 10:00:00"), false,
+                                                groupB);
+        ProductPrice fixed1C = createFixedPrice(getDate("2008-01-01"), getDatetime("2008-01-31 10:00:00"), false);
+        ProductPrice fixed2A = createFixedPrice("2008-02-01", "2008-12-31", false, groupA);
+        ProductPrice fixed2B = createFixedPrice("2008-02-01", "2008-12-31", false, groupB);
+        ProductPrice fixed2C = createFixedPrice("2008-02-01", "2008-12-31", false);
+        ProductPrice fixed3A = createFixedPrice("2008-03-01", null, true, groupA);
+        ProductPrice fixed3B = createFixedPrice("2008-03-01", null, true, groupB);
+        ProductPrice fixed3C = createFixedPrice("2008-03-01", null, true);
+
+        fixed1A.setPrice(one);
+        fixed1B.setPrice(one);
+        fixed1C.setPrice(one);
+        fixed2A.setPrice(two);
+        fixed2B.setPrice(two);
+        fixed2C.setPrice(two);
+        fixed3A.setPrice(three);
+        fixed3B.setPrice(three);
+        fixed3C.setPrice(three);
+
+        ProductPrice unit1A = createUnitPrice("2008-01-01", "2008-01-10", groupA);
+        ProductPrice unit1B = createUnitPrice("2008-01-01", "2008-01-10", groupB);
+        ProductPrice unit1C = createUnitPrice("2008-01-01", "2008-01-10");
+        ProductPrice unit2A = createUnitPrice("2008-02-01", null, groupA);
+        ProductPrice unit2B = createUnitPrice("2008-02-01", null, groupB);
+        ProductPrice unit2C = createUnitPrice("2008-02-01", null);
+
+        unit1A.setPrice(one);
+        unit1B.setPrice(one);
+        unit1C.setPrice(one);
+        unit2A.setPrice(two);
+        unit2B.setPrice(two);
+        unit2C.setPrice(two);
+
+        // should be no prices returned until one is registered
+        assertNull(rules.getProductPrice(product, one, FIXED_PRICE, new Date(), null));
+        assertNull(rules.getProductPrice(product, one, UNIT_PRICE, new Date(), null));
+
+        // add prices
+        product.addProductPrice(fixed1A);
+        product.addProductPrice(fixed1B);
+        product.addProductPrice(fixed1C);
+        product.addProductPrice(fixed2A);
+        product.addProductPrice(fixed2B);
+        product.addProductPrice(fixed2C);
+        product.addProductPrice(unit1A);
+        product.addProductPrice(unit1B);
+        product.addProductPrice(unit1C);
+        product.addProductPrice(unit2A);
+        product.addProductPrice(unit2B);
+        product.addProductPrice(unit2C);
+
+        checkPrice(null, two, FIXED_PRICE, "2008-01-01", product, null);
+        checkPrice(fixed1A, one, FIXED_PRICE, "2008-01-01", product, groupA);
+        checkPrice(fixed1B, one, FIXED_PRICE, "2008-01-01", product, groupB);
+        checkPrice(fixed1C, one, FIXED_PRICE, "2008-01-01", product, null);
+        checkPrice(null, two, FIXED_PRICE, "2008-01-31", product, null);
+        checkPrice(fixed1A, one, FIXED_PRICE, "2008-01-31", product, groupA);
+        checkPrice(fixed1B, one, FIXED_PRICE, "2008-01-31", product, groupB);
+        checkPrice(fixed1C, one, FIXED_PRICE, "2008-01-31", product, null);
+        checkPrice(null, one, FIXED_PRICE, "2008-02-01", product, null);
+
+        // verify time is ignored
+        checkPrice(fixed2A, two, FIXED_PRICE, getDatetime("2008-12-31 23:45:00"), product, groupA);
+        checkPrice(fixed2B, two, FIXED_PRICE, getDatetime("2008-12-31 23:45:00"), product, groupB);
+        checkPrice(fixed2C, two, FIXED_PRICE, getDatetime("2008-12-31 23:45:00"), product, null);
+
+        checkPrice(null, two, FIXED_PRICE, "2009-01-01", product, null);
+
+        checkPrice(null, one, UNIT_PRICE, "2007-12-31", product, null);
+        checkPrice(null, two, UNIT_PRICE, "2008-01-01", product, null);
+        checkPrice(unit1A, one, UNIT_PRICE, "2008-01-01", product, groupA);
+        checkPrice(unit1B, one, UNIT_PRICE, "2008-01-01", product, groupB);
+        checkPrice(unit1C, one, UNIT_PRICE, "2008-01-01", product, null);
+        checkPrice(null, two, UNIT_PRICE, "2008-01-10", product, null);
+        checkPrice(unit1A, one, UNIT_PRICE, "2008-01-10", product, groupA);
+        checkPrice(unit1B, one, UNIT_PRICE, "2008-01-10", product, groupB);
+        checkPrice(unit1C, one, UNIT_PRICE, "2008-01-10", product, null);
+        checkPrice(null, two, UNIT_PRICE, "2008-01-11", product, null);
+        checkPrice(null, three, UNIT_PRICE, "2008-02-01", product, null);
+        checkPrice(unit2A, two, UNIT_PRICE, "2008-02-01", product, groupA);
+        checkPrice(unit2B, two, UNIT_PRICE, "2008-02-01", product, groupB);
+        checkPrice(unit2C, two, UNIT_PRICE, "2008-02-01", product, null);
+        checkPrice(null, three, UNIT_PRICE, "2010-02-01", product, null);
+        checkPrice(unit2A, two, UNIT_PRICE, "2010-02-01", product, groupA); // unbounded
+        checkPrice(unit2B, two, UNIT_PRICE, "2010-02-01", product, groupB); // unbounded
+        checkPrice(unit2C, two, UNIT_PRICE, "2010-02-01", product, null); // unbounded
+
+        if (usePriceTemplate) {
+            // verify that linked products are used if there are no matching prices
+            // for the date
+            Product priceTemplate = createPriceTemplate();
+            priceTemplate.addProductPrice(fixed3A);
+            priceTemplate.addProductPrice(fixed3B);
+            priceTemplate.addProductPrice(fixed3C);
+            priceTemplate.setName("XPriceTemplate");
+            save(priceTemplate);
+
+            EntityBean bean = new EntityBean(product);
+            EntityRelationship relationship = bean.addRelationship(
+                    ProductArchetypes.PRODUCT_LINK_RELATIONSHIP, priceTemplate);
+            relationship.setActiveStartTime(getDate("2008-01-01"));
+            bean.save();
+
+            checkPrice(fixed2A, two, FIXED_PRICE, "2008-02-01", product, groupA);
+            checkPrice(fixed2B, two, FIXED_PRICE, "2008-02-01", product, groupB);
+            checkPrice(fixed2C, two, FIXED_PRICE, "2008-02-01", product, null);
+            checkPrice(fixed3A, three, FIXED_PRICE, "2008-03-01", product, groupA);
+            checkPrice(fixed3B, three, FIXED_PRICE, "2008-03-01", product, groupB);
+            checkPrice(fixed3C, three, FIXED_PRICE, "2008-03-01", product, null);
+            checkPrice(fixed2A, two, FIXED_PRICE, "2008-03-01", product, groupA);
+            checkPrice(fixed2B, two, FIXED_PRICE, "2008-03-01", product, groupB);
+            checkPrice(fixed2C, two, FIXED_PRICE, "2008-03-01", product, null);
         }
     }
 
@@ -481,51 +753,58 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
     /**
      * Verifies a price matches that expected.
      *
-     * @param expected  the expected price
-     * @param shortName the price short name
-     * @param date      the date that the price applies to
-     * @param product   the product to use
+     * @param expected     the expected price
+     * @param shortName    the price short name
+     * @param date         the date that the price applies to
+     * @param product      the product to use
+     * @param pricingGroup the pricing group. May be {@code null}
      */
-    private void checkPrice(ProductPrice expected, String shortName, String date, Product product) {
-        checkPrice(expected, shortName, getDate(date), product);
+    private void checkPrice(ProductPrice expected, String shortName, String date, Product product,
+                            Lookup pricingGroup) {
+        checkPrice(expected, shortName, getDate(date), product, pricingGroup);
     }
 
     /**
      * Verifies a price matches that expected.
      *
-     * @param expected  the expected price
-     * @param shortName the price short name
-     * @param date      the date that the price applies to
-     * @param product   the product to use
+     * @param expected     the expected price
+     * @param shortName    the price short name
+     * @param date         the date that the price applies to
+     * @param product      the product to use
+     * @param pricingGroup the pricing group. May be {@code null}
      */
-    private void checkPrice(ProductPrice expected, String shortName, Date date, Product product) {
-        assertEquals(expected, rules.getProductPrice(product, shortName, date, null));
+    private void checkPrice(ProductPrice expected, String shortName, Date date, Product product, Lookup pricingGroup) {
+        assertEquals(expected, rules.getProductPrice(product, shortName, date, pricingGroup));
     }
 
     /**
      * Verifies a price matches that expected.
      *
-     * @param expected  the expected price
-     * @param price     the price
-     * @param shortName the price short name
-     * @param date      the date that the price applies to
-     * @param product   the product to use
+     * @param expected     the expected price
+     * @param price        the price
+     * @param shortName    the price short name
+     * @param date         the date that the price applies to
+     * @param product      the product to use
+     * @param pricingGroup the pricing group. May be {@code null}
      */
-    private void checkPrice(ProductPrice expected, BigDecimal price, String shortName, String date, Product product) {
-        checkPrice(expected, price, shortName, getDate(date), product);
+    private void checkPrice(ProductPrice expected, BigDecimal price, String shortName, String date, Product product,
+                            Lookup pricingGroup) {
+        checkPrice(expected, price, shortName, getDate(date), product, pricingGroup);
     }
 
     /**
      * Verifies a price matches that expected.
      *
-     * @param expected  the expected price
-     * @param price     the price
-     * @param shortName the price short name
-     * @param date      the date that the price applies to
-     * @param product   the product to use
+     * @param expected     the expected price
+     * @param price        the price
+     * @param shortName    the price short name
+     * @param date         the date that the price applies to
+     * @param product      the product to use
+     * @param pricingGroup the pricing group. May be {@code null}
      */
-    private void checkPrice(ProductPrice expected, BigDecimal price, String shortName, Date date, Product product) {
-        assertEquals(expected, rules.getProductPrice(product, price, shortName, date, null));
+    private void checkPrice(ProductPrice expected, BigDecimal price, String shortName, Date date, Product product,
+                            Lookup pricingGroup) {
+        assertEquals(expected, rules.getProductPrice(product, price, shortName, date, pricingGroup));
     }
 
     /**

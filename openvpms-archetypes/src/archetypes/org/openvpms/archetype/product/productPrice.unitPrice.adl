@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="productPrice.unitPrice.1.0"
                latest="true"
@@ -46,7 +47,7 @@
               type="java.util.Date" minCardinality="0"/>
         <node name="pricingGroups" path="/classifications" parentChild="false" type="java.util.HashSet"
               baseName="Classification" minCardinality="0" maxCardinality="*"
-              filter="lookup.pricingGroups">
+              filter="lookup.pricingGroup">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
