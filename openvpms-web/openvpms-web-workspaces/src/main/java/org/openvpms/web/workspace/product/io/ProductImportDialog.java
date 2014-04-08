@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.product.io;
 
 import nextapp.echo2.app.Alignment;
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Insets;
@@ -25,8 +26,10 @@ import nextapp.echo2.app.layout.GridLayoutData;
 import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.TableColumn;
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.rules.product.io.PriceData;
 import org.openvpms.archetype.rules.product.io.ProductData;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -41,11 +44,14 @@ import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Product import dialog.
@@ -53,6 +59,8 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class ProductImportDialog extends PopupDialog {
+
+    private final ProductPriceRules rules;
 
     /**
      * Constructs a {@link ProductImportDialog}.
@@ -63,6 +71,7 @@ public class ProductImportDialog extends PopupDialog {
     public ProductImportDialog(List<ProductData> data, HelpContext help) {
         super(Messages.get("product.import.title"), "ProductImportExportDialog", OK_CANCEL, help);
         setModal(true);
+        rules = ServiceHelper.getBean(ProductPriceRules.class);
 
         ResultSet<ProductData> resultSet = new ListResultSet<ProductData>(data, 20);
         PagedProductDataTableModel model = new PagedProductDataTableModel();
@@ -86,7 +95,7 @@ public class ProductImportDialog extends PopupDialog {
         dialog.show();
     }
 
-    private static final class PagedProductDataTableModel extends PagedIMTableModel<ProductData, ProductPriceData> {
+    private class PagedProductDataTableModel extends PagedIMTableModel<ProductData, ProductPriceData> {
 
         /**
          * Constructs a {@code PagedProductDataTableModel}.
@@ -122,7 +131,13 @@ public class ProductImportDialog extends PopupDialog {
         }
     }
 
-    private static class ProductPriceDataModel extends ProductImportExportTableModel<ProductPriceData> {
+    private class ProductPriceDataModel extends ProductImportExportTableModel<ProductPriceData> {
+
+
+        /**
+         * Style used to display prior values.
+         */
+        private static final String LINE_THROUGH = "italicLineThrough";
 
         /**
          * Returns the value found at the given coordinate within the table.
@@ -164,6 +179,9 @@ public class ProductImportDialog extends PopupDialog {
                 case FIXED_END_DATE:
                     result = (fixedPrice != null) ? getToDate(object, fixedPrice) : null;
                     break;
+                case FIXED_PRICING_GROUPS:
+                    result = (fixedPrice != null) ? getPricingGroups(object, fixedPrice) : null;
+                    break;
                 case UNIT_PRICE:
                     result = (unitPrice != null) ? getPrice(object, unitPrice) : null;
                     break;
@@ -178,6 +196,9 @@ public class ProductImportDialog extends PopupDialog {
                     break;
                 case UNIT_END_DATE:
                     result = (unitPrice != null) ? getToDate(object, unitPrice) : null;
+                    break;
+                case UNIT_PRICING_GROUPS:
+                    result = (unitPrice != null) ? getPricingGroups(object, unitPrice) : null;
                     break;
                 default:
                     result = null;
@@ -229,6 +250,24 @@ public class ProductImportDialog extends PopupDialog {
                 return getValue(formatDate(oldValue), formatDate(price.getTo()));
             }
             return getValue(formatDate(price.getTo()), formatDate(price.getTo()));
+        }
+
+        private Component getPricingGroups(ProductPriceData object, PriceData price) {
+            Component result;
+            ProductPrice current = getProductPrice(object, price);
+            Set<Lookup> newValue = price.getPricingGroups();
+            if (current != null) {
+                Set<Lookup> oldValue = new HashSet<Lookup>(rules.getPricingGroups(current));
+                if (!oldValue.equals(newValue)) {
+                    result = getOldAndNewValueGrid(getPricingGroups(oldValue, LINE_THROUGH),
+                                                   getPricingGroups(newValue, Styles.DEFAULT));
+                } else {
+                    result = getPricingGroups(newValue, Styles.DEFAULT);
+                }
+            } else {
+                result = getPricingGroups(newValue, Styles.DEFAULT);
+            }
+            return result;
         }
 
         private ProductPrice getProductPrice(ProductPriceData object, PriceData price) {
@@ -283,16 +322,7 @@ public class ProductImportDialog extends PopupDialog {
                 Label newLabel = createNewValueLabel(newValue);
                 newLabel.setLayoutData(newLayout);
 
-                Grid grid = new Grid(2);
-                grid.setWidth(Styles.FULL_WIDTH);
-                grid.setColumnWidth(0, new Extent(50, Extent.PERCENT));
-                grid.setColumnWidth(1, new Extent(50, Extent.PERCENT));
-                grid.add(oldLabel);
-                grid.add(newLabel);
-                TableLayoutData layoutData = new TableLayoutData();
-                layoutData.setAlignment(Alignment.ALIGN_RIGHT);
-                grid.setLayoutData(layoutData);
-                result = grid;
+                result = getOldAndNewValueGrid(oldLabel, newLabel);
             } else {
                 if (newValue instanceof BigDecimal) {
                     result = rightAlign((BigDecimal) newValue);
@@ -303,13 +333,26 @@ public class ProductImportDialog extends PopupDialog {
             return result;
         }
 
+        private Grid getOldAndNewValueGrid(Component oldValue, Component newValue) {
+            Grid grid = new Grid(2);
+            grid.setWidth(Styles.FULL_WIDTH);
+            grid.setColumnWidth(0, new Extent(50, Extent.PERCENT));
+            grid.setColumnWidth(1, new Extent(50, Extent.PERCENT));
+            grid.add(oldValue);
+            grid.add(newValue);
+            TableLayoutData layoutData = new TableLayoutData();
+            layoutData.setAlignment(Alignment.ALIGN_RIGHT);
+            grid.setLayoutData(layoutData);
+            return grid;
+        }
+
         private Label createNewValueLabel(Object newValue) {
             return createLabel(newValue);
         }
 
         private Label createOldValueLabel(Object oldValue) {
             Label oldLabel = createLabel(oldValue);
-            oldLabel.setStyleName("italicLineThrough");
+            oldLabel.setStyleName(LINE_THROUGH);
             return oldLabel;
         }
 

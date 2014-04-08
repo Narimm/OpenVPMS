@@ -1,27 +1,19 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-/**
- * Add description here.
- *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
- */
 package org.openvpms.web.component.im.view.layout;
 
 import org.apache.commons.logging.Log;
@@ -35,20 +27,16 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 
 
 /**
- * Abstact implementation of the {@link IMObjectLayoutStrategyFactory}
- * interface.
+ * Abstract implementation of the {@link IMObjectLayoutStrategyFactory} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public abstract class AbstractLayoutStrategyFactory
-    implements IMObjectLayoutStrategyFactory {
+public abstract class AbstractLayoutStrategyFactory implements IMObjectLayoutStrategyFactory {
 
     /**
      * The logger.
      */
-    private static final Log _log
-        = LogFactory.getLog(AbstractLayoutStrategyFactory.class);
+    private static final Log log = LogFactory.getLog(AbstractLayoutStrategyFactory.class);
 
     /**
      * Creates a new layout strategy for an object.
@@ -64,7 +52,7 @@ public abstract class AbstractLayoutStrategyFactory
      * Creates a new layout strategy for an object.
      *
      * @param object the object to create the layout strategy for
-     * @param parent the parent object. May be <code>null</code>
+     * @param parent the parent object. May be {@code null}
      */
     public IMObjectLayoutStrategy create(IMObject object, IMObject parent) {
         IMObjectLayoutStrategy result = null;
@@ -81,7 +69,7 @@ public abstract class AbstractLayoutStrategyFactory
             try {
                 result = (IMObjectLayoutStrategy) handler.create();
             } catch (Throwable throwable) {
-                _log.error(throwable, throwable);
+                log.error(throwable, throwable);
             }
         }
         if (result == null) {
@@ -92,7 +80,7 @@ public abstract class AbstractLayoutStrategyFactory
     }
 
     /**
-     * Returns the strategy imlementations.
+     * Returns the strategy implementations.
      *
      * @return the strategy implementations
      */
@@ -105,8 +93,7 @@ public abstract class AbstractLayoutStrategyFactory
      * @return the strategy implementations
      */
     protected ShortNamePairArchetypeHandlers load(String name) {
-        return new ShortNamePairArchetypeHandlers(name,
-                                                  IMObjectLayoutStrategy.class);
+        return new ShortNamePairArchetypeHandlers(name, IMObjectLayoutStrategy.class);
     }
 
 }

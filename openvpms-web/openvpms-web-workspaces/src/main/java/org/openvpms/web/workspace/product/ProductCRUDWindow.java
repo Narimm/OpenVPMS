@@ -238,7 +238,8 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
      * @param help     the help context
      */
     private void importDocument(Document document, HelpContext help) {
-        ProductCSVReader reader = new ProductCSVReader(ServiceHelper.getBean(DocumentHandlers.class));
+        ProductCSVReader reader = new ProductCSVReader(ServiceHelper.getBean(DocumentHandlers.class),
+                                                       ServiceHelper.getLookupService());
         List<SimpleDateFormat> formats = reader.getDateFormats(document);
         boolean ambiguousDates = false;
         if (formats.size() > 1) {
