@@ -67,7 +67,7 @@ public class PricingGroupSelectField extends SelectField {
             return PricingGroup.ALL;
         }
         int index = getSelectedIndex();
-        return (index >= 0) ? new PricingGroup(getModel().getLookup(index)) : null;
+        return (index >= 0) ? new PricingGroup(getModel().getLookup(index), false) : null;
     }
 
     /**

@@ -30,7 +30,7 @@ public class OrganisationLocationViewLayoutStrategy extends AbstractLayoutStrate
      * Exclude the mailPassword node from display.
      */
     private static final ArchetypeNodes NODES
-            = new ArchetypeNodes().simple("pricingLocation").exclude("mailPassword");
+            = new ArchetypeNodes().simple("pricingGroup").exclude("mailPassword");
 
     /**
      * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.

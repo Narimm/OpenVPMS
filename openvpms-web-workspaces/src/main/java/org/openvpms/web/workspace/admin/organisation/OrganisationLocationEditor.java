@@ -69,7 +69,7 @@ public class OrganisationLocationEditor extends AbstractIMObjectEditor {
         /**
          * The nodes.
          */
-        private static final ArchetypeNodes NODES = new ArchetypeNodes().simple("pricingLocation");
+        private static final ArchetypeNodes NODES = new ArchetypeNodes().simple("pricingGroup");
 
         /**
          * Creates a component for a property.

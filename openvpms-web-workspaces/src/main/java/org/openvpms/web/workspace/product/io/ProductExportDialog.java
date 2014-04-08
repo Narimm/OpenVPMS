@@ -17,7 +17,6 @@
 package org.openvpms.web.workspace.product.io;
 
 import nextapp.echo2.app.Alignment;
-import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.TableLayoutData;
@@ -41,8 +40,6 @@ import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.component.im.query.ResultSetIterator;
 import org.openvpms.web.component.im.table.PagedIMTableModel;
-import org.openvpms.web.component.im.util.IMObjectSorter;
-import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.servlet.DownloadServlet;
@@ -51,7 +48,6 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -312,14 +308,7 @@ public class ProductExportDialog extends BrowserDialog<Product> {
             if (price != null) {
                 List<Lookup> groups = rules.getPricingGroups(price);
                 if (!groups.isEmpty()) {
-                    Collections.sort(groups, IMObjectSorter.getNameComparator(true));
-                    Column column = ColumnFactory.create(Styles.CELL_SPACING);
-                    for (Lookup group : groups) {
-                        Label label = LabelFactory.create();
-                        label.setText(group.getName());
-                        column.add(label);
-                    }
-                    result = column;
+                    result = getPricingGroups(groups, Styles.DEFAULT);
                 }
             }
             return result;
