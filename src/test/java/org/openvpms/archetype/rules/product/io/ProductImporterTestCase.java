@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -28,7 +29,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -189,10 +192,10 @@ public class ProductImporterTestCase extends AbstractProductIOTest {
         BigDecimal unitPrice = new BigDecimal("1.0");
         BigDecimal unitDiscount = new BigDecimal("25");
         BigDecimal unitCost = new BigDecimal("0.5");
-        String[] locations = {};
+        Set<Lookup> groups = Collections.emptySet();
 
-        data.addFixedPrice(-1, fixedPrice, fixedCost, fixedDiscount, getDate("2013-06-02"), null, true, locations, 1);
-        data.addUnitPrice(-1, unitPrice, unitCost, unitDiscount, getDate("2013-06-03"), null, locations, 1);
+        data.addFixedPrice(-1, fixedPrice, fixedCost, fixedDiscount, getDate("2013-06-02"), null, true, groups, 1);
+        data.addUnitPrice(-1, unitPrice, unitCost, unitDiscount, getDate("2013-06-03"), null, groups, 1);
 
         importProducts(data);
 
@@ -223,11 +226,11 @@ public class ProductImporterTestCase extends AbstractProductIOTest {
         BigDecimal unitPrice = new BigDecimal("1.0");
         BigDecimal unitCost = new BigDecimal("0.5");
         BigDecimal unitDiscount = new BigDecimal("15");
-        String[] locations = {};
+        Set<Lookup> groups = Collections.emptySet();
         data.addFixedPrice(-1, fixedPrice, fixedCost, fixedDiscount, getDate("2014-01-01"), getDate("2014-06-01"), true,
-                           locations, 1);
+                           groups, 1);
         data.addUnitPrice(-1, unitPrice, unitCost, unitDiscount, getDate("2014-01-01"), getDate("2014-06-01"),
-                          locations, 1);
+                          groups, 1);
 
         List<ProductData> input = Arrays.asList(data);
         ProductDataFilter filter = new ProductDataFilter(rules, getArchetypeService());

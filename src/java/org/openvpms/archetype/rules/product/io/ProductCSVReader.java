@@ -20,7 +20,10 @@ import au.com.bytecode.opencsv.CSVReader;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -69,6 +72,11 @@ public class ProductCSVReader implements ProductReader {
      * The document handlers.
      */
     private final DocumentHandlers handlers;
+
+    /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
 
     /**
      * Formats to parse dates with.
@@ -186,9 +194,11 @@ public class ProductCSVReader implements ProductReader {
      * Constructs a {@link ProductCSVReader}.
      *
      * @param handlers the document handlers
+     * @param lookups  the lookups service
      */
-    public ProductCSVReader(DocumentHandlers handlers) {
+    public ProductCSVReader(DocumentHandlers handlers, ILookupService lookups) {
         this.handlers = handlers;
+        this.lookups = lookups;
     }
 
     /**
@@ -298,14 +308,14 @@ public class ProductCSVReader implements ProductReader {
             Date fixedStartDate = getDate(line, FIXED_PRICE_START_DATE, lineNo, fixedPrice != null);
             Date fixedEndDate = getDate(line, FIXED_PRICE_END_DATE, lineNo, false);
             boolean defaultFixedPrice = getBoolean(line, DEFAULT_FIXED_PRICE, lineNo);
-            String[] fixedPriceGroups = getPricingGroups(line, FIXED_PRICE_GROUPS);
+            Set<Lookup> fixedPriceGroups = getPricingGroups(line, FIXED_PRICE_GROUPS, lineNo);
             long unitId = getId(line, UNIT_PRICE_ID, lineNo, false);
             BigDecimal unitPrice = getDecimal(line, UNIT_PRICE, lineNo);
             BigDecimal unitCost = getDecimal(line, UNIT_COST, lineNo);
             BigDecimal unitMaxDiscount = getDecimal(line, UNIT_PRICE_MAX_DISCOUNT, lineNo);
             Date unitStartDate = getDate(line, UNIT_PRICE_START_DATE, lineNo, unitCost != null);
             Date unitEndDate = getDate(line, UNIT_PRICE_END_DATE, lineNo, false);
-            String[] unitPriceGroups = getPricingGroups(line, UNIT_PRICE_GROUPS);
+            Set<Lookup> unitPriceGroups = getPricingGroups(line, UNIT_PRICE_GROUPS, lineNo);
             if (fixedPrice != null) {
                 current.addFixedPrice(fixedId, fixedPrice, fixedCost, fixedMaxDiscount, fixedStartDate, fixedEndDate,
                                       defaultFixedPrice, fixedPriceGroups, lineNo);
@@ -501,12 +511,31 @@ public class ProductCSVReader implements ProductReader {
         return value;
     }
 
-    private String[] getPricingGroups(String[] line, int index) {
-        String[] result = {};
+    /**
+     * Parsers the pricing groups from the specified line.
+     *
+     * @param line   the line
+     * @param index  the value index
+     * @param lineNo the line number
+     * @return the pricing groups
+     * @throws ProductIOException if a pricing group code is invalid
+     */
+    private Set<Lookup> getPricingGroups(String[] line, int index, int lineNo) {
+        Set<Lookup> result = new HashSet<Lookup>();
+        String[] codes = {};
         String value = StringUtils.trimToNull(line[index]);
         if (value != null) {
-            result = value.split(" ");
+            codes = value.split(" ");
         }
+        for (String code : codes) {
+            Lookup lookup = lookups.getLookup(ProductArchetypes.PRICING_GROUP, code);
+            if (lookup == null) {
+                reportInvalid(ProductCSVWriter.HEADER[index], code, lineNo);
+            } else {
+                result.add(lookup);
+            }
+        }
+
         return result;
     }
 

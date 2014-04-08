@@ -17,12 +17,14 @@
 package org.openvpms.archetype.rules.product.io;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Set;
 
 import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
 
@@ -76,7 +78,7 @@ public class PriceData {
     /**
      * The pricing groups.
      */
-    private String[] pricingGroups;
+    private Set<Lookup> pricingGroups;
 
     /**
      * The line that the price was read from.
@@ -97,7 +99,7 @@ public class PriceData {
      * @param line          the line that the price was read from
      */
     public PriceData(long id, String shortName, BigDecimal price, BigDecimal cost, BigDecimal maxDiscount, Date from,
-                     Date to, String[] pricingGroups, int line) {
+                     Date to, Set<Lookup> pricingGroups, int line) {
         this(id, shortName, price, cost, maxDiscount, from, to, false, pricingGroups, line);
     }
 
@@ -116,7 +118,7 @@ public class PriceData {
      * @param line          the line that the price was read from
      */
     public PriceData(long id, String shortName, BigDecimal price, BigDecimal cost, BigDecimal maxDiscount, Date from,
-                     Date to, boolean defaultPrice, String[] pricingGroups, int line) {
+                     Date to, boolean defaultPrice, Set<Lookup> pricingGroups, int line) {
         this.id = id;
         this.shortName = shortName;
         this.price = price;
@@ -284,8 +286,17 @@ public class PriceData {
      *
      * @return the pricing groups
      */
-    public String[] getPricingGroups() {
+    public Set<Lookup> getPricingGroups() {
         return pricingGroups;
+    }
+
+    /**
+     * Sets the pricing groups.
+     *
+     * @param pricingGroups the pricing groups
+     */
+    public void setPricingGroups(Set<Lookup> pricingGroups) {
+        this.pricingGroups = pricingGroups;
     }
 
     /**
