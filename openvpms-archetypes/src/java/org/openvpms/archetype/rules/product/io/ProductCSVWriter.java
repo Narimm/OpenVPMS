@@ -300,7 +300,7 @@ public class ProductCSVWriter implements ProductWriter {
      * @return the group codes
      */
     private String getGroups(ProductPrice price) {
-        return StringUtils.join(ProductIOHelper.getPricingGroups(price, service), ' ');
+        return StringUtils.join(ProductIOHelper.getPricingGroupCodes(price, service), ' ');
     }
 
 }

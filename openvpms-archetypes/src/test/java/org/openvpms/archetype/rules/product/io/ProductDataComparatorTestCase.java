@@ -20,6 +20,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -27,7 +29,12 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -66,9 +73,9 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
     private ProductPrice unit1;
 
     /**
-     * The comparer.
+     * The comparator.
      */
-    private ProductDataComparator comparer;
+    private ProductDataComparator comparator;
 
     /**
      * Sets up the test case.
@@ -76,7 +83,7 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
     @Before
     public void setUp() {
         ProductPriceRules rules = new ProductPriceRules(getArchetypeService(), lookups);
-        comparer = new ProductDataComparator(rules, getArchetypeService());
+        comparator = new ProductDataComparator(rules, getArchetypeService());
 
         product = createProduct("Product 1", "P1");
         fixed1 = createFixedPrice("1.0", "0.5", "100", "10", "2013-02-01", "2013-04-01", true);
@@ -93,7 +100,7 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
     @Test
     public void testCompareNoChanges() {
         ProductData data = createProduct(product);
-        assertNull(comparer.compare(product, data));
+        assertNull(comparator.compare(product, data));
     }
 
     /**
@@ -103,7 +110,7 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
     public void testComparePrintedNameChange() {
         ProductData data = createProduct(product);
         data.setPrintedName("Foo");
-        ProductData changed = comparer.compare(product, data);
+        ProductData changed = comparator.compare(product, data);
         assertNotNull(changed);
 
         assertEquals(data.getName(), changed.getName());
@@ -174,7 +181,6 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
         checkFixedPriceOverlap("2013-03-31", null);          // overlaps the end
     }
 
-
     /**
      * Verifies that {@link ProductDataComparator} detects changes to a unit price's cost.
      */
@@ -242,11 +248,11 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
     @Test
     public void testAddUnitPriceWithNoStartDate() {
         ProductData data = createProduct(product);
-        String[] locations = {};
+        Set<Lookup> locations = Collections.emptySet();
         data.addUnitPrice(-1, new BigDecimal("1.0"), new BigDecimal("0.5"), BigDecimal.TEN, null, null, locations, 1);
 
         try {
-            comparer.compare(product, data);
+            comparator.compare(product, data);
             fail("Expected ProductIOException");
         } catch (ProductIOException exception) {
             assertEquals("A price start date is required", exception.getMessage());
@@ -259,12 +265,12 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
     @Test
     public void testAddFixedPriceWithNoStartDate() {
         ProductData data = createProduct(product);
-        String[] locations = {};
+        Set<Lookup> groups = Collections.emptySet();
         data.addFixedPrice(-1, new BigDecimal("1.0"), new BigDecimal("0.5"), BigDecimal.TEN, null, null, true,
-                           locations, 1);
+                           groups, 1);
 
         try {
-            comparer.compare(product, data);
+            comparator.compare(product, data);
             fail("Expected ProductIOException");
         } catch (ProductIOException exception) {
             assertEquals("A price start date is required", exception.getMessage());
@@ -281,11 +287,11 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
         BigDecimal unitPrice = new BigDecimal("1.0");
         Date from = getDate("2012-01-01");
         Date to = getDate("2013-02-02");
-        String[] locations = {};
-        data.addUnitPrice(-1, unitPrice, unitCost, BigDecimal.TEN, from, to, locations, 1);
+        Set<Lookup> groups = Collections.emptySet();
+        data.addUnitPrice(-1, unitPrice, unitCost, BigDecimal.TEN, from, to, groups, 1);
 
         PriceData changed = checkUnitPriceChange(data);
-        checkPrice(changed, unitCost, unitPrice, BigDecimal.TEN, from, to);
+        checkPrice(changed, unitCost, unitPrice, BigDecimal.TEN, from, to, groups);
     }
 
     /**
@@ -298,11 +304,11 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
         BigDecimal unitPrice = new BigDecimal("1.0");
         Date from = getDate("2013-04-02");
         Date to = getDate("2013-06-01");
-        String[] locations = {};
-        data.addUnitPrice(-1, unitPrice, unitCost, BigDecimal.TEN, from, to, locations, 1);
+        Set<Lookup> groups = Collections.emptySet();
+        data.addUnitPrice(-1, unitPrice, unitCost, BigDecimal.TEN, from, to, groups, 1);
 
         PriceData changed = checkUnitPriceChange(data);
-        checkPrice(changed, unitCost, unitPrice, BigDecimal.TEN, from, to);
+        checkPrice(changed, unitCost, unitPrice, BigDecimal.TEN, from, to, groups);
     }
 
     /**
@@ -313,12 +319,11 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
         ProductData data = createProduct(product);
         BigDecimal unitCost = new BigDecimal("0.5");
         BigDecimal unitPrice = new BigDecimal("1.0");
-        String[] locations = {};
-        data.addUnitPrice(-1, unitPrice, unitCost, BigDecimal.TEN, unit1.getFromDate(), unit1.getToDate(), locations,
-                          1);
+        Set<Lookup> groups = Collections.emptySet();
+        data.addUnitPrice(-1, unitPrice, unitCost, BigDecimal.TEN, unit1.getFromDate(), unit1.getToDate(), groups, 1);
 
         try {
-            comparer.compare(product, data);
+            comparator.compare(product, data);
             fail("Expected ProductIOException to be thrown");
         } catch (ProductIOException expected) {
             assertEquals("Duplicate unit price", expected.getMessage());
@@ -338,15 +343,15 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
         BigDecimal fixedPrice = new BigDecimal("2.0");
         Date from = getDate("2013-04-02");
         Date to = getDate("2013-06-01");
-        String[] locations = {};
-        data.addFixedPrice(-1, fixedPrice, fixedCost, BigDecimal.TEN, from, to, true, locations, 1);
+        Set<Lookup> groups = Collections.emptySet();
+        data.addFixedPrice(-1, fixedPrice, fixedCost, BigDecimal.TEN, from, to, true, groups, 1);
 
-        ProductData changed = comparer.compare(product, data);
+        ProductData changed = comparator.compare(product, data);
         assertNotNull(changed);
         assertEquals(2, changed.getFixedPrices().size());
         checkPrice(changed.getFixedPrices().get(0), new BigDecimal("0.5"), fixed1.getPrice(), BigDecimal.TEN,
-                   fixed1.getFromDate(), from);
-        checkPrice(changed.getFixedPrices().get(1), fixedCost, fixedPrice, BigDecimal.TEN, from, to);
+                   fixed1.getFromDate(), from, groups);
+        checkPrice(changed.getFixedPrices().get(1), fixedCost, fixedPrice, BigDecimal.TEN, from, to, groups);
     }
 
     /**
@@ -362,15 +367,15 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
         BigDecimal unitPrice = new BigDecimal("1.0");
         Date from = getDate("2013-04-02");
         Date to = getDate("2013-06-01");
-        String[] locations = {};
-        data.addUnitPrice(-1, unitPrice, unitCost, BigDecimal.TEN, from, to, locations, 1);
+        Set<Lookup> groups = Collections.emptySet();
+        data.addUnitPrice(-1, unitPrice, unitCost, BigDecimal.TEN, from, to, groups, 1);
 
-        ProductData changed = comparer.compare(product, data);
+        ProductData changed = comparator.compare(product, data);
         assertNotNull(changed);
         assertEquals(2, changed.getUnitPrices().size());
         checkPrice(changed.getUnitPrices().get(0), new BigDecimal("1.2"), unit1.getPrice(), BigDecimal.TEN,
-                   unit1.getFromDate(), from);
-        checkPrice(changed.getUnitPrices().get(1), unitCost, unitPrice, BigDecimal.TEN, from, to);
+                   unit1.getFromDate(), from, groups);
+        checkPrice(changed.getUnitPrices().get(1), unitCost, unitPrice, BigDecimal.TEN, from, to, groups);
     }
 
     /**
@@ -397,7 +402,7 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
         fixedPrice.setFrom(getDate("2014-02-01"));
 
         try {
-            comparer.compare(product, data);
+            comparator.compare(product, data);
             fail("Expected ProductIOException to be thrown");
         } catch (ProductIOException exception) {
             assertEquals("Cannot update linked price", exception.getMessage());
@@ -431,7 +436,150 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
     }
 
     /**
-     * Verifies that adding a unit price that overlaps an existing one throws an exception.
+     * Verifies that {@link ProductDataComparator} detects additions to fixed price pricing groups.
+     */
+    @Test
+    public void testAddPricingGroupsToFixedPrice() {
+        Lookup groupA = TestHelper.getLookup(ProductArchetypes.PRICING_GROUP, "A");
+        Lookup groupB = TestHelper.getLookup(ProductArchetypes.PRICING_GROUP, "B");
+        ProductData data = createProduct(product);
+        Set<Lookup> groups = getSet(groupA, groupB);
+
+        data.getFixedPrices().get(0).setPricingGroups(groups);
+
+        PriceData fixedPrice = checkFixedPriceChange(data);
+        assertEquals(groups, fixedPrice.getPricingGroups());
+    }
+
+    /**
+     * Verifies that {@link ProductDataComparator} detects additions to unit price pricing groups.
+     */
+    @Test
+    public void testAddPricingGroupsToUnitPrice() {
+        Lookup groupA = TestHelper.getLookup(ProductArchetypes.PRICING_GROUP, "A");
+        Lookup groupB = TestHelper.getLookup(ProductArchetypes.PRICING_GROUP, "B");
+        ProductData data = createProduct(product);
+        Set<Lookup> groups = getSet(groupA, groupB);
+
+        data.getUnitPrices().get(0).setPricingGroups(groups);
+
+        PriceData unitPrice = checkUnitPriceChange(data);
+        assertEquals(groups, unitPrice.getPricingGroups());
+    }
+
+    /**
+     * Verifies that {@link ProductDataComparator} detects deletions to fixed price pricing groups.
+     */
+    @Test
+    public void testDeleteFixedPricePricingGroups() {
+        Lookup groupA = TestHelper.getLookup(ProductArchetypes.PRICING_GROUP, "A");
+        Lookup groupB = TestHelper.getLookup(ProductArchetypes.PRICING_GROUP, "B");
+        fixed1.addClassification(groupA);
+        fixed1.addClassification(groupB);
+        ProductData data = createProduct(product);
+        Set<Lookup> groups = Collections.emptySet();
+        data.getFixedPrices().get(0).setPricingGroups(groups);
+
+        PriceData fixedPrice = checkFixedPriceChange(data);
+        assertEquals(groups, fixedPrice.getPricingGroups());
+    }
+
+    /**
+     * Verifies that {@link ProductDataComparator} detects deletions to unit price pricing groups.
+     */
+    @Test
+    public void testDeleteUnitPricePricingGroups() {
+        Lookup groupA = TestHelper.getLookup(ProductArchetypes.PRICING_GROUP, "A");
+        Lookup groupB = TestHelper.getLookup(ProductArchetypes.PRICING_GROUP, "B");
+        unit1.addClassification(groupA);
+        unit1.addClassification(groupB);
+        ProductData data = createProduct(product);
+        Set<Lookup> groups = Collections.emptySet();
+        data.getUnitPrices().get(0).setPricingGroups(groups);
+
+        PriceData unitPrice = checkUnitPriceChange(data);
+        assertEquals(groups, unitPrice.getPricingGroups());
+    }
+
+    /**
+     * Verifies a unit price can be added that overlaps an existing price, if it has a different pricing group.
+     */
+    @Test
+    public void testAddUnitPriceWithDifferentPricingGroup() {
+        Lookup groupA = TestHelper.getLookup(ProductArchetypes.PRICING_GROUP, "A");
+        ProductData data = createProduct(product);
+        Set<Lookup> groups = getSet(groupA);
+        BigDecimal unitPrice = new BigDecimal("1.0");
+        BigDecimal unitCost = new BigDecimal("0.5");
+        data.addUnitPrice(-1, unitPrice, unitCost, BigDecimal.TEN, unit1.getFromDate(), unit1.getToDate(), groups, 1);
+
+        PriceData changed = checkUnitPriceChange(data);
+        checkPrice(changed, unitCost, unitPrice, BigDecimal.TEN, unit1.getFromDate(), unit1.getToDate(), groups);
+    }
+
+    /**
+     * Verifies that the pricing groups on two unit prices that have the same dates can be swapped.
+     */
+    @Test
+    public void testUnitPriceSwapPriceGroups() {
+        Lookup groupA = TestHelper.getLookup(ProductArchetypes.PRICING_GROUP, "A");
+        Lookup groupB = TestHelper.getLookup(ProductArchetypes.PRICING_GROUP, "B");
+        ProductPrice unit2 = createUnitPrice("2.55", "1.5", "70", "10", "2013-02-02", "2013-04-02");
+        unit1.addClassification(groupA);
+        unit2.addClassification(groupB);
+        product.addProductPrice(unit2);
+        save(product);
+
+        ProductData data = createProduct(product);
+
+        PriceData unitPrice1 = getPrice(data.getUnitPrices(), unit1.getId());
+        PriceData unitPrice2 = getPrice(data.getUnitPrices(), unit2.getId());
+        unitPrice1.setPricingGroups(getSet(groupB));
+        unitPrice2.setPricingGroups(getSet(groupA));
+
+        ProductData changed = comparator.compare(product, data);
+        assertNotNull(changed);
+        assertEquals(2, changed.getUnitPrices().size());
+        unitPrice1 = getPrice(changed.getUnitPrices(), unit1.getId());
+        unitPrice2 = getPrice(changed.getUnitPrices(), unit2.getId());
+
+        Date fromDate = unit1.getFromDate();
+        Date toDate = unit1.getToDate();
+        checkPrice(unitPrice1, new BigDecimal("1.2"), unit1.getPrice(), BigDecimal.TEN, fromDate, toDate,
+                   getSet(groupB));
+        checkPrice(unitPrice2, new BigDecimal("1.5"), unit2.getPrice(), BigDecimal.TEN, fromDate, toDate,
+                   getSet(groupA));
+    }
+
+    /**
+     * Finds a price by id.
+     *
+     * @param prices the prices to search
+     * @param id     the price identifier
+     * @return the corresponding price
+     */
+    private PriceData getPrice(List<PriceData> prices, long id) {
+        for (PriceData price : prices) {
+            if (price.getId() == id) {
+                return price;
+            }
+        }
+        fail("Price with id=" + id + " not found");
+        return null;
+    }
+
+    /**
+     * Helper to create a set of lookups.
+     *
+     * @param lookups the lookups
+     * @return a set of the lookups
+     */
+    private Set<Lookup> getSet(Lookup... lookups) {
+        return new HashSet<Lookup>(Arrays.asList(lookups));
+    }
+
+    /**
+     * Verifies that adding a fixed price that overlaps an existing one throws an exception.
      *
      * @param from the price start date. May be {@code null}
      * @param to   the price end date. May be {@code null}
@@ -442,7 +590,7 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
         BigDecimal unitPrice = new BigDecimal("1.0");
         Date fromDate = getDate(from);
         Date toDate = getDate(to);
-        String[] locations = {};
+        Set<Lookup> locations = Collections.emptySet();
         data.addFixedPrice(-1, unitPrice, unitCost, BigDecimal.TEN, fromDate, toDate, true, locations, 1);
 
         PriceData changed = checkFixedPriceChange(data);
@@ -460,11 +608,11 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
         ProductData data = createProduct(product);
         BigDecimal unitCost = new BigDecimal("0.5");
         BigDecimal unitPrice = new BigDecimal("1.0");
-        String[] locations = {};
+        Set<Lookup> locations = Collections.emptySet();
         data.addUnitPrice(-1, unitPrice, unitCost, BigDecimal.TEN, getDate(from), getDate(to), locations, 1);
 
         try {
-            comparer.compare(product, data);
+            comparator.compare(product, data);
             fail("Expected ProductIOException");
         } catch (ProductIOException exception) {
             assertEquals("Unit price dates overlap an existing unit price", exception.getMessage());
@@ -480,14 +628,17 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
      * @param expectedMaxDiscount the expected maximum discount
      * @param expectedFrom        the expected from date. May be {@code null}
      * @param expectedTo          the expected to date. May be {@code null}
+     * @param expectedGroups      the expected pricing groups
      */
     private void checkPrice(PriceData data, BigDecimal expectedCost, BigDecimal expectedPrice,
-                            BigDecimal expectedMaxDiscount, Date expectedFrom, Date expectedTo) {
+                            BigDecimal expectedMaxDiscount, Date expectedFrom, Date expectedTo,
+                            Set<Lookup> expectedGroups) {
         checkEquals(expectedCost, data.getCost());
         checkEquals(expectedPrice, data.getPrice());
         checkEquals(expectedMaxDiscount, data.getMaxDiscount());
         assertEquals(expectedFrom, data.getFrom());
         assertEquals(expectedTo, data.getTo());
+        assertEquals(expectedGroups, data.getPricingGroups());
     }
 
     /**
@@ -497,7 +648,7 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
      * @return the changed unit price
      */
     private PriceData checkUnitPriceChange(ProductData data) {
-        ProductData changed = comparer.compare(product, data);
+        ProductData changed = comparator.compare(product, data);
         assertNotNull(changed);
 
         assertEquals(0, changed.getFixedPrices().size());
@@ -512,7 +663,7 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
      * @return the changed fixed price
      */
     private PriceData checkFixedPriceChange(ProductData data) {
-        ProductData changed = comparer.compare(product, data);
+        ProductData changed = comparator.compare(product, data);
         assertNotNull(changed);
 
         assertEquals(0, changed.getUnitPrices().size());

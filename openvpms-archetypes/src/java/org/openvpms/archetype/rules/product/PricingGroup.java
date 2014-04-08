@@ -18,6 +18,8 @@ package org.openvpms.archetype.rules.product;
 
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 
+import java.util.Collection;
+
 /**
  * Pricing group.
  *
@@ -113,4 +115,20 @@ public class PricingGroup {
         return useFallback;
     }
 
+    /**
+     * Determines if this group matches the specified groups.
+     *
+     * @param groups the groups
+     * @return {@code true} if the groups match
+     */
+    public boolean matches(Collection<Lookup> groups) {
+        if (all) {
+            return true;
+        } else if (group == null) {
+            return groups.isEmpty();
+        } else if ((groups.isEmpty() && useFallback) || groups.contains(group)) {
+            return true;
+        }
+        return false;
+    }
 }

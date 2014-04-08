@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -29,6 +30,8 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -384,8 +387,8 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
      */
     private PriceData createPriceData(long id, String shortName, String price, String cost, String maxDiscount,
                                       String from, String to, boolean isDefault) {
-        String[] locations = {};
+        Set<Lookup> groups = Collections.emptySet();
         return new PriceData(id, shortName, new BigDecimal(price), new BigDecimal(cost), new BigDecimal(maxDiscount),
-                             getDate(from), getDate(to), isDefault, locations, 1);
+                             getDate(from), getDate(to), isDefault, groups, 1);
     }
 }

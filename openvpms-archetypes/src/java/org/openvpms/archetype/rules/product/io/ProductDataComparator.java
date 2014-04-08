@@ -20,6 +20,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -33,6 +34,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.UNIT_PRICE;
@@ -223,6 +225,12 @@ public class ProductDataComparator {
         }
 
         List<PriceData> merged = merge(result, existing); // merged the changed prices with the other prices
+        for (PriceData price : merged) {
+            if (UNIT_PRICE.equals(price.getShortName())) {
+                checkOverlap(price, merged);
+            }
+        }
+
 
         // process new prices
         for (PriceData price : duplicateFree) {
@@ -252,7 +260,7 @@ public class ProductDataComparator {
         } else {
             unique = new ArrayList<PriceData>();
             Map<Long, PriceData> dataById = new HashMap<Long, PriceData>();
-            Map<DateRange, PriceData> dataByDate = new LinkedHashMap<DateRange, PriceData>();
+            Map<DateRangePricingGroup, PriceData> dataByDate = new LinkedHashMap<DateRangePricingGroup, PriceData>();
             for (PriceData data : prices) {
                 if (data.getId() != -1) {
                     PriceData existing = dataById.get(data.getId());
@@ -266,7 +274,7 @@ public class ProductDataComparator {
                         }
                     } else {
                         dataById.put(data.getId(), data);
-                        DateRange key = new DateRange(data);
+                        DateRangePricingGroup key = new DateRangePricingGroup(data);
                         if (dataByDate.get(key) != null) {
                             if (UNIT_PRICE.equals(data.getShortName())) {
                                 throw new ProductIOException(DuplicateUnitPrice, data.getLine());
@@ -280,7 +288,7 @@ public class ProductDataComparator {
             }
             for (PriceData data : prices) {
                 if (data.getId() == -1) {
-                    PriceData existing = dataByDate.get(new DateRange(data));
+                    PriceData existing = dataByDate.get(new DateRangePricingGroup(data));
                     if (existing != null) {
                         if (!priceEquals(data, existing)) {
                             if (UNIT_PRICE.equals(data.getShortName())) {
@@ -290,7 +298,7 @@ public class ProductDataComparator {
                             }
                         }
                     } else {
-                        dataByDate.put(new DateRange(data), data);
+                        dataByDate.put(new DateRangePricingGroup(data), data);
                         unique.add(data);
                     }
                 }
@@ -329,9 +337,6 @@ public class ProductDataComparator {
                 throw new ProductIOException(CannotUpdateLinkedPrice, price.getLine());
             }
         } else if (!equals(price, existing)) {
-            if (UNIT_PRICE.equals(price.getShortName())) {
-                checkOverlap(price, prices);
-            }
             result = price;
         }
         return result;
@@ -371,10 +376,9 @@ public class ProductDataComparator {
      * @param prices the prices to check against
      * @throws ProductIOException if the price overlaps
      */
-    private void checkOverlap(PriceData price, List<ProductPrice> prices) {
-        for (ProductPrice p : prices) {
-            if (p.getId() != price.getId()
-                && DateRules.intersects(p.getFromDate(), p.getToDate(), price.getFrom(), price.getTo())) {
+    private void checkOverlap(PriceData price, List<PriceData> prices) {
+        for (PriceData p : prices) {
+            if (p.getId() != price.getId() && ProductIOHelper.intersects(price, p)) {
                 throw new ProductIOException(UnitPriceOverlap, price.getLine());
             }
         }
@@ -524,9 +528,13 @@ public class ProductDataComparator {
         IMObjectBean bean = new IMObjectBean(price, service);
         BigDecimal cost = bean.getBigDecimal("cost");
         BigDecimal maxDiscount = bean.getBigDecimal("maxDiscount");
-        return price.getPrice().compareTo(data.getPrice()) == 0 && cost.compareTo(data.getCost()) == 0
-               && maxDiscount.compareTo(data.getMaxDiscount()) == 0
-               && (!FIXED_PRICE.equals(data.getShortName()) || data.isDefault() == ProductIOHelper.isDefault(bean));
+        if (price.getPrice().compareTo(data.getPrice()) == 0 && cost.compareTo(data.getCost()) == 0
+            && maxDiscount.compareTo(data.getMaxDiscount()) == 0
+            && (!FIXED_PRICE.equals(data.getShortName()) || data.isDefault() == ProductIOHelper.isDefault(bean))) {
+            Set<Lookup> pricingGroups = ProductIOHelper.getPricingGroups(price, service);
+            return pricingGroups.equals(data.getPricingGroups());
+        }
+        return false;
     }
 
 
@@ -545,11 +553,9 @@ public class ProductDataComparator {
      * @throws ProductIOException if multiple unit prices match
      */
     private PriceData getIntersectMatch(PriceData price, List<PriceData> prices) {
-        Date from = price.getFrom();
-        Date to = price.getTo();
         List<PriceData> matches = new ArrayList<PriceData>();
         for (PriceData other : prices) {
-            if (other.getId() != price.getId() && DateRules.intersects(from, to, other.getFrom(), other.getTo())) {
+            if (other.getId() != price.getId() && ProductIOHelper.intersects(price, other)) {
                 matches.add(other);
             }
         }
@@ -565,14 +571,15 @@ public class ProductDataComparator {
         }
     }
 
-    private static final class DateRange {
+    private static final class DateRangePricingGroup {
         private Date from;
         private Date to;
+        private Set<Lookup> groups;
 
-        private DateRange(PriceData data) {
+        private DateRangePricingGroup(PriceData data) {
             this.from = DateRules.getDate(data.getFrom());
             this.to = DateRules.getDate(data.getTo());
-
+            this.groups = data.getPricingGroups();
         }
 
         /**
@@ -586,9 +593,10 @@ public class ProductDataComparator {
             if (obj == this) {
                 return true;
             }
-            if (obj instanceof DateRange) {
-                DateRange other = (DateRange) obj;
-                return DateRules.compareTo(from, other.from) == 0 && DateRules.compareTo(to, other.to) == 0;
+            if (obj instanceof DateRangePricingGroup) {
+                DateRangePricingGroup other = (DateRangePricingGroup) obj;
+                return (DateRules.compareTo(from, other.from) == 0 && DateRules.compareTo(to, other.to) == 0
+                        && groups.equals(other.groups));
             }
             return false;
         }
