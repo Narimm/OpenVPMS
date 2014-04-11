@@ -44,7 +44,7 @@ from entities p
   join lookups lb on lb.code = d3.value and lb.arch_short_name = "lookup.breed"
 where
   p.arch_short_name like "party.patientpet%" and
-  P.active = 1 and
+  p.active = 1 and
   c.arch_short_name like "party.customer%" and
   ls.name like $P{species} and
   lb.name like $P{breed} and
