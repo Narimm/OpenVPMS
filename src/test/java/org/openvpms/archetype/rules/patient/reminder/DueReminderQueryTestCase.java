@@ -1,23 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.archetype.rules.patient.reminder;
 
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.practice.Location;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -174,8 +175,7 @@ public class DueReminderQueryTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link DueReminderQuery#setLocation(Party)} and {@link DueReminderQuery#setNoLocation(boolean)}
-     * methods.
+     * Tests the {@link DueReminderQuery#setLocation(Location)} methods.
      */
     @Test
     public void testQueryByLocation() {
@@ -202,17 +202,16 @@ public class DueReminderQueryTestCase extends ArchetypeServiceTest {
         // query reminders with reminderType. As there is no date range specified, it should pick up all reminders
         DueReminderQuery query = new DueReminderQuery(getArchetypeService());
         query.setReminderType(reminderType);
-        query.setNoLocation(true);
+        query.setLocation(Location.NONE);
 
         checkReminders(query, reminder1, reminder2, reminder3);
 
         Party location1 = TestHelper.createLocation();
         EntityBean bean = new EntityBean(customer1);
-        bean.addNodeTarget("location", location1);
+        bean.addNodeTarget("practice", location1);
         bean.save();
 
-        query.setNoLocation(false);
-        query.setLocation(location1);
+        query.setLocation(new Location(location1));
         checkReminders(query, reminder1);
     }
 

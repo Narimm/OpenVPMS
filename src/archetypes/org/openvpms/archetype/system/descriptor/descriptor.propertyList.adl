@@ -1,48 +1,46 @@
-<!-- 
- *  Version: 1.0
- *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
- *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
- *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $$Id$$
--->
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
 <archetypes>
-	<archetype name="descriptor.propertyList.1.0"
-		latest="true" primary="false"
-		type="org.openvpms.component.business.domain.im.datatypes.property.PropertyList">
-		<node name="name" path="/name" type="java.lang.String"
-			minCardinality="1" />
-		<node name="description" path="/description"
-			type="java.lang.String"/>
-		<node name="properties" path="/properties"
-			type="java.util.ArrayList"  baseName="property" maxCardinality="*"
-			displayName="Property List">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="descriptor.assertionProperty" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="descriptor.propertyList" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="descriptor.propertyMap" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>Invalid property type</errorMessage>
-			</assertion>
-		</node>
-	</archetype>
+    <archetype name="descriptor.propertyList.1.0"
+               latest="true" primary="false"
+               type="org.openvpms.component.business.domain.im.datatypes.property.PropertyList">
+        <node name="name" path="/name" type="java.lang.String"
+              minCardinality="1"/>
+        <node name="description" path="/description"
+              type="java.lang.String"/>
+        <node name="properties" path="/properties"
+              type="java.util.ArrayList" baseName="property" maxCardinality="*"
+              displayName="Property List">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="descriptor.assertionProperty"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="descriptor.propertyList"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="descriptor.propertyMap"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>Invalid property type</errorMessage>
+            </assertion>
+        </node>
+    </archetype>
 </archetypes>

@@ -1,81 +1,81 @@
-<!-- 
- *  Version: 1.0
- *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
- *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
- *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
--->
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
 <archetypes>
-	<archetype name="party.supplierVeterinaryPractice.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.party.Party"  displayName="Veterinary Practice" >
-		<node name="id" path="/id" type="java.lang.Long" readOnly="true" />
-		<node name="name" type="java.lang.String" path="/name" minCardinality="1" displayName="Practice Name">
+    <archetype name="party.supplierVeterinaryPractice.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.party.Party" displayName="Veterinary Practice">
+        <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" minCardinality="1" displayName="Practice Name">
             <assertion name="propercase"/>
-		</node>
-		<node name="description" type="java.lang.String"
-			path="/description" hidden="true" derived="true"
-			derivedValue="concat(/name, ' - ',party:getPreferredContacts())" />
+        </node>
+        <node name="description" type="java.lang.String"
+              path="/description" hidden="true" derived="true"
+              derivedValue="concat(/name, ' - ',party:getPreferredContacts())"/>
         <node name="notes" path="/details/notes" type="java.lang.String" minCardinality="0" maxLength="300"/>
-        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
-		<node name="contacts" path="/contacts"
-			type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="contact.location" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="contact.phoneNumber" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="contact.email" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="contact.faxNumber" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
-		<node name="veterinarians" path="/entityRelationships"
-			type="java.util.HashSet" baseName="entityRelationship" minCardinality="0" maxCardinality="*"
-			filter="entityRelationship.practiceVeterinarians" >
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="entityRelationship.practiceVeterinarians" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="contacts" path="/contacts"
+              type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="contact.location"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="contact.phoneNumber"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="contact.email"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="contact.faxNumber"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+        <node name="veterinarians" path="/entityRelationships"
+              type="java.util.HashSet" baseName="entityRelationship" minCardinality="0" maxCardinality="*"
+              filter="entityRelationship.practiceVeterinarians">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="entityRelationship.practiceVeterinarians"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active veterinarians relationship</errorMessage>
             </assertion>
-		</node>
-		<node name="classifications" displayName="Categories" path="/classifications" parentChild="false"
-			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="lookup.practiceType" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
-	</archetype>
+        </node>
+        <node name="classifications" displayName="Categories" path="/classifications" parentChild="false"
+              type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="lookup.practiceType"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+    </archetype>
 </archetypes>

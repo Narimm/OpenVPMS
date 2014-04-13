@@ -1,20 +1,18 @@
-<!-- 
- *  Version: 1.0
- *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
- *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
- *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $$Id$$
--->
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
 <archetypes>
     <archetype name="act.customerEstimationItem.1.0" latest="true" primary="false"
                type="org.openvpms.component.business.domain.im.act.Act" displayName="Estimate Item">
@@ -39,13 +37,27 @@
               filter="participation.author" hidden="true"/>
         <node name="lowQty" path="/details/lowQty" type="java.math.BigDecimal" defaultValue="1.0" minCardinality="1"/>
         <node name="highQty" path="/details/highQty" type="java.math.BigDecimal" defaultValue="1.0" minCardinality="1"/>
-        <node name="fixedPrice" path="/details/fixedPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="1"/>
-        <node name="lowUnitPrice" path="/details/lowUnitPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="1"/>
-        <node name="highUnitPrice" path="/details/highUnitPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="1"/>
-        <node name="discount" path="/details/discount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="0"/>
-        <node name="lowTotal" path="/details/lowTotal" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-              derived="true" derivedValue="math:roundAmount(/details/fixedPrice - /details/discount + /details/lowQty * /details/lowUnitPrice)" minCardinality="1"/>
-        <node name="highTotal" path="/details/highTotal" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-              derived="true" derivedValue="math:roundAmount(/details/fixedPrice - /details/discount + /details/highQty * /details/highUnitPrice)" minCardinality="1"/>
+        <node name="fixedPrice" path="/details/fixedPrice"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"
+              minCardinality="1"/>
+        <node name="lowUnitPrice" path="/details/lowUnitPrice"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"
+              minCardinality="1"/>
+        <node name="highUnitPrice" path="/details/highUnitPrice"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"
+              minCardinality="1"/>
+        <node name="discount" path="/details/discount"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"
+              minCardinality="0"/>
+        <node name="lowTotal" path="/details/lowTotal"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
+              derived="true"
+              derivedValue="math:roundAmount(/details/fixedPrice - /details/discount + /details/lowQty * /details/lowUnitPrice)"
+              minCardinality="1"/>
+        <node name="highTotal" path="/details/highTotal"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
+              derived="true"
+              derivedValue="math:roundAmount(/details/fixedPrice - /details/discount + /details/highQty * /details/highUnitPrice)"
+              minCardinality="1"/>
     </archetype>
 </archetypes>

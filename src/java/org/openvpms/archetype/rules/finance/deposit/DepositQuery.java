@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.deposit;
@@ -111,8 +109,7 @@ public class DepositQuery {
         ActBean bean = new ActBean(bankDeposit, service); //The bankDeposit Act
         for (Act tillBalance : bean.getActs()) { // Deposit Till Balances loop
             ActBean tillBalanceBean = new ActBean(tillBalance);
-            for (Act tillBalanceItem : tillBalanceBean.getActs())
-            { // Till Balance Item loop
+            for (Act tillBalanceItem : tillBalanceBean.getActs()) { // Till Balance Item loop
                 ActBean tillBalanceItemBean = new ActBean(tillBalanceItem);
                 if (tillBalanceItemBean.isA("act.tillBalanceAdjustment")) {
                     ObjectSet set = new ObjectSet();
@@ -135,8 +132,7 @@ public class DepositQuery {
                     set.set(AMOUNT, actAmount.negate());
                     result.add(set);
                 } else {
-                    for (Act item : tillBalanceItemBean.getNodeActs("items"))
-                    { //Till Balance Item Items loop
+                    for (Act item : tillBalanceItemBean.getNodeActs("items")) { //Till Balance Item Items loop
                         // Skip any discounts
                         String shortName = item.getArchetypeId().getShortName();
                         if (shortName.endsWith("Discount")) {
@@ -162,8 +158,8 @@ public class DepositQuery {
                 ActBean ab2 = new ActBean(a2);
                 return getPaymentTypeNumber(
                         ab1.getObject().getArchetypeId().getShortName()) -
-                        getPaymentTypeNumber(
-                                ab2.getObject().getArchetypeId().getShortName());
+                       getPaymentTypeNumber(
+                               ab2.getObject().getArchetypeId().getShortName());
             }
         });
         return new Page<ObjectSet>(result, 0, result.size(), result.size());
