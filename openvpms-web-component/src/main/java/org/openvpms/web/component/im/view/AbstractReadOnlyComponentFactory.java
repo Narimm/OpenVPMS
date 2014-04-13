@@ -30,6 +30,9 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.TextComponentFactory;
+import org.openvpms.web.echo.text.TextComponent;
+import org.openvpms.web.resource.i18n.Messages;
 
 
 /**
@@ -186,8 +189,11 @@ public abstract class AbstractReadOnlyComponentFactory
                     value = (IMObject) values[0];
                     result = create(value, parent).getComponent();
                 } else {
-                    // nothing to display, so return an empty label
-                    result = LabelFactory.create();
+                    // nothing to display
+                    TextComponent component = TextComponentFactory.create(20);
+                    component.setText(Messages.get("imobject.none"));
+                    component.setEnabled(false);
+                    result = component;
                 }
             }
         } else if (property.getMinCardinality() == 0 && property.getMaxCardinality() == 0) {

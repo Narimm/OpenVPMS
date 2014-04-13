@@ -27,13 +27,16 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
+import org.openvpms.archetype.rules.practice.Location;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.AbstractListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
+import org.openvpms.web.component.im.location.LocationSelectField;
 import org.openvpms.web.component.im.lookup.ArchetypeLookupQuery;
 import org.openvpms.web.component.im.lookup.LookupField;
 import org.openvpms.web.component.im.lookup.LookupFieldFactory;
@@ -124,6 +127,11 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
      * The 'customer to' field.
      */
     private TextField customerTo;
+
+    /**
+     * The customer location selector.
+     */
+    private LocationSelectField locationSelector;
 
     /**
      * Index of the all balances balance type.
@@ -280,6 +288,9 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
         grid.add(customerFrom);
         grid.add(customerToLabel);
         grid.add(customerTo);
+        grid.add(LabelFactory.create("reporting.customer.location"));
+        locationSelector = new LocationSelectField();
+        grid.add(locationSelector);
 
         container.add(grid);
 
@@ -292,6 +303,7 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
         group.add(excludeCredit);
         group.add(customerFrom);
         group.add(customerTo);
+        group.add(locationSelector);
 
         FocusHelper.setFocus(getSearchField());
     }
@@ -311,11 +323,12 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
             int from = overdue ? getNumber(periodFrom) : -1;
             int to = overdue ? getNumber(periodTo) : -1;
             boolean credit = excludeCredit.isSelected();
+            Location location = locationSelector.getSelected();
             CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
-            query = new CustomerBalanceSummaryQuery(
-                    getDate(), nonOverdue, from, to, credit, getAccountType(),
-                    getWildcardedText(customerFrom),
-                    getWildcardedText(customerTo), rules);
+            IArchetypeService service = ServiceHelper.getArchetypeService();
+            query = new CustomerBalanceSummaryQuery(getDate(), nonOverdue, from, to, credit, getAccountType(),
+                                                    getWildcardedText(customerFrom),
+                                                    getWildcardedText(customerTo), location, service, rules);
             while (query.hasNext()) {
                 sets.add(query.next());
             }
