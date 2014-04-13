@@ -60,6 +60,9 @@ import java.util.Set;
  */
 public class ProductImportDialog extends PopupDialog {
 
+    /**
+     * Product price rules.
+     */
     private final ProductPriceRules rules;
 
     /**
