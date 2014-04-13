@@ -464,6 +464,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         session.saveOrUpdate(source);
         session.saveOrUpdate(target);
         tx.commit();
+        long version = target.getVersion();
 
         session.evict(source);
         source = (PartyDO) session.load(PartyDOImpl.class, source.getId());
@@ -477,8 +478,9 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         assertNull(session.get(PartyDOImpl.class, source.getId()));
         assertNull(session.get(EntityLinkDOImpl.class, link.getId()));
 
-        target = (PartyDO) session.get(PartyDOImpl.class, target.getId());
-        assertNotNull(target);
+        session.evict(target);
+        target = (PartyDO) session.load(PartyDOImpl.class, target.getId());
+        assertEquals(version, target.getVersion());   // verify the target hasn't changed
     }
 
     /**
