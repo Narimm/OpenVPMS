@@ -189,11 +189,8 @@ public abstract class AbstractReadOnlyComponentFactory
                     value = (IMObject) values[0];
                     result = create(value, parent).getComponent();
                 } else {
-                    // nothing to display
-                    TextComponent component = TextComponentFactory.create(20);
-                    component.setText(Messages.get("imobject.none"));
-                    component.setEnabled(false);
-                    result = component;
+                    result = getEmptyCollectionViewer();
+
                 }
             }
         } else if (property.getMinCardinality() == 0 && property.getMaxCardinality() == 0) {
@@ -205,6 +202,20 @@ public abstract class AbstractReadOnlyComponentFactory
                                                                                      getLayoutContext());
             result = viewer.getComponent();
         }
+        return result;
+    }
+
+    /**
+     * Returns a component for an empty collection.
+     *
+     * @return the component
+     */
+    protected Component getEmptyCollectionViewer() {
+        Component result;// nothing to display
+        TextComponent component = TextComponentFactory.create(20);
+        component.setText(Messages.get("imobject.none"));
+        component.setEnabled(false);
+        result = component;
         return result;
     }
 
