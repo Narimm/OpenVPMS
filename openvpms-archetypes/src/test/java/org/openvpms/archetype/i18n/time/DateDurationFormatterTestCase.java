@@ -1,28 +1,27 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.i18n.time;
 
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-import static org.openvpms.archetype.test.TestHelper.getDate;
 
 import java.util.Date;
+
+import static org.junit.Assert.assertEquals;
+import static org.openvpms.archetype.test.TestHelper.getDate;
 
 /**
  * Tests {@link DateDurationFormatter} class.
@@ -332,6 +331,7 @@ public class DateDurationFormatterTestCase {
         Date to3 = getDate("2008-03-15");
         checkFormat("13 Months 4 Weeks", from3, to3, false, true, true, true);
     }
+
     /**
      * Tests behaviour when nothing is shown.
      */

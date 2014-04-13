@@ -1,47 +1,45 @@
-<!-- 
- *  Version: 1.0
- *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
- *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
- *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $$Id$$
--->
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
 <archetypes>
-	<archetype name="contact.email.1.0" latest="true" primary="false"
-		type="org.openvpms.component.business.domain.im.party.Contact"  displayName="Email Contact" >
-		<node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" type="java.lang.String" path="/name" defaultValue="'Email Address'" />
-		<node name="description" type="java.lang.String"
-			path="/description" hidden="true" derived="true"
-			derivedValue="concat(/details/emailAddress,' ',party:getContactPurposes())" />
-		<node name="emailAddress" path="/details/emailAddress"
-		      type="java.lang.String" minCardinality="1">
-	    </node>
+    <archetype name="contact.email.1.0" latest="true" primary="false"
+               type="org.openvpms.component.business.domain.im.party.Contact" displayName="Email Contact">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" defaultValue="'Email Address'"/>
+        <node name="description" type="java.lang.String"
+              path="/description" hidden="true" derived="true"
+              derivedValue="concat(/details/emailAddress,' ',party:getContactPurposes())"/>
+        <node name="emailAddress" path="/details/emailAddress"
+              type="java.lang.String" minCardinality="1">
+        </node>
         <node name="preferred" path="/details/preferred" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="startDate" path="/activeStartTime"
-			type="java.util.Date" hidden="true" minCardinality="1" defaultValue="java.util.Date.new()"/>
-		<node name="endDate" path="/activeEndTime"
-			type="java.util.Date" hidden="true" minCardinality="0" />
-		<node name="purposes" path="/classifications" parentChild="false"
-			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="lookup.contactPurpose" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
-	</archetype>
+              type="java.util.Date" hidden="true" minCardinality="1" defaultValue="java.util.Date.new()"/>
+        <node name="endDate" path="/activeEndTime"
+              type="java.util.Date" hidden="true" minCardinality="0"/>
+        <node name="purposes" path="/classifications" parentChild="false"
+              type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="lookup.contactPurpose"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+    </archetype>
 </archetypes>

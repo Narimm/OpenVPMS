@@ -1,56 +1,74 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <archetype>
-<data id="VACREMINDER" archetype="entity.reminderType" name="Vaccination Reminder" defaultInterval="1" defaultUnits="YEARS"  />
-<data id="OTHREMINDER" archetype="entity.reminderType" name="Other Reminder" defaultInterval="1" defaultUnits="YEARS"  />
-<data id="REM1" archetype="act.patientReminder" startTime="27/05/1995" endTime="25/05/1996" status="IN_PROGRESS">
-    <data collection="patient" archetype="participation.patient" entity="id:A3" act="id:REM1"  />
-    <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM1"  />
-</data>
-<data id="REM2" archetype="act.patientReminder" startTime="07/05/1991" endTime="05/11/1991" status="IN_PROGRESS">
-    <data collection="patient" archetype="participation.patient" entity="id:A9" act="id:REM2"  />
-    <data collection="reminderType" archetype="participation.reminderType" entity="id:OTHREMINDER" act="id:REM2"  />
-</data>
-<data id="REM3" archetype="act.patientReminder" startTime="07/05/1991" endTime="05/11/1991" status="IN_PROGRESS">
-    <data collection="patient" archetype="participation.patient" entity="id:A10" act="id:REM3"  />
-    <data collection="reminderType" archetype="participation.reminderType" entity="id:OTHREMINDER" act="id:REM3"  />
-</data>
-<data id="REM4" archetype="act.patientReminder" startTime="07/05/1991" endTime="05/05/1992" status="IN_PROGRESS">
-    <data collection="patient" archetype="participation.patient" entity="id:A10" act="id:REM4"  />
-    <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM4"  />
-</data>
-<data id="REM5" archetype="act.patientReminder" startTime="07/05/1991" endTime="05/05/1992" status="IN_PROGRESS">
-    <data collection="patient" archetype="participation.patient" entity="id:A10" act="id:REM5"  />
-    <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM5"  />
-</data>
-<data id="REM6" archetype="act.patientReminder" startTime="12/05/1993" endTime="11/05/1994" status="IN_PROGRESS">
-    <data collection="patient" archetype="participation.patient" entity="id:A13" act="id:REM6"  />
-    <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM6"  />
-</data>
-<data id="REM7" archetype="act.patientReminder" startTime="23/11/1993" endTime="22/11/1994" status="IN_PROGRESS">
-    <data collection="patient" archetype="participation.patient" entity="id:A13" act="id:REM7"  />
-    <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM7"  />
-</data>
-<data id="REM8" archetype="act.patientReminder" startTime="24/04/1996" endTime="23/04/1997" status="IN_PROGRESS">
-    <data collection="patient" archetype="participation.patient" entity="id:A13" act="id:REM8"  />
-    <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM8"  />
-</data>
-<data id="REM9" archetype="act.patientReminder" startTime="07/05/1991" endTime="05/05/1992" status="IN_PROGRESS">
-    <data collection="patient" archetype="participation.patient" entity="id:A15" act="id:REM9"  />
-    <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM9"  />
-</data>
-<data id="REM10" archetype="act.patientReminder" startTime="07/05/1991" endTime="05/05/1992" status="IN_PROGRESS">
-    <data collection="patient" archetype="participation.patient" entity="id:A15" act="id:REM10"  />
-    <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM10"  />
-</data>
-<data id="REM11" archetype="act.patientReminder" startTime="20/11/1993" endTime="19/11/1994" status="IN_PROGRESS">
-    <data collection="patient" archetype="participation.patient" entity="id:A17" act="id:REM11"  />
-    <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM11"  />
-</data>
-<data id="REM12" archetype="act.patientReminder" startTime="07/05/1991" endTime="05/05/1992" status="IN_PROGRESS">
-    <data collection="patient" archetype="participation.patient" entity="id:A18" act="id:REM12"  />
-    <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM12"  />
-</data>
-<data id="REM13" archetype="act.patientReminder" startTime="07/05/1991" endTime="05/05/1992" status="IN_PROGRESS">
-    <data collection="patient" archetype="participation.patient" entity="id:A19" act="id:REM13"  />
-    <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM13"  />
-</data>
+    <data id="VACREMINDER" archetype="entity.reminderType" name="Vaccination Reminder" defaultInterval="1"
+          defaultUnits="YEARS"/>
+    <data id="OTHREMINDER" archetype="entity.reminderType" name="Other Reminder" defaultInterval="1"
+          defaultUnits="YEARS"/>
+    <data id="REM1" archetype="act.patientReminder" startTime="27/05/1995" endTime="25/05/1996" status="IN_PROGRESS">
+        <data collection="patient" archetype="participation.patient" entity="id:A3" act="id:REM1"/>
+        <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM1"/>
+    </data>
+    <data id="REM2" archetype="act.patientReminder" startTime="07/05/1991" endTime="05/11/1991" status="IN_PROGRESS">
+        <data collection="patient" archetype="participation.patient" entity="id:A9" act="id:REM2"/>
+        <data collection="reminderType" archetype="participation.reminderType" entity="id:OTHREMINDER" act="id:REM2"/>
+    </data>
+    <data id="REM3" archetype="act.patientReminder" startTime="07/05/1991" endTime="05/11/1991" status="IN_PROGRESS">
+        <data collection="patient" archetype="participation.patient" entity="id:A10" act="id:REM3"/>
+        <data collection="reminderType" archetype="participation.reminderType" entity="id:OTHREMINDER" act="id:REM3"/>
+    </data>
+    <data id="REM4" archetype="act.patientReminder" startTime="07/05/1991" endTime="05/05/1992" status="IN_PROGRESS">
+        <data collection="patient" archetype="participation.patient" entity="id:A10" act="id:REM4"/>
+        <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM4"/>
+    </data>
+    <data id="REM5" archetype="act.patientReminder" startTime="07/05/1991" endTime="05/05/1992" status="IN_PROGRESS">
+        <data collection="patient" archetype="participation.patient" entity="id:A10" act="id:REM5"/>
+        <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM5"/>
+    </data>
+    <data id="REM6" archetype="act.patientReminder" startTime="12/05/1993" endTime="11/05/1994" status="IN_PROGRESS">
+        <data collection="patient" archetype="participation.patient" entity="id:A13" act="id:REM6"/>
+        <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM6"/>
+    </data>
+    <data id="REM7" archetype="act.patientReminder" startTime="23/11/1993" endTime="22/11/1994" status="IN_PROGRESS">
+        <data collection="patient" archetype="participation.patient" entity="id:A13" act="id:REM7"/>
+        <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM7"/>
+    </data>
+    <data id="REM8" archetype="act.patientReminder" startTime="24/04/1996" endTime="23/04/1997" status="IN_PROGRESS">
+        <data collection="patient" archetype="participation.patient" entity="id:A13" act="id:REM8"/>
+        <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM8"/>
+    </data>
+    <data id="REM9" archetype="act.patientReminder" startTime="07/05/1991" endTime="05/05/1992" status="IN_PROGRESS">
+        <data collection="patient" archetype="participation.patient" entity="id:A15" act="id:REM9"/>
+        <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM9"/>
+    </data>
+    <data id="REM10" archetype="act.patientReminder" startTime="07/05/1991" endTime="05/05/1992" status="IN_PROGRESS">
+        <data collection="patient" archetype="participation.patient" entity="id:A15" act="id:REM10"/>
+        <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM10"/>
+    </data>
+    <data id="REM11" archetype="act.patientReminder" startTime="20/11/1993" endTime="19/11/1994" status="IN_PROGRESS">
+        <data collection="patient" archetype="participation.patient" entity="id:A17" act="id:REM11"/>
+        <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM11"/>
+    </data>
+    <data id="REM12" archetype="act.patientReminder" startTime="07/05/1991" endTime="05/05/1992" status="IN_PROGRESS">
+        <data collection="patient" archetype="participation.patient" entity="id:A18" act="id:REM12"/>
+        <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM12"/>
+    </data>
+    <data id="REM13" archetype="act.patientReminder" startTime="07/05/1991" endTime="05/05/1992" status="IN_PROGRESS">
+        <data collection="patient" archetype="participation.patient" entity="id:A19" act="id:REM13"/>
+        <data collection="reminderType" archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM13"/>
+    </data>
 </archetype>

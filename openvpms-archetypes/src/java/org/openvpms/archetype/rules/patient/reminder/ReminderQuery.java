@@ -1,23 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
 
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.practice.Location;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -81,14 +82,9 @@ public class ReminderQuery {
     private Party customer;
 
     /**
-     * The location. If {@code null} and {@link #noLocation} is {@code false}, matches all locations.
+     * The location.
      */
-    private Party location;
-
-    /**
-     * If {@code true}, only return those customers with no location.
-     */
-    private boolean noLocation;
+    private Location location = Location.ALL;
 
 
     /**
@@ -146,24 +142,14 @@ public class ReminderQuery {
     }
 
     /**
-     * Sets the practice location.
+     * Sets the location to query.
      * <p/>
-     * If no location is specified, means to match on all locations.
+     * Defaults to {@link Location#ALL}.
      *
-     * @param location the location. May be {@code null}
+     * @param location the location
      */
-    public void setLocation(Party location) {
+    public void setLocation(Location location) {
         this.location = location;
-    }
-
-    /**
-     * Determines if customers with no practice location should be returned.
-     *
-     * @param noLocation if {@code true}, customers with no practice location are returned, otherwise those matching
-     *                   with a location matching {@link #setLocation(Party)} will be returned
-     */
-    public void setNoLocation(boolean noLocation) {
-        this.noLocation = noLocation;
     }
 
     /**
@@ -217,14 +203,14 @@ public class ReminderQuery {
         if (customer != null) {
             cust.add(eq("id", customer.getId()));
         }
-        if (!noLocation && location != null) {
-            cust.add(join("location", "l2").add(eq("target", location.getObjectReference())));
+        if (location.getLocation() != null) {
+            cust.add(join("practice", "l2").add(eq("target", location.getLocation().getObjectReference())));
         }
         query.add(cust);
 
-        if (noLocation) {
+        if (location.isNone()) {
             query.add(notExists(subQuery(CustomerArchetypes.PERSON, "c2").add(
-                    join("location", "l2").add(idEq("customer", "c2")))));
+                    join("practice", "l2").add(idEq("customer", "c2")))));
         }
 
         query.add(new IdConstraint("participation.entity", "patient"));

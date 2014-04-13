@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -19,6 +19,7 @@ package org.openvpms.archetype.rules.patient.reminder;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.practice.Location;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -198,12 +199,12 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         save(act1, act2, act3);
 
         ReminderQuery query = new ReminderQuery(getArchetypeService());
-        query.setLocation(location1);
+        query.setLocation(new Location(location1));
 
         List<Act> reminders = getReminders(query);
         assertEquals(1, reminders.size());
 
-        query.setLocation(location2);
+        query.setLocation(new Location(location2));
         reminders = getReminders(query);
         assertEquals(2, reminders.size());
     }
@@ -230,7 +231,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         save(act1, act2, act3);
 
         ReminderQuery query = new ReminderQuery(getArchetypeService());
-        query.setNoLocation(true);
+        query.setLocation(Location.NONE);
 
         List<Act> reminders = getReminders(query);
         assertEquals(initialCount + 2, reminders.size());
@@ -279,7 +280,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
                 if (customer != null) {
                     if (noLocation) {
                         IMObjectBean customerBean = new IMObjectBean(customer);
-                        if (customerBean.getNodeTargetObject("location") == null) {
+                        if (customerBean.getNodeTargetObject("practice") == null) {
                             result++;
                         }
                     } else {
@@ -300,7 +301,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
     private Party createCustomer(Party location) {
         Party customer = TestHelper.createCustomer();
         EntityBean bean = new EntityBean(customer);
-        bean.addNodeTarget("location", location);
+        bean.addNodeTarget("practice", location);
         bean.save();
         return customer;
     }

@@ -1,20 +1,18 @@
-<!-- 
- *  Version: 1.0
- *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
- *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
- *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $$Id$$
--->
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
 <archetypes>
     <archetype name="lookup.taxType.1.0"
                latest="true"
@@ -34,7 +32,7 @@
               minCardinality="1"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="taxScheme" path="/details/taxScheme" type="java.lang.String" minCardinality="0"
-                description="UN/ECE 5153 Duty/Tax/Fee Type Code">
+              description="UN/ECE 5153 Duty/Tax/Fee Type Code">
             <!-- Partial list of tax schemes, from UN/ECE 5153 code list. For a complete list, see:   -->
             <!-- . http://www.unece.org/trade/untdid/d09b/tred/tred5153.htm                           -->
             <!-- . http://www.unece.org/uncefact/codelist/standard/UNECE_DutyTaxFeeTypeCode_D09B.xsd  -->
@@ -47,7 +45,7 @@
             </assertion>
         </node>
         <node name="taxCategory" path="/details/taxCategory" type="java.lang.String" minCardinality="0"
-                description="UN/ECE 5305 Duty/Tax/Fee Category Code">
+              description="UN/ECE 5305 Duty/Tax/Fee Category Code">
             <!-- Partial list of tax categories from UN/ECE 5305 code list For a complete list, see:       -->
             <!-- http://www.unece.org/trade/untdid/d09b/tred/tred5305.htm                                  -->
             <!-- http://www.unece.org/uncefact/codelist/standard/UNECE_DutyorTaxorFeeCategoryCode_D09B.xsd -->

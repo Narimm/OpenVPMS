@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.util;
@@ -152,7 +150,7 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
      *
      * @param types the types to reference
      */
-    public void setReference(Class ... types) {
+    public void setReference(Class... types) {
         refTypes.setTypes(types);
     }
 
@@ -164,7 +162,7 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
      *
      * @param shortNames the short names of the objects to reference
      */
-    public void setReference(String ... shortNames) {
+    public void setReference(String... shortNames) {
         refTypes.setShortNames(shortNames);
     }
 
@@ -175,7 +173,7 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
      *
      * @param types the types to copy
      */
-    public void setCopy(Class ... types) {
+    public void setCopy(Class... types) {
         copyTypes.setTypes(types);
     }
 
@@ -186,7 +184,7 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
      *
      * @param shortNames the short names of the objects to copy
      */
-    public void setCopy(String ... shortNames) {
+    public void setCopy(String... shortNames) {
         copyTypes.setShortNames(shortNames);
     }
 
@@ -197,7 +195,7 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
      *
      * @param types the types to exclude
      */
-    public void setExclude(Class ... types) {
+    public void setExclude(Class... types) {
         excludeTypes.setTypes(types);
     }
 
@@ -209,7 +207,7 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
      *
      * @param shortNames the short names of the objects to exclude
      */
-    public void setExclude(String ... shortNames) {
+    public void setExclude(String... shortNames) {
         excludeTypes.setShortNames(shortNames);
     }
 
@@ -260,18 +258,20 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
             result = null;
         } else if (to != null) {
             result = newInstance(to, service);
-        } else switch (getTreatment(object)) {
-            case REFERENCE:
-                result = object;
-                break;
-            case COPY:
-                result = newInstance(object, service);
-                break;
-            case EXCLUDE:
-                result = null;
-                break;
-            default:
-                throw new IllegalStateException("Object not handled");
+        } else {
+            switch (getTreatment(object)) {
+                case REFERENCE:
+                    result = object;
+                    break;
+                case COPY:
+                    result = newInstance(object, service);
+                    break;
+                case EXCLUDE:
+                    result = null;
+                    break;
+                default:
+                    throw new IllegalStateException("Object not handled");
+            }
         }
         return result;
     }
@@ -427,7 +427,7 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
          *
          * @param types the class types
          */
-        public void setTypes(Class ... types) {
+        public void setTypes(Class... types) {
             if (types.length == 0) {
                 this.types = Collections.emptySet();
             } else {
@@ -444,7 +444,7 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
          *
          * @param shortNames the archetype short names
          */
-        public void setShortNames(String ... shortNames) {
+        public void setShortNames(String... shortNames) {
             if (shortNames.length == 0) {
                 this.shortNames = Collections.emptySet();
             } else {

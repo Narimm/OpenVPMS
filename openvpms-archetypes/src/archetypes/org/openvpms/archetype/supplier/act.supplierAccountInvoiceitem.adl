@@ -1,30 +1,28 @@
-<!-- 
- *  Version: 1.0
- *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
- *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
- *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $$Id$$
--->
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
 <archetypes>
     <archetype name="act.supplierAccountInvoiceItem.1.0" latest="true" primary="false"
-        type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Supplier Invoice Item" >
-        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true" />
+               type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Supplier Invoice Item">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
-            hidden="true" minCardinality="1" derived="true"
-            derivedValue="' '" />
+              hidden="true" minCardinality="1" derived="true"
+              derivedValue="' '"/>
         <node name="description" type="java.lang.String"
-            path="/description" hidden="true" derived="true"
-            derivedValue="' '" />
+              path="/description" hidden="true" derived="true"
+              derivedValue="' '"/>
         <node name="startTime" displayName="Date" path="/activityStartTime"
               type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" readOnly="true"/>
         <node name="product" path="/participations" type="java.util.HashSet"
@@ -34,13 +32,14 @@
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
         <node name="quantity" path="/quantity" type="java.math.BigDecimal" defaultValue="1.0"/>
-        <node name="unitPrice" path="/unitAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
+        <node name="unitPrice" path="/unitAmount"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
         <node name="tax" path="/taxAmount"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
               defaultValue="'0.0'" readOnly="true">
         </node>
         <node name="total" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-            derived="true" derivedValue="math:roundAmount(/quantity * /unitAmount + /taxAmount)"/>
+              derived="true" derivedValue="math:roundAmount(/quantity * /unitAmount + /taxAmount)"/>
         <node name="credit" path="/credit" type="java.lang.Boolean"
               defaultValue="false()" readOnly="true" hidden="true"/>
     </archetype>
