@@ -1,11 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <!-- ================================================================== -->
-    <!--                        REPORTING                                   -->
-    <!-- ================================================================== -->
+    <!-- ====================================================================================================== -->
+    <!-- Reporting                                                                                              -->
+    <!-- ====================================================================================================== -->
 
     <!-- the Document handlers -->
     <bean id="documentHandlers"
@@ -19,41 +35,86 @@
         </property>
     </bean>
 
-    <!-- OpenOffice bootstrap service. Starts an instance of OpenOffice on
-         the local host listening on a socket.
-         This is equivalent to running:
-            soffice -nologo -nodefault -norestore -nolockcheck -accept=socket,port=8100;urp;
-    -->
-    <bean id="OOSocketBootstrapService"
-          class="org.openvpms.report.openoffice.OOSocketBootstrapService">
-        <constructor-arg type="int" value="8100"/>
-        <!-- start the service on demand -->
-        <constructor-arg type="boolean" value="false"/>
-    </bean>
-
-    <!-- OpenOffice connection pool. Uses an OOBootstrapService
-         to create connections.
-    -->
-    <bean id="OOBootstrapConnectionPool"
-          class="org.openvpms.report.openoffice.OOBootstrapConnectionPool">
-        <constructor-arg ref="OOSocketBootstrapService"/>
-        <!-- restart OpenOffice after 'reuseCount' uses. Use 0 to never
-             restart.
-        -->
-        <property name="reuseCount" value="1000"/>
-    </bean>
-
-    <bean id="printService"
-          class="org.openvpms.report.openoffice.PrintService">
-        <constructor-arg ref="OOBootstrapConnectionPool"/>
+    <bean id="printService" class="org.openvpms.report.openoffice.PrintService">
+        <constructor-arg ref="openOfficeConnectionPool"/>
         <constructor-arg ref="documentHandlers"/>
     </bean>
 
-    <bean id="openOfficeHelper"
-          class="org.openvpms.report.openoffice.OpenOfficeHelper">
-        <constructor-arg ref="OOBootstrapConnectionPool"/>
+    <bean id="openOfficeHelper" class="org.openvpms.report.openoffice.OpenOfficeHelper">
+        <constructor-arg ref="openOfficeConnectionPool"/>
         <constructor-arg ref="printService"/>
     </bean>
 
+    <!-- ====================================================================================================== -->
+    <!-- OpenOffice Services                                                                                    -->
+    <!-- ====================================================================================================== -->
+    <!--                                                                                                        -->
+    <!-- There are two approaches for configuring OpenOffice:                                                   -->
+    <!-- 1. start an soffice process                                                                            -->
+    <!-- 2. connect to an existing soffice process, configured externally                                       -->
+    <!--                                                                                                        -->
+    <!-- By default, option 1. is used.                                                                         -->
+    <!-- This uses the OOSocketBootstrapService and OOBootstrapConnectionPool classes defined below.            -->
+    <!--                                                                                                        -->
+    <!-- To configure option 2.:                                                                                -->
+    <!-- . comment out OOSocketBootstrapService and OOBootstrapConnectionPool                                   -->
+    <!-- . uncomment DefaultOOConnectionPool                                                                    -->
+    <!-- ====================================================================================================== -->
+
+
+    <!-- ====================================================================================================== -->
+    <!-- OOSocketBootstrapService - OpenOffice socket bootstrap service.                                        -->
+    <!--                                                                                                        -->
+    <!-- Starts an instance of OpenOffice on the local host listening on a socket.                              -->
+    <!-- This is equivalent to running:                                                                         -->
+    <!--    soffice -nologo -nodefault -norestore -nolockcheck -accept=socket,port=8100;urp;                    -->
+    <!--                                                                                                        -->
+    <!-- The constructor takes two arguments:                                                                   -->
+    <!-- * port       - OpenOffice service port                                                                 -->
+    <!-- * start      - if true, start the service                                                              -->
+    <!--                                                                                                        -->
+    <!-- The following properties may be set:                                                                   -->
+    <!-- * path              - the path to the soffice binary/wrapper script. If unset, soffice must be in      -->
+    <!--                       the PATH                                                                         -->
+    <!-- * headless          - if true, starts the service with -headless switch. Defaults to true              -->
+    <!-- * connectionRetries - the no. of times to retry connection to the service before giving up. Defaults   -->
+    <!--                       to 10                                                                            -->
+    <!-- =====================================================================================================  -->
+    <bean id="openOfficeSocketBootstrapService" class="org.openvpms.report.openoffice.OOSocketBootstrapService">
+        <constructor-arg type="int" value="8100"/>
+        <constructor-arg type="boolean" value="false"/>
+    </bean>
+
+    <!-- ====================================================================================================== -->
+    <!-- OpenOffice bootstrap connection pool.                                                                  -->
+    <!--                                                                                                        -->
+    <!-- Uses openOfficeSocketBootstrapService to create connections.                                           -->
+    <!--                                                                                                        -->
+    <!-- The following properties may be set:                                                                   -->
+    <!-- * reuseCount - restart OpenOffice after 'reuseCount' uses. Use 0 to never restart                      -->
+    <!-- ====================================================================================================== -->
+    <bean id="openOfficeConnectionPool" class="org.openvpms.report.openoffice.OOBootstrapConnectionPool">
+        <constructor-arg ref="openOfficeSocketBootstrapService"/>
+        <property name="reuseCount" value="1000"/>
+    </bean>
+
+    <!-- ====================================================================================================== -->
+    <!-- Default OpenOffice connection pool.                                                                    -->
+    <!--                                                                                                        -->
+    <!-- This uses an OOSocketConnectionFactory to connect to an existing OpenOffice process listening on a     -->
+    <!-- socket.                                                                                                -->
+    <!--                                                                                                        -->
+    <!-- The OOSocketConnectionFactory constructor takes two arguments:                                         -->
+    <!-- * host       - the host the OpenOffice process is running on.                                          -->
+    <!-- * port       - the port the OpenOffice process is listening on.                                        -->
+    <!-- ====================================================================================================== -->
+    <!--bean id="openOfficeConnectionPool" class="org.openvpms.report.openoffice.DefaultOOConnectionPool">
+        <constructor-arg>
+            <bean class="org.openvpms.report.openoffice.OOSocketConnectionFactory">
+                <constructor-arg value="localhost"/>
+                <constructor-arg value="8100"/>
+            </bean>
+        </constructor-arg>
+    </bean-->
 
 </beans>
