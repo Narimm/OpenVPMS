@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -46,13 +46,24 @@ public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
 
 
     /**
-     * Constructs a {@code Browser} that queries IMObjects using the specified query.
+     * Constructs a {@link PatientHistoryBrowser} that queries IMObjects using the specified query.
      *
      * @param query   the query
      * @param context the layout context
      */
     public PatientHistoryBrowser(PatientHistoryQuery query, LayoutContext context) {
-        super(query, newTableModel(context), context);
+        this(query, newTableModel(context), context);
+    }
+
+    /**
+     * Constructs a {@link PatientHistoryBrowser} that queries IMObjects using the specified query.
+     *
+     * @param query   the query
+     * @param model   the table model
+     * @param context the layout context
+     */
+    public PatientHistoryBrowser(PatientHistoryQuery query, PatientHistoryTableModel model, LayoutContext context) {
+        super(query, model, context);
     }
 
     /**
@@ -149,8 +160,9 @@ public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
      * @param context the layout context
      * @return a new table model
      */
-    private static IMObjectTableModel<Act> newTableModel(LayoutContext context) {
-        return IMObjectTableModelFactory.create(PatientHistoryTableModel.class, context);
+    private static PatientHistoryTableModel newTableModel(LayoutContext context) {
+        IMObjectTableModel model = IMObjectTableModelFactory.create(PatientHistoryTableModel.class, context);
+        return (PatientHistoryTableModel) model;
     }
 
     /**

@@ -195,7 +195,7 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
     /**
      * Sets the selected visit row.
      *
-     * @param row the row, or <tt>-1</tt> if no visit is selected
+     * @param row the row, or {@code -1} if no visit is selected
      */
     public void setSelectedVisit(int row) {
         if (selectedVisit != row) {
@@ -210,7 +210,7 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
     /**
      * Returns the selected visit row.
      *
-     * @return the row or <tt>-1</tt> if no visit is selected
+     * @return the row or {@code -1} if no visit is selected
      */
     public int getSelectedVisit() {
         return selectedVisit;
@@ -256,6 +256,16 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
      */
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
         return null;
+    }
+
+    /**
+     * Returns the detail of an act.
+     *
+     * @param act the act
+     * @return a component of the act detail
+     */
+    protected Component getDetail(Act act) {
+        return getTextDetail(act);
     }
 
     /**
@@ -458,7 +468,7 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
      */
     private Component getDocumentDetail(DocumentAct act) {
         Component result;
-        Label label = getDetail(act);
+        Label label = getTextDetail(act);
 
         DocumentViewer viewer = new DocumentViewer(act, true, context);
         viewer.setShowNoDocument(false);
@@ -485,7 +495,7 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
         FinancialAct act = (FinancialAct) bean.getAct();
         String text = Messages.format("patient.record.summary.invoiceitem", name, act.getQuantity(),
                                       NumberFormatter.formatCurrency(act.getTotal()));
-        return getDetail(text);
+        return getTextDetail(text);
     }
 
     /**
@@ -510,7 +520,7 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
             }
 
         }
-        return getDetail(text);
+        return getTextDetail(text);
     }
 
     /**
@@ -520,12 +530,18 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
      * @param act the act
      * @return a new component
      */
-    private Label getDetail(Act act) {
+    private Label getTextDetail(Act act) {
         String text = getText(act);
-        return getDetail(text);
+        return getTextDetail(text);
     }
 
-    private Label getDetail(String text) {
+    /**
+     * Returns label for text.
+     *
+     * @param text the text. May be {@code null} or contain new lines
+     * @return a new label
+     */
+    private Label getTextDetail(String text) {
         Label result;
         if (text != null) {
             LabelEx label = new LabelEx(text);
@@ -571,7 +587,7 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
      * Helper to return the jxpath expression for an archetype short name.
      *
      * @param shortName the archetype short name
-     * @return an expression, or <tt>null</tt> if none is found
+     * @return an expression, or {@code null} if none is found
      */
     private String getExpression(String shortName) {
         String result = expressions.get(shortName);
