@@ -19,7 +19,6 @@ package org.openvpms.web.component.im.relationship;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.SequencedRelationship;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -87,9 +86,8 @@ public abstract class MultipleSequencedRelationshipCollectionEditor extends Rela
     }
 
     /**
-     * Creates a new object, subject to a short name being selected, and
-     * current collection cardinality. This must be registered with the
-     * collection.
+     * Creates a new object, subject to a short name being selected, and * current collection cardinality. This must be
+     * registered with the collection.
      * <p/>
      * If an {@link IMObjectCreationListener} is registered, it will be notified on successful creation of an object.
      *
@@ -97,11 +95,11 @@ public abstract class MultipleSequencedRelationshipCollectionEditor extends Rela
      */
     @Override
     public IMObject create() {
-        EntityRelationship relationship = (EntityRelationship) super.create();
+        SequencedRelationship relationship = (SequencedRelationship) super.create();
         if (sequenced && relationships != null) {
             if (!relationships.isEmpty()) {
                 RelationshipState state = relationships.get(relationships.size() - 1);
-                EntityRelationship last = (EntityRelationship) state.getRelationship();
+                SequencedRelationship last = (SequencedRelationship) state.getRelationship();
                 int sequence = last.getSequence();
                 relationship.setSequence(++sequence);
             }

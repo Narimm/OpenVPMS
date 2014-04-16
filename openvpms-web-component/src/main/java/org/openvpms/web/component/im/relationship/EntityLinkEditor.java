@@ -20,6 +20,7 @@ import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.Validator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,5 +59,19 @@ public class EntityLinkEditor extends AbstractRelationshipEditor {
             }
         }
         return result;
+    }
+
+    /**
+     * Validates the object.
+     * <p/>
+     * This implementation caches the result of the validation. If valid, subsequent invocations will return this
+     * result, otherwise {@link #doValidation(Validator)} will be invoked.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    public boolean validate(Validator validator) {
+        return super.validate(validator);
     }
 }

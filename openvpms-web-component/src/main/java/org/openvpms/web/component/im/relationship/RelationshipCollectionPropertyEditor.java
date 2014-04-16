@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -45,11 +43,10 @@ import java.util.Set;
  * and populated when saving. If the parent is saved first, the related objects end up containing the relationship,
  * triggering a StaleObjectStateException.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class RelationshipCollectionPropertyEditor
-    extends AbstractCollectionPropertyEditor {
+        extends AbstractCollectionPropertyEditor {
 
     /**
      * The parent object.
@@ -75,24 +72,27 @@ public abstract class RelationshipCollectionPropertyEditor
      * The relationship states, keyed on their corresponding relationships.
      */
     private Map<IMObjectRelationship, RelationshipState> states
-        = new LinkedHashMap<IMObjectRelationship, RelationshipState>();
+            = new LinkedHashMap<IMObjectRelationship, RelationshipState>();
 
-    private Set<IMObjectRelationship> added
-        = new HashSet<IMObjectRelationship>();
+    /**
+     * The added relationships.
+     */
+    private Set<IMObjectRelationship> added = new HashSet<IMObjectRelationship>();
 
-    private Set<IMObjectRelationship> removed
-        = new HashSet<IMObjectRelationship>();
+    /**
+     * The removed relationships.
+     */
+    private Set<IMObjectRelationship> removed = new HashSet<IMObjectRelationship>();
 
 
     /**
-     * Creates a new <tt>RelationshipCollectionPropertyEditor</tt>.
+     * Constructs a {@link RelationshipCollectionPropertyEditor}.
      *
      * @param property the collection property
      * @param parent   the parent object
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public RelationshipCollectionPropertyEditor(
-        CollectionProperty property, IMObject parent) {
+    public RelationshipCollectionPropertyEditor(CollectionProperty property, IMObject parent) {
         super(property);
         this.parent = parent;
 
@@ -114,7 +114,7 @@ public abstract class RelationshipCollectionPropertyEditor
     /**
      * Indicates if inactive relationships should be excluded.
      *
-     * @param exclude if <tt>true</tt> exclude inactive relationships
+     * @param exclude if {@code true} exclude inactive relationships
      */
     public void setExcludeInactive(boolean exclude) {
         this.exclude = exclude;
@@ -123,7 +123,7 @@ public abstract class RelationshipCollectionPropertyEditor
     /**
      * Determines if inactive relationships should be excluded.
      *
-     * @return <tt>true</tt> if inactive relationships should be excluded
+     * @return {@code true} if inactive relationships should be excluded
      */
     public boolean getExcludeInactive() {
         return exclude;
@@ -132,7 +132,7 @@ public abstract class RelationshipCollectionPropertyEditor
     /**
      * Determines if the parent is the source or target of the relationships.
      *
-     * @return <tt>true</tt> if the parent is the source, <tt>false</tt> if it
+     * @return {@code true} if the parent is the source, {@code false} if it
      *         is the target
      */
     public boolean parentIsSource() {
@@ -141,7 +141,7 @@ public abstract class RelationshipCollectionPropertyEditor
 
     /**
      * Returns the relationship states, filtering inactive states if
-     * {@link #getExcludeInactive()} is <tt>true</tt>.
+     * {@link #getExcludeInactive()} is {@code true}.
      *
      * @return the relationship states
      */
@@ -164,10 +164,10 @@ public abstract class RelationshipCollectionPropertyEditor
      * Returns the relationship state for a relationship.
      *
      * @param relationship the relationship
-     * @return the corresponding state, or <tt>null</tt> if none is found
+     * @return the corresponding state, or {@code null} if none is found
      */
     public RelationshipState getRelationshipState(
-        IMObjectRelationship relationship) {
+            IMObjectRelationship relationship) {
         return states.get(relationship);
     }
 
@@ -175,7 +175,7 @@ public abstract class RelationshipCollectionPropertyEditor
      * Adds an object to the collection, if it doesn't exist.
      *
      * @param object the object to add
-     * @return <tt>true</tt> if the object was added, otherwise <tt>false</tt>
+     * @return {@code true} if the object was added, otherwise {@code false}
      */
     @Override
     public boolean add(IMObject object) {
@@ -195,7 +195,7 @@ public abstract class RelationshipCollectionPropertyEditor
      * This removes any associated editor.
      *
      * @param object the object to remove
-     * @return <tt>true</tt> if the object was removed
+     * @return {@code true} if the object was removed
      */
     @Override
     public boolean remove(IMObject object) {
@@ -217,7 +217,7 @@ public abstract class RelationshipCollectionPropertyEditor
      */
     protected RelationshipStateQuery createQuery(IMObject parent) {
         return new RelationshipStateQuery(
-            parent, getObjects(), getProperty().getArchetypeRange());
+                parent, getObjects(), getProperty().getArchetypeRange());
     }
 
     /**
@@ -242,25 +242,14 @@ public abstract class RelationshipCollectionPropertyEditor
      * For each added relationship, this implementation also adds it to the
      * related object.
      *
-     * @return <tt>true</tt> if the save was successful
+     * @return {@code true} if the save was successful
      */
     @Override
     protected boolean doSave() {
         boolean saved = false;
-        Map<IMObjectReference, IMObject> toSave
-            = new HashMap<IMObjectReference, IMObject>();
-        for (IMObjectRelationship r : removed) {
-            IMObject object = getObject(r, toSave);
-            if (object != null) {
-                removeRelationship(object, r);
-            }
-        }
-        for (IMObjectRelationship r : added) {
-            IMObject object = getObject(r, toSave);
-            if (object != null) {
-                addRelationship(object, r);
-            }
-        }
+        Map<IMObjectReference, IMObject> toSave = new HashMap<IMObjectReference, IMObject>();
+        removeRelationships(removed, toSave);
+        addRelationships(added, toSave);
         if (!toSave.isEmpty()) {
             if (SaveHelper.save(toSave.values())) {
                 removed.clear();
@@ -275,13 +264,42 @@ public abstract class RelationshipCollectionPropertyEditor
     }
 
     /**
+     * Invoked on save to add relationships to related objects.
+     *
+     * @param added   the added relationships
+     * @param changed the changed objects, keyed on their references
+     */
+    protected void addRelationships(Set<IMObjectRelationship> added, Map<IMObjectReference, IMObject> changed) {
+        for (IMObjectRelationship r : added) {
+            IMObject object = getObject(r, changed);
+            if (object != null) {
+                addRelationship(object, r);
+            }
+        }
+    }
+
+    /**
+     * Invoked on save to remove relationships from related objects.
+     *
+     * @param removed the removed relationships
+     * @param changed the changed objects, keyed on their references
+     */
+    protected void removeRelationships(Set<IMObjectRelationship> removed, Map<IMObjectReference, IMObject> changed) {
+        for (IMObjectRelationship r : removed) {
+            IMObject object = getObject(r, changed);
+            if (object != null) {
+                removeRelationship(object, r);
+            }
+        }
+    }
+
+    /**
      * Adds a relationship to the related object.
      *
      * @param object       the related object
      * @param relationship the relationship to add
      */
-    protected abstract void addRelationship(IMObject object,
-                                            IMObjectRelationship relationship);
+    protected abstract void addRelationship(IMObject object, IMObjectRelationship relationship);
 
     /**
      * Removes a relationship from a related object.
@@ -289,21 +307,18 @@ public abstract class RelationshipCollectionPropertyEditor
      * @param object       the related object
      * @param relationship the relationship to remove
      */
-    protected abstract void removeRelationship(
-        IMObject object, IMObjectRelationship relationship);
+    protected abstract void removeRelationship(IMObject object, IMObjectRelationship relationship);
 
     /**
-     * Helper to return the related object in a relationship, first consulting
-     * the supplied cache.
+     * Helper to return the related object in a relationship, first consulting the supplied cache.
      * <p/>
      * Objects are added to the cache.
      *
      * @param relationship the relationship
      * @param cache        the object cache, keyed on reference
-     * @return the related object, or <tt>null</tt> if not found
+     * @return the related object, or {@code null} if not found
      */
-    private IMObject getObject(IMObjectRelationship relationship,
-                               Map<IMObjectReference, IMObject> cache) {
+    private IMObject getObject(IMObjectRelationship relationship, Map<IMObjectReference, IMObject> cache) {
         IMObject object = null;
         IMObjectReference ref = parentIsSource() ? relationship.getTarget() : relationship.getSource();
         if (ref != null) {
