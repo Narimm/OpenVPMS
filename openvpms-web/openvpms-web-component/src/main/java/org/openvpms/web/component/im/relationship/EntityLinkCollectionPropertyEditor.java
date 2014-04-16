@@ -19,10 +19,14 @@ package org.openvpms.web.component.im.relationship;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.property.CollectionProperty;
+
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -44,25 +48,49 @@ public class EntityLinkCollectionPropertyEditor extends RelationshipCollectionPr
     }
 
     /**
+     * Invoked on save to add relationships to related objects.
+     * <p/>
+     * This implementation is a no-op, as {@link EntityLink}s are uni-directional.
+     *
+     * @param added   the added relationships
+     * @param changed the changed objects, keyed on their references
+     */
+    @Override
+    protected void addRelationships(Set<IMObjectRelationship> added, Map<IMObjectReference, IMObject> changed) {
+    }
+
+    /**
+     * Invoked on save to remove relationships from related objects.
+     * <p/>
+     * This implementation is a no-op, as {@link EntityLink}s are uni-directional.
+     *
+     * @param removed the removed relationships
+     * @param changed the changed objects, keyed on their references
+     */
+    @Override
+    protected void removeRelationships(Set<IMObjectRelationship> removed, Map<IMObjectReference, IMObject> changed) {
+    }
+
+    /**
      * Adds a relationship to the related object.
+     * <p/>
+     * This implementation is a no-op, as {@link EntityLink}s are uni-directional.
      *
      * @param object the related object
      * @param link   the relationship to add
      */
     protected void addRelationship(IMObject object, IMObjectRelationship link) {
-        Entity entity = (Entity) object;
-        entity.addEntityLink((EntityLink) link);
     }
 
     /**
      * Removes a relationship from a related object.
+     * <p/>
+     * This implementation is a no-op, as {@link EntityLink}s are uni-directional.
      *
      * @param object the related object
      * @param link   the relationship to remove
      */
     protected void removeRelationship(IMObject object, IMObjectRelationship link) {
-        Entity entity = (Entity) object;
-        entity.removeEntityLink((EntityLink) link);
     }
 
 }
