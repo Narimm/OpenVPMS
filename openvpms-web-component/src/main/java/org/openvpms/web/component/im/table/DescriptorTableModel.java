@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.table;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -152,7 +153,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
         List<ArchetypeDescriptor> archetypes = DescriptorHelper.getArchetypeDescriptors(shortNames);
         if (archetypes.isEmpty()) {
             throw new IllegalArgumentException(
-                    "Argument 'shortNames' doesn't refer to a valid archetype");
+                    "Argument 'shortNames' doesn't refer to a valid archetype: " + StringUtils.join(shortNames, ", "));
         }
         return createColumnModel(archetypes, context);
     }
