@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 /**
@@ -52,7 +50,7 @@ import static org.junit.Assert.assertTrue;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public abstract class AbstractCollectionPropertyEditorTest
-    extends AbstractAppTest {
+        extends AbstractAppTest {
 
     /**
      * Tests the behaviour of performing query operations on an empty
@@ -113,7 +111,7 @@ public abstract class AbstractCollectionPropertyEditorTest
         IMObject savedParent = get(parent);
         assertNotNull(savedParent);
         CollectionPropertyEditor saved = createEditor(
-            getCollectionProperty(savedParent), savedParent);
+                getCollectionProperty(savedParent), savedParent);
         assertEquals(1, saved.getObjects().size());
         assertTrue(saved.getObjects().contains(element));
 
@@ -197,7 +195,7 @@ public abstract class AbstractCollectionPropertyEditorTest
         IMObject savedParent = get(parent);
         assertNotNull(savedParent);
         CollectionPropertyEditor saved = createEditor(
-            getCollectionProperty(savedParent), savedParent);
+                getCollectionProperty(savedParent), savedParent);
         assertEquals(1, saved.getObjects().size());
         assertTrue(saved.getObjects().contains(elt3));
 
@@ -228,6 +226,7 @@ public abstract class AbstractCollectionPropertyEditorTest
 
         IMObject elt1 = createObject(parent);
         IMObject elt2 = createObject(parent);
+        IMObject elt3 = createObject(parent);
         editor.add(elt1);
 
         assertEquals(1, editor.getObjects().size());
@@ -267,7 +266,7 @@ public abstract class AbstractCollectionPropertyEditorTest
         IMObject savedParent = get(parent);
         assertNotNull(savedParent);
         CollectionPropertyEditor saved = createEditor(
-            getCollectionProperty(savedParent), savedParent);
+                getCollectionProperty(savedParent), savedParent);
         assertEquals(1, saved.getObjects().size());
         assertTrue(saved.getObjects().contains(elt2));
 
@@ -276,6 +275,19 @@ public abstract class AbstractCollectionPropertyEditorTest
         assertTrue("Collection should be valid", saved.isValid());
 
         // make sure save can be executed a second time
+        execute(new TransactionCallback<Object>() {
+            public Object doInTransaction(TransactionStatus transactionStatus) {
+                assertTrue("Failed to save collection", editor.save());
+                assertTrue("Failed to save parent", SaveHelper.save(parent));
+                return null;
+            }
+        });
+
+        // add an object and remove it without saving
+        editor.add(elt3);
+        editor.getEditor(elt3);
+        editor.remove(elt3);
+
         execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
                 assertTrue("Failed to save collection", editor.save());
@@ -324,7 +336,7 @@ public abstract class AbstractCollectionPropertyEditorTest
         // reload parent and collection
         final IMObject parent2 = get(parent);
         final CollectionPropertyEditor editor2 = createEditor(
-            getCollectionProperty(parent2), parent2);
+                getCollectionProperty(parent2), parent2);
         assertEquals(2, editor2.getObjects().size());
         elt1 = get(elt1);
         elt2 = get(elt2);
@@ -348,7 +360,7 @@ public abstract class AbstractCollectionPropertyEditorTest
         IMObject savedParent = get(parent2);
         assertNotNull(savedParent);
         CollectionPropertyEditor saved = createEditor(
-            getCollectionProperty(savedParent), savedParent);
+                getCollectionProperty(savedParent), savedParent);
         assertEquals(1, saved.getObjects().size());
         assertTrue(saved.getObjects().contains(elt2));
 
@@ -387,9 +399,9 @@ public abstract class AbstractCollectionPropertyEditorTest
      * @return the collection property
      */
     protected CollectionProperty getCollectionProperty(
-        IMObject parent) {
+            IMObject parent) {
         ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(
-            parent);
+                parent);
         assertNotNull(archetype);
         NodeDescriptor node = archetype.getNodeDescriptor(getCollectionNode());
         assertNotNull(node);
@@ -404,7 +416,7 @@ public abstract class AbstractCollectionPropertyEditorTest
      * @return a new editor for the property
      */
     protected abstract CollectionPropertyEditor createEditor(
-        CollectionProperty property, IMObject parent);
+            CollectionProperty property, IMObject parent);
 
     /**
      * Returns an object to add to the collection.
@@ -421,7 +433,7 @@ public abstract class AbstractCollectionPropertyEditorTest
      */
     protected void execute(TransactionCallback<Object> callback) {
         TransactionTemplate template = new TransactionTemplate(
-            ServiceHelper.getTransactionManager());
+                ServiceHelper.getTransactionManager());
         template.execute(callback);
     }
 }
