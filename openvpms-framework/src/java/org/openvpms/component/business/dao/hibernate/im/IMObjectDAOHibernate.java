@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im;
@@ -50,14 +48,6 @@ import org.openvpms.component.business.dao.hibernate.im.query.QueryContext;
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
-import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.ClassNameMustBeSpecified;
-import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToDeleteIMObject;
-import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToExecuteNamedQuery;
-import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToExecuteQuery;
-import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToFindIMObjects;
-import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToSaveCollectionOfObjects;
-import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToSaveIMObject;
-import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.InvalidQueryString;
 import org.openvpms.component.business.dao.im.common.ResultCollector;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -88,12 +78,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.ClassNameMustBeSpecified;
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToDeleteIMObject;
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToExecuteNamedQuery;
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToExecuteQuery;
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToFindIMObjects;
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToSaveCollectionOfObjects;
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToSaveIMObject;
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.InvalidQueryString;
+
 
 /**
  * This is an implementation of the IMObject DAO for hibernate.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 public class IMObjectDAOHibernate extends HibernateDaoSupport
         implements IMObjectDAO, ContextHandler {
@@ -342,7 +341,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                                String conceptName, String instanceName,
                                String clazz, boolean activeOnly,
                                int firstResult, int maxResults) {
-        StringBuffer shortName = new StringBuffer();
+        StringBuilder shortName = new StringBuilder();
         if (entityName != null) {
             shortName.append(entityName);
         } else {
@@ -393,7 +392,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
             throw new IMObjectDAOException(ClassNameMustBeSpecified);
         }
 
-        StringBuffer queryString = new StringBuffer();
+        StringBuilder queryString = new StringBuilder();
         List<String> names = new ArrayList<String>();
         List<Object> params = new ArrayList<Object>();
         boolean andRequired = false;
@@ -801,7 +800,13 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
 
         public void setParameters(Query query) {
             for (int i = 0; i < names.length; ++i) {
-                query.setParameter(names[i], values[i]);
+                if (values[i] instanceof Collection) {
+                    query.setParameterList(names[i], (Collection) values[i]);
+                } else if (values[i] instanceof Object[]) {
+                    query.setParameterList(names[i], (Object[]) values[i]);
+                } else {
+                    query.setParameter(names[i], values[i]);
+                }
             }
         }
 
