@@ -20,7 +20,6 @@ import org.joda.time.Duration;
 import org.joda.time.Period;
 import org.joda.time.format.PeriodFormatter;
 import org.joda.time.format.PeriodFormatterBuilder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -103,7 +102,6 @@ public class FreeSlotQueryTestCase extends ArchetypeServiceTest {
      * Verifies that overlapping appointments are handled.
      */
     @Test
-    @Ignore("This test is broken")
     public void testOverlappingAppointments() {
         Party schedule1 = createSchedule(null, null);
         Act act1 = createAppointment(getDatetime("2014-01-01 09:00:00"), getDatetime("2014-01-01 09:15:00"), schedule1);
