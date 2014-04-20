@@ -16,9 +16,8 @@
 
 package org.openvpms.archetype.rules.workflow;
 
-import org.apache.commons.collections.Predicate;
-import org.apache.commons.collections.functors.AllPredicate;
-import org.apache.commons.collections.iterators.FilterIterator;
+import org.apache.commons.collections4.Predicate;
+import org.apache.commons.collections4.functors.AllPredicate;
 import org.apache.commons.lang.time.DateUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
@@ -28,12 +27,8 @@ import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.query.NamedQuery;
-import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -141,23 +136,18 @@ public class FreeSlotQuery {
      */
     public Iterator<Slot> query() {
         if (fromDate != null && toDate != null && schedules.length > 0) {
-            NamedQuery query = new NamedQuery("findFreeSlots", Arrays.asList("scheduleId", "startTime", "endTime"));
-            query.setParameter("from", fromDate);
-            query.setParameter("to", toDate);
-            Long[] scheduleIds = new Long[schedules.length];
-            for (int i = 0; i < schedules.length; ++i) {
-                scheduleIds[i] = schedules[i].getId();
+            Predicate<Slot> predicate = getPredicate();
+            List<FreeSlotIterator> list = new ArrayList<FreeSlotIterator>();
+            for (Entity schedule : schedules) {
+                list.add(new FreeSlotIterator(schedule, fromDate, toDate, service));
             }
-            query.setParameter("scheduleIds", scheduleIds);
-            Iterator<Slot> iterator = new SlotIterator(new ObjectSetQueryIterator(service, query));
-            Predicate predicate = getPredicate();
-            return filter(iterator, predicate);
+            return new FreeSlotIterators(list, predicate);
         }
         return Collections.<Slot>emptyList().iterator();
     }
 
-    private Predicate getPredicate() {
-        List<Predicate> predicates = new ArrayList<Predicate>();
+    private Predicate<Slot> getPredicate() {
+        List<Predicate<Slot>> predicates = new ArrayList<Predicate<Slot>>();
         predicates.add(new SchedulePredicate(schedules));
         if (minSlotSize > 0) {
             predicates.add(new SlotSizePredicate());
@@ -168,15 +158,10 @@ public class FreeSlotQuery {
         if (toTime != null) {
             predicates.add(new ToTimePredicate());
         }
-        return AllPredicate.getInstance(predicates);
+        return AllPredicate.allPredicate(predicates);
     }
 
-    @SuppressWarnings("unchecked")
-    private Iterator<Slot> filter(Iterator<Slot> iterator, Predicate predicate) {
-        return new FilterIterator(iterator, predicate);
-    }
-
-    private class SchedulePredicate implements Predicate {
+    private class SchedulePredicate implements Predicate<Slot> {
 
         private class Times {
 
@@ -206,13 +191,12 @@ public class FreeSlotQuery {
         /**
          * Use the specified parameter to perform a test that returns true or false.
          *
-         * @param object the object to evaluate, should not be changed
+         * @param slot the object to evaluate, should not be changed
          * @return true or false
          * @throws ClassCastException (runtime) if the input is the wrong class
          */
         @Override
-        public boolean evaluate(Object object) {
-            Slot slot = (Slot) object;
+        public boolean evaluate(Slot slot) {
             Times times = map.get(slot.getSchedule());
             if (times != null) {
                 long slotStart = getTime(slot.getStartTime());
@@ -244,32 +228,29 @@ public class FreeSlotQuery {
 
     }
 
-    private class SlotSizePredicate implements Predicate {
+    private class SlotSizePredicate implements Predicate<Slot> {
 
         @Override
-        public boolean evaluate(Object object) {
-            Slot slot = (Slot) object;
+        public boolean evaluate(Slot slot) {
             long duration = slot.getEndTime().getTime() - slot.getStartTime().getTime();
             return duration >= minSlotSize;
         }
     }
 
-    private class FromTimePredicate implements Predicate {
+    private class FromTimePredicate implements Predicate<Slot> {
 
         @Override
-        public boolean evaluate(Object object) {
-            Slot slot = (Slot) object;
+        public boolean evaluate(Slot slot) {
             Duration slotStart = getMillisOfDay(slot.getStartTime());
             Duration slotEnd = getMillisOfDay(slot.getEndTime());
             return slotStart.compareTo(slotEnd) >= 0 || slotEnd.compareTo(fromTime) > 0;
         }
     }
 
-    private class ToTimePredicate implements Predicate {
+    private class ToTimePredicate implements Predicate<Slot> {
 
         @Override
-        public boolean evaluate(Object object) {
-            Slot slot = (Slot) object;
+        public boolean evaluate(Slot slot) {
             Duration slotStart = getMillisOfDay(slot.getStartTime());
             Duration slotEnd = getMillisOfDay(slot.getEndTime());
             return slotStart.compareTo(slotEnd) >= 0 || slotStart.compareTo(toTime) < 0;
@@ -293,29 +274,5 @@ public class FreeSlotQuery {
         return -1;
     }
 
-    private class SlotIterator implements Iterator<Slot> {
-
-        private final Iterator<ObjectSet> iterator;
-
-        public SlotIterator(Iterator<ObjectSet> iterator) {
-            this.iterator = iterator;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return iterator.hasNext();
-        }
-
-        @Override
-        public Slot next() {
-            ObjectSet set = iterator.next();
-            return new Slot(set.getLong("scheduleId"), set.getDate("startTime"), set.getDate("endTime"));
-        }
-
-        @Override
-        public void remove() {
-            iterator.remove();
-        }
-    }
 
 }

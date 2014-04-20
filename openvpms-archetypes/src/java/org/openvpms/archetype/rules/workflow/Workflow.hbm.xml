@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+
 <!--
   ~ Version: 1.0
   ~
@@ -88,21 +89,39 @@ order by p.activityStartTime, act.id
 select ap.entity.id as scheduleId, a.activityEndTime as startTime, min(b.activityStartTime) as endTime
 from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as a,
       org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as b
-join a.participations ap with ap.archetypeId.shortName = 'participation.schedule' and ap.entity.id in (:scheduleIds)
-join b.participations bp with bp.archetypeId.shortName = 'participation.schedule'
+join a.participations ap with ap.archetypeId.shortName = 'participation.schedule' and ap.entity.id = :scheduleId
+join b.participations bp with bp.archetypeId.shortName = 'participation.schedule' and bp.entity.id = :scheduleId
 where a.archetypeId.shortName = 'act.customerAppointment'
       and b.archetypeId.shortName = 'act.customerAppointment'
       and (a.activityStartTime between :from and :to or a.activityEndTime between :from and :to)
       and (b.activityStartTime between :from and :to or b.activityEndTime between :from and :to)
-      and a.activityEndTime <= b.activityStartTime
-      and bp.entity.id = ap.entity.id
-group by a.activityEndTime
+      and b.activityEndTime > a.activityEndTime
+group by a.activityEndTime, ap.entity.id
 having a.activityEndTime < min(b.activityStartTime)
 order by a.activityEndTime, ap.entity.id
         ]]>
     </query>
 
     <query name="findFreeSlots2">
+        <![CDATA[
+select ap.entity.id as scheduleId, a.activityEndTime as startTime, min(b.activityStartTime) as endTime
+from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as a,
+      org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as b
+join a.participations ap with ap.archetypeId.shortName = 'participation.schedule' and ap.entity.id in (:scheduleIds)
+join b.participations bp with bp.archetypeId.shortName = 'participation.schedule'
+where a.archetypeId.shortName = 'act.customerAppointment'
+      and b.archetypeId.shortName = 'act.customerAppointment'
+      and (a.activityStartTime between :from and :to or a.activityEndTime between :from and :to)
+      and (b.activityStartTime between :from and :to or b.activityEndTime between :from and :to)
+      and b.activityEndTime > a.activityEndTime
+      and bp.entity.id = ap.entity.id
+group by a.activityEndTime, ap.entity.id
+having a.activityEndTime < min(b.activityStartTime)
+order by a.activityEndTime, ap.entity.id
+        ]]>
+    </query>
+
+    <query name="findFreeSlots3">
         <![CDATA[
 select a.activityEndTime as start_time, min(b.activityStartTime) as end_time
 from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as a,

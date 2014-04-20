@@ -1,25 +1,25 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.i18n.time;
 
 import org.joda.time.DateTime;
 import org.joda.time.Days;
+import org.joda.time.Hours;
+import org.joda.time.Minutes;
 import org.joda.time.Months;
 import org.joda.time.Period;
 import org.joda.time.Weeks;
@@ -35,8 +35,7 @@ import java.util.ResourceBundle;
 /**
  * A {@link DurationFormatter} that formats date durations.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class DateDurationFormatter implements DurationFormatter {
 
@@ -81,9 +80,39 @@ public class DateDurationFormatter implements DurationFormatter {
     private final boolean showDays;
 
     /**
+     * Determines if hours should be displayed.
+     */
+    private final boolean showHours;
+
+    /**
+     * Determines if minutes should be displayed.
+     */
+    private final boolean showMinutes;
+
+    /**
      * The period formatter.
      */
     private final PeriodFormatter formatter;
+
+    /**
+     * Singular minute suffix.
+     */
+    private static String MINUTE_SUFFIX;
+
+    /**
+     * Plural minute suffix.
+     */
+    private static String MINUTES_SUFFIX;
+
+    /**
+     * Singular hour suffix.
+     */
+    private static String HOUR_SUFFIX;
+
+    /**
+     * Plural hour suffix.
+     */
+    private static String HOURS_SUFFIX;
 
     /**
      * Singular day suffix.
@@ -127,6 +156,10 @@ public class DateDurationFormatter implements DurationFormatter {
 
     static {
         ResourceBundle bundle = ResourceBundle.getBundle(DurationFormatter.class.getName(), Locale.getDefault());
+        HOUR_SUFFIX = " " + bundle.getString("hour");
+        HOURS_SUFFIX = " " + bundle.getString("hours");
+        MINUTE_SUFFIX = " " + bundle.getString("minute");
+        MINUTES_SUFFIX = " " + bundle.getString("minutes");
         DAY_SUFFIX = " " + bundle.getString("day");
         DAYS_SUFFIX = " " + bundle.getString("days");
         WEEK_SUFFIX = " " + bundle.getString("week");
@@ -135,14 +168,14 @@ public class DateDurationFormatter implements DurationFormatter {
         MONTHS_SUFFIX = " " + bundle.getString("months");
         YEAR_SUFFIX = " " + bundle.getString("year");
         YEARS_SUFFIX = " " + bundle.getString("years");
-        YEAR = new DateDurationFormatter(true, false, false, false);
-        MONTH = new DateDurationFormatter(false, true, false, false);
-        WEEK = new DateDurationFormatter(false, false, true, false);
-        DAY = new DateDurationFormatter(false, false, false, true);
+        YEAR = new DateDurationFormatter(true, false, false, false, false, false);
+        MONTH = new DateDurationFormatter(false, true, false, false, false, false);
+        WEEK = new DateDurationFormatter(false, false, true, false, false, false);
+        DAY = new DateDurationFormatter(false, false, false, true, false, false);
     }
 
     /**
-     * Constructs a <tt>DateDurationFormatter</tt>.
+     * Constructs a {@link DateDurationFormatter}.
      *
      * @param showYears  determines if years should be displayed
      * @param showMonths determines if months should be displayed
@@ -150,10 +183,27 @@ public class DateDurationFormatter implements DurationFormatter {
      * @param showDays   determines if days should be displayed
      */
     protected DateDurationFormatter(boolean showYears, boolean showMonths, boolean showWeeks, boolean showDays) {
+        this(showYears, showMonths, showWeeks, showDays, false, false);
+    }
+
+    /**
+     * Constructs a {@link DateDurationFormatter}.
+     *
+     * @param showYears   determines if years should be displayed
+     * @param showMonths  determines if months should be displayed
+     * @param showWeeks   determines if weeks should be displayed
+     * @param showDays    determines if days should be displayed
+     * @param showHours   determines if hours should be displayed
+     * @param showMinutes determines if minutes should be displayed
+     */
+    protected DateDurationFormatter(boolean showYears, boolean showMonths, boolean showWeeks, boolean showDays,
+                                    boolean showHours, boolean showMinutes) {
         this.showYears = showYears;
         this.showMonths = showMonths;
         this.showWeeks = showWeeks;
         this.showDays = showDays;
+        this.showHours = showHours;
+        this.showMinutes = showMinutes;
 
         PeriodFormatterBuilder builder = new PeriodFormatterBuilder();
         if (showYears) {
@@ -168,6 +218,12 @@ public class DateDurationFormatter implements DurationFormatter {
         if (showDays) {
             builder = builder.appendDays().appendSuffix(DAY_SUFFIX, DAYS_SUFFIX).appendSeparator(" ");
         }
+        if (showHours) {
+            builder = builder.appendHours().appendSuffix(HOUR_SUFFIX, HOURS_SUFFIX).appendSeparator(" ");
+        }
+        if (showMinutes) {
+            builder = builder.appendMinutes().appendSuffix(MINUTE_SUFFIX, MINUTES_SUFFIX).appendSeparator(" ");
+        }
 
         formatter = builder.toFormatter();
     }
@@ -181,8 +237,23 @@ public class DateDurationFormatter implements DurationFormatter {
      * @param showDays   determines if days should be displayed
      * @return a new formatter
      */
+    public static DurationFormatter create(boolean showYears, boolean showMonths, boolean showWeeks, boolean showDays) {
+        return create(showYears, showMonths, showWeeks, showDays, false, false);
+    }
+
+    /**
+     * Creates a new duration formatter.
+     *
+     * @param showYears   determines if years should be displayed
+     * @param showMonths  determines if months should be displayed
+     * @param showWeeks   determines if weeks should be displayed
+     * @param showDays    determines if days should be displayed
+     * @param showHours   determines if hours should be displayed
+     * @param showMinutes determines if minutes should be displayed
+     * @return a new formatter
+     */
     public static DurationFormatter create(boolean showYears, boolean showMonths, boolean showWeeks,
-                                           boolean showDays) {
+                                           boolean showDays, boolean showHours, boolean showMinutes) {
         if (showYears && !showMonths && !showWeeks && !showDays) {
             return YEAR;
         } else if (!showYears && showMonths && !showWeeks && !showDays) {
@@ -192,7 +263,7 @@ public class DateDurationFormatter implements DurationFormatter {
         } else if (!showYears && !showMonths && !showWeeks && showDays) {
             return DAY;
         }
-        return new DateDurationFormatter(showYears, showMonths, showWeeks, showDays);
+        return new DateDurationFormatter(showYears, showMonths, showWeeks, showDays, showHours, showMinutes);
     }
 
     /**
@@ -221,6 +292,8 @@ public class DateDurationFormatter implements DurationFormatter {
         int months = 0;
         int weeks = 0;
         int days = 0;
+        int hours = 0;
+        int minutes = 0;
 
         DateTime start = from;
         if (showYears) {
@@ -237,9 +310,17 @@ public class DateDurationFormatter implements DurationFormatter {
         }
         if (showDays) {
             days = Days.daysBetween(start, to).getDays();
+            start = start.plusDays(days);
+        }
+        if (showHours) {
+            hours = Hours.hoursBetween(start, to).getHours();
+            start = start.plusHours(hours);
+        }
+        if (showMinutes) {
+            minutes = Minutes.minutesBetween(start, to).getMinutes();
         }
 
-        Period period = new Period(years, months, weeks, days, 0, 0, 0, 0);
+        Period period = new Period(years, months, weeks, days, hours, minutes, 0, 0);
         return formatter.print(period);
     }
 }
