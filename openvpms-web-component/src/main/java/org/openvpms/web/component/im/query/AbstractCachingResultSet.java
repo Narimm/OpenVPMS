@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -134,7 +134,7 @@ public abstract class AbstractCachingResultSet<T> extends AbstractResultSet<T> {
      *
      * @param firstResult the first result of the page to retrieve
      * @param maxResults  the maximum no. of results in the page
-     * @return the page, or {@code null}
+     * @return the page
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected abstract IPage<T> query(int firstResult, int maxResults);

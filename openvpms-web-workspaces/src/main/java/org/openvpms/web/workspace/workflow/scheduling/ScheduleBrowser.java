@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -64,7 +64,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     /**
      * The query.
      */
-    private final ScheduleQuery query;
+    private final ScheduleServiceQuery query;
 
     /**
      * The context.
@@ -123,7 +123,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
      * @param query   the schedule query
      * @param context the context
      */
-    public ScheduleBrowser(ScheduleQuery query, Context context) {
+    public ScheduleBrowser(ScheduleServiceQuery query, Context context) {
         this.query = query;
         this.context = context;
         query.setListener(new QueryListener() {
@@ -378,7 +378,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
      *
      * @return the query
      */
-    protected ScheduleQuery getQuery() {
+    protected ScheduleServiceQuery getQuery() {
         return query;
     }
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -35,11 +35,11 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.AbstractQueryBrowser;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.ListQuery;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.Property;
@@ -340,7 +340,7 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
      * Browser to display a product supplier relationships.
      */
     private static class ProductSupplierBrowser
-            extends TableBrowser<EntityRelationship> {
+            extends AbstractQueryBrowser<EntityRelationship> {
 
         /**
          * Constructs a ProductSupplierBrowser that queries objects using the specified query, displaying them in the
