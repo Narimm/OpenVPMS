@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.util;
@@ -315,5 +315,27 @@ public class DateRules {
             result = compareDates(date1, date2) == 0;
         }
         return result;
+    }
+
+    /**
+     * Returns the minimum of two dates.
+     *
+     * @param date1 the first date
+     * @param date2 the second date
+     * @return the minimum of the two dates
+     */
+    public static Date min(Date date1, Date date2) {
+        return compareTo(date1, date2) < 0 ? date1 : date2;
+    }
+
+    /**
+     * Returns the maximum of two dates.
+     *
+     * @param date1 the first date
+     * @param date2 the second date
+     * @return the maximum of the two dates
+     */
+    public static Date max(Date date1, Date date2) {
+        return compareTo(date1, date2) > 0 ? date1 : date2;
     }
 }

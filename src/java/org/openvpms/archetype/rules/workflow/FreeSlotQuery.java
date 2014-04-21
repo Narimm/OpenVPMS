@@ -21,22 +21,15 @@ import org.apache.commons.collections4.functors.AllPredicate;
 import org.apache.commons.lang.time.DateUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
-import org.joda.time.MutableDateTime;
-import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Queries free appointment slots.
@@ -70,8 +63,14 @@ public class FreeSlotQuery {
      */
     private Duration toTime;
 
+    /**
+     * The schedules to query.
+     */
     private Entity[] schedules = {};
 
+    /**
+     * The minimum slot size, or {@code -1} if there is no minimum slot size.
+     */
     private long minSlotSize = -1;
 
     /**
@@ -148,7 +147,6 @@ public class FreeSlotQuery {
 
     private Predicate<Slot> getPredicate() {
         List<Predicate<Slot>> predicates = new ArrayList<Predicate<Slot>>();
-        predicates.add(new SchedulePredicate(schedules));
         if (minSlotSize > 0) {
             predicates.add(new SlotSizePredicate());
         }
@@ -159,73 +157,6 @@ public class FreeSlotQuery {
             predicates.add(new ToTimePredicate());
         }
         return AllPredicate.allPredicate(predicates);
-    }
-
-    private class SchedulePredicate implements Predicate<Slot> {
-
-        private class Times {
-
-            final long from;
-            final long to;
-
-            public Times(long from, long to) {
-                this.from = from;
-                this.to = to;
-            }
-        }
-
-        private Map<Long, Times> map = new HashMap<Long, Times>();
-
-        public SchedulePredicate(Entity[] schedules) {
-            for (Entity schedule : schedules) {
-                IMObjectBean bean = new IMObjectBean(schedule, service);
-                long startTime = getTime(bean.getDate("startTime"));
-                long endTime = getTime(bean.getDate("endTime"));
-                if (startTime != -1 && endTime != -1) {
-                    map.put(schedule.getId(), new Times(startTime, endTime));
-                }
-            }
-
-        }
-
-        /**
-         * Use the specified parameter to perform a test that returns true or false.
-         *
-         * @param slot the object to evaluate, should not be changed
-         * @return true or false
-         * @throws ClassCastException (runtime) if the input is the wrong class
-         */
-        @Override
-        public boolean evaluate(Slot slot) {
-            Times times = map.get(slot.getSchedule());
-            if (times != null) {
-                long slotStart = getTime(slot.getStartTime());
-                long slotEnd = getTime(slot.getEndTime());
-                if ((!(slotStart > times.to || times.to == -1) && (slotEnd < times.from || times.from == -1))) {
-                    return false;
-                }
-                if (slotStart <= times.from) {
-                    slot.setStartTime(getDateTime(slot.getStartTime(), times.from));
-                }
-                if (times.to != -1) {
-                    if (slotEnd >= times.to) {
-                        slot.setEndTime(getDateTime(slot.getEndTime(), times.to));
-                    } else if (slotEnd <= slotStart) {
-                        Date endTime = getDateTime(slot.getEndTime(), times.to);
-                        endTime = DateRules.getDate(endTime, -1, DateUnits.DAYS);
-                        slot.setEndTime(endTime);
-                    }
-                }
-            }
-            return true;
-        }
-
-        private Date getDateTime(Date date, long time) {
-            MutableDateTime dateTime = new MutableDateTime(date);
-            dateTime.setMillisOfDay((int) time);
-            return dateTime.toDate();
-        }
-
     }
 
     private class SlotSizePredicate implements Predicate<Slot> {
@@ -252,26 +183,13 @@ public class FreeSlotQuery {
         @Override
         public boolean evaluate(Slot slot) {
             Duration slotStart = getMillisOfDay(slot.getStartTime());
-            Duration slotEnd = getMillisOfDay(slot.getEndTime());
-            return slotStart.compareTo(slotEnd) >= 0 || slotStart.compareTo(toTime) < 0;
+            return slotStart.compareTo(toTime) < 0;
         }
     }
 
     private Duration getMillisOfDay(Date date) {
         DateTime time = new DateTime(date);
         return new Duration(time.getMillisOfDay());
-    }
-
-    private static long getTime(Date date) {
-        if (date != null) {
-            Calendar calendar = new GregorianCalendar();
-            calendar.setTime(date);
-            return (calendar.get(Calendar.HOUR_OF_DAY) * DateUtils.MILLIS_PER_HOUR)
-                   + (calendar.get(Calendar.MINUTE) * DateUtils.MILLIS_PER_MINUTE)
-                   + (calendar.get(Calendar.SECOND) * DateUtils.MILLIS_PER_SECOND)
-                   + calendar.get(Calendar.MILLISECOND);
-        }
-        return -1;
     }
 
 
