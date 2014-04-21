@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.system.common.query;
@@ -22,6 +20,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,8 +29,7 @@ import java.util.Map;
 /**
  * Named query.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class NamedQuery extends AbstractArchetypeQuery {
 
@@ -41,46 +39,53 @@ public class NamedQuery extends AbstractArchetypeQuery {
     private String query;
 
     /**
-     * Object names. May be <code>null</code>
+     * Object names. May be {@code null}
      */
     private Collection<String> names;
 
     /**
-     * The query parameters. May be <code>null</code>
+     * The query parameters. May be {@code null}
      */
     private Map<String, Object> parameters;
 
 
     /**
-     * Constructs a new <code>NamedQuery</code>.
+     * Constructs a {@link NamedQuery}.
      *
      * @param query the query name
      */
     public NamedQuery(String query) {
-        this(query, null);
+        this(query, (Collection<String>) null);
     }
 
     /**
-     * Constructs a new <code>NamedQuery</code>.
+     * Constructs a {@link NamedQuery}.
      *
      * @param query the query name
-     * @param names names to assign the objects in the result set.
-     *              If <code>null</code>, or empty, names will generated
+     * @param names names to assign the objects in the result set. If {@code null}, or empty, names will generated
      */
     public NamedQuery(String query, Collection<String> names) {
         this(query, names, null);
     }
 
     /**
-     * Constructs a new <code>NamedQuery</code>.
+     * Constructs a {@link NamedQuery}.
+     *
+     * @param query the query name
+     * @param names names to assign the objects in the result set. If or empty, names will generated
+     */
+    public NamedQuery(String query, String... names) {
+        this(query, names.length != 0 ? Arrays.asList(names) : null, null);
+    }
+
+    /**
+     * Constructs a {@link NamedQuery}.
      *
      * @param query      the query name
-     * @param names      names to assign the objects in the result set.
-     *                   If <code>null</code>, or empty, names will generated
-     * @param parameters the query parameters. May be <code>null</code>
+     * @param names      names to assign the objects in the result set. If {@code null}, or empty, names will generated
+     * @param parameters the query parameters. May be {@code null}
      */
-    public NamedQuery(String query, Collection<String> names,
-                      Map<String, Object> parameters) {
+    public NamedQuery(String query, Collection<String> names, Map<String, Object> parameters) {
         this.query = query;
         if (names != null && !names.isEmpty()) {
             this.names = names;
@@ -106,7 +111,7 @@ public class NamedQuery extends AbstractArchetypeQuery {
     /**
      * Returns the object names.
      *
-     * @return the object names. May be <tt>null</tt>
+     * @return the object names. May be {@code null}
      */
     public Collection<String> getNames() {
         return names;
@@ -135,7 +140,7 @@ public class NamedQuery extends AbstractArchetypeQuery {
      * Returns a parameter value.
      *
      * @param name the parameter name
-     * @return the parameter value. May be <code>null</code>
+     * @return the parameter value. May be {@code null}
      */
     public Object getParameter(String name) {
         return parameters.get(name);
