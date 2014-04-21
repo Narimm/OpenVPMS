@@ -68,16 +68,19 @@ class FreeSlotIterator implements Iterator<Slot> {
      */
     private final long scheduleEnd;
 
-    private static class SplitSlot extends Slot {
+    /**
+     * A slot used to indicate that the slot has already been processed.
+     */
+    private static class ProcessedSlot extends Slot {
 
         /**
-         * Constructs a {@link Slot}.
+         * Constructs a {@link ProcessedSlot}.
          *
          * @param schedule  the schedule id
          * @param startTime the slot start time
          * @param endTime   the slot end time
          */
-        public SplitSlot(long schedule, Date startTime, Date endTime) {
+        public ProcessedSlot(long schedule, Date startTime, Date endTime) {
             super(schedule, startTime, endTime);
         }
     }
@@ -232,11 +235,8 @@ class FreeSlotIterator implements Iterator<Slot> {
     @Override
     public Slot next() {
         Slot slot = iterator.next();
-        if (slot instanceof SplitSlot) {
-            return slot;
-        }
-        if (scheduleStart != -1 && scheduleEnd != -1) {
-            slot = split(slot);
+        if (scheduleStart != -1 && scheduleEnd != -1 && (!(slot instanceof ProcessedSlot))) {
+            slot = adjustSlotForScheduleTimes(slot);
         }
         return slot;
     }
@@ -255,30 +255,105 @@ class FreeSlotIterator implements Iterator<Slot> {
         iterator.remove();
     }
 
-    private Slot split(Slot slot) {
-        long slotStart = -1;
+    /**
+     * Adjusts a slot start time, if it is before the start time defined by the schedule.
+     *
+     * @param startTime the slot start time
+     * @return the adjusted start time, or {@code startTime}  if it didn't need adjusting
+     */
+    private Date getSlotStart(Date startTime) {
+        Date result = startTime;
         if (scheduleStart != -1) {
-            slotStart = getTime(slot.getStartTime());
+            long slotStart = getTime(startTime);
             if (slotStart < scheduleStart) {
-                slot.setStartTime(getDateTime(slot.getStartTime(), scheduleStart));
+                result = getDateTime(startTime, scheduleStart);
             }
         }
+        return result;
+    }
+
+    /**
+     * Adjusts a slot end time, if it is after the end time defined by the schedule.
+     *
+     * @param endTime the slot end time
+     * @return the adjusted end time, or {@code endTime}  if it didn't need adjusting
+     */
+    private Date getSlotEnd(Date endTime) {
+        Date result = endTime;
         if (scheduleEnd != -1) {
-            long slotEnd = getTime(slot.getEndTime());
+            long slotEnd = getTime(endTime);
             if (slotEnd >= scheduleEnd) {
-                slot.setEndTime(getDateTime(slot.getEndTime(), scheduleStart));
-            } else {
-                if (slotStart == -1) {
-                    slotStart = getTime(slot.getStartTime());
-                }
-                if (slotEnd <= slotStart) {
-                    Date endTime = getDateTime(slot.getEndTime(), scheduleEnd);
-                    endTime = DateRules.getDate(endTime, -1, DateUnits.DAYS);
-                    slot.setEndTime(endTime);
-                }
+                result = getDateTime(endTime, scheduleEnd);
             }
         }
-        return slot;
+        return result;
+    }
+
+    /**
+     * Returns the schedule start for a particular date.
+     *
+     * @param date the date
+     * @return the schedule start for the date
+     */
+    private Date getScheduleStart(Date date) {
+        if (scheduleStart == -1) {
+            return date;
+        }
+        return getDateTime(date, scheduleStart);
+    }
+
+    /**
+     * Returns the schedule end for a particular date.
+     *
+     * @param date the date
+     * @return the schedule end for the date
+     */
+    private Date getScheduleEnd(Date date) {
+        if (scheduleEnd == -1) {
+            return DateRules.getDate(date, 1, DateUnits.DAYS);
+        }
+        return getDateTime(date, scheduleEnd);
+    }
+
+    private void pushback(long scheduleId, Date slotStart, Date slotEnd) {
+        if (slotStart.compareTo(slotEnd) < 0) {
+            iterator.pushback(new ProcessedSlot(scheduleId, slotStart, slotEnd));
+        }
+    }
+
+    /**
+     * Processes a slot to take into account schedule start and end times.
+     * <p/>
+     * For slots that don't span multiple days, this ensures that the slot start and end times don't exceed those
+     * of the schedule.
+     * <p/>
+     * Slots that spans multiple days are split into a slot per day. The first of the split slots are returned,
+     * and the remainder are pushed back onto the iterator.
+     *
+     * @param slot the slot
+     * @return the original slot, or the first slot in the collection of the split slots
+     */
+    private Slot adjustSlotForScheduleTimes(Slot slot) {
+        Slot result;
+        Date from = DateRules.getDate(slot.getStartTime());
+        Date to = DateRules.getDate(slot.getEndTime());
+        if (from.compareTo(to) != 0) {
+            pushback(slot.getSchedule(), getScheduleStart(to), getSlotEnd(slot.getEndTime()));
+            while ((to = DateRules.getDate(to, -1, DateUnits.DAYS)).compareTo(from) > 0) {
+                pushback(slot.getSchedule(), getScheduleStart(to), getScheduleEnd(to));
+            }
+            pushback(slot.getSchedule(), getSlotStart(slot.getStartTime()), getScheduleEnd(from));
+            result = iterator.next();
+        } else {
+            if (scheduleStart != -1) {
+                slot.setStartTime(getSlotStart(slot.getStartTime()));
+            }
+            if (scheduleEnd != -1) {
+                slot.setEndTime(getSlotEnd(slot.getEndTime()));
+            }
+            result = slot;
+        }
+        return result;
     }
 
     private long getTime(Date date) {
@@ -300,6 +375,9 @@ class FreeSlotIterator implements Iterator<Slot> {
     }
 
 
+    /**
+     * Predicate to exclude slots outside the opening times of the schedule.
+     */
     private class SchedulePredicate implements Predicate<Slot> {
 
         /**
@@ -310,12 +388,12 @@ class FreeSlotIterator implements Iterator<Slot> {
          */
         @Override
         public boolean evaluate(Slot slot) {
-            long slotStart = getTime(slot.getStartTime());
-            long slotEnd = getTime(slot.getEndTime());
-            if ((!(slotStart > scheduleEnd || scheduleEnd == -1) && (slotEnd < scheduleStart || scheduleStart == -1))) {
-                return false;
-            }
-            return true;
+            Date slotStart = slot.getStartTime();
+            Date slotEnd = slot.getEndTime();
+            Date start = scheduleStart != -1 ? getScheduleStart(slotStart) : DateRules.getDate(slotStart);
+            Date end = scheduleEnd != -1 ? getScheduleEnd(slotEnd)
+                                         : DateRules.getDate(DateRules.getDate(slotStart), 1, DateUnits.DAYS);
+            return DateRules.intersects(slotStart, slotEnd, start, end);
         }
     }
 
