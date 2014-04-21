@@ -392,6 +392,14 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
      */
     @Test
     public void testDateParsing() {
+        ProductPrice fixed1 = createFixedPrice("1.0", "0.5", "100", "10", "2012-02-01", "2012-04-01", false);
+        ProductPrice fixed2 = createFixedPrice("1.08", "0.6", "80", "10", "2012-04-02", "2012-06-01", true);
+        ProductPrice unit1 = createUnitPrice("1.92", "1.2", "60", "10", "2012-02-02", "2012-04-02");
+        ProductPrice unit2 = createUnitPrice("2.55", "1.5", "70", "10", "2012-04-03", "2012-06-02");
+        Product product = createProduct("Product A", "A", fixed1, fixed2, unit1, unit2);
+        product.addClassification(createTaxType(new BigDecimal("5.0")));
+        save(product);
+
         ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers) {
             @Override
             protected String getDate(Date date) {
@@ -412,8 +420,8 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
 
         ProductData data = products.getData().get(0);
         checkProduct(data, product);
-        checkPrices(data.getFixedPrices(), fixed1A, fixed1B, fixed1C, fixed2A, fixed2B, fixed2C);
-        checkPrices(data.getUnitPrices(), unit1A, unit1B, unit1C, unit2A, unit2B, unit2C);
+        checkPrices(data.getFixedPrices(), fixed1, fixed2);
+        checkPrices(data.getUnitPrices(), unit1, unit2);
     }
 
     /**
