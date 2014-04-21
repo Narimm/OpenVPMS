@@ -231,6 +231,7 @@ public class FreeSlotQueryTestCase extends ArchetypeServiceTest {
         Iterator<Slot> query = createIterator("2014-01-01", "2014-01-03", schedule);
         checkSlot(query, schedule, "2014-01-01 09:00:00", "2014-01-01 09:30:00");
         checkSlot(query, schedule, "2014-01-01 09:45:00", "2014-01-01 17:00:00");
+        checkSlot(query, schedule, "2014-01-02 10:00:00", "2014-01-02 17:00:00");
         assertFalse(query.hasNext());
     }
 
@@ -297,6 +298,17 @@ public class FreeSlotQueryTestCase extends ArchetypeServiceTest {
         Iterator<Slot> iterator = createIterator(query);
         checkSlot(iterator, schedule, "2014-01-01 09:15:00", "2014-01-01 10:00:00");
         assertFalse(iterator.hasNext());
+    }
+
+    /**
+     * Verifies that when a schedule has start and end times, free slots are split over those times.
+     */
+    @Test
+    public void testFreeSlotSplitsOverScheduleTimes() {
+        Party schedule = createSchedule("09:00:00", "17:00:00");
+        Iterator<Slot> query = createIterator("2014-01-01", "2014-01-03", schedule);
+        checkSlot(query, schedule, "2014-01-01 09:00:00", "2014-01-01 17:00:00");
+        checkSlot(query, schedule, "2014-01-02 09:00:00", "2014-01-02 17:00:00");
     }
 
     /**
