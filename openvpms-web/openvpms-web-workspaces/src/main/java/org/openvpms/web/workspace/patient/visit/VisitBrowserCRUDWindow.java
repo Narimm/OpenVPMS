@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.patient.visit;
 
@@ -26,7 +26,7 @@ import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 import java.util.List;
 
 /**
- * A patient medical record browser that CRUD operations.
+ * A patient medical record browser that provides CRUD operations.
  *
  * @author Tim Anderson
  */
@@ -38,16 +38,27 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
     private final HelpContext help;
 
     /**
-     * Constructs a {@code VisitBrowserCRUDWindow}.
+     * Constructs a {@link VisitBrowserCRUDWindow}.
      *
      * @param query   the patient medical record query
      * @param context the context
      * @param help    the help context
      */
     public VisitBrowserCRUDWindow(PatientHistoryQuery query, Context context, HelpContext help) {
+        this(query, new PatientHistoryBrowser(query, new DefaultLayoutContext(context, help)), context, help);
+    }
+
+    /**
+     * Constructs a {@link VisitBrowserCRUDWindow}.
+     *
+     * @param query   the patient history query
+     * @param browser the patient history browser
+     * @param context the context
+     * @param help    the help context
+     */
+    public VisitBrowserCRUDWindow(PatientHistoryQuery query, PatientHistoryBrowser browser, Context context,
+                                  HelpContext help) {
         this.help = help;
-        DefaultLayoutContext layout = new DefaultLayoutContext(context, help);
-        PatientHistoryBrowser browser = new PatientHistoryBrowser(query, layout);
         if (browser.getSelected() == null) {
             browser.query();
             List<Act> objects = browser.getObjects();

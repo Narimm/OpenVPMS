@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.history;
 
@@ -27,7 +27,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.app.SelectionHistory;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.TableBrowser;
+import org.openvpms.web.component.im.query.AbstractQueryBrowser;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
@@ -41,11 +41,10 @@ import org.openvpms.web.resource.i18n.Messages;
  *
  * @author Tim Anderson
  */
-public class CustomerPatientHistoryBrowser extends TableBrowser<CustomerPatient> {
+public class CustomerPatientHistoryBrowser extends AbstractQueryBrowser<CustomerPatient> {
 
     /**
-     * Construct a new {@code TableBrowser} that queries objects using the
-     * specified query, displaying them in the table.
+     * Constructs a {@link CustomerPatientHistoryBrowser}.
      *
      * @param context the context
      * @param layout  the layout context

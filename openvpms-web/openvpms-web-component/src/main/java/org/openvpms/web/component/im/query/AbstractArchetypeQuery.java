@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -53,6 +53,11 @@ import org.openvpms.web.resource.i18n.Messages;
  * @author Tim Anderson
  */
 public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
+
+    /**
+     * The archetypes to query.
+     */
+    private final ShortNameConstraint archetypes;
 
     /**
      * The search field. If the text is {@code null} or empty, indicates
@@ -139,6 +144,7 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
      */
     public AbstractArchetypeQuery(String[] shortNames, boolean primaryOnly, Class type) {
         super(shortNames, primaryOnly, type);
+        archetypes = new ShortNameConstraint(getShortNames(), primaryOnly, true);
     }
 
     /**
@@ -151,6 +157,7 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
      */
     public AbstractArchetypeQuery(String[] shortNames, boolean primaryOnly) {
         super(shortNames, primaryOnly);
+        archetypes = new ShortNameConstraint(getShortNames(), primaryOnly, true);
     }
 
     /**
@@ -293,6 +300,15 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
                     activeSelector.setSelectedIndex(ACTIVE_BOTH);
             }
         }
+    }
+
+    /**
+     * Returns the archetypes to select from.
+     *
+     * @return the archetypes to select from
+     */
+    public ShortNameConstraint getArchetypes() {
+        return archetypes;
     }
 
     /**

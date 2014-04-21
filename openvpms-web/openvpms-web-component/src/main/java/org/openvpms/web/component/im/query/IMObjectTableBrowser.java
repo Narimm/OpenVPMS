@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -32,7 +32,7 @@ import org.openvpms.web.component.im.view.TableComponentFactory;
  * @author Tim Anderson
  */
 public abstract class IMObjectTableBrowser<T extends IMObject>
-        extends TableBrowser<T> {
+        extends AbstractQueryBrowser<T> {
 
     /**
      * Constructs an {@code IMObjectTableBrowser} that queries IMObjects using the specified query.

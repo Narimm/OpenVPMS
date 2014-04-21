@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -108,7 +108,7 @@ public class EntityBrowser extends QueryBrowserAdapter<ObjectSet, Entity> {
      */
     private Browser<ObjectSet> createBrowser(final EntityQuery query, LayoutContext context) {
         Query<ObjectSet> delegate = query.getQuery();
-        return new TableBrowser<ObjectSet>(delegate, delegate.getDefaultSortConstraint(), model, context) {
+        return new AbstractQueryBrowser<ObjectSet>(delegate, delegate.getDefaultSortConstraint(), model, context) {
             /**
              * Performs the query.
              *

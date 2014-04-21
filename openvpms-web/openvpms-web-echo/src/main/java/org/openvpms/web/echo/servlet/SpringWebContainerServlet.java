@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.servlet;
@@ -160,39 +160,44 @@ public class SpringWebContainerServlet extends WebContainerServlet {
             getSessionMonitor().active(session);
         }
 
-        // get next instance-counter
-        Integer nextInstance = (Integer) session.getAttribute(NEXT_INSTANCE);
-        if (nextInstance == null) {
-            nextInstance = 1;
-        }
+        if (supportsMultipleInstances(request)) {
+            // get next instance-counter
+            Integer nextInstance = (Integer) session.getAttribute(NEXT_INSTANCE);
+            if (nextInstance == null) {
+                nextInstance = 1;
+            }
 
-        ServletInstance instance = new ServletInstance(request);
+            ServletInstance instance = new ServletInstance(request);
 
-        if (instance.getId() != -1 && instance.getId() < nextInstance) {
-            servletName.set(instance.getServletName());
-            locale.set(request.getLocale());
-            super.process(request, response);
-        } else {
-            // increase instance-counter
-            synchronized (session) {
-                nextInstance = (Integer) session.getAttribute(NEXT_INSTANCE);
-                if (nextInstance == null) {
-                    nextInstance = 1;
+            if (instance.getId() != -1 && instance.getId() < nextInstance) {
+                servletName.set(instance.getServletName());
+                locale.set(request.getLocale());
+                super.process(request, response);
+            } else {
+                // increase instance-counter
+                synchronized (session) {
+                    nextInstance = (Integer) session.getAttribute(NEXT_INSTANCE);
+                    if (nextInstance == null) {
+                        nextInstance = 1;
+                    }
+                    instance.setId(nextInstance);
+                    nextInstance += 1;
+                    session.setAttribute(NEXT_INSTANCE, nextInstance);
                 }
-                instance.setId(nextInstance);
-                nextInstance += 1;
-                session.setAttribute(NEXT_INSTANCE, nextInstance);
-            }
 
-            servletName.set(instance.getServletName());
+                servletName.set(instance.getServletName());
 
-            // redirect to new servlet-path including request parameters
-            String url = instance.getURI();
-            String queryString = request.getQueryString();
-            if (queryString != null) {
-                url += "?" + queryString;
+                // redirect to new servlet-path including request parameters
+                String url = instance.getURI();
+                String queryString = request.getQueryString();
+                if (queryString != null) {
+                    url += "?" + queryString;
+                }
+                response.sendRedirect(response.encodeRedirectURL(url));
             }
-            response.sendRedirect(response.encodeRedirectURL(url));
+        } else {
+            servletName.set(request.getServletPath());
+            super.process(request, response);
         }
     }
 
@@ -203,6 +208,18 @@ public class SpringWebContainerServlet extends WebContainerServlet {
      */
     public String getServletName() {
         return servletName.get();
+    }
+
+    /**
+     * Determines if the application identified by the request supports multiple instances.
+     * <p/>
+     * This implementation returns {@code true}
+     *
+     * @param request the request
+     * @return {@code true}
+     */
+    protected boolean supportsMultipleInstances(HttpServletRequest request) {
+        return true;
     }
 
     /**

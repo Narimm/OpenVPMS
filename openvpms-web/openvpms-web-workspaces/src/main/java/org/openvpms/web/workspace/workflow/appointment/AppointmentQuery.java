@@ -19,20 +19,13 @@ package org.openvpms.web.workspace.workflow.appointment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.archetype.rules.practice.LocationRules;
-import org.openvpms.archetype.rules.workflow.AppointmentRules;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.workflow.scheduling.ScheduleQuery;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import org.openvpms.web.workspace.workflow.scheduling.ScheduleServiceQuery;
 
 
 /**
@@ -40,7 +33,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-class AppointmentQuery extends ScheduleQuery {
+class AppointmentQuery extends ScheduleServiceQuery {
 
     public enum TimeRange {
 
@@ -66,21 +59,6 @@ class AppointmentQuery extends ScheduleQuery {
     }
 
     /**
-     * The practice location.
-     */
-    private final Party location;
-
-    /**
-     * Appointment rules.
-     */
-    private AppointmentRules rules;
-
-    /**
-     * The location rules.
-     */
-    private final LocationRules locationRules;
-
-    /**
      * Time range selector.
      */
     private SelectField timeSelector;
@@ -92,10 +70,7 @@ class AppointmentQuery extends ScheduleQuery {
      * @param location the practice location. May be {@code null}
      */
     public AppointmentQuery(Party location) {
-        super(ServiceHelper.getAppointmentService(), "entity.organisationScheduleView");
-        this.location = location;
-        rules = ServiceHelper.getBean(AppointmentRules.class);
-        locationRules = ServiceHelper.getBean(LocationRules.class);
+        super(ServiceHelper.getAppointmentService(), new AppointmentSchedules(location));
     }
 
     /**
@@ -129,55 +104,6 @@ class AppointmentQuery extends ScheduleQuery {
                 range = TimeRange.ALL;
         }
         return range;
-    }
-
-    /**
-     * Returns the schedule views.
-     * <p/>
-     * This returns the <em>entity.organisationWorkListView</em> entities for the current location.
-     *
-     * @return the schedule views
-     */
-    protected List<Entity> getScheduleViews() {
-        List<Entity> views;
-        if (location != null) {
-            views = locationRules.getScheduleViews(location);
-        } else {
-            views = Collections.emptyList();
-        }
-        return views;
-    }
-
-    /**
-     * Returns the default schedule view.
-     *
-     * @return the default schedule view. May be {@code null}
-     */
-    protected Entity getDefaultScheduleView() {
-        if (location != null) {
-            return locationRules.getDefaultScheduleView(location);
-        }
-        return null;
-    }
-
-    /**
-     * Returns the schedules for the specified schedule view.
-     *
-     * @param view the schedule view
-     * @return the corresponding schedules
-     */
-    protected List<Entity> getSchedules(Entity view) {
-        List<Party> schedules = rules.getSchedules(view);
-        return new ArrayList<Entity>(schedules);
-    }
-
-    /**
-     * Returns a display name for the schedule selector.
-     *
-     * @return a display name for the schedule selector
-     */
-    protected String getScheduleDisplayName() {
-        return Messages.get("workflow.scheduling.query.schedule");
     }
 
     /**
