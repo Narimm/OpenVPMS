@@ -31,6 +31,7 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -64,7 +65,7 @@ public abstract class BaseScheduleQuery {
     /**
      * The list of schedules associated with the selected schedule view.
      */
-    private List<Entity> selectedSchedules;
+    private List<Entity> viewSchedules;
 
     /**
      * The query component.
@@ -92,7 +93,7 @@ public abstract class BaseScheduleQuery {
      */
     public Component getComponent() {
         if (component == null) {
-            component = GridFactory.create(6);
+            component = createContainer();
             focus = new FocusGroup(getClass().getSimpleName());
             doLayout(component);
         }
@@ -117,7 +118,7 @@ public abstract class BaseScheduleQuery {
     public void setScheduleView(Entity view) {
         getComponent();
         viewField.setSelectedItem(view);
-        selectedSchedules = null;
+        viewSchedules = null;
         updateScheduleField();
     }
 
@@ -126,24 +127,33 @@ public abstract class BaseScheduleQuery {
      *
      * @return the schedules
      */
-    public List<Entity> getSelectedSchedules() {
-        if (selectedSchedules == null) {
+    public List<Entity> getViewSchedules() {
+        if (viewSchedules == null) {
             Entity view = getScheduleView();
             if (view != null) {
-                selectedSchedules = schedules.getSchedules(view);
+                viewSchedules = schedules.getSchedules(view);
             }
         }
-        return (selectedSchedules != null) ? selectedSchedules : Collections.<Entity>emptyList();
+        return (viewSchedules != null) ? viewSchedules : Collections.<Entity>emptyList();
     }
 
     /**
      * Returns the selected schedule.
-     * \
      *
      * @return the selected schedule, or {@code null} if all schedules are selected
      */
     public Party getSchedule() {
         return (Party) scheduleField.getSelectedItem();
+    }
+
+    /**
+     * Returns the selected schedules.
+     *
+     * @return the selected schedules
+     */
+    public List<Entity> getSelectedSchedules() {
+        Entity schedule = getSchedule();
+        return (schedule != null) ? Arrays.asList(schedule) : getViewSchedules();
     }
 
     /**
@@ -181,6 +191,15 @@ public abstract class BaseScheduleQuery {
      */
     protected Schedules getSchedules() {
         return schedules;
+    }
+
+    /**
+     * Creates a container to lay out the component.
+     *
+     * @return a new container
+     */
+    protected Component createContainer() {
+        return GridFactory.create(6);
     }
 
     /**
@@ -269,7 +288,7 @@ public abstract class BaseScheduleQuery {
      * @return a new schedule model
      */
     private IMObjectListModel createScheduleModel() {
-        List<Entity> schedules = getSelectedSchedules();
+        List<Entity> schedules = getViewSchedules();
         return new IMObjectListModel(schedules, true, false);
     }
 
@@ -279,7 +298,7 @@ public abstract class BaseScheduleQuery {
      * Notifies any listener to perform a query.
      */
     protected void onViewChanged() {
-        selectedSchedules = null;
+        viewSchedules = null;
         updateScheduleField();
         onQuery();
     }

@@ -41,7 +41,6 @@ import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -233,16 +232,8 @@ public abstract class ScheduleServiceQuery extends BaseScheduleQuery {
      */
     private Map<Entity, List<PropertySet>> getEvents() {
         Date date = getDate();
-        Map<Entity, List<PropertySet>> result
-                = new LinkedHashMap<Entity, List<PropertySet>>();
-        Entity selected = getSchedule();
-        List<Entity> schedules;
-        if (selected != null) {
-            schedules = Arrays.asList(selected);
-        } else {
-            schedules = getSelectedSchedules();
-        }
-        for (Entity schedule : schedules) {
+        Map<Entity, List<PropertySet>> result = new LinkedHashMap<Entity, List<PropertySet>>();
+        for (Entity schedule : getSelectedSchedules()) {
             List<PropertySet> events = getEvents(schedule, date);
             result.put(schedule, events);
         }

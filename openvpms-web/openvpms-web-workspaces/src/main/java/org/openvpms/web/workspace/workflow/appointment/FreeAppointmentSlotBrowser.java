@@ -77,6 +77,21 @@ public class FreeAppointmentSlotBrowser extends AbstractTableBrowser<Slot> {
     }
 
     /**
+     * Returns the schedule for a slot.
+     *
+     * @param slot the slot
+     * @return the corresponding schedule or {@code null} if none is found
+     */
+    public Entity getSchedule(Slot slot) {
+        for (Entity schedule : query.getViewSchedules()) {
+            if (slot.getSchedule() == schedule.getId()) {
+                return schedule;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Query using the specified criteria, and populate the browser with matches.
      */
     @Override
@@ -130,25 +145,49 @@ public class FreeAppointmentSlotBrowser extends AbstractTableBrowser<Slot> {
 
     private static class SlotTableModel extends AbstractIMTableModel<Slot> {
 
-        private Map<Long, String> schedules = Collections.emptyMap();
+        /**
+         * The schedule names, keyed on schedule identifier.
+         */
+        private Map<Long, String> names = Collections.emptyMap();
+
+        /**
+         * The schedule name column.
+         */
         private static final int SCHEDULE = 0;
-        private static final int FROM = 1;
-        private static final int TO = 2;
+
+        /**
+         * The slot start date column.
+         */
+        private static final int DATE = 1;
+
+        /**
+         * The slot start time column.
+         */
+        private static final int TIME = 2;
+
+        /**
+         * The slot duration column.
+         */
         private static final int DURATION = 3;
 
         public SlotTableModel() {
             DefaultTableColumnModel model = new DefaultTableColumnModel();
             model.addColumn(createTableColumn(SCHEDULE, "workflow.scheduling.query.schedule"));
-            model.addColumn(createTableColumn(FROM, "workflow.scheduling.appointment.find.from"));
-            model.addColumn(createTableColumn(TO, "workflow.scheduling.appointment.find.to"));
+            model.addColumn(createTableColumn(DATE, "table.act.date"));
+            model.addColumn(createTableColumn(TIME, "table.act.time"));
             model.addColumn(createTableColumn(DURATION, "workflow.scheduling.appointment.find.duration"));
             setTableColumnModel(model);
         }
 
+        /**
+         * Sets the schedules being viewed.
+         *
+         * @param schedules the schedules
+         */
         public void setSchedules(List<Entity> schedules) {
-            this.schedules = new HashMap<Long, String>();
+            names = new HashMap<Long, String>();
             for (Entity schedule : schedules) {
-                this.schedules.put(schedule.getId(), schedule.getName());
+                names.put(schedule.getId(), schedule.getName());
             }
         }
 
@@ -177,13 +216,13 @@ public class FreeAppointmentSlotBrowser extends AbstractTableBrowser<Slot> {
             Object result = null;
             switch (column.getModelIndex()) {
                 case SCHEDULE:
-                    result = schedules.get(slot.getSchedule());
+                    result = names.get(slot.getSchedule());
                     break;
-                case FROM:
-                    result = DateFormatter.formatDateTime(slot.getStartTime(), false);
+                case DATE:
+                    result = DateFormatter.getFullDateFormat().format(slot.getStartTime());
                     break;
-                case TO:
-                    result = DateFormatter.formatDateTime(slot.getEndTime(), false);
+                case TIME:
+                    result = DateFormatter.formatTime(slot.getStartTime(), false);
                     break;
                 case DURATION:
                     result = formatter.format(slot.getStartTime(), slot.getEndTime());

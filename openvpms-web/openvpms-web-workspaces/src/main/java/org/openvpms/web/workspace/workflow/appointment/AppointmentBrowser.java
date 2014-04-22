@@ -36,6 +36,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.scheduling.IntersectComparator;
+import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel;
@@ -97,6 +98,22 @@ public class AppointmentBrowser extends ScheduleBrowser {
         lastTimeRange = timeRange;
         doQuery(reselect);
         updateTitle();
+    }
+
+    /**
+     * Selects the cell for the specified schedule and slot start time.
+     *
+     * @param schedule  the schedule
+     * @param startTime the slot start time
+     */
+    public void setSelected(Entity schedule, Date startTime) {
+        AppointmentGrid grid = (AppointmentGrid) getModel().getGrid();
+        int slot = grid.getSlot(startTime);
+        for (Schedule s : grid.getSchedules()) {
+            if (s.getSchedule().getId() == schedule.getId()) {
+                setSelectedCell(getModel().getColumn(schedule.getObjectReference()), slot);
+            }
+        }
     }
 
     /**

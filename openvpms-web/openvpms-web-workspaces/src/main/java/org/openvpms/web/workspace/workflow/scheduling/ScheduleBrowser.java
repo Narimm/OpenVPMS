@@ -592,6 +592,30 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     }
 
     /**
+     * Selects a cell.
+     *
+     * @param column the column to select
+     * @param row    the row to select
+     */
+    protected void setSelectedCell(int column, int row) {
+        model.setSelectedCell(column, row);
+        selected = model.getEvent(column, row);
+        if (model.getAvailability(column, row) != Availability.UNAVAILABLE) {
+            Schedule schedule = model.getSchedule(column);
+            if (schedule != null) {
+                selectedTime = model.getStartTime(schedule, row);
+                selectedSchedule = model.getScheduleEntity(column);
+            } else {
+                selectedTime = null;
+                selectedSchedule = null;
+            }
+        } else {
+            selectedTime = null;
+            selectedSchedule = null;
+        }
+    }
+
+    /**
      * Invoked when a cell is selected.
      * <p/>
      * Notifies listeners of the selection.
@@ -615,21 +639,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
                 }
             }
         }
-        model.setSelectedCell(column, row);
-        selected = model.getEvent(column, row);
-        if (model.getAvailability(column, row) != Availability.UNAVAILABLE) {
-            Schedule schedule = model.getSchedule(column);
-            if (schedule != null) {
-                selectedTime = model.getStartTime(schedule, row);
-                selectedSchedule = model.getScheduleEntity(column);
-            } else {
-                selectedTime = null;
-                selectedSchedule = null;
-            }
-        } else {
-            selectedTime = null;
-            selectedSchedule = null;
-        }
+        setSelectedCell(column, row);
         if (doubleClick) {
             if (selected == null) {
                 for (BrowserListener<PropertySet> listener : getBrowserListeners()) {
