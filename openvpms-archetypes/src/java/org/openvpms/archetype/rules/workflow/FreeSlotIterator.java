@@ -20,9 +20,9 @@ import org.apache.commons.collections4.Predicate;
 import org.apache.commons.collections4.iterators.AbstractUntypedIteratorDecorator;
 import org.apache.commons.collections4.iterators.FilterIterator;
 import org.apache.commons.collections4.iterators.IteratorChain;
-import org.apache.commons.collections4.iterators.PushbackIterator;
-import org.apache.commons.lang.time.DateUtils;
+import org.joda.time.DateTime;
 import org.joda.time.MutableDateTime;
+import org.joda.time.Period;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -35,10 +35,10 @@ import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -54,36 +54,7 @@ class FreeSlotIterator implements Iterator<Slot> {
     /**
      * The underlying iterator.
      */
-    private final PushbackIterator<Slot> iterator;
-
-    /**
-     * The time in milliseconds from midnight that the schedule starts at. Corresponds to the schedule
-     * <em>startTime</em> node. A value of {@code -1} indicates the <em>startTime</em> is unset.
-     */
-    private final long scheduleStart;
-
-    /**
-     * The time in milliseconds from midnight that the schedule ends at. Corresponds to the schedule
-     * <em>endTime</em> node. A value of {@code -1} indicates the <em>endTime</em> is unset.
-     */
-    private final long scheduleEnd;
-
-    /**
-     * A slot used to indicate that the slot has already been processed.
-     */
-    private static class ProcessedSlot extends Slot {
-
-        /**
-         * Constructs a {@link ProcessedSlot}.
-         *
-         * @param schedule  the schedule id
-         * @param startTime the slot start time
-         * @param endTime   the slot end time
-         */
-        public ProcessedSlot(long schedule, Date startTime, Date endTime) {
-            super(schedule, startTime, endTime);
-        }
-    }
+    private final Iterator<Slot> iterator;
 
     /**
      * Constructs an {@link FreeSlotIterator}.
@@ -91,33 +62,86 @@ class FreeSlotIterator implements Iterator<Slot> {
      * @param schedule the schedule
      * @param fromDate the date to query from
      * @param toDate   the date to query to
+     * @param fromTime the time to query from. May be {@code null}
+     * @param toTime   the time to query to. May be {@code null}
      * @param service  the archetype service
      */
-    public FreeSlotIterator(Entity schedule, Date fromDate, Date toDate, IArchetypeService service) {
+    public FreeSlotIterator(Entity schedule, Date fromDate, Date toDate, Period fromTime, Period toTime,
+                            IArchetypeService service) {
         IMObjectBean bean = new IMObjectBean(schedule, service);
-        scheduleStart = getTime(bean.getDate("startTime"));
-        scheduleEnd = getTime(bean.getDate("endTime"));
+
+        long scheduleStart = getTime(bean.getDate("startTime")); // the time that the schedule starts at
+        long scheduleEnd = getTime(bean.getDate("endTime"));     // the time that the schedule ends at
 
         Iterator<ObjectSet> queryIterator = createFreeSlotIterator(schedule, fromDate, toDate, service);
         Iterator<Slot> slotIterator = createFreeSlotAdapter(queryIterator);
-        Iterator<Slot> first = createFirstFreeSlotIterator(slotIterator, schedule, fromDate, toDate, service);
-        if (scheduleStart != -1 && scheduleEnd != -1) {
-            // filter free slots outside the schedule opening and closing times
-            first = new FilterIterator<Slot>(first, new SchedulePredicate());
+        Iterator<Slot> first = createFirstLastFreeSlotIterator(slotIterator, schedule, fromDate, toDate, service);
+        if (scheduleStart != -1 || scheduleEnd != -1) {
+            // filter free slots outside the schedule opening and closing times, and split those slots that span
+            // multiple opening/closing times
+            first = new TimeRangeSlotIterator(first, scheduleStart, scheduleEnd);
         }
-        iterator = new PushbackIterator<Slot>(first);
+        if (fromTime != null || toTime != null) {
+            // filter free slots outside the time range
+            long from = (fromTime != null) ? fromTime.toStandardDuration().getMillis() : -1;
+            long to = (toTime != null) ? toTime.toStandardDuration().getMillis() : -1;
+            first = new TimeRangeSlotIterator(first, from, to);
+        }
+        iterator = first;
+    }
+
+    /**
+     * Returns {@code true} if the iteration has more elements.
+     *
+     * @return {@code true} if the iteration has more elements
+     */
+    @Override
+    public boolean hasNext() {
+        return iterator.hasNext();
+    }
+
+    /**
+     * Returns the next element in the iteration.
+     *
+     * @return the next element in the iteration
+     * @throws NoSuchElementException if the iteration has no more elements
+     */
+    @Override
+    public Slot next() {
+        return iterator.next();
+    }
+
+    /**
+     * Removes from the underlying collection the last element returned
+     * by this iterator (optional operation).
+     *
+     * @throws UnsupportedOperationException if invoked
+     */
+    @Override
+    public void remove() {
+        throw new UnsupportedOperationException();
     }
 
     /**
      * Creates an iterator to handle the first and last free slot.
      * <p/>
-     * This cannot be done in the database layer without using slow unions.
+     * These cannot be determined by the findFreeSlots named query without using unions which are slow, so two other
+     * queries are issued to find:
+     * <ul>
+     * <li>the start time of the earliest appointment intersecting the start of the date range (before)</li>
+     * <li>the end time of the latest appointment intersecting the end of the date range (after)</li>
+     * </ul>
+     * If there is an appointment at the start, this is used to add a slot (fromDate, before).
+     * <p/>
+     * If there is an appointment at the end, this is used to add a slot (after, toDate).
+     * <p/>
+     * If there are no appointments, then a slot (fromDate, toDate) is added.
      *
      * @param iterator the slot iterator
      * @return an iterator that handles the first free slot in the date range
      */
-    private Iterator<Slot> createFirstFreeSlotIterator(Iterator<Slot> iterator, Entity schedule, Date fromDate,
-                                                       Date toDate, IArchetypeService service) {
+    private Iterator<Slot> createFirstLastFreeSlotIterator(Iterator<Slot> iterator, Entity schedule, Date fromDate,
+                                                           Date toDate, IArchetypeService service) {
         IteratorChain<Slot> result = new IteratorChain<Slot>();
         Date appointmentBefore = getAppointmentBefore(schedule, fromDate, toDate, service);
         Date appointmentAfter = getAppointmentAfter(schedule, fromDate, toDate, service);
@@ -165,7 +189,8 @@ class FreeSlotIterator implements Iterator<Slot> {
      * @param service  the archetype service
      * @return a new iterator over the free slots
      */
-    private Iterator<ObjectSet> createFreeSlotIterator(Entity schedule, Date fromDate, Date toDate, IArchetypeService service) {
+    private Iterator<ObjectSet> createFreeSlotIterator(Entity schedule, Date fromDate, Date toDate,
+                                                       IArchetypeService service) {
         NamedQuery query = new NamedQuery("findFreeSlots", "scheduleId", "startTime", "endTime");
         query.setParameter("from", fromDate);
         query.setParameter("to", toDate);
@@ -173,16 +198,19 @@ class FreeSlotIterator implements Iterator<Slot> {
         return new ObjectSetQueryIterator(service, query);
     }
 
+    /**
+     * Returns the start time of the earliest appointment intersecting the start of the date range.
+     *
+     * @param schedule the schedule
+     * @param fromDate the start of the date range
+     * @param toDate   the end of the date range
+     * @param service  the archetype service
+     * @return the start time of the appointment at the start of the date range, or {@code null} if none exists
+     */
     private Date getAppointmentBefore(Entity schedule, Date fromDate, Date toDate, IArchetypeService service) {
         Date result = null;
-        ArchetypeQuery query = new ArchetypeQuery(shortName("a", ScheduleArchetypes.APPOINTMENT));
-        query.add(new NodeSelectConstraint("a.startTime"));
-        query.add(new NodeSelectConstraint("a.endTime"));
-        query.add(Constraints.join("schedule").add(Constraints.eq("entity", schedule.getObjectReference())));
-        query.add(Constraints.or(Constraints.between("startTime", fromDate, toDate),
-                                 Constraints.between("endTime", fromDate, toDate)));
+        ArchetypeQuery query = createAppointmentQuery(schedule, fromDate, toDate);
         query.add(Constraints.sort("startTime"));
-        query.setMaxResults(1);
         Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(service, query);
         if (iterator.hasNext()) {
             ObjectSet set = iterator.next();
@@ -194,16 +222,19 @@ class FreeSlotIterator implements Iterator<Slot> {
         return result;
     }
 
+    /**
+     * Returns the end time of the latest appointment intersecting the end of the date range.
+     *
+     * @param schedule the schedule
+     * @param fromDate the start of the date range
+     * @param toDate   the end of the date range
+     * @param service  the archetype service
+     * @return the end time of the appointment after the date range, or {@code null} if none exists
+     */
     private Date getAppointmentAfter(Entity schedule, Date fromDate, Date toDate, IArchetypeService service) {
         Date result = null;
-        ArchetypeQuery query = new ArchetypeQuery(shortName("a", ScheduleArchetypes.APPOINTMENT));
-        query.add(new NodeSelectConstraint("a.startTime"));
-        query.add(new NodeSelectConstraint("a.endTime"));
-        query.add(Constraints.join("schedule").add(Constraints.eq("entity", schedule.getObjectReference())));
-        query.add(Constraints.or(Constraints.between("startTime", fromDate, toDate),
-                                 Constraints.between("endTime", fromDate, toDate)));
+        ArchetypeQuery query = createAppointmentQuery(schedule, fromDate, toDate);
         query.add(Constraints.sort("endTime", false));
-        query.setMaxResults(1);
         Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(service, query);
         if (iterator.hasNext()) {
             ObjectSet set = iterator.next();
@@ -215,186 +246,250 @@ class FreeSlotIterator implements Iterator<Slot> {
         return result;
     }
 
-
     /**
-     * Returns {@code true} if the iteration has more elements.
+     * Creates a query for the start and end times of an appointment falling in the specified date range.
      *
-     * @return {@code true} if the iteration has more elements
+     * @param schedule the appointment schedule
+     * @param fromDate the date to query from
+     * @param toDate   the date to query to
+     * @return a new query
      */
-    @Override
-    public boolean hasNext() {
-        return iterator.hasNext();
-    }
-
-    /**
-     * Returns the next element in the iteration.
-     *
-     * @return the next element in the iteration
-     * @throws NoSuchElementException if the iteration has no more elements
-     */
-    @Override
-    public Slot next() {
-        Slot slot = iterator.next();
-        if (scheduleStart != -1 && scheduleEnd != -1 && (!(slot instanceof ProcessedSlot))) {
-            slot = adjustSlotForScheduleTimes(slot);
-        }
-        return slot;
+    private ArchetypeQuery createAppointmentQuery(Entity schedule, Date fromDate, Date toDate) {
+        ArchetypeQuery query = new ArchetypeQuery(shortName("a", ScheduleArchetypes.APPOINTMENT));
+        query.add(new NodeSelectConstraint("a.startTime"));
+        query.add(new NodeSelectConstraint("a.endTime"));
+        query.add(Constraints.join("schedule").add(Constraints.eq("entity", schedule.getObjectReference())));
+        query.add(Constraints.or(Constraints.between("startTime", fromDate, toDate),
+                                 Constraints.between("endTime", fromDate, toDate)));
+        query.setMaxResults(1);
+        return query;
     }
 
     /**
-     * Removes from the underlying collection the last element returned
-     * by this iterator (optional operation).
+     * Returns the time portion of a date/time, in milliseconds.
      *
-     * @throws UnsupportedOperationException if the {@code remove} operation is not supported by this iterator
-     * @throws IllegalStateException         if the {@code next} method has not yet been called, or the {@code remove}
-     *                                       method has already been called after the last call to the {@code next}
-     *                                       method
+     * @param date the date/time
+     * @return the time, in milliseconds, or {@code -1} if the date is {@code null}
      */
-    @Override
-    public void remove() {
-        iterator.remove();
-    }
-
-    /**
-     * Adjusts a slot start time, if it is before the start time defined by the schedule.
-     *
-     * @param startTime the slot start time
-     * @return the adjusted start time, or {@code startTime}  if it didn't need adjusting
-     */
-    private Date getSlotStart(Date startTime) {
-        Date result = startTime;
-        if (scheduleStart != -1) {
-            long slotStart = getTime(startTime);
-            if (slotStart < scheduleStart) {
-                result = getDateTime(startTime, scheduleStart);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Adjusts a slot end time, if it is after the end time defined by the schedule.
-     *
-     * @param endTime the slot end time
-     * @return the adjusted end time, or {@code endTime}  if it didn't need adjusting
-     */
-    private Date getSlotEnd(Date endTime) {
-        Date result = endTime;
-        if (scheduleEnd != -1) {
-            long slotEnd = getTime(endTime);
-            if (slotEnd >= scheduleEnd) {
-                result = getDateTime(endTime, scheduleEnd);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns the schedule start for a particular date.
-     *
-     * @param date the date
-     * @return the schedule start for the date
-     */
-    private Date getScheduleStart(Date date) {
-        if (scheduleStart == -1) {
-            return date;
-        }
-        return getDateTime(date, scheduleStart);
-    }
-
-    /**
-     * Returns the schedule end for a particular date.
-     *
-     * @param date the date
-     * @return the schedule end for the date
-     */
-    private Date getScheduleEnd(Date date) {
-        if (scheduleEnd == -1) {
-            return DateRules.getDate(date, 1, DateUnits.DAYS);
-        }
-        return getDateTime(date, scheduleEnd);
-    }
-
-    private void pushback(long scheduleId, Date slotStart, Date slotEnd) {
-        if (slotStart.compareTo(slotEnd) < 0) {
-            iterator.pushback(new ProcessedSlot(scheduleId, slotStart, slotEnd));
-        }
-    }
-
-    /**
-     * Processes a slot to take into account schedule start and end times.
-     * <p/>
-     * For slots that don't span multiple days, this ensures that the slot start and end times don't exceed those
-     * of the schedule.
-     * <p/>
-     * Slots that spans multiple days are split into a slot per day. The first of the split slots are returned,
-     * and the remainder are pushed back onto the iterator.
-     *
-     * @param slot the slot
-     * @return the original slot, or the first slot in the collection of the split slots
-     */
-    private Slot adjustSlotForScheduleTimes(Slot slot) {
-        Slot result;
-        Date from = DateRules.getDate(slot.getStartTime());
-        Date to = DateRules.getDate(slot.getEndTime());
-        if (from.compareTo(to) != 0) {
-            pushback(slot.getSchedule(), getScheduleStart(to), getSlotEnd(slot.getEndTime()));
-            while ((to = DateRules.getDate(to, -1, DateUnits.DAYS)).compareTo(from) > 0) {
-                pushback(slot.getSchedule(), getScheduleStart(to), getScheduleEnd(to));
-            }
-            pushback(slot.getSchedule(), getSlotStart(slot.getStartTime()), getScheduleEnd(from));
-            result = iterator.next();
-        } else {
-            if (scheduleStart != -1) {
-                slot.setStartTime(getSlotStart(slot.getStartTime()));
-            }
-            if (scheduleEnd != -1) {
-                slot.setEndTime(getSlotEnd(slot.getEndTime()));
-            }
-            result = slot;
-        }
-        return result;
-    }
-
     private long getTime(Date date) {
         if (date != null) {
-            Calendar calendar = new GregorianCalendar();
-            calendar.setTime(date);
-            return (calendar.get(Calendar.HOUR_OF_DAY) * DateUtils.MILLIS_PER_HOUR)
-                   + (calendar.get(Calendar.MINUTE) * DateUtils.MILLIS_PER_MINUTE)
-                   + (calendar.get(Calendar.SECOND) * DateUtils.MILLIS_PER_SECOND)
-                   + calendar.get(Calendar.MILLISECOND);
+            return new DateTime(date).getMillisOfDay();
         }
         return -1;
     }
 
-    private Date getDateTime(Date date, long time) {
-        MutableDateTime dateTime = new MutableDateTime(date);
-        dateTime.setMillisOfDay((int) time);
-        return dateTime.toDate();
-    }
-
-
     /**
-     * Predicate to exclude slots outside the opening times of the schedule.
+     * An iterator that filters slots that fall outside a time range, and splits slots that overlap the time range.
      */
-    private class SchedulePredicate implements Predicate<Slot> {
+    private class TimeRangeSlotIterator implements Iterator<Slot> {
 
         /**
-         * Use the specified parameter to perform a test that returns true or false.
+         * The filtering iterator. This filters out slots that aren't in the time range.
+         */
+        private final Iterator<Slot> filter;
+
+        /**
+         * The underlying iterator. A push-back iterator is used to handle the case where a free slot spans multiple
+         * time ranges. In this case, the slot is split into two or more slots, and pushed back onto the iterator.
+         */
+        private final Deque<Slot> slots = new ArrayDeque<Slot>();
+
+        /**
+         * The start of the time range, in milliseconds, or {@code -1} if there is no start (in which case, the range
+         * effectively starts at 12 AM).
+         */
+        private final long rangeStart;
+
+        /**
+         * The end of the time range, in milliseconds, or {@code -1} if there is no end ((in which case, the range
+         * effectively ends at 12AM the following day).
+         */
+        private final long rangeEnd;
+
+        /**
+         * Constructs a {@link TimeRangeSlotIterator}.
          *
-         * @param slot the object to evaluate
-         * @return true or false
+         * @param iterator   the underlying slot iterator
+         * @param rangeStart the start of the time range
+         * @param rangeEnd   the end of the time range
+         */
+        public TimeRangeSlotIterator(Iterator<Slot> iterator, long rangeStart, long rangeEnd) {
+            filter = new FilterIterator<Slot>(iterator, new TimeRangePredicate());
+            this.rangeStart = rangeStart;
+            this.rangeEnd = rangeEnd;
+        }
+
+        /**
+         * Returns {@code true} if the iteration has more elements.
+         * (In other words, returns {@code true} if {@link #next} would
+         * return an element rather than throwing an exception.)
+         *
+         * @return {@code true} if the iteration has more elements
          */
         @Override
-        public boolean evaluate(Slot slot) {
-            Date slotStart = slot.getStartTime();
-            Date slotEnd = slot.getEndTime();
-            Date start = scheduleStart != -1 ? getScheduleStart(slotStart) : DateRules.getDate(slotStart);
-            Date end = scheduleEnd != -1 ? getScheduleEnd(slotEnd)
-                                         : DateRules.getDate(DateRules.getDate(slotStart), 1, DateUnits.DAYS);
-            return DateRules.intersects(slotStart, slotEnd, start, end);
+        public boolean hasNext() {
+            while (slots.isEmpty() && filter.hasNext()) {
+                Slot slot = filter.next();
+                add(slot);
+            }
+            return !slots.isEmpty();
         }
+
+        /**
+         * Returns the next element in the iteration.
+         *
+         * @return the next element in the iteration
+         * @throws NoSuchElementException if the iteration has no more elements
+         */
+        @Override
+        public Slot next() {
+            return slots.pop();
+        }
+
+        /**
+         * Removes from the underlying collection the last element returned
+         * by this iterator (optional operation).
+         *
+         * @throws UnsupportedOperationException if invoked
+         */
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Adds a slot.
+         * <p/>
+         * For slots that don't span multiple days, this ensures that the slot start and end times don't exceed those
+         * of the range.
+         * <p/>
+         * Slots that span multiple days are split into a slot per day.
+         *
+         * @param slot the slot to add
+         */
+        private void add(Slot slot) {
+            Date from = DateRules.getDate(slot.getStartTime());
+            Date to = DateRules.getDate(slot.getEndTime());
+            if (from.compareTo(to) != 0) {
+                add(slot.getSchedule(), getSlotStart(slot.getStartTime()), getRangeEnd(from));
+                while ((from = DateRules.getDate(from, 1, DateUnits.DAYS)).compareTo(to) < 0) {
+                    add(slot.getSchedule(), getRangeStart(from), getRangeEnd(from));
+                }
+                add(slot.getSchedule(), getRangeStart(to), getSlotEnd(slot.getEndTime()));
+            } else {
+                add(slot.getSchedule(), getSlotStart(slot.getStartTime()), getSlotEnd(slot.getEndTime()));
+            }
+        }
+
+        /**
+         * Adds a slot, if it is valid.
+         *
+         * @param scheduleId the schedule identifier.
+         * @param slotStart  the slot start time
+         * @param slotEnd    the slot end time
+         */
+        private void add(long scheduleId, Date slotStart, Date slotEnd) {
+            if (slotStart.compareTo(slotEnd) < 0) {
+                slots.add(new Slot(scheduleId, slotStart, slotEnd));
+            }
+        }
+
+        /**
+         * Returns the time range start for a particular date.
+         *
+         * @param date the date
+         * @return the schedule start for the date
+         */
+        private Date getRangeStart(Date date) {
+            if (rangeStart == -1) {
+                return date;
+            }
+            return getDateTime(date, rangeStart);
+        }
+
+        /**
+         * Returns the time range end for a particular date.
+         *
+         * @param date the date
+         * @return the schedule end for the date
+         */
+        private Date getRangeEnd(Date date) {
+            if (rangeEnd == -1) {
+                return DateRules.getDate(date, 1, DateUnits.DAYS);
+            }
+            return getDateTime(date, rangeEnd);
+        }
+
+        /**
+         * Adjusts a slot start time, if it is before the range start time.
+         *
+         * @param startTime the slot start time
+         * @return the adjusted start time, or {@code startTime}  if it didn't need adjusting
+         */
+        private Date getSlotStart(Date startTime) {
+            Date result = startTime;
+            if (rangeStart != -1) {
+                long slotStart = getTime(startTime);
+                if (slotStart < rangeStart) {
+                    result = getDateTime(startTime, rangeStart);
+                }
+            }
+            return result;
+        }
+
+        /**
+         * Adjusts a slot end time, if it is after the range end time.
+         *
+         * @param endTime the slot end time
+         * @return the adjusted end time, or {@code endTime}  if it didn't need adjusting
+         */
+        private Date getSlotEnd(Date endTime) {
+            Date result = endTime;
+            if (rangeEnd != -1) {
+                long slotEnd = getTime(endTime);
+                if (slotEnd >= rangeEnd) {
+                    result = getDateTime(endTime, rangeEnd);
+                }
+            }
+            return result;
+        }
+
+        /**
+         * Returns a new date/time from the specified date and time
+         *
+         * @param date the date
+         * @param time the time, in milliseconds
+         * @return a new date/time
+         */
+        private Date getDateTime(Date date, long time) {
+            MutableDateTime dateTime = new MutableDateTime(date);
+            dateTime.setMillisOfDay((int) time);
+            return dateTime.toDate();
+        }
+
+
+        /**
+         * Predicate to exclude slots outside a time range.
+         */
+        private class TimeRangePredicate implements Predicate<Slot> {
+
+            /**
+             * Use the specified parameter to perform a test that returns true or false.
+             *
+             * @param slot the object to evaluate
+             * @return true or false
+             */
+            @Override
+            public boolean evaluate(Slot slot) {
+                Date slotStart = slot.getStartTime();
+                Date slotEnd = slot.getEndTime();
+                Date start = rangeStart != -1 ? getRangeStart(slotStart) : DateRules.getDate(slotStart);
+                Date end = rangeEnd != -1 ? getRangeEnd(slotEnd)
+                                          : DateRules.getDate(DateRules.getDate(slotStart), 1, DateUnits.DAYS);
+                return DateRules.intersects(slotStart, slotEnd, start, end);
+            }
+        }
+
     }
 
 }
