@@ -19,8 +19,7 @@ package org.openvpms.archetype.rules.workflow;
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.collections4.functors.AllPredicate;
 import org.apache.commons.lang.time.DateUtils;
-import org.joda.time.DateTime;
-import org.joda.time.Duration;
+import org.joda.time.Period;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -56,12 +55,12 @@ public class FreeSlotQuery {
     /**
      * If set, only return slots to those occurring on or after the specified time.
      */
-    private Duration fromTime;
+    private Period fromTime;
 
     /**
      * If set, only return slots to those occurring prior to the specified time.
      */
-    private Duration toTime;
+    private Period toTime;
 
     /**
      * The schedules to query.
@@ -100,20 +99,44 @@ public class FreeSlotQuery {
         this.toDate = to;
     }
 
-    public void setFromTime(Duration time) {
+    /**
+     * Sets the time to include slots from.
+     *
+     * @param time the time. May be {@code null} to include all times up to {@link #setToTime(Period)}.
+     */
+    public void setFromTime(Period time) {
         this.fromTime = time;
     }
 
-    public void setToTime(Duration time) {
+    /**
+     * Sets the time to include slots to.
+     *
+     * @param time the time. May be {@code null} to include all times from {@link #setFromTime(Period)}.
+     */
+    public void setToTime(Period time) {
         this.toTime = time;
     }
 
+    /**
+     * Sets the schedules to query.
+     *
+     * @param schedules the schedules
+     */
     public void setSchedules(Entity... schedules) {
         this.schedules = schedules;
     }
 
+    /**
+     * Sets the minimum slot size.
+     *
+     * @param size  the size, or {@code 0} to include all slots
+     * @param units the size units
+     */
     public void setMinSlotSize(int size, DateUnits units) {
         switch (units) {
+            case WEEKS:
+                minSlotSize = size * DateUtils.MILLIS_PER_DAY * 7;
+                break;
             case DAYS:
                 minSlotSize = size * DateUtils.MILLIS_PER_DAY;
                 break;
@@ -138,7 +161,7 @@ public class FreeSlotQuery {
             Predicate<Slot> predicate = getPredicate();
             List<FreeSlotIterator> list = new ArrayList<FreeSlotIterator>();
             for (Entity schedule : schedules) {
-                list.add(new FreeSlotIterator(schedule, fromDate, toDate, service));
+                list.add(new FreeSlotIterator(schedule, fromDate, toDate, fromTime, toTime, service));
             }
             return new FreeSlotIterators(list, predicate);
         }
@@ -150,12 +173,6 @@ public class FreeSlotQuery {
         if (minSlotSize > 0) {
             predicates.add(new SlotSizePredicate());
         }
-        if (fromTime != null) {
-            predicates.add(new FromTimePredicate());
-        }
-        if (toTime != null) {
-            predicates.add(new ToTimePredicate());
-        }
         return AllPredicate.allPredicate(predicates);
     }
 
@@ -166,30 +183,6 @@ public class FreeSlotQuery {
             long duration = slot.getEndTime().getTime() - slot.getStartTime().getTime();
             return duration >= minSlotSize;
         }
-    }
-
-    private class FromTimePredicate implements Predicate<Slot> {
-
-        @Override
-        public boolean evaluate(Slot slot) {
-            Duration slotStart = getMillisOfDay(slot.getStartTime());
-            Duration slotEnd = getMillisOfDay(slot.getEndTime());
-            return slotStart.compareTo(slotEnd) >= 0 || slotEnd.compareTo(fromTime) > 0;
-        }
-    }
-
-    private class ToTimePredicate implements Predicate<Slot> {
-
-        @Override
-        public boolean evaluate(Slot slot) {
-            Duration slotStart = getMillisOfDay(slot.getStartTime());
-            return slotStart.compareTo(toTime) < 0;
-        }
-    }
-
-    private Duration getMillisOfDay(Date date) {
-        DateTime time = new DateTime(date);
-        return new Duration(time.getMillisOfDay());
     }
 
 

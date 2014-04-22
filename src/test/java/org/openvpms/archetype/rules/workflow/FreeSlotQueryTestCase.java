@@ -16,7 +16,6 @@
 
 package org.openvpms.archetype.rules.workflow;
 
-import org.joda.time.Duration;
 import org.joda.time.Period;
 import org.joda.time.format.PeriodFormatter;
 import org.joda.time.format.PeriodFormatterBuilder;
@@ -236,7 +235,7 @@ public class FreeSlotQueryTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Verifies that when a {@link FreeSlotQuery#setFromTime(Duration)} is specified, only free slots after that
+     * Verifies that when a {@link FreeSlotQuery#setFromTime(Period)} is specified, only free slots after that
      * time are returned.
      */
     @Test
@@ -251,14 +250,14 @@ public class FreeSlotQueryTestCase extends ArchetypeServiceTest {
         FreeSlotQuery query = createQuery("2014-01-01", "2014-01-02", schedule);
         query.setFromTime(getTime("09:30"));
         Iterator<Slot> iterator = createIterator(query);
-        checkSlot(iterator, schedule, "2014-01-01 09:15:00", "2014-01-01 10:00:00");
+        checkSlot(iterator, schedule, "2014-01-01 09:30:00", "2014-01-01 10:00:00");
         checkSlot(iterator, schedule, "2014-01-01 10:15:00", "2014-01-01 10:30:00");
         checkSlot(iterator, schedule, "2014-01-01 11:00:00", "2014-01-02 00:00:00");
         assertFalse(iterator.hasNext());
     }
 
     /**
-     * Verifies that when a {@link FreeSlotQuery#setToTime(Duration)} is specified, only free slots before that
+     * Verifies that when a {@link FreeSlotQuery#setToTime(Period)} is specified, only free slots before that
      * time are returned.
      */
     @Test
@@ -274,13 +273,13 @@ public class FreeSlotQueryTestCase extends ArchetypeServiceTest {
         query.setToTime(getTime("09:30"));
         Iterator<Slot> iterator = createIterator(query);
         checkSlot(iterator, schedule, "2014-01-01 08:00:00", "2014-01-01 09:00:00");
-        checkSlot(iterator, schedule, "2014-01-01 09:15:00", "2014-01-01 10:00:00");
+        checkSlot(iterator, schedule, "2014-01-01 09:15:00", "2014-01-01 09:30:00");
         assertFalse(iterator.hasNext());
     }
 
     /**
-     * Verifies that when both a {@link FreeSlotQuery#setFromTime(Duration)} and
-     * {@link FreeSlotQuery#setToTime(Duration)} is specified, only free slots between those times are returned.
+     * Verifies that when both a {@link FreeSlotQuery#setFromTime(Period)} and
+     * {@link FreeSlotQuery#setToTime(Period)} is specified, only free slots between those times are returned.
      */
     @Test
     public void testFindFreeSlotsWithFromToTimeRange() {
@@ -392,11 +391,10 @@ public class FreeSlotQueryTestCase extends ArchetypeServiceTest {
         assertEquals("expected=" + expected + ", actual=" + actual, 0, DateRules.compareTo(expected, actual));
     }
 
-    private Duration getTime(String time) {
+    private Period getTime(String time) {
         PeriodFormatterBuilder builder = new PeriodFormatterBuilder().appendHours().appendLiteral(":").appendMinutes();
         PeriodFormatter formatter = builder.toFormatter();
-        Period period = formatter.parsePeriod(time);
-        return period.toStandardDuration();
+        return formatter.parsePeriod(time);
     }
 
     /**
