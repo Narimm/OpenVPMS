@@ -41,6 +41,7 @@ import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.Workflow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.InformationDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
@@ -338,9 +339,23 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     private void onFindFreeSlot() {
         HelpContext help = getHelpContext();
         DefaultLayoutContext layoutContext = new DefaultLayoutContext(getContext(), help);
-        FreeAppointmentSlotBrowser browser = new FreeAppointmentSlotBrowser(layoutContext);
-        BrowserDialog<Slot> dialog = new BrowserDialog<Slot>(Messages.get("workflow.scheduling.appointment.find.title"),
-                                                             browser, help);
+        final FreeAppointmentSlotBrowser slots = new FreeAppointmentSlotBrowser(layoutContext);
+        final BrowserDialog<Slot> dialog
+                = new BrowserDialog<Slot>(Messages.get("workflow.scheduling.appointment.find.title"), slots, help);
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                Slot slot = dialog.getSelected();
+                if (slot != null) {
+                    Entity schedule = slots.getSchedule(slot);
+                    if (schedule != null) {
+                        browser.setDate(slot.getStartTime());
+                        browser.query();
+                        browser.setSelected(schedule, slot.getStartTime());
+                    }
+                }
+            }
+        });
         dialog.show();
     }
 
