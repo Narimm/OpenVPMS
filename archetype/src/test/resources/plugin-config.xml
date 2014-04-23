@@ -6,7 +6,7 @@
                 <artifactId>openvpms-archetype-maven-plugin</artifactId>
                 <configuration>
                     <dir>src/test/archetypes</dir>
-                    <propertyfile>src/test/resources/hibernate.properties</propertyfile>
+                    <propertyfile>target/test-classes/hibernate.properties</propertyfile>
                 </configuration>
             </plugin>
         </plugins>

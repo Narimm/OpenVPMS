@@ -6,7 +6,7 @@
                 <artifactId>openvpms-report-maven-plugin</artifactId>
                 <configuration>
                     <file>src/test/data/templates.xml</file>
-                    <propertyfile>src/test/resources/hibernate.properties</propertyfile>
+                    <propertyfile>target/test-classes/hibernate.properties</propertyfile>
                 </configuration>
             </plugin>
         </plugins>
