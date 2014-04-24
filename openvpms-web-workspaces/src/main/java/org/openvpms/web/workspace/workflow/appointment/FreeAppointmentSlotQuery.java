@@ -98,7 +98,7 @@ public class FreeAppointmentSlotQuery extends BaseScheduleQuery {
      * @param schedule the current schedule. May be {@code null}
      * @param date     the current schedule date. May be {@code null}
      */
-    public FreeAppointmentSlotQuery(Party location, Entity view, Party schedule, Date date) {
+    public FreeAppointmentSlotQuery(Party location, Entity view, Entity schedule, Date date) {
         super(new AppointmentSchedules(location));
         this.date = date;
         fromTime = createTime("fromTime", Messages.get("workflow.scheduling.appointment.find.fromTime"));
@@ -116,7 +116,7 @@ public class FreeAppointmentSlotQuery extends BaseScheduleQuery {
      * @param schedule the schedule. May be {@code null}
      */
     @Override
-    public void setSchedule(Party schedule) {
+    public void setSchedule(Entity schedule) {
         super.setSchedule(schedule);
         if (schedule != null) {
             IMObjectBean bean = new IMObjectBean(schedule);
@@ -151,8 +151,17 @@ public class FreeAppointmentSlotQuery extends BaseScheduleQuery {
         FreeSlotQuery query = new FreeSlotQuery(ServiceHelper.getArchetypeService());
         List<Entity> schedules = getSelectedSchedules();
         query.setSchedules(schedules.toArray(new Entity[schedules.size()]));
-        query.setFromDate(dateRange.getFrom());
-        query.setToDate(dateRange.getTo());
+        Date from = dateRange.getFrom();
+        Date now = new Date();
+        if (from == null || DateRules.compareTo(from, now) < 0) {
+            from = getNextSlot(now);
+        }
+        query.setFromDate(from);
+        Date to = dateRange.getTo();
+        if (to == null || DateRules.compareTo(to, from) < 0) {
+            to = from;
+        }
+        query.setToDate(to);
         query.setFromTime(getPeriod(fromTime));
         query.setToTime(getPeriod(toTime));
         query.setMinSlotSize(duration.getInt(), getDurationUnits());
@@ -285,4 +294,27 @@ public class FreeAppointmentSlotQuery extends BaseScheduleQuery {
         result.setSelectedIndex(0);
         return result;
     }
+
+    /**
+     * Returns the next slot nearest to the specified time.
+     *
+     * @param time the slot time
+     * @return the next nearest slot
+     */
+    private Date getNextSlot(Date time) {
+        Date from;
+        int slotSize = 15;
+        DateTime dt = new DateTime(time);
+        int min = (dt.getMinuteOfHour() / slotSize) * slotSize;
+        if (dt.getMinuteOfHour() % slotSize != 0) {
+            min += slotSize;
+            if (min >= 60) {
+                dt = dt.plusHours(1);
+                min = 0;
+            }
+        }
+        from = dt.withMinuteOfHour(min).minuteOfDay().roundFloorCopy().toDate();
+        return from;
+    }
+
 }

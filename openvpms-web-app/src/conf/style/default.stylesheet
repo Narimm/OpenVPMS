@@ -1091,12 +1091,6 @@
         </properties>
     </style>
 
-    <style name="Inset.SmallXLargeY" type="nextapp.echo2.app.Column">
-        <properties>
-            <property name="insets" value="${padding.small} ${padding.large}"/>
-        </properties>
-    </style>
-
     <style name="Workspace.Heading" type="nextapp.echo2.app.Label">
         <properties>
             <property name="foreground" value="#0000ff"/>

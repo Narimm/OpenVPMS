@@ -21,6 +21,7 @@ import echopointng.table.TableActionEventEx;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
+import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -42,6 +43,7 @@ import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.table.DefaultTableHeaderRenderer;
 import org.openvpms.web.echo.table.EvenOddTableCellRenderer;
 import org.openvpms.web.echo.util.DoubleClickMonitor;
@@ -118,7 +120,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
 
 
     /**
-     * Creates a new <tt>ScheduleBrowser</tt>.
+     * Constructs a {@link ScheduleBrowser}.
      *
      * @param query   the schedule query
      * @param context the context
@@ -312,7 +314,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
      * Helper to return the act associated with an event.
      *
      * @param event the event. May be {@code null}
-     * @return the associated act, or {@code null} if <tt>event</tt> is null or has been deleted
+     * @return the associated act, or {@code null} if {@code event} is null or has been deleted
      */
     public Act getAct(PropertySet event) {
         if (event != null) {
@@ -326,7 +328,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
      * Helper to return the event associated with an act.
      *
      * @param act the act. May be {@code null}
-     * @return the associated event, or <tt>nukl</tt> if <tt>act</tt> is null or has been deleted
+     * @return the associated event, or {@code nukl} if {@code act} is null or has been deleted
      */
     public PropertySet getEvent(Act act) {
         if (act != null) {
@@ -425,10 +427,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
      * @return a new component
      */
     protected Component doLayout() {
-        Row row = RowFactory.create("CellSpacing");
-        layoutQueryRow(row);
-
-        Component column = ColumnFactory.create("WideCellSpacing", row);
+        Component column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, layoutQuery());
         SplitPane component = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, "ScheduleBrowser", column);
         if (getScheduleView() != null && table != null) {
             addTable(table, component);
@@ -437,21 +436,32 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     }
 
     /**
-     * Lays out the query row.
-     *
-     * @param row the row
+     * Lays out the query component.
      */
-    protected void layoutQueryRow(Row row) {
-        FocusGroup group = getFocusGroup();
-        row.add(query.getComponent());
-        group.add(query.getFocusGroup());
-        ButtonRow buttons = new ButtonRow(group);
-        buttons.addButton("query", new ActionListener() {
+    protected Component layoutQuery() {
+        return layoutQuery(query, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onQuery();
             }
         });
+    }
+
+    /**
+     * Lays out the query component.
+     *
+     * @param query    the query
+     * @param listener the listener to notify when the query button is pressed
+     * @return the query component
+     */
+    protected Component layoutQuery(BaseScheduleQuery query, ActionListener listener) {
+        Row row = RowFactory.create(Styles.CELL_SPACING);
+        FocusGroup group = getFocusGroup();
+        row.add(query.getComponent());
+        group.add(query.getFocusGroup());
+        ButtonRow buttons = new ButtonRow(group);
+        buttons.addButton("query", listener);
         row.add(buttons);
+        return row;
     }
 
     /**
@@ -465,7 +475,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     /**
      * Performs a query.
      *
-     * @param reselect if <tt>true</tt> try and reselect the selected cell
+     * @param reselect if {@code true} try and reselect the selected cell
      */
     protected void doQuery(boolean reselect) {
         getComponent();
@@ -587,8 +597,8 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
      * @param table     the table to add
      * @param component the component
      */
-    protected void addTable(TableEx table, Component component) {
-        component.add(ColumnFactory.create("Inset.SmallXLargeY", table));
+    protected void addTable(Table table, Component component) {
+        component.add(ColumnFactory.create(Styles.INSET, table));
     }
 
     /**

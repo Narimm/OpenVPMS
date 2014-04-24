@@ -17,26 +17,26 @@
 package org.openvpms.web.workspace.workflow.appointment;
 
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
+import org.joda.time.DateTime;
 import org.openvpms.archetype.i18n.time.DateDurationFormatter;
 import org.openvpms.archetype.i18n.time.DurationFormatter;
 import org.openvpms.archetype.rules.workflow.Slot;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.AbstractTableBrowser;
 import org.openvpms.web.component.im.query.IterableBackedResultSet;
+import org.openvpms.web.component.im.query.QueryListener;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
-import org.openvpms.web.echo.button.ButtonRow;
-import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 
+import java.text.DateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -60,20 +60,18 @@ public class FreeAppointmentSlotBrowser extends AbstractTableBrowser<Slot> {
     private static DurationFormatter formatter = DateDurationFormatter.create(true, true, true, true, true, true);
 
     /**
-     * Query button id.
-     */
-    private static final String QUERY_ID = "button.query";
-
-    /**
      * Constructs a {@link FreeAppointmentSlotBrowser}.
      *
      * @param layoutContext the layout context
      */
-    public FreeAppointmentSlotBrowser(LayoutContext layoutContext) {
+    public FreeAppointmentSlotBrowser(FreeAppointmentSlotQuery query, LayoutContext layoutContext) {
         super(new SlotTableModel(), layoutContext);
-        Context context = layoutContext.getContext();
-        query = new FreeAppointmentSlotQuery(context.getLocation(), context.getScheduleView(), context.getSchedule(),
-                                             context.getScheduleDate());
+        this.query = query;
+        query.setListener(new QueryListener() {
+            public void query() {
+                onQuery();
+            }
+        });
     }
 
     /**
@@ -121,27 +119,15 @@ public class FreeAppointmentSlotBrowser extends AbstractTableBrowser<Slot> {
      */
     @Override
     protected void doLayout(Component container) {
-        Component component = query.getComponent();
-
-        ButtonRow row = new ButtonRow(getFocusGroup());
-        row.add(component);
-        row.addButton(QUERY_ID, new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onQuery();
-            }
-        });
-        container.add(row);
     }
 
     /**
-     * Invoked when the query button is pressed. Performs the query and notifies
-     * any listeners.
+     * Performs a query and notifies registered listeners.
      */
     private void onQuery() {
         query();
         notifyBrowserListeners();
     }
-
 
     private static class SlotTableModel extends AbstractIMTableModel<Slot> {
 
@@ -214,18 +200,26 @@ public class FreeAppointmentSlotBrowser extends AbstractTableBrowser<Slot> {
         @Override
         protected Object getValue(Slot slot, TableColumn column, int row) {
             Object result = null;
+            Date startTime = slot.getStartTime();
             switch (column.getModelIndex()) {
                 case SCHEDULE:
                     result = names.get(slot.getSchedule());
                     break;
                 case DATE:
-                    result = DateFormatter.getFullDateFormat().format(slot.getStartTime());
+                    DateTime dt = new DateTime(startTime);
+                    DateFormat format;
+                    if (dt.getYear() == new DateTime().getYear()) {
+                        format = DateFormatter.getDayMonthDateFormat();
+                    } else {
+                        format = DateFormatter.getFullDateFormat();
+                    }
+                    result = format.format(startTime);
                     break;
                 case TIME:
-                    result = DateFormatter.formatTime(slot.getStartTime(), false);
+                    result = DateFormatter.formatTime(startTime, false);
                     break;
                 case DURATION:
-                    result = formatter.format(slot.getStartTime(), slot.getEndTime());
+                    result = formatter.format(startTime, slot.getEndTime());
                     break;
             }
             return result;
