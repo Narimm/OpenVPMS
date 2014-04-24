@@ -24,7 +24,6 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.focus.FocusHelper;
-import org.openvpms.web.echo.style.Styles;
 
 
 /**
@@ -178,7 +177,7 @@ public class ComponentState {
      */
     public Label getLabel() {
         if (label == null) {
-            label = LabelFactory.create(null, Styles.BOLD);
+            label = LabelFactory.create();
             label.setText(displayName);
         }
         return label;

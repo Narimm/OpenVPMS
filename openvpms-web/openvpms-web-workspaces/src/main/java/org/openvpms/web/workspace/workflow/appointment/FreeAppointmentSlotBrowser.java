@@ -47,7 +47,7 @@ import java.util.Map;
  *
  * @author Tim Anderson
  */
-public class FreeAppointmentSlotBrowser extends AbstractTableBrowser<Slot> {
+class FreeAppointmentSlotBrowser extends AbstractTableBrowser<Slot> {
 
     /**
      * The query.
@@ -119,6 +119,7 @@ public class FreeAppointmentSlotBrowser extends AbstractTableBrowser<Slot> {
      */
     @Override
     protected void doLayout(Component container) {
+        // do nothing.
     }
 
     /**
@@ -206,13 +207,7 @@ public class FreeAppointmentSlotBrowser extends AbstractTableBrowser<Slot> {
                     result = names.get(slot.getSchedule());
                     break;
                 case DATE:
-                    DateTime dt = new DateTime(startTime);
-                    DateFormat format;
-                    if (dt.getYear() == new DateTime().getYear()) {
-                        format = DateFormatter.getDayMonthDateFormat();
-                    } else {
-                        format = DateFormatter.getFullDateFormat();
-                    }
+                    DateFormat format = getDateFormat(startTime);
                     result = format.format(startTime);
                     break;
                 case TIME:
@@ -224,5 +219,23 @@ public class FreeAppointmentSlotBrowser extends AbstractTableBrowser<Slot> {
             }
             return result;
         }
+
+        /**
+         * Returns the date format for a slot start time. This includes the year if the time is not for the current
+         * year.
+         *
+         * @param startTime the slot start time.
+         * @return the date format
+         */
+        private DateFormat getDateFormat(Date startTime) {
+            DateFormat format;
+            if (new DateTime(startTime).getYear() == new DateTime().getYear()) {
+                format = DateFormatter.getDayMonthDateFormat();
+            } else {
+                format = DateFormatter.getFullDateFormat();
+            }
+            return format;
+        }
+
     }
 }

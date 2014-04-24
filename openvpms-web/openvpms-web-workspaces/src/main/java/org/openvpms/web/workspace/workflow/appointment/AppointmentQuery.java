@@ -56,6 +56,12 @@ class AppointmentQuery extends ScheduleServiceQuery {
             return endMins;
         }
 
+        /**
+         * Returns the time range that the specified time falls into.
+         *
+         * @param time the time
+         * @return the corresponding time range
+         */
         public static TimeRange getRange(Date time) {
             DateTime dateTime = new DateTime(time);
             int hour = dateTime.getHourOfDay();

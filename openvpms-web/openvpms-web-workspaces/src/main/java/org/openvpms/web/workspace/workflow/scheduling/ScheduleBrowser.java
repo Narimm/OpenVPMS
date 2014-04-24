@@ -453,7 +453,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
      * @param listener the listener to notify when the query button is pressed
      * @return the query component
      */
-    protected Component layoutQuery(BaseScheduleQuery query, ActionListener listener) {
+    protected Component layoutQuery(ScheduleQuery query, ActionListener listener) {
         Row row = RowFactory.create(Styles.CELL_SPACING);
         FocusGroup group = getFocusGroup();
         row.add(query.getComponent());

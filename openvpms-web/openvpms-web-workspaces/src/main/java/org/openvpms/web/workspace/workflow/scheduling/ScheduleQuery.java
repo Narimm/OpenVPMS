@@ -39,7 +39,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public abstract class BaseScheduleQuery {
+public abstract class ScheduleQuery {
 
     /**
      * The schedules.
@@ -77,11 +77,11 @@ public abstract class BaseScheduleQuery {
     private FocusGroup focus;
 
     /**
-     * Constructs a {@link BaseScheduleQuery}.
+     * Constructs a {@link ScheduleQuery}.
      *
      * @param schedules the schedules
      */
-    public BaseScheduleQuery(Schedules schedules) {
+    public ScheduleQuery(Schedules schedules) {
         this.schedules = schedules;
     }
 
@@ -158,11 +158,15 @@ public abstract class BaseScheduleQuery {
     /**
      * Sets the selected schedule.
      *
-     * @param schedule the schedule. May be {@code null}
+     * @param schedule the schedule. If {@code null}, indicates all schedules
      */
     public void setSchedule(Entity schedule) {
         getComponent();
-        scheduleField.setSelectedItem(schedule);
+        if (schedule != null) {
+            scheduleField.setSelectedItem(schedule);
+        } else if (scheduleField.getModel().size() > 0) {
+            scheduleField.setSelectedIndex(0); // All
+        }
     }
 
     /**
@@ -276,9 +280,7 @@ public abstract class BaseScheduleQuery {
     private void updateScheduleField() {
         IMObjectListModel model = createScheduleModel();
         scheduleField.setModel(model);
-        if (model.size() > 0) {
-            scheduleField.setSelectedIndex(0); // select All
-        }
+        setSchedule(null); // select All
     }
 
     /**

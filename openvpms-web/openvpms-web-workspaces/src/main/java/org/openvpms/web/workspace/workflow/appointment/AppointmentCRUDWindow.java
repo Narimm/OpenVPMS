@@ -32,6 +32,7 @@ import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.TabbedBrowserListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
@@ -86,6 +87,12 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         super(Archetypes.create("act.customerAppointment", Act.class, Messages.get("workflow.scheduling.createtype")),
               context, help);
         this.browser = browser;
+        browser.setListener(new TabbedBrowserListener() {
+            @Override
+            public void onBrowserChanged() {
+                enableButtons(getButtons(), getObject() != null);
+            }
+        });
         rules = ServiceHelper.getBean(AppointmentRules.class);
     }
 
@@ -157,6 +164,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
+        enable = browser.isAppointmentsSelected() && enable;
         super.enableButtons(buttons, enable);
         boolean checkInEnabled = false;
         boolean checkoutConsultEnabled = false;
@@ -219,7 +227,8 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * @return {@code true} if a schedule and slot has been selected
      */
     private boolean canCreateAppointment() {
-        return browser.getSelectedSchedule() != null && browser.getSelectedTime() != null;
+        return browser.isAppointmentsSelected() && browser.getSelectedSchedule() != null
+               && browser.getSelectedTime() != null;
     }
 
     /**

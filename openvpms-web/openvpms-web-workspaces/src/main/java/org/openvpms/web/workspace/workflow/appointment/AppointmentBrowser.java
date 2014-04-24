@@ -33,6 +33,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.AbstractBrowserListener;
+import org.openvpms.web.component.im.query.TabbedBrowserListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -65,8 +66,18 @@ import static org.openvpms.web.echo.style.Styles.WIDE_CELL_SPACING;
 
 
 /**
- * Appointment browser. Renders blocks of appointments in different hours a
+ * Appointment browser.
+ * <p/>
+ * This provides two tabs:
+ * <ol><li>Appointments<br/>
+ * Provides a query to select appointments, and renders blocks of appointments in different hours a
  * different colour.
+ * </li>
+ * <li>Free Appointment Slots<br/>
+ * Provides a query to find free appointment slots
+ * </li>
+ * </ol>
+ * The Appointments tab is the primary tab; all {@link ScheduleBrowser} methods will be directed to this.
  *
  * @author Tim Anderson
  */
@@ -114,6 +125,11 @@ public class AppointmentBrowser extends ScheduleBrowser {
     private FreeAppointmentSlotBrowser freeSlotBrowser;
 
     /**
+     * The tab listener.
+     */
+    private TabbedBrowserListener listener;
+
+    /**
      * The appointments tab index.
      */
     private int appointmentsTab;
@@ -147,6 +163,15 @@ public class AppointmentBrowser extends ScheduleBrowser {
     }
 
     /**
+     * Sets the tab listener.
+     *
+     * @param listener the listener. May be {@code null}
+     */
+    public void setListener(TabbedBrowserListener listener) {
+        this.listener = listener;
+    }
+
+    /**
      * Query using the specified criteria, and populate the table with matches.
      */
     public void query() {
@@ -158,6 +183,15 @@ public class AppointmentBrowser extends ScheduleBrowser {
         lastTimeRange = timeRange;
         doQuery(reselect);
         updateTitle();
+    }
+
+    /**
+     * Returns if the appointments tab is selected.
+     *
+     * @return {@code true} if the appointments tab is selected, {@code false} if the free slot tab is selected
+     */
+    public boolean isAppointmentsSelected() {
+        return tab.getSelectedIndex() == appointmentsTab;
     }
 
     /**
@@ -267,12 +301,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
         }
         tab.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                int index = tab.getSelectedIndex();
-                if (index == appointmentsTab) {
-                    onAppointmentsSelected();
-                } else {
-                    onFreeSlotsSelected();
-                }
+                onBrowserChanged();
             }
         });
 
@@ -346,21 +375,40 @@ public class AppointmentBrowser extends ScheduleBrowser {
     }
 
     /**
+     * Removes the existing browser, if required.
+     */
+    private void removeBrowser() {
+        Component parent = getComponent();
+        if (parent.getComponentCount() == 2) {
+            parent.remove(parent.getComponents()[1]);
+        }
+    }
+
+    /**
+     * Invoked when a browser tab is selected.
+     */
+    private void onBrowserChanged() {
+        int index = tab.getSelectedIndex();
+        if (index == appointmentsTab) {
+            onAppointmentsSelected();
+        } else {
+            onFreeSlotsSelected();
+        }
+        if (listener != null) {
+            listener.onBrowserChanged();
+        }
+    }
+
+    /**
      * Invoked when the appointments tab is selected.
      */
     private void onAppointmentsSelected() {
         Component parent = getComponent();
-        removeBrowser(parent);
+        removeBrowser();
 
         Table table = getTable();
         if (getScheduleView() != null && table != null) {
             addTable(table, parent);
-        }
-    }
-
-    private void removeBrowser(Component parent) {
-        if (parent.getComponentCount() == 2) {
-            parent.remove(parent.getComponents()[1]);
         }
     }
 
@@ -388,7 +436,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
             model.getTabContentAt(freeSlotsTab).add(query);
         }
         Component parent = getComponent();
-        removeBrowser(parent);
+        removeBrowser();
         parent.add(freeSlotBrowser.getComponent());
     }
 

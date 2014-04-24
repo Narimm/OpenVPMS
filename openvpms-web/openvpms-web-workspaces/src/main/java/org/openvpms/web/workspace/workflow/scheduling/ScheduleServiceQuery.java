@@ -55,7 +55,7 @@ import static org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel.
  *
  * @author Tim Anderson
  */
-public abstract class ScheduleServiceQuery extends BaseScheduleQuery {
+public abstract class ScheduleServiceQuery extends ScheduleQuery {
 
     /**
      * Schedule service.

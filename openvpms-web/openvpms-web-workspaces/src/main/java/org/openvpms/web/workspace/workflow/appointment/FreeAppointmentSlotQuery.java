@@ -46,7 +46,7 @@ import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.workflow.scheduling.BaseScheduleQuery;
+import org.openvpms.web.workspace.workflow.scheduling.ScheduleQuery;
 
 import java.util.Date;
 import java.util.EnumSet;
@@ -58,7 +58,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class FreeAppointmentSlotQuery extends BaseScheduleQuery {
+class FreeAppointmentSlotQuery extends ScheduleQuery {
 
     /**
      * The initial date, used to initialise the date range.

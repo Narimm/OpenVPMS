@@ -32,6 +32,7 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.focus.FocusHelper;
+import org.openvpms.web.echo.style.Styles;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -209,7 +210,7 @@ public abstract class AbstractTableBrowser<T> extends AbstractBrowser<T> {
      * @param container the container
      */
     protected void doLayoutForNoResults(Component container) {
-        Label label = LabelFactory.create("browser.noresults", "bold");
+        Label label = LabelFactory.create("browser.noresults", Styles.BOLD);
         ColumnLayoutData layout = new ColumnLayoutData();
         layout.setAlignment(Alignment.ALIGN_CENTER);
         label.setLayoutData(layout);
@@ -275,8 +276,7 @@ public abstract class AbstractTableBrowser<T> extends AbstractBrowser<T> {
     }
 
     /**
-     * Initialises the table model. This is invoked at during construction, and after {@link #createTableModel}
-     * is invoked.
+     * Initialises the table model. This is invoked at construction, and after {@link #createTableModel} is invoked.
      * <p/>
      * This implementation is a no-op.
      *
