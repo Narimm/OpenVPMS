@@ -28,6 +28,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleCRUDWindow;
@@ -118,7 +119,7 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
      */
     protected ScheduleBrowser createBrowser() {
         Context context = getContext();
-        return new AppointmentBrowser(context.getLocation(), context);
+        return new AppointmentBrowser(context.getLocation(), new DefaultLayoutContext(getContext(), getHelpContext()));
     }
 
     /**

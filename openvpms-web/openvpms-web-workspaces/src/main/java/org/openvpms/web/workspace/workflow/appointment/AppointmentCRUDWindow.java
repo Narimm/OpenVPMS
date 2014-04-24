@@ -22,7 +22,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
-import org.openvpms.archetype.rules.workflow.Slot;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -33,7 +32,6 @@ import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
@@ -41,7 +39,6 @@ import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.Workflow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.InformationDialog;
-import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
@@ -76,11 +73,6 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * Check-in button identifier.
      */
     private static final String CHECKIN_ID = "checkin";
-
-    /**
-     * Find free slot button identifier.
-     */
-    private static final String FIND_FREE_SLOT_ID = "button.findFreeSlot";
 
 
     /**
@@ -136,17 +128,10 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                 onCheckIn();
             }
         });
-        Button findFreeSlot = ButtonFactory.create(FIND_FREE_SLOT_ID, new ActionListener() {
-            @Override
-            public void onAction(ActionEvent event) {
-                onFindFreeSlot();
-            }
-        });
         buttons.add(checkIn);
         buttons.add(createConsultButton());
         buttons.add(createCheckOutButton());
         buttons.add(createOverTheCounterButton());
-        buttons.add(findFreeSlot);
         buttons.addKeyListener(KeyStrokes.CONTROL_MASK | 'C', new ActionListener() {
             public void onAction(ActionEvent event) {
                 onCopy();
@@ -331,32 +316,6 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                 copy(appointment, schedule, startTime);
             }
         }
-    }
-
-    /**
-     * Opens the Find Free Slot dialog.
-     */
-    private void onFindFreeSlot() {
-        HelpContext help = getHelpContext();
-        DefaultLayoutContext layoutContext = new DefaultLayoutContext(getContext(), help);
-        final FreeAppointmentSlotBrowser slots = new FreeAppointmentSlotBrowser(layoutContext);
-        final BrowserDialog<Slot> dialog
-                = new BrowserDialog<Slot>(Messages.get("workflow.scheduling.appointment.find.title"), slots, help);
-        dialog.addWindowPaneListener(new PopupDialogListener() {
-            @Override
-            public void onOK() {
-                Slot slot = dialog.getSelected();
-                if (slot != null) {
-                    Entity schedule = slots.getSchedule(slot);
-                    if (schedule != null) {
-                        browser.setDate(slot.getStartTime());
-                        browser.query();
-                        browser.setSelected(schedule, slot.getStartTime());
-                    }
-                }
-            }
-        });
-        dialog.show();
     }
 
     /**

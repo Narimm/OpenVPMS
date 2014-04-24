@@ -84,7 +84,7 @@ public abstract class AbstractTableBrowser<T> extends AbstractBrowser<T> {
     /**
      * Style name for this.
      */
-    private static final String STYLE = "Browser";
+    protected static final String STYLE = "Browser";
 
     /**
      * Constructs an {@link AbstractTableBrowser}.
@@ -139,9 +139,9 @@ public abstract class AbstractTableBrowser<T> extends AbstractBrowser<T> {
     }
 
     /**
-     * Returns the query component.
+     * Returns the browser component.
      *
-     * @return the query component
+     * @return the browser component
      */
     public Component getComponent() {
         if (component == null) {
@@ -285,7 +285,6 @@ public abstract class AbstractTableBrowser<T> extends AbstractBrowser<T> {
     protected void initTableModel(IMTableModel<T> model) {
         // do nothing
     }
-
 
     /**
      * Returns the layout context.

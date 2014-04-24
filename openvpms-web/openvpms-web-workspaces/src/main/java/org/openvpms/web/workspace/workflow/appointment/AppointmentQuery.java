@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.workflow.appointment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
+import org.joda.time.DateTime;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -26,6 +27,8 @@ import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleServiceQuery;
+
+import java.util.Date;
 
 
 /**
@@ -51,6 +54,21 @@ class AppointmentQuery extends ScheduleServiceQuery {
 
         public int getEndMins() {
             return endMins;
+        }
+
+        public static TimeRange getRange(Date time) {
+            DateTime dateTime = new DateTime(time);
+            int hour = dateTime.getHourOfDay();
+            if (hour < 8) {
+                return AM;
+            } else if (hour >= 8 && hour < 12) {
+                return MORNING;
+            } else if (hour >= 12 && hour < 17) {
+                return AFTERNOON;
+            } else if (hour >= 17) {
+                return EVENING;
+            }
+            return ALL;
         }
 
         private final int startMins;
@@ -80,30 +98,16 @@ class AppointmentQuery extends ScheduleServiceQuery {
      */
     public TimeRange getTimeRange() {
         int index = timeSelector.getSelectedIndex();
-        TimeRange range;
-        switch (index) {
-            case 0:
-                range = TimeRange.ALL;
-                break;
-            case 1:
-                range = TimeRange.MORNING;
-                break;
-            case 2:
-                range = TimeRange.AFTERNOON;
-                break;
-            case 3:
-                range = TimeRange.EVENING;
-                break;
-            case 4:
-                range = TimeRange.AM;
-                break;
-            case 5:
-                range = TimeRange.PM;
-                break;
-            default:
-                range = TimeRange.ALL;
-        }
-        return range;
+        return index >= 0 && index < TimeRange.values().length ? TimeRange.values()[index] : TimeRange.ALL;
+    }
+
+    /**
+     * Sets the selected time range.
+     *
+     * @param range the time range
+     */
+    public void setTimeRange(TimeRange range) {
+        timeSelector.setSelectedIndex(range.ordinal());
     }
 
     /**
@@ -114,6 +118,7 @@ class AppointmentQuery extends ScheduleServiceQuery {
     @Override
     protected void doLayout(Component container) {
         super.doLayout(container);
+        // the order of the items must correspond to the order of TimeRange values.
         String[] timeSelectorItems = {
                 Messages.get("workflow.scheduling.time.all"),
                 Messages.get("workflow.scheduling.time.morning"),

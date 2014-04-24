@@ -21,7 +21,6 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
 import org.openvpms.web.component.im.query.QueryListener;
@@ -142,8 +141,8 @@ public abstract class BaseScheduleQuery {
      *
      * @return the selected schedule, or {@code null} if all schedules are selected
      */
-    public Party getSchedule() {
-        return (Party) scheduleField.getSelectedItem();
+    public Entity getSchedule() {
+        return (Entity) scheduleField.getSelectedItem();
     }
 
     /**
@@ -161,7 +160,7 @@ public abstract class BaseScheduleQuery {
      *
      * @param schedule the schedule. May be {@code null}
      */
-    public void setSchedule(Party schedule) {
+    public void setSchedule(Entity schedule) {
         getComponent();
         scheduleField.setSelectedItem(schedule);
     }
