@@ -187,8 +187,9 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node name="practice" path="/entityLinks"
+        <node name="practice" displayName="Practice Location" path="/entityLinks"
               type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="1"
               filter="entityLink.customerLocation"/>
+        <!-- called practice rather than location to avoid clashes with the party.organisationOTC location node -->
     </archetype>
 </archetypes>
