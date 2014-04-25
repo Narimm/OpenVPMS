@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -115,7 +115,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
 
 
     /**
-     * Constructs an {@code AbstractJasperIMReport}.
+     * Constructs an {@link AbstractJasperIMReport}.
      *
      * @param service  the archetype service
      * @param handlers the document handlers
@@ -142,8 +142,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
                     try {
                         defaultValue = getEvaluator().evaluate(expression);
                     } catch (JRException exception) {
-                        throw new ReportException(FailedToGetParameters,
-                                                  exception);
+                        throw new ReportException(exception, FailedToGetParameters);
                     }
                 }
                 ParameterType type = new ParameterType(p.getName(), p.getValueClass(), p.getDescription(),
