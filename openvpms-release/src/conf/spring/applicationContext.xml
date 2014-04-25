@@ -113,6 +113,19 @@
         </property>
     </bean>
 
+    <bean id="archetypeRuleService"
+          class="org.openvpms.component.business.service.archetype.rule.ArchetypeRuleService">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="ruleEngine"/>
+        <constructor-arg ref="txnManager"/>
+        <property name="facts">
+            <list>
+                <ref bean="lookupService"/>
+                <ref bean="txnManager"/>
+            </list>
+        </property>
+    </bean>
+
     <bean id="archetypeServiceHelper"
           class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
         <constructor-arg index="0">
@@ -158,11 +171,14 @@
         <constructor-arg ref="imObjectBeanFactory"/>
     </bean>
 
+    <bean id="customerAccountRules" class="org.openvpms.archetype.rules.finance.account.CustomerAccountRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
     <bean name="imObjectBeanFactory"
           class="org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory">
         <constructor-arg index="0" ref="archetypeService"/>
     </bean>
-
 
     <!-- The JXPathHelper class, used to register extension functions -->
     <bean id="jxpathHelper"
@@ -184,7 +200,7 @@
                     <bean class="org.openvpms.archetype.function.party.PartyFunctions">
                         <constructor-arg ref="archetypeService"/>
                         <constructor-arg ref="patientRules"/>
-                        <constructor-arg><null/></constructor-arg>
+                        <constructor-arg ref="customerAccountRules"/>
                     </bean>
                 </entry>
                 <entry key="math">
@@ -205,4 +221,41 @@
             </list>
         </property>
     </bean>
+
+    <!-- ================================================================== -->
+    <!--                 RULES DEFINITIONS                                  -->
+    <!-- ================================================================== -->
+
+    <!-- The `local' ruleServiceProvider; we can have as many different ruleProviders as we want -->
+    <bean id="ruleServiceProvider"
+          class="org.springmodules.jsr94.factory.DefaultRuleServiceProviderFactoryBean">
+        <property name="provider" value="http://drools.org"/>
+        <property name="providerClass" value="org.drools.jsr94.rules.RuleServiceProviderImpl"/>
+    </bean>
+
+    <!-- The local ruleRuntime. Usually, there is one ruleRuntime bean for each ruleServiceProvider bean. -->
+    <bean id="ruleRuntime"
+          class="org.springmodules.jsr94.factory.RuleRuntimeFactoryBean">
+        <property name="serviceProvider" ref="ruleServiceProvider"/>
+    </bean>
+
+    <!-- the local ruleAdministrator. Usually, there is one ruleAdministrator bean for each ruleServiceProvider bean -->
+    <bean id="ruleAdministrator"
+          class="org.springmodules.jsr94.factory.RuleAdministratorFactoryBean">
+        <property name="serviceProvider" ref="ruleServiceProvider"/>
+    </bean>
+
+    <!-- the ruleSource. There can be many ruleSource beans for each ruleAdministrator/ruleRuntime. -->
+    <bean id="ruleSource"
+          class="org.openvpms.component.business.service.ruleengine.RuleDescriptorRuleSource">
+        <property name="ruleRuntime" ref="ruleRuntime"/>
+        <property name="ruleAdministrator" ref="ruleAdministrator"/>
+    </bean>
+
+    <!--  The Rule engine -->
+    <bean id="ruleEngine"
+          class="org.openvpms.component.business.service.ruleengine.RuleEngine">
+        <constructor-arg ref="ruleSource"/>
+    </bean>
+
 </beans>
