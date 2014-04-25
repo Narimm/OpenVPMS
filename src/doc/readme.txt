@@ -97,7 +97,18 @@ change to:
   > mysql -u admin -p < createdb.sql
   > mysql -u admin -p openvpms < db.sql
 
-  NOTE: replace 'admin' with a user that has administrator privileges in MySQL.
+  NOTES:
+  * replace 'admin' with a user that has administrator privileges in MySQL.
+  * the createdb.sql script creates an 'openvpms' user that only has
+    privileges to connect from localhost.
+    If the MySQL database is a different host to that running Tomcat, change
+    the createdb.sql script to uncomment:
+
+    # GRANT ALL PRIVILEGES ON openvpms.* TO 'openvpms'@'%'
+    #     IDENTIFIED BY 'openvpms' WITH GRANT OPTION;
+
+    To improve security, the '%' can be limited to the host that Tomcat will
+    connect from.
 
   Next, run the 'dataload' script. This provides two options, 'base' and
   'setup'. The former loads a base database setup in preparation for data
@@ -340,3 +351,38 @@ change to:
   Note that both Context Sensitive Help and Print Previews are treated as
   pop-ups by browsers and may be blocked.
   You will need to enable pop-ups for your OpenVPMS site.
+
+6. Security
+
+6.1 Database passwords
+  The default installation creates a MySQL database user named 'openvpms'
+  with password 'openvpms'.
+
+  This password should be changed. E.g, using the mysql tool:
+    set password for 'openvpms'@'localhost' = password('3f6iNF7m46w9vjc');
+
+  This should be done for each host that the openvpms user has been granted
+  access from.
+
+  For more information see:
+  . https://dev.mysql.com/doc/refman/5.5/en/set-password.html
+
+  The password is stored in configuration files that will also need to be
+  updated:
+  . <OPENVPMS_HOME>/conf/hibernate.properties
+  . <TOMCAT_HOME>/openvpms/WEB-INF/classes/hibernate.properties
+
+  The file permissions on these files should be restricted to the user that
+  runs Tomcat.
+
+6.2 Administrator password
+  The default installation creates an OpenVPMS user named 'admin', with
+  password 'admin'.
+  This should be changed when installation is complete, via
+  Administration|Users.
+
+6.3 User passwords
+  User passwords are configured via Administration|Users. There is little
+  restriction on what passwords may be entered, but it is recommended that
+  strong passwords are used.
+
