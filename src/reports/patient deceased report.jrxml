@@ -30,7 +30,7 @@ from entities p
   join entity_details d3 on d3.entity_id = p.entity_id and d3.name = "deceased"
 where
   p.arch_short_name like "party.patientpet%" and
-  P.active = 1 and
+  p.active = 1 and
   c.arch_short_name like "party.customer%" and
   d3.value = "true" and
   d2.value between $P{startDate} and $P{endDate}
