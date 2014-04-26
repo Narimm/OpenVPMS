@@ -194,6 +194,15 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     }
 
     /**
+     * Returns the history browser.
+     *
+     * @return the history browser
+     */
+    public PatientHistoryBrowser getHistory() {
+        return history;
+    }
+
+    /**
      * Creates a patient history browser.
      *
      * @param query  the history query

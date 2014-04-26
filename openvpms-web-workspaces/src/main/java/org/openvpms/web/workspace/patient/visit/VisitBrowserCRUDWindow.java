@@ -21,6 +21,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
+import org.openvpms.web.workspace.patient.history.PatientHistoryCRUDWindow;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 
 import java.util.List;
@@ -67,7 +68,7 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
             }
         }
         setBrowser(browser);
-        VisitCRUDWindow window = createWindow(context);
+        PatientHistoryCRUDWindow window = createWindow(context);
         window.setMailContext(new CustomerMailContext(context, help));
         window.setQuery(query);
         window.setEvent(browser.getEvent());
@@ -91,8 +92,8 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
      * @return the window
      */
     @Override
-    public VisitCRUDWindow getWindow() {
-        return (VisitCRUDWindow) super.getWindow();
+    public PatientHistoryCRUDWindow getWindow() {
+        return (PatientHistoryCRUDWindow) super.getWindow();
     }
 
     /**
@@ -111,7 +112,7 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
      * @param context the context
      * @return a new window
      */
-    protected VisitCRUDWindow createWindow(Context context) {
+    protected PatientHistoryCRUDWindow createWindow(Context context) {
         return new VisitCRUDWindow(context, help);
     }
 
@@ -123,7 +124,7 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
     @Override
     protected void onSelected(Act object) {
         PatientHistoryBrowser browser = getBrowser();
-        VisitCRUDWindow window = getWindow();
+        PatientHistoryCRUDWindow window = getWindow();
         window.setEvent(browser.getEvent(object));
         super.onSelected(object);
     }
