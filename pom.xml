@@ -110,7 +110,7 @@
             <testResource>
                 <directory>${basedir}/src/test/resources</directory>
                 <includes>
-                    <include>*.properties</include>
+                    <include>*.xml</include>
                 </includes>
                 <filtering>true</filtering>
             </testResource>
@@ -143,8 +143,7 @@
                     <componentProperties>
                         <drop>true</drop>
                         <jdk5>true</jdk5>
-                        <configurationfile>src/test/resources/hibernate.cfg.xml</configurationfile>
-                        <propertyfile>target/test-classes/hibernate.properties</propertyfile>
+                        <configurationfile>target/test-classes/hibernate.cfg.xml</configurationfile>
                         <skip>${skipTests}</skip>
                     </componentProperties>
                 </configuration>
@@ -167,10 +166,14 @@
             <plugin>
                 <groupId>org.openvpms</groupId>
                 <artifactId>openvpms-archetype-maven-plugin</artifactId>
-                <version>${pom.version}</version>
+                <version>${project.version}</version>
                 <configuration>
                     <dir>src/archetypes/org/openvpms/archetype</dir>
-                    <propertyfile>target/test-classes/hibernate.properties</propertyfile>
+                    <dialect>${build.hibernate.dialect}</dialect>
+                    <driver>${build.jdbc.driverClassName}</driver>
+                    <url>${build.jdbc.url}</url>
+                    <username>${build.jdbc.username}</username>
+                    <password>${build.jdbc.password}</password>
                     <skip>${skipTests}</skip>
                 </configuration>
                 <executions>
@@ -192,10 +195,14 @@
             <plugin>
                 <groupId>org.openvpms</groupId>
                 <artifactId>openvpms-data-maven-plugin</artifactId>
-                <version>${pom.version}</version>
+                <version>${project.version}</version>
                 <configuration>
                     <dir>src/data/org/openvpms/data/demo</dir>
-                    <propertyfile>target/test-classes/hibernate.properties</propertyfile>
+                    <dialect>${build.hibernate.dialect}</dialect>
+                    <driver>${build.jdbc.driverClassName}</driver>
+                    <url>${build.jdbc.url}</url>
+                    <username>${build.jdbc.username}</username>
+                    <password>${build.jdbc.password}</password>
                 </configuration>
                 <dependencies>
                     <dependency>

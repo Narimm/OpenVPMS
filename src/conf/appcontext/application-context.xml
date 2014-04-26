@@ -41,11 +41,10 @@
 
     <!--  The DataSource -->
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
-        <property name="driverClassName"
-                  value="${hibernate.connection.driver_class}"/>
-        <property name="url" value="${hibernate.connection.url}"/>
-        <property name="username" value="${hibernate.connection.username}"/>
-        <property name="password" value="${hibernate.connection.password}"/>
+        <property name="driverClassName" value="${jdbc.driverClassName}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
     </bean>
 
     <!--  Hibernate session factory -->
@@ -57,15 +56,13 @@
         <property name="hibernateProperties">
             <props>
                 <prop key="hibernate.dialect">${hibernate.dialect}</prop>
-                <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+                <prop key="hibernate.show_sql">false</prop>
                 <prop key="hibernate.max_fetch_depth">3</prop>
                 <prop key="hibernate.jdbc.use_scrollable_resultset">false</prop>
                 <prop key="hibernate.cache.use_query_cache">true</prop>
-                <prop key="hibernate.cache.provider_class">${hibernate.cache.provider_class}</prop>
-                <prop key="hibernate.cache.use_second_level_cache">${hibernate.cache.use_second_level_cache}</prop>
-                <prop key="hibernate.jdbc.batch_size">
-                    ${hibernate.jdbc.batch_size}
-                </prop>
+                <prop key="hibernate.cache.provider_class">org.hibernate.cache.SingletonEhCacheProvider</prop>
+                <prop key="hibernate.cache.use_second_level_cache">true</prop>
+                <prop key="hibernate.jdbc.batch_size">30</prop>
             </props>
         </property>
         <property name="mappingLocations">
@@ -84,9 +81,7 @@
     <!--  The IMObject DAO bean -->
     <bean id="imObjectDao"
           class="org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate">
-        <property name="sessionFactory">
-            <ref local="sessionFactory"/>
-        </property>
+        <constructor-arg ref="sessionFactory"/>
         <property name="transactionManager">
             <ref local="txnManager"/>
         </property>
