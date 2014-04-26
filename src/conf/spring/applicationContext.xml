@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
@@ -44,20 +60,26 @@
                 <prop key="hibernate.jdbc.use_scrollable_resultset">false</prop>
                 <prop key="hibernate.cache.use_query_cache">true</prop>
                 <prop key="hibernate.c3p0.min_size">
-                    ${hibernate.c3p0.min_size}</prop>
+                    ${hibernate.c3p0.min_size}
+                </prop>
                 <prop key="hibernate.c3p0.max_size">
-                    ${hibernate.c3p0.max_size}</prop>
+                    ${hibernate.c3p0.max_size}
+                </prop>
                 <prop key="hibernate.c3p0.timeout">
-                    ${hibernate.c3p0.timeout}</prop>
+                    ${hibernate.c3p0.timeout}
+                </prop>
                 <prop key="hibernate.c3p0.max_statements">
                     ${hibernate.c3p0.max_statements}
                 </prop>
                 <prop key="hibernate.cache.provider_class">
-                    ${hibernate.cache.provider_class}</prop>
+                    ${hibernate.cache.provider_class}
+                </prop>
                 <prop key="hibernate.cache.use_second_level_cache">
-                    ${hibernate.cache.use_second_level_cache}</prop>
+                    ${hibernate.cache.use_second_level_cache}
+                </prop>
                 <prop key="hibernate.jdbc.batch_size">
-                    ${hibernate.jdbc.batch_size}</prop>
+                    ${hibernate.jdbc.batch_size}
+                </prop>
                 <prop key="hibernate.c3p0.max_statements">
                     ${hibernate.c3p0.max_statements}
                 </prop>
@@ -80,9 +102,7 @@
     <!--  The IMObject DAO bean -->
     <bean id="imObjectDao"
           class="org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate">
-        <property name="sessionFactory">
-            <ref local="sessionFactory"/>
-        </property>
+        <constructor-arg ref="sessionFactory"/>
         <property name="transactionManager">
             <ref local="txnManager"/>
         </property>
