@@ -1,20 +1,19 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.maven.archetype;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -28,8 +27,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
@@ -40,10 +37,49 @@ import java.util.Properties;
  * Abstract class for Maven plugins based on Spring and Hibernate. This injects the properties from a
  * <em>hibernate.properties</tt> file into the Spring application context.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class AbstractHibernateMojo extends AbstractMojo {
+
+    /**
+     * The Hibernate dialect;
+     *
+     * @parameter
+     * @required
+     */
+    private String dialect;
+
+    /**
+     * The JDBC driver class name.
+     *
+     * @parameter
+     * @required
+     */
+    private String driver;
+
+    /**
+     * The JDBC URL.
+     *
+     * @parameter
+     * @required
+     */
+    private String url;
+
+    /**
+     * The JDBC user name.
+     *
+     * @parameter
+     * @required
+     */
+    private String username;
+
+    /**
+     * The JDBC password.
+     *
+     * @parameter
+     * @required
+     */
+    private String password;
 
     /**
      * The hibernate properties.
@@ -55,13 +91,95 @@ public abstract class AbstractHibernateMojo extends AbstractMojo {
      */
     protected final static String APPLICATION_CONTEXT = "mavenPluginApplicationContext.xml";
 
+    /**
+     * Returns the Hibernate dialect.
+     *
+     * @return the Hibernate dialect
+     */
+    public String getDialect() {
+        return dialect;
+    }
 
     /**
-     * Returns the hibernate property file.
+     * Sets the Hibernate dialect.
      *
-     * @return the hibernate property file
+     * @param dialect the hibernate dialect
      */
-    public abstract File getPropertyfile();
+    public void setDialect(String dialect) {
+        this.dialect = dialect;
+    }
+
+    /**
+     * Returns the JDBC driver class name.
+     *
+     * @return the JDBC driver class name
+     */
+    public String getDriver() {
+        return driver;
+    }
+
+    /**
+     * Sets the JDBC driver class name.
+     *
+     * @param driver the JDBC driver class name
+     */
+    public void setDriver(String driver) {
+        this.driver = driver;
+    }
+
+    /**
+     * Returns the JDBC URL.
+     *
+     * @return the JDBC URL
+     */
+    public String getUrl() {
+        return url;
+    }
+
+    /**
+     * RSets the JDBC URL.
+     *
+     * @param url the JDBC URL
+     */
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    /**
+     * Returns the JDBC username.
+     *
+     * @return the JDBC username
+     */
+    public String getUsername() {
+        return username;
+    }
+
+    /**
+     * Sets the JDBC username.
+     *
+     * @param username the JDBC username
+     */
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    /**
+     * Returns the JDBC password.
+     *
+     * @return the JDBC password
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * Sets the JDBC password.
+     *
+     * @param password the JDBC password
+     */
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     /**
      * Returns the maven project.
@@ -80,17 +198,12 @@ public abstract class AbstractHibernateMojo extends AbstractMojo {
      * @throws MojoFailureException   an expected problem (such as a compilation failure) occurs.
      */
     public void execute() throws MojoExecutionException, MojoFailureException {
-        File file = getPropertyfile();
-        if (file == null || !file.exists()) {
-            throw new MojoExecutionException("Hibernate properties not found: " + file);
-        }
-
         properties = new Properties();
-        try {
-            properties.load(new FileInputStream(file));
-        } catch (IOException exception) {
-            throw new MojoExecutionException("Failed to load properties from: " + file, exception);
-        }
+        properties.setProperty("hibernate.dialect", dialect);
+        properties.setProperty("jdbc.driverClassName", driver);
+        properties.setProperty("jdbc.url", url);
+        properties.setProperty("jdbc.username", username);
+        properties.setProperty("jdbc.password", password);
 
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         try {
@@ -143,8 +256,7 @@ public abstract class AbstractHibernateMojo extends AbstractMojo {
             }
 
             return new URLClassLoader(urls, this.getClass().getClassLoader());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             getLog().debug("Couldn't get the classloader.", e);
             return this.getClass().getClassLoader();
         }

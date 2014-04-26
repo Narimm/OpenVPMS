@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.maven.archetype;
 
 /*
@@ -33,7 +49,6 @@ import java.io.File;
  * Plugin to load archetypes using {@link ArchetypeLoader}.
  *
  * @goal load
- * @requiresDependencyResolution test
  */
 public class ArchetypeLoadMojo extends AbstractHibernateMojo {
 
@@ -46,7 +61,7 @@ public class ArchetypeLoadMojo extends AbstractHibernateMojo {
     private File dir;
 
     /**
-     * The assertion types file. If not specified, defaults to <tt>dir/assertionTypes.xml</tt>
+     * The assertion types file. If not specified, defaults to {@code dir/assertionTypes.xml}
      *
      * @parameter
      * @optional
@@ -70,15 +85,7 @@ public class ArchetypeLoadMojo extends AbstractHibernateMojo {
     private boolean verbose = true;
 
     /**
-     * The hibernate property file.
-     *
-     * @parameter
-     * @required
-     */
-    private File propertyfile;
-
-    /**
-     * If <tt>true</tt>, skips execution.
+     * If {@code true}, skips execution.
      *
      * @parameter expression="false"
      * @optional
@@ -125,7 +132,7 @@ public class ArchetypeLoadMojo extends AbstractHibernateMojo {
     /**
      * Returns the assertion types file.
      *
-     * @return the assertion types file. May be <tt>null</tt>
+     * @return the assertion types file. May be {@code null}
      */
     public File getAssertionTypes() {
         return assertionTypes;
@@ -134,7 +141,7 @@ public class ArchetypeLoadMojo extends AbstractHibernateMojo {
     /**
      * Determines if verbose logging is enabled.
      *
-     * @param verbose if <tt>true</tt> log verbosely
+     * @param verbose if {@code true} log verbosely
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -143,7 +150,7 @@ public class ArchetypeLoadMojo extends AbstractHibernateMojo {
     /**
      * Determines if verbose logging is enabled.
      *
-     * @return <tt>true</tt> if logging verbosely
+     * @return {@code true} if logging verbosely
      */
     public boolean isVerbose() {
         return verbose;
@@ -152,7 +159,7 @@ public class ArchetypeLoadMojo extends AbstractHibernateMojo {
     /**
      * Determines if execution should be skipped.
      *
-     * @param skip if <tt>true</tt>, skip execution
+     * @param skip if {@code true}, skip execution
      */
     public void setSkip(boolean skip) {
         this.skip = skip;
@@ -161,7 +168,7 @@ public class ArchetypeLoadMojo extends AbstractHibernateMojo {
     /**
      * Determines if execution is skipped.
      *
-     * @return <tt>true</tt> if execution is skipped
+     * @return {@code true} if execution is skipped
      */
     public boolean isSkip() {
         return skip;
@@ -203,8 +210,7 @@ public class ArchetypeLoadMojo extends AbstractHibernateMojo {
 
         PlatformTransactionManager mgr;
         mgr = (PlatformTransactionManager) context.getBean("txnManager");
-        TransactionStatus status = mgr.getTransaction(
-                new DefaultTransactionDefinition());
+        TransactionStatus status = mgr.getTransaction(new DefaultTransactionDefinition());
         File mappingFile = (assertionTypes != null) ? assertionTypes : new File(dir, "assertionTypes.xml");
         try {
             if (mappingFile.exists()) {
@@ -216,14 +222,6 @@ public class ArchetypeLoadMojo extends AbstractHibernateMojo {
             mgr.rollback(status);
             throw new MojoExecutionException("Failed to load archetypes", throwable);
         }
-    }
-
-    public File getPropertyfile() {
-        return propertyfile;
-    }
-
-    public void setPropertyfile(File propertyfile) {
-        this.propertyfile = propertyfile;
     }
 
     public void setProject(MavenProject project) {
