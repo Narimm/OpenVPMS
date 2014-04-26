@@ -49,6 +49,7 @@ import java.io.File;
  * Plugin to load archetypes using {@link ArchetypeLoader}.
  *
  * @goal load
+ * @requiresDependencyResolution test
  */
 public class ArchetypeLoadMojo extends AbstractHibernateMojo {
 
