@@ -1,3 +1,19 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
@@ -137,8 +153,8 @@
 
                 <!-- common configuration shared by all executions -->
                 <configuration>
-                    <driver>${jdbc.driverClassName}</driver>
-                    <url>${jdbc.admin.url}</url>
+                    <driver>${build.jdbc.driverClassName}</driver>
+                    <url>${build.jdbc.server}</url>
                     <username>${jdbc.admin.username}</username>
                     <password>${jdbc.admin.password}</password>
                 </configuration>
@@ -152,8 +168,7 @@
                         </goals>
                         <configuration>
                             <autocommit>true</autocommit>
-                            <sqlCommand>drop database openvpms</sqlCommand>
-                            <!-- ignore error when database is not avaiable -->
+                            <sqlCommand>drop database `${build.jdbc.db}`</sqlCommand>
                             <onError>continue</onError>
                         </configuration>
                     </execution>
@@ -165,9 +180,7 @@
                             <goal>execute</goal>
                         </goals>
                         <configuration>
-                            <srcFiles>
-                                <srcFile>src/db/createdb.sql</srcFile>
-                            </srcFiles>
+                            <sqlCommand>create database `${build.jdbc.db}`</sqlCommand>
                             <keepFormat>true</keepFormat>
                         </configuration>
                     </execution>
@@ -181,8 +194,7 @@
                 <configuration>
                     <componentProperties>
                         <jdk5>true</jdk5>
-                        <configurationfile>src/conf/hibernate/hibernate.cfg.xml</configurationfile>
-                        <propertyfile>target/classes/hibernate.properties</propertyfile>
+                        <configurationfile>target/classes/hibernate.cfg.xml</configurationfile>
                     </componentProperties>
                 </configuration>
                 <executions>
@@ -209,7 +221,11 @@
                 <configuration>
                     <dir>target/archetypes/org/openvpms</dir>
                     <assertionTypes>target/archetypes/org/openvpms/archetype/assertionTypes.xml</assertionTypes>
-                    <propertyfile>target/classes/hibernate.properties</propertyfile>
+                    <dialect>${build.hibernate.dialect}</dialect>
+                    <driver>${build.jdbc.driverClassName}</driver>
+                    <url>${build.jdbc.url}</url>
+                    <username>${build.jdbc.username}</username>
+                    <password>${build.jdbc.password}</password>
                 </configuration>
                 <executions>
                     <execution>
@@ -236,7 +252,7 @@
                         <!-- todo - need alternative dump for other databases -->
                         <mkdir dir="target/db"/>
                         <exec executable="mysqldump" output="target/db/db.sql" failOnError="true" logError="true">
-                            <arg line="${jdbc.admin.db} -u ${jdbc.admin.username} --password=${jdbc.admin.password}"/>
+                            <arg line="${build.jdbc.db} -u ${jdbc.admin.username} --password=${jdbc.admin.password}"/>
                         </exec>
                     </tasks>
                 </configuration>
@@ -274,7 +290,11 @@
                 <version>${pom.version}</version>
                 <configuration>
                     <file>src/reports/templates.xml</file>
-                    <propertyfile>target/classes/hibernate.properties</propertyfile>
+                    <dialect>${build.hibernate.dialect}</dialect>
+                    <driver>${build.jdbc.driverClassName}</driver>
+                    <url>${build.jdbc.url}</url>
+                    <username>${build.jdbc.username}</username>
+                    <password>${build.jdbc.password}</password>
                 </configuration>
                 <dependencies>
                     <dependency>
@@ -288,17 +308,12 @@
         <resources>
             <resource>
                 <directory>${basedir}/src/conf/hibernate</directory>
-                <includes>
-                    <include>*.properties</include>
-                </includes>
                 <filtering>true</filtering>
             </resource>
         </resources>
     </build>
 
     <properties>
-        <jdbc.admin.url>jdbc:mysql://localhost:3306/</jdbc.admin.url>
-        <jdbc.admin.db>openvpms-1.8</jdbc.admin.db>
         <jdbc.admin.username>root</jdbc.admin.username>
         <jdbc.admin.password>root</jdbc.admin.password>
     </properties>
