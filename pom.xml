@@ -19,10 +19,6 @@
         OpenVPMS Maven Plugins
     </description>
 
-    <!--issueManagement>
-        <system>jira</system>
-    </issueManagement-->
-
     <scm>
         <connection>scm:svn:svn://svn.openvpms.org/openvpms/maven/trunk</connection>
         <developerConnection>scm:svn:svn://svn.openvpms.org/openvpms/maven/trunk</developerConnection>
@@ -42,5 +38,32 @@
         <module>data</module>
         <module>report</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-project</artifactId>
+                <version>2.1.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-plugin-api</artifactId>
+                <version>2.1.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven.plugin-testing</groupId>
+                <artifactId>maven-plugin-testing-harness</artifactId>
+                <scope>test</scope>
+                <version>1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven.plugin-testing</groupId>
+                <artifactId>maven-plugin-testing-tools</artifactId>
+                <scope>test</scope>
+                <version>1.2</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 </project>

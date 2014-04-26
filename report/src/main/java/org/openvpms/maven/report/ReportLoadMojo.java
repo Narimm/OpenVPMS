@@ -32,7 +32,6 @@ import java.io.File;
  * Loads report templates using the {@link TemplateLoader}.
  *
  * @goal load
- * @requiresDependencyResolution test
  */
 public class ReportLoadMojo extends AbstractHibernateMojo {
 
@@ -45,12 +44,49 @@ public class ReportLoadMojo extends AbstractHibernateMojo {
     private File file;
 
     /**
-     * The hibernate property file.
+     * TODO - the JDBC properties are repeated from AbstractHibernateMojo as the maven plugin API cannot pick up
+     * parameters otherwise.
+     */
+
+    /**
+     * The Hibernate dialect;
      *
      * @parameter
      * @required
      */
-    private File propertyfile;
+    private String dialect;
+
+    /**
+     * The JDBC driver class name.
+     *
+     * @parameter
+     * @required
+     */
+    private String driver;
+
+    /**
+     * The JDBC URL.
+     *
+     * @parameter
+     * @required
+     */
+    private String url;
+
+    /**
+     * The JDBC user name.
+     *
+     * @parameter
+     * @required
+     */
+    private String username;
+
+    /**
+     * The JDBC password.
+     *
+     * @parameter
+     * @required
+     */
+    private String password;
 
     /**
      * The maven project to interact with.

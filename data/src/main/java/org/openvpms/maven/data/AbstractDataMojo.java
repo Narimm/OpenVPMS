@@ -44,6 +44,51 @@ public abstract class AbstractDataMojo extends AbstractHibernateMojo {
     private File dir;
 
     /**
+     * TODO - the JDBC properties are repeated from AbstractHibernateMojo as the maven plugin API cannot pick up
+     * parameters otherwise.
+     */
+
+    /**
+     * The Hibernate dialect;
+     *
+     * @parameter
+     * @required
+     */
+    private String dialect;
+
+    /**
+     * The JDBC driver class name.
+     *
+     * @parameter
+     * @required
+     */
+    private String driver;
+
+    /**
+     * The JDBC URL.
+     *
+     * @parameter
+     * @required
+     */
+    private String url;
+
+    /**
+     * The JDBC user name.
+     *
+     * @parameter
+     * @required
+     */
+    private String username;
+
+    /**
+     * The JDBC password.
+     *
+     * @parameter
+     * @required
+     */
+    private String password;
+
+    /**
      * Determines if verbose logging is enabled.
      *
      * @parameter=true
