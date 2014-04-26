@@ -19,6 +19,7 @@ package org.openvpms.component.business.dao.hibernate.im.party;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.exception.ConstraintViolationException;
+import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDO;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityDO;
@@ -512,9 +513,8 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
     /**
      * Sets up the test case.
      */
-    @Override
+    @Before
     public void setUp() {
-        super.setUp();
         parties = count(PartyDOImpl.class);
         relationships = count(EntityRelationshipDOImpl.class);
         links = count(EntityLinkDOImpl.class);

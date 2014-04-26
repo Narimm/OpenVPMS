@@ -13,6 +13,7 @@
  *
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.component.business.dao.hibernate.im.security;
 
 import org.hibernate.Session;
@@ -125,7 +126,6 @@ public class UserDAOHibernateTestCase extends HibernateInfoModelTestCase {
      */
     @Before
     public void setUp() {
-        super.setUp();
         dao = new UserDAOHibernate();
         dao.setSessionFactory(getSessionFactory());
     }
