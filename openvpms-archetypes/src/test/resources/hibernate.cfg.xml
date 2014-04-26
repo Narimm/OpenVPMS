@@ -20,6 +20,11 @@
         "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
 <hibernate-configuration>
     <session-factory>
+        <property name="hibernate.dialect">${build.hibernate.dialect}</property>
+        <property name="connection.driver_class">${build.jdbc.driverClassName}</property>
+        <property name="connection.url">${build.jdbc.url}</property>
+        <property name="connection.username">${build.jdbc.username}</property>
+        <property name="connection.password">${build.jdbc.password}</property>
         <mapping resource="org/openvpms/component/business/dao/hibernate/im/act/ActDOImpl.hbm.xml"/>
         <mapping resource="org/openvpms/component/business/dao/hibernate/im/act/ActRelationshipDOImpl.hbm.xml"/>
         <mapping resource="org/openvpms/component/business/dao/hibernate/im/act/ParticipationDOImpl.hbm.xml"/>
