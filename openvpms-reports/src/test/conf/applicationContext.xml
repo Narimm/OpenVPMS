@@ -20,22 +20,19 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-    <!--  Property configuration -->
-    <bean id="props"
+    <bean id="propertyPlaceholderConfigurer"
           class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="locations">
-            <list>
-                <value>classpath:hibernate.properties</value>
-            </list>
-        </property>
+
+        <!-- allow system properties to override any other property source -->
+        <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
     </bean>
 
     <!--  The data source -->
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
-        <property name="driverClassName" value="${hibernate.connection.driver_class}"/>
-        <property name="url" value="${hibernate.connection.url}"/>
-        <property name="username" value="${hibernate.connection.username}"/>
-        <property name="password" value="${hibernate.connection.password}"/>
+        <property name="driverClassName" value="${jdbc.driverClassName}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
     </bean>
 
     <!--  Hibernate session factory -->
@@ -47,19 +44,14 @@
         <property name="hibernateProperties">
             <props>
                 <prop key="hibernate.dialect">${hibernate.dialect}</prop>
-                <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
-                <prop key="hibernate.c3p0.min_size">
-                    ${hibernate.c3p0.min_size}
-                </prop>
-                <prop key="hibernate.c3p0.max_size">
-                    ${hibernate.c3p0.max_size}
-                </prop>
-                <prop key="hibernate.c3p0.timeout">
-                    ${hibernate.c3p0.timeout}
-                </prop>
-                <prop key="hibernate.c3p0.max_statements">
-                    ${hibernate.c3p0.max_statements}
-                </prop>
+                <prop key="hibernate.show_sql">false</prop>
+                <prop key="hibernate.c3p0.min_size">5</prop>
+                <prop key="hibernate.c3p0.max_size">20</prop>
+                <prop key="hibernate.c3p0.timeout">1800</prop>
+                <prop key="hibernate.c3p0.max_statements">50</prop>
+                <prop key="hibernate.cache.use_query_cache">true</prop>
+                <prop key="hibernate.cache.provider_class">org.hibernate.cache.SingletonEhCacheProvider</prop>
+                <prop key="hibernate.cache.use_second_level_cache">true</prop>
             </props>
         </property>
         <property name="mappingLocations">
@@ -77,9 +69,7 @@
     <!--  The IMObject DAO bean -->
     <bean id="imObjectDao"
           class="org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate">
-        <property name="sessionFactory">
-            <ref local="sessionFactory"/>
-        </property>
+        <constructor-arg ref="sessionFactory"/>
         <property name="transactionManager">
             <ref local="txnManager"/>
         </property>
