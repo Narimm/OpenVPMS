@@ -50,6 +50,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
 import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
+import org.openvpms.web.workspace.patient.history.PatientHistoryCRUDWindow;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQueryFactory;
 import org.openvpms.web.workspace.patient.mr.PatientDocumentQuery;
@@ -263,7 +264,7 @@ public class VisitEditor {
      *
      * @return the history CRUD window
      */
-    public VisitCRUDWindow getHistory() {
+    public PatientHistoryCRUDWindow getHistory() {
         return visitWindow.getWindow();
     }
 
