@@ -20,115 +20,13 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-    <!--  Property configuration -->
-    <bean id="props"
-          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="locations">
-            <list>
-                <value>classpath:hibernate.properties</value>
-            </list>
-        </property>
-    </bean>
-
-    <!--  The data source -->
-    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
-        <property name="driverClassName" value="${hibernate.connection.driver_class}"/>
-        <property name="url" value="${hibernate.connection.url}"/>
-        <property name="username" value="${hibernate.connection.username}"/>
-        <property name="password" value="${hibernate.connection.password}"/>
-    </bean>
-
-
-    <!--  Hibernate session factory -->
-    <bean id="sessionFactory"
-          class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
-        <property name="dataSource">
-            <ref local="dataSource"/>
-        </property>
-        <property name="hibernateProperties">
-            <props>
-                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
-                <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
-            </props>
-        </property>
-        <property name="mappingResources">
-            <list>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/act/ActDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/act/ActRelationshipDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/act/ParticipationDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/ActionTypeDescriptorDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/ArchetypeDescriptorDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/AssertionDescriptorDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/AssertionTypeDescriptorDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/NodeDescriptorDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/document/DocumentDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/audit/AuditRecord.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/entity/EntityDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/entity/EntityIdentityDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/entity/EntityRelationshipDOImpl.hbm.xml
-                </value>
-                <value>org/openvpms/component/business/dao/hibernate/im/entity/EntityLinkDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/lookup/LookupDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/lookup/LookupRelationshipDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/party/ContactDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/product/ProductPriceDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/security/ArchetypeAuthorityDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/security/SecurityRoleDOImpl.hbm.xml
-                </value>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="txManager"
-          class="org.springframework.orm.hibernate3.HibernateTransactionManager">
-        <property name="sessionFactory" ref="sessionFactory"/>
-    </bean>
+    <import resource="classpath:/datasource-context.xml"/>
 
     <!--  The IMObject DAO bean -->
     <bean id="imObjectDao"
           class="org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate">
-        <property name="sessionFactory">
-            <ref local="sessionFactory"/>
-        </property>
-        <property name="transactionManager">
-            <ref local="txManager"/>
-        </property>
+        <constructor-arg ref="sessionFactory"/>
+        <property name="transactionManager" ref="txnManager"/>
         <property name="archetypeDescriptorCache">
             <ref local="archetypeDescriptorCache"/>
         </property>
@@ -137,9 +35,7 @@
     <!--  The AuditRecord DAO bean -->
     <bean id="auditDao"
           class="org.openvpms.component.business.dao.hibernate.im.audit.AuditDAOHibernate">
-        <property name="sessionFactory">
-            <ref local="sessionFactory"/>
-        </property>
+        <property name="sessionFactory" ref="sessionFactory"/>
     </bean>
 
     <!--  The Archetype Descriptor Cache -->

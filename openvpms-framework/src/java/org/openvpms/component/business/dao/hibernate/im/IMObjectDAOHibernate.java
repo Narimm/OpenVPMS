@@ -126,9 +126,12 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
 
 
     /**
-     * Default constructor.
+     * Constructs an {@link IMObjectDAOHibernate}.
+     *
+     * @param factory the session factory
      */
-    public IMObjectDAOHibernate() {
+    public IMObjectDAOHibernate(SessionFactory factory) {
+        setSessionFactory(factory);
     }
 
     /**
