@@ -327,7 +327,7 @@ public class ProductPriceRules {
 
     /**
      * Updates the cost node of any <em>productPrice.unitPrice</em>
-     * associated with a product, and recalculates its price.
+     * associated with a product active at the current time, and recalculates its price.
      * <p/>
      * Returns a list of unit prices whose cost and price have changed.
      *
@@ -340,7 +340,15 @@ public class ProductPriceRules {
     public List<ProductPrice> updateUnitPrices(Product product, BigDecimal cost, Party practice, Currency currency) {
         List<ProductPrice> result = null;
         IMObjectBean bean = new IMObjectBean(product, service);
-        List<ProductPrice> prices = bean.getValues("prices", ProductPrice.class);
+        final Date now = new Date();
+        Predicate predicate = new Predicate() {
+            @Override
+            public boolean evaluate(Object object) {
+                ProductPrice price = (ProductPrice) object;
+                return price.isActive() && DateRules.between(now, price.getFromDate(), price.getToDate());
+            }
+        };
+        List<ProductPrice> prices = bean.getValues("prices", predicate, ProductPrice.class);
         if (!prices.isEmpty()) {
             cost = currency.round(cost);
             for (ProductPrice price : prices) {

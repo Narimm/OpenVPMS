@@ -18,19 +18,26 @@ package org.openvpms.archetype.rules.product;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createUnitPrice;
+import static org.openvpms.archetype.rules.util.DateRules.getToday;
+import static org.openvpms.archetype.rules.util.DateRules.getTomorrow;
+import static org.openvpms.archetype.rules.util.DateRules.getYesterday;
 
 
 /**
@@ -63,8 +70,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      */
     @Test
     public void testUpdateFromMerchandise() {
-        Product product = TestHelper.createProduct(
-                ProductArchetypes.MERCHANDISE, null);
+        Product product = TestHelper.createProduct(ProductArchetypes.MERCHANDISE, null);
         checkUpdateFromProduct(product);
     }
 
@@ -75,8 +81,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      */
     @Test
     public void testCustomUnitPrice() {
-        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION,
-                                                   null);
+        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION, null);
         Party supplier = TestHelper.createSupplier();
         BigDecimal initialCost = BigDecimal.ZERO;
         BigDecimal initialPrice = BigDecimal.ONE;
@@ -140,6 +145,42 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
     }
 
     /**
+     * Verifies that when a product has multiple active unit prices with different pricing groups,
+     * each is updated when the product-supplier relationship is saved.
+     */
+    @Test
+    public void testPricingGroups() {
+        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION, null);
+
+        // add prices
+        ProductPrice price1 = addUnitPrice(product, "1", "100", "2", "GROUP1");
+        ProductPrice price2 = addUnitPrice(product, "1", "200", "3", "GROUP2");
+        ProductPrice price3 = addUnitPrice(product, "1", "300", "4", null);
+        ProductPrice price4 = addUnitPrice(product, "1", "400", "5", null);
+        price4.setToDate(DateRules.getYesterday()); // now inactive
+
+        Party supplier = TestHelper.createSupplier();
+        int packageSize = 30;
+        ProductSupplier ps = createProductSupplier(product, supplier);
+        ps.setPackageSize(packageSize);
+        ps.setNettPrice(new BigDecimal("10.00"));
+        ps.setListPrice(new BigDecimal("20.00"));
+        ps.setAutoPriceUpdate(true);
+        product.addEntityRelationship(ps.getRelationship());
+        save(product);
+
+        price1 = get(price1);
+        price2 = get(price2);
+        price3 = get(price3);
+        price4 = get(price4);
+
+        checkPrice(price1, new BigDecimal("0.67"), new BigDecimal("1.34"));
+        checkPrice(price2, new BigDecimal("0.67"), new BigDecimal("2.01"));
+        checkPrice(price3, new BigDecimal("0.67"), new BigDecimal("2.68"));
+        checkPrice(price4, new BigDecimal("1"), new BigDecimal("5"));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -159,27 +200,45 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
         return TestHelper.getPractice();
     }
 
+    private ProductPrice addUnitPrice(Product product, String cost, String markup, String price, String pricingGroup) {
+        ProductPrice unit = ProductPriceTestHelper.createUnitPrice(new BigDecimal(price), new BigDecimal(cost),
+                                                                   new BigDecimal(markup), BigDecimal.valueOf(100),
+                                                                   (Date) null, null);
+        if (pricingGroup != null) {
+            Lookup lookup = TestHelper.getLookup(ProductArchetypes.PRICING_GROUP, pricingGroup);
+            unit.addClassification(lookup);
+        }
+        product.addProductPrice(unit);
+        return unit;
+    }
+
     /**
      * Verifies that prices are updated correctly when relationships are
      * created between products and suppliers.
      *
-     * @param newProduct       if <tt>true</tt> the product is not saved prior
-     *                         to adding the relationship
-     * @param newSupplier      if <tt>true</tt> the supplier is not saved prior
-     *                         to adding the relationship
-     * @param saveProductFirst if <tt>true</tt> the product is saved first
-     *                         in the transaction, otherwise the supplier is.
+     * @param newProduct       if {@code true} the product is not saved prior to adding the relationship
+     * @param newSupplier      if {@code true} the supplier is not saved prior to adding the relationship
+     * @param saveProductFirst if {@code true} the product is saved first in the transaction, otherwise the supplier is.
      *                         This affects the order in which rules are fired
      */
-    private void checkSaveProductAndSupplier(boolean newProduct,
-                                             boolean newSupplier,
-                                             boolean saveProductFirst) {
-        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION,
-                                                   null, !newProduct);
+    private void checkSaveProductAndSupplier(boolean newProduct, boolean newSupplier, boolean saveProductFirst) {
+        BigDecimal cost = BigDecimal.ONE;
+        BigDecimal markup = BigDecimal.valueOf(100);
+        BigDecimal price = BigDecimal.valueOf(2);
+        BigDecimal maxDiscount = BigDecimal.valueOf(100);
+
+        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION, null, !newProduct);
         Party supplier = TestHelper.createSupplier(!newSupplier);
 
-        // add a new price
-        addUnitPrice(product, BigDecimal.ZERO, BigDecimal.ZERO, false);
+        // add some prices
+        ProductPrice unit1 = createUnitPrice(price, cost, markup, maxDiscount, null, getYesterday()); // inactive
+        ProductPrice unit2 = createUnitPrice(price, cost, markup, maxDiscount, getToday(), null);     // active
+        ProductPrice unit3 = createUnitPrice(price, cost, markup, maxDiscount, (Date) null, null);    // active
+        ProductPrice unit4 = createUnitPrice(price, cost, markup, maxDiscount, getTomorrow(), null);  // inactive
+        product.addProductPrice(unit1);
+        product.addProductPrice(unit2);
+        product.addProductPrice(unit3);
+        product.addProductPrice(unit4);
 
         // create a product-supplier relationship.
         int packageSize = 30;
@@ -209,8 +268,13 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
             save(supplier, product);
         }
 
-        // verify that the price has updated
-        checkPrice(product, new BigDecimal("0.67"), new BigDecimal("1.34"));
+        // verify that the expected prices have updated
+        BigDecimal newCost = new BigDecimal("0.67");
+        BigDecimal newPrice = new BigDecimal("1.34");
+        checkPrice(unit1, cost, price);              // inactive, so shouldn't update
+        checkPrice(unit2, newCost, newPrice);
+        checkPrice(unit3, newCost, newPrice);
+        checkPrice(unit4, cost, price);              // inactive, so shouldn't update
     }
 
     /**

@@ -20,7 +20,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.math.Currency;
-import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -49,6 +48,9 @@ import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.addPri
 import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createFixedPrice;
 import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createPriceTemplate;
 import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createUnitPrice;
+import static org.openvpms.archetype.rules.util.DateRules.getToday;
+import static org.openvpms.archetype.rules.util.DateRules.getTomorrow;
+import static org.openvpms.archetype.rules.util.DateRules.getYesterday;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 import static org.openvpms.archetype.test.TestHelper.getDatetime;
 
@@ -58,7 +60,7 @@ import static org.openvpms.archetype.test.TestHelper.getDatetime;
  *
  * @author Tim Anderson
  */
-public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
+public class ProductPriceRulesTestCase extends AbstractProductTest {
 
     /**
      * The lookup service.
@@ -256,6 +258,44 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         IMObjectBean bean = new IMObjectBean(price);
         bean.setValue("maxDiscount", 10);
         checkEquals(BigDecimal.TEN, rules.getMaxDiscount(price));
+    }
+
+    /**
+     * Tests the {@link ProductPriceRules#updateUnitPrices(Product, BigDecimal, Party, Currency)} method.
+     */
+    @Test
+    public void testUpdatePrices() {
+        BigDecimal cost = BigDecimal.ONE;
+        BigDecimal markup = BigDecimal.valueOf(100);
+        BigDecimal price = BigDecimal.valueOf(2);
+        BigDecimal maxDiscount = BigDecimal.valueOf(100);
+
+        ProductPrice unit1 = createUnitPrice(price, cost, markup, maxDiscount, null, getYesterday()); // inactive
+        ProductPrice unit2 = createUnitPrice(price, cost, markup, maxDiscount, getToday(), null);     // active
+        ProductPrice unit3 = createUnitPrice(price, cost, markup, maxDiscount, (Date) null, null);    // active
+        ProductPrice unit4 = createUnitPrice(price, cost, markup, maxDiscount, getTomorrow(), null);  // inactive
+
+        Product product = TestHelper.createProduct();
+        product.addProductPrice(unit1);
+        product.addProductPrice(unit2);
+        product.addProductPrice(unit3);
+        product.addProductPrice(unit4);
+
+        save(product);
+
+        BigDecimal newCost = BigDecimal.valueOf(2);
+        List<ProductPrice> updated = rules.updateUnitPrices(product, newCost, practice, currency);
+        assertEquals(2, updated.size());
+        assertFalse(updated.contains(unit1));
+        assertTrue(updated.contains(unit2));
+        assertTrue(updated.contains(unit3));
+        assertFalse(updated.contains(unit4));
+
+        BigDecimal newPrice = new BigDecimal("4.40");
+        checkPrice(unit1, cost, price);
+        checkPrice(unit2, newCost, newPrice);
+        checkPrice(unit3, newCost, newPrice);
+        checkPrice(unit4, cost, price);
     }
 
     /**

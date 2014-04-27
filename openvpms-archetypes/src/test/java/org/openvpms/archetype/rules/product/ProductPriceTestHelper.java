@@ -127,6 +127,17 @@ public class ProductPriceTestHelper {
     /**
      * Helper to create a new unit price.
      *
+     * @param from the active from date. May be {@code null}
+     * @param to   the active to date. May be {@code null}
+     * @return a new fixed price
+     */
+    public static ProductPrice createUnitPrice(Date from, Date to) {
+        return createPrice(ProductArchetypes.UNIT_PRICE, from, to);
+    }
+
+    /**
+     * Helper to create a new unit price.
+     *
      * @param from         the active from date. May be {@code null}
      * @param to           the active to date. May be {@code null}
      * @param pricingGroup the pricing group
@@ -142,33 +153,17 @@ public class ProductPriceTestHelper {
     /**
      * Helper to create a new unit price.
      *
-     * @param from the active from date. May be {@code null}
-     * @param to   the active to date. May be {@code null}
-     * @return a new fixed price
-     */
-    public static ProductPrice createUnitPrice(Date from, Date to) {
-        return createPrice(ProductArchetypes.UNIT_PRICE, from, to);
-    }
-
-    /**
-     * Helper to create a new unit price.
-     *
      * @param price       the price
      * @param cost        the cost price
      * @param markup      the markup
      * @param maxDiscount the maximum discount
      * @param from        the active from date. May be {@code null}
-     * @param to          the active to date. May be {@code null}   @return a new fixed price
+     * @param to          the active to date. May be {@code null}
+     * @return a new fixed price
      */
     public static ProductPrice createUnitPrice(BigDecimal price, BigDecimal cost, BigDecimal markup,
                                                BigDecimal maxDiscount, String from, String to) {
-        ProductPrice result = createUnitPrice(from, to);
-        IMObjectBean bean = new IMObjectBean(result);
-        bean.setValue("price", price);
-        bean.setValue("cost", cost);
-        bean.setValue("markup", markup);
-        bean.setValue("maxDiscount", maxDiscount);
-        return result;
+        return createUnitPrice(price, cost, markup, maxDiscount, getDate(from), getDate(to));
     }
 
     /**
