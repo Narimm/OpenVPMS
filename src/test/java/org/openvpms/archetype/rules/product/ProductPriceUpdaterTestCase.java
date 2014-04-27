@@ -1,24 +1,21 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
 
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.test.TestHelper;
@@ -28,14 +25,23 @@ import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createUnitPrice;
+import static org.openvpms.archetype.rules.util.DateRules.getToday;
+import static org.openvpms.archetype.rules.util.DateRules.getTomorrow;
+import static org.openvpms.archetype.rules.util.DateRules.getYesterday;
 
 
 /**
  * Tests the {@link ProductPriceUpdater} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ProductPriceUpdaterTestCase extends AbstractProductTest {
 
@@ -62,8 +68,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      */
     @Test
     public void testUpdateFromMerchandise() {
-        Product product = TestHelper.createProduct(
-                ProductArchetypes.MERCHANDISE, null);
+        Product product = TestHelper.createProduct(ProductArchetypes.MERCHANDISE, null);
         checkUpdateFromProduct(product);
     }
 
@@ -74,8 +79,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      */
     @Test
     public void testCustomUnitPrice() {
-        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION,
-                                                   null);
+        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION, null);
         Party supplier = TestHelper.createSupplier();
         BigDecimal initialCost = BigDecimal.ZERO;
         BigDecimal initialPrice = BigDecimal.ONE;
@@ -162,23 +166,29 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      * Verifies that prices are updated correctly when relationships are
      * created between products and suppliers.
      *
-     * @param newProduct       if <tt>true</tt> the product is not saved prior
-     *                         to adding the relationship
-     * @param newSupplier      if <tt>true</tt> the supplier is not saved prior
-     *                         to adding the relationship
-     * @param saveProductFirst if <tt>true</tt> the product is saved first
-     *                         in the transaction, otherwise the supplier is.
+     * @param newProduct       if {@code true} the product is not saved prior to adding the relationship
+     * @param newSupplier      if {@code true} the supplier is not saved prior to adding the relationship
+     * @param saveProductFirst if {@code true} the product is saved first in the transaction, otherwise the supplier is.
      *                         This affects the order in which rules are fired
      */
-    private void checkSaveProductAndSupplier(boolean newProduct,
-                                             boolean newSupplier,
-                                             boolean saveProductFirst) {
-        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION,
-                                                   null, !newProduct);
+    private void checkSaveProductAndSupplier(boolean newProduct, boolean newSupplier, boolean saveProductFirst) {
+        BigDecimal cost = BigDecimal.ONE;
+        BigDecimal markup = BigDecimal.valueOf(100);
+        BigDecimal price = BigDecimal.valueOf(2);
+        BigDecimal maxDiscount = BigDecimal.valueOf(100);
+
+        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION, null, !newProduct);
         Party supplier = TestHelper.createSupplier(!newSupplier);
 
-        // add a new price
-        addUnitPrice(product, BigDecimal.ZERO, BigDecimal.ZERO, false);
+        // add some prices
+        ProductPrice unit1 = createUnitPrice(price, cost, markup, maxDiscount, null, getYesterday()); // inactive
+        ProductPrice unit2 = createUnitPrice(price, cost, markup, maxDiscount, getToday(), null);     // active
+        ProductPrice unit3 = createUnitPrice(price, cost, markup, maxDiscount, (Date) null, null);    // active
+        ProductPrice unit4 = createUnitPrice(price, cost, markup, maxDiscount, getTomorrow(), null);  // inactive
+        product.addProductPrice(unit1);
+        product.addProductPrice(unit2);
+        product.addProductPrice(unit3);
+        product.addProductPrice(unit4);
 
         // create a product-supplier relationship.
         int packageSize = 30;
@@ -208,8 +218,13 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
             save(supplier, product);
         }
 
-        // verify that the price has updated
-        checkPrice(product, new BigDecimal("0.67"), new BigDecimal("1.34"));
+        // verify that the expected prices have updated
+        BigDecimal newCost = new BigDecimal("0.67");
+        BigDecimal newPrice = new BigDecimal("1.34");
+        checkPrice(unit1, cost, price);              // inactive, so shouldn't update
+        checkPrice(unit2, newCost, newPrice);
+        checkPrice(unit3, newCost, newPrice);
+        checkPrice(unit4, cost, price);              // inactive, so shouldn't update
     }
 
     /**
@@ -291,7 +306,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      * @param product     the product
      * @param supplier    the supplier
      * @param packageSize the package size
-     * @return the corresponding product supplier, or <tt>null</tt> if none is found
+     * @return the corresponding product supplier, or {@code null} if none is found
      */
     private ProductSupplier getProductSupplier(Product product, Party supplier, int packageSize) {
         ProductRules rules = new ProductRules();

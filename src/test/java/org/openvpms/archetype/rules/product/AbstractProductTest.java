@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -84,4 +82,16 @@ public class AbstractProductTest extends ArchetypeServiceTest {
         return unitPrice;
     }
 
+    /**
+     * Verifies a price matches that expected.
+     *
+     * @param price         the price
+     * @param expectedCost  the expected cost
+     * @param expectedPrice the expected price
+     */
+    protected void checkPrice(ProductPrice price, BigDecimal expectedCost, BigDecimal expectedPrice) {
+        IMObjectBean bean = new IMObjectBean(price);
+        checkEquals(expectedCost, bean.getBigDecimal("cost"));
+        checkEquals(expectedPrice, bean.getBigDecimal("price"));
+    }
 }

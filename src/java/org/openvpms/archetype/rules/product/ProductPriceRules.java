@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -275,7 +275,7 @@ public class ProductPriceRules {
 
     /**
      * Updates the cost node of any <em>productPrice.unitPrice</em>
-     * associated with a product, and recalculates its price.
+     * associated with a product active at the current time, and recalculates its price.
      * <p/>
      * Returns a list of unit prices whose cost and price have changed.
      *
@@ -288,7 +288,15 @@ public class ProductPriceRules {
     public List<ProductPrice> updateUnitPrices(Product product, BigDecimal cost, Party practice, Currency currency) {
         List<ProductPrice> result = null;
         IMObjectBean bean = new IMObjectBean(product, service);
-        List<ProductPrice> prices = bean.getValues("prices", ProductPrice.class);
+        final Date now = new Date();
+        Predicate predicate = new Predicate() {
+            @Override
+            public boolean evaluate(Object object) {
+                ProductPrice price = (ProductPrice) object;
+                return price.isActive() && DateRules.between(now, price.getFromDate(), price.getToDate());
+            }
+        };
+        List<ProductPrice> prices = bean.getValues("prices", predicate, ProductPrice.class);
         if (!prices.isEmpty()) {
             cost = currency.round(cost);
             for (ProductPrice price : prices) {
@@ -423,12 +431,10 @@ public class ProductPriceRules {
      *
      * @param product    the product
      * @param predicate  the predicate to evaluate
-     * @param useDefault if {@code true}, select prices that have a
-     *                   {@code true} default node
+     * @param useDefault if {@code true}, select prices that have a {@code true} default node
      * @return the price matching the criteria, or {@code null} if none is found
      */
-    private ProductPrice findPrice(Product product, Predicate predicate,
-                                   boolean useDefault) {
+    private ProductPrice findPrice(Product product, Predicate predicate, boolean useDefault) {
         ProductPrice result = null;
         ProductPrice fallback = null;
         for (ProductPrice price : product.getProductPrices()) {
