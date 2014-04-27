@@ -54,8 +54,7 @@ import static org.openvpms.archetype.rules.product.ProductPriceUpdaterException.
 /**
  * Updates <em>productPrice.unitPrice</em>s associated with a product.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ProductPriceUpdater {
 
@@ -86,23 +85,20 @@ public class ProductPriceUpdater {
 
 
     /**
-     * Creates a new <tt>ProductPriceUpdater</tt>.
+     * Constructs a {@link ProductPriceUpdater}.
      *
      * @param currencies the currency cache
      * @param service    the archetype service
      * @param lookups    the lookup service
      */
-    public ProductPriceUpdater(Currencies currencies,
-                               IArchetypeService service,
-                               ILookupService lookups) {
+    public ProductPriceUpdater(Currencies currencies, IArchetypeService service, ILookupService lookups) {
         this.currencies = currencies;
         this.service = service;
         rules = new ProductPriceRules(service, lookups);
     }
 
     /**
-     * Updates any <em>productPrice.unitPrice</em> product prices associated
-     * with a product.
+     * Updates any <em>productPrice.unitPrice</em> product prices associated with a product.
      *
      * @param product the product
      * @return a list of updated prices
@@ -114,11 +110,10 @@ public class ProductPriceUpdater {
     }
 
     /**
-     * Updates any <em>productPrice.unitPrice</em> product prices associated
-     * with a product.
+     * Updates any <em>productPrice.unitPrice</em> product prices associated with a product.
      *
      * @param product the product
-     * @param save    if <tt>true</tt>, save updated prices
+     * @param save    if {@code true}, save updated prices
      * @return a list of updated prices
      * @throws ArchetypeServiceException    for any archetype service error
      * @throws ProductPriceUpdaterException if there is no practice
@@ -127,12 +122,10 @@ public class ProductPriceUpdater {
         List<ProductPrice> result = Collections.emptyList();
         if (needsUpdate(product)) {
             EntityBean bean = new EntityBean(product, service);
-            List<EntityRelationship> relationships
-                    = bean.getNodeRelationships("suppliers");
+            List<EntityRelationship> relationships = bean.getNodeRelationships("suppliers");
             Transformer transformer = new Transformer() {
                 public Object transform(Object object) {
-                    ProductSupplier ps = new ProductSupplier(
-                            (EntityRelationship) object, service);
+                    ProductSupplier ps = new ProductSupplier((EntityRelationship) object, service);
                     return update(product, ps, false);
                 }
             };
@@ -142,8 +135,7 @@ public class ProductPriceUpdater {
     }
 
     /**
-     * Updates an <em>productPrice.unitPrice</em> product prices associated
-     * with products for the specified supplier.
+     * Updates an <em>productPrice.unitPrice</em> product prices associated with products for the specified supplier.
      *
      * @param supplier the supplier
      * @return a list of updated prices
@@ -155,23 +147,20 @@ public class ProductPriceUpdater {
     }
 
     /**
-     * Updates an <em>productPrice.unitPrice</em> product prices associated
-     * with products for the specified supplier.
+     * Updates an <em>productPrice.unitPrice</em> product prices associated with products for the specified supplier.
      *
      * @param supplier the supplier
-     * @param save     if <tt>true</tt>, save updated prices
+     * @param save     if {@code true}, save updated prices
      * @return a list of updated prices
      * @throws ArchetypeServiceException    for any archetype service error
      * @throws ProductPriceUpdaterException if there is no practice
      */
     public List<ProductPrice> update(Party supplier, boolean save) {
         EntityBean bean = new EntityBean(supplier, service);
-        List<EntityRelationship> products = bean.getNodeRelationships(
-                "products");
+        List<EntityRelationship> products = bean.getNodeRelationships("products");
         Transformer transformer = new Transformer() {
             public Object transform(Object object) {
-                ProductSupplier ps = new ProductSupplier((EntityRelationship)
-                                                                 object, service);
+                ProductSupplier ps = new ProductSupplier((EntityRelationship) object, service);
                 return update(ps, false);
             }
         };
@@ -179,22 +168,18 @@ public class ProductPriceUpdater {
     }
 
     /**
-     * Updates any <em>productPrice.unitPrice</em> product prices associated
-     * with a product.
+     * Updates any <em>productPrice.unitPrice</em> product prices associated with a product.
      *
      * @param product         the product
      * @param productSupplier the product-supplier relationship
-     * @param save            if <tt>true</tt>, save updated prices
+     * @param save            if {@code true}, save updated prices
      * @return a list of updated prices
      * @throws ArchetypeServiceException    for any archetype service error
      * @throws ProductPriceUpdaterException if there is no practice
-     * @throws IllegalArgumentException     if the product is not that referred
-     *                                      to by the product-supplier
+     * @throws IllegalArgumentException     if the product is not that referred to by the product-supplier
      *                                      relationship
      */
-    public List<ProductPrice> update(Product product,
-                                     ProductSupplier productSupplier,
-                                     boolean save) {
+    public List<ProductPrice> update(Product product, ProductSupplier productSupplier, boolean save) {
         if (!product.getObjectReference().equals(productSupplier.getRelationship().getSource())) {
             throw new IllegalArgumentException("Argument 'product' is not that referred to by 'productSupplier'");
         }
@@ -208,17 +193,15 @@ public class ProductPriceUpdater {
     }
 
     /**
-     * Updates any <em>productPrice.unitPrice</em> product prices associated
-     * with a product.
+     * Updates any <em>productPrice.unitPrice</em> product prices associated with a product.
      *
      * @param productSupplier the product-supplier relationship
-     * @param save            if <tt>true</tt>, save updated prices
+     * @param save            if {@code true}, save updated prices
      * @return a list of updated prices
      * @throws ArchetypeServiceException    for any archetype service error
      * @throws ProductPriceUpdaterException if there is no practice
      */
-    public List<ProductPrice> update(ProductSupplier productSupplier,
-                                     boolean save) {
+    public List<ProductPrice> update(ProductSupplier productSupplier, boolean save) {
         List<ProductPrice> result = Collections.emptyList();
         if (canUpdate(productSupplier)) {
             Product product = productSupplier.getProduct();
@@ -233,17 +216,15 @@ public class ProductPriceUpdater {
      * Determines if the prices associated with a product should be updated.
      *
      * @param product the product
-     * @return <tt>true</tt> if prices should be updated
+     * @return {@code true} if prices should be updated
      */
     private boolean needsUpdate(Product product) {
         boolean update = true;
         if (!product.isNew()) {
             Product prior = (Product) service.get(product.getObjectReference());
             if (prior != null) {
-                Set<EntityRelationship> oldSuppliers = getProductSuppliers(
-                        prior);
-                Set<EntityRelationship> newSuppliers = getProductSuppliers(
-                        product);
+                Set<EntityRelationship> oldSuppliers = getProductSuppliers(prior);
+                Set<EntityRelationship> newSuppliers = getProductSuppliers(product);
                 if (oldSuppliers.equals(newSuppliers)) {
                     update = !checkEquals(oldSuppliers, newSuppliers);
                 }
@@ -252,14 +233,10 @@ public class ProductPriceUpdater {
         return update;
     }
 
-    private boolean checkEquals(Set<EntityRelationship> oldSuppliers,
-                                Set<EntityRelationship> newSuppliers) {
-        Map<IMObjectReference, ProductSupplier> oldMap = getProductSuppliers(
-                oldSuppliers);
-        Map<IMObjectReference, ProductSupplier> newMap = getProductSuppliers(
-                newSuppliers);
-        for (Map.Entry<IMObjectReference, ProductSupplier> entry
-                : newMap.entrySet()) {
+    private boolean checkEquals(Set<EntityRelationship> oldSuppliers, Set<EntityRelationship> newSuppliers) {
+        Map<IMObjectReference, ProductSupplier> oldMap = getProductSuppliers(oldSuppliers);
+        Map<IMObjectReference, ProductSupplier> newMap = getProductSuppliers(newSuppliers);
+        for (Map.Entry<IMObjectReference, ProductSupplier> entry : newMap.entrySet()) {
             ProductSupplier supplier = entry.getValue();
             ProductSupplier old = oldMap.get(entry.getKey());
             if (old == null || supplier.getListPrice().compareTo(old.getListPrice()) != 0
@@ -270,13 +247,10 @@ public class ProductPriceUpdater {
         return true;
     }
 
-    private Map<IMObjectReference, ProductSupplier> getProductSuppliers(
-            Set<EntityRelationship> suppliers) {
-        Map<IMObjectReference, ProductSupplier> result
-                = new HashMap<IMObjectReference, ProductSupplier>();
+    private Map<IMObjectReference, ProductSupplier> getProductSuppliers(Set<EntityRelationship> suppliers) {
+        Map<IMObjectReference, ProductSupplier> result = new HashMap<IMObjectReference, ProductSupplier>();
         for (EntityRelationship supplier : suppliers) {
-            result.put(supplier.getObjectReference(),
-                       new ProductSupplier(supplier, service));
+            result.put(supplier.getObjectReference(), new ProductSupplier(supplier, service));
         }
         return result;
     }
@@ -286,14 +260,14 @@ public class ProductPriceUpdater {
      * <p/>
      * Prices can be updated if:
      * <ul>
-     * <li>autoPriceUpdate is <tt>true</tt>; and</li>
+     * <li>autoPriceUpdate is {@code true}; and</li>
      * <li>listPrice &lt;&gt; 0; and</li>
      * <li>packageSize &lt;&gt; 0; and</li>
      * <li>the supplier is active</li>
      * </ul>
      *
      * @param productSupplier the product-supplier relationship
-     * @return <tt>true</tt> if prices can be updated
+     * @return {@code true} if prices can be updated
      */
     private boolean canUpdate(ProductSupplier productSupplier) {
         BigDecimal listPrice = productSupplier.getListPrice();
@@ -309,18 +283,15 @@ public class ProductPriceUpdater {
      *
      * @param productSupplier the product-supplier relationship
      * @param product         the product
-     * @param save            if <tt>true</tt>, save updated prices, otherwise
-     *                        derive values
+     * @param save            if {@code true}, save updated prices, otherwise derive values
      * @return a list of updated prices
      */
-    private List<ProductPrice> doUpdate(ProductSupplier productSupplier,
-                                        Product product, boolean save) {
+    private List<ProductPrice> doUpdate(ProductSupplier productSupplier, Product product, boolean save) {
         List<ProductPrice> result;
         BigDecimal listPrice = productSupplier.getListPrice();
         int packageSize = productSupplier.getPackageSize();
         BigDecimal cost = MathRules.divide(listPrice, packageSize, 3);
-        result = rules.updateUnitPrices(product,
-                                        cost, getPractice(), getCurrency());
+        result = rules.updateUnitPrices(product, cost, getPractice(), getCurrency());
         if (!result.isEmpty()) {
             if (save) {
                 service.save(result);
@@ -334,22 +305,18 @@ public class ProductPriceUpdater {
     }
 
     /**
-     * Collects product prices from a list of product-supplier
-     * relationships, updated by the specified transformer.
+     * Collects product prices from a list of product-supplier relationships, updated by the specified transformer.
      *
      * @param relationships the product-supplier relationships
-     * @param transformer   returns the updated product prices associated with
-     *                      each relationship
-     * @param save          if <tt>true</tt>, save updated prices
+     * @param transformer   returns the updated product prices associated with each relationship
+     * @param save          if {@code true}, save updated prices
      * @return a list of updated prices
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private List<ProductPrice> collect(List<EntityRelationship> relationships,
-                                       Transformer transformer, boolean save) {
+    private List<ProductPrice> collect(List<EntityRelationship> relationships, Transformer transformer, boolean save) {
         List<ProductPrice> result = null;
         for (EntityRelationship relationship : relationships) {
-            List<ProductPrice> prices
-                    = (List<ProductPrice>) transformer.transform(relationship);
+            List<ProductPrice> prices = (List<ProductPrice>) transformer.transform(relationship);
             if (!prices.isEmpty()) {
                 if (result == null) {
                     result = prices;
@@ -409,7 +376,7 @@ public class ProductPriceUpdater {
      * It queries the database for persistent references to avoid pulling in large objects.
      *
      * @param reference the object's reference
-     * @return <tt>true</tt> if the object is active
+     * @return {@code true} if the object is active
      */
     private boolean isActive(IMObjectReference reference) {
         boolean result = false;
@@ -435,7 +402,6 @@ public class ProductPriceUpdater {
 
     private Set<EntityRelationship> getProductSuppliers(Product product) {
         EntityBean bean = new EntityBean(product, service);
-        return new HashSet<EntityRelationship>(
-                bean.getNodeRelationships("suppliers"));
+        return new HashSet<EntityRelationship>(bean.getNodeRelationships("suppliers"));
     }
 }
