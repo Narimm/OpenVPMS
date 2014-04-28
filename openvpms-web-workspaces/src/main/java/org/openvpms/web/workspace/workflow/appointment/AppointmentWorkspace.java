@@ -11,26 +11,29 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
 
 import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleCRUDWindow;
 import org.openvpms.web.workspace.workflow.scheduling.SchedulingWorkspace;
+
+import java.util.Date;
 
 
 /**
@@ -97,9 +100,10 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
             Act act = (Act) object;
             ActBean bean = new ActBean(act);
             Entity schedule = bean.getNodeParticipant("schedule");
-            if (schedule != null) {
-                EntityBean entity = new EntityBean(schedule);
-                Entity view = entity.getNodeSourceEntity("views");
+            Party location = getContext().getLocation();
+            if (schedule != null && location != null) {
+                AppointmentRules rules = ServiceHelper.getBean(AppointmentRules.class);
+                Entity view = rules.getScheduleView(location, schedule);
                 if (view != null) {
                     setScheduleView(view, act.getActivityStartTime());
                     ScheduleBrowser scheduleBrowser = getBrowser();
@@ -108,6 +112,20 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
                 }
             }
         }
+    }
+
+    /**
+     * Sets the schedule view and date.
+     *
+     * @param view the schedule view
+     * @param date the date to view
+     */
+    @Override
+    protected void setScheduleView(Entity view, Date date) {
+        // TODO - this is icky. Should be done via setObject(), but for SchedulingWorkspace.setScheduleView()
+        // invoking super.setObject() to avoid unwanted side-effects
+        getContext().setScheduleView(view);
+        super.setScheduleView(view, date);
     }
 
     /**
