@@ -1,28 +1,21 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
@@ -39,12 +32,17 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * Tests the {@link ProductRules} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ProductRulesTestCase extends AbstractProductTest {
 
@@ -69,7 +67,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
 
         Party stockLocation = (Party) create(StockArchetypes.STOCK_LOCATION);
         stockLocation.setName("STOCK-LOCATION-" + stockLocation.hashCode());
-        stockRules.updateStock(product, stockLocation, BigDecimal.ONE);
+        stockRules.updateStock(product, stockLocation, BigDecimal.TEN);
 
         // add a linked product. This should *not* be copied
         Product linked = TestHelper.createProduct(ProductArchetypes.PRICE_TEMPLATE, null);
@@ -110,6 +108,9 @@ public class ProductRulesTestCase extends AbstractProductTest {
         List<IMObjectReference> linkedRefs = copyBean.getNodeTargetEntityRefs("linked");
         assertEquals(1, linkedRefs.size());
         assertEquals(linked.getObjectReference(), linkedRefs.get(0));
+
+        // stock quantity should not be copied
+        checkEquals(BigDecimal.ZERO, stockRules.getStock(copy, stockLocation));
     }
 
     /**
@@ -123,7 +124,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
 
         ProductSupplier p1rel1 = rules.createProductSupplier(product1, supplier);
         ProductSupplier p1rel2 = rules.createProductSupplier(product1, supplier);
-        ProductSupplier p2rel1= rules.createProductSupplier(product2, supplier);
+        ProductSupplier p2rel1 = rules.createProductSupplier(product2, supplier);
 
         List<ProductSupplier> relationships = rules.getProductSuppliers(product1, supplier);
         assertEquals(2, relationships.size());
@@ -142,7 +143,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
     }
 
     /**
-     * Tests the {@link ProductRules#getProductSupplier(Product, Party, String,int, String)} method.
+     * Tests the {@link ProductRules#getProductSupplier(Product, Party, String, int, String)} method.
      */
     @Test
     public void testGetProductSupplier() {
@@ -191,7 +192,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
 
         // verify that the correct relationship is returned for a match on package size
         assertEquals(p1rel1, rules.getProductSupplier(product1, supplier, "foo", 4, null));
-        assertEquals(p1rel2, rules.getProductSupplier(product1, supplier, "bar", 3,  null));
+        assertEquals(p1rel2, rules.getProductSupplier(product1, supplier, "bar", 3, null));
         assertEquals(p2rel, rules.getProductSupplier(product2, supplier, "zoo", 4, null));
         assertEquals(p3rel, rules.getProductSupplier(product3, supplier, "p?", 4, null));
 
