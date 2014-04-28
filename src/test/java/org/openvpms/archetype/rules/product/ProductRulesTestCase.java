@@ -42,8 +42,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the {@link ProductRules} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ProductRulesTestCase extends AbstractProductTest {
 
@@ -68,7 +67,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
 
         Party stockLocation = (Party) create(StockArchetypes.STOCK_LOCATION);
         stockLocation.setName("STOCK-LOCATION-" + stockLocation.hashCode());
-        stockRules.updateStock(product, stockLocation, BigDecimal.ONE);
+        stockRules.updateStock(product, stockLocation, BigDecimal.TEN);
 
         // add a linked product. This should *not* be copied
         Product linked = TestHelper.createProduct(ProductArchetypes.PRICE_TEMPLATE, null);
@@ -109,6 +108,9 @@ public class ProductRulesTestCase extends AbstractProductTest {
         List<IMObjectReference> linkedRefs = copyBean.getNodeTargetEntityRefs("linked");
         assertEquals(1, linkedRefs.size());
         assertEquals(linked.getObjectReference(), linkedRefs.get(0));
+
+        // stock quantity should not be copied
+        checkEquals(BigDecimal.ZERO, stockRules.getStock(copy, stockLocation));
     }
 
     /**
