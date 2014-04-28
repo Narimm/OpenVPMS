@@ -1,25 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.act.DefaultActCopyHandler;
+import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
@@ -35,6 +34,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.functor.SequenceComparator;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -53,16 +53,17 @@ import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+
+import static org.openvpms.component.system.common.query.Constraints.eq;
+import static org.openvpms.component.system.common.query.Constraints.join;
 
 
 /**
  * Appointment rules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class AppointmentRules {
 
@@ -99,13 +100,8 @@ public class AppointmentRules {
     public List<Party> getSchedules(Entity scheduleView) {
         List<Party> result = new ArrayList<Party>();
         EntityBean bean = new EntityBean(scheduleView, service);
-        List<EntityRelationship> relationships
-                = bean.getNodeRelationships("schedules");
-        Collections.sort(relationships, new Comparator<EntityRelationship>() {
-            public int compare(EntityRelationship o1, EntityRelationship o2) {
-                return o1.getSequence() - o2.getSequence();
-            }
-        });
+        List<EntityRelationship> relationships = bean.getValues("schedules", EntityRelationship.class);
+        Collections.sort(relationships, SequenceComparator.INSTANCE);
         for (EntityRelationship relationship : relationships) {
             if (relationship.getTarget() != null) {
                 Party schedule = (Party) service.get(relationship.getTarget());
@@ -115,6 +111,39 @@ public class AppointmentRules {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the first view that contain the specified schedule for a given practice location.
+     *
+     * @param location the practice location
+     * @param schedule the schedule
+     * @return the view, or {@code null} if none is found
+     */
+    public Entity getScheduleView(Party location, Entity schedule) {
+        EntityBean bean = new EntityBean(location, service);
+        for (Entity view : bean.getNodeTargetEntities("scheduleViews", SequenceComparator.INSTANCE)) {
+            IMObjectBean viewBean = new IMObjectBean(view, service);
+            if (viewBean.hasNodeTarget("schedules", schedule)) {
+                return view;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the first practice location that has a view containing the specified schedule.
+     *
+     * @param schedule the schedule
+     * @return the location, or {@code null} if none is found
+     */
+    public Party getLocation(Entity schedule) {
+        ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.LOCATION);
+        query.add(join("scheduleViews").add(join("target").add(join("schedules").add(
+                eq("target", schedule.getObjectReference())))));
+        query.setMaxResults(1);
+        IMObjectQueryIterator<Party> iterator = new IMObjectQueryIterator<Party>(service, query);
+        return iterator.hasNext() ? iterator.next() : null;
     }
 
     /**
