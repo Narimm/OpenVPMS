@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -35,6 +35,9 @@ import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -161,6 +164,8 @@ public class PartyRules {
 
     /**
      * Returns a formatted string of preferred contacts for a party.
+     * <p/>
+     * If there are multiple preferred contacts, these are sorted on identifier.
      *
      * @param party the party
      * @return a formatted string of preferred contacts
@@ -168,7 +173,7 @@ public class PartyRules {
      */
     public String getPreferredContacts(Party party) {
         StringBuilder result = new StringBuilder();
-        for (Contact contact : party.getContacts()) {
+        for (Contact contact : sort(party.getContacts())) {
             IMObjectBean bean = new IMObjectBean(contact, service);
             if (bean.hasNode("preferred")) {
                 boolean preferred = bean.getBoolean("preferred");
@@ -592,7 +597,7 @@ public class PartyRules {
 
     private Contact getContact(Party party, ContactMatcher matcher) {
         Contact result;
-        for (Contact contact : party.getContacts()) {
+        for (Contact contact : sort(party.getContacts())) {
             if (matcher.matches(contact)) {
                 break;
             }
@@ -777,8 +782,7 @@ public class PartyRules {
      *
      * @param objects the objects
      * @param node    the node name
-     * @return the stringified value of {@code node} for each object,
-     *         separated by ", "
+     * @return the stringified value of {@code node} for each object, separated by ", "
      * @throws ArchetypeServiceException for any archetype service error
      */
     private String getValues(List<IMObject> objects, String node) {
@@ -794,6 +798,25 @@ public class PartyRules {
             }
         }
         return result.toString();
+    }
+
+    /**
+     * Sorts contacts by id.
+     *
+     * @param contacts the contacts to sort
+     * @return the sorted contacts
+     */
+    private List<Contact> sort(Set<Contact> contacts) {
+        List<Contact> list = new ArrayList<Contact>(contacts);
+        if (list.size() > 1) {
+            Collections.sort(list, new Comparator<Contact>() {
+                @Override
+                public int compare(Contact o1, Contact o2) {
+                    return o1.getId() < o2.getId() ? -1 : o1.getId() == o2.getId() ? 0 : 1;
+                }
+            });
+        }
+        return list;
     }
 
     /**
@@ -847,14 +870,15 @@ public class PartyRules {
         }
 
         /**
-         * Registers a contact that matches some/all of the criteria.
+         * Registers a contact that matches some/all of the criteria, if none with the same priority is present.
          *
-         * @param priority the priority, where {@code 0} is the highest
-         *                 priority.
+         * @param priority the priority, where {@code 0} is the highest priority.
          * @param contact  the contact
          */
         protected void setMatch(int priority, Contact contact) {
-            contacts.put(priority, contact);
+            if (contacts.get(priority) == null) {
+                contacts.put(priority, contact);
+            }
         }
 
         /**

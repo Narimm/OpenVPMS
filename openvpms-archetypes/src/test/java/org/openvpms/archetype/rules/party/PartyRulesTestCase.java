@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -54,7 +55,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testGetFullName() {
-        Party customer = (Party) create("party.customerperson");
+        Party customer = (Party) create(CustomerArchetypes.PERSON);
         IMObjectBean bean = new IMObjectBean(customer);
         Lookup mr = TestHelper.getLookup("lookup.personTitle", "MR");
         bean.setValue("title", mr.getCode());
@@ -88,10 +89,15 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testGetPreferredContacts() {
-        Party party = (Party) create("party.customerperson");
+        Party party = (Party) create(CustomerArchetypes.PERSON);
         assertEquals(0, party.getContacts().size());
         party.setContacts(rules.getDefaultContacts());
         assertEquals(2, party.getContacts().size());
+
+        IMObjectBean bean = new IMObjectBean(party);
+        bean.setValue("firstName", "ZFoo");
+        bean.setValue("lastName", "ZBar");
+
         Contact location = getContact(party, ContactArchetypes.LOCATION);
         Contact phone = getContact(party, ContactArchetypes.PHONE);
         IMObjectBean locationBean = new IMObjectBean(location);
@@ -123,10 +129,14 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         phone.addClassification(getContactPurpose("WORK"));
         final String phoneNo = "(03) 1234567 (Work)";
 
+        bean.save();
+
         String contacts = rules.getPreferredContacts(party);
-        // order is not guaranteed
-        assertTrue(contacts.equals(address + ", " + phoneNo)
-                   || contacts.equals(phoneNo + ", " + address));
+        if (location.getId() < phone.getId()) { // check sort order
+            assertEquals(address + ", " + phoneNo, contacts);
+        } else {
+            assertEquals(phoneNo + ", " + address, contacts);
+        }
     }
 
     /**
@@ -412,6 +422,41 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link PartyRules#getContact(Party, String, String)} method.
+     */
+    @Test
+    public void testGetContact() {
+        Party party = (Party) create(CustomerArchetypes.PERSON);
+        IMObjectBean bean = new IMObjectBean(party);
+        bean.setValue("firstName", "Foo");
+        bean.setValue("lastName", "Bar");
+
+        // add 3 contacts, saving each time to ensure to ensure ordering of contacts by id
+        Contact phone1 = createPhone("12345", false, null);
+        party.addContact(phone1);
+        save(party);
+
+        Contact phone2 = createPhone("45678", false, "HOME");
+        party.addContact(phone2);
+        save(party);
+
+        Contact phone3 = createPhone("90123", false, "HOME");
+        party.addContact(phone3);
+        save(party);
+
+        assertEquals(phone1, rules.getContact(party, ContactArchetypes.PHONE, null));
+        assertEquals(phone2, rules.getContact(party, ContactArchetypes.PHONE, "HOME"));
+
+        setPreferred(phone3, true);
+        assertEquals(phone3, rules.getContact(party, ContactArchetypes.PHONE, "HOME"));
+
+        setPreferred(phone2, true);
+
+        // phone2 should now be returned as its id < phone3
+        assertEquals(phone2, rules.getContact(party, ContactArchetypes.PHONE, "HOME"));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -424,11 +469,22 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Helper to set the preferred flag of a contact.
+     *
+     * @param contact   the contact
+     * @param preferred if {@code true}, marks the contact as preferred
+     */
+    private void setPreferred(Contact contact, boolean preferred) {
+        IMObjectBean bean = new IMObjectBean(contact);
+        bean.setValue("preferred", preferred);
+    }
+
+    /**
      * Helper to get a contact from party by short name.
      *
      * @param party     the party
      * @param shortName contact short name
-     * @return the associated short name or <code>null</code>
+     * @return the associated short name or {@code null}
      */
     private Contact getContact(Party party, String shortName) {
         return getContact(party.getContacts(), shortName);
@@ -440,7 +496,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      *
      * @param contacts  the contacts
      * @param shortName contact short name
-     * @return the associated short name or <code>null</code>
+     * @return the associated short name or {@code null}
      */
     private Contact getContact(Collection<Contact> contacts, String shortName) {
         for (Contact contact : contacts) {
@@ -466,7 +522,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      * Creates a new <em>contact.location</em>.
      *
      * @param address the address
-     * @param purpose the contact purpose. May be <code>null</code>
+     * @param purpose the contact purpose. May be {@code null}
      * @return a new location contact
      */
     private Contact createLocation(String address, String purpose) {
@@ -480,7 +536,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      *
      * @param contact the contact
      * @param address the address
-     * @param purpose the contact purpose. May be <code>null</code>
+     * @param purpose the contact purpose. May be {@code null}
      */
     private void populateLocation(Contact contact, String address,
                                   String purpose) {
