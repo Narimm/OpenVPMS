@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -325,12 +326,79 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link AppointmentRules#getScheduleView(Party, Entity)} method.
+     */
+    @Test
+    public void testGetScheduleView() {
+        Party location1 = TestHelper.createLocation();
+        Party location2 = TestHelper.createLocation();
+
+        Entity scheduleA = ScheduleTestHelper.createSchedule();
+        Entity scheduleB = ScheduleTestHelper.createSchedule();
+        Entity scheduleC = ScheduleTestHelper.createSchedule();
+        Entity scheduleD = ScheduleTestHelper.createSchedule();
+
+        Entity view1 = ScheduleTestHelper.createScheduleView(scheduleA, scheduleB);
+        Entity view2 = ScheduleTestHelper.createScheduleView(scheduleC);
+
+        addScheduleView(location1, view1);
+        addScheduleView(location2, view2);
+
+        assertEquals(view1, rules.getScheduleView(location1, scheduleA));
+        assertEquals(view1, rules.getScheduleView(location1, scheduleB));
+        assertEquals(view2, rules.getScheduleView(location2, scheduleC));
+
+        assertNull(rules.getScheduleView(location2, scheduleA));
+        assertNull(rules.getScheduleView(location2, scheduleB));
+        assertNull(rules.getScheduleView(location2, scheduleA));
+        assertNull(rules.getScheduleView(location1, scheduleD));
+        assertNull(rules.getScheduleView(location2, scheduleD));
+    }
+
+    /**
+     * Tests the {@link AppointmentRules#getLocation(Entity)} method.
+     */
+    @Test
+    public void testGetLocation() {
+        Party location1 = TestHelper.createLocation();
+        Party location2 = TestHelper.createLocation();
+
+        Entity scheduleA = ScheduleTestHelper.createSchedule();
+        Entity scheduleB = ScheduleTestHelper.createSchedule();
+        Entity scheduleC = ScheduleTestHelper.createSchedule();
+        Entity scheduleD = ScheduleTestHelper.createSchedule();
+
+        Entity view1 = ScheduleTestHelper.createScheduleView(scheduleA, scheduleB);
+        Entity view2 = ScheduleTestHelper.createScheduleView(scheduleC);
+
+        addScheduleView(location1, view1);
+        addScheduleView(location2, view2);
+
+        assertEquals(location1, rules.getLocation(scheduleA));
+        assertEquals(location1, rules.getLocation(scheduleB));
+        assertEquals(location2, rules.getLocation(scheduleC));
+        assertNull(rules.getLocation(scheduleD));
+    }
+
+    /**
+     * Adds a schedule view to a practice location.
+     *
+     * @param location the practice location
+     * @param view     the schedule view
+     */
+    private void addScheduleView(Party location, Entity view) {
+        EntityBean bean = new EntityBean(location);
+        bean.addNodeRelationship("scheduleViews", view);
+        save(location, view);
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
         removeActs();
-        rules = new AppointmentRules();
+        rules = new AppointmentRules(getArchetypeService());
         appointmentService = new AppointmentService(getArchetypeService(),
                                                     applicationContext.getBean(ILookupService.class),
                                                     ScheduleTestHelper.createCache(30));
