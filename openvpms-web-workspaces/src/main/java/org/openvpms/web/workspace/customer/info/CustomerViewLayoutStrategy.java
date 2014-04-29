@@ -11,15 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.info;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -32,9 +36,11 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
 
@@ -78,15 +84,14 @@ public class CustomerViewLayoutStrategy extends AbstractLayoutStrategy {
      */
     protected Browser<Act> getAppointments(Party customer, LayoutContext context) {
         Query<Act> query = new CustomerAppointmentQuery(customer);
-        LayoutContext subContext = new DefaultLayoutContext(context);
+        final LayoutContext subContext = new DefaultLayoutContext(context);
         subContext.setComponentFactory(new TableComponentFactory(subContext));
         IMTableModel<Act> model = new CustomerAppointmentTableModel(subContext);
         Browser<Act> browser = new DefaultIMObjectTableBrowser<Act>(query, model, context);
-        final ContextSwitchListener listener = context.getContextSwitchListener();
         browser.addBrowserListener(new BrowserListener<Act>() {
             public void selected(Act object) {
                 // switch to the appointment workspace, and select the appointment.
-                listener.switchTo(object);
+                onAppointmentSelected(object, subContext);
             }
 
             public void query() {
@@ -98,6 +103,34 @@ public class CustomerViewLayoutStrategy extends AbstractLayoutStrategy {
             }
         });
         return browser;
+    }
+
+    /**
+     * Invoked when an appointment is selected.
+     * <p/>
+     * If the appointment can be viewed at the current practice location, the appointment workspace will be switched
+     * to.
+     *
+     * @param appointment   the appointment
+     * @param layoutContext the layout context
+     */
+    private void onAppointmentSelected(Act appointment, LayoutContext layoutContext) {
+        AppointmentRules rules = ServiceHelper.getBean(AppointmentRules.class);
+        Context context = layoutContext.getContext();
+        ContextSwitchListener listener = layoutContext.getContextSwitchListener();
+        ActBean bean = new ActBean(appointment);
+        Entity schedule = bean.getNodeParticipant("schedule");
+        Party location = context.getLocation();
+        if (schedule != null && location != null) {
+            Entity view = rules.getScheduleView(location, schedule);
+            if (view != null) {
+                listener.switchTo(appointment);
+            } else {
+                Party newLocation = rules.getLocation(schedule);
+                String name = (newLocation != null) ? newLocation.getName() : Messages.get("imobject.none");
+                InformationDialog.show(Messages.format("customer.info.appointment.wrongLocation", name));
+            }
+        }
     }
 
 }
