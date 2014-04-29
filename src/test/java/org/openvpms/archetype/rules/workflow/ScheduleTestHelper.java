@@ -52,11 +52,11 @@ public class ScheduleTestHelper extends TestHelper {
      * @param schedules the schedules
      * @return a new schedule view
      */
-    public static Entity createScheduleView(Party... schedules) {
+    public static Entity createScheduleView(Entity... schedules) {
         Entity view = (Entity) create("entity.organisationScheduleView");
         view.setName("XScheduleView");
         EntityBean bean = new EntityBean(view);
-        for (Party schedule : schedules) {
+        for (Entity schedule : schedules) {
             bean.addNodeRelationship("schedules", schedule);
         }
         bean.save();
