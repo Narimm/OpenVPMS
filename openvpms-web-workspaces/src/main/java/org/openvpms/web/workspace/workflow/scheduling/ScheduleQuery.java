@@ -20,6 +20,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
@@ -115,10 +116,12 @@ public abstract class ScheduleQuery {
      * @param view the schedule view
      */
     public void setScheduleView(Entity view) {
-        getComponent();
-        viewField.setSelectedItem(view);
-        viewSchedules = null;
-        updateScheduleField();
+        if (viewField == null || !ObjectUtils.equals(viewField.getSelectedItem(), view)) {
+            getComponent();
+            viewField.setSelectedItem(view);
+            viewSchedules = null;
+            updateScheduleField();
+        }
     }
 
     /**

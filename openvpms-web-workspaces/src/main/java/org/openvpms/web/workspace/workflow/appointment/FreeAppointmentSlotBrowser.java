@@ -75,6 +75,15 @@ class FreeAppointmentSlotBrowser extends AbstractTableBrowser<Slot> {
     }
 
     /**
+     * Returns the selected schedule view.
+     *
+     * @return the selected schedule view. May be {@code null}
+     */
+    public Entity getScheduleView() {
+        return query.getScheduleView();
+    }
+
+    /**
      * Returns the schedule for a slot.
      *
      * @param slot the slot

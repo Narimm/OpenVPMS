@@ -161,6 +161,7 @@ class FreeAppointmentSlotQuery extends ScheduleQuery {
         if (to == null || DateRules.compareTo(to, from) < 0) {
             to = from;
         }
+        to = DateRules.getDate(to, 1, DateUnits.DAYS); // FreeSlotQuery returns slots < to
         query.setToDate(to);
         query.setFromTime(getPeriod(fromTime));
         query.setToTime(getPeriod(toTime));
