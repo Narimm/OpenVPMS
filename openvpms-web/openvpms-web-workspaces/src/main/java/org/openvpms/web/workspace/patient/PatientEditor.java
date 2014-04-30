@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient;
@@ -66,11 +66,11 @@ public class PatientEditor extends AbstractIMObjectEditor {
     private PatientLayoutStrategy strategy;
 
     /**
-     * Constructs a new <tt>PatientEditor</tt>.
+     * Constructs a {@link PatientEditor}.
      *
      * @param patient the object to edit
-     * @param parent  the parent object. May be <tt>null</tt>
-     * @param context the layout context. May be <tt>null</tt>.
+     * @param parent  the parent object. May be {@code null}
+     * @param context the layout context. May be {@code null}.
      */
     public PatientEditor(Party patient, IMObject parent, LayoutContext context) {
         super(patient, parent, context);
@@ -111,16 +111,14 @@ public class PatientEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Adds a patient owner relationship to the current context customer,
-     * if present.
+     * Adds a patient owner relationship to the current context customer, if present.
      *
      * @param patient the patient
      */
     private void addOwnerRelationship(Party patient) {
         Party customer = getLayoutContext().getContext().getCustomer();
         if (customer != null) {
-            PatientRules rules = new PatientRules(ServiceHelper.getArchetypeService(),
-                                                  ServiceHelper.getLookupService());
+            PatientRules rules = ServiceHelper.getBean(PatientRules.class);
             if (!rules.isOwner(customer, patient)) {
                 rules.addPatientOwnerRelationship(customer, patient);
             }
@@ -142,7 +140,7 @@ public class PatientEditor extends AbstractIMObjectEditor {
      * will be added.
      */
     private void updateCustomFields() {
-        getComponent(); // force render to ensure the stategy has a focus group set
+        getComponent(); // force render to ensure the strategy has a focus group set
 
         String species = (String) getProperty("species").getValue();
         String shortName = getCustomFieldsArchetype(species);
@@ -176,7 +174,7 @@ public class PatientEditor extends AbstractIMObjectEditor {
      * species lookup.
      *
      * @param species the <em>lookup.species</em> code
-     * @return the archetype short name, or <tt>null</tt> if none is found
+     * @return the archetype short name, or {@code null} if none is found
      */
     private String getCustomFieldsArchetype(String species) {
         String result = null;
@@ -194,7 +192,7 @@ public class PatientEditor extends AbstractIMObjectEditor {
      * Returns the <em>entity.customFields</em> object from the customFields
      * node.
      *
-     * @return the object, or <tt>null</tt> if none is found
+     * @return the object, or {@code null} if none is found
      */
     private Entity getCustomFields() {
         List<IMObject> result = customFieldEditor.getObjects();

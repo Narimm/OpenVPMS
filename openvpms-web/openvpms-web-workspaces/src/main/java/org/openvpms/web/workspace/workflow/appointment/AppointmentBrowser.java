@@ -441,8 +441,10 @@ public class AppointmentBrowser extends ScheduleBrowser {
     }
 
     private void onFreeSlotSelected(Slot slot) {
+        Entity scheduleView = freeSlotBrowser.getScheduleView();
         Entity schedule = freeSlotBrowser.getSchedule(slot);
-        if (schedule != null) {
+        if (scheduleView != null && schedule != null) {
+            setScheduleView(scheduleView);
             Date startTime = slot.getStartTime();
             setDate(startTime);
             getQuery().setTimeRange(AppointmentQuery.TimeRange.getRange(startTime));
