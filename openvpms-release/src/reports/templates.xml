@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"  ?>
 
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <templates>
 
     <template name="Invoice"
@@ -365,7 +381,7 @@
     <template name="Product List Report"
               archetype="REPORT"
               reportType="PRODUCT"
-              path="product list report.jrxml"
+              path="Product List Report.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Lists products and their prices as of the current date"/>
@@ -373,7 +389,7 @@
     <template name="Product Price List Report"
               archetype="REPORT"
               reportType="PRODUCT"
-              path="product price list report.jrxml"
+              path="Product Price List Report.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Lists products prices, including aggregates"/>
@@ -429,7 +445,7 @@
     <template name="Stock Valuation Report"
               archetype="REPORT"
               reportType="PRODUCT"
-              path="stock valuation report.jrxml"
+              path="Stock Valuation Report.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Lists stock value by stock location"/>

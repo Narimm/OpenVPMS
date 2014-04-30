@@ -287,7 +287,7 @@
                 <!-- helper to load report templates for testing -->
                 <groupId>org.openvpms</groupId>
                 <artifactId>openvpms-report-maven-plugin</artifactId>
-                <version>${pom.version}</version>
+                <version>${project.version}</version>
                 <configuration>
                     <file>src/reports/templates.xml</file>
                     <dialect>${build.hibernate.dialect}</dialect>
