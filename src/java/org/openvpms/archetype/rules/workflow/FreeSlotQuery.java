@@ -82,7 +82,7 @@ public class FreeSlotQuery {
     }
 
     /**
-     * Sets the date to query slots from.
+     * Sets the date to query slots from. Those slots starting on or after the specified date will be returned.
      *
      * @param from the from date
      */
@@ -91,7 +91,7 @@ public class FreeSlotQuery {
     }
 
     /**
-     * Sets the date to query slots to.
+     * Sets the date to query slots to. Only those slots starting before the specified date will be returned.
      *
      * @param to the to date
      */
