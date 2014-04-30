@@ -13,18 +13,19 @@
   ~
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetype>
     <data id="OP1" archetype="party.organisationPractice" name="OpenVPMS Demonstration Practice" currency="AUD">
         <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97628777"/>
         <data collection="contacts" archetype="contact.location" address="123 Boronia Road" suburb="Boronia" state="VIC"
               postcode="3088"/>
     </data>
-    <data id="OL1" archetype="party.organisationLocation" name="Main Clinic">
+    <data id="OL1" archetype="party.organisationLocation" name="Main Clinic" stockControl="true">
         <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97628777"/>
         <data collection="contacts" archetype="contact.location" address="123 Boronia Road" suburb="Boronia" state="VIC"
               postcode="3088"/>
     </data>
-    <data id="OL2" archetype="party.organisationLocation" name="Branch Clinic">
+    <data id="OL2" archetype="party.organisationLocation" name="Branch Clinic" stockControl="true">
         <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97629865"/>
         <data collection="contacts" archetype="contact.location" address="4/18 Station Street" suburb="Bayswater"
               state="VIC" postcode="3082"/>
