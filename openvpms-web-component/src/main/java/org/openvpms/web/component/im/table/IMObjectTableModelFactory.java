@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -95,7 +95,8 @@ public class IMObjectTableModelFactory {
      * @return a new table model, or {@link DefaultIMObjectTableModel} if the type cannot be constructed
      */
     @SuppressWarnings("unchecked")
-    public static <T extends IMObject> IMObjectTableModel<T> create(Class type, LayoutContext context) {
+    public static <T extends IMObject> IMObjectTableModel<T> create(Class<? extends IMObjectTableModel<T>> type,
+                                                                    LayoutContext context) {
         IMObjectTableModel<T> result = null;
 
         ArchetypeHandler handler = getTableModels().getHandler(type);

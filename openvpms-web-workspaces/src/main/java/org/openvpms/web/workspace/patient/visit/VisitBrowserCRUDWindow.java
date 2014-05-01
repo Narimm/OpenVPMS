@@ -13,6 +13,7 @@
  *
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient.visit;
 
 import org.openvpms.component.business.domain.im.act.Act;
@@ -71,7 +72,7 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
         PatientHistoryCRUDWindow window = createWindow(context);
         window.setMailContext(new CustomerMailContext(context, help));
         window.setQuery(query);
-        window.setEvent(browser.getEvent());
+        window.setEvent(browser.getSelectedParent());
         setWindow(window);
     }
 
@@ -83,7 +84,7 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
     @Override
     public void setSelected(Act object) {
         super.setSelected(object);
-        getWindow().setEvent(getBrowser().getEvent());
+        getWindow().setEvent(getBrowser().getSelectedParent());
     }
 
     /**
@@ -125,7 +126,7 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
     protected void onSelected(Act object) {
         PatientHistoryBrowser browser = getBrowser();
         PatientHistoryCRUDWindow window = getWindow();
-        window.setEvent(browser.getEvent(object));
+        window.setEvent(browser.getParent(object));
         super.onSelected(object);
     }
 }

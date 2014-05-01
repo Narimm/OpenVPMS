@@ -410,7 +410,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         assertEquals(selected, editor.getHistory().getObject());
         assertEquals(event, editor.getHistory().getEvent());
         assertEquals(selected, editor.getHistoryBrowser().getSelected());
-        assertEquals(event, editor.getHistoryBrowser().getEvent());
+        assertEquals(event, editor.getHistoryBrowser().getSelectedParent());
     }
 
 }

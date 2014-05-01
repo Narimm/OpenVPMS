@@ -16,20 +16,12 @@
 
 package org.openvpms.web.workspace.patient.history;
 
-import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
-import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
-import org.openvpms.web.echo.event.ActionListener;
-
-import java.util.List;
 
 
 /**
@@ -37,7 +29,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
+public class PatientHistoryBrowser extends AbstractPatientHistoryBrowser {
 
     /**
      * The table model that wraps the underlying model, to filter acts.
@@ -91,44 +83,6 @@ public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
     }
 
     /**
-     * Select an object.
-     *
-     * @param object the object to select
-     */
-    @Override
-    public void setSelected(Act object) {
-        super.setSelected(object);
-        onSelected();
-    }
-
-    /**
-     * Returns the <em>act.patientClinicalEvent</em> associated with the selected act.
-     *
-     * @return the event, or {@code null} if none is found
-     */
-    public Act getEvent() {
-        return getEvent(getSelected());
-    }
-
-    /**
-     * Returns the <em>act.patientClinicalEvent</em> associated with the supplied act.
-     *
-     * @param act the act. May be {@code null}
-     * @return the event, or {@code null} if none is found
-     */
-    public Act getEvent(Act act) {
-        boolean found = false;
-        if (act != null) {
-            List<Act> acts = getObjects();
-            int index = acts.indexOf(act);
-            while (!(found = TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) && index > 0) {
-                act = acts.get(--index);
-            }
-        }
-        return (found) ? act : null;
-    }
-
-    /**
      * Creates a new paged table.
      *
      * @param model the table model
@@ -141,16 +95,7 @@ public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
                                                        query.getActItemShortNames());
         pagedModel.setSortAscending(query.isSortAscending());
         PagedIMTable<Act> result = super.createTable(pagedModel);
-        IMTable<Act> table = result.getTable();
-        table.addActionListener(new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onSelected();
-            }
-        });
-        table.setDefaultRenderer(Object.class, new PatientHistoryTableCellRenderer());
-        table.setHeaderVisible(false);
-        table.setStyleName("MedicalRecordSummary");
-        // table.setRolloverEnabled(false); // TODO - ideally set this in style, but it gets overridden by the model
+        initTable(result);
         return result;
     }
 
@@ -165,21 +110,4 @@ public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
         return (PatientHistoryTableModel) model;
     }
 
-    /**
-     * Invoked when an act is selected. Highlights the associated visit.
-     */
-    private void onSelected() {
-        IMTable<Act> table = getTable().getTable();
-        int index = table.getSelectionModel().getMinSelectedIndex();
-        while (index >= 0) {
-            Act act = table.getObjects().get(index);
-            if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) {
-                break;
-            } else {
-                --index;
-            }
-        }
-        PatientHistoryTableModel model = (PatientHistoryTableModel) pagedModel.getModel();
-        model.setSelectedVisit(index);
-    }
 }
