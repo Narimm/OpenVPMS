@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient;
@@ -43,6 +43,11 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
     private final Act event;
 
     /**
+     * The original patient clinical problem.
+     */
+    private final Act problem;
+
+    /**
      * The original patient record item.
      */
     private final Act item;
@@ -51,6 +56,11 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
      * The current event.
      */
     private Act currentEvent;
+
+    /**
+     * The current problem;
+     */
+    private Act currentProblem;
 
     /**
      * The current item.
@@ -75,24 +85,42 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
      * @param item  the patient record item
      */
     public PatientMedicalRecordLinker(Act event, Act item) {
-        this.event = event;
-        this.item = item;
-        if (event.isNew()) {
-            throw new IllegalStateException("Argument 'event' must be saved");
+        this(event, null, item);
+    }
+
+    /**
+     * Constructs a {@link PatientMedicalRecordLinker}.
+     *
+     * @param event   the patient clinical event. May be {@code null}
+     * @param problem the patient clinical problem. May be {@code null}
+     * @param item    the patient record item. May be {@code null}
+     */
+    public PatientMedicalRecordLinker(Act event, Act problem, Act item) {
+        if (event != null) {
+            if (!TypeHelper.isA(event, PatientArchetypes.CLINICAL_EVENT)) {
+                throw new IllegalArgumentException("Argument 'event' is invalid: "
+                                                   + event.getArchetypeId().getShortName());
+            }
+            if (event.isNew()) {
+                throw new IllegalStateException("Argument 'event' must be saved");
+            }
         }
-        if (item.isNew()) {
+        if (problem != null && problem.isNew()) {
+            throw new IllegalStateException("Argument 'problem' must be saved");
+        }
+        if (item != null && item.isNew()) {
             throw new IllegalStateException("Argument 'item' must be saved: " + item.getArchetypeId().getShortName());
         }
-        if (!TypeHelper.isA(event, PatientArchetypes.CLINICAL_EVENT)) {
-            throw new IllegalArgumentException("Argument 'event' is invalid: " + event.getArchetypeId().getShortName());
-        }
+        this.event = event;
+        this.problem = problem;
+        this.item = item;
         rules = ServiceHelper.getBean(MedicalRecordRules.class);
     }
 
     /**
      * Returns the current instance of the event.
      * <p/>
-     * If the link was successful, this will be non-null
+     * If the link was successful, and one was supplied at construction, this will be non-null.
      *
      * @return the current instance of the event. May be {@code null}
      */
@@ -101,9 +129,20 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
     }
 
     /**
+     * Returns the current instance of the problem.
+     * <p/>
+     * If the link was successful, and one was supplied at construction, this will be non-null.
+     *
+     * @return the current instance of og the problem. May be {@code null}
+     */
+    public Act getProblem() {
+        return currentProblem;
+    }
+
+    /**
      * Returns the current instance of the item.
      * <p/>
-     * If the link was successful, this will be non-null
+     * If the link was successful, and one was supplied at construction, this will be non-null.
      *
      * @return the current instance of the item. May be {@code null}
      */
@@ -131,7 +170,7 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
      */
     @Override
     protected boolean runFirst() {
-        return linkRecords(event, item);
+        return linkRecords(event, problem, item);
     }
 
     /**
@@ -143,26 +182,30 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
      */
     @Override
     protected boolean runAction() {
-        return linkRecords(IMObjectHelper.reload(event), IMObjectHelper.reload(item));
+        return linkRecords(IMObjectHelper.reload(event), IMObjectHelper.reload(problem), IMObjectHelper.reload(item));
     }
 
     /**
      * Links the records.
      *
-     * @param currentEvent the current instance of the event. May be {@code null}
-     * @param currentItem  the current instance of the item. May be {@code null}
+     * @param currentEvent   the current instance of the event. May be {@code null}
+     * @param currentProblem the current instance of the problem. May be {@code null}
+     * @param currentItem    the current instance of the item. May be {@code null}
      * @return {@code true} if the records were linked, {@code false} if one or both of the events is missing.
      */
-    private boolean linkRecords(Act currentEvent, Act currentItem) {
+    private boolean linkRecords(Act currentEvent, Act currentProblem, Act currentItem) {
         boolean result = false;
-        if (currentEvent == null) {
-            logMissing(event, item, event);
-        } else if (currentItem == null) {
-            logMissing(event, item, item);
+        if (currentEvent == null && event != null) {
+            logMissing(event);
+        } else if (currentProblem == null && problem != null) {
+            logMissing(event);
+        } else if (currentItem == null && item != null) {
+            logMissing(event);
         } else {
             // link the records to the event
-            rules.linkMedicalRecords(currentEvent, currentItem);
+            rules.linkMedicalRecords(currentEvent, currentProblem, currentItem);
             this.currentEvent = currentEvent;
+            this.currentProblem = currentProblem;
             this.currentItem = currentItem;
             result = true;
         }
@@ -172,13 +215,10 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
     /**
      * Logs a failure to link due to missing act.
      *
-     * @param source  the source act
-     * @param target  the target act
-     * @param missing the missing act
+     * @param source the source act
      */
-    private void logMissing(Act source, Act target, Act missing) {
-        log.warn("Cannot link " + getId(source) + " with " + getId(target) + ": " + getId(missing)
-                 + " no longer exists");
+    private void logMissing(Act source) {
+        log.warn("Cannot link " + getId(source) + ": it no longer exists");
     }
 
     /**

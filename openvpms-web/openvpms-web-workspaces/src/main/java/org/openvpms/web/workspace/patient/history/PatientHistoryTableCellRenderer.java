@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -26,32 +24,40 @@ import org.openvpms.web.echo.table.AbstractTableCellRenderer;
 
 /**
  * Patient history record summary table cell renderer.
+ * <p/>
+ * This uses styles of the form {@code <styleName>.<archetype short name>} to support different styles
+ * per record type.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientHistoryTableCellRenderer extends AbstractTableCellRenderer {
 
     /**
-     * The default row style.
+     * The style name.
      */
-    private static final String DEFAULT_STYLE = "MedicalRecordSummary";
+    private final String styleName;
 
+    /**
+     * Constructs a {@link PatientHistoryTableCellRenderer}.
+     *
+     * @param styleName the style name.
+     */
+    public PatientHistoryTableCellRenderer(String styleName) {
+        this.styleName = styleName;
+    }
 
     /**
      * Returns the style name for a column and row.
      *
-     * @param table  the <code>Table</code> for which the rendering is
-     *               occurring
-     * @param value  the value retrieved from the <code>TableModel</code> for
-     *               the specified coordinate
+     * @param table  the {@code Table} for which the rendering is occurring
+     * @param value  the value retrieved from the {@code TableModel} for the specified coordinate
      * @param column the column
      * @param row    the row
      * @return a style name for the given column and row.
      */
     @SuppressWarnings("unchecked")
     protected String getStyle(Table table, Object value, int column, int row) {
-        String style = DEFAULT_STYLE;
+        String style = styleName;
         if (table instanceof IMTable && column == 1) {
             style = getStyle((IMTable) table, row);
         }
@@ -67,6 +73,6 @@ public class PatientHistoryTableCellRenderer extends AbstractTableCellRenderer {
      */
     private String getStyle(IMTable<IMObject> table, int row) {
         IMObject object = table.getObjects().get(row);
-        return DEFAULT_STYLE + "." + object.getArchetypeId().getShortName();
+        return styleName + "." + object.getArchetypeId().getShortName();
     }
 }

@@ -18,7 +18,6 @@ package org.openvpms.web.workspace.patient.history;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
@@ -26,10 +25,8 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -37,14 +34,11 @@ import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
 
-import java.util.Date;
 import java.util.List;
 
 
@@ -62,47 +56,6 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
      */
     public PatientHistoryTableModel(LayoutContext context) {
         super(PatientArchetypes.CLINICAL_EVENT, context);
-    }
-
-    /**
-     * Returns a component for a parent act.
-     *
-     * @param act the parent act
-     * @param row the current row
-     * @return a component representing the act
-     * @throws OpenVPMSException for any error
-     */
-    protected Component formatParent(Act act, int row) {
-        ActBean bean = new ActBean(act);
-        String started = null;
-        String completed = null;
-        String clinician;
-        String reason = getValue(bean, "reason", "patient.record.history.reason.none");
-        String status = ArchetypeServiceFunctions.lookup(act, "status");
-
-        Date startTime = bean.getDate("startTime");
-        if (startTime != null) {
-            started = DateFormatter.formatDate(startTime, false);
-        }
-
-        Date endTime = bean.getDate("endTime");
-        if (endTime != null) {
-            completed = DateFormatter.formatDate(endTime, false);
-        }
-
-        clinician = getClinician(bean, row);
-        String age = getAge(bean);
-
-        String text;
-        if (completed == null || ObjectUtils.equals(started, completed)) {
-            text = Messages.format("patient.record.history.singleDate", started, reason, clinician, status, age);
-        } else {
-            text = Messages.format("patient.record.history.dateRange", started, completed, reason, clinician, status,
-                                   age);
-        }
-        Label summary = LabelFactory.create(null, Styles.BOLD);
-        summary.setText(text);
-        return summary;
     }
 
     /**

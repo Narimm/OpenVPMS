@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -49,8 +49,8 @@ import org.openvpms.web.echo.tabpane.TabPaneModel;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
+import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryCRUDWindow;
 import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
-import org.openvpms.web.workspace.patient.history.PatientHistoryCRUDWindow;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQueryFactory;
 import org.openvpms.web.workspace.patient.mr.PatientDocumentQuery;
@@ -264,7 +264,7 @@ public class VisitEditor {
      *
      * @return the history CRUD window
      */
-    public PatientHistoryCRUDWindow getHistory() {
+    public AbstractPatientHistoryCRUDWindow getHistory() {
         return visitWindow.getWindow();
     }
 

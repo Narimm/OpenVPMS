@@ -70,6 +70,55 @@ public class AbstractPatientHistoryBrowser extends IMObjectTableBrowser<Act> {
     }
 
     /**
+     * Selects the next act closest to a deleted act.
+     * <p/>
+     * This should be called prior to the browser being refreshed.
+     *
+     * @param deleted the deleted act
+     * @return the next act, or {@code null} if none is found
+     */
+    public Act selectNext(Act deleted) {
+        Act result = null;
+        String parentShortName = getTableModel().getParentShortName();
+        List<Act> list = getObjects();
+        int index = list.indexOf(deleted);
+        if (index != -1 && list.size() > 1) {
+            if (TypeHelper.isA(deleted, parentShortName)) {
+                // select the next parent act, if any
+                int newIndex = -1;
+                for (int i = index + 1; i < list.size(); ++i) {
+                    if (TypeHelper.isA(list.get(i), parentShortName)) {
+                        newIndex = i;
+                        break;
+                    }
+                }
+                if (newIndex == -1) {
+                    // select the previous parent act, if any
+                    for (int i = index - 1; i >= 0; --i) {
+                        if (TypeHelper.isA(list.get(i), parentShortName)) {
+                            newIndex = i;
+                            break;
+                        }
+                    }
+                }
+                index = newIndex;
+            } else {
+                // select another object. If there is one after the object being deleted, select that, else select
+                // the one before it
+                if (index + 1 < list.size()) {
+                    ++index;
+                } else {
+                    --index;
+                }
+            }
+            if (index != -1) {
+                result = list.get(index);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Returns the parent of the supplied act.
      *
      * @param act the act. May be {@code null}
@@ -114,7 +163,6 @@ public class AbstractPatientHistoryBrowser extends IMObjectTableBrowser<Act> {
                 onSelected();
             }
         });
-        t.setDefaultRenderer(Object.class, new PatientHistoryTableCellRenderer());
         t.setHeaderVisible(false);
         t.setStyleName("MedicalRecordSummary");
     }
