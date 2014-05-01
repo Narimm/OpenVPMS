@@ -41,6 +41,8 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryCRUDWindow;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
+import org.openvpms.web.workspace.patient.problem.ProblemBrowser;
+import org.openvpms.web.workspace.patient.problem.ProblemQuery;
 
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_PARTICIPATION;
 
@@ -190,7 +192,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
         if (act == null) {
             act = history.getSelected();
         }
-        return history.getEvent(act);
+        return history.getParent(act);
     }
 
     /**
@@ -234,13 +236,8 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      * @param layout  the layout context
      * @return a new {@link CRUDWindow}
      */
-    protected Browser<Act> createProblemBrowser(Party patient, LayoutContext layout) {
-        String[] shortNames = {PatientArchetypes.CLINICAL_PROBLEM};
-        DefaultActQuery<Act> query = new DefaultActQuery<Act>(patient, "patient", PATIENT_PARTICIPATION, shortNames,
-                                                              PROBLEM_STATUSES);
-        query.setStatus(null);
-        query.setDefaultSortConstraint(DEFAULT_SORT);
-        return BrowserFactory.create(query, layout);
+    protected ProblemBrowser createProblemBrowser(Party patient, LayoutContext layout) {
+        return new ProblemBrowser(new ProblemQuery(patient), layout);
     }
 
     /**

@@ -50,4 +50,29 @@
             </entry>
         </properties>
     </handler>
+    <handler>
+        <type>org.openvpms.web.workspace.patient.problem.ProblemTableModel</type>
+        <properties>
+            <entry>
+                <string>expressions</string>
+                <java.util.Map>
+                    <entry>
+                        <string>act.patientClinicalProblem</string>
+                        <string>/description</string>
+                    </entry>
+                    <entry>
+                        <string>act.patientClinicalNote</string>
+                        <string>/details/note</string>
+                    </entry>
+                    <entry>
+                        <string>act.patientMedication</string>
+                        <string>concat(openvpms:get(.,'product.entity.name'), ' - Qty: ',/details/quantity,
+                            ' Expiry: ', expr:if(boolean(/activityEndTime), date:formatDate(/activityEndTime), 'None'),
+                            expr:if(boolean(/details/label),concat('&#10;',/details/label),''))
+                        </string>
+                    </entry>
+                </java.util.Map>
+            </entry>
+        </properties>
+    </handler>
 </handlers>

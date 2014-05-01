@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -132,7 +132,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     protected Component createWorkspace() {
         Component result;
         CRUDWindow window = getCRUDWindow();
-        if (window instanceof PatientHistoryCRUDWindow) {
+        if (window instanceof PatientHistoryCRUDWindow || window instanceof ProblemRecordCRUDWindow) {
             result = SplitPaneFactory.create(
                     SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
                     "PatientRecordWorkspace.SummaryLayout",
