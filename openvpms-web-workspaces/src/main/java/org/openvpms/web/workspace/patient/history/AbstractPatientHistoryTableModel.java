@@ -41,6 +41,7 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -53,12 +54,14 @@ import org.openvpms.web.component.im.table.AbstractIMObjectTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.ComponentFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -131,9 +134,9 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     private static final int SPACER_COLUMN = 2;
 
     /**
-     * Path of the selected visit icon.
+     * Path of the selected parent act icon.
      */
-    private static final String SELECTED_VISIT_IMAGE = "../images/navigation/next.png";
+    private static final String SELECTED_ICON = "../images/navigation/next.png";
 
     /**
      * The logger.
@@ -248,7 +251,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
         switch (column.getModelIndex()) {
             case SELECTION_COLUMN:
                 if (row == selectedParent) {
-                    return new Label(new HttpImageReference(SELECTED_VISIT_IMAGE));
+                    return new Label(new HttpImageReference(SELECTED_ICON));
                 }
                 break;
             case SUMMARY_COLUMN:
@@ -274,7 +277,51 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * @return a component representing the act
      * @throws OpenVPMSException for any error
      */
-    protected abstract Component formatParent(Act act, int row);
+    protected Component formatParent(Act act, int row) {
+        ActBean bean = new ActBean(act);
+        String started = null;
+        String completed = null;
+        String clinician;
+        String reason = getReason(bean);
+        if (StringUtils.isEmpty(reason)) {
+            reason = Messages.get("patient.record.summary.reason.none");
+        }
+        String status = ArchetypeServiceFunctions.lookup(act, "status");
+
+        Date startTime = bean.getDate("startTime");
+        if (startTime != null) {
+            started = DateFormatter.formatDate(startTime, false);
+        }
+
+        Date endTime = bean.getDate("endTime");
+        if (endTime != null) {
+            completed = DateFormatter.formatDate(endTime, false);
+        }
+
+        clinician = getClinician(bean, row);
+        String age = getAge(bean);
+
+        String text;
+        if (completed == null || ObjectUtils.equals(started, completed)) {
+            text = Messages.format("patient.record.summary.singleDate", started, reason, clinician, status, age);
+        } else {
+            text = Messages.format("patient.record.summary.dateRange", started, completed, reason, clinician, status,
+                                   age);
+        }
+        Label summary = LabelFactory.create(null, Styles.BOLD);
+        summary.setText(text);
+        return summary;
+    }
+
+    /**
+     * Returns the reason for the parent act.
+     *
+     * @param bean the parent act bean
+     * @return the reason. May be {@code null}
+     */
+    protected String getReason(ActBean bean) {
+        return bean.getString("reason");
+    }
 
     /**
      * Returns a component for an act item.
@@ -328,7 +375,9 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      */
     protected Component getType(Act act) {
         String text = DescriptorHelper.getDisplayName(act);
-        return new LabelEx(text);
+        LabelEx label = new LabelEx(text);
+        label.setStyleName("MedicalRecordSummary.type");
+        return label;
     }
 
     /**

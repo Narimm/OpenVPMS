@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.patient.history;
 
+import nextapp.echo2.app.table.TableCellRenderer;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
@@ -36,6 +37,10 @@ public class PatientHistoryBrowser extends AbstractPatientHistoryBrowser {
      */
     private PagedPatientHistoryTableModel pagedModel;
 
+    /**
+     * The cell renderer.
+     */
+    private static final TableCellRenderer RENDERER = new PatientHistoryTableCellRenderer("MedicalRecordSummary");
 
     /**
      * Constructs a {@link PatientHistoryBrowser} that queries IMObjects using the specified query.
@@ -97,6 +102,17 @@ public class PatientHistoryBrowser extends AbstractPatientHistoryBrowser {
         PagedIMTable<Act> result = super.createTable(pagedModel);
         initTable(result);
         return result;
+    }
+
+    /**
+     * Initialises a paged table.
+     *
+     * @param table the table
+     */
+    @Override
+    protected void initTable(PagedIMTable<Act> table) {
+        super.initTable(table);
+        table.getTable().setDefaultRenderer(Object.class, RENDERER);
     }
 
     /**

@@ -391,6 +391,44 @@
         <properties>
             <property name="width" value="${history.clinician.width}"/>
         </properties>
+
+    </style>
+
+    <style name="ProblemSummary.act.patientClinicalProblem" type="nextapp.echo2.app.Component">
+        <properties>
+            <!--property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="${history.problem.colour}"/>
+                    </properties>
+                </layout-data>
+            </property-->
+        </properties>
+    </style>
+
+    <style name="ProblemSummary.act.patientClinicalNote" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="${history.note.colour}"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="ProblemSummary.act.patientMedication"
+           type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="${history.medication.colour}"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
     </style>
 
     <style name="PatientClinicalNote.note" type="org.openvpms.web.echo.text.TextArea" base-name="default">

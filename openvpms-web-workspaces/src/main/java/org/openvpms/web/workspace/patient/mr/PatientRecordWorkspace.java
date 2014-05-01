@@ -18,10 +18,8 @@ package org.openvpms.web.workspace.patient.mr;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
@@ -39,12 +37,11 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.patient.CustomerPatientSummary;
 import org.openvpms.web.workspace.patient.PatientRecordCRUDWindow;
-import org.openvpms.web.workspace.patient.history.PatientHistoryCRUDWindow;
+import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryBrowser;
+import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryCRUDWindow;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQueryFactory;
 import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
-
-import java.util.List;
 
 
 /**
@@ -61,7 +58,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
 
     /**
-     * Constructs a {@code PatientRecordWorkspace}.
+     * Constructs a {@link PatientRecordWorkspace}.
      *
      * @param context the context
      */
@@ -132,16 +129,13 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     protected Component createWorkspace() {
         Component result;
         CRUDWindow window = getCRUDWindow();
-        if (window instanceof PatientHistoryCRUDWindow || window instanceof ProblemRecordCRUDWindow) {
-            result = SplitPaneFactory.create(
-                    SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                    "PatientRecordWorkspace.SummaryLayout",
-                    window.getComponent(), getBrowser().getComponent());
+        if (window instanceof AbstractPatientHistoryCRUDWindow) {
+            result = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
+                                             "PatientRecordWorkspace.SummaryLayout", window.getComponent(),
+                                             getBrowser().getComponent());
         } else {
-            result = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
-                                             "PatientRecordWorkspace.Layout",
-                                             getBrowser().getComponent(),
-                                             window.getComponent());
+            result = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, "PatientRecordWorkspace.Layout",
+                                             getBrowser().getComponent(), window.getComponent());
         }
         return result;
     }
@@ -209,7 +203,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     /**
      * Invoked when an act is selected.
      * <p/>
-     * This implementation edits the selected act, if the current view is summary view and it has been double
+     * This implementation edits the selected act, if the current view is a history view and it has been double
      * clicked on.
      *
      * @param act the act
@@ -221,7 +215,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
         if (window instanceof PatientRecordCRUDWindow) {
             Act event = getBrowser().getEvent(act);
             ((PatientRecordCRUDWindow) window).setEvent(event);
-            if (window instanceof PatientHistoryCRUDWindow) {
+            if (window instanceof AbstractPatientHistoryCRUDWindow) {
                 long id = (act != null) ? act.getId() : 0;
                 if (click.isDoubleClick(id)) { // avoid holding onto the act
                     window.edit();
@@ -233,7 +227,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     /**
      * Invoked when the object has been deleted.
      * <p/>
-     * If the current window is the summary view, this implementation attempts to select the next object in the browser,
+     * If the current window is a history view, this implementation attempts to select the next object in the browser,
      * or the prior object if there is no next object. This is so that when the browser is refreshed, the selection will
      * be retained.
      *
@@ -241,45 +235,14 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      */
     @Override
     protected void onDeleted(Act object) {
-        CRUDWindow<Act> window = getCRUDWindow();
-        if (window instanceof PatientHistoryCRUDWindow) {
-            List<Act> list = getBrowser().getObjects();
-            int index = list.indexOf(object);
-            if (index != -1 && list.size() > 1) {
-                if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_EVENT)) {
-                    // select the next event, if any
-                    int newIndex = -1;
-                    for (int i = index + 1; i < list.size(); ++i) {
-                        if (TypeHelper.isA(list.get(i), PatientArchetypes.CLINICAL_EVENT)) {
-                            newIndex = i;
-                            break;
-                        }
-                    }
-                    if (newIndex == -1) {
-                        // select the previous event, if any
-                        for (int i = index - 1; i >= 0; --i) {
-                            if (TypeHelper.isA(list.get(i), PatientArchetypes.CLINICAL_EVENT)) {
-                                newIndex = i;
-                                break;
-                            }
-                        }
-                    }
-                    index = newIndex;
-                } else {
-                    // select another object. If there is one after the object being deleted, select that, else select
-                    // the one before it
-                    if (index + 1 < list.size()) {
-                        ++index;
-                    } else {
-                        --index;
-                    }
-                }
-                if (index != -1) {
-                    Act select = list.get(index);
-                    Act event = getBrowser().getEvent(select);
-                    ((PatientHistoryCRUDWindow) window).setEvent(event);
-                    getBrowser().setSelected(select);
-                }
+        Browser<Act> browser = getBrowser().getSelectedBrowser();
+        if (browser instanceof AbstractPatientHistoryBrowser) {
+            AbstractPatientHistoryBrowser history = (AbstractPatientHistoryBrowser) browser;
+            Act select = history.selectNext(object);
+            if (select != null) {
+                Act event = getBrowser().getEvent(select);
+                ((AbstractPatientHistoryCRUDWindow) getCRUDWindow()).setEvent(event);
+                getBrowser().setSelected(select);
             }
         }
         super.onDeleted(object);
