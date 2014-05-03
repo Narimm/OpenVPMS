@@ -57,6 +57,7 @@ import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -804,12 +805,17 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * @param source the source lookup
      */
     protected void refreshLookups(LookupField source) {
+        boolean refreshed = false;
         for (PropertyEditor editor : lookups.keySet()) {
             LookupField lookup = (LookupField) editor.getComponent();
             if (source != lookup) {
-                lookup.refresh();
+                refreshed |= lookup.refresh();
             }
         }
+        // need to reset focus, otherwise focus traversal is non-deterministic. Note that this has implications
+        // for tabbing through lookup fields. It requires 2 tabs to leave a lookup field that has changed
+        // instead of one. OVPMS-1397
+        FocusHelper.setFocus(source);
     }
 
     /**
