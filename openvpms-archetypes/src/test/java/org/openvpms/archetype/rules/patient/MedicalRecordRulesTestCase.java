@@ -79,14 +79,10 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         Act problem = createProblem();
         Act note = createNote();
         ActBean eventBean = new ActBean(event);
-        eventBean.addRelationship("actRelationship.patientClinicalEventItem",
-                                  problem);
-        eventBean.addRelationship("actRelationship.patientClinicalEventItem",
-                                  note);
+        eventBean.addNodeRelationship("items", problem);
+        eventBean.addNodeRelationship("items", note);
         ActBean problemBean = new ActBean(problem);
-        problemBean.addRelationship(
-                "actRelationship.patientClinicalProblemItem",
-                note);
+        problemBean.addNodeRelationship("items", note);
         save(event, problem, note);
 
         // make sure each of the objects can be retrieved
@@ -358,9 +354,11 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
 
         ActBean eventBean = new ActBean(event);
         assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, note));
+        assertEquals(1, event.getActRelationships().size());
 
         // verify that it can be called again with no ill effect
         rules.linkMedicalRecords(event, note);
+        assertEquals(1, event.getActRelationships().size());
     }
 
     /**
@@ -380,9 +378,11 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
 
         ActBean eventBean = new ActBean(event);
         assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM, invoiceItem));
+        assertEquals(1, event.getActRelationships().size());
 
         // verify that it can be called again with no ill effect
         rules.linkMedicalRecords(event, invoiceItem);
+        assertEquals(1, event.getActRelationships().size());
     }
 
     /**
@@ -408,9 +408,13 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         ActBean eventBean = new ActBean(event);
         assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, note));
         assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, problem));
+        assertEquals(2, event.getActRelationships().size());
+        assertEquals(2, problem.getActRelationships().size());
 
         // verify that it can be called again with no ill effect
         rules.linkMedicalRecords(event, problem);
+        assertEquals(2, event.getActRelationships().size());
+        assertEquals(2, problem.getActRelationships().size());
     }
 
     /**

@@ -135,17 +135,17 @@ public class MedicalRecordRules {
     }
 
     /**
-     * Links a patient medical record or charge item to an <em>act.patientClinicalEvent</em>.
-     * If the item is an <em>act.patientClinicalProblem</em>, all of its items will be also be linked to the event.
+     * Links a patient medical child record to their parent act.
+     * If the child is an <em>act.patientClinicalProblem</em>, all of its items will be also be linked to the event.
      *
-     * @param event the event
-     * @param item  the item
+     * @param parent the parent act. An <em>act.patientClinicalEvent</em> or <em>>act.patientClinicalProblem</em>
+     * @param child  the child act
      */
-    public void linkMedicalRecords(Act event, Act item) {
-        if (TypeHelper.isA(item, PatientArchetypes.CLINICAL_PROBLEM)) {
-            linkMedicalRecords(event, item, null);
+    public void linkMedicalRecords(Act parent, Act child) {
+        if (TypeHelper.isA(child, PatientArchetypes.CLINICAL_PROBLEM)) {
+            linkMedicalRecords(parent, child, null);
         } else {
-            linkMedicalRecords(event, null, item);
+            linkMedicalRecords(parent, null, child);
         }
     }
 
@@ -159,13 +159,13 @@ public class MedicalRecordRules {
      * <li>any of its items not presently linked to the event will be linked
      * </ul>
      *
-     * @param event   the <em>act.patientClinicalEvent</em>
+     * @param event   the <em>act.patientClinicalEvent</em>. May be {@code null}
      * @param problem the <em>act.patientClinicalProblem</em>. May be {@code null}
      * @param item    the patient medical record or charge item. May be {@code null}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void linkMedicalRecords(Act event, Act problem, Act item) {
-        if (!TypeHelper.isA(event, PatientArchetypes.CLINICAL_EVENT)) {
+        if (event != null && !TypeHelper.isA(event, PatientArchetypes.CLINICAL_EVENT)) {
             throw new IllegalArgumentException("Argument 'event' is of the wrong type: "
                                                + event.getArchetypeId().getShortName());
         }
@@ -177,53 +177,18 @@ public class MedicalRecordRules {
             throw new IllegalArgumentException("Argument 'problem' is of the wrong type: "
                                                + problem.getArchetypeId().getShortName());
         }
-        ActBean bean = new ActBean(event, service);
+        ActBean bean = (event != null) ? new ActBean(event, service) : null;
 
         if (problem != null && item != null) {
-            // link the problem and item if required
-            ActBean problemBean = new ActBean(problem, service);
-            if (!problemBean.hasRelationship(PatientArchetypes.CLINICAL_PROBLEM_ITEM, item)) {
-                problemBean.addNodeRelationship("items", item);
-                service.save(Arrays.asList(problem, item));
-            }
+            linkItemToProblem(problem, item);
         }
 
-        if (item != null) {
-            // link the event and item
-            if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
-                if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM, item)) {
-                    bean.addNodeRelationship("chargeItems", item);
-                    service.save(Arrays.asList(event, item));
-                }
-            } else if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, item)) {
-                bean.addNodeRelationship("items", item);
-                service.save(Arrays.asList(event, item));
-            }
+        if (event != null && item != null) {
+            linkItemToEvent(bean, item);
         }
 
-        if (problem != null) {
-            // link the event and problem
-            ActBean problemBean = new ActBean(problem, service);
-            List<Act> toSave = new ArrayList<Act>();
-
-            // if the problem has no parent event, add it
-            if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, problem)) {
-                bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, problem);
-                toSave.add(event);
-            }
-
-            // for each of the problem's child acts, link them to the parent event
-            List<Act> acts = problemBean.getNodeActs("items");
-            for (Act child : acts) {
-                if (TypeHelper.isA(child, getClinicalEventItems())
-                    && !bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, child)) {
-                    bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, child);
-                    toSave.add(child);
-                }
-            }
-            if (!toSave.isEmpty()) {
-                service.save(toSave);
-            }
+        if (event != null && problem != null) {
+            linkProblemToEvent(bean, problem);
         }
     }
 
@@ -704,6 +669,75 @@ public class MedicalRecordRules {
      */
     private long getSeconds(Date date) {
         return date.getTime() / 1000;
+    }
+
+
+    /**
+     * Links an item to an <em>act.patientClinicalProblem</em>, if no relationship currently exists.
+     *
+     * @param problem the problem
+     * @param item    the item to link
+     */
+    private void linkItemToProblem(Act problem, Act item) {
+        // link the problem and item if required
+        ActBean problemBean = new ActBean(problem, service);
+        if (!problemBean.hasRelationship(PatientArchetypes.CLINICAL_PROBLEM_ITEM, item)) {
+            problemBean.addNodeRelationship("items", item);
+            service.save(Arrays.asList(problem, item));
+        }
+    }
+
+    /**
+     * Links an item to an <em>act.patientClinicalEvent</em>, if no relationship currently exists.
+     *
+     * @param bean the event
+     * @param item the item to link
+     */
+    private void linkItemToEvent(ActBean bean, Act item) {
+        Act event = bean.getAct();
+        // link the event and item
+        if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
+            if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM, item)) {
+                bean.addNodeRelationship("chargeItems", item);
+                service.save(Arrays.asList(event, item));
+            }
+        } else if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, item)) {
+            bean.addNodeRelationship("items", item);
+            service.save(Arrays.asList(event, item));
+        }
+    }
+
+    /**
+     * Links an <em>act.patientClinicalProblem> and its acts to an <em>act.patientClinicalEvent</em>,
+     * if no relationship currently exists.
+     *
+     * @param bean    the event
+     * @param problem the problem to link
+     */
+    private void linkProblemToEvent(ActBean bean, Act problem) {
+        Act event = bean.getAct();
+        // link the event and problem
+        ActBean problemBean = new ActBean(problem, service);
+        List<Act> toSave = new ArrayList<Act>();
+
+        // if the problem has no parent event, add it
+        if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, problem)) {
+            bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, problem);
+            toSave.add(event);
+        }
+
+        // for each of the problem's child acts, link them to the parent event
+        List<Act> acts = problemBean.getNodeActs("items");
+        for (Act child : acts) {
+            if (TypeHelper.isA(child, getClinicalEventItems())
+                && !bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, child)) {
+                bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, child);
+                toSave.add(child);
+            }
+        }
+        if (!toSave.isEmpty()) {
+            service.save(toSave);
+        }
     }
 
 }
