@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -21,6 +21,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
@@ -30,6 +31,7 @@ import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.print.BasicPrinterListener;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
@@ -134,8 +136,11 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
      * Invoked when the 'post' button is pressed.
      */
     protected void onPost() {
-        final T act = getObject();
-        if (act != null && getActions().canPost(act)) {
+        T previous = getObject();
+        final T act = IMObjectHelper.reload(previous);
+        if (act == null && previous != null) {
+            ErrorDialog.show(Messages.format("imobject.noexist", DescriptorHelper.getDisplayName(previous)));
+        } else if (act != null && getActions().canPost(act)) {
             try {
                 HelpContext help = getHelpContext().subtopic("post");
                 String displayName = getArchetypes().getDisplayName();
