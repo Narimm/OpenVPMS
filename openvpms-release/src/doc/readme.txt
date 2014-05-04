@@ -370,10 +370,7 @@ change to:
   The password is stored in configuration files that will also need to be
   updated:
   . <OPENVPMS_HOME>/conf/hibernate.properties
-  . <TOMCAT_HOME>/openvpms/WEB-INF/classes/hibernate.properties
-
-  The file permissions on these files should be restricted to the user that
-  runs Tomcat.
+  . <TOMCAT_HOME>/webapps/openvpms/WEB-INF/classes/hibernate.properties
 
 6.2 Administrator password
   The default installation creates an OpenVPMS user named 'admin', with
@@ -386,3 +383,8 @@ change to:
   restriction on what passwords may be entered, but it is recommended that
   strong passwords are used.
 
+6.4 File permissions
+  The OpenVPMS and Tomcat installation directories should only be accessible
+  to a single user with a strong password.
+  These directories contain files that could enable an attacker to gain access
+  to the OpenVPMS web application, or the MySQL database.
