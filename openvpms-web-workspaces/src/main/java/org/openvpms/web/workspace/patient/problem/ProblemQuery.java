@@ -21,7 +21,6 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
-import org.apache.commons.lang.ArrayUtils;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -50,7 +49,6 @@ import org.openvpms.web.resource.i18n.Messages;
  */
 public class ProblemQuery extends DateRangeActQuery<Act> {
 
-    private static final String[] SHORT_NAMES = new String[]{PatientArchetypes.CLINICAL_PROBLEM};
     /**
      * The set of possible act item short names.
      */
@@ -82,13 +80,9 @@ public class ProblemQuery extends DateRangeActQuery<Act> {
     private SelectField shortNameSelector;
 
     /**
-     * Document act version short names.
+     * The short names to query.
      */
-    private static final String[] DOC_VERSION_SHORT_NAMES = new String[]{
-            InvestigationArchetypes.PATIENT_INVESTIGATION_VERSION,
-            PatientArchetypes.DOCUMENT_ATTACHMENT_VERSION,
-            PatientArchetypes.DOCUMENT_IMAGE_VERSION,
-            PatientArchetypes.DOCUMENT_LETTER_VERSION};
+    private static final String[] SHORT_NAMES = new String[]{PatientArchetypes.CLINICAL_PROBLEM};
 
 
     /**
@@ -99,10 +93,9 @@ public class ProblemQuery extends DateRangeActQuery<Act> {
     public ProblemQuery(Party patient) {
         super(patient, "patient", PatientArchetypes.PATIENT_PARTICIPATION, SHORT_NAMES, Act.class);
 
-        String[] actItemShortNames = RelationshipHelper.getTargetShortNames(PatientArchetypes.CLINICAL_EVENT_ITEM);
-        shortNames = (String[]) ArrayUtils.addAll(actItemShortNames, DOC_VERSION_SHORT_NAMES);
+        shortNames = RelationshipHelper.getTargetShortNames(PatientArchetypes.CLINICAL_PROBLEM_ITEM);
         selectedShortNames = shortNames;
-        model = new ShortNameListModel(actItemShortNames, true, false);
+        model = new ShortNameListModel(shortNames, true, false);
         shortNameSelector = SelectFieldFactory.create(model);
 
         ActionListener listener = new ActionListener() {
