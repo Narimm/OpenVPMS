@@ -131,7 +131,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      */
     public void setSchedule(Entity schedule) {
         setParticipant("schedule", schedule);
-        updateSchedule(schedule);
+        onScheduleChanged(schedule);
         calculateEndTime();
     }
 
@@ -153,7 +153,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         super.onLayoutCompleted();
 
         Party schedule = (Party) getParticipant("schedule");
-        AppointmentTypeParticipationEditor editor = updateSchedule(schedule);
+        AppointmentTypeParticipationEditor editor = onScheduleChanged(schedule);
         editor.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 onAppointmentTypeChanged();
@@ -166,20 +166,13 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         }
     }
 
-    private AppointmentTypeParticipationEditor updateSchedule(Entity schedule) {
-        AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
-        editor.setSchedule(schedule);
-        slotSize = rules.getSlotSize((Party) schedule);
-        return editor;
-    }
-
     /**
      * Invoked when the start time changes. Calculates the end time.
      */
     @Override
     protected void onStartTimeChanged() {
         Date start = getStartTime();
-        if (start != null) {
+        if (start != null && slotSize != 0) {
             Date rounded = SchedulingHelper.getSlotTime(start, slotSize, false);
             if (DateRules.compareTo(start, rounded) != 0) {
                 setStartTime(rounded, true);
@@ -203,7 +196,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         if (start != null && end != null) {
             if (end.compareTo(start) < 0) {
                 calculateEndTime();
-            } else {
+            } else if (slotSize != 0) {
                 Date rounded = SchedulingHelper.getSlotTime(end, slotSize, true);
                 if (DateRules.compareTo(end, rounded) != 0) {
                     setEndTime(rounded, true);
@@ -225,6 +218,22 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         super.onCustomerChanged();
         editor.addModifiableListener(patientListener);
         updateAlerts();
+    }
+
+    /**
+     * Invoked when the schedule is updated. This propagates it to the appointment type editor, and gets the new slot
+     * size.
+     *
+     * @param schedule the schedule. May be {@code null}
+     * @return the appointment type editor
+     */
+    private AppointmentTypeParticipationEditor onScheduleChanged(Entity schedule) {
+        AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
+        editor.setSchedule(schedule);
+        if (schedule != null) {
+            slotSize = rules.getSlotSize((Party) schedule);
+        }
+        return editor;
     }
 
     /**
