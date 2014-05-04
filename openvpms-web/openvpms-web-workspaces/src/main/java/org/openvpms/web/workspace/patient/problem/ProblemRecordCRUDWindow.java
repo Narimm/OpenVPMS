@@ -64,15 +64,19 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     @Override
     public void setObject(Act object) {
         super.setObject(object);
-        if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_PROBLEM)) {
-            setProblem(object);
+        if (object != null) {
+            if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_PROBLEM)) {
+                setProblem(object);
+            } else {
+                setProblem(getSource(object, PatientArchetypes.CLINICAL_PROBLEM));
+            }
         }
     }
 
     /**
      * Sets the current patient clinical problem.
      *
-     * @param problem the current problem
+     * @param problem the current problem. May be {@code null}
      */
     public void setProblem(Act problem) {
         this.problem = problem;
@@ -137,7 +141,6 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         Act event = getEvent(problem);
         PatientMedicalRecordLinker linker = new PatientMedicalRecordLinker(event, problem, act);
         Retryer.run(linker);
-        setProblem(problem);
         super.onSaved(act, isNew);
     }
 
