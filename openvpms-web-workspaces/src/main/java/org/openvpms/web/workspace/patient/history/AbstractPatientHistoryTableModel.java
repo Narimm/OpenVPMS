@@ -282,7 +282,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
         String started = null;
         String completed = null;
         String clinician;
-        String reason = getReason(bean);
+        String reason = getReason(act);
         if (StringUtils.isEmpty(reason)) {
             reason = Messages.get("patient.record.summary.reason.none");
         }
@@ -316,11 +316,11 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     /**
      * Returns the reason for the parent act.
      *
-     * @param bean the parent act bean
+     * @param act the act
      * @return the reason. May be {@code null}
      */
-    protected String getReason(ActBean bean) {
-        return bean.getString("reason");
+    protected String getReason(Act act) {
+        return act.getReason();
     }
 
     /**
