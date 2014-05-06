@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
     <archetype name="act.patientClinicalProblem.1.0" latest="true"
@@ -20,21 +20,31 @@
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
               derivedValue="'Problem'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
-              derivedValue="concat(/details/problem,' (',openvpms:lookup(.,'status'),')')"/>
+              derivedValue="concat(openvpms:lookup(.,'reason'),' (',openvpms:lookup(.,'status'),')')"/>
         <node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"
               defaultValue="java.util.Date.new()"/>
         <node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.patient" hidden="true"/>
         <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
-        <node name="problem" path="/details/problem" type="java.lang.String" maxLength="50"/>
+        <node name="reason" displayName="Diagnosis" path="/reason" type="java.lang.String" minCardinality="1">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.diagnosis*"/>
+            </assertion>
+        </node>
+        <node name="presentingComplaint" path="/details/presentingComplaint" type="java.lang.String" minCardinality="0">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.presentingComplaint*"/>
+            </assertion>
+        </node>
         <node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'UNRESOLVED'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="UNRESOLVED" value="Unresolved"/>
                     <property name="RESOLVED" value="Resolved"/>
                 </propertyList>
-                <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
         <node displayName="Resolved Date" name="endTime" path="/activityEndTime" type="java.util.Date"/>
@@ -47,7 +57,6 @@
                                   value="actRelationship.patientClinicalProblemItem"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"

@@ -84,10 +84,10 @@
         <data collection="product" archetype="participation.product" entity="id:P14" act="id:HI12"/>
         <data collection="patient" archetype="participation.patient" entity="id:A5" act="id:HI12"/>
     </data>
-    <data id="HI13" archetype="act.patientClinicalProblem" startTime="23/08/2002" problem="FLEAAL - test dignosis ">
+    <data id="HI13" archetype="act.patientClinicalProblem" startTime="23/08/2002" reason="id:VENOM_1028">
         <data collection="patient" archetype="participation.patient" entity="id:A5" act="id:HI13"/>
     </data>
-    <data id="HI14" archetype="act.patientClinicalNote" startTime="15/10/2002" note="Corneal Opacity test symtom">
+    <data id="HI14" archetype="act.patientClinicalNote" startTime="15/10/2002" note="Corneal Opacity test symptom">
         <data collection="patient" archetype="participation.patient" entity="id:A5" act="id:HI14"/>
     </data>
     <data id="HI15" archetype="act.patientClinicalEvent" startTime="11/02/2004" endTime="11/02/2004"
@@ -188,7 +188,7 @@
         <data collection="items" archetype="actRelationship.patientClinicalEventItem" source="id:HI30"
               target="id:HI32"/>
     </data>
-    <data id="HI31" archetype="act.patientClinicalProblem" startTime="12/05/1993" problem="CELLULITIS - myxomatosis ">
+    <data id="HI31" archetype="act.patientClinicalProblem" startTime="12/05/1993" reason="id:VENOM_529">
         <data collection="patient" archetype="participation.patient" entity="id:A12" act="id:HI31"/>
     </data>
     <data id="HI32" archetype="act.patientClinicalNote" startTime="12/05/1993"
@@ -247,8 +247,7 @@
         <data collection="product" archetype="participation.product" entity="id:P241" act="id:HI40"/>
         <data collection="patient" archetype="participation.patient" entity="id:A13" act="id:HI40"/>
     </data>
-    <data id="HI41" archetype="act.patientClinicalProblem" startTime="12/05/1993"
-          problem="SKIN ALLERGY MISC. OTHER DISEASE - flea ">
+    <data id="HI41" archetype="act.patientClinicalProblem" startTime="12/05/1993" reason="id:VENOM_1028">
         <data collection="patient" archetype="participation.patient" entity="id:A13" act="id:HI41"/>
     </data>
     <data id="HI42" archetype="act.patientClinicalNote" startTime="12/05/1993" note="Hair Loss&#10;Puritis Of Eye">
@@ -293,10 +292,10 @@
         <data collection="product" archetype="participation.product" entity="id:P15" act="id:HI48"/>
         <data collection="patient" archetype="participation.patient" entity="id:A13" act="id:HI48"/>
     </data>
-    <data id="HI49" archetype="act.patientClinicalProblem" startTime="24/04/1996" problem="FLEAAL - AT: ">
+    <data id="HI49" archetype="act.patientClinicalProblem" startTime="24/04/1996" reason="id:VENOM_1028">
         <data collection="patient" archetype="participation.patient" entity="id:A13" act="id:HI49"/>
     </data>
-    <data id="HI50" archetype="act.patientClinicalProblem" startTime="24/04/1996" problem="FLEAAL - AT: ">
+    <data id="HI50" archetype="act.patientClinicalProblem" startTime="24/04/1996" reason="id:VENOM_1028">
         <data collection="patient" archetype="participation.patient" entity="id:A13" act="id:HI50"/>
     </data>
     <data id="HI51" archetype="act.patientClinicalEvent" startTime="07/05/1991" endTime="07/05/1991"
