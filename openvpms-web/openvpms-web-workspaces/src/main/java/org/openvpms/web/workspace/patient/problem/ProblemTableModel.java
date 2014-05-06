@@ -17,8 +17,9 @@
 package org.openvpms.web.workspace.patient.problem;
 
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryTableModel;
 
 
@@ -41,11 +42,11 @@ public class ProblemTableModel extends AbstractPatientHistoryTableModel {
     /**
      * Returns the reason for the parent act.
      *
-     * @param bean the parent act bean
+     * @param act the act
      * @return the reason. May be {@code null}
      */
     @Override
-    protected String getReason(ActBean bean) {
-        return bean.getString("problem");
+    protected String getReason(Act act) {
+        return LookupNameHelper.getName(act, "reason");
     }
 }
