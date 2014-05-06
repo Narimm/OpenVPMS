@@ -78,7 +78,7 @@ public class LookupUtil {
                                       String shortName, String code) {
         Lookup lookup = (Lookup) service.create(shortName);
         assertNotNull(lookup);
-        code = code + "-" + System.nanoTime();
+        code = code + "_" + System.nanoTime();
         lookup.setCode(code);
         return lookup;
     }
