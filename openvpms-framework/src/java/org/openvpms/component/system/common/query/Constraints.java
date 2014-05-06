@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.component.system.common.query;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 import java.util.Arrays;
@@ -47,8 +48,9 @@ public class Constraints {
      * @param value the value
      * @return a new <em>equal</em> constraint
      */
-    public static NodeConstraint eq(String name, Object value) {
-        return new NodeConstraint(name, value);
+    public static AbstractNodeConstraint eq(String name, Object value) {
+        return (value instanceof IMObject) ? eq(name, ((IMObject) value).getObjectReference())
+                                           : new NodeConstraint(name, value);
     }
 
     /**
@@ -80,8 +82,9 @@ public class Constraints {
      * @param value the value
      * @return a new <em>not-equal</em> constraint
      */
-    public static NodeConstraint ne(String name, Object value) {
-        return new NodeConstraint(name, RelationalOp.NE, value);
+    public static AbstractNodeConstraint ne(String name, Object value) {
+        return (value instanceof IMObject) ? ne(name, ((IMObject) value).getObjectReference())
+                                           : new NodeConstraint(name, RelationalOp.NE, value);
     }
 
     /**
