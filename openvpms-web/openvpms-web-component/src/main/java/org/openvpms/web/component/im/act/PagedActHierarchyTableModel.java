@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.im.act;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
@@ -92,24 +93,22 @@ public class PagedActHierarchyTableModel<T extends Act>
      */
     @Override
     protected void setPage(List<T> objects) {
-        Iterable<T> iterable = createFlattener(objects, shortNames, context);
-        List<T> acts = new ArrayList<T>();
-        for (T act : iterable) {
-            acts.add(act);
-        }
+        List<T> acts = flattenHierarchy(objects, shortNames, context);
         getModel().setObjects(acts);
     }
 
     /**
-     * Creates a new {@link ActHierarchyIterator}.
+     * Flattens an act hierarchy, only including those acts matching the supplied short names.
      *
      * @param objects    the acts
      * @param shortNames the child archetype short names
      * @param context    the context
-     * @return an iterator to flatten the act hierarchy
+     * @return the acts
      */
-    protected ActHierarchyIterator<T> createFlattener(List<T> objects, String[] shortNames, Context context) {
-        return new ActHierarchyIterator<T>(objects, shortNames, maxDepth);
+    protected List<T> flattenHierarchy(List<T> objects, String[] shortNames, Context context) {
+        List<T> list = new ArrayList<T>();
+        CollectionUtils.addAll(list, new ActHierarchyIterator<T>(objects, shortNames, maxDepth));
+        return list;
     }
 
 }

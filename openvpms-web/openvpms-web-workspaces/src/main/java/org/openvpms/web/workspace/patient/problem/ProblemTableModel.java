@@ -16,10 +16,17 @@
 
 package org.openvpms.web.workspace.patient.problem;
 
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.LookupNameHelper;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryTableModel;
 
 
@@ -49,4 +56,44 @@ public class ProblemTableModel extends AbstractPatientHistoryTableModel {
     protected String getReason(Act act) {
         return LookupNameHelper.getName(act, "reason");
     }
+
+    /**
+     * Formats an act item.
+     *
+     * @param bean the item bean
+     * @param row  the current row
+     * @return a component representing the item
+     */
+    @Override
+    protected Component formatItem(ActBean bean, int row) {
+        if (bean.isA(PatientArchetypes.CLINICAL_EVENT)) {
+            return formatEvent(bean, row);
+        }
+        return super.formatItem(bean, row);
+    }
+
+    /**
+     * Returns a component for an <em>act.patientClinicalEvent</em>.
+     *
+     * @param bean the act
+     * @param row  the current row
+     * @return a component representing the act
+     * @throws OpenVPMSException for any error
+     */
+    private Component formatEvent(ActBean bean, int row) {
+        Act act = bean.getAct();
+        String reason = act.getReason();
+        if (StringUtils.isEmpty(reason)) {
+            reason = Messages.get("patient.record.summary.reason.none");
+        }
+        String status = LookupNameHelper.getName(act, "status");
+        String clinician = getClinician(bean, row);
+        String age = getAge(bean);
+
+        String text = Messages.format("patient.record.problem.event", reason, clinician, status, age);
+        Label label = LabelFactory.create();
+        label.setText(text);
+        return label;
+    }
+
 }

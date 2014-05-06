@@ -157,8 +157,8 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
             }
             // link the item to its parent event, if required. As there might be multiple user's accessing the event,
             // use a Retryer to retry if the linking fails initially
-            PatientMedicalRecordLinker recordAction = new PatientMedicalRecordLinker(getEvent(), act);
-            Retryer.run(recordAction);
+            PatientMedicalRecordLinker linker = createMedicalRecordLinker(getEvent(), act);
+            Retryer.run(linker);
         } else {
             setEvent(act);
         }

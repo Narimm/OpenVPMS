@@ -40,17 +40,17 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
     /**
      * The original patient clinical event.
      */
-    private final Act event;
+    private Act event;
 
     /**
      * The original patient clinical problem.
      */
-    private final Act problem;
+    private Act problem;
 
     /**
      * The original patient record item.
      */
-    private final Act item;
+    private Act item;
 
     /**
      * The current event.
@@ -85,7 +85,9 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
      * @param item  the patient record item
      */
     public PatientMedicalRecordLinker(Act event, Act item) {
-        this(event, null, item);
+        rules = ServiceHelper.getBean(MedicalRecordRules.class);
+        boolean isProblem = TypeHelper.isA(item, PatientArchetypes.CLINICAL_PROBLEM);
+        init(event, isProblem ? item : null, isProblem ? null : item);
     }
 
     /**
@@ -96,25 +98,8 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
      * @param item    the patient record item. May be {@code null}
      */
     public PatientMedicalRecordLinker(Act event, Act problem, Act item) {
-        if (event != null) {
-            if (!TypeHelper.isA(event, PatientArchetypes.CLINICAL_EVENT)) {
-                throw new IllegalArgumentException("Argument 'event' is invalid: "
-                                                   + event.getArchetypeId().getShortName());
-            }
-            if (event.isNew()) {
-                throw new IllegalStateException("Argument 'event' must be saved");
-            }
-        }
-        if (problem != null && problem.isNew()) {
-            throw new IllegalStateException("Argument 'problem' must be saved");
-        }
-        if (item != null && item.isNew()) {
-            throw new IllegalStateException("Argument 'item' must be saved: " + item.getArchetypeId().getShortName());
-        }
-        this.event = event;
-        this.problem = problem;
-        this.item = item;
         rules = ServiceHelper.getBean(MedicalRecordRules.class);
+        init(event, problem, item);
     }
 
     /**
@@ -186,6 +171,34 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
     }
 
     /**
+     * Initialises this.
+     *
+     * @param event   the patient clinical event. May be {@code null}
+     * @param problem the patient clinical problem. May be {@code null}
+     * @param item    the patient record item. May be {@code null}
+     */
+    private void init(Act event, Act problem, Act item) {
+        if (event != null) {
+            if (!TypeHelper.isA(event, PatientArchetypes.CLINICAL_EVENT)) {
+                throw new IllegalArgumentException("Argument 'event' is invalid: "
+                                                   + event.getArchetypeId().getShortName());
+            }
+            if (event.isNew()) {
+                throw new IllegalStateException("Argument 'event' must be saved");
+            }
+        }
+        if (problem != null && problem.isNew()) {
+            throw new IllegalStateException("Argument 'problem' must be saved");
+        }
+        if (item != null && item.isNew()) {
+            throw new IllegalStateException("Argument 'item' must be saved: " + item.getArchetypeId().getShortName());
+        }
+        this.event = event;
+        this.problem = problem;
+        this.item = item;
+    }
+
+    /**
      * Links the records.
      *
      * @param currentEvent   the current instance of the event. May be {@code null}
@@ -198,9 +211,9 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
         if (currentEvent == null && event != null) {
             logMissing(event);
         } else if (currentProblem == null && problem != null) {
-            logMissing(event);
+            logMissing(problem);
         } else if (currentItem == null && item != null) {
-            logMissing(event);
+            logMissing(item);
         } else {
             // link the records to the event
             rules.linkMedicalRecords(currentEvent, currentProblem, currentItem);

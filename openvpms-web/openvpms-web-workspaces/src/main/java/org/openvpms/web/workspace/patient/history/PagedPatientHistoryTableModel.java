@@ -13,14 +13,17 @@
  *
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient.history;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.act.PagedActHierarchyTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -57,19 +60,21 @@ public class PagedPatientHistoryTableModel extends PagedActHierarchyTableModel<A
     }
 
     /**
-     * Creates a new {@link ActHierarchyIterator}.
+     * Flattens an act hierarchy, only including those acts matching the supplied short names.
      *
      * @param objects    the acts
      * @param shortNames the child archetype short names
      * @param context    the context
-     * @return an iterator to flatten the act hierarchy
+     * @return the acts
      */
     @Override
-    protected ActHierarchyIterator<Act> createFlattener(List<Act> objects, String[] shortNames, Context context) {
+    protected List<Act> flattenHierarchy(List<Act> objects, String[] shortNames, Context context) {
+        List<Act> list = new ArrayList<Act>();
         PatientHistoryFilter filter = new PatientHistoryFilter(shortNames);
         filter.setSortItemsAscending(sortAscending);
         // maxDepth = 2 - display the events, and their immediate children
-        return new ActHierarchyIterator<Act>(objects, filter, 2);
+        CollectionUtils.addAll(list, new ActHierarchyIterator<Act>(objects, filter, 2));
+        return list;
     }
 
 }

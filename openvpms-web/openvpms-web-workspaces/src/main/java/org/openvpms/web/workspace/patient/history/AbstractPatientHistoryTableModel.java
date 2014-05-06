@@ -255,11 +255,12 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
                 }
                 break;
             case SUMMARY_COLUMN:
+                ActBean bean = new ActBean(act);
                 try {
                     if (TypeHelper.isA(act, parentShortName)) {
-                        result = formatParent(act, row);
+                        result = formatParent(bean, row);
                     } else {
-                        result = formatItem(act, row, showClinician);
+                        result = formatItem(bean, row, showClinician);
                     }
                 } catch (OpenVPMSException exception) {
                     ErrorHelper.show(exception);
@@ -272,17 +273,17 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     /**
      * Returns a component for a parent act.
      *
-     * @param act the parent act
-     * @param row the current row
+     * @param bean the parent act
+     * @param row  the current row
      * @return a component representing the act
      * @throws OpenVPMSException for any error
      */
-    protected Component formatParent(Act act, int row) {
-        ActBean bean = new ActBean(act);
+    protected Component formatParent(ActBean bean, int row) {
+        Act act = bean.getAct();
         String started = null;
         String completed = null;
         String clinician;
-        String reason = getReason(act);
+        String reason = getReason(bean.getAct());
         if (StringUtils.isEmpty(reason)) {
             reason = Messages.get("patient.record.summary.reason.none");
         }
@@ -326,13 +327,13 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     /**
      * Returns a component for an act item.
      *
-     * @param act the act item
-     * @param row the current row
+     * @param bean the act item
+     * @param row  the current row
      * @return a component representing the act
      * @throws OpenVPMSException for any error
      */
-    protected Component formatItem(Act act, int row, boolean showClinician) {
-        ActBean bean = new ActBean(act);
+    protected Component formatItem(ActBean bean, int row, boolean showClinician) {
+        Act act = bean.getAct();
         Component date = getDate(act, row);
         Component type = getType(act);
         Component clinician = (showClinician) ? getClinicianLabel(bean, row) : null;
@@ -347,7 +348,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
             clinician.setLayoutData(layout);
         }
 
-        detail = formatItem(bean);
+        detail = formatItem(bean, row);
         Row padding = RowFactory.create(Styles.INSET, new Label(""));
         Row item = RowFactory.create(Styles.CELL_SPACING, padding, date, type);
         if (clinician != null) {
@@ -361,9 +362,10 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * Formats an act item.
      *
      * @param bean the item bean
+     * @param row  the current row
      * @return a component representing the item
      */
-    protected Component formatItem(ActBean bean) {
+    protected Component formatItem(ActBean bean, int row) {
         return getTextDetail(bean.getAct());
     }
 

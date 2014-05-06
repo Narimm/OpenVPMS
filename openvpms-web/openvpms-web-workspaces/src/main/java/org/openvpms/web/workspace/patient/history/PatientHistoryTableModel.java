@@ -62,9 +62,10 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
      * Formats an act item.
      *
      * @param bean the item bean
+     * @param row  the current row
      * @return a component representing the item
      */
-    protected Component formatItem(ActBean bean) {
+    protected Component formatItem(ActBean bean, int row) {
         Component detail;
         if (bean.isA("act.patientInvestigation*") || bean.isA("act.patientDocument*")) {
             detail = getDocumentDetail((DocumentAct) bean.getAct());
@@ -73,7 +74,7 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
         } else if (bean.isA(CustomerAccountArchetypes.INVOICE_ITEM)) {
             detail = getInvoiceItemDetail(bean);
         } else {
-            detail = super.formatItem(bean);
+            detail = super.formatItem(bean, row);
         }
         return detail;
     }

@@ -121,6 +121,7 @@ public class ActHierarchyIteratorTestCase extends AbstractAppTest {
         Act event = createAct("act.patientClinicalEvent", patient, startTime);
         Act eventNote = createAct("act.patientClinicalNote", patient, startTime);
         Act problem = createAct("act.patientClinicalProblem", patient, startTime);
+        problem.setReason(TestHelper.getLookup("lookup.diagnosis", "HEART_MURMUR").getCode());
         Act problemNote = createAct("act.patientClinicalNote", patient, startTime);
         Act weight = createAct("act.patientWeight", patient, startTime);
         ActBean bean = new ActBean(event);
