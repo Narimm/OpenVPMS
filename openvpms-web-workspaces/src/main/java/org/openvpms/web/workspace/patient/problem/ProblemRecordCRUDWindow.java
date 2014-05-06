@@ -139,7 +139,7 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
             act = null;
         }
         Act event = getEvent(problem);
-        PatientMedicalRecordLinker linker = new PatientMedicalRecordLinker(event, problem, act);
+        PatientMedicalRecordLinker linker = createMedicalRecordLinker(event, problem, act);
         Retryer.run(linker);
         super.onSaved(act, isNew);
     }

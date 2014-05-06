@@ -28,6 +28,7 @@ import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.workspace.patient.PatientMedicalRecordLinker;
 import org.openvpms.web.workspace.patient.PatientRecordCRUDWindow;
 
 import java.util.Arrays;
@@ -94,6 +95,27 @@ public class AbstractPatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> im
         } else {
             super.onCreated(object);
         }
+    }
+
+    /**
+     * Creates a {@link PatientMedicalRecordLinker} to link medical records.
+     *
+     * @param event the patient clinical event
+     * @param item  the patient record item
+     */
+    protected PatientMedicalRecordLinker createMedicalRecordLinker(Act event, Act item) {
+        return new PatientMedicalRecordLinker(event, item);
+    }
+
+    /**
+     * Creates a {@link PatientMedicalRecordLinker} to link medical records.
+     *
+     * @param event   the patient clinical event. May be {@code null}
+     * @param problem the patient clinical problem. May be {@code null}
+     * @param item    the patient record item. May be {@code null}
+     */
+    protected PatientMedicalRecordLinker createMedicalRecordLinker(Act event, Act problem, Act item) {
+        return new PatientMedicalRecordLinker(event, problem, item);
     }
 
     /**

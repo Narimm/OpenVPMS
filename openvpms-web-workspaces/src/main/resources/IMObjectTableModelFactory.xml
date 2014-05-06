@@ -61,6 +61,10 @@
                         <string>/description</string>
                     </entry>
                     <entry>
+                        <string>act.patientClinicalEvent</string>
+                        <string>openvpms:lookup(., 'reason')</string>
+                    </entry>
+                    <entry>
                         <string>act.patientClinicalNote</string>
                         <string>/details/note</string>
                     </entry>

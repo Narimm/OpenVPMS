@@ -25,6 +25,8 @@ import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
 import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
@@ -86,13 +88,22 @@ public class ProblemQuery extends DateRangeActQuery<Act> {
 
 
     /**
+     * Sort such that Unresolved acts are displayed first, ordered on most recent timestamp.
+     */
+    private static final SortConstraint[] SORT_CONSTRAINTS = {
+            new NodeSortConstraint("status", false),
+            new NodeSortConstraint("startTime", false),
+            new NodeSortConstraint("id")
+    };
+
+
+    /**
      * Constructs a {@link ProblemQuery}.
      *
      * @param patient the patient to query
      */
     public ProblemQuery(Party patient) {
         super(patient, "patient", PatientArchetypes.PATIENT_PARTICIPATION, SHORT_NAMES, Act.class);
-
         shortNames = RelationshipHelper.getTargetShortNames(PatientArchetypes.CLINICAL_PROBLEM_ITEM);
         selectedShortNames = shortNames;
         model = new ShortNameListModel(shortNames, true, false);
@@ -107,6 +118,7 @@ public class ProblemQuery extends DateRangeActQuery<Act> {
         shortNameSelector.addActionListener(listener);
         shortNameSelector.setCellRenderer(new ShortNameListCellRenderer());
         setAuto(true);
+        setDefaultSortConstraint(SORT_CONSTRAINTS);
     }
 
     /**

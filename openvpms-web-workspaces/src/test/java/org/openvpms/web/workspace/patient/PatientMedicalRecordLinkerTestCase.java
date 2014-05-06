@@ -13,6 +13,7 @@
  *
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient;
 
 import org.junit.Before;
@@ -117,6 +118,7 @@ public class PatientMedicalRecordLinkerTestCase extends AbstractAppTest {
         Act act = (Act) create(PatientArchetypes.CLINICAL_PROBLEM);
         ActBean bean = new ActBean(act);
         bean.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
+        act.setReason(TestHelper.getLookup("lookup.diagnosis", "HEART_MURMUR").getCode());
         bean.save();
         return act;
     }
