@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -604,7 +604,7 @@ public class PatientRules {
     private ArchetypeQuery createWeightQuery(Party patient) {
         ArchetypeQuery query = new ArchetypeQuery(Constraints.shortName("act", PATIENT_WEIGHT));
         JoinConstraint participation = Constraints.join("patient");
-        participation.add(Constraints.eq("entity", patient.getObjectReference()));
+        participation.add(Constraints.eq("entity", patient));
         participation.add(new ParticipationConstraint(ActShortName, PATIENT_WEIGHT));
         query.add(participation);
         query.add(Constraints.sort("startTime", false));

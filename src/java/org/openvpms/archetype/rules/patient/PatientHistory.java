@@ -146,7 +146,7 @@ public class PatientHistory {
     private ArchetypeQuery createMedicationQuery(Party patient) {
         ArchetypeQuery query = new ArchetypeQuery(shortName("act", PATIENT_MEDICATION));
         JoinConstraint participation = join("patient");
-        participation.add(eq("entity", patient.getObjectReference()));
+        participation.add(eq("entity", patient));
         participation.add(new ParticipationConstraint(ActShortName, PATIENT_MEDICATION));
         query.add(participation);
         query.add(sort("startTime", false));

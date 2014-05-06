@@ -30,7 +30,6 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.IdConstraint;
-import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.util.ArrayList;
@@ -204,7 +203,7 @@ public class ReminderQuery {
             cust.add(eq("id", customer.getId()));
         }
         if (location.getLocation() != null) {
-            cust.add(join("practice", "l2").add(eq("target", location.getLocation().getObjectReference())));
+            cust.add(join("practice", "l2").add(eq("target", location.getLocation())));
         }
         query.add(cust);
 
@@ -222,8 +221,7 @@ public class ReminderQuery {
 
         ShortNameConstraint reminder = shortName("reminderType", ReminderArchetypes.REMINDER_TYPE_PARTICIPATION, true);
         if (reminderType != null) {
-            ObjectRefNodeConstraint reminderTypeRef = eq("entity", reminderType.getObjectReference());
-            query.add(join("reminderType", reminder).add(reminderTypeRef));
+            query.add(join("reminderType", reminder).add(eq("entity", reminderType)));
         } else {
             query.add(reminder);
             query.add(new IdConstraint("reminderType.act", "act"));
