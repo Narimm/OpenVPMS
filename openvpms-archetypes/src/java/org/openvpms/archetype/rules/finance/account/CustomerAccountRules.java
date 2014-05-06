@@ -443,7 +443,7 @@ public class CustomerAccountRules {
         ArchetypeQuery query = new ArchetypeQuery(CustomerAccountArchetypes.INVOICE, false, true);
         query.setMaxResults(1);
 
-        query.add(Constraints.join("customer").add(Constraints.eq("entity", customer.getObjectReference())));
+        query.add(Constraints.join("customer").add(Constraints.eq("entity", customer)));
         query.add(Constraints.eq("status", status));
         query.add(Constraints.sort("startTime", false));
         IMObjectQueryIterator<FinancialAct> iterator = new IMObjectQueryIterator<FinancialAct>(service, query);

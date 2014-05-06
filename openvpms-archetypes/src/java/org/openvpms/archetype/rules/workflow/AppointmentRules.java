@@ -131,8 +131,7 @@ public class AppointmentRules {
      */
     public Party getLocation(Entity schedule) {
         ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.LOCATION);
-        query.add(join("scheduleViews").add(join("target").add(join("schedules").add(
-                eq("target", schedule.getObjectReference())))));
+        query.add(join("scheduleViews").add(join("target").add(join("schedules").add(eq("target", schedule)))));
         query.setMaxResults(1);
         IMObjectQueryIterator<Party> iterator = new IMObjectQueryIterator<Party>(service, query);
         return iterator.hasNext() ? iterator.next() : null;

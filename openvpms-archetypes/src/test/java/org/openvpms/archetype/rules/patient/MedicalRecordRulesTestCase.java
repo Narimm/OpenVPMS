@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -692,6 +693,8 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      */
     protected Act createProblem() {
         Act act = createAct("act.patientClinicalProblem");
+        Lookup diagnosis = TestHelper.getLookup("lookup.diagnosis", "HEART_MURMUR");
+        act.setReason(diagnosis.getCode());
         ActBean bean = new ActBean(act);
         bean.addParticipation("participation.patient", patient);
         bean.addParticipation("participation.clinician", clinician);

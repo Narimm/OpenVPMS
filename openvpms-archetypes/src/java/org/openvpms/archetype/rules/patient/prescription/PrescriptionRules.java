@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.prescription;
@@ -197,8 +197,8 @@ public class PrescriptionRules {
         Act result = null;
         ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.PRESCRIPTION);
         query.add(gte("endTime", DateRules.getDate(expiryDate)));
-        query.add(join("patient").add(eq("entity", patient.getObjectReference())));
-        query.add(join("product").add(eq("entity", product.getObjectReference())));
+        query.add(join("patient").add(eq("entity", patient)));
+        query.add(join("product").add(eq("entity", product)));
         if (!exclude.isEmpty()) {
             for (Act act : exclude) {
                 query.add(Constraints.ne("id", act.getId()));

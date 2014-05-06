@@ -258,7 +258,7 @@ class FreeSlotIterator implements Iterator<Slot> {
         ArchetypeQuery query = new ArchetypeQuery(shortName("a", ScheduleArchetypes.APPOINTMENT));
         query.add(new NodeSelectConstraint("a.startTime"));
         query.add(new NodeSelectConstraint("a.endTime"));
-        query.add(Constraints.join("schedule").add(Constraints.eq("entity", schedule.getObjectReference())));
+        query.add(Constraints.join("schedule").add(Constraints.eq("entity", schedule)));
         query.add(Constraints.or(Constraints.between("startTime", fromDate, toDate),
                                  Constraints.between("endTime", fromDate, toDate)));
         query.setMaxResults(1);
