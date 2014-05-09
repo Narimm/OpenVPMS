@@ -215,5 +215,17 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
             // @todo fix when statuses are sorted out
             return true;
         }
+
+        /**
+         * Determines if an act can be deleted.
+         *
+         * @param act the act to check
+         * @return {@code true} if the act can be deleted
+         */
+        @Override
+        public boolean canDelete(Act act) {
+            return !TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT) && super.canDelete(act)
+                   && act.getSourceActRelationships().isEmpty();
+        }
     }
 }

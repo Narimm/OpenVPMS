@@ -13,6 +13,7 @@
  *
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient.history;
 
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
@@ -59,13 +60,26 @@ class PatientHistoryFilter extends ActHierarchyFilter<Act> {
 
     /**
      * Constructs a {@link PatientHistoryFilter}.
+     * <p/>
+     * Items are sorted on ascending timestamp.
      *
      * @param shortNames the history item short names to include
      */
     public PatientHistoryFilter(String[] shortNames) {
+        this(shortNames, true);
+    }
+
+    /**
+     * Constructs a {@link PatientHistoryFilter}.
+     *
+     * @param shortNames    the history item short names to include
+     * @param sortAscending if {@code true} sort items on ascending timestamp; otherwise sort on descending timestamp
+     */
+    public PatientHistoryFilter(String[] shortNames, boolean sortAscending) {
         super();
         this.shortNames = new ArrayList<String>(Arrays.asList(shortNames));
         invoice = this.shortNames.remove(CustomerAccountArchetypes.INVOICE_ITEM);
+        setSortItemsAscending(sortAscending);
     }
 
     /**

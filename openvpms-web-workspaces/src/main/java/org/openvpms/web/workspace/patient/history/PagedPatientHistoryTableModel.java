@@ -19,7 +19,6 @@ package org.openvpms.web.workspace.patient.history;
 import org.apache.commons.collections4.CollectionUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.act.PagedActHierarchyTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 
@@ -70,10 +69,7 @@ public class PagedPatientHistoryTableModel extends PagedActHierarchyTableModel<A
     @Override
     protected List<Act> flattenHierarchy(List<Act> objects, String[] shortNames, Context context) {
         List<Act> list = new ArrayList<Act>();
-        PatientHistoryFilter filter = new PatientHistoryFilter(shortNames);
-        filter.setSortItemsAscending(sortAscending);
-        // maxDepth = 2 - display the events, and their immediate children
-        CollectionUtils.addAll(list, new ActHierarchyIterator<Act>(objects, filter, 2));
+        CollectionUtils.addAll(list, new PatientHistoryIterator(objects, shortNames, sortAscending));
         return list;
     }
 

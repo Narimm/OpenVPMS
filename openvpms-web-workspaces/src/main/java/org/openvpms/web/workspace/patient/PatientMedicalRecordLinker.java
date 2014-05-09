@@ -145,6 +145,17 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
     }
 
     /**
+     * Links the records.
+     *
+     * @param currentEvent   the current instance of the event. May be {@code null}
+     * @param currentProblem the current instance of the problem. May be {@code null}
+     * @param currentItem    the current instance of the item. May be {@code null}
+     */
+    protected void link(Act currentEvent, Act currentProblem, Act currentItem) {
+        rules.linkMedicalRecords(currentEvent, currentProblem, currentItem);
+    }
+
+    /**
      * Runs the action for the first time.
      * <p/>
      * This implementation delegates to {@link #runAction()}.
@@ -215,8 +226,8 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
         } else if (currentItem == null && item != null) {
             logMissing(item);
         } else {
-            // link the records to the event
-            rules.linkMedicalRecords(currentEvent, currentProblem, currentItem);
+            link(currentEvent, currentProblem, currentItem);
+
             this.currentEvent = currentEvent;
             this.currentProblem = currentProblem;
             this.currentItem = currentItem;
