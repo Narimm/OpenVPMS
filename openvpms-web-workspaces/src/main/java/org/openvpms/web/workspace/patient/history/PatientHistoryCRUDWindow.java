@@ -81,6 +81,18 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     }
 
     /**
+     * Constructs a {@link PatientHistoryCRUDWindow}.
+     *
+     * @param context the context
+     * @param actions the history actions
+     * @param help    the help context
+     */
+    protected PatientHistoryCRUDWindow(Context context, PatientHistoryActions actions, HelpContext help) {
+        super(Archetypes.create(PatientArchetypes.CLINICAL_EVENT, Act.class, Messages.get("patient.record.createtype")),
+              actions, context, help);
+    }
+
+    /**
      * Sets the current patient clinical event.
      * <p/>
      * This updates the context.

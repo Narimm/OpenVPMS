@@ -17,25 +17,17 @@
 package org.openvpms.web.workspace.patient.history;
 
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
-import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.echo.factory.RowFactory;
-import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
 
@@ -65,11 +57,10 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
      * @param row  the current row
      * @return a component representing the item
      */
+    @Override
     protected Component formatItem(ActBean bean, int row) {
         Component detail;
-        if (bean.isA("act.patientInvestigation*") || bean.isA("act.patientDocument*")) {
-            detail = getDocumentDetail((DocumentAct) bean.getAct());
-        } else if (bean.isA(PatientArchetypes.PATIENT_MEDICATION)) {
+        if (bean.isA(PatientArchetypes.PATIENT_MEDICATION)) {
             detail = getMedicationDetail(bean);
         } else if (bean.isA(CustomerAccountArchetypes.INVOICE_ITEM)) {
             detail = getInvoiceItemDetail(bean);
@@ -77,45 +68,6 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
             detail = super.formatItem(bean, row);
         }
         return detail;
-    }
-
-    /**
-     * Returns a component for the act type.
-     * <p/>
-     * This indents document version acts.
-     *
-     * @param act the act
-     * @return a component representing the act type
-     */
-    @Override
-    protected Component getType(Act act) {
-        Component result = super.getType(act);
-        if (TypeHelper.isA(act, "act.patientDocument*Version")) {
-            result = RowFactory.create("InsetX", result);
-        }
-        return result;
-    }
-
-    /**
-     * Returns a component for the detail of an act.patientDocument*. or
-     * act.patientInvestigation*.
-     *
-     * @param act the act
-     * @return a new component
-     */
-    private Component getDocumentDetail(DocumentAct act) {
-        Component result;
-        Label label = getTextDetail(act);
-
-        DocumentViewer viewer = new DocumentViewer(act, true, getContext());
-        viewer.setShowNoDocument(false);
-
-        if (StringUtils.isEmpty(label.getText())) {
-            result = viewer.getComponent();
-        } else {
-            result = RowFactory.create(Styles.CELL_SPACING, label, viewer.getComponent());
-        }
-        return result;
     }
 
     /**

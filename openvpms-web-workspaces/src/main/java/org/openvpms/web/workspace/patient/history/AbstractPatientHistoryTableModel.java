@@ -23,6 +23,7 @@ import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.HttpImageReference;
+import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.Style;
@@ -39,16 +40,17 @@ import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.AbstractIMObjectTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -57,6 +59,7 @@ import org.openvpms.web.echo.factory.ComponentFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.style.UserStyleSheets;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
@@ -142,6 +145,8 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * The logger.
      */
     private static final Log log = LogFactory.getLog(AbstractPatientHistoryTableModel.class);
+
+    private int padding = -1;
 
     /**
      * Constructs an {@link AbstractPatientHistoryTableModel}.
@@ -335,7 +340,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     protected Component formatItem(ActBean bean, int row, boolean showClinician) {
         Act act = bean.getAct();
         Component date = getDate(act, row);
-        Component type = getType(act);
+        Component type = getType(bean);
         Component clinician = (showClinician) ? getClinicianLabel(bean, row) : null;
         Component detail;
 
@@ -366,20 +371,60 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * @return a component representing the item
      */
     protected Component formatItem(ActBean bean, int row) {
+        if (bean.isA("act.patientInvestigation*") || bean.isA("act.patientDocument*")) {
+            return getDocumentDetail((DocumentAct) bean.getAct());
+        }
         return getTextDetail(bean.getAct());
     }
 
     /**
      * Returns a component for the act type.
      *
-     * @param act the act
+     * @param bean the act
      * @return a component representing the act type
      */
-    protected Component getType(Act act) {
-        String text = DescriptorHelper.getDisplayName(act);
+    protected Component getType(ActBean bean) {
+        Component result;
+        String text = getTypeName(bean);
         LabelEx label = new LabelEx(text);
         label.setStyleName("MedicalRecordSummary.type");
-        return label;
+        int depth = getDepth(bean);
+        result = label;
+        if (depth > 0) {
+            Row row = RowFactory.create(label);
+            row.setInsets(new Insets(depth * getPadding(), 0, 0, 0));
+            result = row;
+        }
+        return result;
+    }
+
+    /**
+     * Returns the name of an act to display in the Type column.
+     *
+     * @param bean the act
+     * @return the name
+     */
+    protected String getTypeName(ActBean bean) {
+        return bean.getDisplayName();
+    }
+
+    /**
+     * Returns the depth of an act relative to an event or problem.
+     * <p/>
+     * This is used to inset child acts.
+     *
+     * @param bean the act
+     * @return the minimum number of steps to a parent event/problem
+     */
+    protected int getDepth(ActBean bean) {
+        int depth = 0;
+        if (bean.isA("act.patientDocument*Version")) {
+            ++depth;
+        }
+        if (bean.hasNode("problem") && !bean.getNodeSourceObjectRefs("problem").isEmpty()) {
+            ++depth;
+        }
+        return depth;
     }
 
     /**
@@ -447,6 +492,27 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
             clinician = Messages.get("patient.record.summary.clinician.none");
         }
         return clinician;
+    }
+
+    /**
+     * Returns a component for the detail of an act.patientDocument*. or act.patientInvestigation*.
+     *
+     * @param act the act
+     * @return a new component
+     */
+    protected Component getDocumentDetail(DocumentAct act) {
+        Component result;
+        Label label = getTextDetail(act);
+
+        DocumentViewer viewer = new DocumentViewer(act, true, getContext());
+        viewer.setShowNoDocument(false);
+
+        if (StringUtils.isEmpty(label.getText())) {
+            result = viewer.getComponent();
+        } else {
+            result = RowFactory.create(Styles.CELL_SPACING, label, viewer.getComponent());
+        }
+        return result;
     }
 
     /**
@@ -572,5 +638,33 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
         return date;
     }
 
+
+    /**
+     * Helper to determine the padding, in pixels to indent child acts.
+     * <p/>
+     * This uses the "padding.large" property of the active style.
+     *
+     * @return the padding
+     */
+    private int getPadding() {
+        if (padding == -1) {
+            UserStyleSheets styleSheets = ServiceHelper.getBean(UserStyleSheets.class);
+            org.openvpms.web.echo.style.Style style = styleSheets.getStyle();
+            if (style != null) {
+                String value = style.getProperty("padding.large");
+                if (value != null) {
+                    try {
+                        padding = Integer.valueOf(value);
+                    } catch (NumberFormatException ignore) {
+                        // do nothing
+                    }
+                }
+            }
+            if (padding < 0) {
+                padding = 10;
+            }
+        }
+        return padding;
+    }
 
 }

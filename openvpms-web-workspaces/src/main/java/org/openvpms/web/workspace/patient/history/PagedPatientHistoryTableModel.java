@@ -16,13 +16,12 @@
 
 package org.openvpms.web.workspace.patient.history;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.act.PagedActHierarchyTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,7 +38,7 @@ public class PagedPatientHistoryTableModel extends PagedActHierarchyTableModel<A
 
 
     /**
-     * Constructs a {@code PagedPatientHistoryTableModel}.
+     * Constructs a {@link PagedPatientHistoryTableModel}.
      *
      * @param model      the underlying table model
      * @param context    the context
@@ -59,18 +58,23 @@ public class PagedPatientHistoryTableModel extends PagedActHierarchyTableModel<A
     }
 
     /**
-     * Flattens an act hierarchy, only including those acts matching the supplied short names.
+     * Determines if the visit items are being sorted ascending or descending.
      *
-     * @param objects    the acts
-     * @param shortNames the child archetype short names
-     * @param context    the context
-     * @return the acts
+     * @return {@code true} if visit items are to be sorted ascending; {@code false} if descending
      */
-    @Override
-    protected List<Act> flattenHierarchy(List<Act> objects, String[] shortNames, Context context) {
-        List<Act> list = new ArrayList<Act>();
-        CollectionUtils.addAll(list, new PatientHistoryIterator(objects, shortNames, sortAscending));
-        return list;
+    public boolean isSortAscending() {
+        return sortAscending;
     }
 
+    /**
+     * Creates an iterator over the act hierarchy.
+     *
+     * @param objects    the objects to iterate over
+     * @param shortNames the child archetype short names to include in the iteration
+     * @return a new iterator
+     */
+    @Override
+    protected ActHierarchyIterator<Act> createIterator(List<Act> objects, String[] shortNames) {
+        return new PatientHistoryIterator(objects, shortNames, sortAscending);
+    }
 }

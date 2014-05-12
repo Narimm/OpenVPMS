@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.patient.history;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.web.component.im.act.ActHierarchyFilter;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 
 /**
@@ -36,6 +37,28 @@ public class PatientHistoryIterator extends ActHierarchyIterator<Act> {
      * @param sortAscending if {@code true} sort items on ascending timestamp; otherwise sort on descending timestamp
      */
     public PatientHistoryIterator(Iterable<Act> acts, String[] shortNames, boolean sortAscending) {
-        super(acts, new PatientHistoryFilter(shortNames, sortAscending), 3);
+        this(acts, new PatientHistoryFilter(shortNames, sortAscending));
     }
+
+    /**
+     * Constructs an {@link PatientHistoryIterator}.
+     *
+     * @param acts   the top-level acts to iterate
+     * @param filter the history item short names to include
+     */
+    public PatientHistoryIterator(Iterable<Act> acts, ActHierarchyFilter<Act> filter) {
+        this(acts, filter, 3);
+    }
+
+    /**
+     * Constructs an {@link PatientHistoryIterator}.
+     *
+     * @param acts     the top-level acts to iterate
+     * @param filter   the history item short names to include
+     * @param maxDepth the maximum depth to iterate to, or {@code -1} to have unlimited depth
+     */
+    public PatientHistoryIterator(Iterable<Act> acts, ActHierarchyFilter<Act> filter, int maxDepth) {
+        super(acts, filter, maxDepth);
+    }
+
 }
