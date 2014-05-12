@@ -36,6 +36,7 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.lookup.LookupField;
+import org.openvpms.web.component.im.lookup.LookupPropertyEditor;
 import org.openvpms.web.component.im.view.AbstractIMObjectView;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.IMObjectView;
@@ -927,16 +928,19 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
          * @return a component to edit the property
          */
         @Override
-        protected Editor createLookupEditor(Property property, IMObject context) {
-            Editor editor = super.createLookupEditor(property, context);
-            final LookupField lookup = (LookupField) editor.getComponent();
-            ModifiableListener listener = new ModifiableListener() {
-                public void modified(Modifiable modifiable) {
-                    refreshLookups(lookup);
-                }
-            };
-            property.addModifiableListener(listener);
-            lookups.put((PropertyEditor) editor, listener);
+        protected LookupPropertyEditor createLookupEditor(Property property, IMObject context) {
+            LookupPropertyEditor editor = super.createLookupEditor(property, context);
+            Component component = editor.getComponent();
+            if (component instanceof LookupField) {
+                final LookupField lookup = (LookupField) editor.getComponent();
+                ModifiableListener listener = new ModifiableListener() {
+                    public void modified(Modifiable modifiable) {
+                        refreshLookups(lookup);
+                    }
+                };
+                property.addModifiableListener(listener);
+                lookups.put(editor, listener);
+            }
             return editor;
         }
     }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -35,7 +35,8 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
-import org.openvpms.web.component.im.lookup.LookupFieldFactory;
+import org.openvpms.web.component.im.lookup.LookupPropertyEditor;
+import org.openvpms.web.component.im.lookup.LookupPropertyEditorFactory;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.component.im.view.AbstractIMObjectComponentFactory;
@@ -186,9 +187,8 @@ public class AbstractEditableComponentFactory extends AbstractIMObjectComponentF
      * @param context  the parent object
      * @return a new editor for {@code property}
      */
-    protected Editor createLookupEditor(Property property, IMObject context) {
-        Component component = LookupFieldFactory.create(property, context);
-        return createPropertyEditor(property, component);
+    protected LookupPropertyEditor createLookupEditor(Property property, IMObject context) {
+        return LookupPropertyEditorFactory.create(property, context, getLayoutContext());
     }
 
     /**
@@ -233,19 +233,12 @@ public class AbstractEditableComponentFactory extends AbstractIMObjectComponentF
                 String[] range = property.getArchetypeRange();
                 if (range.length == 1) {
                     Object[] values = property.getValues().toArray();
-                    IMObject value;
-                    if (values.length > 0) {
-                        value = (IMObject) values[0];
-                    } else {
-                        value = IMObjectCreator.create(range[0]);
+                    if (values.length == 0) {
+                        IMObject value = IMObjectCreator.create(range[0]);
                         if (value != null) {
                             property.add(value);
                         }
                     }
-//                    if (value != null) {
-//                        editor = getObjectEditor(value, object, subContext);
-//                        editors.add(editor, property);
-//                    }
                 }
             }
             editor = IMObjectCollectionEditorFactory.create(property, object, subContext);
@@ -258,6 +251,7 @@ public class AbstractEditableComponentFactory extends AbstractIMObjectComponentF
             Component component;
             if (property.getMaxCardinality() == 1) {
                 // render as a dropdown when at most one element can be selected
+                IMObjectSorter.sort(identifiers, nodes);
                 boolean allowNone = property.getMinCardinality() == 0;
                 IMObjectListModel model = new IMObjectListModel(identifiers, false, allowNone);
                 SelectField selectField = BoundSelectFieldFactory.create(property, model);
