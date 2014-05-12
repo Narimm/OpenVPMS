@@ -45,7 +45,7 @@ import java.util.Set;
  *
  * @author Tim Anderson
  */
-class PatientHistoryFilter extends ActHierarchyFilter<Act> {
+public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
 
     /**
      * The short names of the child acts to return.
