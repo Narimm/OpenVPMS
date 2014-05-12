@@ -107,8 +107,19 @@ public class PagedActHierarchyTableModel<T extends Act>
      */
     protected List<T> flattenHierarchy(List<T> objects, String[] shortNames, Context context) {
         List<T> list = new ArrayList<T>();
-        CollectionUtils.addAll(list, new ActHierarchyIterator<T>(objects, shortNames, maxDepth));
+        CollectionUtils.addAll(list, createIterator(objects, shortNames));
         return list;
+    }
+
+    /**
+     * Creates an iterator over the act hierarchy.
+     *
+     * @param objects    the objects to iterate over
+     * @param shortNames the child archetype short names to include in the iteration
+     * @return a new iterator
+     */
+    protected ActHierarchyIterator<T> createIterator(List<T> objects, String[] shortNames) {
+        return new ActHierarchyIterator<T>(objects, shortNames, maxDepth);
     }
 
 }
