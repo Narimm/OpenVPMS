@@ -998,6 +998,20 @@ public class IMObjectBean {
     }
 
     /**
+     * Returns the source object reference from the first active {@link IMObjectRelationship} for the specified
+     * relationship node.
+     *
+     * @param node the relationship node name
+     * @return the source object reference, or {@code null} if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObjectReference getNodeSourceObjectRef(String node) {
+        List<IMObjectRelationship> relationships = getValues(node, IsActiveRelationship.isActiveNow(),
+                                                             IMObjectRelationship.class);
+        return getRelatedRef(relationships, null, SOURCE);
+    }
+
+    /**
      * Returns the source object references from each active {@link IMObjectRelationship} for the specified node.
      *
      * @param node the relationship node

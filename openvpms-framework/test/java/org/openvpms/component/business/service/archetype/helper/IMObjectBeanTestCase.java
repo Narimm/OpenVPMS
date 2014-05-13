@@ -716,17 +716,25 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         checkEquals(patients3, patient3, patient2);
     }
 
+    /**
+     * Tests the {@link IMObjectBean#getNodeSourceObjectRef(String)}
+     * and {@link IMObjectBean#getNodeTargetObjectRef(String)} methods.
+     */
     @Test
-    public void testGetNodeTargetObjectRef() {
+    public void testGetNodeSourceTargetObjectRef() {
         Party customer = createCustomer();
         Party patient1 = createPatient();
         save(customer, patient1);
 
-        IMObjectBean bean = new IMObjectBean(customer);
-        assertNull(bean.getNodeTargetObjectRef("patients"));
+        IMObjectBean custBean = new IMObjectBean(customer);
+        assertNull(custBean.getNodeTargetObjectRef("patients"));
+
+        IMObjectBean patBean = new IMObjectBean(patient1);
+        assertNull(patBean.getNodeSourceObjectRef("customers"));
 
         EntityRelationship rel1 = addOwnerRelationship(customer, patient1);
-        assertEquals(patient1.getObjectReference(), bean.getNodeTargetObjectRef("patients"));
+        assertEquals(patient1.getObjectReference(), custBean.getNodeTargetObjectRef("patients"));
+        assertEquals(customer.getObjectReference(), patBean.getNodeSourceObjectRef("customers"));
 
         Date now = new Date();
         Date start1 = new Date(now.getTime() - 60 * 1000);
@@ -736,7 +744,8 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         rel1.setActiveStartTime(start1);
         rel1.setActiveEndTime(end1);
 
-        assertNull(bean.getNodeTargetObjectRef("patients"));
+        assertNull(custBean.getNodeTargetObjectRef("patients"));
+        assertNull(patBean.getNodeSourceObjectRef("customers"));
     }
 }
 
