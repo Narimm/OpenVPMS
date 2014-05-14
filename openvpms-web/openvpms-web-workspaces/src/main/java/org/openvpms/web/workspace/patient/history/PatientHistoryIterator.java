@@ -17,7 +17,6 @@
 package org.openvpms.web.workspace.patient.history;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.im.act.ActHierarchyFilter;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 
 /**
@@ -46,7 +45,7 @@ public class PatientHistoryIterator extends ActHierarchyIterator<Act> {
      * @param acts   the top-level acts to iterate
      * @param filter the history item short names to include
      */
-    public PatientHistoryIterator(Iterable<Act> acts, ActHierarchyFilter<Act> filter) {
+    public PatientHistoryIterator(Iterable<Act> acts, PatientHistoryFilter filter) {
         this(acts, filter, 3);
     }
 
@@ -57,7 +56,7 @@ public class PatientHistoryIterator extends ActHierarchyIterator<Act> {
      * @param filter   the history item short names to include
      * @param maxDepth the maximum depth to iterate to, or {@code -1} to have unlimited depth
      */
-    public PatientHistoryIterator(Iterable<Act> acts, ActHierarchyFilter<Act> filter, int maxDepth) {
+    public PatientHistoryIterator(Iterable<Act> acts, PatientHistoryFilter filter, int maxDepth) {
         super(acts, filter, maxDepth);
     }
 

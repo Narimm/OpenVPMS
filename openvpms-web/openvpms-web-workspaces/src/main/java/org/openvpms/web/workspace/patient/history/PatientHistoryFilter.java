@@ -101,6 +101,29 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
     }
 
     /**
+     * Determines if a child act should be included.
+     * <p/>
+     * This implementation excludes children of <em>act.patientClinicalProblem</em> acts that are linked to an event
+     * different to the root.
+     *
+     * @param child  the child act
+     * @param parent the parent act
+     * @param root   the root act
+     * @return {@code true} if the child act should be included
+     */
+    @Override
+    protected boolean include(Act child, Act parent, Act root) {
+        if (TypeHelper.isA(parent, PatientArchetypes.CLINICAL_PROBLEM)) {
+            ActBean bean = new ActBean(child);
+            IMObjectReference event = bean.getNodeSourceObjectRef("event");
+            if (event != null && event.getId() != root.getId()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Filters relationships.
      *
      * @param act the act

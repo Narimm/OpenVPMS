@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.act.PagedActHierarchyTableModel;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -35,6 +36,7 @@ import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryTableCellRenderer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +72,12 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
     });
 
     /**
+     * Act event nodes.
+     */
+    private static final String[] EVENT_NODES = new String[]{"event", "events"};
+
+
+    /**
      * Constructs a {@link ProblemBrowser} that queries IMObjects using the specified query.
      *
      * @param query   the query
@@ -101,6 +109,41 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
             pagedModel.setShortNames(query.getActItemShortNames());
         }
         super.query();
+    }
+
+    /**
+     * Returns the event associated with the supplied act.
+     *
+     * @param act the act. May be {@code null}
+     * @return the event, or {@code null} if none is found
+     */
+    @Override
+    public Act getEvent(Act act) {
+        Act result = null;
+        if (act != null) {
+            if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_PROBLEM)) {
+                // scan forward through the acts to find the event. It should be the first in the list, unless
+                // problem items have failed to be linked to an event
+                List<Act> acts = getObjects();
+                int index = acts.indexOf(act);
+                if (index >= 0) {
+                    index++;
+                    for (; index < acts.size(); index++) {
+                        Act a = acts.get(index);
+                        if (TypeHelper.isA(a, PatientArchetypes.CLINICAL_EVENT)) {
+                            result = a;
+                            break;
+                        } else if (TypeHelper.isA(a, PatientArchetypes.CLINICAL_PROBLEM)) {
+                            // next problem, so problem not linked to an event
+                            break;
+                        }
+                    }
+                }
+            } else {
+                result = getTableModel().getParent(act, PatientArchetypes.CLINICAL_EVENT);
+            }
+        }
+        return result;
     }
 
     /**
@@ -163,15 +206,17 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
                     addAll(acts, actsWithoutEvents, actsByEvent);
                     acts.add(act);
                 }
-                Act event = getEvent(bean, events);
-                if (event != null) {
-                    List<Act> list = actsByEvent.get(event);
-                    if (list == null) {
-                        list = new ArrayList<Act>();
-                        actsByEvent.put(event, list);
-                    }
-                    if (!isProblem) {
-                        list.add(act);
+                List<Act> actEvents = getEvents(bean, events);
+                if (!actEvents.isEmpty()) {
+                    for (Act event : actEvents) {
+                        List<Act> list = actsByEvent.get(event);
+                        if (list == null) {
+                            list = new ArrayList<Act>();
+                            actsByEvent.put(event, list);
+                        }
+                        if (!isProblem) {
+                            list.add(act);
+                        }
                     }
                 } else if (!isProblem) {
                     actsWithoutEvents.add(act);
@@ -199,28 +244,34 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
         }
 
         /**
-         * Returns the event associated with an act.
+         * Returns the events associated with an act.
          *
          * @param bean   the act bean
          * @param events the event cache
          * @return the corresponding event, or {@code null} if none is found
          */
-        private Act getEvent(ActBean bean, Map<IMObjectReference, Act> events) {
-            Act event = null;
-            if (bean.hasNode("event")) {
-                List<IMObjectReference> refs = bean.getNodeSourceObjectRefs("event");
-                if (!refs.isEmpty()) {
-                    IMObjectReference ref = refs.get(0);
-                    event = events.get(ref);
-                    if (event == null) {
-                        event = (Act) IMObjectHelper.getObject(ref, null);
-                        if (event != null) {
-                            events.put(ref, event);
-                        }
-                    }
+        private List<Act> getEvents(ActBean bean, Map<IMObjectReference, Act> events) {
+            List<Act> result = new ArrayList<Act>();
+            List<IMObjectReference> refs = Collections.emptyList();
+            for (String node : EVENT_NODES) {
+                if (bean.hasNode(node)) {
+                    refs = bean.getNodeSourceObjectRefs(node);
+                    break;
                 }
             }
-            return event;
+            for (IMObjectReference ref : refs) {
+                Act event = events.get(ref);
+                if (event == null) {
+                    event = (Act) IMObjectHelper.getObject(ref, null);
+                    if (event != null) {
+                        events.put(ref, event);
+                    }
+                }
+                if (event != null) {
+                    result.add(event);
+                }
+            }
+            return result;
         }
 
     }

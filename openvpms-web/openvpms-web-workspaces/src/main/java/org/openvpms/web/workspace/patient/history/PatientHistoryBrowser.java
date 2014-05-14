@@ -88,6 +88,17 @@ public class PatientHistoryBrowser extends AbstractPatientHistoryBrowser {
     }
 
     /**
+     * Returns the event associated with the supplied act.
+     *
+     * @param act the act. May be {@code null}
+     * @return the event, or {@code null} if none is found
+     */
+    @Override
+    public Act getEvent(Act act) {
+        return getTableModel().getParent(act);
+    }
+
+    /**
      * Creates a new paged table.
      *
      * @param model the table model

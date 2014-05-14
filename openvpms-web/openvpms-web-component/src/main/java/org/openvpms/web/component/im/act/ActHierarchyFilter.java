@@ -82,13 +82,14 @@ public class ActHierarchyFilter<T extends Act> {
     /**
      * Returns the immediate children of an act, after applying filters.
      *
-     * @param act the act
+     * @param act  the act
+     * @param root the root of the tree
      * @return the immediate children of the act, or an empty list if they have been filtered
      */
-    public List<T> filter(T act) {
+    public List<T> filter(T act, T root) {
         List<T> result = new ArrayList<T>();
         if (include(act)) {
-            List<T> items = getIncludedTargets(act);
+            List<T> items = getIncludedTargets(act, root);
             items = filter(act, items);
             if (include(act, items)) {
                 sortItems(items, act);
@@ -186,9 +187,10 @@ public class ActHierarchyFilter<T extends Act> {
      *
      * @param child  the child act
      * @param parent the parent act
+     * @param root   the root act
      * @return {@code true} if the child act should be included
      */
-    protected boolean include(T child, T parent) {
+    protected boolean include(T child, T parent, T root) {
         return true;
     }
 
@@ -221,16 +223,17 @@ public class ActHierarchyFilter<T extends Act> {
     /**
      * Returns the included target acts in set of relationships.
      *
-     * @param act the parent act
+     * @param act  the parent act
+     * @param root the root act
      * @return the include target acts
      */
     @SuppressWarnings("unchecked")
-    protected List<T> getIncludedTargets(T act) {
+    protected List<T> getIncludedTargets(T act, T root) {
         List<T> result = new ArrayList<T>();
         Collection<ActRelationship> relationships = getRelationships(act);
         for (Act match : ActHelper.getTargetActs(relationships)) {
             T item = (T) match;
-            if (include(item, act)) {
+            if (include(item, act, root)) {
                 result.add(item);
             }
         }

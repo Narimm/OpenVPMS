@@ -66,6 +66,7 @@ import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -122,6 +123,16 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     private int lastRow;
 
     /**
+     * The padding, in pixels, used to indent the Type.
+     */
+    private int typePadding = -1;
+
+    /**
+     * The width of the Type column, in pixels.
+     */
+    private int typeWidth = -1;
+
+    /**
      * Column indicating the selected parent record.
      */
     private static final int SELECTION_COLUMN = 0;
@@ -146,8 +157,6 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      */
     private static final Log log = LogFactory.getLog(AbstractPatientHistoryTableModel.class);
 
-    private int padding = -1;
-
     /**
      * Constructs an {@link AbstractPatientHistoryTableModel}.
      *
@@ -168,6 +177,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
             IMObjectBean bean = new IMObjectBean(practice);
             showClinician = bean.getBoolean("showClinicianInHistoryItems");
         }
+        initStyles();
     }
 
     /**
@@ -232,6 +242,33 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      */
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
         return null;
+    }
+
+    /**
+     * Returns the parent of the supplied act.
+     *
+     * @param act the act. May be {@code null}
+     * @return the parent, or {@code null} if none is found
+     */
+    public Act getParent(Act act) {
+        return (act != null) ? getParent(act, parentShortName) : null;
+    }
+
+    /**
+     * Returns the parent of the supplied act.
+     *
+     * @param act       the act. May be {@code null}
+     * @param shortName the parent act short name
+     * @return the parent, or {@code null} if none is found
+     */
+    public Act getParent(Act act, String shortName) {
+        boolean found;
+        List<Act> acts = getObjects();
+        int index = acts.indexOf(act);
+        while (!(found = TypeHelper.isA(act, shortName)) && index > 0) {
+            act = acts.get(--index);
+        }
+        return (found) ? act : null;
     }
 
     /**
@@ -340,7 +377,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     protected Component formatItem(ActBean bean, int row, boolean showClinician) {
         Act act = bean.getAct();
         Component date = getDate(act, row);
-        Component type = getType(bean);
+        Component type = getType(bean, row);
         Component clinician = (showClinician) ? getClinicianLabel(bean, row) : null;
         Component detail;
 
@@ -379,21 +416,24 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
 
     /**
      * Returns a component for the act type.
+     * <p/>
+     * This indents the type depending on the acts depth in the act hierarchy.
      *
      * @param bean the act
+     * @param row  the current row
      * @return a component representing the act type
      */
-    protected Component getType(ActBean bean) {
+    protected Component getType(ActBean bean, int row) {
         Component result;
-        String text = getTypeName(bean);
+        String text = getTypeName(bean, row);
         LabelEx label = new LabelEx(text);
         label.setStyleName("MedicalRecordSummary.type");
         int depth = getDepth(bean);
         result = label;
         if (depth > 0) {
-            Row row = RowFactory.create(label);
-            row.setInsets(new Insets(depth * getPadding(), 0, 0, 0));
-            result = row;
+            int inset = depth * typePadding;
+            label.setInsets(new Insets(inset, 0, 0, 0));
+            label.setWidth(new Extent(typeWidth - inset));
         }
         return result;
     }
@@ -402,9 +442,10 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * Returns the name of an act to display in the Type column.
      *
      * @param bean the act
+     * @param row  the current row
      * @return the name
      */
-    protected String getTypeName(ActBean bean) {
+    protected String getTypeName(ActBean bean, int row) {
         return bean.getDisplayName();
     }
 
@@ -638,33 +679,22 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
         return date;
     }
 
-
     /**
-     * Helper to determine the padding, in pixels to indent child acts.
-     * <p/>
-     * This uses the "padding.large" property of the active style.
-     *
-     * @return the padding
+     * Initialises the typePadding and typeWidth style properties.
      */
-    private int getPadding() {
-        if (padding == -1) {
-            UserStyleSheets styleSheets = ServiceHelper.getBean(UserStyleSheets.class);
-            org.openvpms.web.echo.style.Style style = styleSheets.getStyle();
-            if (style != null) {
-                String value = style.getProperty("padding.large");
-                if (value != null) {
-                    try {
-                        padding = Integer.valueOf(value);
-                    } catch (NumberFormatException ignore) {
-                        // do nothing
-                    }
-                }
-            }
-            if (padding < 0) {
-                padding = 10;
-            }
+    private void initStyles() {
+        UserStyleSheets styleSheets = ServiceHelper.getBean(UserStyleSheets.class);
+        org.openvpms.web.echo.style.Style style = styleSheets.getStyle();
+        if (style != null) {
+            typePadding = style.getProperty("padding.large", 10);
+            typeWidth = style.getProperty("history.type.width", 10);
         }
-        return padding;
+        if (typePadding <= 0) {
+            typePadding = 10;
+        }
+        if (typeWidth <= 0) {
+            typeWidth = 150;
+        }
     }
 
 }
