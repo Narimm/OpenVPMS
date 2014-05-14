@@ -246,7 +246,7 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
         private List<T> flattenTree(T root) {
             Node<T> tree = new Node<T>(root);
             Map<T, Node<T>> nodes = new HashMap<T, Node<T>>();
-            buildTree(root, 2, maxDepth, tree, nodes); // root elements are depth = 1
+            buildTree(root, root, 2, maxDepth, tree, nodes); // root elements are depth = 1
             List<T> result = new ArrayList<T>();
             return flattenTree(tree, result);
         }
@@ -268,16 +268,17 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
 
         /**
          * Builds a tree of acts given a parent. Where acts are linked to multiple parent acts, only one instance
-         * will be recorded in the resulting tree; that which has the maxmimum depth.
+         * will be recorded in the resulting tree; that which has the maximum depth.
          *
          * @param act      the parent act
+         * @param root     the root act
          * @param depth    the current depth
          * @param maxDepth the maximum depth to build to, or {@code -1} if there is no depth restriction
          * @param parent   the parent node
          * @param nodes    a map of value to node, for quick searches
          */
-        private void buildTree(T act, int depth, int maxDepth, Node<T> parent, Map<T, Node<T>> nodes) {
-            List<T> children = filter.filter(act);
+        private void buildTree(T act, T root, int depth, int maxDepth, Node<T> parent, Map<T, Node<T>> nodes) {
+            List<T> children = filter.filter(act, root);
             for (T child : new ArrayList<T>(children)) {
                 Node<T> node = nodes.get(child);
                 if (node != null) {
@@ -289,7 +290,7 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
                     node = new Node<T>(parent, child);
                     nodes.put(child, node);
                     if (depth < maxDepth || maxDepth == -1) {
-                        buildTree(child, depth + 1, maxDepth, node, nodes);
+                        buildTree(child, root, depth + 1, maxDepth, node, nodes);
                     }
                 }
             }

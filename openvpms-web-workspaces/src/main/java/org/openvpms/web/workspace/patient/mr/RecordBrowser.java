@@ -38,6 +38,7 @@ import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryCRUDWindow;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
@@ -74,7 +75,17 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     /**
      * The history browser.
      */
-    private PatientHistoryBrowser history;
+    private final PatientHistoryBrowser history;
+
+    /**
+     * The problem browser.
+     */
+    private final ProblemBrowser problems;
+
+    /**
+     * History browser tab index.
+     */
+    private final int historyIndex;
 
     /**
      * Problem browser tab index.
@@ -130,7 +141,6 @@ public class RecordBrowser extends TabbedBrowser<Act> {
         PROBLEM_STATUSES.setDefault((String) null);
     }
 
-
     /**
      * Constructs a {@link RecordBrowser}.
      *
@@ -147,9 +157,9 @@ public class RecordBrowser extends TabbedBrowser<Act> {
         LayoutContext layout = new DefaultLayoutContext(context, help);
 
         history = createHistoryBrowser(query, layout);
-        addBrowser(Messages.get("button.summary"), history);
-
-        problemIndex = addBrowser(Messages.get("button.problem"), createProblemBrowser(patient, layout));
+        historyIndex = addBrowser(Messages.get("button.summary"), history);
+        problems = createProblemBrowser(patient, layout);
+        problemIndex = addBrowser(Messages.get("button.problem"), problems);
         remindersIndex = addBrowser(Messages.get("button.reminder"), createReminderAlertBrowser(patient, layout));
         documentsIndex = addBrowser(Messages.get("button.document"), createDocumentBrowser(patient, layout));
         chargesIndex = addBrowser(Messages.get("button.charges"), createChargeBrowser(patient, layout));
@@ -184,16 +194,30 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     }
 
     /**
-     * Returns the event associated with the current selected history act.
+     * Returns the event associated with the current selected browser act.
+     * <p/>
+     * Only applies if the history or problem browser is visible.
      *
      * @param act the current selected act. May be {@code null}
      * @return the event associated with the current selected act, or {@code null} if none is found
      */
     public Act getEvent(Act act) {
-        if (act == null) {
-            act = history.getSelected();
+        int index = getSelectedBrowserIndex();
+        AbstractPatientHistoryBrowser browser;
+        if (index == historyIndex) {
+            browser = history;
+        } else if (index == problemIndex) {
+            browser = problems;
+        } else {
+            browser = null;
         }
-        return history.getParent(act);
+        if (browser != null) {
+            if (act == null) {
+                act = browser.getSelected();
+            }
+            return browser.getEvent(act);
+        }
+        return null;
     }
 
     /**

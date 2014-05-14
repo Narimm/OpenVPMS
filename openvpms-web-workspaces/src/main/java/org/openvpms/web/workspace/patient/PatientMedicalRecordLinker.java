@@ -26,6 +26,9 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.retry.AbstractRetryable;
 import org.openvpms.web.system.ServiceHelper;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 
 /**
@@ -146,6 +149,8 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
 
     /**
      * Links the records.
+     * <p/>
+     * This is invoked in a transaction.
      *
      * @param currentEvent   the current instance of the event. May be {@code null}
      * @param currentProblem the current instance of the problem. May be {@code null}
@@ -215,9 +220,9 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
      * @param currentEvent   the current instance of the event. May be {@code null}
      * @param currentProblem the current instance of the problem. May be {@code null}
      * @param currentItem    the current instance of the item. May be {@code null}
-     * @return {@code true} if the records were linked, {@code false} if one or both of the events is missing.
+     * @return {@code true} if the records were linked, {@code false} if an act is no longer available
      */
-    private boolean linkRecords(Act currentEvent, Act currentProblem, Act currentItem) {
+    private boolean linkRecords(final Act currentEvent, final Act currentProblem, final Act currentItem) {
         boolean result = false;
         if (currentEvent == null && event != null) {
             logMissing(event);
@@ -226,8 +231,13 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
         } else if (currentItem == null && item != null) {
             logMissing(item);
         } else {
-            link(currentEvent, currentProblem, currentItem);
-
+            TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
+            template.execute(new TransactionCallbackWithoutResult() {
+                @Override
+                protected void doInTransactionWithoutResult(TransactionStatus status) {
+                    link(currentEvent, currentProblem, currentItem);
+                }
+            });
             this.currentEvent = currentEvent;
             this.currentProblem = currentProblem;
             this.currentItem = currentItem;

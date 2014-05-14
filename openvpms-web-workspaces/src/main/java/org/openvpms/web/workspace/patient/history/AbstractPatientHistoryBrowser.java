@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class AbstractPatientHistoryBrowser extends IMObjectTableBrowser<Act> {
+public abstract class AbstractPatientHistoryBrowser extends IMObjectTableBrowser<Act> {
 
     /**
      * Constructs an {@link AbstractPatientHistoryBrowser} that queries acts using the specified query, displaying them
@@ -66,7 +66,7 @@ public class AbstractPatientHistoryBrowser extends IMObjectTableBrowser<Act> {
      * @return the parent act, or {@code null} if none is found
      */
     public Act getSelectedParent() {
-        return getParent(getSelected());
+        return getTableModel().getParent(getSelected());
     }
 
     /**
@@ -119,24 +119,12 @@ public class AbstractPatientHistoryBrowser extends IMObjectTableBrowser<Act> {
     }
 
     /**
-     * Returns the parent of the supplied act.
+     * Returns the event associated with the supplied act.
      *
      * @param act the act. May be {@code null}
-     * @return the parent, or {@code null} if none is found
+     * @return the event, or {@code null} if none is found
      */
-    public Act getParent(Act act) {
-        AbstractPatientHistoryTableModel model = getTableModel();
-        String shortName = model.getParentShortName();
-        boolean found = false;
-        if (act != null) {
-            List<Act> acts = getObjects();
-            int index = acts.indexOf(act);
-            while (!(found = TypeHelper.isA(act, shortName)) && index > 0) {
-                act = acts.get(--index);
-            }
-        }
-        return (found) ? act : null;
-    }
+    public abstract Act getEvent(Act act);
 
     /**
      * Creates a new paged table.

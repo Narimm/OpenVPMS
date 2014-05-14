@@ -16,13 +16,19 @@
 
 package org.openvpms.web.workspace.patient.history;
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.IMObjectActions;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
+import org.openvpms.web.component.im.edit.act.AbstractActEditor;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.RelationshipHelper;
+import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.workspace.AbstractCRUDWindow;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
@@ -116,6 +122,24 @@ public class AbstractPatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> im
      */
     protected PatientMedicalRecordLinker createMedicalRecordLinker(Act event, Act problem, Act item) {
         return new PatientMedicalRecordLinker(event, problem, item);
+    }
+
+    /**
+     * Creates a new event, making it the current event.
+     */
+    protected void createEvent() {
+        Act event = (Act) IMObjectCreator.create(PatientArchetypes.CLINICAL_EVENT);
+        if (event == null) {
+            throw new IllegalStateException("Failed to create " + PatientArchetypes.CLINICAL_EVENT);
+        }
+        LayoutContext layoutContext = createLayoutContext(getHelpContext());
+        IMObjectEditor editor = IMObjectEditorFactory.create(event, layoutContext);
+        editor.getComponent();
+        if (editor instanceof AbstractActEditor) {
+            ((AbstractActEditor) editor).setStatus(ActStatus.COMPLETED);
+        }
+        editor.save();
+        setEvent(event);
     }
 
     /**

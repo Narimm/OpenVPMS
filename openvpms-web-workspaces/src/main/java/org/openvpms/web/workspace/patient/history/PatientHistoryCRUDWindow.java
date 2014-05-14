@@ -18,7 +18,6 @@ package org.openvpms.web.workspace.patient.history;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -26,15 +25,10 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
-import org.openvpms.web.component.im.edit.act.AbstractActEditor;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
-import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.retry.Retryer;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonSet;
@@ -224,24 +218,6 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         setEvent(null);     // event will be created in onSaved()
         Archetypes<Act> archetypes = new Archetypes<Act>(PatientArchetypes.CLINICAL_NOTE, Act.class);
         onCreate(archetypes);
-    }
-
-    /**
-     * Creates a new event, making it the current event.
-     */
-    private void createEvent() {
-        Act event = (Act) IMObjectCreator.create(PatientArchetypes.CLINICAL_EVENT);
-        if (event == null) {
-            throw new IllegalStateException("Failed to create " + PatientArchetypes.CLINICAL_EVENT);
-        }
-        LayoutContext layoutContext = createLayoutContext(getHelpContext());
-        IMObjectEditor editor = IMObjectEditorFactory.create(event, layoutContext);
-        editor.getComponent();
-        if (editor instanceof AbstractActEditor) {
-            ((AbstractActEditor) editor).setStatus(ActStatus.COMPLETED);
-        }
-        editor.save();
-        setEvent(event);
     }
 
     /**

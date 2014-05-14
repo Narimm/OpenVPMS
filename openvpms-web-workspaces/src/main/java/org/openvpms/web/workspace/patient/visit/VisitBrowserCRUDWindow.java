@@ -127,7 +127,7 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
     protected void onSelected(Act object) {
         PatientHistoryBrowser browser = getBrowser();
         AbstractPatientHistoryCRUDWindow window = getWindow();
-        window.setEvent(browser.getParent(object));
+        window.setEvent(browser.getEvent(object));
         super.onSelected(object);
     }
 }

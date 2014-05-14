@@ -391,7 +391,6 @@
         <properties>
             <property name="width" value="${history.clinician.width}"/>
         </properties>
-
     </style>
 
     <style name="ProblemSummary.act.patientClinicalProblem" type="nextapp.echo2.app.Component">
@@ -2295,6 +2294,16 @@
                 </fill-image>
             </property-->
             <property name="insets" value="${padding.large} ${padding.smaller}"/>
+        </properties>
+    </style>
+
+    <style name="default" type="nextapp.echo2.app.RadioButton">
+        <properties>
+            <property name="font">
+                <font size="${font.size}">
+                    <typeface name="${font.typeface}"/>
+                </font>
+            </property>
         </properties>
     </style>
 

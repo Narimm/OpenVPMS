@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.style;
@@ -85,12 +85,32 @@ public class Style {
     }
 
     /**
-     * Returns the named properties.
+     * Returns the named property.
      *
      * @param name the property name
      * @return the property value. May be {@code null}
      */
     public String getProperty(String name) {
         return properties.get(name);
+    }
+
+    /**
+     * Returns the named property, as an int.
+     *
+     * @param name         the property name
+     * @param defaultValue the default value, if the property doesn't exist or is invalid
+     * @return the property value, or {@code defaultValue} if the property doesn't exist or is invalid
+     */
+    public int getProperty(String name, int defaultValue) {
+        int result = defaultValue;
+        String value = properties.get(name);
+        if (value != null) {
+            try {
+                result = Integer.valueOf(value);
+            } catch (NumberFormatException ignore) {
+                // do nothing
+            }
+        }
+        return result;
     }
 }
