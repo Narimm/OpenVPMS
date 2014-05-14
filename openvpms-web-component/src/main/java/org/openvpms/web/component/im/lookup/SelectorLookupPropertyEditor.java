@@ -70,7 +70,7 @@ public class SelectorLookupPropertyEditor extends AbstractSelectorPropertyEditor
      * @return the object. May be {@code null}
      */
     @Override
-    protected Lookup getObject() {
+    protected Lookup getValue() {
         Property property = getProperty();
         if (property.isCollection()) {
             Collection values = ((CollectionProperty) property).getValues();

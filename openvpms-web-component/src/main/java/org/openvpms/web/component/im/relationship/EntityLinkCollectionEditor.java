@@ -17,7 +17,7 @@
 package org.openvpms.web.component.im.relationship;
 
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
+import org.openvpms.web.component.im.edit.AbstractEditableIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.DelegatingCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -39,7 +39,7 @@ public class EntityLinkCollectionEditor extends DelegatingCollectionEditor {
     public EntityLinkCollectionEditor(CollectionProperty property, Entity object, LayoutContext context) {
         String[] shortNames = property.getArchetypeRange();
         int max = property.getMaxCardinality();
-        AbstractIMObjectCollectionEditor editor;
+        AbstractEditableIMObjectCollectionEditor editor;
         if (max == 1 && shortNames.length == 1) {
             editor = new SingleEntityLinkCollectionEditor(property, object, context);
         } else {

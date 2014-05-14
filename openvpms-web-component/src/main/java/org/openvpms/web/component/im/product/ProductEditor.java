@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
+import org.openvpms.web.component.im.edit.EditableIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -82,8 +83,8 @@ public class ProductEditor extends AbstractIMObjectEditor {
      * Invoked when a product-supplier relationship changes. This recalculates product prices if required.
      */
     private void onSupplierChanged() {
-        IMObjectCollectionEditor suppliers = (IMObjectCollectionEditor) getEditor("suppliers");
-        IMObjectCollectionEditor prices = (IMObjectCollectionEditor) getEditor("prices");
+        EditableIMObjectCollectionEditor suppliers = (EditableIMObjectCollectionEditor) getEditor("suppliers");
+        EditableIMObjectCollectionEditor prices = (EditableIMObjectCollectionEditor) getEditor("prices");
         Collection<IMObjectEditor> currentPrices = prices.getEditors();
         Collection<IMObjectEditor> editors = suppliers.getEditors();
         for (IMObjectEditor editor : editors) {

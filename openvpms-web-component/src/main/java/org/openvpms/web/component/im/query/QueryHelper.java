@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -126,6 +126,21 @@ public class QueryHelper {
             matches.add(iterator.next());
         }
         return matches;
+    }
+
+    /**
+     * Returns all objects matching the specified short names, sorted on the specified nodes.
+     *
+     * @param shortNames the archetype short names
+     * @param sortNodes  the sort nodes
+     * @return the matching objects
+     */
+    public static <T extends IMObject> List<T> query(String[] shortNames, String... sortNodes) {
+        ArchetypeQuery query = new ArchetypeQuery(shortNames, false, true);
+        for (String sort : sortNodes) {
+            query.add(Constraints.sort(sort));
+        }
+        return query(query);
     }
 
     /**

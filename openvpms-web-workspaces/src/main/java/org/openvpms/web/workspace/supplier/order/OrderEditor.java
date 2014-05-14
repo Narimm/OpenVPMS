@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006-2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.order;
@@ -25,7 +25,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
+import org.openvpms.web.component.im.edit.EditableIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.act.FinancialActEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -84,7 +84,7 @@ public class OrderEditor extends FinancialActEditor {
         super(act, parent, context);
         if (!TypeHelper.isA(act, "act.supplierOrder")) {
             throw new IllegalArgumentException(
-                "Invalid act type: " + act.getArchetypeId().getShortName());
+                    "Invalid act type: " + act.getArchetypeId().getShortName());
         }
         posted = OrderStatus.POSTED.equals(act.getStatus());
         accepted = OrderStatus.ACCEPTED.equals(act.getStatus());
@@ -135,7 +135,7 @@ public class OrderEditor extends FinancialActEditor {
             NodeDescriptor descriptor = deliveryStatus.getDescriptor();
             if (descriptor != null) {
                 deliveryStatusField.setText(LookupNameHelper.getLookupName(
-                    descriptor, getObject()));
+                        descriptor, getObject()));
             }
         }
     }
@@ -147,7 +147,7 @@ public class OrderEditor extends FinancialActEditor {
          *
          * @param editor the act items editor
          */
-        public LayoutStrategy(IMObjectCollectionEditor editor) {
+        public LayoutStrategy(EditableIMObjectCollectionEditor editor) {
             super(editor);
             if (posted || accepted) {
                 editor.setCardinalityReadOnly(true);
