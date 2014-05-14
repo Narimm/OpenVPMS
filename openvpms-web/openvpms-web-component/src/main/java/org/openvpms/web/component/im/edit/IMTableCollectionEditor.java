@@ -73,8 +73,7 @@ import java.beans.PropertyChangeListener;
  *
  * @author Tim Anderson
  */
-public abstract class IMTableCollectionEditor<T>
-        extends AbstractIMObjectCollectionEditor {
+public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjectCollectionEditor {
 
     /**
      * The container.

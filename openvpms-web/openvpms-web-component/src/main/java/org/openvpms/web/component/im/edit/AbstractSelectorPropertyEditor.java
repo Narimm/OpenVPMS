@@ -65,6 +65,8 @@ public abstract class AbstractSelectorPropertyEditor<T extends IMObject> extends
 
     /**
      * Constructs an {@link AbstractSelectorPropertyEditor}.
+     * <p/>
+     * Subclasses should invoke {@link #updateSelector()} to update the selector at the end of construction.
      *
      * @param property the property
      * @param context  the layout context
@@ -244,7 +246,7 @@ public abstract class AbstractSelectorPropertyEditor<T extends IMObject> extends
      *
      * @return the object. May be {@code null}
      */
-    protected abstract T getObject();
+    protected abstract T getValue();
 
     /**
      * Updates the underlying property with the specified value.
@@ -275,7 +277,7 @@ public abstract class AbstractSelectorPropertyEditor<T extends IMObject> extends
      * @return the current object, or {@code null} if there is none
      */
     protected T updateSelector() {
-        T object = getObject();
+        T object = getValue();
         selector.setObject(object);
         return object;
     }
