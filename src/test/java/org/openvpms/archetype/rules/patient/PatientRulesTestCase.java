@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -40,6 +40,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.test.TestHelper.getDate;
 
 
 /**
@@ -174,11 +175,11 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         assertNull(rules.getPatientWeight(patient));
 
         Date date1 = getDate("2006-12-22");
-        TestHelper.createWeight(patient, date1, new BigDecimal("5.0"), WeightUnits.KILOGRAMS);
+        PatientTestHelper.createWeight(patient, date1, new BigDecimal("5.0"), WeightUnits.KILOGRAMS);
         assertEquals("5 Kilograms", rules.getPatientWeight(patient));
 
         Date date2 = getDate("2007-02-25");
-        TestHelper.createWeight(patient, date2, new BigDecimal("13"), WeightUnits.POUNDS);
+        PatientTestHelper.createWeight(patient, date2, new BigDecimal("13"), WeightUnits.POUNDS);
         assertEquals("13 Pounds", rules.getPatientWeight(patient));
     }
 
@@ -369,17 +370,6 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         IMObjectBean bean = new IMObjectBean(result);
         bean.setValue("microchip", microchip);
         return result;
-    }
-
-
-    /**
-     * Helper to convert a string to a date.
-     *
-     * @param value the date string
-     * @return the date
-     */
-    private Date getDate(String value) {
-        return java.sql.Date.valueOf(value);
     }
 
 }
