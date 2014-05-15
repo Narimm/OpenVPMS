@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="actRelationship.patientClinicalProblemItem.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.act.ActRelationship"
@@ -46,8 +47,22 @@
                     <propertyMap name="archetype">
                         <property name="shortName" value="act.patientMedication"/>
                     </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="act.patientInvestigation"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="act.patientDocumentAttachment"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="act.patientDocumentForm"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="act.patientDocumentImage"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="act.patientDocumentLetter"/>
+                    </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
     </archetype>
