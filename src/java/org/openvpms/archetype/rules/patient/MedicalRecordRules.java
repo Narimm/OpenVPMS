@@ -720,19 +720,22 @@ public class MedicalRecordRules {
         ActBean problemBean = new ActBean(problem, service);
         List<Act> toSave = new ArrayList<Act>();
 
-        // if the problem has no parent event, add it
+        // if the problem is not linked to the event, add it
         if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, problem)) {
             bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, problem);
             toSave.add(event);
         }
 
-        // for each of the problem's child acts, link them to the parent event
+        // add each of the problem's child acts not linked to an event
         List<Act> acts = problemBean.getNodeActs("items");
-        for (Act child : acts) {
-            if (TypeHelper.isA(child, getClinicalEventItems())
-                && !bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, child)) {
-                bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, child);
-                toSave.add(child);
+        if (!acts.isEmpty()) {
+            String[] shortNames = getClinicalEventItems();
+            for (Act child : acts) {
+                ActBean childBean = new ActBean(child, service);
+                if (childBean.isA(shortNames) && !childBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM)) {
+                    bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, child);
+                    toSave.add(child);
+                }
             }
         }
         if (!toSave.isEmpty()) {
