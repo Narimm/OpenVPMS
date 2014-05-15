@@ -46,4 +46,9 @@
     <data archetype="entityRelationship.locationStockLocation" source="id:OL1" target="id:OSL1"/>
     <data id="OSL2" archetype="party.organisationStockLocation" name="Branch Clinic Stock"/>
     <data archetype="entityRelationship.locationStockLocation" source="id:OL2" target="id:OSL2"/>
+    <data id="OTC1" archetype="party.organisationOTC" name="Main OTC"/>
+    <data id="OTC2" archetype="party.organisationOTC" name="Branch OTC"/>
+    <data archetype="entityRelationship.locationOTC" source="id:OL1" target="id:OTC1"/>
+    <data archetype="entityRelationship.locationOTC" source="id:OL2" target="id:OTC2"/>
+
 </archetype>
