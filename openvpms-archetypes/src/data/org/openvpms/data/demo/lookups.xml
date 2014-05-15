@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetype>
     <data id="CTY1" archetype="lookup.country" code="AU" name="Australia" defaultLookup="true"/>
     <data id="VIC" archetype="lookup.state" code="VIC" name="Victoria" defaultLookup="true"/>
@@ -134,6 +135,7 @@
     <data archetype="lookup.personTitle" code="DR"/>
     <data archetype="lookup.personTitle" code="LADY"/>
     <data archetype="lookup.customerAlertType" code="BAD_DEBT" priority="HIGH" colour="0xFF0000"/>
+    <data archetype="lookup.customerNoteCategory" code="NOTES"/>
     <data archetype="lookup.patientAlertType" code="ALLERGY" priority="HIGH" colour="0xFF0000"/>
     <data archetype="lookup.patientAlertType" code="AGGRESSION" priority="HIGH" colour="0xFF0000"/>
     <data archetype="lookup.patientAlertType" code="OTHER" defaultLookup="true" priority="MEDIUM" colour="0xFFFF00"/>
