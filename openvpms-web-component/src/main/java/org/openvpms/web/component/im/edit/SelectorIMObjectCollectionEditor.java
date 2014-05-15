@@ -16,12 +16,15 @@
 
 package org.openvpms.web.component.im.edit;
 
+import nextapp.echo2.app.Component;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.echo.focus.FocusGroup;
 
 import java.util.List;
 
@@ -31,18 +34,13 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class SelectorIMObjectCollectionEditor extends AbstractSelectorPropertyEditor<IMObject>
-        implements IMObjectCollectionEditor {
+public class SelectorIMObjectCollectionEditor extends AbstractIMObjectCollectionEditor {
 
     /**
-     * The collection property editor.
+     * The property editor.
      */
-    private CollectionPropertyEditor editor;
+    private PropertyEditor selector;
 
-    /**
-     * The parent object.
-     */
-    private IMObject object;
 
     /**
      * Constructs an {@link SelectorIMObjectCollectionEditor}.
@@ -51,109 +49,79 @@ public class SelectorIMObjectCollectionEditor extends AbstractSelectorPropertyEd
      * @param context  the layout context
      */
     public SelectorIMObjectCollectionEditor(CollectionProperty property, IMObject object, LayoutContext context) {
-        super(property, context);
-        this.object = object;
-        editor = new DefaultCollectionPropertyEditor(property);
-        updateSelector();
+        super(property, object, context);
+        selector = new Selector(property, context);
     }
 
     /**
-     * Save any edits.
+     * Returns the focus group.
      *
-     * @return {@code true} if the save was successful
+     * @return the focus group, or {@code null} if the editor hasn't been rendered
      */
     @Override
-    public boolean save() {
-        boolean saved = editor.save();
-        if (saved) {
-            clearModified();
+    public FocusGroup getFocusGroup() {
+        return selector.getFocusGroup();
+    }
+
+    /**
+     * Lays out the component.
+     *
+     * @param context the layout context
+     * @return the component
+     */
+    @Override
+    protected Component doLayout(LayoutContext context) {
+        return selector.getComponent();
+    }
+
+    private class Selector extends AbstractSelectorPropertyEditor<IMObject> {
+
+        /**
+         * Constructs an [@link Selector}.
+         *
+         * @param property the property
+         * @param context  the context
+         */
+        public Selector(CollectionProperty property, LayoutContext context) {
+            super(property, context);
+            updateSelector();
         }
-        return saved;
-    }
 
-    /**
-     * Returns the object corresponding to the property.
-     *
-     * @return the object. May be {@code null}
-     */
-    @Override
-    protected IMObject getValue() {
-        List<IMObject> objects = editor.getObjects();
-        return !objects.isEmpty() ? objects.get(0) : null;
-    }
-
-    /**
-     * Updates the underlying property with the specified value.
-     *
-     * @param property the property
-     * @param value    the value to update with. May be {@code null}
-     * @return {@code true} if the property was modified
-     */
-    @Override
-    protected boolean updateProperty(Property property, IMObject value) {
-        boolean result = false;
-        List<IMObject> objects = editor.getObjects();
-        if (value == null) {
-            for (IMObject object : objects) {
-                result |= editor.remove(object);
-            }
-        } else if ((objects.size() == 1 && !ObjectUtils.equals(objects.get(0), value) || objects.size() > 1)) {
-            for (IMObject object : objects) {
-                editor.remove(object);
-            }
-            editor.add(value);
-            result = true;
+        /**
+         * Returns the object corresponding to the property.
+         *
+         * @return the object. May be {@code null}
+         */
+        @Override
+        protected IMObject getObject() {
+            List<IMObject> objects = getCollectionPropertyEditor().getObjects();
+            return !objects.isEmpty() ? objects.get(0) : null;
         }
-        return result;
-    }
 
-    /**
-     * Returns the collection property.
-     *
-     * @return the collection property
-     */
-    @Override
-    public CollectionProperty getCollection() {
-        return editor.getProperty();
-    }
-
-    /**
-     * Returns the parent of the collection.
-     *
-     * @return the parent object
-     */
-    @Override
-    public IMObject getObject() {
-        return object;
-    }
-
-    /**
-     * Adds an object to the collection.
-     *
-     * @param object the object to add
-     */
-    @Override
-    public void add(IMObject object) {
-        editor.add(object);
-    }
-
-    /**
-     * Removes an object from the collection.
-     *
-     * @param object the object to remove
-     */
-    @Override
-    public void remove(IMObject object) {
-        editor.remove(object);
-    }
-
-    /**
-     * Determines if any edits have been saved.
-     *
-     * @return {@code true} if edits have been saved.
-     */
-    @Override
-    public boolean isSaved() {
-        return editor.isSaved();
+        /**
+         * Updates the underlying property with the specified value.
+         *
+         * @param property the property
+         * @param value    the value to update with. May be {@code null}
+         * @return {@code true} if the property was modified
+         */
+        @Override
+        protected boolean updateProperty(Property property, IMObject value) {
+            boolean result = false;
+            CollectionPropertyEditor editor = getCollectionPropertyEditor();
+            List<IMObject> objects = editor.getObjects();
+            if (value == null) {
+                for (IMObject object : objects) {
+                    result |= editor.remove(object);
+                }
+            } else if ((objects.size() == 1 && !ObjectUtils.equals(objects.get(0), value) || objects.size() > 1)) {
+                for (IMObject object : objects) {
+                    editor.remove(object);
+                }
+                editor.add(value);
+                result = true;
+            }
+            return result;
+        }
     }
 }

@@ -94,7 +94,7 @@ public class StockLocationParticipationEditor extends ParticipationEditor<Party>
         @Override
         protected Query<Party> createQuery(String name) {
             Query<Party> query = super.createQuery(name);
-            if (!TypeHelper.isA(getValue(),
+            if (!TypeHelper.isA(getObject(),
                                 STOCK_XFER_LOCATION_PARTICIPATION)) {
                 Context context = getLayoutContext().getContext();
                 Party location = context.getLocation();

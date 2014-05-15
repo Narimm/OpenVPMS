@@ -69,6 +69,11 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     private final ModifiableListeners listeners = new ModifiableListeners();
 
     /**
+     * Event broadcaster.
+     */
+    private final ModifiableListener broadcaster;
+
+    /**
      * The error listener.
      */
     private ErrorListener errorListener;
@@ -91,12 +96,17 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
      * @param object  the object being edited
      * @param context the layout context
      */
-    protected AbstractIMObjectCollectionEditor(CollectionPropertyEditor editor,
-                                               IMObject object,
+    protected AbstractIMObjectCollectionEditor(CollectionPropertyEditor editor, IMObject object,
                                                LayoutContext context) {
         collection = editor;
         this.object = object;
         this.context = context;
+        broadcaster = new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                onModified(modifiable);
+            }
+        };
+        collection.addModifiableListener(broadcaster);
     }
 
     /**
@@ -106,6 +116,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
      */
     @Override
     public void dispose() {
+        collection.removeModifiableListener(broadcaster);
         collection.setErrorListener(null);
     }
 
@@ -255,6 +266,17 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
      */
     public void remove(IMObject object) {
         collection.remove(object);
+    }
+
+    /**
+     * Returns the listener to receive update notifications.
+     * <p/>
+     * This delegates to {@link #onModified(Modifiable)}.
+     *
+     * @return the listener
+     */
+    protected ModifiableListener getModifiableListener() {
+        return broadcaster;
     }
 
     /**
