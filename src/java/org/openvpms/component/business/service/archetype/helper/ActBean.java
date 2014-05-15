@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -307,7 +305,8 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
-     * Returns the first active act that matches the specified short name and links to this act.
+     * Returns the source act from the first active relationship matching the specified relationship short name and
+     * having an active source act.
      *
      * @param shortName the archetype short name to match on
      * @return the source act, or {@code null}if none is found
@@ -317,7 +316,8 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
-     * Returns the first active act that matches the specified short name and links to this act.
+     * Returns the source act from the first active relationship matching the specified relationship short names and
+     * having an active source act.
      *
      * @param shortNames the archetype short names to match on
      * @return the source act, or {@code null}if none is found
@@ -327,9 +327,9 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
-     * Returns the active acts that match the specified short name and link to this act.
+     * Returns the active source acts from each relationship that matches the specified short name.
      *
-     * @param shortName the archetype short name to match on
+     * @param shortName the relationship archetype short name to match on
      * @return the source acts
      */
     public List<Act> getSourceActs(String shortName) {
@@ -337,7 +337,7 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
-     * Returns the active acts that match the specified short names and link to this act.
+     * Returns the active source acts from each relationship that matches the specified short names.
      *
      * @param shortNames the archetype short names to match on
      * @return the source acts
@@ -347,7 +347,8 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
-     * Returns the first active act that matches the specified short name and this act links to.
+     * Returns the target act from the first active relationship matching the specified relationship short name and
+     * having an active target act.
      *
      * @param shortName the archetype short name to match on
      * @return the target act, or {@code null}if none is found
@@ -357,7 +358,8 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
-     * Returns the first active act that matches the specified short names and this act links to.
+     * Returns the target act from the first active relationship matching the specified relationship short names and
+     * having an active target act.
      *
      * @param shortNames the archetype short names to match on
      * @return the target act, or {@code null}if none is found
@@ -367,7 +369,7 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
-     * Returns the active acts that match the specified short name and this act links to.
+     * Returns the active target acts from each relationship that matches the specified short name.
      *
      * @param shortName the archetype short name to match on
      * @return the target acts
@@ -377,7 +379,7 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
-     * Returns the active acts that match the specified short name and this act links to.
+     * Returns the active target acts from each relationship that matches the specified short names.
      *
      * @param shortNames the archetype short names to match on
      * @return the target acts
