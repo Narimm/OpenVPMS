@@ -22,7 +22,6 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Validator;
 
@@ -48,11 +47,6 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
      * Determines if elements may be added/removed.
      */
     private boolean cardinalityReadOnly = false;
-
-    /**
-     * Event broadcaster.
-     */
-    private final ModifiableListener broadcaster;
 
     /**
      * The listener for creation events.
@@ -82,12 +76,6 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
     protected AbstractEditableIMObjectCollectionEditor(CollectionPropertyEditor editor, IMObject object,
                                                        LayoutContext context) {
         super(editor, object, context);
-        broadcaster = new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onModified(modifiable);
-            }
-        };
-        editor.addModifiableListener(broadcaster);
     }
 
     /**
@@ -98,9 +86,9 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
     @Override
     public void dispose() {
         super.dispose();
-        getCollectionPropertyEditor().removeModifiableListener(broadcaster);
+        ModifiableListener listener = getModifiableListener();
         for (Editor editor : getEditors()) {
-            editor.removeModifiableListener(broadcaster);
+            editor.removeModifiableListener(listener);
             editor.setErrorListener(null);
             editor.dispose();
         }
@@ -288,7 +276,7 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
      * @param editor the editor for the object
      */
     protected void addEditor(IMObject object, IMObjectEditor editor) {
-        editor.addModifiableListener(broadcaster);
+        editor.addModifiableListener(getModifiableListener());
         editor.setErrorListener(getErrorListener());
         getCollectionPropertyEditor().setEditor(object, editor);
     }

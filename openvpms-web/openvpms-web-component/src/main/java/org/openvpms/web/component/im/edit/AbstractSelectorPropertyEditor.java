@@ -143,6 +143,8 @@ public abstract class AbstractSelectorPropertyEditor<T extends IMObject> extends
      * Sets the value property to the supplied object.
      *
      * @param object the object. May  be {@code null}
+     * @return {@code true} if the value was set, {@code false} if it cannot be set due to error, or is the same as
+     *         the existing value
      */
     public boolean setObject(T object) {
         if (!inListener) {
@@ -246,7 +248,7 @@ public abstract class AbstractSelectorPropertyEditor<T extends IMObject> extends
      *
      * @return the object. May be {@code null}
      */
-    protected abstract T getValue();
+    protected abstract T getObject();
 
     /**
      * Updates the underlying property with the specified value.
@@ -277,7 +279,7 @@ public abstract class AbstractSelectorPropertyEditor<T extends IMObject> extends
      * @return the current object, or {@code null} if there is none
      */
     protected T updateSelector() {
-        T object = getValue();
+        T object = getObject();
         selector.setObject(object);
         return object;
     }

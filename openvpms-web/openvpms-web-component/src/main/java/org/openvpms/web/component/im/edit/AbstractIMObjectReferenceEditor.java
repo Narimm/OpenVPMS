@@ -201,7 +201,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      */
     @SuppressWarnings("unchecked")
     @Override
-    protected T getValue() {
+    protected T getObject() {
         Property property = getProperty();
         IMObjectReference reference = (IMObjectReference) property.getValue();
         T object = null;
