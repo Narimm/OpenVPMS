@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
@@ -54,6 +55,9 @@ import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQueryFactory;
 import org.openvpms.web.workspace.patient.mr.PatientDocumentQuery;
+import org.openvpms.web.workspace.patient.problem.ProblemBrowser;
+import org.openvpms.web.workspace.patient.problem.ProblemQuery;
+import org.openvpms.web.workspace.patient.problem.ProblemRecordCRUDWindow;
 
 
 /**
@@ -69,29 +73,34 @@ public class VisitEditor {
     public static final int HISTORY_TAB = 0;
 
     /**
+     * The id of the patient problem tab.
+     */
+    public static final int PROBLEM_TAB = 1;
+
+    /**
      * The id of the invoice tab.
      */
-    public static final int INVOICE_TAB = 1;
+    public static final int INVOICE_TAB = 2;
 
     /**
      * The id of the reminders/alerts tab.
      */
-    public static final int REMINDER_TAB = 2;
+    public static final int REMINDER_TAB = 3;
 
     /**
      * The id of the document tab.
      */
-    public static final int DOCUMENT_TAB = 3;
+    public static final int DOCUMENT_TAB = 4;
 
     /**
      * The id of the prescription tab.
      */
-    public static final int PRESCRIPTION_TAB = 4;
+    public static final int PRESCRIPTION_TAB = 5;
 
     /**
      * The id of the estimates tab.
      */
-    public static final int ESTIMATE_TAB = 5;
+    public static final int ESTIMATE_TAB = 6;
 
     /**
      * The CRUD window for editing events and their items.
@@ -117,6 +126,11 @@ public class VisitEditor {
      * The help context.
      */
     private final HelpContext help;
+
+    /**
+     * The problem CRUD window, or {@code null} if problem view is disabled.
+     */
+    private BrowserCRUDWindow<Act> problemWindow;
 
     /**
      * The invoice CRUD window.
@@ -179,6 +193,11 @@ public class VisitEditor {
     private int historyIndex;
 
     /**
+     * Problem tab index.
+     */
+    private int problemIndex;
+
+    /**
      * Invoice tab index.
      */
     private int invoiceIndex;
@@ -229,6 +248,10 @@ public class VisitEditor {
         visitWindow = createVisitBrowserCRUDWindow(context);
         visitWindow.setSelected(event);
 
+        if (showProblems(context)) {
+            problemWindow = createProblemBrowserCRUDWindow(context);
+        }
+
         chargeWindow = createVisitChargeCRUDWindow(event, context);
         chargeWindow.setObject(invoice);
 
@@ -266,6 +289,15 @@ public class VisitEditor {
      */
     public AbstractPatientHistoryCRUDWindow getHistory() {
         return visitWindow.getWindow();
+    }
+
+    /**
+     * Returns the problem CRUD window.
+     *
+     * @return the problem CRUD window, or {@code null} if it has been suppressed
+     */
+    public ProblemRecordCRUDWindow getProblemWindow() {
+        return problemWindow != null ? (ProblemRecordCRUDWindow) problemWindow.getWindow() : null;
     }
 
     /**
@@ -450,6 +482,8 @@ public class VisitEditor {
         switch (index) {
             case HISTORY_TAB:
                 return visitWindow.getWindow();
+            case PROBLEM_TAB:
+                return problemWindow.getWindow();
             case INVOICE_TAB:
                 return chargeWindow;
             case REMINDER_TAB:
@@ -473,6 +507,8 @@ public class VisitEditor {
     protected int getModelIndex(int tabIndex) {
         if (tabIndex == historyIndex) {
             return HISTORY_TAB;
+        } else if (tabIndex == problemIndex) {
+            return PROBLEM_TAB;
         } else if (tabIndex == invoiceIndex) {
             return INVOICE_TAB;
         } else if (tabIndex == reminderIndex) {
@@ -497,6 +533,8 @@ public class VisitEditor {
         switch (modelIndex) {
             case HISTORY_TAB:
                 return historyIndex;
+            case PROBLEM_TAB:
+                return problemIndex;
             case INVOICE_TAB:
                 return invoiceIndex;
             case REMINDER_TAB:
@@ -519,6 +557,28 @@ public class VisitEditor {
      */
     protected VisitBrowserCRUDWindow createVisitBrowserCRUDWindow(Context context) {
         return new VisitBrowserCRUDWindow(query, context, help.subtopic("summary"));
+    }
+
+    /**
+     * Determines if the problems tab is displayed.
+     *
+     * @param context the context
+     * @return {@code true} if the problems tab should be displayed
+     */
+    protected boolean showProblems(Context context) {
+        IMObjectBean bean = new IMObjectBean(context.getPractice());
+        return bean.getBoolean("showProblemsInVisit");
+    }
+
+    /**
+     * Creates a new problem browser CRUD window.
+     *
+     * @param context the context
+     */
+    protected BrowserCRUDWindow<Act> createProblemBrowserCRUDWindow(Context context) {
+        ProblemQuery query = new ProblemQuery(context.getPatient());
+        ProblemBrowser browser = new ProblemBrowser(query, new DefaultLayoutContext(context, help));
+        return new BrowserCRUDWindow<Act>(browser, new ProblemRecordCRUDWindow(context, help));
     }
 
     /**
@@ -552,6 +612,9 @@ public class VisitEditor {
      */
     protected void addTabs(TabPaneModel model) {
         addPatientHistoryTab(model);
+        if (problemWindow != null) {
+            addProblemTab(model);
+        }
         addInvoiceTab(model);
         addRemindersAlertsTab(model);
         addDocumentsTab(model);
@@ -584,6 +647,9 @@ public class VisitEditor {
         switch (selected) {
             case HISTORY_TAB:
                 onHistorySelected();
+                break;
+            case PROBLEM_TAB:
+                onProblemSelected();
                 break;
             case INVOICE_TAB:
                 onInvoiceSelected();
@@ -624,6 +690,18 @@ public class VisitEditor {
         ContentPane pane = new ContentPane();
         pane.add(visitWindow.getComponent());
         historyIndex = addTab("button.summary", model, pane);
+    }
+
+    /**
+     * Adds a tab to display/edit the problems.
+     *
+     * @param model the tab pane model to add to
+     */
+    protected void addProblemTab(TabPaneModel model) {
+        // need to add the window to a ContentPane to get scrollbars
+        ContentPane pane = new ContentPane();
+        pane.add(problemWindow.getComponent());
+        problemIndex = addTab("button.problem", model, pane);
     }
 
     /**
@@ -697,6 +775,15 @@ public class VisitEditor {
         }
         browser.setFocusOnResults();
         notifyListener(HISTORY_TAB);
+    }
+
+    /**
+     * Invoked when the problem tab is selected.
+     */
+    protected void onProblemSelected() {
+        Browser<Act> browser = problemWindow.getBrowser();
+        browser.setFocusOnResults();
+        notifyListener(PROBLEM_TAB);
     }
 
     /**
