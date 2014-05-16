@@ -556,7 +556,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
         LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         IMObject object = service.create(shortName);
         assertNotNull("Failed to create object with shortname=" + shortName, object);
-        IMObjectEditor editor = IMObjectEditorFactory.create(object, layout);
+        IMObjectEditor editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, layout);
         assertNotNull("Failed to create editor", editor);
         assertEquals(type, editor.getClass());
     }
@@ -576,7 +576,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
         assertNotNull("Failed to create object with shortname=" + shortName, object);
         IMObject parent = service.create(parentShortName);
         assertNotNull("Failed to create object with shortname=" + parentShortName, parent);
-        IMObjectEditor editor = IMObjectEditorFactory.create(object, parent, context);
+        IMObjectEditor editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, parent, context);
         assertNotNull("Failed to create editor", editor);
         assertEquals(type, editor.getClass());
     }

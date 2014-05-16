@@ -37,6 +37,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.system.ServiceHelper;
 
 /**
  * A factory for editable components.
@@ -137,7 +138,7 @@ public class AbstractEditableComponentFactory extends AbstractIMObjectComponentF
      * @return a new editor for {@code object}
      */
     protected IMObjectEditor getObjectEditor(IMObject object, IMObject parent, LayoutContext context) {
-        return IMObjectEditorFactory.create(object, parent, context);
+        return ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, parent, context);
     }
 
     /**

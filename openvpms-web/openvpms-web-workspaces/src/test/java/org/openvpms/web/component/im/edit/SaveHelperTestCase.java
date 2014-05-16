@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -27,6 +27,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.util.ArrayList;
@@ -62,7 +63,7 @@ public class SaveHelperTestCase extends AbstractAppTest {
 
         // create an editor for the customer
         LayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
-        IMObjectEditor editor = IMObjectEditorFactory.create(customer, context);
+        IMObjectEditor editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(customer, context);
 
         // verify save fails. The id should by -1
         assertFalse(SaveHelper.save(editor));
