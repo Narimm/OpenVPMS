@@ -24,6 +24,7 @@ import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -266,7 +267,7 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
      * @return an editor to edit {@code object}
      */
     protected IMObjectEditor createEditor(IMObject object, LayoutContext context) {
-        return IMObjectEditorFactory.create(object, getObject(), context);
+        return ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, getObject(), context);
     }
 
     /**

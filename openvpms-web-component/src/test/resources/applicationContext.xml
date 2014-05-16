@@ -273,4 +273,12 @@
         <constructor-arg index="1" ref="archetypeService"/>
         <constructor-arg index="2" ref="documentHandlers"/>
     </bean>
+
+    <!-- ================================================================== -->
+    <!--                        FACTORIES                                   -->
+    <!-- ================================================================== -->
+    <bean id="editorFactory" class="org.openvpms.web.component.im.edit.IMObjectEditorFactory">
+        <constructor-arg value="TestIMObjectEditorFactory.properties"/>
+    </bean>
+
 </beans>

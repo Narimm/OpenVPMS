@@ -34,6 +34,7 @@ import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.PatientMedicalRecordLinker;
 import org.openvpms.web.workspace.patient.PatientRecordCRUDWindow;
 
@@ -133,7 +134,7 @@ public class AbstractPatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> im
             throw new IllegalStateException("Failed to create " + PatientArchetypes.CLINICAL_EVENT);
         }
         LayoutContext layoutContext = createLayoutContext(getHelpContext());
-        IMObjectEditor editor = IMObjectEditorFactory.create(event, layoutContext);
+        IMObjectEditor editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(event, layoutContext);
         editor.getComponent();
         if (editor instanceof AbstractActEditor) {
             ((AbstractActEditor) editor).setStatus(ActStatus.COMPLETED);

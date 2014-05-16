@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
@@ -150,7 +150,7 @@ public abstract class IMObjectDeleter {
         try {
             DefaultLayoutContext layout = new DefaultLayoutContext(true, context, help);
             layout.setDeletionListener(new DeletionListenerAdapter<T>(object, listener));
-            final IMObjectEditor editor = IMObjectEditorFactory.create(object, layout);
+            final IMObjectEditor editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, layout);
             TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
             Boolean result = template.execute(new TransactionCallback<Boolean>() {
                 public Boolean doInTransaction(TransactionStatus status) {

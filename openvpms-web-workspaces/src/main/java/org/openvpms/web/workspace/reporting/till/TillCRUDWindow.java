@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.till;
@@ -426,7 +426,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         // pass in the parent balance, if it isn't CLEARED
         FinancialAct balance = getObject();
         if (balance != null && !TillBalanceStatus.CLEARED.equals(balance.getStatus())) {
-            return IMObjectEditorFactory.create(object, balance, context);
+            return ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, balance, context);
         } else {
             return super.createEditor(object, context);
         }

@@ -29,6 +29,7 @@ import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.util.List;
@@ -55,7 +56,7 @@ public class LookupEditorTestCase extends AbstractAppTest {
 
         Lookup lookup = (Lookup) create("lookup.bank"); // create a new lookup, and edit it
         DefaultLayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
-        IMObjectEditor editor = IMObjectEditorFactory.create(lookup, context);
+        IMObjectEditor editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(lookup, context);
         assertTrue(editor instanceof LookupEditor);
         Property name = editor.getProperty("name");
         assertNotNull(name);

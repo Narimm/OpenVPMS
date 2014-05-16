@@ -113,7 +113,7 @@ public class EditDialogFactoryTestCase extends AbstractAppTest {
         LayoutContext context = new DefaultLayoutContext(local, help);
         IMObject object = service.create(shortName);
         assertNotNull("Failed to create object with shortname=" + shortName, object);
-        IMObjectEditor editor = IMObjectEditorFactory.create(object, context);
+        IMObjectEditor editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, context);
         assertNotNull("Failed to create editor for shortname=" + shortName, editor);
         EditDialog dialog = EditDialogFactory.create(editor, context.getContext());
         assertEquals("Incorrect dialog type for shortname=" + shortName, type, dialog.getClass());

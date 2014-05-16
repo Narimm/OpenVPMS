@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -30,6 +30,7 @@ import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -213,7 +214,7 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
             HelpContext help = getHelpContext().topic(object, "edit");
             LayoutContext context = new DefaultLayoutContext(true, this.context, help);
             context.getContext().setCurrent(object); // TODO - requirement for setCurrent()
-            IMObjectEditor editor = IMObjectEditorFactory.create(current, context);
+            IMObjectEditor editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(current, context);
             setEditor(editor);
         }
     }

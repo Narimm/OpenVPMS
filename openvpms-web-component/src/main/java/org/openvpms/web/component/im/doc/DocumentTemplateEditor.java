@@ -64,7 +64,8 @@ public class DocumentTemplateEditor extends AbstractIMObjectEditor {
         if (participation == null) {
             participation = (Participation) IMObjectCreator.create("participation.document");
         }
-        participationEditor = IMObjectEditorFactory.create(participation, template, context);
+        participationEditor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(
+                participation, template, context);
         getEditors().add(participationEditor);
 
         if (participationEditor instanceof DocumentParticipationEditor) {

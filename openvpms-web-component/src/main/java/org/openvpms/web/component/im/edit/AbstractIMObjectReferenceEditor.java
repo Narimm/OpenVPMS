@@ -37,6 +37,7 @@ import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -161,7 +162,8 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
         context.setCurrent(object);
         HelpContext help = getLayoutContext().getHelpContext().topic(object, "edit");
         LayoutContext layoutContext = new DefaultLayoutContext(true, context, help);
-        final IMObjectEditor editor = IMObjectEditorFactory.create(object, parent, layoutContext);
+        final IMObjectEditor editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(
+                object, parent, layoutContext);
         final EditDialog dialog = EditDialogFactory.create(editor, context);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {

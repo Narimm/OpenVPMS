@@ -13,6 +13,7 @@
  *
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.admin.archetype;
 
 import nextapp.echo2.app.event.ActionEvent;
@@ -37,6 +38,7 @@ import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Arrays;
 
@@ -111,7 +113,7 @@ public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor
                 String shortName = descriptor.getShortName();
                 IMObject object = factory.create(shortName);
                 TestLayoutContext context = new TestLayoutContext(new LocalContext(), getHelpContext());
-                IMObjectEditor editor = IMObjectEditorFactory.create(object, context);
+                IMObjectEditor editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, context);
                 EditDialog dialog = new TestEditDialog(editor, context.getContext());
                 dialog.show();
             } else {
