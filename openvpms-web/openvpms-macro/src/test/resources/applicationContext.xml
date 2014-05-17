@@ -27,7 +27,7 @@
         <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
     </bean>
 
-    <!--  The DataSource -->
+    <!--  The data source -->
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
         <property name="driverClassName" value="${jdbc.driverClassName}"/>
         <property name="url" value="${jdbc.url}"/>
@@ -35,23 +35,29 @@
         <property name="password" value="${jdbc.password}"/>
     </bean>
 
+    <!-- Configure CacheManager from specified config location -->
+    <bean id="cacheManager"
+          class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+        <property name="configLocation" value="classpath:ehcache.xml"/>
+        <property name="shared" value="true"/>
+    </bean>
+
     <!--  Hibernate session factory -->
     <bean id="sessionFactory"
           class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
-        <property name="dataSource">
-            <ref local="dataSource"/>
-        </property>
+        <property name="dataSource" ref="dataSource"/>
         <property name="hibernateProperties">
             <props>
                 <prop key="hibernate.dialect">${hibernate.dialect}</prop>
                 <prop key="hibernate.show_sql">false</prop>
+                <prop key="hibernate.max_fetch_depth">3</prop>
                 <prop key="hibernate.jdbc.use_scrollable_resultset">true</prop>
                 <prop key="hibernate.cache.use_query_cache">true</prop>
                 <prop key="hibernate.cache.provider_class">org.hibernate.cache.SingletonEhCacheProvider</prop>
                 <prop key="hibernate.cache.use_second_level_cache">true</prop>
-                <prop key="hibernate.cache.use_query_cache">true</prop>
                 <prop key="hibernate.jdbc.batch_size">30</prop>
                 <prop key="hibernate.query.factory_class">org.hibernate.hql.ast.ASTQueryTranslatorFactory</prop>
+                <prop key="hibernate.jdbc.fetch_size">100</prop>
             </props>
         </property>
         <property name="mappingLocations">
@@ -71,68 +77,52 @@
     <bean id="imObjectDao"
           class="org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate">
         <constructor-arg ref="sessionFactory"/>
-        <property name="transactionManager">
-            <ref local="txnManager"/>
-        </property>
+        <property name="transactionManager" ref="txnManager"/>
     </bean>
 
     <bean id="archetypeDescriptorCache"
           class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheDB">
-        <constructor-arg index="0" ref="imObjectDao"/>
+        <constructor-arg ref="imObjectDao"/>
     </bean>
 
-    <!-- The Archetype service -->
+    <!--  The Archetype Service -->
     <bean id="defaultArchetypeService"
-          class="org.openvpms.component.business.service.archetype.ArchetypeService" autowire-candidate="false">
-        <!-- don't make this a candidate for autowiring as it doesn't support rules -->
+          class="org.openvpms.component.business.service.archetype.ArchetypeService">
         <constructor-arg ref="archetypeDescriptorCache"/>
         <property name="dao" ref="imObjectDao"/>
-        <property name="ruleEngine" ref="ruleEngine"/>
     </bean>
 
-    <!--  The Archetype Rule service -->
     <bean id="archetypeService"
           class="org.openvpms.component.business.service.archetype.rule.ArchetypeRuleService">
         <constructor-arg ref="defaultArchetypeService"/>
         <constructor-arg ref="ruleEngine"/>
         <constructor-arg ref="txnManager"/>
         <property name="facts">
-            <!-- make currencies available to rules -->
             <list>
                 <ref bean="currencies"/>
                 <ref bean="lookupService"/>
+                <ref bean="txnManager"/>
             </list>
         </property>
     </bean>
 
+
     <bean id="archetypeServiceHelper"
           class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
-        <constructor-arg index="0">
-            <ref local="archetypeService"/>
-        </constructor-arg>
+        <constructor-arg ref="archetypeService"/>
     </bean>
 
-    <!--  The Lookup Service -->
-    <bean id="lookupService" class="org.openvpms.component.business.service.lookup.CachingLookupService">
-        <constructor-arg index="0" ref="archetypeService"/>
-        <constructor-arg index="1">
-            <ref local="imObjectDao"/>
-        </constructor-arg>
-        <constructor-arg index="2">
-            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
-                <property name="diskPersistent" value="false"/>
-                <property name="cacheName" value="lookupCache"/>
-                <property name="maxElementsInMemory" value="40000"/>
-                <property name="overflowToDisk" value="false"/>
-                <property name="eternal" value="true"/>
-            </bean>
-        </constructor-arg>
+    <bean id="reminderRules" class="org.openvpms.archetype.rules.patient.reminder.ReminderRules">
+        <constructor-arg ref="defaultArchetypeService"/>
+        <constructor-arg ref="patientRules"/>
     </bean>
 
-    <bean id="lookupServiceHelper" class="org.openvpms.component.business.service.lookup.LookupServiceHelper">
-        <constructor-arg>
-            <ref local="lookupService"/>
-        </constructor-arg>
+    <bean id="customerRules" class="org.openvpms.archetype.rules.party.CustomerRules">
+        <constructor-arg ref="defaultArchetypeService"/>
+    </bean>
+
+    <bean id="customerAccountRules" class="org.openvpms.archetype.rules.finance.account.CustomerAccountRules">
+        <constructor-arg ref="archetypeService"/>
     </bean>
 
     <!-- The JXPathHelper class, used to register extension functions -->
@@ -142,22 +132,35 @@
             <map>
                 <entry key="openvpms"
                        value="org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions"/>
+                <entry key="date"
+                       value="org.openvpms.component.system.common.jxpath.DateFunctions"/>
                 <entry key="lookup"
                        value="org.openvpms.archetype.function.lookup.LookupFunctions"/>
                 <entry key="party">
                     <bean class="org.openvpms.archetype.function.party.PartyFunctions">
-                        <constructor-arg index="0" ref="defaultArchetypeService"/>
+                        <constructor-arg index="0" ref="archetypeService"/>
                         <constructor-arg index="1" ref="patientRules"/>
                         <constructor-arg index="2" ref="customerAccountRules"/>
                     </bean>
                 </entry>
-                <entry key="date" value="org.openvpms.component.system.common.jxpath.DateFunctions"/>
                 <entry key="math">
                     <bean class="org.openvpms.archetype.function.math.MathFunctions"/>
+                </entry>
+                <entry key="reminder">
+                    <bean class="org.openvpms.archetype.function.reminder.ReminderFunctions">
+                        <constructor-arg index="0" ref="archetypeService"/>
+                        <constructor-arg index="1" ref="reminderRules"/>
+                        <constructor-arg index="2" ref="customerRules"/>
+                    </bean>
                 </entry>
                 <entry key="expr">
                     <bean class="org.openvpms.archetype.function.expression.ExpressionFunctions">
                         <constructor-arg value="expr"/>
+                    </bean>
+                </entry>
+                <entry key="history">
+                    <bean class="org.openvpms.archetype.function.history.HistoryFunctions">
+                        <constructor-arg index="0" ref="archetypeService"/>
                     </bean>
                 </entry>
             </map>
@@ -165,15 +168,14 @@
     </bean>
 
     <!-- ================================================================== -->
-    <!--                 RULES ENGINE (DROOLS)                              -->
+    <!--                 RULES DEFINITIONS                                  -->
     <!-- ================================================================== -->
 
-    <!-- The local ruleServiceProvider. We can have as many different ruleProviders as we want -->
+    <!-- The `local' ruleServiceProvider; we can have as many different ruleProviders as we want -->
     <bean id="ruleServiceProvider"
           class="org.springmodules.jsr94.factory.DefaultRuleServiceProviderFactoryBean">
         <property name="provider" value="http://drools.org"/>
-        <property name="providerClass"
-                  value="org.drools.jsr94.rules.RuleServiceProviderImpl"/>
+        <property name="providerClass" value="org.drools.jsr94.rules.RuleServiceProviderImpl"/>
     </bean>
 
     <!-- The local ruleRuntime. Usually, there is one ruleRuntime bean for each ruleServiceProvider bean. -->
@@ -201,130 +203,42 @@
         <constructor-arg ref="ruleSource"/>
     </bean>
 
+
     <!-- ================================================================== -->
-    <!-- Business rules                                                     -->
+    <!--                        MISC                                        -->
     <!-- ================================================================== -->
 
-    <bean id="appointmentRules" class="org.openvpms.archetype.rules.workflow.AppointmentRules">
-        <constructor-arg ref="archetypeService"/>
+    <bean id="lookupService" class="org.openvpms.component.business.service.lookup.LookupService">
+        <constructor-arg index="0">
+            <ref local="archetypeService"/>
+        </constructor-arg>
+        <constructor-arg index="1">
+            <ref local="imObjectDao"/>
+        </constructor-arg>
+    </bean>
+
+    <bean id="lookupServiceHelper" class="org.openvpms.component.business.service.lookup.LookupServiceHelper">
+        <constructor-arg>
+            <ref local="lookupService"/>
+        </constructor-arg>
     </bean>
 
     <bean id="currencies" class="org.openvpms.archetype.rules.math.Currencies">
-        <constructor-arg ref="defaultArchetypeService"/>
-        <constructor-arg ref="lookupService"/>
-    </bean>
-
-    <bean id="customerAccountRules" class="org.openvpms.archetype.rules.finance.account.CustomerAccountRules">
-        <constructor-arg ref="archetypeService"/>
-    </bean>
-
-    <bean id="estimateRules" class="org.openvpms.archetype.rules.finance.estimate.EstimateRules">
-        <constructor-arg ref="archetypeService"/>
-    </bean>
-
-    <bean id="locationRules" class="org.openvpms.archetype.rules.practice.LocationRules">
-        <constructor-arg ref="archetypeService"/>
-    </bean>
-
-    <bean id="productPriceRules" class="org.openvpms.archetype.rules.product.ProductPriceRules">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
-    </bean>
-
-    <bean id="productRules" class="org.openvpms.archetype.rules.product.ProductRules">
-        <constructor-arg ref="archetypeService"/>
-    </bean>
-
-    <bean id="medicalRecordRules" class="org.openvpms.archetype.rules.patient.MedicalRecordRules">
-        <constructor-arg ref="archetypeService"/>
-    </bean>
-
-    <!-- ================================================================== -->
-    <!--                        APPLICATION                                 -->
-    <!-- ================================================================== -->
-
-    <bean id="context" class="org.openvpms.web.component.app.GlobalContext" scope="prototype"/>
-
-    <bean id="openVPMSApp" class="org.openvpms.web.workspace.OpenVPMSApp" scope="prototype">
-        <constructor-arg ref="context"/>
-        <constructor-arg>
-            <bean class="org.openvpms.web.workspace.DefaultWorkspacesFactory"/>
-        </constructor-arg>
-        <constructor-arg ref="practiceRules"/>
-        <constructor-arg ref="locationRules"/>
-    </bean>
-
-    <bean id="styleSheetCache" class="org.openvpms.web.echo.style.StyleSheetCache">
-        <constructor-arg index="0" value="style/default"/>
-    </bean>
-
-    <bean id="userStyleSheets" class="org.openvpms.web.echo.style.UserStyleSheets">
-        <constructor-arg index="0" ref="styleSheetCache"/>
-    </bean>
-
-    <bean id="messageMonitor" class="org.openvpms.web.workspace.workflow.messaging.MessageMonitor">
-        <constructor-arg ref="defaultArchetypeService"/>
-    </bean>
-
-    <bean id="browserStates" class="org.openvpms.web.component.im.query.BrowserStates"/>
-
-    <!-- Defines the key stroke combination for accelerator keys.
-          If mask not specified, defaults to 'Alt'.
-       -->
-    <bean id="keyStrokeMask"
-          class="org.openvpms.web.echo.keyboard.KeyStrokeMask">
-        <!--  The mask. May contain combinations of Ctrl, Alt, or Shift,
-     separated by '-' -->
-        <property name="mask" value="Ctrl-Shift"/>
     </bean>
 
     <bean id="patientRules" class="org.openvpms.archetype.rules.patient.PatientRules">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
+        <constructor-arg>
+            <null/>
+        </constructor-arg>
     </bean>
 
-    <bean id="reminderRules" class="org.openvpms.archetype.rules.patient.reminder.ReminderRules">
-        <constructor-arg ref="archetypeService"/>
-        <constructor-arg ref="patientRules"/>
-    </bean>
-
-    <bean id="prescriptionRules" class="org.openvpms.archetype.rules.patient.prescription.PrescriptionRules">
+    <bean id="imObjectBeanFactory" class="org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory">
         <constructor-arg ref="archetypeService"/>
     </bean>
 
-    <bean id="practiceRules" class="org.openvpms.archetype.rules.practice.PracticeRules">
-        <constructor-arg ref="archetypeService"/>
-    </bean>
-
-    <!-- ================================================================== -->
-    <!--                        REPORTING                                   -->
-    <!-- ================================================================== -->
-
-    <!-- the Document handlers -->
-    <bean id="documentHandlers"
-          class="org.openvpms.archetype.rules.doc.DocumentHandlers">
-        <property name="documentHandlers">
-            <list>
-                <bean class="org.openvpms.report.jasper.JRXMLDocumentHandler">
-                    <constructor-arg ref="archetypeService"/>
-                </bean>
-            </list>
-        </property>
-    </bean>
-
-    <!-- ================================================================== -->
-    <!--                        MACROS                                      -->
-    <!-- ================================================================== -->
-
-    <bean id="macros" class="org.openvpms.macro.impl.LookupMacros">
-        <constructor-arg index="0" ref="lookupService"/>
-        <constructor-arg index="1" ref="defaultArchetypeService"/>
-        <constructor-arg index="2" ref="documentHandlers"/>
-    </bean>
-
-    <!-- ================================================================== -->
-    <!--                        FACTORIES                                   -->
-    <!-- ================================================================== -->
-    <bean id="editorFactory" class="org.openvpms.web.component.im.edit.IMObjectEditorFactory"/>
 
 </beans>

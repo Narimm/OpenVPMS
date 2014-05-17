@@ -165,7 +165,7 @@ public class OrderEditor extends FinancialActEditor {
                 deliveryStatusField = (TextComponent) state.getComponent();
             } else if (posted || accepted) {
                 if (property.getName().equals("status")) {
-                    LookupQuery query = new NodeLookupQuery(parent, property.getDescriptor());
+                    LookupQuery query = new NodeLookupQuery(parent, property);
                     if (posted) {
                         query = new LookupFilter(query, true, OrderStatus.POSTED, OrderStatus.CANCELLED);
                     } else {
