@@ -28,6 +28,7 @@ import org.openvpms.component.business.service.archetype.helper.lookup.LookupAss
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
 
 import java.util.Collections;
@@ -72,6 +73,16 @@ public class NodeLookupQuery extends AbstractLookupQuery {
         this.shortName = shortName;
         this.node = node;
 
+    }
+
+    /**
+     * Constructs a {@link NodeLookupQuery for an object and property.
+     *
+     * @param object   the object
+     * @param property the property
+     */
+    public NodeLookupQuery(IMObject object, Property property) {
+        this(object, property.getDescriptor());
     }
 
     /**

@@ -237,7 +237,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         // verify the event has been created with IN_PROGRESS status
         VisitEditorDialog visitEditorDialog1 = workflow1.editVisit();
         VisitEditor editor1 = visitEditorDialog1.getEditor();
-        Act event = editor1.getHistory().getObject();
+        Act event = editor1.getHistoryWindow().getObject();
         assertEquals(ActStatus.IN_PROGRESS, event.getStatus());
 
         // verify the event is selected
@@ -407,8 +407,8 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      * @param event    the event
      */
     private void checkSelectedHistory(VisitEditor editor, Act selected, Act event) {
-        assertEquals(selected, editor.getHistory().getObject());
-        assertEquals(event, editor.getHistory().getEvent());
+        assertEquals(selected, editor.getHistoryWindow().getObject());
+        assertEquals(event, editor.getHistoryWindow().getEvent());
         assertEquals(selected, editor.getHistoryBrowser().getSelected());
         assertEquals(event, editor.getHistoryBrowser().getSelectedParent());
     }
