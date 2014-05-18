@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -25,16 +25,20 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
 import org.openvpms.web.workspace.patient.mr.PatientPrescriptionQuery;
 
 
 /**
- * Links a patient reminder/alerts browser to a CRUD window.
+ * Patient prescription browser.
  *
  * @author Tim Anderson
  */
 public class PrescriptionBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
+
+    /**
+     * The parent visit editor.
+     */
+    private VisitEditor editor;
 
     /**
      * Constructs a {@link PrescriptionBrowserCRUDWindow}.
@@ -54,11 +58,22 @@ public class PrescriptionBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
     }
 
     /**
-     * Registers the charge editor.
+     * Registers the visit editor.
      *
-     * @param chargeEditor the charge editor. May be {@code null}
+     * @param editor the editor
      */
-    public void setChargeEditor(VisitChargeEditor chargeEditor) {
-        ((VisitPrescriptionCRUDWindow) getWindow()).setChargeEditor(chargeEditor);
+    public void setVisitEditor(VisitEditor editor) {
+        this.editor = editor;
+    }
+
+    /**
+     * Invoked when the tab is displayed.
+     */
+    @Override
+    public void show() {
+        super.show();
+        if (editor != null) {
+            ((VisitPrescriptionCRUDWindow) getWindow()).setChargeEditor(editor.getChargeEditor());
+        }
     }
 }

@@ -142,11 +142,7 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
             ErrorDialog.show(Messages.format("imobject.noexist", DescriptorHelper.getDisplayName(previous)));
         } else if (act != null && getActions().canPost(act)) {
             try {
-                HelpContext help = getHelpContext().subtopic("post");
-                String displayName = getArchetypes().getDisplayName();
-                String title = Messages.format("act.post.title", displayName);
-                String message = Messages.format("act.post.message", displayName);
-                final ConfirmationDialog dialog = new ConfirmationDialog(title, message, help);
+                final ConfirmationDialog dialog = createPostConfirmationDialog(act);
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
                     public void onOK() {
@@ -169,6 +165,20 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
                 ErrorHelper.show(exception);
             }
         }
+    }
+
+    /**
+     * Creates a dialog to confirm posting an act.
+     *
+     * @param act the act to be posted
+     * @return a new dialog
+     */
+    protected ConfirmationDialog createPostConfirmationDialog(Act act) {
+        HelpContext help = getHelpContext().subtopic("post");
+        String displayName = getArchetypes().getDisplayName();
+        String title = Messages.format("act.post.title", displayName);
+        String message = Messages.format("act.post.message", displayName);
+        return new ConfirmationDialog(title, message, help);
     }
 
     /**

@@ -249,15 +249,14 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     /**
      * Determines if the current object can be edited.
      *
-     * @return {@code true} if an object exists and the edit button is enabled
+     * @return {@code true} if an object exists and there is no edit button or it is enabled
      */
     public boolean canEdit() {
         boolean edit = false;
         if (actions.canEdit(object)) {
-            Button button = getButtons().getButton(EDIT_ID);
-            if (button != null && button.isEnabled()) {
-                edit = true;
-            }
+            ButtonSet buttons = getButtons();
+            Button button = (buttons != null) ? buttons.getButton(EDIT_ID) : null;
+            edit = (button == null || button.isEnabled());
         }
         return edit;
     }

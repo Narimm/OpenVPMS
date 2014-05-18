@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.patient.visit;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryCRUDWindow;
@@ -33,7 +34,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
+public class VisitHistoryBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
 
     /**
      * The help context.
@@ -41,26 +42,31 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
     private final HelpContext help;
 
     /**
-     * Constructs a {@link VisitBrowserCRUDWindow}.
+     * The initial event.
+     */
+    private Act event;
+
+    /**
+     * Constructs a {@link VisitHistoryBrowserCRUDWindow}.
      *
      * @param query   the patient medical record query
      * @param context the context
      * @param help    the help context
      */
-    public VisitBrowserCRUDWindow(PatientHistoryQuery query, Context context, HelpContext help) {
+    public VisitHistoryBrowserCRUDWindow(PatientHistoryQuery query, Context context, HelpContext help) {
         this(query, new PatientHistoryBrowser(query, new DefaultLayoutContext(context, help)), context, help);
     }
 
     /**
-     * Constructs a {@link VisitBrowserCRUDWindow}.
+     * Constructs a {@link VisitHistoryBrowserCRUDWindow}.
      *
      * @param query   the patient history query
      * @param browser the patient history browser
      * @param context the context
      * @param help    the help context
      */
-    public VisitBrowserCRUDWindow(PatientHistoryQuery query, PatientHistoryBrowser browser, Context context,
-                                  HelpContext help) {
+    public VisitHistoryBrowserCRUDWindow(PatientHistoryQuery query, PatientHistoryBrowser browser, Context context,
+                                         HelpContext help) {
         this.help = help;
         if (browser.getSelected() == null) {
             browser.query();
@@ -75,6 +81,15 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
         window.setQuery(query);
         window.setEvent(browser.getSelectedParent());
         setWindow(window);
+    }
+
+    /**
+     * Sets the event.
+     *
+     * @param event the event
+     */
+    public void setEvent(Act event) {
+        this.event = event;
     }
 
     /**
@@ -106,6 +121,24 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
     @Override
     public PatientHistoryBrowser getBrowser() {
         return (PatientHistoryBrowser) super.getBrowser();
+    }
+
+    /**
+     * Invoked when the tab is displayed.
+     * <p/>
+     * This refreshes the history if the current event being displayed.
+     */
+    @Override
+    public void show() {
+        Browser<Act> browser = getBrowser();
+        if (browser.getObjects().contains(event)) {
+            Act selected = browser.getSelected();
+            browser.query();
+            if (selected != null) {
+                browser.setSelected(selected);
+            }
+        }
+        browser.setFocusOnResults();
     }
 
     /**

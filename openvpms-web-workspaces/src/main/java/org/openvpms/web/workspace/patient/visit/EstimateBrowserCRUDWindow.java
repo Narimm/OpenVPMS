@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -71,9 +71,22 @@ public class EstimateBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
         Browser<Act> browser = BrowserFactory.create(query, new DefaultLayoutContext(context, help));
         setBrowser(browser);
 
+        VisitEstimateCRUDWindow estimateWindow = createEstimateCRUDWindow(editor, context, help);
+        setWindow(estimateWindow);
+    }
+
+    /**
+     * Creates a new CRUD window for estimates.
+     *
+     * @param editor  the visit editor
+     * @param context the context
+     * @param help    the help context
+     * @return a new CRUD window
+     */
+    protected VisitEstimateCRUDWindow createEstimateCRUDWindow(VisitEditor editor, Context context, HelpContext help) {
         VisitEstimateCRUDWindow estimateWindow = new VisitEstimateCRUDWindow(context, help);
         estimateWindow.setVisitEditor(editor);
-        setWindow(estimateWindow);
+        return estimateWindow;
     }
 
     /**

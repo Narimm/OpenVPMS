@@ -83,17 +83,18 @@
     </bean>
 
     <!-- The Archetype service -->
-    <bean id="archetypeService"
-          class="org.openvpms.component.business.service.archetype.ArchetypeService">
+    <bean id="defaultArchetypeService"
+          class="org.openvpms.component.business.service.archetype.ArchetypeService" autowire-candidate="false">
+        <!-- don't make this a candidate for autowiring as it doesn't support rules -->
         <constructor-arg ref="archetypeDescriptorCache"/>
         <property name="dao" ref="imObjectDao"/>
         <property name="ruleEngine" ref="ruleEngine"/>
     </bean>
 
     <!--  The Archetype Rule service -->
-    <bean id="archetypeRuleService"
+    <bean id="archetypeService"
           class="org.openvpms.component.business.service.archetype.rule.ArchetypeRuleService">
-        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="defaultArchetypeService"/>
         <constructor-arg ref="ruleEngine"/>
         <constructor-arg ref="txnManager"/>
         <property name="facts">
@@ -108,13 +109,13 @@
     <bean id="archetypeServiceHelper"
           class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
         <constructor-arg index="0">
-            <ref local="archetypeRuleService"/>
+            <ref local="archetypeService"/>
         </constructor-arg>
     </bean>
 
     <!--  The Lookup Service -->
     <bean id="lookupService" class="org.openvpms.component.business.service.lookup.CachingLookupService">
-        <constructor-arg index="0" ref="archetypeRuleService"/>
+        <constructor-arg index="0" ref="archetypeService"/>
         <constructor-arg index="1">
             <ref local="imObjectDao"/>
         </constructor-arg>
@@ -211,40 +212,40 @@
     </bean>
 
     <bean id="customerAccountRules" class="org.openvpms.archetype.rules.finance.account.CustomerAccountRules">
-        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="archetypeService"/>
     </bean>
 
     <bean id="estimateRules" class="org.openvpms.archetype.rules.finance.estimate.EstimateRules">
-        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="archetypeService"/>
     </bean>
 
     <bean id="medicalRecordRules" class="org.openvpms.archetype.rules.patient.MedicalRecordRules">
-        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="archetypeService"/>
     </bean>
     <bean id="productPriceRules" class="org.openvpms.archetype.rules.product.ProductPriceRules">
-        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
     </bean>
 
     <bean id="productRules" class="org.openvpms.archetype.rules.product.ProductRules">
-        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="archetypeService"/>
     </bean>
 
     <bean id="patientRules" class="org.openvpms.archetype.rules.patient.PatientRules">
-        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
     </bean>
 
     <bean id="prescriptionRules" class="org.openvpms.archetype.rules.patient.prescription.PrescriptionRules">
-        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="archetypeService"/>
     </bean>
 
     <bean id="practiceRules" class="org.openvpms.archetype.rules.practice.PracticeRules">
-        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="archetypeService"/>
     </bean>
 
     <bean id="reminderRules" class="org.openvpms.archetype.rules.patient.reminder.ReminderRules">
-        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="patientRules"/>
     </bean>
 
@@ -258,7 +259,7 @@
         <property name="documentHandlers">
             <list>
                 <bean class="org.openvpms.report.jasper.JRXMLDocumentHandler">
-                    <constructor-arg ref="archetypeRuleService"/>
+                    <constructor-arg ref="archetypeService"/>
                 </bean>
             </list>
         </property>
