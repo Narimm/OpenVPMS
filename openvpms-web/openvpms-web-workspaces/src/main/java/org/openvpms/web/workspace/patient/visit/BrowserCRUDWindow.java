@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.patient.visit;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.SplitPane;
-import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.query.AbstractBrowserListener;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.workspace.AbstractCRUDWindow;
@@ -35,7 +36,12 @@ import org.openvpms.web.echo.util.DoubleClickMonitor;
  *
  * @author Tim Anderson
  */
-public class BrowserCRUDWindow<T extends IMObject> {
+public class BrowserCRUDWindow<T extends Act> implements VisitEditorTab {
+
+    /**
+     * The tab identifier.
+     */
+    private int id;
 
     /**
      * The browser.
@@ -72,6 +78,26 @@ public class BrowserCRUDWindow<T extends IMObject> {
     }
 
     /**
+     * Returns the identifier of this tab.
+     *
+     * @return the tab identifier
+     */
+    @Override
+    public int getId() {
+        return id;
+    }
+
+    /**
+     * Sets the identifier of this tab.
+     *
+     * @param id the tab identifier
+     */
+    @Override
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    /**
      * Sets the buttons.
      *
      * @param buttons the buttons
@@ -103,6 +129,9 @@ public class BrowserCRUDWindow<T extends IMObject> {
                                              window.getComponent());
         } else {
             result = browser.getComponent();
+            ContentPane pane = new ContentPane(); // add the browser to a pane to get scroll bars
+            pane.add(result);
+            result = pane;
         }
         return result;
     }
@@ -135,6 +164,31 @@ public class BrowserCRUDWindow<T extends IMObject> {
         if (window != null) {
             window.setObject(browser.getSelected());
         }
+    }
+
+    /**
+     * Invoked when the tab is displayed.
+     */
+    @Override
+    public void show() {
+        T selected = browser.getSelected();
+        browser.query();
+        if (selected != null) {
+            browser.setSelected(selected);
+        }
+        browser.setFocusOnResults();
+    }
+
+    /**
+     * Invoked prior to switching to another tab, in order to save state.
+     * <p/>
+     * If the save fails, then switching is cancelled.
+     *
+     * @return {@code true} if the save was successful, otherwise {@code false}
+     */
+    @Override
+    public boolean save() {
+        return true;
     }
 
     /**

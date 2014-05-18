@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -172,10 +172,7 @@ public class EstimateCRUDWindow extends CustomerActCRUDWindow<Act> {
         final Act act = IMObjectHelper.reload(getObject()); // make sure we have the latest version
         if (act != null) {
             if (canInvoice(act)) {
-                String title = Messages.get("customer.estimate.invoice.title");
-                String message = Messages.get("customer.estimate.invoice.message");
-                HelpContext help = getHelpContext().subtopic("invoice");
-                ConfirmationDialog dialog = new ConfirmationDialog(title, message, help);
+                ConfirmationDialog dialog = createInvoiceConfirmationDialog(act);
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
                     public void onOK() {
@@ -187,6 +184,19 @@ public class EstimateCRUDWindow extends CustomerActCRUDWindow<Act> {
         } else {
             ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
         }
+    }
+
+    /**
+     * Creates a dialog to confirm invoicing an estimate.
+     *
+     * @param act the estimate to be invoiced
+     * @return a new dialog
+     */
+    protected ConfirmationDialog createInvoiceConfirmationDialog(Act act) {
+        String title = Messages.get("customer.estimate.invoice.title");
+        String message = Messages.get("customer.estimate.invoice.message");
+        HelpContext help = getHelpContext().subtopic("invoice");
+        return new ConfirmationDialog(title, message, help);
     }
 
     /**

@@ -33,6 +33,7 @@ import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.workspace.AbstractCRUDWindow;
+import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.help.HelpContext;
@@ -45,7 +46,17 @@ import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
  *
  * @author Tim Anderson
  */
-public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
+public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> implements VisitEditorTab {
+
+    /**
+     * Completed button identifier.
+     */
+    public static final String COMPLETED_ID = "button.completed";
+
+    /**
+     * In Progress button identifier.
+     */
+    public static final String IN_PROGRESS_ID = "button.inprogress";
 
     /**
      * The event.
@@ -68,18 +79,13 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
     private Component container = ColumnFactory.create();
 
     /**
-     * Completed button identifier.
+     * The tab identifier.
      */
-    public static final String COMPLETED_ID = "button.completed";
-
-    /**
-     * In Progress button identifier.
-     */
-    public static final String IN_PROGRESS_ID = "button.inprogress";
+    private int id;
 
 
     /**
-     * Constructs a {@code VisitChargeCRUDWindow}.
+     * Constructs a {@link VisitChargeCRUDWindow}.
      *
      * @param event   the event
      * @param context the context
@@ -89,6 +95,26 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
         super(Archetypes.create(CustomerAccountArchetypes.INVOICE, FinancialAct.class),
               DefaultActActions.<FinancialAct>getInstance(), context, help);
         this.event = event;
+    }
+
+    /**
+     * Returns the identifier of this tab.
+     *
+     * @return the tab identifier
+     */
+    @Override
+    public int getId() {
+        return id;
+    }
+
+    /**
+     * Sets the identifier of this tab.
+     *
+     * @param id the tab identifier
+     */
+    @Override
+    public void setId(int id) {
+        this.id = id;
     }
 
     /**
@@ -139,6 +165,16 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
     }
 
     /**
+     * Invoked when the tab is displayed.
+     */
+    @Override
+    public void show() {
+        if (editor != null) {
+            editor.getFocusGroup().setFocus();
+        }
+    }
+
+    /**
      * Saves the invoice.
      *
      * @return {@code true} if the invoice was saved
@@ -158,6 +194,16 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
             result = true;
         }
         return result;
+    }
+
+    /**
+     * Returns the CRUD window for the tab.
+     *
+     * @return the CRUD window for the tab, or {@code null} if the tab doesn't provide one
+     */
+    @Override
+    public CRUDWindow<? extends Act> getWindow() {
+        return this;
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow;
@@ -26,10 +26,10 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.customer.charge.ChargeEditorQueue;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
-import org.openvpms.web.workspace.patient.visit.VisitBrowserCRUDWindow;
 import org.openvpms.web.workspace.patient.visit.VisitCRUDWindow;
 import org.openvpms.web.workspace.patient.visit.VisitChargeCRUDWindow;
 import org.openvpms.web.workspace.patient.visit.VisitEditor;
+import org.openvpms.web.workspace.patient.visit.VisitHistoryBrowserCRUDWindow;
 
 /**
  * Helper to edit invoices.
@@ -69,7 +69,7 @@ public class TestEditVisitTask extends EditVisitTask implements EditorQueueHandl
                                             final HelpContext help) {
         return new VisitEditor(customer, patient, event, invoice, context, context.getHelpContext()) {
             @Override
-            protected VisitBrowserCRUDWindow createVisitBrowserCRUDWindow(Context context) {
+            protected VisitHistoryBrowserCRUDWindow createHistoryBrowserCRUDWindow(Context context) {
                 return new TestVisitBrowserCRUDWindow(getQuery(), context);
             }
 
@@ -86,9 +86,9 @@ public class TestEditVisitTask extends EditVisitTask implements EditorQueueHandl
         };
     }
 
-    private class TestVisitBrowserCRUDWindow extends VisitBrowserCRUDWindow {
+    private class TestVisitBrowserCRUDWindow extends VisitHistoryBrowserCRUDWindow {
         /**
-         * Constructs a {@code VisitBrowserCRUDWindow}.
+         * Constructs a {@code VisitHistoryBrowserCRUDWindow}.
          *
          * @param query   the patient medical record query
          * @param context the context
