@@ -87,7 +87,7 @@
 
     <!--  The Archetype Service -->
     <bean id="defaultArchetypeService"
-          class="org.openvpms.component.business.service.archetype.ArchetypeService">
+          class="org.openvpms.component.business.service.archetype.ArchetypeService" autowire-candidate="false">
         <constructor-arg ref="archetypeDescriptorCache"/>
         <property name="dao" ref="imObjectDao"/>
     </bean>
