@@ -196,7 +196,7 @@ public class ProductData {
      * @param price        the price
      * @param cost         the cost price
      * @param maxDiscount  the maximum discount
-     * @param from         the price start date. May be {@code null}
+     * @param from         the price start date
      * @param to           the price end date. May be {@code null}
      * @param defaultPrice {@code true} if the price is the default
      * @param line         the line the price was read from
@@ -214,7 +214,7 @@ public class ProductData {
      * @param price       the price
      * @param cost        the cost price
      * @param maxDiscount the maximum discount
-     * @param from        the price start date. May be {@code null}
+     * @param from        the price start date
      * @param to          the price end date. May be {@code null}
      * @param line        the line the price was read from
      */

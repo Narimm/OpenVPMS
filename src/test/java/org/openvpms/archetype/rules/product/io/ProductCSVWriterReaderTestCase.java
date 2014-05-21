@@ -16,8 +16,10 @@
 
 package org.openvpms.archetype.rules.product.io;
 
+import au.com.bytecode.opencsv.CSVWriter;
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
@@ -31,6 +33,9 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.jxpath.DateFunctions;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -278,6 +283,86 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         assertEquals(2, data.getUnitPrices().size());
         checkPrice(data.getUnitPrices().get(0), unit2);
         checkPrice(data.getUnitPrices().get(1), unit1);
+    }
+
+    /**
+     * Verifies that an error is raised if a fixed price is specified without a fixed cost.
+     *
+     * @throws IOException for any I/O error
+     */
+    @Test
+    public void testMissingFixedCost() throws IOException {
+        String[] data = {"1001", "Product A", "A", "-1", "1.08", "", "10", "02/04/12", "01/06/12", "true", "-1", "2.55",
+                         "1.5", "10", "03/04/12", "02/06/12", "5.0"};
+        ProductDataSet products = createProductDataSet(data);
+        assertEquals(1, products.getErrors().size());
+        assertEquals("A value for Fixed Cost is required", products.getErrors().get(0).getError());
+    }
+
+    /**
+     * Verifies that an error is raised if a fixed price is specified without a fixed max discount.
+     *
+     * @throws IOException for any I/O error
+     */
+    @Test
+    public void testMissingFixedMaxDiscount() throws IOException {
+        String[] data = {"1001", "Product A", "A", "-1", "1.08", "0.6", "", "02/04/12", "01/06/12", "true", "-1",
+                         "2.55", "1.5", "10", "03/04/12", "02/06/12", "5.0"};
+        ProductDataSet products = createProductDataSet(data);
+
+        assertEquals(1, products.getErrors().size());
+        assertEquals("A value for Fixed Price Max Discount is required", products.getErrors().get(0).getError());
+    }
+
+    /**
+     * Verifies that an error is raised if a unit price is specified without a unit cost.
+     *
+     * @throws IOException for any I/O error
+     */
+    @Test
+    public void testMissingUnitCost() throws IOException {
+        String[] data = {"1001", "Product A", "A", "-1", "1.08", "0.6", "10", "02/04/12", "01/06/12", "true", "-1",
+                         "2.55", "", "10", "03/04/12", "02/06/12", "5.0"};
+        ProductDataSet products = createProductDataSet(data);
+
+        assertEquals(1, products.getErrors().size());
+        assertEquals("A value for Unit Cost is required", products.getErrors().get(0).getError());
+    }
+
+    /**
+     * Verifies that an error is raised if a unit price is specified without a unit price max discount.
+     *
+     * @throws IOException for any I/O error
+     */
+    @Test
+    public void testMissingUnitPriceMaxDiscount() throws IOException {
+        String[] data = {"1001", "Product A", "A", "-1", "1.08", "0.6", "10", "02/04/12", "01/06/12", "true", "-1",
+                         "2.55", "1.5", "", "03/04/12", "02/06/12", "5.0"};
+        ProductDataSet products = createProductDataSet(data);
+
+        assertEquals(1, products.getErrors().size());
+        assertEquals("A value for Unit Price Max Discount is required", products.getErrors().get(0).getError());
+    }
+
+    /**
+     * Creates a CSV containing a single line from the supplied data, and reads it back into a {@link ProductDataSet}.
+     *
+     * @param data the data to write
+     * @return the read data
+     * @throws IOException for any I/O error
+     */
+    private ProductDataSet createProductDataSet(String[] data) throws IOException {
+        StringWriter writer = new StringWriter();
+        CSVWriter csv = new CSVWriter(writer, ProductCSVWriter.SEPARATOR);
+        csv.writeNext(ProductCSVWriter.HEADER);
+        csv.writeNext(data);
+        csv.close();
+
+        DocumentHandler handler = handlers.get("Dummy.csv", ProductCSVWriter.MIME_TYPE);
+        Document document = handler.create("Dummy.csv", new ByteArrayInputStream(writer.toString().getBytes("UTF-8")),
+                                           ProductCSVWriter.MIME_TYPE, -1);
+        ProductCSVReader reader = new ProductCSVReader(handlers);
+        return reader.read(document);
     }
 
     /**
