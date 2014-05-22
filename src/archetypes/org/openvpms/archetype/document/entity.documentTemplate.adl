@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -35,7 +35,9 @@
                     <property name="act.customerAccountRefund" value="Customer Refund"/>
                     <property name="act.customerAccountChargesInvoice" value="Customer Invoice"/>
                     <property name="act.customerAccountChargesCredit" value="Customer Credit"/>
+                    <property name="act.customerAccountCreditAdjust" value="Customer Credit Adjustment"/>
                     <property name="act.customerAccountChargesCounter" value="Customer Counter Sale"/>
+                    <property name="act.customerAccountDebitAdjust" value="Customer Debit Adjustment"/>
                     <property name="act.customerEstimation" value="Customer Estimate"/>
                     <property name="act.patientMedication" value="Patient Medication Label"/>
                     <property name="act.patientPrescription" value="Prescription"/>
@@ -50,6 +52,7 @@
                     <property name="act.supplierAccountChargesInvoice" value="Supplier Invoice"/>
                     <property name="act.supplierAccountChargesCredit" value="Supplier Credit"/>
                     <property name="act.supplierAccountPayment" value="Supplier Remittance"/>
+                    <property name="act.supplierAccountRefund" value="Supplier Refund"/>
                     <property name="act.stockAdjust" value="Stock Adjustment"/>
                     <property name="act.stockTransfer" value="Stock Transfer"/>
                     <property name="act.customerAppointment" value="Appointment"/>
