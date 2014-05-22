@@ -299,6 +299,22 @@
 		serviceName="archetypeService" method="save" archetypeShortName="act.stock*" />
 	<data id="RSTKALL" archetype="security.archetypeAuthority" name="Stock Transaction Remove" description="Authority to Remove Stock"
 		serviceName="archetypeService" method="remove" archetypeShortName="act.stock*" />
+	<!-- Till Balance Authorities -->
+	<data id="CTILLB" archetype="security.archetypeAuthority" name="Till Balance Create" description="Authority to Create Till Balance"
+		serviceName="archetypeService" method="create" archetypeShortName="act.tillBalance" />
+	<data id="STILLB" archetype="security.archetypeAuthority" name="Till Balance Save" description="Authority to Save Till Balance"
+		serviceName="archetypeService" method="save" archetypeShortName="act.tillBalance" />
+	<data id="RTILLB" archetype="security.archetypeAuthority" name="Till Balance Remove" description="Authority to Remove Till Balance"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.tillBalance" />
+
+	<!-- Bank Deposit Authorities -->
+	<data id="CBANKD" archetype="security.archetypeAuthority" name="Bank Deposit Create" description="Authority to Create Bank Deposit"
+		serviceName="archetypeService" method="create" archetypeShortName="act.bankDeposit" />
+	<data id="SBANKD" archetype="security.archetypeAuthority" name="Bank Deposit Save" description="Authority to Save Bank Deposit"
+		serviceName="archetypeService" method="save" archetypeShortName="act.bankDeposit" />
+	<data id="RBANKD" archetype="security.archetypeAuthority" name="Bank Deposit Remove" description="Authority to Remove Bank Deposit"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.bankDeposit" />
+
 
 	<!-- Worflow Authorities -->
 	<!-- Appointment Authorities -->
@@ -324,25 +340,87 @@
           serviceName="archetypeService" method="remove" archetypeShortName="act.userMessage"/>
 
 	<!-- ROLES -->
-	<!-- Base Role that contains all the authorities that relate to object collections and child objects -->
+	<!-- Base Role that contains all the commly required authorities -->
 	<data id="ROLE1" archetype="security.role" name="Base Role" >
-		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CPARTIC" />
-		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SPARTIC" />
-		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RPARTIC" />
-		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CENTREL" />
-		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SENTREL" />
-		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RENTREL" />
 		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CACTREL" />
 		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SACTREL" />
 		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RACTREL" />
-		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CENTIDE" />
-		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SENTIDE" />
-		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RENTIDE" />
-		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CDOCUME" />
-		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SDOCUME" />
-		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RDOCUME" />
 		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CCONTAC" />
 		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SCONTAC" />
 		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RCONTAC" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CDOCUME" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SDOCUME" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RDOCUME" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CENTREL" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SENTREL" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RENTREL" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CENTIDE" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SENTIDE" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RENTIDE" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CPARTIC" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SPARTIC" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RPARTIC" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CCUSACC" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SCUSACC" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CCUSALE" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SCUSALE" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CCUSCHI" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SCUSCHI" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RCUSCHI" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CCUSCHA" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SCUSCHA" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CCUSDOC" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SCUSDOC" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CCUSEST" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SCUSEST" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RCUSEST" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CCUSNOT" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SCUSNOT" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CCUSPAY" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SCUSPAY" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CCUSPAR" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SCUSPAR" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RCUSPAR" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CPATALL" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SPATALL" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RPATALL" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CPATPAR" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SPATPAR" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RPATPAR" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CPROPRO" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SPROPRO" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CSUPALL" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SSUPALL" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CSUPPAR" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SSUPPAR" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CWRKAPP" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SWRKAPP" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RWRKAPP" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CWRKTAS" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SWRKTAS" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RWRKTAS" />	
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CEMESS" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SEMESS" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:REMESS" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CTILLB" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:STILLB" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CBANKD" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SBANKD" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SORGALL" />
+	</data>
+	
+	<data id="ROLE_S" archetype="security.role" name="Stock Control" >
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CPROPRI" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SPROPRI" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RPROPRI" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CPROPRO" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SPROPRO" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RPROPRO" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CSTKALL" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SSTKALL" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RSTKALL" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CSUPALL" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SSUPALL" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RSUPALL" />
 	</data>
 </archetype>
