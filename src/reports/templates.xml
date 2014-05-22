@@ -2,6 +2,14 @@
 
 <templates>
 
+    <template name="Appointment"
+              archetype="act.customerAppointment"
+              reportType="WORKFLOW"
+              path="Appointment A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer Appointment - A5"/>
+
     <template name="Invoice"
               archetype="act.customerAccountChargesInvoice"
               reportType="CUSTOMER"
@@ -42,6 +50,14 @@
               docType="document.other"
               description="Customer credit items - A5"/>
 
+    <template name="Credit Adjustment"
+              archetype="act.customerAccountCreditAdjust"
+              reportType="CUSTOMER"
+              path="Credit Adjustment A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer credit adjustment - A5"/>
+
     <template name="Counter Sale"
               archetype="act.customerAccountChargesCounter"
               reportType="CUSTOMER"
@@ -57,6 +73,14 @@
               mimeType="text/xml"
               docType="document.other"
               description="Customer counter sale items - A5"/>
+
+    <template name="Debit Adjustment"
+              archetype="act.customerAccountDebitAdjust"
+              reportType="CUSTOMER"
+              path="Debit Adjustment A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer debit adjustment - A5"/>
 
     <template name="Receipt"
               archetype="act.customerAccountPayment"
@@ -378,10 +402,26 @@
               docType="document.other"
               description="Lists products prices, including aggregates"/>
 
+    <template name="Refund"
+              archetype="act.customerAccountRefund"
+              reportType="CUSTOMER"
+              path="Refund A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer refund - A5"/>
+
+    <template name="Refund Items"
+              archetype="SUBREPORT"
+              reportType="CUSTOMER"
+              path="Refund Items A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer refund items - A5"/>
+
     <template name="Stock Adjustment"
               archetype="act.stockAdjust"
               reportType="PRODUCT"
-              path="stockAdjustmentA4.jrxml"
+              path="Stock Adjustment A4.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Stock adjustment - A4"/>
@@ -389,7 +429,7 @@
     <template name="Stock Adjustment Items"
               archetype="SUBREPORT"
               reportType="PRODUCT"
-              path="stockAdjustmentItemsA4.jrxml"
+              path="Stock Adjustment Items A4.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Stock adjustment items - A4"/>
@@ -397,7 +437,7 @@
     <template name="Stock Transfer"
               archetype="act.stockTransfer"
               reportType="PRODUCT"
-              path="stockTransferA4.jrxml"
+              path="Stock Transfer A4.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Stock transfer - A4"/>
@@ -405,7 +445,7 @@
     <template name="Stock Transfer Items"
               archetype="SUBREPORT"
               reportType="PRODUCT"
-              path="stockTransferItemsA4.jrxml"
+              path="Stock Transfer Items A4.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Stock transfer items - A4"/>
@@ -450,6 +490,70 @@
               docType="document.other"
               description="Supplier order items"/>
 
+    <template name="Supplier Credit"
+              archetype="act.supplierAccountChargesCredit"
+              reportType="SUPPLIER"
+              path="Supplier Credit A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Supplier credit - A5"/>
+
+    <template name="Supplier Credit Items"
+              archetype="SUBREPORT"
+              reportType="SUPPLIER"
+              path="Supplier Credit Items A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Supplier credit items - A5"/>
+
+    <template name="Supplier Invoice"
+              archetype="act.supplierAccountChargesInvoice"
+              reportType="SUPPLIER"
+              path="Supplier Invoice A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Supplier invoice - A5"/>
+
+    <template name="Supplier Invoice Items"
+              archetype="SUBREPORT"
+              reportType="SUPPLIER"
+              path="Supplier Invoice Items A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Supplier invoice items - A5"/>
+
+    <template name="Supplier Remittance"
+              archetype="act.supplierAccountPayment"
+              reportType="SUPPLIER"
+              path="Supplier Remittance A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Supplier remittance - A5"/>
+
+    <template name="Supplier Remittance Items"
+              archetype="SUBREPORT"
+              reportType="SUPPLIER"
+              path="Supplier Remittance Items A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Supplier remittance items - A5"/>
+
+    <template name="Supplier Refund"
+              archetype="act.supplierAccountRefund"
+              reportType="SUPPLIER"
+              path="Supplier Refund A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Supplier refund - A5"/>
+
+    <template name="Supplier Refund Items"
+              archetype="SUBREPORT"
+              reportType="SUPPLIER"
+              path="Supplier Refund Items A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Supplier refund items - A5"/>
+
     <template name="Message"
               archetype="act.userMessage"
               reportType="WORKFLOW"
@@ -457,5 +561,13 @@
               mimeType="text/xml"
               docType="document.other"
               description="Message - A4"/>
+
+    <template name="Task"
+              archetype="act.customerTask"
+              reportType="WORKFLOW"
+              path="Task A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Task - A5"/>
 
 </templates>
