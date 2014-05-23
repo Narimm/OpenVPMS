@@ -273,7 +273,7 @@
                 <artifactId>openvpms-report-maven-plugin</artifactId>
                 <version>${pom.version}</version>
                 <configuration>
-                    <file>src/reports/templates.xml</file>
+                    <file>src/reports/US/templates.xml</file>
                     <propertyfile>target/classes/hibernate.properties</propertyfile>
                 </configuration>
                 <dependencies>
