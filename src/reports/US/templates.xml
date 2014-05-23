@@ -1,0 +1,573 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+
+<templates>
+
+    <template name="Appointment"
+              archetype="act.customerAppointment"
+              reportType="WORKFLOW"
+              path="../Appointment A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer Appointment - A5"/>
+
+    <template name="Invoice"
+              archetype="act.customerAccountChargesInvoice"
+              reportType="CUSTOMER"
+              path="Invoice.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer invoice - LETTER"/>
+
+    <template name="Invoice Items"
+              archetype="SUBREPORT"
+              reportType="CUSTOMER"
+              path="Invoice Items.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer invoice items - LETTER"/>
+
+    <template name="Invoice Reminders"
+              archetype="SUBREPORT"
+              reportType="CUSTOMER"
+              path="Invoice Reminders.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer invoice reminders - LETTER"/>
+
+    <template name="Credit"
+              archetype="act.customerAccountChargesCredit"
+              reportType="CUSTOMER"
+              path="Credit.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer credit - LETTER"/>
+
+    <template name="Credit Items"
+              archetype="SUBREPORT"
+              reportType="CUSTOMER"
+              path="Credit Items.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer credit items - LETTER"/>
+
+    <template name="Credit Adjustment"
+              archetype="act.customerAccountCreditAdjust"
+              reportType="CUSTOMER"
+              path="../Credit Adjustment A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer credit adjustment - A5"/>
+
+    <template name="Counter Sale"
+              archetype="act.customerAccountChargesCounter"
+              reportType="CUSTOMER"
+              path="Counter Sale.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer counter sale - LETTER"/>
+
+    <template name="Counter Sale Items"
+              archetype="SUBREPORT"
+              reportType="CUSTOMER"
+              path="Counter Sale Items.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer counter sale items - LETTER"/>
+
+    <template name="Debit Adjustment"
+              archetype="act.customerAccountDebitAdjust"
+              reportType="CUSTOMER"
+              path="../Debit Adjustment A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer debit adjustment - A5"/>
+
+    <template name="Receipt"
+              archetype="act.customerAccountPayment"
+              reportType="CUSTOMER"
+              path="Receipt.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer receipt - LETTER"/>
+
+    <template name="Receipt Items"
+              archetype="SUBREPORT"
+              reportType="CUSTOMER"
+              path="Receipt Items.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer receipt items - LETTER"/>
+
+    <template name="Estimate"
+              archetype="act.customerEstimation"
+              reportType="CUSTOMER"
+              path="Estimate.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer estimate - LETTER"/>
+
+    <template name="Estimate Items"
+              archetype="SUBREPORT"
+              reportType="CUSTOMER"
+              path="Estimate Items.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer estimate items - LETTER"/>
+
+    <template name="Statement"
+              archetype="act.customerAccountOpeningBalance"
+              reportType="CUSTOMER"
+              path="Statement.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer statement - LETTER"/>
+
+    <template name="Statement Items"
+              archetype="SUBREPORT"
+              reportType="CUSTOMER"
+              path="Statement Items.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer statement items - LETTER"/>
+
+    <template name="Till Balance"
+              archetype="act.tillBalance"
+              reportType="FINANCIAL"
+              path="../TillBalance.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Till balance - A5"/>
+
+    <template name="Bank Deposit"
+              archetype="act.bankDeposit"
+              reportType="FINANCIAL"
+              path="Bank Deposit.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Bank Deposit - LETTER"/>
+
+    <template name="Customer Account Balance Report"
+              archetype="CUSTOMER_BALANCE"
+              reportType="FINANCIAL"
+              path="../customerAccountBalance.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer account balance"/>
+
+    <template name="Work In Progress Report"
+              archetype="WORK_IN_PROGRESS_CHARGES"
+              reportType="FINANCIAL"
+              path="../workInProgress.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Work In Progress Report"/>
+
+    <template name="Patient Clinical Event"
+              archetype="act.patientClinicalEvent"
+              reportType="PATIENT"
+              path="Patient Clinical Event.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists patient clinical events"/>
+
+    <template name="Patient Reminders Report"
+              archetype="act.patientReminder"
+              reportType="PATIENT"
+              path="../patientReminders.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists patient reminders"/>
+
+    <template name="Grouped Reminders Report"
+              archetype="GROUPED_REMINDERS"
+              reportType="PATIENT"
+              path="../grouped reminders a4.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Groups multiple reminders for a patient"/>
+
+    <template name="Patient Image"
+              archetype="act.patientDocumentImage"
+              reportType="PATIENT"
+              path="Patient Image.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Patient image - LETTER"/>
+
+    <template name="Drug Label"
+              archetype="act.patientMedication"
+              reportType="PATIENT"
+              path="Label 1.8x3.1.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Drug label"/>
+
+    <template name="Prescription"
+              path="../Prescription.odt"
+              reportType="PATIENT"
+              archetype="act.patientDocumentForm"
+              mimeType="application/vnd.oasis.opendocument.text"
+              docType="document.other"
+              description="Patient prescription"/>
+
+    <template name="Vaccination Certificate"
+              path="../vaccination certificate a5.odt"
+              reportType="PATIENT"
+              archetype="act.patientDocumentForm"
+              mimeType="application/vnd.oasis.opendocument.text"
+              docType="document.other"
+              description="Vaccination certificate - A5"/>
+
+    <template name="Desexing Certificate"
+              path="../desexing certificate a5.odt"
+              reportType="PATIENT"
+              archetype="act.patientDocumentForm"
+              mimeType="application/vnd.oasis.opendocument.text"
+              docType="document.other"
+              description="Desexing certificate - A5"/>
+
+    <template name="Reminder Cartrophen First"
+              path="../cartrophen first reminder.odt"
+              reportType="PATIENT"
+              archetype="act.patientDocumentLetter"
+              mimeType="application/vnd.oasis.opendocument.text"
+              docType="document.other"
+              description="First Cartrophen reminder"/>
+
+    <template name="Reminder Desexing First"
+              path="../desex first reminder.odt"
+              reportType="PATIENT"
+              archetype="act.patientDocumentLetter"
+              mimeType="application/vnd.oasis.opendocument.text"
+              docType="document.other"
+              description="First desexing reminder"/>
+
+    <template name="Reminder Vaccination First"
+              path="../vaccination first reminder.odt"
+              reportType="PATIENT"
+              archetype="act.patientDocumentLetter"
+              mimeType="application/vnd.oasis.opendocument.text"
+              docType="document.other"
+              description="First vaccination reminder"/>
+
+    <template name="Reminder Vaccination Second"
+              path="../vaccination second reminder.odt"
+              reportType="PATIENT"
+              archetype="act.patientDocumentLetter"
+              mimeType="application/vnd.oasis.opendocument.text"
+              docType="document.other"
+              description="Second vaccination reminder"/>
+
+    <template name="Reminder Vaccination Puppy and Kitten First"
+              path="../vaccination puppy kitten first reminder.odt"
+              reportType="PATIENT"
+              archetype="act.patientDocumentLetter"
+              mimeType="application/vnd.oasis.opendocument.text"
+              docType="document.other"
+              description="First puppy/kitten vaccination reminder"/>
+
+    <template name="Referral Letter"
+              path="../Referral Letter.odt"
+              reportType="PATIENT"
+              archetype="act.patientDocumentLetter"
+              mimeType="application/vnd.oasis.opendocument.text"
+              docType="document.other"
+              description="Patient referral letter"/>
+
+    <template name="Clinician Sales Report"
+              archetype="REPORT"
+              reportType="FINANCIAL"
+              path="../clinician sales report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists sales per clinician between two dates"/>
+
+    <template name="Customer Acquisition Report"
+              archetype="REPORT"
+              reportType="CUSTOMER"
+              path="../customer acquisition report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists customers created between two dates"/>
+
+    <template name="Customer Balance Report"
+              archetype="REPORT"
+              reportType="FINANCIAL"
+              path="../customer balance report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists customers that have a non-zero opening balance for the specified date"/>
+
+    <template name="Customer List Report"
+              archetype="REPORT"
+              reportType="CUSTOMER"
+              path="../customer list report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists customers, optionally filtered by classification"/>
+
+    <template name="Customer Payments Report"
+              archetype="REPORT"
+              reportType="FINANCIAL"
+              path="../customer payments report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists customer payments between two dates"/>
+
+    <template name="Customer Product Sales Report"
+              archetype="REPORT"
+              reportType="FINANCIAL"
+              path="../customer product sales report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists product sales by customer"/>
+
+    <template name="Customer Reconciliation Report"
+              archetype="REPORT"
+              reportType="FINANCIAL"
+              path="../customer reconciliation report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists transactions for a customer between two dates"/>
+
+    <template name="Customer Referral Report"
+              archetype="REPORT"
+              reportType="CUSTOMER"
+              path="../customer referral report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Displays a summary of how customers were referred to the practice"/>
+
+    <template name="Customer Sales Report"
+              archetype="REPORT"
+              reportType="FINANCIAL"
+              path="../customer sales report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists gross and nett sales between two dates"/>
+
+    <template name="Patient Acquisition Report"
+              archetype="REPORT"
+              reportType="PATIENT"
+              path="../patient acquisition report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists patients created between two dates"/>
+
+    <template name="Patient Deceased Report"
+              archetype="REPORT"
+              reportType="PATIENT"
+              path="../patient deceased report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists active patients that have been flagged deceased between two dates"/>
+
+    <template name="Patient List Report"
+              archetype="REPORT"
+              reportType="PATIENT"
+              path="../patient list report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists patients by owner, species and breed, born between two dates"/>
+
+    <template name="Patient Sterilisation Report"
+              archetype="REPORT"
+              reportType="PATIENT"
+              path="../patient sterilisation report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists patients born between two dates, that have not been desexed"/>
+
+    <template name="Practice Clinician Sales Report"
+              archetype="REPORT"
+              reportType="FINANCIAL"
+              path="../practice clinician sales report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists aggregate sales by practice location and clinician"/>
+
+    <template name="Product List Report"
+              archetype="REPORT"
+              reportType="PRODUCT"
+              path="../product list report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists products and their prices as of the current date"/>
+
+    <template name="Product Price List Report"
+              archetype="REPORT"
+              reportType="PRODUCT"
+              path="../product price list report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists products prices, including aggregates"/>
+
+    <template name="Refund"
+              archetype="act.customerAccountRefund"
+              reportType="CUSTOMER"
+              path="../Refund A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer refund - A5"/>
+
+    <template name="Refund Items"
+              archetype="SUBREPORT"
+              reportType="CUSTOMER"
+              path="../Refund Items A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer refund items - A5"/>
+
+    <template name="Stock Adjustment"
+              archetype="act.stockAdjust"
+              reportType="PRODUCT"
+              path="../Stock Adjustment A4.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Stock adjustment - A4"/>
+
+    <template name="Stock Adjustment Items"
+              archetype="SUBREPORT"
+              reportType="PRODUCT"
+              path="../Stock Adjustment Items A4.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Stock adjustment items - A4"/>
+
+    <template name="Stock Transfer"
+              archetype="act.stockTransfer"
+              reportType="PRODUCT"
+              path="../Stock Transfer A4.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Stock transfer - A4"/>
+
+    <template name="Stock Transfer Items"
+              archetype="SUBREPORT"
+              reportType="PRODUCT"
+              path="../Stock Transfer Items A4.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Stock transfer items - A4"/>
+
+    <template name="Stock Reorder Report"
+              archetype="REPORT"
+              reportType="PRODUCT"
+              path="../stock reorder report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists stocks that needs reordering"/>
+
+    <template name="Stock Take List Report"
+              archetype="REPORT"
+              reportType="PRODUCT"
+              path="../stock take list.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists stock and their quantities"/>
+
+    <template name="Stock Valuation Report"
+              archetype="REPORT"
+              reportType="PRODUCT"
+              path="../stock valuation report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists stock value by stock location"/>
+
+    <template name="Order"
+              archetype="act.supplierOrder"
+              reportType="SUPPLIER"
+              path="Order.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Supplier order"/>
+
+    <template name="Order Items"
+              archetype="SUBREPORT"
+              reportType="SUPPLIER"
+              path="Order Items.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Supplier order items"/>
+
+    <template name="Supplier Credit"
+              archetype="act.supplierAccountChargesCredit"
+              reportType="SUPPLIER"
+              path="../Supplier Credit A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Supplier credit - A5"/>
+
+    <template name="Supplier Credit Items"
+              archetype="SUBREPORT"
+              reportType="SUPPLIER"
+              path="../Supplier Credit Items A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Supplier credit items - A5"/>
+
+    <template name="Supplier Invoice"
+              archetype="act.supplierAccountChargesInvoice"
+              reportType="SUPPLIER"
+              path="../Supplier Invoice A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Supplier invoice - A5"/>
+
+    <template name="Supplier Invoice Items"
+              archetype="SUBREPORT"
+              reportType="SUPPLIER"
+              path="../Supplier Invoice Items A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Supplier invoice items - A5"/>
+
+    <template name="Supplier Remittance"
+              archetype="act.supplierAccountPayment"
+              reportType="SUPPLIER"
+              path="../Supplier Remittance A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Supplier remittance - A5"/>
+
+    <template name="Supplier Remittance Items"
+              archetype="SUBREPORT"
+              reportType="SUPPLIER"
+              path="../Supplier Remittance Items A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Supplier remittance items - A5"/>
+
+    <template name="Supplier Refund"
+              archetype="act.supplierAccountRefund"
+              reportType="SUPPLIER"
+              path="../Supplier Refund A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Supplier refund - A5"/>
+
+    <template name="Supplier Refund Items"
+              archetype="SUBREPORT"
+              reportType="SUPPLIER"
+              path="../Supplier Refund Items A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Supplier refund items - A5"/>
+
+    <template name="Message"
+              archetype="act.userMessage"
+              reportType="WORKFLOW"
+              path="../message a4.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Message - A4"/>
+
+    <template name="Task"
+              archetype="act.customerTask"
+              reportType="WORKFLOW"
+              path="../Task A5.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Task - A5"/>
+
+</templates>
