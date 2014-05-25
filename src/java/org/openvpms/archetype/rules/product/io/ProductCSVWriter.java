@@ -56,6 +56,11 @@ public class ProductCSVWriter implements ProductWriter {
             "Unit Price Start Date", "Unit Price End Date", "Unit Price Groups", "Tax Rate", "Notes"};
 
     /**
+     * The mime type of the exported document.
+     */
+    public static final String MIME_TYPE = "text/csv";
+
+    /**
      * The archetype service.
      */
     private final IArchetypeService service;
@@ -78,12 +83,7 @@ public class ProductCSVWriter implements ProductWriter {
     /**
      * Field separator.
      */
-    private static final char SEPARATOR = ',';
-
-    /**
-     * The mime type of the exported document.
-     */
-    private static final String MIME_TYPE = "text/csv";
+    static final char SEPARATOR = ',';
 
     /**
      * The prices to write.
