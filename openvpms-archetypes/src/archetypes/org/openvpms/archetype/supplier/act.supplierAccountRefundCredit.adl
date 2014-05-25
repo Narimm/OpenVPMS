@@ -13,13 +13,14 @@
   ~
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="act.supplierAccountRefundCredit.1.0" latest="true" primary="false"
                type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Credit Card">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"
-              derivedValue="'Credit Payment'"/>
+              derivedValue="'Credit Refund'"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat(' Amount : ', /total,' Details : ',openvpms:lookup(.,'creditCard'))"/>

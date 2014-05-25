@@ -289,7 +289,7 @@ public class ProductCSVReader implements ProductReader {
             id = getId(line, ID, lineNo, true);
             name = getName(line, lineNo);
             printedName = getValue(line, PRINTED_NAME, lineNo, false);
-            tax = getDecimal(line, TAX_RATE, lineNo);
+            tax = getDecimal(line, TAX_RATE, lineNo, true);
         } catch (ProductIOException exception) {
             ProductData invalid = new ProductData(id, name, printedName, tax, lineNo);
             invalid.setError(exception.getMessage(), exception.getLine());
@@ -302,18 +302,18 @@ public class ProductCSVReader implements ProductReader {
         }
         try {
             long fixedId = getId(line, FIXED_PRICE_ID, lineNo, false);
-            BigDecimal fixedPrice = getDecimal(line, FIXED_PRICE, lineNo);
-            BigDecimal fixedCost = getDecimal(line, FIXED_COST, lineNo);
-            BigDecimal fixedMaxDiscount = getDecimal(line, FIXED_PRICE_MAX_DISCOUNT, lineNo);
+            BigDecimal fixedPrice = getDecimal(line, FIXED_PRICE, lineNo, false);
+            BigDecimal fixedCost = getDecimal(line, FIXED_COST, lineNo, fixedPrice != null);
+            BigDecimal fixedMaxDiscount = getDecimal(line, FIXED_PRICE_MAX_DISCOUNT, lineNo, fixedPrice != null);
             Date fixedStartDate = getDate(line, FIXED_PRICE_START_DATE, lineNo, fixedPrice != null);
             Date fixedEndDate = getDate(line, FIXED_PRICE_END_DATE, lineNo, false);
             boolean defaultFixedPrice = getBoolean(line, DEFAULT_FIXED_PRICE, lineNo);
             Set<Lookup> fixedPriceGroups = getPricingGroups(line, FIXED_PRICE_GROUPS, lineNo);
             long unitId = getId(line, UNIT_PRICE_ID, lineNo, false);
-            BigDecimal unitPrice = getDecimal(line, UNIT_PRICE, lineNo);
-            BigDecimal unitCost = getDecimal(line, UNIT_COST, lineNo);
-            BigDecimal unitMaxDiscount = getDecimal(line, UNIT_PRICE_MAX_DISCOUNT, lineNo);
-            Date unitStartDate = getDate(line, UNIT_PRICE_START_DATE, lineNo, unitCost != null);
+            BigDecimal unitPrice = getDecimal(line, UNIT_PRICE, lineNo, false);
+            BigDecimal unitCost = getDecimal(line, UNIT_COST, lineNo, unitPrice != null);
+            BigDecimal unitMaxDiscount = getDecimal(line, UNIT_PRICE_MAX_DISCOUNT, lineNo, unitPrice != null);
+            Date unitStartDate = getDate(line, UNIT_PRICE_START_DATE, lineNo, unitPrice != null);
             Date unitEndDate = getDate(line, UNIT_PRICE_END_DATE, lineNo, false);
             Set<Lookup> unitPriceGroups = getPricingGroups(line, UNIT_PRICE_GROUPS, lineNo);
             if (fixedPrice != null) {
@@ -433,13 +433,14 @@ public class ProductCSVReader implements ProductReader {
     /**
      * Returns a decimal value at the specified line.
      *
-     * @param line   the line
-     * @param index  the price column index
-     * @param lineNo the line no.
+     * @param line     the line
+     * @param index    the price column index
+     * @param lineNo   the line no.
+     * @param required if {@code true}, the value is required
      * @return the value, or {@code null} if there is no value
      */
-    private BigDecimal getDecimal(String[] line, int index, int lineNo) {
-        String value = line[index];
+    private BigDecimal getDecimal(String[] line, int index, int lineNo, boolean required) {
+        String value = getValue(line, index, lineNo, required);
         BigDecimal result = null;
         try {
             if (!StringUtils.isEmpty(value)) {
