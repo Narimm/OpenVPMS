@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -285,11 +285,12 @@ public class MailEditor extends AbstractModifiable {
     /**
      * Sets the from address.
      *
-     * @param from the from address
+     * @param from the from address. May be {@code null}
      */
     public void setFrom(Contact from) {
         this.selectedFrom = from;
-        this.from.setValue(fromFormatter.format(from));
+        String value = (from != null) ? fromFormatter.format(from) : null;
+        this.from.setValue(value);
     }
 
     /**
@@ -310,7 +311,8 @@ public class MailEditor extends AbstractModifiable {
         selectedTo = toAddress;
         to.removeModifiableListener(toListener);
         try {
-            to.setValue(toFormatter.format(toAddress));
+            String value = toAddress != null ? toFormatter.format(toAddress) : null;
+            to.setValue(value);
         } finally {
             to.addModifiableListener(toListener);
         }
@@ -902,7 +904,7 @@ public class MailEditor extends AbstractModifiable {
          * @return the rendered object
          */
         protected Object getComponent(Component list, Contact object, int index) {
-            return formatter.format(object);
+            return (object != null) ? formatter.format(object) : null;
         }
 
         /**
