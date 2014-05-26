@@ -271,6 +271,15 @@ public class EstimateCRUDWindow extends CustomerActCRUDWindow<Act> {
     }
 
     /**
+     * Creates a new {@link EstimateInvoicer}.
+     *
+     * @return a new estimate invoicer
+     */
+    protected EstimateInvoicer createEstimateInvoicer() {
+        return new EstimateInvoicer();
+    }
+
+    /**
      * Invoices an estimate.
      *
      * @param estimate the estimate
@@ -278,7 +287,7 @@ public class EstimateCRUDWindow extends CustomerActCRUDWindow<Act> {
      */
     private void invoice(final Act estimate, FinancialAct invoice) {
         try {
-            EstimateInvoicer invoicer = new EstimateInvoicer();
+            EstimateInvoicer invoicer = createEstimateInvoicer();
             HelpContext edit = getHelpContext().topic(CustomerAccountArchetypes.INVOICE + "/edit");
             CustomerChargeActEditDialog editor = invoicer.invoice(estimate, invoice,
                                                                   new DefaultLayoutContext(true, getContext(), edit));

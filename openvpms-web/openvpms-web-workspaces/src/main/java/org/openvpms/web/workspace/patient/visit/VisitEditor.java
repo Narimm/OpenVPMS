@@ -448,7 +448,7 @@ public class VisitEditor {
      * @return the corresponding {@link CRUDWindow} or {@code null} if none is found
      */
     protected CRUDWindow<? extends Act> getWindow(int index) {
-        VisitEditorTab tab = getModel().getObject(index);
+        VisitEditorTab tab = getVisitEditorTab(index);
         return (tab != null) ? tab.getWindow() : null;
     }
 
@@ -459,7 +459,7 @@ public class VisitEditor {
      * @return the tab model index
      */
     protected int getModelIndex(int tabIndex) {
-        VisitEditorTab tab = getModel().getObject(tabIndex);
+        VisitEditorTab tab = getVisitEditorTab(tabIndex);
         return tab != null ? tab.getId() : -1;
     }
 
@@ -638,6 +638,16 @@ public class VisitEditor {
     }
 
     /**
+     * Returns the visit editor tab at the specified index.
+     *
+     * @param index the tab index
+     * @return the tab, or {@code null} if there is none at the specified index or the index is invalid
+     */
+    protected VisitEditorTab getVisitEditorTab(int index) {
+        return getModel().getObject(index);
+    }
+
+    /**
      * Returns the tab pane model.
      *
      * @return the model
@@ -730,9 +740,19 @@ public class VisitEditor {
         return estimateWindow;
     }
 
-
+    /**
+     * Invoked when switching tabs.
+     * <p/>
+     * If the current tab is an {@link VisitEditorTab}, its {@link VisitEditorTab#save()} will be invoked, and
+     * the switch only allowed if the save is successful.
+     *
+     * @param oldIndex the previous tab index, or {@code -1} if no tab was selected
+     * @param newIndex the new tab index, or {@code -1} if no tab is selected
+     * @return {@code true} if switching tabs is allowed
+     */
     protected boolean switchTabs(int oldIndex, int newIndex) {
-        return true;
+        VisitEditorTab tab = getVisitEditorTab(oldIndex);
+        return (tab == null) || tab.save();
     }
 
     /**

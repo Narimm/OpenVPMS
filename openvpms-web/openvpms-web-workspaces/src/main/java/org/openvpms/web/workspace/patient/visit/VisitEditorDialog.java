@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -163,11 +163,15 @@ public class VisitEditorDialog extends PopupDialog {
     /**
      * Sets the dialog buttons to the default Apply, OK and Cancel buttons.
      *
+     * @param apply if {@code true}, add an Apply button
      * @return the buttons
      */
-    protected ButtonSet setDefaultButtons() {
+    protected ButtonSet setDefaultButtons(boolean apply) {
         ButtonSet buttons = getButtons();
         buttons.removeAll();
+        if (apply) {
+            addButton(APPLY_ID);
+        }
         addButton(OK_ID);
         addButton(CANCEL_ID);
         return buttons;
@@ -290,7 +294,7 @@ public class VisitEditorDialog extends PopupDialog {
      * Updates the dialog buttons
      */
     private void onRemindersSelected() {
-        editor.setButtons(setDefaultButtons());
+        editor.setButtons(setDefaultButtons(false));
     }
 
     /**
@@ -299,7 +303,7 @@ public class VisitEditorDialog extends PopupDialog {
      * Updates the dialog buttons
      */
     private void onDocumentsSelected() {
-        editor.setButtons(setDefaultButtons());
+        editor.setButtons(setDefaultButtons(false));
     }
 
     /**
@@ -308,7 +312,7 @@ public class VisitEditorDialog extends PopupDialog {
      * Updates the dialog buttons.
      */
     private void onPrescriptionSelected() {
-        ButtonSet buttons = setDefaultButtons();
+        ButtonSet buttons = setDefaultButtons(false);
         editor.setButtons(buttons);
     }
 
@@ -318,7 +322,7 @@ public class VisitEditorDialog extends PopupDialog {
      * Updates the dialog buttons.
      */
     private void onEstimatesSelected() {
-        ButtonSet buttons = setDefaultButtons();
+        ButtonSet buttons = setDefaultButtons(false);
         editor.setButtons(buttons);
     }
 
@@ -326,10 +330,7 @@ public class VisitEditorDialog extends PopupDialog {
      * Sets the dialog buttons to that of the patient history summary.
      */
     private void setHistoryButtons() {
-        ButtonSet buttons = getButtons();
-        buttons.removeAll();
-        addButton(OK_ID);
-        addButton(CANCEL_ID);
+        ButtonSet buttons = setDefaultButtons(true);
         editor.setButtons(buttons);
     }
 

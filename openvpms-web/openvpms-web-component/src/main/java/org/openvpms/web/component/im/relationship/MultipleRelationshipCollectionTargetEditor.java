@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.relationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
+import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectTableCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -44,6 +45,20 @@ public class MultipleRelationshipCollectionTargetEditor
     public MultipleRelationshipCollectionTargetEditor(RelationshipCollectionTargetPropertyEditor editor,
                                                       IMObject object, LayoutContext context) {
         super(editor, object, context);
+    }
+
+    /**
+     * Constructs a {@link MultipleRelationshipCollectionTargetEditor}.
+     *
+     * @param editor  the property editor
+     * @param object  the parent object
+     * @param context the layout context
+     * @param factory the result set factory
+     */
+    public MultipleRelationshipCollectionTargetEditor(RelationshipCollectionTargetPropertyEditor editor,
+                                                      IMObject object, LayoutContext context,
+                                                      CollectionResultSetFactory factory) {
+        super(editor, object, context, factory);
     }
 
     /**

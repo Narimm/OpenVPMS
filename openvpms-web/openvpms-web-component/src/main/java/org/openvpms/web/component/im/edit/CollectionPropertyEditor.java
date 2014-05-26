@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.im.edit;
 
+import org.apache.commons.collections4.Predicate;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -115,7 +116,14 @@ public interface CollectionPropertyEditor extends Modifiable, Saveable {
      *
      * @return the objects in the collection
      */
-    List<IMObject> getObjects();
+    <T extends IMObject> List<T> getObjects();
+
+    /**
+     * Returns the objects in the collection, selected by a predicate.
+     *
+     * @return the selected objects
+     */
+    <T extends IMObject> List<T> getObjects(Predicate<T> predicate);
 
     /**
      * Returns the minimum cardinality.
