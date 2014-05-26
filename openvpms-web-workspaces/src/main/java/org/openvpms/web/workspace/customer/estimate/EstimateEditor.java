@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
 
+import org.openvpms.archetype.rules.act.EstimateActStatus;
 import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -23,9 +24,15 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.edit.act.ActEditor;
+import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.lookup.LookupField;
+import org.openvpms.web.component.im.lookup.LookupFieldFactory;
+import org.openvpms.web.component.im.lookup.LookupFilter;
+import org.openvpms.web.component.im.lookup.LookupQuery;
+import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 
@@ -48,14 +55,41 @@ public class EstimateEditor extends ActEditor {
      * @param parent  the parent object. May be {@code null}
      * @param context the layout context
      */
-    public EstimateEditor(Act act, IMObject parent,
-                          LayoutContext context) {
+    public EstimateEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
         if (!TypeHelper.isA(act, EstimateArchetypes.ESTIMATE)) {
             throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
         }
         addStartEndTimeListeners();
         initParticipant("customer", context.getContext().getCustomer());
+    }
+
+    /**
+     * Returns the items collection editor.
+     *
+     * @return the items collection editor. May be {@code null}
+     */
+    @Override
+    public ActRelationshipCollectionEditor getItems() {
+        return super.getItems();
+    }
+
+    /**
+     * Returns the customer notes collection editor.
+     *
+     * @return the customer notes collection editor. May be {@code null}
+     */
+    public ActRelationshipCollectionEditor getCustomerNotes() {
+        return (ActRelationshipCollectionEditor) getEditors().getEditor("customerNotes");
+    }
+
+    /**
+     * Returns the documents editor.
+     *
+     * @return the documents editor. May be {@code null}
+     */
+    public ActRelationshipCollectionEditor getDocuments() {
+        return (ActRelationshipCollectionEditor) getEditors().getEditor("documents");
     }
 
     /**
@@ -67,6 +101,14 @@ public class EstimateEditor extends ActEditor {
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         IMObjectLayoutStrategyFactory layoutStrategy = getLayoutContext().getLayoutStrategyFactory();
         IMObjectLayoutStrategy strategy = layoutStrategy.create(getObject(), getParent());
+
+        // exclude the INVOICED status from the status dropdown
+        Property status = getProperty("status");
+        LookupQuery query = new NodeLookupQuery(getObject(), status);
+        query = new LookupFilter(query, false, EstimateActStatus.INVOICED);
+        LookupField field = LookupFieldFactory.create(status, query);
+        strategy.addComponent(new ComponentState(field, status));
+
         strategy.addComponent(new ComponentState(getItems()));
         return strategy;
     }

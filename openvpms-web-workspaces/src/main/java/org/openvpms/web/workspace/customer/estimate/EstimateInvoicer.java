@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -25,10 +25,13 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
+import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
+import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 
@@ -44,7 +47,7 @@ import org.springframework.transaction.support.TransactionCallback;
  *
  * @author Tim Anderson
  */
-class EstimateInvoicer {
+public class EstimateInvoicer {
 
     /**
      * Creates an invoice for an estimate.
@@ -77,8 +80,57 @@ class EstimateInvoicer {
         // popups which would parent themselves on the wrong window otherwise.
         EditDialog dialog = new EditDialog(editor, estimate, context.getContext());
         dialog.show();
-        EstimateInvoicerHelper.invoice(estimate, editor);
+        invoice(estimate, editor);
         return dialog;
+    }
+
+    /**
+     * Invoices an estimate.
+     *
+     * @param estimate the estimate to invoice
+     * @param editor   the editor to add invoice items to
+     */
+    public void invoice(Act estimate, AbstractCustomerChargeActEditor editor) {
+        ActBean bean = new ActBean(estimate);
+        ActRelationshipCollectionEditor items = editor.getItems();
+        for (Act estimationItem : bean.getNodeActs("items")) {
+            ActBean itemBean = new ActBean(estimationItem);
+            Act act = (Act) items.create();
+            if (act == null) {
+                throw new IllegalStateException("Failed to create charge item");
+            }
+            CustomerChargeActItemEditor itemEditor = (CustomerChargeActItemEditor) items.getEditor(act);
+            itemEditor.getComponent();
+            items.addEdited(itemEditor);
+            itemEditor.setPatientRef(itemBean.getNodeParticipantRef("patient"));
+            itemEditor.setQuantity(itemBean.getBigDecimal("highQty"));
+
+            // NOTE: setting the product can trigger popups - want the popups to get the correct
+            // property values from above
+            itemEditor.setProductRef(itemBean.getNodeParticipantRef("product"));
+
+            itemEditor.setFixedPrice(itemBean.getBigDecimal("fixedPrice"));
+            itemEditor.setUnitPrice(itemBean.getBigDecimal("highUnitPrice"));
+            itemEditor.setDiscount(itemBean.getBigDecimal("discount"));
+        }
+        items.refresh();
+        ActRelationshipCollectionEditor customerNotes = editor.getCustomerNotes();
+        if (customerNotes != null) {
+            for (Act note : bean.getNodeActs("customerNotes")) {
+                IMObjectEditor noteEditor = customerNotes.getEditor(note);
+                noteEditor.getComponent();
+                customerNotes.addEdited(noteEditor);
+            }
+        }
+        ActRelationshipCollectionEditor documents = editor.getDocuments();
+        if (documents != null) {
+            for (Act document : bean.getNodeActs("documents")) {
+                IMObjectEditor documentsEditor = documents.getEditor(document);
+                documentsEditor.getComponent();
+                documents.addEdited(documentsEditor);
+            }
+        }
+
     }
 
     /**

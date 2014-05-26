@@ -73,7 +73,7 @@ public class ActRelationshipCollectionPropertyEditor extends RelationshipCollect
      * @return the child acts
      */
     @SuppressWarnings("unchecked")
-    protected Map<Act, ActRelationship> getActs() {
+    public Map<Act, ActRelationship> getActs() {
         Map relationships = super.getTargets();
         return (Map<Act, ActRelationship>) relationships;
     }

@@ -16,6 +16,8 @@
 
 package org.openvpms.web.component.im.edit.act;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.Predicate;
 import org.openvpms.archetype.rules.act.ActCopyHandler;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -32,6 +34,8 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
+import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
+import org.openvpms.web.component.im.edit.DefaultCollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -60,8 +64,7 @@ import static org.openvpms.archetype.rules.product.ProductArchetypes.TEMPLATE;
  *
  * @author Tim Anderson
  */
-public class ActRelationshipCollectionEditor
-        extends MultipleRelationshipCollectionTargetEditor {
+public class ActRelationshipCollectionEditor extends MultipleRelationshipCollectionTargetEditor {
 
     /**
      * Determines if a new object has been modified since its editor was created (i.e has been user modified).
@@ -85,15 +88,27 @@ public class ActRelationshipCollectionEditor
 
 
     /**
-     * Constructs an <tt>ActRelationshipCollectionEditor</tt>.
+     * Constructs an {@link ActRelationshipCollectionEditor}.
      *
      * @param property the collection property
      * @param act      the parent act
      * @param context  the layout context
      */
-    public ActRelationshipCollectionEditor(CollectionProperty property,
-                                           Act act, LayoutContext context) {
-        super(new ActRelationshipCollectionPropertyEditor(property, act), act, context);
+    public ActRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context) {
+        this(property, act, context, DefaultCollectionResultSetFactory.INSTANCE);
+    }
+
+    /**
+     * Constructs an {@link ActRelationshipCollectionEditor}.
+     *
+     * @param property the collection property
+     * @param act      the parent act
+     * @param context  the layout context
+     * @param factory  the result set factory
+     */
+    public ActRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context,
+                                           CollectionResultSetFactory factory) {
+        super(new ActRelationshipCollectionPropertyEditor(property, act), act, context, factory);
         productListener = new ProductListener() {
             public void productChanged(ActItemEditor editor, Product product) {
                 onProductChanged(editor, product);
@@ -112,6 +127,16 @@ public class ActRelationshipCollectionEditor
     }
 
     /**
+     * Returns the set of acts being edited, filtered by a predicate.
+     *
+     * @return the filtered acts
+     */
+    public List<Act> getActs(Predicate<Act> predicate) {
+        List<Act> result = new ArrayList<Act>();
+        return CollectionUtils.select(getActs(), predicate, result);
+    }
+
+    /**
      * Returns the set of acts being edited, including that of the {@link #getCurrentEditor()}.
      *
      * @return the set of acts being edited
@@ -123,6 +148,16 @@ public class ActRelationshipCollectionEditor
             result.add((Act) current.getObject());
         }
         return new ArrayList<Act>(result);
+    }
+
+    /**
+     * Returns the set of acts being edited, including that of the {@link #getCurrentEditor()}, filtered by a predicate.
+     *
+     * @return the filtered acts
+     */
+    public List<Act> getCurrentActs(Predicate<Act> predicate) {
+        List<Act> result = new ArrayList<Act>();
+        return CollectionUtils.select(getCurrentActs(), predicate, result);
     }
 
     /**
@@ -154,7 +189,7 @@ public class ActRelationshipCollectionEditor
      * Adds any object being edited to the collection, if it is valid.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object is valid, otherwise <tt>false</tt>
+     * @return {@code true} if the object is valid, otherwise {@code false}
      */
     @Override
     protected boolean addCurrentEdits(Validator validator) {
@@ -179,7 +214,7 @@ public class ActRelationshipCollectionEditor
      * The object will be selected.
      *
      * @param editor the editor
-     * @return <tt>true</tt> if the object was added, otherwise <tt>false</tt>
+     * @return {@code true} if the object was added, otherwise {@code false}
      */
     @Override
     public boolean addEdited(IMObjectEditor editor) {
@@ -205,9 +240,9 @@ public class ActRelationshipCollectionEditor
      * This is so that incomplete objects that contain no user-entered data can be excluded from commits.
      * An object will only be removed if its removal won't invalidate the collection's minimum cardinality.
      * <p/>
-     * Defaults to <tt>true</tt>.
+     * Defaults to {@code true}.
      *
-     * @param exclude if <tt>true</tt> exclude objects with
+     * @param exclude if {@code true} exclude objects with
      */
     public void setExcludeDefaultValueObject(boolean exclude) {
         excludeDefaultValueObject = exclude;
@@ -217,7 +252,7 @@ public class ActRelationshipCollectionEditor
      * Determines if an act has been modified.
      *
      * @param act the act
-     * @return <tt>true</tt> if the act has been modified
+     * @return {@code true} if the act has been modified
      */
     public boolean isModified(Act act) {
         Boolean result = modified.get(act.getObjectReference());
@@ -240,7 +275,7 @@ public class ActRelationshipCollectionEditor
      * This validates the current object being edited, and if valid, the collection.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     @Override
     protected boolean doValidation(Validator validator) {
@@ -258,7 +293,7 @@ public class ActRelationshipCollectionEditor
     /**
      * Saves any current edits.
      *
-     * @return <tt>true</tt> if edits were saved successfully, otherwise <tt>false</tt>
+     * @return {@code true} if edits were saved successfully, otherwise {@code false}
      */
     @Override
     protected boolean doSave() {
@@ -319,7 +354,7 @@ public class ActRelationshipCollectionEditor
      *
      * @param editor   the editor
      * @param template the template. May be {@code null}
-     * @return <tt>true</tt> if the template was expanded; otherwise <tt>false</tt>
+     * @return {@code true} if the template was expanded; otherwise {@code false}
      */
     protected boolean expandTemplate(ActItemEditor editor, Product template) {
         boolean result = false;
@@ -423,14 +458,14 @@ public class ActRelationshipCollectionEditor
     /**
      * Excludes the current object being edited from the collection if:
      * <ul>
-     * <li>excludeWithDefaultValues is <tt>true</tt>
+     * <li>excludeWithDefaultValues is {@code true}
      * <li>it has default values; and
      * <li>excluding the object won't invalidate the collection's minimum cardinality
      * </ul>
      * <p/>
      * This is so that incomplete objects that contain no user-entered data can be excluded from commits.
      *
-     * @return <tt>true</tt> if an incomplete object was excluded; otherwise <tt>false</tt>
+     * @return {@code true} if an incomplete object was excluded; otherwise {@code false}
      */
     private boolean excludeObjectWithDefaultValues() {
         IMObjectEditor editor = getCurrentEditor();
@@ -471,7 +506,7 @@ public class ActRelationshipCollectionEditor
      * since the editor was created (the editor typically initialises default values within its constructor).
      *
      * @param editor the editor
-     * @return <tt>true</tt> if the object has default values
+     * @return {@code true} if the object has default values
      */
     private boolean hasDefaultValues(IMObjectEditor editor) {
         boolean result = false;
@@ -489,7 +524,7 @@ public class ActRelationshipCollectionEditor
      * Determines if an editor has a template product that needs expanding.
      *
      * @param editor the editor
-     * @return <tt>true</tt> iif the editor has a template product
+     * @return {@code true} iif the editor has a template product
      */
     private boolean needsTemplateExpansion(IMObjectEditor editor) {
         if (editor instanceof ActItemEditor) {
@@ -506,9 +541,9 @@ public class ActRelationshipCollectionEditor
          *
          * @param object  the source object
          * @param service the archetype service
-         * @return <tt>object</tt> if the object shouldn't be copied,
-         *         <tt>null</tt> if it should be replaced with
-         *         <tt>null</tt>, or a new instance if the object should be
+         * @return {@code object} if the object shouldn't be copied,
+         *         {@code null} if it should be replaced with
+         *         {@code null}, or a new instance if the object should be
          *         copied
          */
         public IMObject getObject(IMObject object, IArchetypeService service) {
@@ -535,9 +570,9 @@ public class ActRelationshipCollectionEditor
          *
          * @param archetype the archetype descriptor
          * @param node      the node descriptor
-         * @param source    if <tt>true</tt> the node is the source; otherwise its
+         * @param source    if {@code true} the node is the source; otherwise its
          *                  the target
-         * @return <tt>true</tt> if the node is copyable; otherwise <tt>false</tt>
+         * @return {@code true} if the node is copyable; otherwise {@code false}
          */
         @Override
         protected boolean isCopyable(ArchetypeDescriptor archetype,

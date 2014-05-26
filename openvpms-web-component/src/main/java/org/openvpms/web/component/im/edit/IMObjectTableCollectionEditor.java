@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -21,16 +21,12 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
-import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.echo.table.TableNavigator;
-
-import java.util.List;
 
 
 /**
@@ -41,37 +37,49 @@ import java.util.List;
  * This implementation renders {@link IMObject} instances, and creates the
  * table model using {@link IMObjectTableModelFactory}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
-public abstract class IMObjectTableCollectionEditor
-        extends IMTableCollectionEditor<IMObject> {
-
+public abstract class IMObjectTableCollectionEditor extends IMTableCollectionEditor<IMObject> {
 
     /**
-     * Creates a new <tt>IMObjectTableCollectionEditor</tt>.
-     *
-     * @param editor  the collection property editor
-     * @param object  the object being edited
-     * @param context the layout context
+     * The result set factory.
      */
-    protected IMObjectTableCollectionEditor(CollectionPropertyEditor editor,
-                                            IMObject object,
-                                            LayoutContext context) {
-        super(editor, object, new DefaultLayoutContext(context));
-    }
+    private final CollectionResultSetFactory resultSetFactory;
 
     /**
-     * Creates a new <tt>IMObjectCollectionEditor</tt>.
+     * Constructs a {@link IMObjectTableCollectionEditor}.
      *
      * @param property the collection property
      * @param object   the object being edited
      * @param context  the layout context
      */
-    public IMObjectTableCollectionEditor(CollectionProperty property,
-                                         IMObject object,
-                                         LayoutContext context) {
+    public IMObjectTableCollectionEditor(CollectionProperty property, IMObject object, LayoutContext context) {
         this(new DefaultCollectionPropertyEditor(property), object, context);
+    }
+
+    /**
+     * Constructs a {@link IMObjectTableCollectionEditor}.
+     *
+     * @param editor  the collection property editor
+     * @param object  the object being edited
+     * @param context the layout context
+     */
+    protected IMObjectTableCollectionEditor(CollectionPropertyEditor editor, IMObject object, LayoutContext context) {
+        this(editor, object, context, DefaultCollectionResultSetFactory.INSTANCE);
+    }
+
+    /**
+     * Constructs a {@link IMObjectTableCollectionEditor}.
+     *
+     * @param editor  the collection property editor
+     * @param object  the object being edited
+     * @param context the layout context
+     * @param factory the result set factory
+     */
+    protected IMObjectTableCollectionEditor(CollectionPropertyEditor editor, IMObject object, LayoutContext context,
+                                            CollectionResultSetFactory factory) {
+        super(editor, object, new DefaultLayoutContext(context));
+        this.resultSetFactory = factory;
     }
 
     /**
@@ -81,10 +89,8 @@ public abstract class IMObjectTableCollectionEditor
      * @return a new table model
      */
     protected IMTableModel<IMObject> createTableModel(LayoutContext context) {
-        context = new DefaultLayoutContext(context);
-        context.setComponentFactory(new TableComponentFactory(context));
         CollectionPropertyEditor editor = getCollectionPropertyEditor();
-        return IMObjectTableModelFactory.create(editor.getArchetypeRange(), getObject(), context);
+        return resultSetFactory.createTableModel(editor, getObject(), context);
     }
 
     /**
@@ -120,7 +126,7 @@ public abstract class IMObjectTableCollectionEditor
     /**
      * Returns the selected object.
      *
-     * @return the selected object. May be <tt>null</tt>
+     * @return the selected object. May be {@code null}
      */
     protected IMObject getSelected() {
         return getTable().getSelected();
@@ -129,7 +135,7 @@ public abstract class IMObjectTableCollectionEditor
     /**
      * Selects the object prior to the selected object, if one is available.
      *
-     * @return the prior object. May be <tt>null</tt>
+     * @return the prior object. May be {@code null}
      */
     protected IMObject selectPrevious() {
         IMObject result = null;
@@ -145,7 +151,7 @@ public abstract class IMObjectTableCollectionEditor
     /**
      * Selects the object after the selected object, if one is available.
      *
-     * @return the next object. May be <tt>null</tt>
+     * @return the next object. May be {@code null}
      */
     protected IMObject selectNext() {
         IMObject result = null;
@@ -164,9 +170,7 @@ public abstract class IMObjectTableCollectionEditor
      * @return a new result set
      */
     protected ResultSet<IMObject> createResultSet() {
-        CollectionPropertyEditor editor = getCollectionPropertyEditor();
-        List<IMObject> objects = editor.getObjects();
-        return new IMObjectListResultSet<IMObject>(objects, ROWS);
+        return resultSetFactory.createResultSet(getCollectionPropertyEditor());
     }
 
 }

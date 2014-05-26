@@ -16,6 +16,8 @@
 
 package org.openvpms.web.component.im.edit;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.Predicate;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -270,22 +272,43 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
         return saved;
     }
 
+
     /**
      * Returns the objects in the collection.
      *
      * @return the objects in the collection
      */
-    public List<IMObject> getObjects() {
-        List<IMObject> objects = Collections.emptyList();
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T extends IMObject> List<T> getObjects() {
+        List<T> objects = Collections.emptyList();
         Collection values = property.getValues();
         int size = values.size();
         if (size != 0) {
-            objects = new ArrayList<IMObject>();
+            objects = new ArrayList<T>();
             for (Object value : values) {
-                objects.add((IMObject) value);
+                objects.add((T) value);
             }
         }
         return objects;
+    }
+
+    /**
+     * Returns the objects in the collection, selected by a predicate.
+     *
+     * @return the selected objects
+     */
+    @Override
+    public <T extends IMObject> List<T> getObjects(Predicate<T> predicate) {
+        List<T> result;
+        List<T> objects = getObjects();
+        if (!objects.isEmpty()) {
+            result = new ArrayList<T>();
+            CollectionUtils.select(objects, predicate, result);
+        } else {
+            result = Collections.emptyList();
+        }
+        return result;
     }
 
     /**

@@ -35,11 +35,14 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.act.ActHelper;
+import org.openvpms.web.component.im.edit.IMObjectCollectionEditorFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.FinancialActEditor;
 import org.openvpms.web.component.im.edit.act.TemplateProductListener;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.system.ServiceHelper;
@@ -67,7 +70,20 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
      */
     private boolean addDefaultItem;
 
+    /**
+     * Tracks patient history changes.
+     */
     private PatientHistoryChanges changes;
+
+    /**
+     * The customer notes editor.
+     */
+    private ActRelationshipCollectionEditor customerNotes;
+
+    /**
+     * The documents editor.
+     */
+    private ActRelationshipCollectionEditor documents;
 
     /**
      * Constructs an {@link AbstractCustomerChargeActEditor}.
@@ -179,6 +195,38 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
+     * Returns the customer notes collection editor.
+     *
+     * @return the customer notes collection editor. May be {@code null}
+     */
+    public ActRelationshipCollectionEditor getCustomerNotes() {
+        if (customerNotes == null) {
+            CollectionProperty notes = (CollectionProperty) getProperty("customerNotes");
+            if (notes != null && !notes.isHidden()) {
+                customerNotes = createCustomerNotesEditor((Act) getObject(), notes);
+                getEditors().add(customerNotes);
+            }
+        }
+        return customerNotes;
+    }
+
+    /**
+     * Returns the document collection editor.
+     *
+     * @return the document collection editor. May be {@code null}
+     */
+    public ActRelationshipCollectionEditor getDocuments() {
+        if (documents == null) {
+            CollectionProperty notes = (CollectionProperty) getProperty("documents");
+            if (notes != null && !notes.isHidden()) {
+                documents = createDocumentsEditor((Act) getObject(), notes);
+                getEditors().add(documents);
+            }
+        }
+        return documents;
+    }
+
+    /**
      * Adds a new charge item, returning its editor.
      *
      * @return the charge item editor, or {@code null} if an item couldn't be created
@@ -285,6 +333,34 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        IMObjectLayoutStrategy strategy = super.createLayoutStrategy();
+        iniLayoutStrategy(strategy);
+        return strategy;
+    }
+
+    /**
+     * Initialises a layout strategy with the customerNotes and documents collections, if they are present.
+     *
+     * @param strategy the layout strategy to initialise
+     */
+    protected void iniLayoutStrategy(IMObjectLayoutStrategy strategy) {
+        ActRelationshipCollectionEditor notes = getCustomerNotes();
+        ActRelationshipCollectionEditor documents = getDocuments();
+        if (notes != null) {
+            strategy.addComponent(new ComponentState(notes));
+        }
+        if (documents != null) {
+            strategy.addComponent(new ComponentState(documents));
+        }
+    }
+
+    /**
      * Invoked when layout has completed.
      * <p/>
      * This invokes {@link #initItems()}.
@@ -302,6 +378,29 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     protected void onItemsChanged() {
         super.onItemsChanged();
         calculateCosts();
+    }
+
+    /**
+     * Creates a collection editor for the customer notes collection.
+     *
+     * @param act   the act
+     * @param notes the customer notes collection
+     * @return a new collection editor
+     */
+    protected ActRelationshipCollectionEditor createCustomerNotesEditor(Act act, CollectionProperty notes) {
+        return (ActRelationshipCollectionEditor) IMObjectCollectionEditorFactory.create(notes, act, getLayoutContext());
+    }
+
+    /**
+     * Creates a collection editor for the documents collection.
+     *
+     * @param act       the act
+     * @param documents the documents collection
+     * @return a new collection editor
+     */
+    protected ActRelationshipCollectionEditor createDocumentsEditor(Act act, CollectionProperty documents) {
+        return (ActRelationshipCollectionEditor) IMObjectCollectionEditorFactory.create(documents, act,
+                                                                                        getLayoutContext());
     }
 
     /**

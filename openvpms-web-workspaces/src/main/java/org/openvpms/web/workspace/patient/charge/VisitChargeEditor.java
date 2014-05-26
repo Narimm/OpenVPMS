@@ -137,61 +137,39 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     }
 
     /**
+     * Creates a collection editor for the customer notes collection.
+     *
+     * @param act   the act
+     * @param notes the customer notes collection
+     * @return a new collection editor
+     */
+    @Override
+    protected ActRelationshipCollectionEditor createCustomerNotesEditor(Act act, CollectionProperty notes) {
+        return new VisitActRelationshipCollectionEditor(notes, act, getLayoutContext());
+    }
+
+    /**
+     * Creates a collection editor for the documents collection.
+     *
+     * @param act       the act
+     * @param documents the documents collection
+     * @return a new collection editor
+     */
+    @Override
+    protected ActRelationshipCollectionEditor createDocumentsEditor(Act act, CollectionProperty documents) {
+        return new VisitActRelationshipCollectionEditor(documents, act, getLayoutContext());
+    }
+
+    /**
      * Creates the layout strategy.
      *
      * @return a new layout strategy
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new ActLayoutStrategy(getItems()) {
-
-            /**
-             * Creates a component for a property.
-             * <p/>
-             * This makes the status node read-only.
-             *
-             * @param property the property
-             * @param parent   the parent object
-             * @param context  the layout context
-             * @return a component to display <tt>property</tt>
-             */
-            @Override
-            protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
-                if ("status".equals(property.getName())) {
-                    // status is not editable
-                    return super.createComponent(createReadOnly(property), parent, context);
-                }
-                return super.createComponent(property, parent, context);
-            }
-
-            @Override
-            protected ComponentSet createComponentSet(IMObject object, List<Property> properties,
-                                                      LayoutContext context) {
-                ComponentSet result = super.createComponentSet(object, properties, context);
-                IMObjectComponentFactory factory = context.getComponentFactory();
-
-                ComponentState total = factory.create(visitTotal, object);
-                ComponentState tax = factory.create(visitTax, object);
-
-                total.setDisplayName(Messages.get("patient.record.charge.total"));
-                tax.setDisplayName(Messages.get("patient.record.charge.tax"));
-
-                result.add(1, total);
-                result.add(2, tax);
-
-                return result;
-            }
-
-            /**
-             * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-             *
-             * @return the archetype nodes
-             */
-            @Override
-            protected ArchetypeNodes getArchetypeNodes() {
-                return NODES;
-            }
-        };
+        VisitChargeLayoutStrategy strategy = new VisitChargeLayoutStrategy();
+        iniLayoutStrategy(strategy);
+        return strategy;
     }
 
     /**
@@ -200,7 +178,7 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
      * For invoices, this links items to their corresponding clinical events, creating events as required, and marks
      * matching reminders completed.
      *
-     * @return <tt>true</tt> if the save was successful
+     * @return {@code true} if the save was successful
      */
     @Override
     protected boolean doSave() {
@@ -218,7 +196,7 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
      */
     @Override
     protected void linkToEvents(PatientHistoryChanges changes) {
-        List<FinancialAct> items = getItems().getPatientActs();
+        List<Act> items = getItems().getPatientActs();
         event = IMObjectHelper.reload(event); // make sure the most recent instance is being used
         if (event != null && !items.isEmpty()) {
             changes.addEvent(event);
@@ -242,7 +220,7 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
      */
     private void calculateVisitTotals() {
         VisitChargeItemRelationshipCollectionEditor items = getItems();
-        List<FinancialAct> acts = items.getCurrentPatientActs();
+        List<Act> acts = items.getCurrentPatientActs();
         BigDecimal total = ActHelper.sum((Act) getObject(), acts, "total");
         visitTotal.setValue(total);
 
@@ -257,7 +235,7 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     private void addTemplateNotes() {
         List<TemplateChargeItems> templates = getItems().getTemplates();
         if (event != null && !templates.isEmpty()) {
-            List<FinancialAct> items = getItems().getPatientActs();
+            List<Act> items = getItems().getPatientActs();
             MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
             for (TemplateChargeItems template : templates) {
                 Act item = template.findFirst(items);
@@ -278,6 +256,60 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
                 }
             }
             getItems().clearTemplates();
+        }
+    }
+
+    private class VisitChargeLayoutStrategy extends ActLayoutStrategy {
+
+        public VisitChargeLayoutStrategy() {
+            super(VisitChargeEditor.this.getItems());
+        }
+
+        /**
+         * Creates a component for a property.
+         * <p/>
+         * This makes the status node read-only.
+         *
+         * @param property the property
+         * @param parent   the parent object
+         * @param context  the layout context
+         * @return a component to display {@code property}
+         */
+        @Override
+        protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
+            if ("status".equals(property.getName())) {
+                // status is not editable
+                return super.createComponent(createReadOnly(property), parent, context);
+            }
+            return super.createComponent(property, parent, context);
+        }
+
+        @Override
+        protected ComponentSet createComponentSet(IMObject object, List<Property> properties,
+                                                  LayoutContext context) {
+            ComponentSet result = super.createComponentSet(object, properties, context);
+            IMObjectComponentFactory factory = context.getComponentFactory();
+
+            ComponentState total = factory.create(visitTotal, object);
+            ComponentState tax = factory.create(visitTax, object);
+
+            total.setDisplayName(Messages.get("patient.record.charge.total"));
+            tax.setDisplayName(Messages.get("patient.record.charge.tax"));
+
+            result.add(1, total);
+            result.add(2, tax);
+
+            return result;
+        }
+
+        /**
+         * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
+         *
+         * @return the archetype nodes
+         */
+        @Override
+        protected ArchetypeNodes getArchetypeNodes() {
+            return NODES;
         }
     }
 }
