@@ -1,0 +1,38 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="act.patientCustomerNote.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.act.Act" displayName="Customer Note">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
+              derivedValue="'Customer Note'"/>
+        <node name="description" type="java.lang.String" path="/description" hidden="true" maxLength="255"/>
+        <node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"
+              defaultValue="java.util.Date.new()" hidden="true"/>
+        <node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+              filter="participation.patient"/>
+        <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+              filter="participation.author" hidden="true"/>
+        <node name="note" path="/details/note" type="java.lang.String" maxLength="5000"/>
+        <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+              filter="participation.clinician"/>
+        <node name="event" path="/targetActRelationships" type="java.util.HashSet" baseName="TargetActRelationship"
+              minCardinality="0" maxCardinality="1" hidden="true" filter="actRelationship.patientClinicalEventItem"/>
+        <node name="problem" path="/targetActRelationships" type="java.util.HashSet" baseName="TargetActRelationship"
+              minCardinality="0" maxCardinality="1" hidden="true" filter="actRelationship.patientClinicalProblemItem"/>
+    </archetype>
+</archetypes>
