@@ -77,7 +77,7 @@ public class ChargeItemEventLinker {
      * @param item    the charge item
      * @param changes the patient history changes
      */
-    public void link(Act event, FinancialAct item, PatientHistoryChanges changes) {
+    public void link(Act event, Act item, PatientHistoryChanges changes) {
         link(event, Arrays.asList(item), changes);
     }
 
@@ -90,7 +90,7 @@ public class ChargeItemEventLinker {
      * @param items   the charge items
      * @param changes the patient history changes
      */
-    public void link(Act event, List<FinancialAct> items, PatientHistoryChanges changes) {
+    public void link(Act event, List<Act> items, PatientHistoryChanges changes) {
         prepare(event, items, changes);
         changes.save();
     }
@@ -104,8 +104,8 @@ public class ChargeItemEventLinker {
      * @param items   the charge items
      * @param changes the patient history changes
      */
-    public void prepare(Act event, List<FinancialAct> items, PatientHistoryChanges changes) {
-        for (FinancialAct item : items) {
+    public void prepare(Act event, List<Act> items, PatientHistoryChanges changes) {
+        for (Act item : items) {
             List<Act> acts = getActs(item, changes);
             rules.addToEvent(event, acts, changes);
         }
@@ -150,7 +150,7 @@ public class ChargeItemEventLinker {
      * @param changes the patient history changes
      * @return the acts
      */
-    private List<Act> getActs(FinancialAct item, PatientHistoryChanges changes) {
+    private List<Act> getActs(Act item, PatientHistoryChanges changes) {
         List<Act> acts = new ArrayList<Act>();
         ActBean bean = new ActBean(item, service);
         acts.add(item);

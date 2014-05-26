@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="act.customerAccountChargesInvoice.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Invoice">
@@ -96,29 +97,15 @@
               filter="participation.location" readOnly="true"/>
         <node name="items" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
-              filter="actRelationship.customerAccountInvoiceItem">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="actRelationship.customerAccountInvoiceItem"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
+              filter="actRelationship.customerAccountInvoiceItem"/>
+        <node name="customerNotes" path="/sourceActRelationships"
+              type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
+              filter="actRelationship.patientCustomerNote"/>
+        <!--node name="documents" path="/sourceActRelationships"
+              type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
+              filter="actRelationship.patientDocument"/-->
         <node name="allocation" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
-              filter="actRelationship.customerAccountAllocation" hidden="true">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="actRelationship.customerAccountAllocation"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
+              filter="actRelationship.customerAccountAllocation" hidden="true"/>
     </archetype>
 </archetypes>

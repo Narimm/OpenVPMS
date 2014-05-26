@@ -38,8 +38,7 @@ import java.util.Set;
  * class type</li>.
  * </ul>
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
 
@@ -49,7 +48,7 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
     public enum Treatment {
         REFERENCE,  // indicates that the object should be returned unchanged
         COPY,       // indicates to return a new instance of the object
-        EXCLUDE     // indicates to return <tt>null</tt>
+        EXCLUDE     // indicates to return {@code null}
     }
 
     /**
@@ -60,7 +59,7 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
     private String[][] shortNameMap;
 
     /**
-     * If <tt>true</tt>, the 'from' short name in the short name map is the
+     * If {@code true}, the 'from' short name in the short name map is the
      * second element and the 'to' short name the first.
      */
     private boolean reverse;
@@ -87,19 +86,19 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
 
     /**
      * Returned by {@link #mapTo} to indicate that an object is to be
-     * replaced with <tt>null</tt>.
+     * replaced with {@code null}.
      */
     protected static final String MAP_TO_NULL = "__MAP_TO_NULL";
 
 
     /**
-     * Creates a new <tt>MappingCopyHandler</tt>.
+     * Creates a new {@code MappingCopyHandler}.
      */
     public MappingCopyHandler() {
     }
 
     /**
-     * Creates a new <tt>MappingCopyHandler</tt>.
+     * Creates a new {@code MappingCopyHandler}.
      *
      * @param shortNameMap a list of short name pairs, indicating the short name
      *                     to map from and to. If the 'to' short name is null,
@@ -110,12 +109,12 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
     }
 
     /**
-     * Creates a new <tt>MappingCopyHandler</tt>.
+     * Creates a new {@code MappingCopyHandler}.
      *
      * @param shortNameMap a list of short name pairs, indicating the short name
      *                     to map from and to. If the 'to' short name is null,
      *                     then any instance of the 'from' is ignored
-     * @param reverse      if <tt>true</tt>, the 'from' short name is the second
+     * @param reverse      if {@code true}, the 'from' short name is the second
      *                     element and the 'to' short name the first
      */
     public MappingCopyHandler(String[][] shortNameMap, boolean reverse) {
@@ -135,7 +134,7 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
     }
 
     /**
-     * @param reverse if <tt>true</tt>, the 'from' short name is the element,
+     * @param reverse if {@code true}, the 'from' short name is the element,
      *                and the 'to' short name the first
      */
     public void setReverse(boolean reverse) {
@@ -191,7 +190,7 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
     /**
      * Sets the types to exclude.
      * <p/>
-     * All instance of the specified types will be replaced with <tt>null</tt>.
+     * All instance of the specified types will be replaced with {@code null}.
      *
      * @param types the types to exclude
      */
@@ -203,7 +202,7 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
      * Sets the archetype short names of the objects to exclude.
      * <p/>
      * All instances with the specified short names will be replaced with
-     * <tt>null</tt>.
+     * {@code null}.
      *
      * @param shortNames the short names of the objects to exclude
      */
@@ -239,14 +238,14 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
      * <li>if the the object is mapped to a different archetype via
      * {@link #setShortNameMap} , a new instance of the map-to type is
      * returned; else</li>
-     * <li>if the object is mapped to null via the above, then <tt>null</null>
+     * <li>if the object is mapped to null via the above, then {@code null</null>
      * is returned; else</li>
      * <li>the treatment is determined via {@link #getTreatment}</li>
      *
      * @param object  the source object
      * @param service the archetype service
-     * @return <tt>object</tt> if the object shouldn't be copied,
-     *         <tt>null</tt> if it should be replaced with <tt>null</tt>,
+     * @return {@code object} if the object shouldn't be copied,
+     *         {@code null} if it should be replaced with {@code null},
      *         or a new instance if the object should be copied
      */
     @Override
@@ -281,7 +280,7 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
      *
      * @param shortName the short name to map from
      * @return the short name to map to or {@link #MAP_TO_NULL} if the object
-     *         should be replaced with <tt>null</tt>, or <tt>null</tt> if there
+     *         should be replaced with {@code null}, or {@code null} if there
      *         is no mapping for the short name
      */
     protected String mapTo(String shortName) {
@@ -311,24 +310,24 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
      * <p/>
      * This returns:
      * <ul>
+     * <li>{@link Treatment#EXCLUDE EXCLUDE} if the object should be replaced
+     * with {@code null}</li>
      * <li>{@link Treatment#REFERENCE REFERENCE} if the object should be
      * referenced</li>
      * <li>{@link Treatment#COPY COPY} if a new instance of the object should be
      * returned so it may be copied</li>
-     * <li>{@link Treatment#EXCLUDE EXCLUDE} if the object should be replaced
-     * with <tt>null</tt></li>
      * </ul>
      *
      * @param object the object
      * @return the type of behaviour to apply to the object
      */
     protected Treatment getTreatment(IMObject object) {
-        if (reference(object)) {
+        if (exclude(object)) {
+            return Treatment.EXCLUDE;
+        } else if (reference(object)) {
             return Treatment.REFERENCE;
         } else if (copy(object)) {
             return Treatment.COPY;
-        } else if (exclude(object)) {
-            return Treatment.EXCLUDE;
         }
         return defaultTreatment;
     }
@@ -336,12 +335,12 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
     /**
      * Determines if an object should be referenced.
      * <p/>
-     * This implementation returns <tt>true</tt> if the object is an instance
+     * This implementation returns {@code true} if the object is an instance
      * of a type specified by {@link #setReference(String[])}
      * or {@link #setReference(Class[])}.
      *
      * @param object the object to check
-     * @return <tt>true</tt> if it should be referenced
+     * @return {@code true} if it should be referenced
      */
     protected boolean reference(IMObject object) {
         return refTypes.matches(object);
@@ -350,12 +349,12 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
     /**
      * Determines if an object should be copied.
      * <p/>
-     * This implementation returns <tt>true</tt> if the object is an instance
+     * This implementation returns {@code true} if the object is an instance
      * of a type specified by {@link #setCopy(String[])}
      * or {@link #setCopy(Class[])}.
      *
      * @param object the object to check
-     * @return <tt>true</tt> if it should be referenced
+     * @return {@code true} if it should be referenced
      */
     protected boolean copy(IMObject object) {
         return copyTypes.matches(object);
@@ -364,14 +363,14 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
     /**
      * Determines if an object should by excluded.
      * <p/>
-     * Excluded objects are replaced with <tt>null</tt>.
+     * Excluded objects are replaced with {@code null}.
      * <p/>
-     * This implementation returns <tt>true</tt> if the object is an instance
+     * This implementation returns {@code true} if the object is an instance
      * of a type specified by {@link #setExclude(String[])} or
      * {@link #setExclude(Class[])}.
      *
      * @param object the object to check
-     * @return <tt>true</tt> if it should be replaced with <tt>null</tt>
+     * @return {@code true} if it should be replaced with {@code null}
      */
     protected boolean exclude(IMObject object) {
         return excludeTypes.matches(object);
@@ -457,7 +456,7 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
          * Determines if an object matches the types.
          *
          * @param object the object
-         * @return <tt>true</tt> if the object matches, otherwise <tt>false</tt>
+         * @return {@code true} if the object matches, otherwise {@code false}
          */
         public boolean matches(IMObject object) {
             String shortName = object.getArchetypeId().getShortName();
@@ -468,8 +467,8 @@ public abstract class MappingCopyHandler extends AbstractIMObjectCopyHandler {
          * Determines if an object is an instance of one of the specified types.
          *
          * @param object the object to check
-         * @return <tt>true</tt> if the object is an instance, otherwise
-         *         <tt>false</tt>
+         * @return {@code true} if the object is an instance, otherwise
+         *         {@code false}
          */
         private boolean isInstance(IMObject object) {
             for (Class type : types) {

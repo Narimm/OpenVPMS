@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
     <archetype name="act.customerEstimation.1.0" latest="true"
@@ -68,16 +68,13 @@
               filter="participation.author" hidden="true"/>
         <node name="items" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship"
-              minCardinality="1" maxCardinality="*">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="actRelationship.customerEstimationItem"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
+              minCardinality="1" maxCardinality="*"
+              filter="actRelationship.customerEstimationItem"/>
+        <node name="customerNotes" path="/sourceActRelationships"
+              type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
+              filter="actRelationship.patientCustomerNote"/>
+        <!--node name="documents" path="/sourceActRelationships"
+              type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
+              filter="actRelationship.patientDocument"/-->
     </archetype>
 </archetypes>
