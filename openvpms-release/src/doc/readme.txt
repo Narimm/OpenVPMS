@@ -149,7 +149,13 @@ change to:
   > cd <OPENVPMS_HOME>/bin
   > templateload ../reports/templates.xml
 
-  NOTE: if a template has been already loaded, it will be replaced.
+  For users in the US, templates in LETTER format can be loaded by running:
+  > cd <OPENVPMS_HOME>/bin
+  > templateload ../reports/US/templates.xml
+
+  NOTES:
+  * if a template has been already loaded, it will be replaced.
+  * not all templates are available in LETTER format
 
   After installation, templates can be updated using via Administration|Templates.
 
