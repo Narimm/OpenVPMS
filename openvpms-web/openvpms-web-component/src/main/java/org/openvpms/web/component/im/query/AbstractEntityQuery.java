@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -23,7 +23,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -50,14 +49,6 @@ public abstract class AbstractEntityQuery<T> extends AbstractArchetypeQuery<T> {
     private static final String IDENTITY_SEARCH_ID = "entityquery.identity";
 
     /**
-     * The default sort constraint.
-     */
-    private static final SortConstraint[] DEFAULT_SORT = {
-            new NodeSortConstraint("name")
-    };
-
-
-    /**
      * Construct a new <tt>AbstractEntityQuery</tt> that queries Entity
      * instances with the specified short names.
      *
@@ -67,7 +58,7 @@ public abstract class AbstractEntityQuery<T> extends AbstractArchetypeQuery<T> {
      */
     public AbstractEntityQuery(String[] shortNames) {
         super(shortNames, true);
-        setDefaultSortConstraint(DEFAULT_SORT);
+        setDefaultSortConstraint(NAME_SORT_CONSTRAINT);
         QueryFactory.initialise(this);
     }
 
@@ -82,7 +73,7 @@ public abstract class AbstractEntityQuery<T> extends AbstractArchetypeQuery<T> {
      */
     public AbstractEntityQuery(String[] shortNames, Class type) {
         super(shortNames, type);
-        setDefaultSortConstraint(DEFAULT_SORT);
+        setDefaultSortConstraint(NAME_SORT_CONSTRAINT);
         QueryFactory.initialise(this);
     }
 
