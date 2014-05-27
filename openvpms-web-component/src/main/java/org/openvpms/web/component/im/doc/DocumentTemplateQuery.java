@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -23,7 +23,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.AbstractFilteredResultSet;
 import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
@@ -48,20 +47,13 @@ public class DocumentTemplateQuery extends AbstractIMObjectQuery<Entity> {
 
 
     /**
-     * The default sort constraint.
-     */
-    private static final SortConstraint[] DEFAULT_SORT
-            = new SortConstraint[]{new NodeSortConstraint("name", true)};
-
-
-    /**
      * Constructs a {@link DocumentTemplateQuery}.
      *
      * @throws ArchetypeQueryException if the short name don't match any archetypes
      */
     public DocumentTemplateQuery() {
         super(new String[]{DocumentArchetypes.DOCUMENT_TEMPLATE}, Entity.class);
-        setDefaultSortConstraint(DEFAULT_SORT);
+        setDefaultSortConstraint(NAME_SORT_CONSTRAINT);
         QueryFactory.initialise(this);
     }
 

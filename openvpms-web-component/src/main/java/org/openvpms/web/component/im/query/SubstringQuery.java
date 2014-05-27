@@ -18,26 +18,48 @@ package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
+import org.openvpms.web.echo.text.TextComponent;
 
 
 /**
- * Query implementation that queries {@link IMObject} instances on short name,
- * instance name, and active/inactive status.
+ * A query that supports substring searches.
  *
  * @author Tim Anderson
  */
-public class DefaultQuery<T extends IMObject> extends AbstractIMObjectQuery<T> {
+public class SubstringQuery<T extends IMObject> extends AbstractIMObjectQuery<T> {
 
     /**
-     * Constructs a {@link DefaultQuery} that queries IMObjects with the specified short names.
+     * Constructs a {@link SubstringQuery} that queries IMObjects with the specified short names.
+     *
+     * @param shortNames the short names
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
+     */
+    public SubstringQuery(String[] shortNames) {
+        super(shortNames);
+        setDefaultSortConstraint(NAME_SORT_CONSTRAINT);
+    }
+
+    /**
+     * Constructs a {@link SubstringQuery} that queries IMObjects with the specified short names.
      *
      * @param shortNames the short names
      * @param type       the type that this query returns
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
-    public DefaultQuery(String[] shortNames, Class<T> type) {
+    public SubstringQuery(String[] shortNames, Class type) {
         super(shortNames, type);
         setDefaultSortConstraint(NAME_SORT_CONSTRAINT);
+    }
+
+    /**
+     * Helper to return the text of the supplied field with wildcards to support substring matches.
+     *
+     * @param field the text field
+     * @return the wildcarded field text, or {@code null} if the field is empty
+     */
+    @Override
+    protected String getWildcardedText(TextComponent field) {
+        return super.getWildcardedText(field, true);
     }
 
 }

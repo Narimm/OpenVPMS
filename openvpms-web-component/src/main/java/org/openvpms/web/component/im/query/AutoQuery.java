@@ -18,9 +18,6 @@ package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.component.system.common.query.SortConstraint;
-
-import static org.openvpms.component.system.common.query.Constraints.sort;
 
 
 /**
@@ -31,11 +28,6 @@ import static org.openvpms.component.system.common.query.Constraints.sort;
 public class AutoQuery extends AbstractIMObjectQuery<IMObject> {
 
     /**
-     * The sort constraint.
-     */
-    private static final SortConstraint[] SORT_CONSTRAINT = new SortConstraint[]{sort("name"), sort("id")};
-
-    /**
      * Constructs a {@link AutoQuery} that queries IMObjects with the specified short names.
      *
      * @param shortNames the short names
@@ -43,7 +35,7 @@ public class AutoQuery extends AbstractIMObjectQuery<IMObject> {
      */
     public AutoQuery(String[] shortNames) {
         super(shortNames);
-        setDefaultSortConstraint(SORT_CONSTRAINT);
+        setDefaultSortConstraint(NAME_SORT_CONSTRAINT);
     }
 
     /**

@@ -45,6 +45,8 @@ import org.openvpms.web.echo.text.TextComponent;
 import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 
+import static org.openvpms.component.system.common.query.Constraints.sort;
+
 
 /**
  * Abstract implementation of the {@link Query} interface that queries objects
@@ -53,6 +55,12 @@ import org.openvpms.web.resource.i18n.Messages;
  * @author Tim Anderson
  */
 public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
+
+
+    /**
+     * Default sort constraint on name and id nodes.
+     */
+    protected static final SortConstraint[] NAME_SORT_CONSTRAINT = new SortConstraint[]{sort("name"), sort("id")};
 
     /**
      * The archetypes to query.

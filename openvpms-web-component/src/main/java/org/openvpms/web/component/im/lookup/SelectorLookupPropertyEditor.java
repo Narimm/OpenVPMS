@@ -32,6 +32,8 @@ import java.util.Collection;
 
 /**
  * An editor for lookup properties that provides an {@link IMObjectSelector} to display and query lookups.
+ * <p/>
+ * Note that this editor is only applicable to nodes where a lookup assertion with a "source" is used.
  *
  * @author Tim Anderson
  */

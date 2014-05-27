@@ -92,13 +92,48 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
         if (col instanceof DescriptorTableColumn) {
             DescriptorTableColumn descCol = (DescriptorTableColumn) col;
             if (descCol.isSortable()) {
-                SortConstraint sort = descCol.createSortConstraint(ascending);
-                result = new SortConstraint[]{sort};
+                List<SortConstraint> list = getSortConstraints(descCol, ascending);
+                result = list.toArray(new SortConstraint[list.size()]);
             } else {
                 result = null;
             }
         } else {
             result = super.getSortConstraints(column, ascending);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the sort constraints, given a primary sort column.
+     *
+     * @param primary   the primary sort column
+     * @param ascending whether to sort in ascending or descending order
+     * @return the sort constraints
+     */
+    protected List<SortConstraint> getSortConstraints(DescriptorTableColumn primary, boolean ascending) {
+        if (primary.getName().equals("description")) {
+            return getSortConstraints(primary, ascending, "name", "id");
+        }
+        return getSortConstraints(primary, ascending, "description", "id");
+    }
+
+    /**
+     * Returns the sort constraints, given a primary sort column.
+     *
+     * @param primary   the primary sort column
+     * @param ascending whether to sort in ascending or descending order
+     * @param names     the secondary sort column names
+     * @return the sort constraints
+     */
+    protected List<SortConstraint> getSortConstraints(DescriptorTableColumn primary, boolean ascending,
+                                                      String... names) {
+        List<SortConstraint> result = new ArrayList<SortConstraint>();
+        result.add(primary.createSortConstraint(ascending));
+        for (String name : names) {
+            DescriptorTableColumn column = getColumn(name);
+            if (column != null && column.isSortable()) {
+                result.add(column.createSortConstraint(ascending));
+            }
         }
         return result;
     }
@@ -265,6 +300,26 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
             ++offset;
         }
         return result;
+    }
+
+    /**
+     * Returns a column, given its node name.
+     *
+     * @param name the node name
+     * @return the descriptor column, or {@code null} if none exists
+     */
+    protected DescriptorTableColumn getColumn(String name) {
+        Iterator iterator = getColumnModel().getColumns();
+        while (iterator.hasNext()) {
+            TableColumn col = (TableColumn) iterator.next();
+            if (col instanceof DescriptorTableColumn) {
+                DescriptorTableColumn descriptorCol = (DescriptorTableColumn) col;
+                if (descriptorCol.getName().equals(name)) {
+                    return descriptorCol;
+                }
+            }
+        }
+        return null;
     }
 
     /**

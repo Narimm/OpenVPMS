@@ -79,7 +79,6 @@ import java.util.Map;
  */
 public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
 
-    private static final int DEFAULT_WIDTH = 150;
     /**
      * The parent act short name.
      */
@@ -135,6 +134,11 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * The width of the clinician column, in pixels.
      */
     private int clinicianWidth = -1;
+
+    /**
+     * Default fixed column width, in pixels.
+     */
+    private static final int DEFAULT_WIDTH = 150;
 
     /**
      * Column indicating the selected parent record.
