@@ -205,7 +205,7 @@
     <template name="Prescription"
               path="../Prescription.odt"
               reportType="PATIENT"
-              archetype="act.patientDocumentForm"
+              archetype="act.patientPrescription"
               mimeType="application/vnd.oasis.opendocument.text"
               docType="document.other"
               description="Patient prescription"/>
