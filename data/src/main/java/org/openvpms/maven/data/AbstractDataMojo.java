@@ -17,6 +17,7 @@
 package org.openvpms.maven.data;
 
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.maven.archetype.AbstractHibernateMojo;
@@ -141,6 +142,32 @@ public abstract class AbstractDataMojo extends AbstractHibernateMojo {
     }
 
     /**
+     * If {@code true}, skips execution.
+     *
+     * @parameter expression="false"
+     * @optional
+     */
+    private boolean skip;
+
+    /**
+     * Determines if execution should be skipped.
+     *
+     * @param skip if {@code true}, skip execution
+     */
+    public void setSkip(boolean skip) {
+        this.skip = skip;
+    }
+
+    /**
+     * Determines if execution is skipped.
+     *
+     * @return {@code true} if execution is skipped
+     */
+    public boolean isSkip() {
+        return skip;
+    }
+
+    /**
      * Sets the maven project.
      *
      * @param project the project
@@ -156,6 +183,21 @@ public abstract class AbstractDataMojo extends AbstractHibernateMojo {
      */
     public MavenProject getProject() {
         return project;
+    }
+
+    /**
+     * Executes the plugin unless execution is skipped.
+     *
+     * @throws MojoExecutionException if an unexpected problem occurs
+     * @throws MojoFailureException   if an expected problem (such as a compilation failure) occurs
+     */
+    @Override
+    public void execute() throws MojoExecutionException, MojoFailureException {
+        if (!skip) {
+            super.execute();
+        } else {
+            getLog().info("Plugin is skipped");
+        }
     }
 
     /**
