@@ -27,6 +27,7 @@ import nextapp.echo2.webrender.Connection;
 import nextapp.echo2.webrender.WebRenderServlet;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
@@ -79,10 +80,11 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      * @param factory       the workspaces factory
      * @param practiceRules the practice rules
      * @param locationRules the location rules
+     * @param userRules     the user rules
      */
     public OpenVPMSApp(GlobalContext context, WorkspacesFactory factory, PracticeRules practiceRules,
-                       LocationRules locationRules) {
-        super(context, practiceRules, locationRules);
+                       LocationRules locationRules, UserRules userRules) {
+        super(context, practiceRules, locationRules, userRules);
         this.factory = factory;
         location = getLocation(context.getLocation());
         customer = getCustomer(context.getCustomer());

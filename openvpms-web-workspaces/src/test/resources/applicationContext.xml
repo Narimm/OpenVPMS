@@ -252,6 +252,7 @@
         </constructor-arg>
         <constructor-arg ref="practiceRules"/>
         <constructor-arg ref="locationRules"/>
+        <constructor-arg ref="userRules"/>
     </bean>
 
     <bean id="styleSheetCache" class="org.openvpms.web.echo.style.StyleSheetCache">
@@ -293,6 +294,10 @@
     </bean>
 
     <bean id="practiceRules" class="org.openvpms.archetype.rules.practice.PracticeRules">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
+    <bean id="userRules" class="org.openvpms.archetype.rules.user.UserRules">
         <constructor-arg ref="archetypeService"/>
     </bean>
 

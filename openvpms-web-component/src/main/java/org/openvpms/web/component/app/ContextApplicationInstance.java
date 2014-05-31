@@ -77,6 +77,11 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
      */
     private final LocationRules locationRules;
 
+    /**
+     * The user rules.
+     */
+    private final UserRules userRules;
+
 
     /**
      * Constructs a {@link ContextApplicationInstance}.
@@ -84,11 +89,14 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
      * @param context       the context
      * @param practiceRules the practice rules
      * @param locationRules the location rules
+     * @param userRules     the user rules
      */
-    public ContextApplicationInstance(GlobalContext context, PracticeRules practiceRules, LocationRules locationRules) {
+    public ContextApplicationInstance(GlobalContext context, PracticeRules practiceRules, LocationRules locationRules,
+                                      UserRules userRules) {
         this.context = context;
         this.practiceRules = practiceRules;
         this.locationRules = locationRules;
+        this.userRules = userRules;
         initUser();
         initPractice();
         initLocation();
@@ -254,11 +262,10 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
     private void initUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
-            UserRules rules = new UserRules();
-            User user = rules.getUser(auth.getName());
+            User user = userRules.getUser(auth.getName());
             if (user != null) {
                 context.setUser(user);
-                if (rules.isClinician(user)) {
+                if (userRules.isClinician(user)) {
                     context.setClinician(user);
                 }
             }
@@ -291,7 +298,6 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
             return;
         }
 
-        UserRules userRules = new UserRules();
         // Now get the default location for the user or the first location if
         // no default.
         Party location = userRules.getDefaultLocation(user);
