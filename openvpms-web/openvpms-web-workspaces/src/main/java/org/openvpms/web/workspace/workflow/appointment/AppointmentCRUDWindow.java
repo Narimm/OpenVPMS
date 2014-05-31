@@ -84,8 +84,20 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * @param help    the help context
      */
     public AppointmentCRUDWindow(AppointmentBrowser browser, Context context, HelpContext help) {
+        this(browser, AppointmentActions.INSTANCE, context, help);
+    }
+
+    /**
+     * Constructs an {@link AppointmentCRUDWindow}.
+     *
+     * @param browser the browser
+     * @param context the context
+     * @param help    the help context
+     */
+    protected AppointmentCRUDWindow(AppointmentBrowser browser, AppointmentActions actions, Context context,
+                                    HelpContext help) {
         super(Archetypes.create("act.customerAppointment", Act.class, Messages.get("workflow.scheduling.createtype")),
-              context, help);
+              actions, context, help);
         this.browser = browser;
         browser.setListener(new TabbedBrowserListener() {
             @Override
@@ -104,6 +116,16 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         if (canCreateAppointment()) {
             super.create();
         }
+    }
+
+    /**
+     * Determines the actions that may be performed on the selected object.
+     *
+     * @return the actions
+     */
+    @Override
+    protected AppointmentActions getActions() {
+        return (AppointmentActions) super.getActions();
     }
 
     /**
@@ -170,11 +192,11 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         boolean checkoutConsultEnabled = false;
         if (enable) {
             Act act = getObject();
-            String status = act.getStatus();
-            if (AppointmentStatus.PENDING.equals(status)) {
+            AppointmentActions actions = getActions();
+            if (actions.canCheckIn(act)) {
                 checkInEnabled = true;
                 checkoutConsultEnabled = false;
-            } else if (canCheckoutOrConsult(act)) {
+            } else if (actions.canCheckoutOrConsult(act)) {
                 checkInEnabled = false;
                 checkoutConsultEnabled = true;
             }
@@ -209,19 +231,6 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     }
 
     /**
-     * Determines if a checkout or consult can be performed on an act.
-     *
-     * @param act the act
-     */
-    protected boolean canCheckoutOrConsult(Act act) {
-        String status = act.getStatus();
-        return AppointmentStatus.CHECKED_IN.equals(status)
-               || AppointmentStatus.IN_PROGRESS.equals(status)
-               || AppointmentStatus.COMPLETED.equals(status)
-               || AppointmentStatus.BILLED.equals(status);
-    }
-
-    /**
      * Determines if an appointment can be created.
      *
      * @return {@code true} if a schedule and slot has been selected
@@ -236,9 +245,8 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      */
     private void onCheckIn() {
         Act act = IMObjectHelper.reload(getObject());
-        // make sure the act is still available and PENDING prior to beginning
-        // workflow
-        if (act != null && AppointmentStatus.PENDING.equals(act.getStatus())) {
+        // make sure the act is still available and can be checked in prior to beginning workflow
+        if (act != null && getActions().canCheckIn(act)) {
             WorkflowFactory factory = ServiceHelper.getBean(WorkflowFactory.class);
             Workflow workflow = factory.createCheckInWorkflow(act, getContext(), getHelpContext());
             workflow.addTaskListener(new DefaultTaskListener() {
@@ -371,5 +379,35 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         editor.setStartTime(startTime); // will recalc end time
         dialog.save(true);              // checks for overlapping appointments
         browser.setSelected(browser.getEvent(appointment));
+    }
+
+    protected static class AppointmentActions extends ScheduleActions {
+
+        public static AppointmentActions INSTANCE = new AppointmentActions();
+
+        /**
+         * Determines if an appointment can be checked in.
+         *
+         * @param act the appointment
+         * @return {@code true} if it can be checked in
+         */
+        public boolean canCheckIn(Act act) {
+            return AppointmentStatus.PENDING.equals(act.getStatus());
+        }
+
+        /**
+         * Determines if a consultation or checkout can be performed on an act.
+         *
+         * @param act the act
+         * @return {@code true} if consultation can be performed
+         */
+        @Override
+        public boolean canCheckoutOrConsult(Act act) {
+            String status = act.getStatus();
+            return AppointmentStatus.CHECKED_IN.equals(status)
+                   || AppointmentStatus.IN_PROGRESS.equals(status)
+                   || AppointmentStatus.COMPLETED.equals(status)
+                   || AppointmentStatus.BILLED.equals(status);
+        }
     }
 }
