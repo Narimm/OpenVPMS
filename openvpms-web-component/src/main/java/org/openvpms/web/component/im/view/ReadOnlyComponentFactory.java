@@ -17,7 +17,6 @@
 package org.openvpms.web.component.im.view;
 
 import nextapp.echo2.app.Component;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -75,11 +74,7 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
     protected Component createLookup(Property property, IMObject context) {
         TextComponent result;
         int length = property.getMaxLength();
-        String value = null;
-        NodeDescriptor descriptor = property.getDescriptor();
-        if (descriptor != null) {
-            value = LookupNameHelper.getLookupName(descriptor, context);
-        }
+        String value = LookupNameHelper.getName(context, property.getName());
         if (value != null && value.length() > 0) {
             length = value.length();
         } else if (length > 20) {
