@@ -22,7 +22,6 @@ import org.openvpms.archetype.rules.supplier.OrderRules;
 import org.openvpms.archetype.rules.supplier.OrderStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.EditableIMObjectCollectionEditor;
@@ -132,11 +131,7 @@ public class OrderEditor extends FinancialActEditor {
         }
         if (newStatus != null && newStatus != current) {
             deliveryStatus.setValue(newStatus.toString());
-            NodeDescriptor descriptor = deliveryStatus.getDescriptor();
-            if (descriptor != null) {
-                deliveryStatusField.setText(LookupNameHelper.getLookupName(
-                        descriptor, getObject()));
-            }
+            deliveryStatusField.setText(LookupNameHelper.getName(getObject(), deliveryStatus.getName()));
         }
     }
 

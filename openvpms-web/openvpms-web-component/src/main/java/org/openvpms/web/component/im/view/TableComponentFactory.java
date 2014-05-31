@@ -21,7 +21,6 @@ import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.TableLayoutData;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.LookupNameHelper;
@@ -64,10 +63,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
     @Override
     protected Component createLookup(Property property, IMObject context) {
         Label result = LabelFactory.create();
-        NodeDescriptor descriptor = property.getDescriptor();
-        if (descriptor != null) {
-            result.setText(LookupNameHelper.getLookupName(descriptor, context));
-        }
+        result.setText(LookupNameHelper.getName(context, property.getName()));
         return result;
     }
 
