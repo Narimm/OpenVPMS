@@ -422,8 +422,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link PartyRules#getContact(Party, String, String)} and
-     * {@link PartyRules#getContact(Collection, String, String)} methods.
+     * Tests the {@link PartyRules#getContact(Party, String, String)}.
      */
     @Test
     public void testGetContact() {
@@ -448,23 +447,13 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         assertEquals(phone1, rules.getContact(party, ContactArchetypes.PHONE, null));
         assertEquals(phone2, rules.getContact(party, ContactArchetypes.PHONE, "HOME"));
 
-        Contact match = rules.getContact(party.getContacts(), ContactArchetypes.PHONE, null);
-        assertTrue(phone1.equals(match) || phone2.equals(phone2)); // order not guaranteed
-        match = rules.getContact(party.getContacts(), ContactArchetypes.PHONE, "HOME");
-        assertTrue(phone2.equals(match) || phone3.equals(phone2)); // order not guaranteed
-
         setPreferred(phone3, true);
         assertEquals(phone3, rules.getContact(party, ContactArchetypes.PHONE, "HOME"));
-        assertEquals(phone3, rules.getContact(party.getContacts(), ContactArchetypes.PHONE, "HOME"));
 
         setPreferred(phone2, true);
 
         // phone2 should now be returned as its id < phone3
         assertEquals(phone2, rules.getContact(party, ContactArchetypes.PHONE, "HOME"));
-
-        // order not guaranteed for the collection form
-        match = rules.getContact(party.getContacts(), ContactArchetypes.PHONE, "HOME");
-        assertTrue(phone3.equals(match) || phone2.equals(match));
     }
 
     /**

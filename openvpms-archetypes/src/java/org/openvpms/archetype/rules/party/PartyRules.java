@@ -22,7 +22,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -35,15 +34,9 @@ import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 
 /**
@@ -174,7 +167,7 @@ public class PartyRules {
      */
     public String getPreferredContacts(Party party) {
         StringBuilder result = new StringBuilder();
-        for (Contact contact : sort(party.getContacts())) {
+        for (Contact contact : Contacts.sort(party.getContacts())) {
             IMObjectBean bean = new IMObjectBean(contact, service);
             if (bean.hasNode("preferred")) {
                 boolean preferred = bean.getBoolean("preferred");
@@ -461,7 +454,7 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getSMSTelephone(Party party) {
-        Contact contact = (party != null) ? getContact(party, new SMSMatcher()) : null;
+        Contact contact = (party != null) ? getContact(party, new SMSMatcher(service)) : null;
         return (contact != null) ? formatPhone(contact) : "";
     }
 
@@ -569,24 +562,6 @@ public class PartyRules {
      */
     public Contact getContact(Party party, String type, String purpose) {
         return getContact(party, type, purpose, false);
-    }
-
-    /**
-     * Returns a contact for the specified contact type and purpose.
-     * If cannot find one with matching purpose returns last preferred contact.
-     * If cannot find with matching purpose and preferred returns last found.
-     * <p/>
-     * Note that contacts will be processed in the order given, so different results may be obtained from successive
-     * calls if the same contacts are given in different order.
-     *
-     * @param contacts the contacts to search
-     * @param type     the contact archetype shortname
-     * @param purpose  the contact purpose. May be {@code null}
-     * @return the corresponding contact, or {@code null}
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public Contact getContact(Collection<Contact> contacts, String type, String purpose) {
-        return getContact(contacts, new PurposeMatcher(type, purpose, false));
     }
 
     /**
@@ -745,7 +720,7 @@ public class PartyRules {
      * @return the matching contact or {@code null}
      */
     private Contact getContact(Party party, String type, String purpose, boolean exact) {
-        return (party != null) ? getContact(party, new PurposeMatcher(type, purpose, exact)) : null;
+        return (party != null) ? getContact(party, new PurposeMatcher(type, purpose, exact, service)) : null;
     }
 
     /**
@@ -756,27 +731,10 @@ public class PartyRules {
      * @return the matching contact or {@code null}
      */
     private Contact getContact(Party party, ContactMatcher matcher) {
-        List<Contact> contacts = sort(party.getContacts());
-        return getContact(contacts, matcher);
+        List<Contact> contacts = Contacts.sort(party.getContacts());
+        return Contacts.find(contacts, matcher);
     }
 
-    /**
-     * Looks for a contact that matches the criteria.
-     *
-     * @param contacts the contacts
-     * @param matcher  the contact matcher
-     * @return the matching contact or {@code null}
-     */
-    private Contact getContact(Collection<Contact> contacts, ContactMatcher matcher) {
-        Contact result;
-        for (Contact contact : contacts) {
-            if (matcher.matches(contact)) {
-                break;
-            }
-        }
-        result = matcher.getMatch();
-        return result;
-    }
 
     /**
      * Formats an address from an <em>contact.location</em> contact.
@@ -838,208 +796,4 @@ public class PartyRules {
         }
     }
 
-    /**
-     * Sorts contacts by id.
-     *
-     * @param contacts the contacts to sort
-     * @return the sorted contacts
-     */
-    private List<Contact> sort(Set<Contact> contacts) {
-        List<Contact> list = new ArrayList<Contact>(contacts);
-        if (list.size() > 1) {
-            Collections.sort(list, new Comparator<Contact>() {
-                @Override
-                public int compare(Contact o1, Contact o2) {
-                    return o1.getId() < o2.getId() ? -1 : o1.getId() == o2.getId() ? 0 : 1;
-                }
-            });
-        }
-        return list;
-    }
-
-    /**
-     * Helper to find a contact matching some criteria.
-     */
-    private abstract class ContactMatcher {
-
-        /**
-         * The contact archetype short name.
-         */
-        private final String shortName;
-
-        /**
-         * The contacts matching some or all of the criteria, keyed on
-         * priority, where the 0 is the highest priority.
-         */
-        private SortedMap<Integer, Contact> contacts
-                = new TreeMap<Integer, Contact>();
-
-        /**
-         * Constructs a new {@code ContactMatcher}.
-         *
-         * @param shortName the contact archetype short name
-         */
-        public ContactMatcher(String shortName) {
-            this.shortName = shortName;
-        }
-
-        /**
-         * Determines if a contact matches the criteria.
-         *
-         * @param contact the contact
-         * @return {@code true} if the contact is an exact match; otherwise
-         *         {@code false}
-         */
-        public boolean matches(Contact contact) {
-            return TypeHelper.isA(contact, shortName);
-        }
-
-        /**
-         * Returns the contact that best matches the criteria.
-         *
-         * @return the contact that best matches the criteria, or {@code null}
-         */
-        public Contact getMatch() {
-            Integer best = null;
-            if (!contacts.isEmpty()) {
-                best = contacts.firstKey();
-            }
-            return (best != null) ? contacts.get(best) : null;
-        }
-
-        /**
-         * Registers a contact that matches some/all of the criteria, if none with the same priority is present.
-         *
-         * @param priority the priority, where {@code 0} is the highest priority.
-         * @param contact  the contact
-         */
-        protected void setMatch(int priority, Contact contact) {
-            if (contacts.get(priority) == null) {
-                contacts.put(priority, contact);
-            }
-        }
-
-        /**
-         * Determines if a contact has a preferred node with value 'true'.
-         *
-         * @param contact the contact
-         * @return {@code true} if the contact is preferred
-         */
-        protected boolean isPreferred(Contact contact) {
-            IMObjectBean bean = new IMObjectBean(contact, service);
-            return bean.hasNode("preferred") && bean.getBoolean("preferred");
-        }
-    }
-
-    /**
-     * Matches contacts on purpose.
-     */
-    private class PurposeMatcher extends ContactMatcher {
-
-        /**
-         * The purpose to match on.
-         */
-        private final String purpose;
-
-        /**
-         * If {@code true} the contact must contain the purpose to be returned
-         */
-        private final boolean exact;
-
-        /**
-         * Constructs a new {@code PurposeMatcher}.
-         *
-         * @param shortName the contact archetype short name
-         * @param purpose   the purpose. May be {@code null}
-         * @param exact     if {@code true} the contact must contain the purpose
-         *                  in order to be considered a match
-         */
-        public PurposeMatcher(String shortName, String purpose, boolean exact) {
-            super(shortName);
-            this.purpose = purpose;
-            this.exact = exact;
-        }
-
-        @Override
-        public boolean matches(Contact contact) {
-            boolean best = false;
-            if (super.matches(contact)) {
-                boolean preferred = isPreferred(contact);
-                if (purpose != null) {
-                    if (hasContactPurpose(contact, purpose)) {
-                        if (preferred) {
-                            setMatch(0, contact);
-                            best = true;
-                        } else {
-                            setMatch(1, contact);
-                        }
-                    } else if (!exact) {
-                        if (preferred) {
-                            setMatch(2, contact);
-                        } else {
-                            setMatch(3, contact);
-                        }
-                    }
-                } else {
-                    if (preferred) {
-                        setMatch(0, contact);
-                        best = true;
-                    } else {
-                        setMatch(1, contact);
-                    }
-                }
-            }
-            return best;
-        }
-
-        /**
-         * Determines if a contact has a particular purpose.
-         *
-         * @param contact the contact
-         * @param purpose the contact purpose
-         * @return {@code true} if the contact has the specified purpose,
-         *         otherwise {@code false}
-         */
-        private boolean hasContactPurpose(Contact contact, String purpose) {
-            for (Lookup classification : contact.getClassifications()) {
-                if (classification.getCode().equals(purpose)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-
-    /**
-     * Matches phone contacts if they have sms enabled.
-     */
-    private class SMSMatcher extends ContactMatcher {
-
-        /**
-         * Constructs an {@link SMSMatcher}.
-         */
-        public SMSMatcher() {
-            super(ContactArchetypes.PHONE);
-        }
-
-        @Override
-        public boolean matches(Contact contact) {
-            boolean result = super.matches(contact);
-            if (result) {
-                IMObjectBean bean = new IMObjectBean(contact, service);
-                if (bean.getBoolean("sms")) {
-                    if (isPreferred(contact)) {
-                        result = true;
-                        setMatch(0, contact);
-                    } else {
-                        result = false;
-                        setMatch(1, contact);
-                    }
-                } else {
-                    result = false;
-                }
-            }
-            return result;
-        }
-    }
 }
