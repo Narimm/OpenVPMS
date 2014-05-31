@@ -39,6 +39,7 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -246,7 +247,7 @@ public abstract class ScheduleServiceQuery extends ScheduleQuery {
      * @return a new clinician selector
      */
     private SelectField createClinicianSelector() {
-        UserRules rules = new UserRules();
+        UserRules rules = ServiceHelper.getBean(UserRules.class);
         List<IMObject> clinicians = new ArrayList<IMObject>();
         ArchetypeQuery query = new ArchetypeQuery(UserArchetypes.USER, true, true);
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);

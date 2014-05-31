@@ -55,6 +55,11 @@ public class TitlePane extends ContentPane {
     private final PracticeRules practiceRules;
 
     /**
+     * The user rules.
+     */
+    private final UserRules userRules;
+
+    /**
      * The context.
      */
     private final Context context;
@@ -74,10 +79,12 @@ public class TitlePane extends ContentPane {
      * Construct a new {@code TitlePane}.
      *
      * @param practiceRules the practice rules
+     * @param userRules     the user rules
      * @param context       the context
      */
-    public TitlePane(PracticeRules practiceRules, Context context) {
+    public TitlePane(PracticeRules practiceRules, UserRules userRules, Context context) {
         this.practiceRules = practiceRules;
+        this.userRules = userRules;
         this.context = context;
         doLayout();
     }
@@ -154,8 +161,7 @@ public class TitlePane extends ContentPane {
         List<Party> locations = Collections.emptyList();
         User user = context.getUser();
         if (user != null) {
-            UserRules rules = new UserRules();
-            locations = rules.getLocations(user);
+            locations = userRules.getLocations(user);
             if (locations.isEmpty()) {
                 Party practice = context.getPractice();
                 if (practice != null) {
@@ -176,8 +182,7 @@ public class TitlePane extends ContentPane {
         Party location = null;
         User user = context.getUser();
         if (user != null) {
-            UserRules rules = new UserRules();
-            location = rules.getDefaultLocation(user);
+            location = userRules.getDefaultLocation(user);
             if (location == null) {
                 Party practice = context.getPractice();
                 if (practice != null) {

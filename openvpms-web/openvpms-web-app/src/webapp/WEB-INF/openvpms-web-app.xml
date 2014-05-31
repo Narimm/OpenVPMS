@@ -53,6 +53,7 @@
         </constructor-arg>
         <constructor-arg ref="practiceRules"/>
         <constructor-arg ref="locationRules"/>
+        <constructor-arg ref="userRules"/>
         <property name="styleSheets" ref="userStyleSheets"/>
     </bean>
 
