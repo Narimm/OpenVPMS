@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.messaging;
@@ -150,7 +150,7 @@ public class SystemMessageLayoutStrategy extends AbstractMessageLayoutStrategy {
         boolean result = context.isEdit();
         if (!result) {
             IMObjectBean bean = new IMObjectBean(object);
-            result = !bean.getNodeTargetObjectRefs("item").isEmpty();
+            result = bean.hasNode("item") && !bean.getNodeTargetObjectRefs("item").isEmpty();
         }
         return result;
     }
