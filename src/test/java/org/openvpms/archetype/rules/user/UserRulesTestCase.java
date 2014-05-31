@@ -48,7 +48,7 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testGetUser() {
-        UserRules rules = new UserRules();
+        UserRules rules = new UserRules(getArchetypeService());
         String username = "zuser" + System.currentTimeMillis();
         assertNull(rules.getUser(username));
         User user = TestHelper.createUser(username, true);
@@ -60,7 +60,7 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testIsClinician() {
-        UserRules rules = new UserRules();
+        UserRules rules = new UserRules(getArchetypeService());
         User user = TestHelper.createUser();
         assertFalse(rules.isClinician(user));
         Lookup clinicianClassification
@@ -81,7 +81,7 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
 
         bean.addRelationship("entityRelationship.userLocation", location1);
         bean.addRelationship("entityRelationship.userLocation", location2);
-        UserRules rules = new UserRules();
+        UserRules rules = new UserRules(getArchetypeService());
         List<Party> locations = rules.getLocations(user);
         assertEquals(2, locations.size());
         assertTrue(locations.contains(location1));
@@ -95,7 +95,7 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
     public void testGetDefaultLocation() {
         User user = TestHelper.createUser();
 
-        UserRules rules = new UserRules();
+        UserRules rules = new UserRules(getArchetypeService());
         assertNull(rules.getDefaultLocation(user));
 
         Party location1 = TestHelper.createLocation();
@@ -127,7 +127,7 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
     @Test
     public void testIsAdministrator() {
         User user = TestHelper.createUser();
-        UserRules rules = new UserRules();
+        UserRules rules = new UserRules(getArchetypeService());
         assertFalse(rules.isAdministrator(user));
 
         Lookup adminClassification = TestHelper.getLookup("lookup.userType", "ADMINISTRATOR");
