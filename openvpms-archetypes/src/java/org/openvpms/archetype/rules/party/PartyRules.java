@@ -36,6 +36,7 @@ import org.openvpms.component.business.service.archetype.helper.LookupHelperExce
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -571,6 +572,24 @@ public class PartyRules {
     }
 
     /**
+     * Returns a contact for the specified contact type and purpose.
+     * If cannot find one with matching purpose returns last preferred contact.
+     * If cannot find with matching purpose and preferred returns last found.
+     * <p/>
+     * Note that contacts will be processed in the order given, so different results may be obtained from successive
+     * calls if the same contacts are given in different order.
+     *
+     * @param contacts the contacts to search
+     * @param type     the contact archetype shortname
+     * @param purpose  the contact purpose. May be {@code null}
+     * @return the corresponding contact, or {@code null}
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Contact getContact(Collection<Contact> contacts, String type, String purpose) {
+        return getContact(contacts, new PurposeMatcher(type, purpose, false));
+    }
+
+    /**
      * Returns the customer associated with an act via an
      * <em>participation.customer</em> participation.
      *
@@ -580,90 +599,6 @@ public class PartyRules {
     public Party getCustomer(Act act) {
         ActBean bean = new ActBean(act, service);
         return (Party) bean.getParticipant("participation.customer");
-    }
-
-    /**
-     * Looks for the contact that best matches the criteria.
-     *
-     * @param party   the party
-     * @param type    the contact type
-     * @param purpose the contact purpose. May be {@code null}
-     * @param exact   if {@code true}, the contact must have the specified purpose
-     * @return the matching contact or {@code null}
-     */
-    private Contact getContact(Party party, String type, String purpose, boolean exact) {
-        return (party != null) ? getContact(party, new PurposeMatcher(type, purpose, exact)) : null;
-    }
-
-    private Contact getContact(Party party, ContactMatcher matcher) {
-        Contact result;
-        for (Contact contact : sort(party.getContacts())) {
-            if (matcher.matches(contact)) {
-                break;
-            }
-        }
-        result = matcher.getMatch();
-        return result;
-    }
-
-    /**
-     * Formats an address from an <em>contact.location</em> contact.
-     *
-     * @param contact contact
-     * @return a formatted address
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    private String formatAddress(Contact contact) {
-        return formatAddress(contact, false);
-    }
-
-    /**
-     * Formats an address from an <em>contact.location</em> contact.
-     *
-     * @param contact    contact
-     * @param singleLine if {@code true} formats the address on a single line
-     * @return a formatted address
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    private String formatAddress(Contact contact, boolean singleLine) {
-        IMObjectBean bean = new IMObjectBean(contact, service);
-        StringBuilder result = new StringBuilder();
-        if (singleLine) {
-            result.append(bean.getString("address", "").replace('\n', ' '));
-            result.append(" ");
-        } else {
-            result.append(bean.getString("address", ""));
-            result.append("\n");
-        }
-        String suburb = ArchetypeServiceFunctions.lookup(contact, "suburb", "");
-        if (!StringUtils.isEmpty(suburb)) {
-            result.append(suburb);
-            result.append(" ");
-        }
-        String state = ArchetypeServiceFunctions.lookup(contact, "state", "");
-        if (!StringUtils.isEmpty(state)) {
-            result.append(state);
-            result.append(" ");
-        }
-        result.append(bean.getString("postcode", ""));
-        return result.toString();
-    }
-
-    /**
-     * Returns a formatted telephone number from a <em>contact.phoneNumber</em>.
-     *
-     * @param contact the contact
-     * @return a formatted telephone number
-     */
-    private String formatPhone(Contact contact) {
-        IMObjectBean bean = new IMObjectBean(contact, service);
-        String areaCode = bean.getString("areaCode");
-        String phone = bean.getString("telephoneNumber", "");
-        if (StringUtils.isEmpty(areaCode)) {
-            return phone;
-        } else {
-            return "(" + areaCode + ") " + phone;
-        }
     }
 
     /**
@@ -798,6 +733,109 @@ public class PartyRules {
             }
         }
         return result.toString();
+    }
+
+    /**
+     * Looks for the contact that best matches the criteria.
+     *
+     * @param party   the party. May be {@code null}
+     * @param type    the contact type
+     * @param purpose the contact purpose. May be {@code null}
+     * @param exact   if {@code true}, the contact must have the specified purpose
+     * @return the matching contact or {@code null}
+     */
+    private Contact getContact(Party party, String type, String purpose, boolean exact) {
+        return (party != null) ? getContact(party, new PurposeMatcher(type, purpose, exact)) : null;
+    }
+
+    /**
+     * Looks for a party contact that matches the criteria.
+     *
+     * @param party   the party
+     * @param matcher the contact matcher
+     * @return the matching contact or {@code null}
+     */
+    private Contact getContact(Party party, ContactMatcher matcher) {
+        List<Contact> contacts = sort(party.getContacts());
+        return getContact(contacts, matcher);
+    }
+
+    /**
+     * Looks for a contact that matches the criteria.
+     *
+     * @param contacts the contacts
+     * @param matcher  the contact matcher
+     * @return the matching contact or {@code null}
+     */
+    private Contact getContact(Collection<Contact> contacts, ContactMatcher matcher) {
+        Contact result;
+        for (Contact contact : contacts) {
+            if (matcher.matches(contact)) {
+                break;
+            }
+        }
+        result = matcher.getMatch();
+        return result;
+    }
+
+    /**
+     * Formats an address from an <em>contact.location</em> contact.
+     *
+     * @param contact contact
+     * @return a formatted address
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private String formatAddress(Contact contact) {
+        return formatAddress(contact, false);
+    }
+
+    /**
+     * Formats an address from an <em>contact.location</em> contact.
+     *
+     * @param contact    contact
+     * @param singleLine if {@code true} formats the address on a single line
+     * @return a formatted address
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private String formatAddress(Contact contact, boolean singleLine) {
+        IMObjectBean bean = new IMObjectBean(contact, service);
+        StringBuilder result = new StringBuilder();
+        if (singleLine) {
+            result.append(bean.getString("address", "").replace('\n', ' '));
+            result.append(" ");
+        } else {
+            result.append(bean.getString("address", ""));
+            result.append("\n");
+        }
+        String suburb = ArchetypeServiceFunctions.lookup(contact, "suburb", "");
+        if (!StringUtils.isEmpty(suburb)) {
+            result.append(suburb);
+            result.append(" ");
+        }
+        String state = ArchetypeServiceFunctions.lookup(contact, "state", "");
+        if (!StringUtils.isEmpty(state)) {
+            result.append(state);
+            result.append(" ");
+        }
+        result.append(bean.getString("postcode", ""));
+        return result.toString();
+    }
+
+    /**
+     * Returns a formatted telephone number from a <em>contact.phoneNumber</em>.
+     *
+     * @param contact the contact
+     * @return a formatted telephone number
+     */
+    private String formatPhone(Contact contact) {
+        IMObjectBean bean = new IMObjectBean(contact, service);
+        String areaCode = bean.getString("areaCode");
+        String phone = bean.getString("telephoneNumber", "");
+        if (StringUtils.isEmpty(areaCode)) {
+            return phone;
+        } else {
+            return "(" + areaCode + ") " + phone;
+        }
     }
 
     /**
