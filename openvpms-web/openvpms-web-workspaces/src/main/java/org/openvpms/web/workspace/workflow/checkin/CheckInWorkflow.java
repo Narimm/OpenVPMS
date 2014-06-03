@@ -245,6 +245,15 @@ public class CheckInWorkflow extends WorkflowImpl {
     }
 
     /**
+     * Returns the initial context.
+     *
+     * @return the initial context
+     */
+    protected Context getInitialContext() {
+        return initial;
+    }
+
+    /**
      * Creates a new {@link SelectIMObjectTask} to select a patient.
      *
      * @param context       the context
