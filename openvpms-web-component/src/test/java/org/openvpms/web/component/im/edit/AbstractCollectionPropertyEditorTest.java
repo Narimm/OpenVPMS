@@ -14,12 +14,6 @@
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-/**
- * Add description here.
- *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
- */
 package org.openvpms.web.component.im.edit;
 
 import org.junit.Test;
@@ -46,8 +40,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * {@link CollectionPropertyEditor} test.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractCollectionPropertyEditorTest
         extends AbstractAppTest {
@@ -376,6 +369,25 @@ public abstract class AbstractCollectionPropertyEditorTest
                 return null;
             }
         });
+    }
+
+    /**
+     * Tests the {@link CollectionPropertyEditor#clearModified()} method.
+     */
+    @Test
+    public void testClearModified() {
+        final IMObject parent = createParent();
+        CollectionProperty property = getCollectionProperty(parent);
+        final CollectionPropertyEditor editor = createEditor(property, parent);
+
+        assertFalse(editor.isModified());
+
+        IMObject element = createObject(parent);
+        editor.add(element);
+        assertEquals(1, editor.getObjects().size());
+        assertTrue(editor.isModified());
+        editor.clearModified();
+        assertFalse(editor.isModified());
     }
 
     /**

@@ -180,7 +180,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
      * @return {@code true} if the collection has been modified
      */
     public boolean isModified() {
-        boolean modified = property.isModified() || !edited.isEmpty();
+        boolean modified = property.isModified();
         if (!modified) {
             for (IMObjectEditor editor : editors.values()) {
                 if (editor.isModified()) {
