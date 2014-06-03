@@ -546,7 +546,6 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
         editBox.add(component);
         editBox.setTitle(editor.getTitle());
         editor.addPropertyChangeListener(IMObjectEditor.COMPONENT_CHANGED_PROPERTY, componentListener);
-        editor.addModifiableListener(editorListener);
         changeFocusGroup(editor);
         setCurrentEditor(editor);
 
@@ -612,6 +611,26 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
     }
 
     /**
+     * Sets the current editor.
+     * <p/>
+     * This registers a listener so that {@link #onCurrentEditorModified()} is invoked when the editor changes.
+     * If there is an existing editor, its listener is removed.
+     *
+     * @param editor the editor. May be {@code null}
+     */
+    @Override
+    protected void setCurrentEditor(IMObjectEditor editor) {
+        IMObjectEditor current = getCurrentEditor();
+        if (current != null) {
+            current.removeModifiableListener(editorListener);
+        }
+        if (editor != null) {
+            editor.addModifiableListener(editorListener);
+        }
+        super.setCurrentEditor(editor);
+    }
+
+    /**
      * Removes the current editor.
      */
     protected void removeCurrentEditor() {
@@ -621,7 +640,6 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
         editBox.remove(editor.getComponent());
         container.remove(editBox);
         editor.removePropertyChangeListener(IMObjectEditor.COMPONENT_CHANGED_PROPERTY, componentListener);
-        editor.removeModifiableListener(editorListener);
         editorModified = false;
         editBox = null;
 
@@ -669,7 +687,9 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
         resetValid(false);
 
         editorModified = true;
-        enableNavigation(getCurrentEditor().isValid());
+        IMObjectEditor current = getCurrentEditor();
+        boolean valid = current != null && current.isValid();
+        enableNavigation(valid);
         getListeners().notifyListeners(this);
     }
 
