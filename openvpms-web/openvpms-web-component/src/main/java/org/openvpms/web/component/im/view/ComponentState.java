@@ -174,6 +174,8 @@ public class ComponentState {
 
     /**
      * Returns a label for the component.
+     * <p/>
+     * If none exists, one will be created using {@link #getDisplayName()}.
      */
     public Label getLabel() {
         if (label == null) {
@@ -181,6 +183,15 @@ public class ComponentState {
             label.setText(displayName);
         }
         return label;
+    }
+
+    /**
+     * Sets the label for the component.
+     *
+     * @param label the label
+     */
+    public void setLabel(Label label) {
+        this.label = label;
     }
 
     /**
