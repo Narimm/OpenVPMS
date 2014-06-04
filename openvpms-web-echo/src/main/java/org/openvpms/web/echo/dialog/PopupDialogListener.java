@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.dialog;
@@ -46,48 +46,69 @@ public abstract class PopupDialogListener extends WindowPaneListener {
 
     /**
      * Invoked when the 'OK' button is pressed.
+     * <p/>
+     * If not overridden in subclasses, delegates to {@link #onAction(String)}.
      */
     public void onOK() {
+        onAction(PopupDialog.OK_ID);
     }
 
     /**
      * Invoked when the 'cancel' button is pressed.
+     * <p/>
+     * If not overridden in subclasses, delegates to {@link #onAction(String)}.
      */
     public void onCancel() {
+        onAction(PopupDialog.CANCEL_ID);
     }
 
     /**
      * Invoked when the 'yes' button is pressed.
+     * <p/>
+     * If not overridden in subclasses, delegates to {@link #onAction(String)}.
      */
     public void onYes() {
+        onAction(PopupDialog.YES_ID);
     }
 
     /**
      * Invoked when the 'no' button is pressed.
+     * <p/>
+     * If not overridden in subclasses, delegates to {@link #onAction(String)}.
      */
     public void onNo() {
+        onAction(PopupDialog.NO_ID);
     }
 
     /**
      * Invoked when the 'skip' button is pressed.
+     * <p/>
+     * If not overridden in subclasses, delegates to {@link #onAction(String)}.
      */
     public void onSkip() {
+        onAction(PopupDialog.SKIP_ID);
     }
 
     /**
      * Invoked when the 'apply' button is pressed.
+     * <p/>
+     * If not overridden in subclasses, delegates to {@link #onAction(String)}.
      */
     public void onApply() {
+        onAction(PopupDialog.APPLY_ID);
     }
 
     /**
      * Invoked when the 'retry' button is pressed.
+     * <p/>
+     * If not overridden in subclasses, delegates to {@link #onAction(String)}.
      */
     public void onRetry() {
+        onAction(PopupDialog.RETRY_ID);
     }
 
     /**
-     * Invoked when an unknown button is selected.
+     * Invoked when an unhandled button is selected.
      *
      * @param action the dialog action
      */
