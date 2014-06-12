@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -212,7 +212,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
                 if (layout != null) {
                     Color background = layout.getBackground();
                     if (background != null) {
-                        setForeground(component, background);
+                        setForegroundFromBackground(component, background);
                     }
                     TableHelper.mergeStyle(component, layout, true);
                 }
@@ -259,13 +259,16 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     /**
      * Highlights a cell component, used to highlight the selected cell.
      * <p/>
-     * Ideally, this would be done by the table, however none of
-     * the tables support cell selection.
+     * Ideally this would be done by the table, however none of the tables support cell selection.
      *
      * @param component the cell component
      */
     protected void highlightCell(Component component) {
         TableHelper.mergeStyle(component, "ScheduleTable.Selected", true);
+        Color colour = component.getForeground();
+        if (colour != null && component.getComponentCount() != 0) {
+            setForeground(component, colour);
+        }
     }
 
     /**
@@ -498,7 +501,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     }
 
     /**
-     * Sets the foreground colour of a component.
+     * Sets the foreground colour of a component based on a background colour.
      * <p/>
      * If the component is a <tt>Row</tt>, the request will be propagated to the child components.
      * <p/>
@@ -513,13 +516,17 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @param component  the component
      * @param background the background colour of the row
      */
-    private void setForeground(Component component, Color background) {
+    private void setForegroundFromBackground(Component component, Color background) {
+        setForeground(component, ColourHelper.getTextColour(background));
+    }
+
+    private void setForeground(Component component, Color colour) {
         if (component instanceof Row) {
             for (Component child : component.getComponents()) {
-                setForeground(child, background);
+                setForeground(child, colour);
             }
         } else if (!(component instanceof BalloonHelp)) {
-            component.setForeground(ColourHelper.getTextColour(background));
+            component.setForeground(colour);
         }
     }
 
