@@ -250,16 +250,20 @@ public class ArchetypeNodes {
     /**
      * Returns the simple node properties.
      *
-     * @param archetype the archetype descriptor
-     * @param object    the object to return nodes for
-     * @param filter    a filter to exclude nodes according to some criteria. May be {@code null}
+     * @param properties the properties corresponding to the nodes
+     * @param archetype  the archetype descriptor
+     * @param object     the object to return nodes for
+     * @param filter     a filter to exclude nodes according to some criteria. May be {@code null}
      * @return the simple node properties
      */
     public List<Property> getSimpleNodes(PropertySet properties, ArchetypeDescriptor archetype, IMObject object,
                                          NodeFilter filter) {
         List<Property> result = new ArrayList<Property>();
         for (NodeDescriptor descriptor : getSimpleNodes(archetype, object, filter)) {
-            result.add(properties.get(descriptor));
+            Property property = properties.get(descriptor);
+            if (property != null) {
+                result.add(property);
+            }
         }
         return result;
     }
@@ -343,6 +347,27 @@ public class ArchetypeNodes {
             }
         }
         return result;
+    }
+
+    /**
+     * Helper to insert properties into a list after the named property.
+     *
+     * @param list       the property list to insert into
+     * @param after      the property to insert after
+     * @param properties the properties to insert
+     * @return {@code list}
+     */
+    public static List<Property> insert(List<Property> list, String after, Property... properties) {
+        int i = 0;
+        for (; i < list.size(); ++i) {
+            if (after.equals(list.get(i).getName())) {
+                ++i;
+                break;
+            }
+        }
+
+        list.addAll(i, Arrays.asList(properties));
+        return list;
     }
 
     /**

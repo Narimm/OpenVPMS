@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient;
@@ -33,7 +33,6 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 
-import java.util.Collection;
 import java.util.List;
 
 
@@ -205,9 +204,9 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
     private ComponentState createCustomViewComponent(Property property, IMObject parent, LayoutContext context) {
         ComponentState result = super.createComponent(property, parent, context);
         CollectionProperty collection = (CollectionProperty) property;
-        Collection values = collection.getValues();
+        List values = collection.getValues();
         if (!values.isEmpty()) {
-            EntityRelationship relationship = (EntityRelationship) values.toArray(new Object[values.size()])[0];
+            EntityRelationship relationship = (EntityRelationship) values.get(0);
             IMObjectReference ref = relationship.getTarget();
             if (ref != null) {
                 String displayName = DescriptorHelper.getDisplayName(

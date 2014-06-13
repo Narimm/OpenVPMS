@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -23,8 +23,8 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -73,7 +73,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
      *
      * @return the collection
      */
-    public Collection getValues() {
+    public List getValues() {
         return ((CollectionProperty) property).getValues();
     }
 

@@ -410,7 +410,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
         if (addDefaultItem) {
             ActRelationshipCollectionEditor items = getItems();
             CollectionProperty property = items.getCollection();
-            if (property.getValues().size() == 0) {
+            if (property.getValues().isEmpty()) {
                 // no invoice items, so add one
                 addItem();
             }

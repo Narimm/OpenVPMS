@@ -39,6 +39,8 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.List;
+
 /**
  * A factory for editable components.
  *
@@ -209,8 +211,8 @@ public class AbstractEditableComponentFactory extends AbstractIMObjectComponentF
                 // handle the special case of a collection of one element. Pre-populate the value
                 String[] range = property.getArchetypeRange();
                 if (range.length == 1) {
-                    Object[] values = property.getValues().toArray();
-                    if (values.length == 0) {
+                    List values = property.getValues();
+                    if (values.isEmpty()) {
                         IMObject value = IMObjectCreator.create(range[0]);
                         if (value != null) {
                             property.add(value);
