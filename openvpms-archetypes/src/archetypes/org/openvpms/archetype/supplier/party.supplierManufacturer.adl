@@ -1,0 +1,63 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="party.supplierManufacturer.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.party.Party" displayName="Manufacturer">
+        <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" minCardinality="1" displayName="Company Name">
+            <assertion name="propercase"/>
+        </node>
+        <node name="description" type="java.lang.String"
+              path="/description" hidden="true" derived="true"
+              derivedValue="/name"/>
+        <node name="notes" path="/details/notes" type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="contacts" path="/contacts"
+              type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="contact.location"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="contact.phoneNumber"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="contact.email"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="contact.faxNumber"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="representatives" path="/entityRelationships"
+              type="java.util.HashSet" baseName="entityRelationship" minCardinality="0" maxCardinality="*"
+              filter="entityRelationship.supplierRepresentatives">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="entityRelationship.supplierRepresentatives"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active representatives relationship</errorMessage>
+            </assertion>
+        </node>
+    </archetype>
+</archetypes>

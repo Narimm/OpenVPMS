@@ -20,8 +20,7 @@ package org.openvpms.archetype.rules.product;
 /**
  * Product archetype short names.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ProductArchetypes {
 
@@ -86,4 +85,9 @@ public class ProductArchetypes {
      * Product type short name.
      */
     public static final String PRODUCT_TYPE = "entity.productType";
+
+    /**
+     * Product batch short name.
+     */
+    public static final String PRODUCT_BATCH = "entity.productBatch";
 }

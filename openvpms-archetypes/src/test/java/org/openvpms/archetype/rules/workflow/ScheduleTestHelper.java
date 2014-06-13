@@ -46,6 +46,18 @@ import java.util.Date;
 public class ScheduleTestHelper extends TestHelper {
 
     /**
+     * Helper to a add schedule view to a practice location.
+     *
+     * @param location the practice location
+     * @param view     the schedule view
+     */
+    public static void addScheduleView(Party location, Entity view) {
+        EntityBean bean = new EntityBean(location);
+        bean.addNodeRelationship("scheduleViews", view);
+        save(location, view);
+    }
+
+    /**
      * Helper to create and save an <em>entity.organisationScheduleView</em>,
      * with associated <em>party.organisationSchedule</em>s.
      *

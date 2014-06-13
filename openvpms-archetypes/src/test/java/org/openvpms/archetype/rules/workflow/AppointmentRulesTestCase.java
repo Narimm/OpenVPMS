@@ -29,7 +29,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -341,8 +340,8 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         Entity view1 = ScheduleTestHelper.createScheduleView(scheduleA, scheduleB);
         Entity view2 = ScheduleTestHelper.createScheduleView(scheduleC);
 
-        addScheduleView(location1, view1);
-        addScheduleView(location2, view2);
+        ScheduleTestHelper.addScheduleView(location1, view1);
+        ScheduleTestHelper.addScheduleView(location2, view2);
 
         assertEquals(view1, rules.getScheduleView(location1, scheduleA));
         assertEquals(view1, rules.getScheduleView(location1, scheduleB));
@@ -371,8 +370,8 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         Entity view1 = ScheduleTestHelper.createScheduleView(scheduleA, scheduleB);
         Entity view2 = ScheduleTestHelper.createScheduleView(scheduleC);
 
-        addScheduleView(location1, view1);
-        addScheduleView(location2, view2);
+        ScheduleTestHelper.addScheduleView(location1, view1);
+        ScheduleTestHelper.addScheduleView(location2, view2);
 
         assertEquals(location1, rules.getLocation(scheduleA));
         assertEquals(location1, rules.getLocation(scheduleB));
@@ -471,18 +470,6 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
                                    int noSlots, Entity appointmentType) {
         return ScheduleTestHelper.createSchedule(slotSize, slotUnits,
                                                  noSlots, appointmentType);
-    }
-
-    /**
-     * Adds a schedule view to a practice location.
-     *
-     * @param location the practice location
-     * @param view     the schedule view
-     */
-    private void addScheduleView(Party location, Entity view) {
-        EntityBean bean = new EntityBean(location);
-        bean.addNodeRelationship("scheduleViews", view);
-        save(location, view);
     }
 
     /**

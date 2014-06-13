@@ -112,13 +112,26 @@ public class DateRules {
      * Returns the next date given the supplied date, zero-ing out any time component.
      *
      * @param datetime the date/time. May be {@code null}
-     * @return the date part of {@code datetime}, or {@code null} if {@code datetime} is null
+     * @return the next date from {@code datetime}, or {@code null} if {@code datetime} is null
      */
     public static Date getNextDate(Date datetime) {
         if (datetime == null) {
             return null;
         }
         return getDate(getDate(datetime), 1, DateUnits.DAYS);
+    }
+
+    /**
+     * Returns the previous date given the supplied date, zero-ing out any time component.
+     *
+     * @param datetime the date/time. May be {@code null}
+     * @return the date prior to {@code datetime}, or {@code null} if {@code datetime} is null
+     */
+    public static Date getPreviousDate(Date datetime) {
+        if (datetime == null) {
+            return null;
+        }
+        return getDate(getDate(datetime), -1, DateUnits.DAYS);
     }
 
     /**
