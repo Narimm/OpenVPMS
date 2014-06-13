@@ -34,6 +34,8 @@ import org.openvpms.web.echo.factory.TextComponentFactory;
 import org.openvpms.web.echo.text.TextComponent;
 import org.openvpms.web.resource.i18n.Messages;
 
+import java.util.List;
+
 
 /**
  * An {@link IMObjectComponentFactory} that returns read-only components.
@@ -183,10 +185,10 @@ public abstract class AbstractReadOnlyComponentFactory
             // This can be viewed inline
             String[] shortNames = property.getArchetypeRange();
             if (shortNames.length == 1) {
-                Object[] values = property.getValues().toArray();
+                List values = property.getValues();
                 IMObject value;
-                if (values.length > 0) {
-                    value = (IMObject) values[0];
+                if (!values.isEmpty()) {
+                    value = (IMObject) values.get(0);
                     result = create(value, parent).getComponent();
                 } else {
                     result = getEmptyCollectionViewer();

@@ -282,7 +282,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
     @SuppressWarnings("unchecked")
     public <T extends IMObject> List<T> getObjects() {
         List<T> objects = Collections.emptyList();
-        Collection values = property.getValues();
+        List values = property.getValues();
         int size = values.size();
         if (size != 0) {
             objects = new ArrayList<T>();

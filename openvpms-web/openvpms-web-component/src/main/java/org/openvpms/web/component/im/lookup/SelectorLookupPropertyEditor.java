@@ -29,6 +29,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * An editor for lookup properties that provides an {@link IMObjectSelector} to display and query lookups.
@@ -75,8 +76,8 @@ public class SelectorLookupPropertyEditor extends AbstractSelectorPropertyEditor
     protected Lookup getObject() {
         Property property = getProperty();
         if (property.isCollection()) {
-            Collection values = ((CollectionProperty) property).getValues();
-            return (!values.isEmpty()) ? (Lookup) values.iterator().next() : null;
+            List values = ((CollectionProperty) property).getValues();
+            return (!values.isEmpty()) ? (Lookup) values.get(0) : null;
         }
         return ServiceHelper.getLookupService().getLookup(parent, property.getName());
     }

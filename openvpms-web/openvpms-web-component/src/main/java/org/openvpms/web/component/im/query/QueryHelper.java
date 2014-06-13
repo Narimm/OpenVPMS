@@ -39,8 +39,7 @@ import java.util.List;
 /**
  * Query helper.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class QueryHelper {
 
@@ -48,7 +47,7 @@ public class QueryHelper {
      * Determines if a node is a participation node.
      *
      * @param descriptor the node descriptor
-     * @return <tt>true</tt> if the node is a participation node
+     * @return {@code true} if the node is a participation node
      */
     public static boolean isParticipationNode(NodeDescriptor descriptor) {
         return descriptor.isCollection() && "/participations".equals(descriptor.getPath());
@@ -59,7 +58,7 @@ public class QueryHelper {
      *
      * @param archetypes the archetype constraint
      * @param node       the node name
-     * @return the corresponding descriptor or <tt>null</tt>
+     * @return the corresponding descriptor or {@code null}
      */
     public static NodeDescriptor getDescriptor(ShortNameConstraint archetypes,
                                                String node) {
@@ -78,9 +77,9 @@ public class QueryHelper {
      * Adds a sort constraint on a participation node.
      *
      * @param acts       the act short names constraint. Must specify an alias
-     * @param query      the query. Must reference <tt>acts</tt>
+     * @param query      the query. Must reference {@code acts}
      * @param descriptor the participation node descriptor
-     * @param ascending  if <tt>true</tt> sort ascending
+     * @param ascending  if {@code true} sort ascending
      */
     public static void addSortOnParticipation(ShortNameConstraint acts,
                                               ArchetypeQuery query,
@@ -99,7 +98,7 @@ public class QueryHelper {
      *
      * @param set       the query
      * @param reference the object reference to check
-     * @return <tt>true</tt> if the query selects the reference; otherwise <tt>false</tt>
+     * @return {@code true} if the query selects the reference; otherwise {@code false}
      */
     public static <T extends IMObject> boolean selects(ResultSet<T> set, IMObjectReference reference) {
         boolean result = false;
@@ -210,6 +209,32 @@ public class QueryHelper {
         return result;
     }
 
+    /**
+     * Determines if a node is an entityLink node.
+     *
+     * @param descriptor the node descriptor
+     * @return {@code true} if the node is a participation node
+     */
+    public static boolean isEntityLinkNode(NodeDescriptor descriptor) {
+        return descriptor.isCollection() && "/entityLinks".equals(descriptor.getPath());
+    }
+
+    /**
+     * Adds a sort constraint on an entityLink node.
+     *
+     * @param acts       the act short names constraint. Must specify an alias
+     * @param query      the query. Must reference {@code acts}
+     * @param descriptor the participation node descriptor
+     * @param ascending  if {@code true} sort ascending
+     */
+    public static void addSortOnEntityLink(ShortNameConstraint acts, ArchetypeQuery query, NodeDescriptor descriptor,
+                                           boolean ascending) {
+        JoinConstraint linkJoin = Constraints.leftJoin(descriptor.getName(), getAlias(descriptor.getName(), query));
+        JoinConstraint targetJoin = Constraints.leftJoin("target", getAlias("target", query));
+        linkJoin.add(targetJoin);
+        acts.add(linkJoin);
+        query.add(Constraints.sort(targetJoin.getAlias(), "name", ascending));
+    }
 
     /**
      * Returns a unique alias for an entity constraint.

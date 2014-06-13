@@ -318,7 +318,7 @@ public class IMObjectProperty extends AbstractProperty
      *
      * @return the collection
      */
-    public Collection getValues() {
+    public List getValues() {
         List<IMObject> values = null;
         try {
             values = descriptor.getChildren(object);

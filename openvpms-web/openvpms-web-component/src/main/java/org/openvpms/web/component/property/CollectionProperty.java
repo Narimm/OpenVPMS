@@ -11,12 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
 
-import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -46,7 +46,7 @@ public interface CollectionProperty extends Property {
      *
      * @return the collection
      */
-    Collection getValues();
+    List getValues();
 
     /**
      * Returns the no. of elements in the collection
@@ -65,16 +65,14 @@ public interface CollectionProperty extends Property {
     /**
      * Returns the maximum cardinality.
      *
-     * @return the maximum cardinality, or <code>-1</code> if it is unbounded
+     * @return the maximum cardinality, or {@code -1} if it is unbounded
      */
     int getMaxCardinality();
 
     /**
-     * Determines the relationship of the elements of the collection to the
-     * object.
+     * Determines the relationship of the elements of the collection to the object.
      *
-     * @return <tt>true</tt> if the objects are children of the parent object,
-     *         or <tt>false</tt> if they are its peer
+     * @return {@code true} if the objects are children of the parent object, or {@code false} if they are its peer
      */
     boolean isParentChild();
 }
