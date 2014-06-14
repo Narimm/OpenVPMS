@@ -155,6 +155,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private final ModifiableListener totalListener;
 
     /**
+     * Listener for changes to the batch.
+     */
+    private final ModifiableListener batchListener;
+
+    /**
      * Stock rules.
      */
     private StockRules rules;
@@ -215,7 +220,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private static final ArchetypeNodes TEMPLATE_NODES = new ArchetypeNodes().exclude(
             "quantity", "fixedPrice", "unitPrice", "discount", "clinician", "total", DISPENSING, INVESTIGATIONS,
             REMINDERS, "batch");
-    private final ModifiableListener batchListener;
 
 
     /**
@@ -302,7 +306,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 updateMedicationBatch();
             }
         };
-        getProperty("batch").addModifiableListener(batchListener);
     }
 
     /**
