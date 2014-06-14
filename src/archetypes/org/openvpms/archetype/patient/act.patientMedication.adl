@@ -33,6 +33,8 @@
         <node name="product" displayName="Medication" path="/participations" type="java.util.HashSet" minCardinality="1"
               maxCardinality="1"
               filter="participation.product"/>
+        <node name="batch" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+              filter="participation.productBatch"/>
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.clinician"/>
         <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"

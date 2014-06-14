@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="act.customerAccountInvoiceItem.1.0" latest="true" primary="false"
                type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Customer Invoice Item">
@@ -31,6 +32,8 @@
         <node name="product" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
               filter="participation.product"/>
+        <node name="batch" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+              filter="participation.productBatch"/>
         <node name="stockLocation" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.stockLocation" hidden="true"/>

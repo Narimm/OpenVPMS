@@ -20,7 +20,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.rules.stock.StockRules;
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -29,6 +31,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -37,6 +40,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.test.TestHelper.getDate;
+import static org.openvpms.archetype.test.TestHelper.getDatetime;
 
 
 /**
@@ -232,11 +237,73 @@ public class ProductRulesTestCase extends AbstractProductTest {
     }
 
     /**
+     * Tests the {@link ProductRules#getBatches(Product, String, Date, Party)} method.
+     */
+    @Test
+    public void testGetBatches() {
+        Product product = TestHelper.createProduct();
+        Party manufacturer1 = createManufacturer();
+        Party manufacturer2 = createManufacturer();
+        Party manufacturer3 = createManufacturer();
+        List<Entity> batches = rules.getBatches(product, null, null, null);
+        assertEquals(0, batches.size());
+
+        Entity batch1 = rules.createBatch(product, "aa", getDatetime("2014-06-01 10:00:00"), manufacturer1);
+        Entity batch2 = rules.createBatch(product, "ab", getDatetime("2014-07-01 07:00:00"), manufacturer2);
+        Entity batch3 = rules.createBatch(product, "ac", getDatetime("2014-08-01 15:00:00"), manufacturer3);
+        save(batch1, batch2, batch3);
+
+        checkBatches(rules.getBatches(product, "a*", null, null), batch1, batch2, batch3);
+
+        checkBatches(rules.getBatches(product, "a*", getDate("2014-06-01"), null), batch1);
+        checkBatches(rules.getBatches(product, "a*", null, manufacturer1), batch1);
+
+        checkBatches(rules.getBatches(product, null, null, manufacturer2), batch2);
+
+        checkBatches(rules.getBatches(product, "ac", null, manufacturer3), batch3);
+    }
+
+    /**
+     * Tests the {@link ProductRules#createBatch(Product, String, Date, Party)} and
+     * {@link ProductRules#getBatchExpiry(Entity)} method.
+     */
+    @Test
+    public void testCreateBatch() {
+        Product product = TestHelper.createProduct();
+        Date expiry = TestHelper.getDate("2014-06-14");
+        Party manufacturer = createManufacturer();
+        String batchNumber = "12345";
+        Entity batch = rules.createBatch(product, batchNumber, expiry, manufacturer);
+        assertTrue(batch.isNew());
+        save(batch);
+
+        batch = get(batch);
+        EntityBean bean = new EntityBean(batch);
+        assertEquals(batchNumber, batch.getName());
+        assertEquals(product.getObjectReference(), bean.getNodeTargetObjectRef("product", false));
+        assertEquals(expiry, rules.getBatchExpiry(batch));
+        assertEquals(manufacturer.getObjectReference(), bean.getNodeTargetObjectRef("manufacturer"));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
         rules = new ProductRules(getArchetypeService());
+    }
+
+    /**
+     * Verifies batches match those expected.
+     *
+     * @param matches the matches to check
+     * @param batches the expected batches
+     */
+    private void checkBatches(List<Entity> matches, Entity... batches) {
+        assertEquals(batches.length, matches.size());
+        for (int i = 0; i < batches.length; ++i) {
+            assertEquals(batches[i], matches.get(i));
+        }
     }
 
     /**
@@ -254,6 +321,18 @@ public class ProductRulesTestCase extends AbstractProductTest {
         } catch (InterruptedException ignore) {
             // do nothing
         }
+    }
+
+    /**
+     * Helper to create a party.supplierManufacturer.
+     *
+     * @return a new manufacturer
+     */
+    private Party createManufacturer() {
+        Party manufacturer = (Party) create(SupplierArchetypes.MANUFACTURER);
+        manufacturer.setName("Z-Manufacturer" + System.currentTimeMillis());
+        save(manufacturer);
+        return manufacturer;
     }
 
 }
