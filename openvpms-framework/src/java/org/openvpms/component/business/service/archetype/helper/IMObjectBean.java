@@ -1006,7 +1006,20 @@ public class IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObjectReference getNodeSourceObjectRef(String node) {
-        List<IMObjectRelationship> relationships = getValues(node, IsActiveRelationship.isActiveNow(),
+        return getNodeSourceObjectRef(node, true);
+    }
+
+    /**
+     * Returns the source object reference from the first {@link IMObjectRelationship} for the specified
+     * relationship node.
+     *
+     * @param node   the relationship node name
+     * @param active determines if the relationship must be active
+     * @return the source object reference, or {@code null} if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObjectReference getNodeSourceObjectRef(String node, boolean active) {
+        List<IMObjectRelationship> relationships = getValues(node, getDefaultPredicate(active),
                                                              IMObjectRelationship.class);
         return getRelatedRef(relationships, null, SOURCE);
     }
@@ -1063,7 +1076,19 @@ public class IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObjectReference getNodeTargetObjectRef(String node) {
-        List<IMObjectRelationship> relationships = getValues(node, IsActiveRelationship.isActiveNow(),
+        return getNodeTargetObjectRef(node, true);
+    }
+
+    /**
+     * Returns the target object reference from the first {@link IMObjectRelationship} for the specified node.
+     *
+     * @param node   the relationship node
+     * @param active determines if the relationship must be active
+     * @return the target reference, or {@code null} if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObjectReference getNodeTargetObjectRef(String node, boolean active) {
+        List<IMObjectRelationship> relationships = getValues(node, getDefaultPredicate(active),
                                                              IMObjectRelationship.class);
         return getRelatedRef(relationships, null, TARGET);
     }
