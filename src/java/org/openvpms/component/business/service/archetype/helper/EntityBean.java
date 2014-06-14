@@ -117,6 +117,22 @@ public class EntityBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObjectRelationship addNodeTarget(String name, Entity target) {
+        IMObjectRelationship result = addNodeTarget(name, target.getObjectReference());
+        if (result instanceof EntityRelationship) {
+            target.addEntityRelationship((EntityRelationship) result);
+        }
+        return result;
+    }
+
+    /**
+     * Adds a new relationship between the current entity (the source), and the supplied target.
+     *
+     * @param name   the name
+     * @param target the target
+     * @return the new relationship
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObjectRelationship addNodeTarget(String name, IMObjectReference target) {
         String shortName = getRelationshipShortName(name, target, "target");
         Entity entity = getEntity();
         IMObjectRelationship r = (IMObjectRelationship) getArchetypeService().create(shortName);
@@ -124,11 +140,8 @@ public class EntityBean extends IMObjectBean {
             throw new IMObjectBeanException(ArchetypeNotFound, shortName);
         }
         r.setSource(entity.getObjectReference());
-        r.setTarget(target.getObjectReference());
+        r.setTarget(target);
         addValue(name, r);
-        if (r instanceof EntityRelationship) {
-            target.addEntityRelationship((EntityRelationship) r);
-        }
         return r;
     }
 
