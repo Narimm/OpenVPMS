@@ -30,6 +30,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.product.ProductBatchResultSet;
 import org.openvpms.web.component.im.query.QueryTestHelper;
 import org.openvpms.web.component.im.query.ResultSetIterator;
 import org.openvpms.web.component.im.util.VirtualNodeSortConstraint;
@@ -89,7 +90,7 @@ public class ProductBatchResultTestCase extends ArchetypeServiceTest {
 
         SortConstraint[] sort = {Constraints.sort("name")};
         ProductBatchResultSet set = new ProductBatchResultSet(shortName(ProductArchetypes.PRODUCT_BATCH),
-                                                              null, null, null, null, null, sort, 20);
+                                                              null, null, null, null, null, null, sort, 20);
         checkOrder(set, batch1, batch2);
     }
 
@@ -104,7 +105,7 @@ public class ProductBatchResultTestCase extends ArchetypeServiceTest {
 
         SortConstraint[] sort = {new VirtualNodeSortConstraint("expiryDate", true)};
         ProductBatchResultSet set = new ProductBatchResultSet(shortName(ProductArchetypes.PRODUCT_BATCH),
-                                                              null, null, null, null, null, sort, 20);
+                                                              null, null, null, null, null, null, sort, 20);
         checkOrder(set, batch2, batch1);
     }
 
@@ -120,7 +121,7 @@ public class ProductBatchResultTestCase extends ArchetypeServiceTest {
 
         SortConstraint[] sort = {Constraints.sort("product", true)};
         ProductBatchResultSet set = new ProductBatchResultSet(shortName(ProductArchetypes.PRODUCT_BATCH),
-                                                              null, null, null, null, null, sort, 20);
+                                                              null, null, null, null, null, null, sort, 20);
         checkOrder(set, batch2, batch1);
     }
 
@@ -187,7 +188,7 @@ public class ProductBatchResultTestCase extends ArchetypeServiceTest {
      */
     private void checkExpiry(Date from, Date to, boolean include, Entity... batches) {
         ProductBatchResultSet set = new ProductBatchResultSet(shortName(ProductArchetypes.PRODUCT_BATCH),
-                                                              null, null, from, to, null, null, 20);
+                                                              null, null, null, from, to, null, null, 20);
         List<IMObjectReference> objectRefs = QueryTestHelper.getObjectRefs(set);
         for (IMObject object : batches) {
             if (include) {

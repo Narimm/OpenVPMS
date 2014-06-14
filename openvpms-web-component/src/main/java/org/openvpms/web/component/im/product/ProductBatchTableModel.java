@@ -14,7 +14,7 @@
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.product.batch;
+package org.openvpms.web.component.im.product;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
@@ -83,11 +83,26 @@ public class ProductBatchTableModel extends AbstractIMObjectTableModel<Entity> {
      * @param context the layout context
      */
     public ProductBatchTableModel(LayoutContext context) {
+        this(context, true, true);
+    }
+
+    /**
+     * Constructs a {@link ProductBatchTableModel}.
+     *
+     * @param context     the layout context
+     * @param showId      if {@code true}, show the id column
+     * @param showProduct if {@code true}, show the product column
+     */
+    public ProductBatchTableModel(LayoutContext context, boolean showId, boolean showProduct) {
         this.context = context;
         DefaultTableColumnModel model = new DefaultTableColumnModel();
-        model.addColumn(createTableColumn(ID_INDEX, ID));
+        if (showId) {
+            model.addColumn(createTableColumn(ID_INDEX, ID));
+        }
         model.addColumn(createTableColumn(BATCH_NUMBER_INDEX, ProductArchetypes.PRODUCT_BATCH, "name"));
-        model.addColumn(createTableColumn(PRODUCT_INDEX, ProductArchetypes.PRODUCT_BATCH, "product"));
+        if (showProduct) {
+            model.addColumn(createTableColumn(PRODUCT_INDEX, ProductArchetypes.PRODUCT_BATCH, "product"));
+        }
         model.addColumn(createTableColumn(EXPIRY_DATE_INDEX, "entityLink.batchProduct", "activeEndTime"));
         model.addColumn(createTableColumn(MANUFACTURER_INDEX, ProductArchetypes.PRODUCT_BATCH, "manufacturer"));
         setTableColumnModel(model);

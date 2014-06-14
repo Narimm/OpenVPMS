@@ -14,11 +14,13 @@
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.product.batch;
+package org.openvpms.web.component.im.product;
 
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IConstraint;
@@ -28,6 +30,7 @@ import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.EntityResultSet;
 import org.openvpms.web.component.im.query.QueryHelper;
+import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.VirtualNodeSortConstraint;
 
 import java.util.Date;
@@ -37,35 +40,74 @@ import static org.openvpms.component.system.common.query.Constraints.isNull;
 import static org.openvpms.component.system.common.query.Constraints.join;
 
 /**
- * Enter description.
+ * An {@link ResultSet} for <em>entity.productBatch</em> entities.
  *
  * @author Tim Anderson
  */
 public class ProductBatchResultSet extends EntityResultSet<Entity> {
 
     private static final String EXPIRY_DATE = "activeEndTime";
-    private final String product;
 
+    /**
+     * The product, used to filter on batches belonging to a single product. May be {@code null}
+     */
+    private final Product product;
+
+    /**
+     * Used to filter batches on associated product name. May be {@code null}
+     */
+    private final String productName;
+
+    /**
+     * The start of the expiry date range. If non-null, only includes those batches expiring after {@code from}.
+     */
     private final Date from;
 
+    /**
+     * The end of the expiry date range. If non-null, only includes those batches expiring before {@code to}.
+     */
     private final Date to;
 
+    /**
+     * Used to filter batches on associated manufacturer name. May be {@code null}.
+     */
     private final String manufacturer;
 
     /**
-     * Construct a new {@code EntityResultSet}.
+     * Expiry date sort constraint. Sorts on ascending expiry date.
+     */
+    private static final SortConstraint[] EXPIRY_DATES
+            = new SortConstraint[]{new VirtualNodeSortConstraint("expiryDate", true),
+                                   Constraints.sort("name", true), Constraints.sort("id", true)};
+
+    /**
+     * Constructs a {@link ProductBatchResultSet}.
+     *
+     * @param value   the value to query on. May be {@code null}
+     * @param product the product to search on. May be {@code null}
+     * @param rows    the maximum no. of rows per page
+     */
+    public ProductBatchResultSet(String value, Product product, Date from, int rows) {
+        this(Constraints.shortName(ProductArchetypes.PRODUCT_BATCH), value, product, null, from, null, null,
+             EXPIRY_DATES, rows);
+    }
+
+    /**
+     * Constructs a {@link ProductBatchResultSet}.
      *
      * @param archetypes   the archetypes to query
      * @param value        the value to query on. May be {@code null}
-     * @param product      the product name to search on. May be {@code null}
+     * @param product      the product to search on. May be {@code null}
+     * @param productName  the product name to search on. May be {@code null}
      * @param manufacturer the manufacturer to search on. May be {@code null}
      * @param sort         the sort criteria. May be {@code null}
      * @param rows         the maximum no. of rows per page
      */
-    public ProductBatchResultSet(ShortNameConstraint archetypes, String value, String product,
+    public ProductBatchResultSet(ShortNameConstraint archetypes, String value, Product product, String productName,
                                  Date from, Date to, String manufacturer, SortConstraint[] sort, int rows) {
         super(archetypes, value, false, null, sort, rows, true);
         this.product = product;
+        this.productName = productName;
         this.from = DateRules.getDate(from);
         this.to = DateRules.getPreviousDate(to); // createDateConstraint() uses < to + 1
         this.manufacturer = manufacturer;
@@ -80,10 +122,13 @@ public class ProductBatchResultSet extends EntityResultSet<Entity> {
     protected ArchetypeQuery createQuery() {
         ArchetypeQuery query = super.createQuery();
         JoinConstraint productJoin = null;
-        if (product != null || from != null || to != null) {
+        if (product != null || productName != null || from != null || to != null) {
             productJoin = join("product", "product");
             if (product != null) {
-                productJoin.add(join("target", "t1").add(eq("name", product)));
+                productJoin.add(eq("target", product));
+            }
+            if (productName != null) {
+                productJoin.add(join("target", "t1").add(eq("name", productName)));
             }
             IConstraint expiryDateConstraint = QueryHelper.createDateConstraint(EXPIRY_DATE, from, to);
             if (expiryDateConstraint != null) {

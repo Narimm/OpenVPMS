@@ -18,11 +18,16 @@ package org.openvpms.web.workspace.supplier.delivery;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.supplier.OrderRules;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -34,6 +39,7 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
@@ -47,8 +53,13 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.supplier.SupplierHelper;
 import org.openvpms.web.workspace.supplier.order.ESCISupplierCRUDWindow;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -117,12 +128,46 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
     protected void onPosted(FinancialAct act) {
         try {
             if (TypeHelper.isA(act, SupplierArchetypes.DELIVERY)) {
+                createBatches(act);
                 onInvoice(act);
             } else {
                 onCredit(act);
             }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
+        }
+    }
+
+    /**
+     * Creates batches when a delivery is created.
+     *
+     * @param act the act
+     */
+    private void createBatches(FinancialAct act) {
+        ProductRules rules = ServiceHelper.getBean(ProductRules.class);
+        ActBean bean = new ActBean(act);
+        List<Entity> newBatches = new ArrayList<Entity>();
+        for (Act item : bean.getNodeActs("items")) {
+            ActBean itemBean = new ActBean(item);
+            String batchNumber = itemBean.getString("batchNumber");
+            Date expiryDate = itemBean.getDate("expiryDate");
+            if (batchNumber != null || expiryDate != null) {
+                IMObjectReference product = itemBean.getNodeParticipantRef("product");
+                IMObjectReference manufacturer = itemBean.getNodeParticipantRef("manufacturer");
+                List<Entity> batches = rules.getBatches(product, batchNumber, expiryDate, manufacturer);
+                if (batches.isEmpty()) {
+                    if (batchNumber == null) {
+                        batchNumber = IMObjectHelper.getName(product);
+                    }
+                    if (!StringUtils.isEmpty(batchNumber)) {
+                        Entity batch = rules.createBatch(product, batchNumber, expiryDate, manufacturer);
+                        newBatches.add(batch);
+                    }
+                }
+            }
+        }
+        if (!newBatches.isEmpty()) {
+            SaveHelper.save(newBatches);
         }
     }
 
