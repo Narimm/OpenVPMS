@@ -47,6 +47,7 @@ import org.openvpms.web.component.im.edit.IMObjectCollectionEditorFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.ClinicianParticipationEditor;
+import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.edit.reminder.ReminderEditor;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -54,6 +55,7 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.patient.PatientActEditor;
 import org.openvpms.web.component.im.patient.PatientParticipationEditor;
+import org.openvpms.web.component.im.product.BatchParticipationEditor;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.util.IMObjectSorter;
@@ -71,6 +73,7 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.focus.FocusHelper;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
@@ -132,9 +135,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private final ModifiableListener quantityListener;
 
     /**
-     * Listener for changes to the medication quantity.
+     * Listener for changes to the medication act.
      */
-    private final ModifiableListener medicationQuantityListener;
+    private final ModifiableListener dispensingListener;
 
     /**
      * Listener for changes to the start time.
@@ -211,7 +214,8 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     private static final ArchetypeNodes TEMPLATE_NODES = new ArchetypeNodes().exclude(
             "quantity", "fixedPrice", "unitPrice", "discount", "clinician", "total", DISPENSING, INVESTIGATIONS,
-            REMINDERS);
+            REMINDERS, "batch");
+    private final ModifiableListener batchListener;
 
 
     /**
@@ -243,13 +247,14 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 updateMedicationQuantity();
             }
         };
-        medicationQuantityListener = new ModifiableListener() {
+        dispensingListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updateQuantity();
+                updateBatch();
             }
         };
         if (dispensing != null) {
-            dispensing.addModifiableListener(medicationQuantityListener);
+            dispensing.addModifiableListener(dispensingListener);
         }
 
         sellingUnits = LabelFactory.create();
@@ -290,6 +295,14 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             }
         };
         getProperty("startTime").addModifiableListener(startTimeListener);
+
+        batchListener = new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                updateMedicationBatch();
+            }
+        };
+        getProperty("batch").addModifiableListener(batchListener);
     }
 
     /**
@@ -301,7 +314,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     public void dispose() {
         super.dispose();
         if (dispensing != null) {
-            dispensing.removeModifiableListener(medicationQuantityListener);
+            dispensing.removeModifiableListener(dispensingListener);
         }
 
         getProperty("total").removeModifiableListener(totalListener);
@@ -513,6 +526,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 }
             });
         }
+        updateBatch(getProduct());
     }
 
     /**
@@ -573,6 +587,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             }
             updateStockLocation(product);
             updateSellingUnits(product);
+            updateBatch(product);
         }
         notifyProductListener(product);
     }
@@ -890,6 +905,24 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Updates the batch.
+     *
+     * @param product the product. May be {@code null}
+     */
+    private void updateBatch(Product product) {
+        BatchParticipationEditor batchEditor = getBatchEditor();
+        if (batchEditor != null) {
+            try {
+                batchEditor.removeModifiableListener(batchListener);
+                batchEditor.setProduct(product);
+                updateMedicationBatch();
+            } finally {
+                batchEditor.addModifiableListener(batchListener);
+            }
+        }
+    }
+
+    /**
      * Helper to return the investigation types for a product.
      * <p/>
      * If there are multiple investigation types, these will be sorted on name.
@@ -965,7 +998,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private void updateMedicationQuantity() {
         BigDecimal quantity = (BigDecimal) getProperty("quantity").getValue();
         if (dispensing != null && quantity != null) {
-            dispensing.removeModifiableListener(medicationQuantityListener);
+            dispensing.removeModifiableListener(dispensingListener);
             try {
                 PatientMedicationActEditor editor = (PatientMedicationActEditor) dispensing.getCurrentEditor();
                 if (editor == null) {
@@ -979,7 +1012,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                     dispensing.refresh();
                 }
             } finally {
-                dispensing.addModifiableListener(medicationQuantityListener);
+                dispensing.addModifiableListener(dispensingListener);
             }
         }
     }
@@ -1010,6 +1043,43 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             }
         } finally {
             property.addModifiableListener(quantityListener);
+        }
+    }
+
+    /**
+     * Updates the medication batch from the invoice.
+     */
+    private void updateMedicationBatch() {
+        BatchParticipationEditor batchEditor = getBatchEditor();
+        if (batchEditor != null && dispensing != null) {
+            dispensing.removeModifiableListener(dispensingListener);
+            try {
+                for (PatientMedicationActEditor editor : getMedicationActEditors()) {
+                    editor.setBatch(batchEditor.getEntity());
+                }
+                dispensing.refresh();
+            } finally {
+                dispensing.addModifiableListener(dispensingListener);
+            }
+        }
+    }
+
+    /**
+     * Updates the batch if the medication batch changes.
+     */
+    private void updateBatch() {
+        Property batch = getProperty("batch");
+        if (batch != null) {
+            batch.removeModifiableListener(batchListener);
+            try {
+                Entity selected = null;
+                for (PatientMedicationActEditor editor : getMedicationActEditors()) {
+                    selected = editor.getBatch();
+                }
+                getBatchEditor().setEntity(selected);
+            } finally {
+                batch.addModifiableListener(batchListener);
+            }
         }
     }
 
@@ -1263,6 +1333,27 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         return editor;
     }
 
+    /**
+     * Returns the product batch participation editor.
+     *
+     * @return the product batch participation, or {@code null}  if none exists
+     */
+    protected BatchParticipationEditor getBatchEditor() {
+        return getBatchEditor(true);
+    }
+
+    /**
+     * Returns the product batch participation editor.
+     *
+     * @param create if {@code true} force creation of the edit components if it hasn't already been done
+     * @return the product batch participation, or {@code null} if none exists
+     */
+    protected BatchParticipationEditor getBatchEditor(boolean create) {
+        ParticipationEditor<Entity> editor = getParticipationEditor("batch", create);
+        return (BatchParticipationEditor) editor;
+    }
+
+
     protected class CustomerChargeItemLayoutStrategy extends PriceItemLayoutStrategy {
 
         public CustomerChargeItemLayoutStrategy(FixedPriceEditor fixedPrice) {
@@ -1282,7 +1373,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
             ComponentState state = super.createComponent(property, parent, context);
             if ("quantity".equals(property.getName())) {
-                Component component = RowFactory.create("CellSpacing", state.getComponent(), sellingUnits);
+                Component component = RowFactory.create(Styles.CELL_SPACING, state.getComponent(), sellingUnits);
                 state = new ComponentState(component, property);
             }
             return state;

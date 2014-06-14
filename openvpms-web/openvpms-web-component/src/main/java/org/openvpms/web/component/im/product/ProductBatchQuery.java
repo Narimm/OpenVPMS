@@ -14,13 +14,15 @@
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.product.batch;
+package org.openvpms.web.component.im.product;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.AbstractEntityQuery;
@@ -46,7 +48,12 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
     /**
      * The product filter.
      */
-    private TextField product;
+    private Product product;
+
+    /**
+     * The product name filter.
+     */
+    private TextField productName;
 
     /**
      * The expiry date filter.
@@ -59,7 +66,16 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
     private TextField manufacturer;
 
     /**
-     * Constructs an {@link ProductBatchQuery}.
+     * Constructs a {@link ProductBatchQuery}.
+     *
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
+     */
+    public ProductBatchQuery() {
+        this(new String[]{ProductArchetypes.PRODUCT_BATCH});
+    }
+
+    /**
+     * Constructs a {@link ProductBatchQuery}.
      *
      * @param shortNames the short names
      * @throws ArchetypeQueryException if the short names don't match any archetypes
@@ -69,11 +85,20 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
     }
 
     /**
+     * Sets the product filter.
+     *
+     * @param product the product. May be {@code null}
+     */
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+
+    /**
      * Sets the product name.
      *
      * @param product the product name. May be {@code null}
      */
-    public void setProduct(String product) {
+    public void setProductName(String product) {
         getProductField().setText(product);
     }
 
@@ -82,7 +107,7 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
      *
      * @return the product name. May be {@code null}
      */
-    public String getProduct() {
+    public String setProductName() {
         return getProductField().getText();
     }
 
@@ -105,6 +130,15 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
     }
 
     /**
+     * Sets the date that products must expire on or after.
+     *
+     * @param date the expiry date
+     */
+    public void setExpireAfter(Date date) {
+        getExpiryDate().setFrom(date);
+    }
+
+    /**
      * Lays out the component in a container, and sets focus on the search field.
      *
      * @param container the container
@@ -112,9 +146,12 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
     protected void doLayout(Component container) {
         addShortNameSelector(container);
         addSearchField(container);
-        addProductField(container);
-        addManufacturerField(container);
+        if (product == null) {
+            addProductName(container);
+        }
         addExpiryDate(container);
+        addManufacturer(container);
+        addActive(container);
         FocusHelper.setFocus(getSearchField());
         getExpiryDate().setFrom(DateRules.getToday());
         getExpiryDate().setTo(null);
@@ -126,15 +163,15 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
      * @return the product field
      */
     protected TextField getProductField() {
-        if (product == null) {
-            product = TextComponentFactory.create();
-            product.addActionListener(new ActionListener() {
+        if (productName == null) {
+            productName = TextComponentFactory.create();
+            productName.addActionListener(new ActionListener() {
                 public void onAction(ActionEvent event) {
                     onQuery();
                 }
             });
         }
-        return product;
+        return productName;
     }
 
     /**
@@ -170,12 +207,6 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
                     return fromDate;
                 }
 
-                /**
-                 * Creates a component to render the "to date" property.
-                 *
-                 * @param to the "to date" property
-                 * @return a new component
-                 */
                 @Override
                 protected ComponentState createToDate(Property to) {
                     ComponentState toDate = super.createToDate(to);
@@ -192,7 +223,7 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
      *
      * @param container the container
      */
-    protected void addProductField(Component container) {
+    protected void addProductName(Component container) {
         Label label = LabelFactory.create("product.batch.product");
         container.add(label);
         TextField field = getProductField();
@@ -205,7 +236,7 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
      *
      * @param container the container
      */
-    protected void addManufacturerField(Component container) {
+    protected void addManufacturer(Component container) {
         Label label = LabelFactory.create("product.batch.manufacturer");
         container.add(label);
         TextField field = getManufacturerField();
@@ -231,12 +262,12 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
      */
     @Override
     protected ResultSet<Entity> createResultSet(SortConstraint[] sort) {
-        String product = getWildcardedText(getProductField());
+        String productName = getWildcardedText(getProductField());
         String manufacturer = getWildcardedText(getManufacturerField());
         Date from = getExpiryDate().getFrom();
         Date to = getExpiryDate().getTo();
-        return new ProductBatchResultSet(getArchetypeConstraint(), getValue(), product, from, to, manufacturer,
-                                         sort, getMaxResults());
+        return new ProductBatchResultSet(getArchetypeConstraint(), getValue(), product, productName, from, to,
+                                         manufacturer, sort, getMaxResults());
     }
 
 }
