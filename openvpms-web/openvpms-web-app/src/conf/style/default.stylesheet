@@ -2398,4 +2398,15 @@
         </properties>
     </style>
 
+    <!-- =================================================================== -->
+    <!--  Dropdown component defaults                                        -->
+    <!-- =================================================================== -->
+    <style name="default" type="echopointng.DropDown">
+        <properties>
+            <property name="popUpBorder">
+                <border size="2px" style="groove" color="#cfdfff"/>
+            </property>
+        </properties>
+    </style>
+
 </stylesheet>

@@ -368,7 +368,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
     private void onBatchChanged() {
         Entity batch = getBatch();
         if (batch != null) {
-            Date date = ServiceHelper.getBean(ProductRules.class).getExpiryDate(batch);
+            Date date = ServiceHelper.getBean(ProductRules.class).getBatchExpiry(batch);
             expiryDate.getProperty().setValue(date);
         }
         expiryDate.getComponent().setEnabled(batch == null);
