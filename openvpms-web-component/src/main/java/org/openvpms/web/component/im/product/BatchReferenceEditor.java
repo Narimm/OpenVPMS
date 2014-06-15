@@ -16,8 +16,6 @@
 
 package org.openvpms.web.component.im.product;
 
-import echopointng.DropDown;
-import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
@@ -47,6 +45,7 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.popup.DropDown;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 
@@ -124,6 +123,7 @@ class BatchReferenceEditor extends AbstractPropertyEditor implements IMObjectRef
         BoundTextField inputField = new BoundTextField(input);
         inputField.setStyleName("Selector");
         dropDown = new DropDown();
+        dropDown.setStyleName(Styles.DEFAULT);
         dropDown.setTarget(inputField);
         dropDown.setPopUpAlwaysOnTop(true);
         dropDown.setFocusOnExpand(true);
@@ -335,13 +335,11 @@ class BatchReferenceEditor extends AbstractPropertyEditor implements IMObjectRef
         if (table != null) {
             table.getTable().setSelected(batch);
             Column newValue = ColumnFactory.create(Styles.INSET, table);
-            newValue.setBackground(Color.LIGHTGRAY);
             dropDown.setPopUp(newValue);
             dropDown.setFocusComponent(table);
         } else {
             Label component = LabelFactory.create("imobject.none");
             Column newValue = ColumnFactory.create(Styles.INSET, component);
-            newValue.setBackground(Color.LIGHTGRAY);
             dropDown.setPopUp(newValue);
             dropDown.setFocusComponent(null);
         }

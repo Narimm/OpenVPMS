@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 /*
@@ -498,6 +498,9 @@ EPPU.prototype.reparentBox = function () {
 EPPU.prototype.positionBox = function () {
     this.reparentBox();
 
+    // begin mod
+    EP.setDisplayed(this.eBox, true);    // need to display first in order for widths to be calculated correctly
+
     var boxWidth = EP.getWidth(this.eBox);
     var boxHeight = EP.getHeight(this.eBox);
 
@@ -511,7 +514,6 @@ EPPU.prototype.positionBox = function () {
     }
     // end mod
 
-    EP.setDisplayed(this.eBox, true);
     if (this.eIframeQuirk) {
         EP.setDisplayed(this.eIframeQuirk, true);
     }
