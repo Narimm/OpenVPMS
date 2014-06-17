@@ -47,8 +47,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import static java.math.BigDecimal.ZERO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.openvpms.archetype.rules.math.MathRules.ONE_HUNDRED;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.PRICING_GROUP;
 import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createFixedPrice;
 import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createUnitPrice;
@@ -486,6 +488,47 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
 
         assertEquals(1, products.getErrors().size());
         assertEquals("A value for Unit Price Max Discount is required", products.getErrors().get(0).getError());
+    }
+
+    /**
+     * Verifies that products can be written if they have prices with {@code null} costs and maxDiscounts.
+     * <p/>
+     * These will default to 0.0 and 100 respectively, as per the price archetypes.
+     */
+    @Test
+    public void testWritePricesWithNullCostAndMaxDiscounts() {
+        Product product = createProduct("Product A", "A");
+        product.addClassification(createTaxType(new BigDecimal("5.0")));
+        ProductPrice fixed1 = createFixedPrice("1.0", "0.5", "100", "10", "2012-02-01", "2012-04-01", false);
+        ProductPrice unit1 = createUnitPrice("1.92", "1.2", "60", "10", "2012-02-02", "2012-04-02");
+
+        IMObjectBean unit1Bean = new IMObjectBean(unit1);
+        unit1Bean.setValue("cost", null);
+        unit1Bean.setValue("maxDiscount", null);
+        IMObjectBean fixed1Bean = new IMObjectBean(fixed1);
+        fixed1Bean.setValue("cost", null);
+        fixed1Bean.setValue("maxDiscount", null);
+        product.addProductPrice(fixed1);
+        product.addProductPrice(unit1);
+
+        ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers);
+        Document document = writer.write(Arrays.asList(product).iterator(), false, true, PricingGroup.ALL);
+
+        ProductCSVReader reader = new ProductCSVReader(handlers, lookups);
+        reader.setDateFormats(Arrays.asList(ProductCSVReader.YEAR_MONTH_DAY_FORMATS));
+        ProductDataSet products = reader.read(document);
+        assertEquals(1, products.getData().size());
+        assertEquals(0, products.getErrors().size());
+
+        ProductData data = products.getData().get(0);
+        checkProduct(data, product);
+        assertEquals(1, data.getFixedPrices().size());
+        checkEquals(ZERO, data.getFixedPrices().get(0).getCost());
+        checkEquals(ONE_HUNDRED, data.getFixedPrices().get(0).getMaxDiscount());
+
+        assertEquals(1, data.getUnitPrices().size());
+        checkEquals(ZERO, data.getUnitPrices().get(0).getCost());
+        checkEquals(ONE_HUNDRED, data.getUnitPrices().get(0).getMaxDiscount());
     }
 
     /**

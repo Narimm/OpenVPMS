@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
@@ -33,6 +34,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
@@ -223,8 +225,8 @@ public class ProductCSVWriter implements ProductWriter {
                 IMObjectBean fixedBean = new IMObjectBean(fixedPrice, service);
                 fixedId = fixedBean.getString("id");
                 fixed = fixedPrice.getPrice().toString();
-                fixedCost = fixedBean.getBigDecimal("cost").toString();
-                fixedMaxDiscount = fixedBean.getBigDecimal("maxDiscount").toString();
+                fixedCost = fixedBean.getBigDecimal("cost", BigDecimal.ZERO).toString();
+                fixedMaxDiscount = fixedBean.getBigDecimal("maxDiscount", MathRules.ONE_HUNDRED).toString();
                 fixedStartDate = getDate(fixedPrice.getFromDate());
                 fixedEndDate = getDate(fixedPrice.getToDate());
                 defaultFixedPrice = fixedBean.getString("default", "false").toLowerCase();
@@ -247,8 +249,8 @@ public class ProductCSVWriter implements ProductWriter {
                 IMObjectBean unitBean = new IMObjectBean(unitPrice, service);
                 unitId = unitBean.getString("id");
                 unit = unitPrice.getPrice().toString();
-                unitCost = unitBean.getBigDecimal("cost").toString();
-                unitMaxDiscount = unitBean.getBigDecimal("maxDiscount").toString();
+                unitCost = unitBean.getBigDecimal("cost", BigDecimal.ZERO).toString();
+                unitMaxDiscount = unitBean.getBigDecimal("maxDiscount", MathRules.ONE_HUNDRED).toString();
                 unitStartDate = getDate(unitPrice.getFromDate());
                 unitEndDate = getDate(unitPrice.getToDate());
                 unitPriceGroups = getGroups(unitPrice);
