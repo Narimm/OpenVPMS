@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="party.supplierVeterinarian.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party" displayName="Veterinarian">
@@ -22,13 +23,12 @@
               derivedValue="concat(/details/lastName, ',', /details/firstName)"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
-              derivedValue="concat(openvpms:lookup(.,'title'), ' ', /details/firstName, ' ', /details/initials,' ',/details/lastName)"/>
+              derivedValue="expr:trim(concat(openvpms:lookup(.,'title'), ' ', /details/firstName, ' ', /details/lastName, expr:concatIf(' (', list:sortedNamesOf('classifications'), ')')),255)"/>
         <node name="title" path="/details/title" type="java.lang.String"
               minCardinality="1" maxlength="15">
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
                 <property name="source" value="lookup.personTitle"/>
-                <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
         <node name="firstName" path="/details/firstName" type="java.lang.String"
@@ -50,37 +50,23 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="contact.location"/>
+                        <property name="shortName" value="contact.location"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="contact.phoneNumber"/>
+                        <property name="shortName" value="contact.phoneNumber"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="contact.email"/>
+                        <property name="shortName" value="contact.email"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="contact.faxNumber"/>
+                        <property name="shortName" value="contact.faxNumber"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node name="practices" path="/entityRelationships"
+        <node name="practices" path="/targetEntityRelationships"
               type="java.util.HashSet" baseName="entityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.practiceVeterinarians">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.practiceVeterinarians"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active practice relationship</errorMessage>
             </assertion>
@@ -90,11 +76,9 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="lookup.veterinarySpeciality"/>
+                        <property name="shortName" value="lookup.veterinarySpeciality"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
     </archetype>

@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="party.supplierVeterinaryPractice.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party" displayName="Veterinary Practice">
@@ -30,37 +31,23 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="contact.location"/>
+                        <property name="shortName" value="contact.location"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="contact.phoneNumber"/>
+                        <property name="shortName" value="contact.phoneNumber"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="contact.email"/>
+                        <property name="shortName" value="contact.email"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="contact.faxNumber"/>
+                        <property name="shortName" value="contact.faxNumber"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node name="veterinarians" path="/entityRelationships"
+        <node name="veterinarians" path="/sourceEntityRelationships"
               type="java.util.HashSet" baseName="entityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.practiceVeterinarians">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.practiceVeterinarians"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active veterinarians relationship</errorMessage>
             </assertion>
@@ -70,11 +57,9 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="lookup.practiceType"/>
+                        <property name="shortName" value="lookup.practiceType"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
     </archetype>
