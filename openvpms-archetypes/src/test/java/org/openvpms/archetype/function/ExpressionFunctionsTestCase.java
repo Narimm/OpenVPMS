@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function;
@@ -85,5 +85,30 @@ public class ExpressionFunctionsTestCase {
         assertEquals("bar", ctx.getValue("expr:var('foo')"));
         assertNull(ctx.getValue("expr:var('novar')"));
         assertEquals("fail", ctx.getValue("expr:var('novar', 'fail')"));
+    }
+
+    /**
+     * Tests the {@link ExpressionFunctions#concatIf} methods.
+     */
+    @Test
+    public void testConcatIf() {
+        assertEquals("", ctx.getValue("expr:concatIf('x','')"));
+        assertEquals("", ctx.getValue("expr:concatIf('','x')"));
+        assertEquals("xy", ctx.getValue("expr:concatIf('x','y')"));
+
+        assertEquals("", ctx.getValue("expr:concatIf('','x','x')"));
+        assertEquals("", ctx.getValue("expr:concatIf('x','','x')"));
+        assertEquals("", ctx.getValue("expr:concatIf('x','x','')"));
+        assertEquals("xyx", ctx.getValue("expr:concatIf('x','y','x')"));
+    }
+
+    /**
+     * Tests the {@link ExpressionFunctions#trim(String, int)} methods.
+     */
+    @Test
+    public void testTrim() {
+        assertEquals("abc", ctx.getValue("expr:trim('abc', 4)"));
+        assertEquals("ab", ctx.getValue("expr:trim('abc', 2)"));
+        assertEquals("", ctx.getValue("expr:trim('', 255)"));
     }
 }
