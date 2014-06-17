@@ -35,6 +35,7 @@ import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.component.im.query.ResultSetIterator;
 import org.openvpms.web.component.im.table.PagedIMTableModel;
+import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.servlet.DownloadServlet;
 import org.openvpms.web.resource.i18n.Messages;
@@ -99,7 +100,11 @@ public class ProductExportDialog extends BrowserDialog<Product> {
     @Override
     protected void onButton(String button) {
         if (EXPORT_ID.equals(button)) {
-            onExport();
+            try {
+                onExport();
+            } catch (Throwable exception) {
+                ErrorHandler.getInstance().error(exception);
+            }
         } else {
             super.onButton(button);
         }
