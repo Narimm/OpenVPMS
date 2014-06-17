@@ -18,6 +18,7 @@ package org.openvpms.component.system.common.query;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -177,7 +178,7 @@ public class NamedQuery extends AbstractArchetypeQuery {
      */
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .appendSuper(super.toString())
                 .append("query", query)
                 .append("names", names)

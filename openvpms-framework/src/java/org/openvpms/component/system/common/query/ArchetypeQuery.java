@@ -1,25 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
 package org.openvpms.component.system.common.query;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
@@ -27,8 +26,8 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 /**
  * Create a query against an archetype.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 public class ArchetypeQuery extends AbstractArchetypeQuery
         implements IConstraintContainer {
@@ -119,7 +118,7 @@ public class ArchetypeQuery extends AbstractArchetypeQuery
      */
     public ArchetypeQuery(String entityName, String conceptName,
                           boolean primaryOnly, boolean activeOnly) {
-        StringBuffer shortName = new StringBuffer();
+        StringBuilder shortName = new StringBuilder();
         if (entityName != null) {
             shortName.append(entityName);
         } else {
@@ -132,14 +131,14 @@ public class ArchetypeQuery extends AbstractArchetypeQuery
             shortName.append("*");
         }
         archetypeConstraint = new ShortNameConstraint(shortName.toString(),
-                primaryOnly, activeOnly);
+                                                      primaryOnly, activeOnly);
     }
 
     /**
      * Create an instance of this constraint with the specified short name,
      * for primary/non-primary archetypes and active/inactive objects.
      *
-     * @param shortName   the short name
+     * @param shortName the short name
      */
     public ArchetypeQuery(String shortName) {
         this(shortName, false);
@@ -149,8 +148,8 @@ public class ArchetypeQuery extends AbstractArchetypeQuery
      * Create an instance of this constraint with the specified short name,
      * for primary/non-primary archetypes and active/inactive objects.
      *
-     * @param shortName   the short name
-     * @param activeOnly  if <tt>true</tt> only return active objects
+     * @param shortName  the short name
+     * @param activeOnly if <tt>true</tt> only return active objects
      */
     public ArchetypeQuery(String shortName, boolean activeOnly) {
         this(shortName, false, activeOnly);
@@ -305,7 +304,7 @@ public class ArchetypeQuery extends AbstractArchetypeQuery
      */
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .appendSuper(super.toString())
                 .append("constraints", archetypeConstraint)
                 .toString();

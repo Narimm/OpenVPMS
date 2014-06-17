@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
@@ -49,8 +49,8 @@ import java.util.Map;
 /**
  * Default implementation of the {@link IArchetypeService} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 public class ArchetypeService implements IArchetypeService {
 
@@ -325,9 +325,9 @@ public class ArchetypeService implements IArchetypeService {
         try {
             return dao.get(reference);
         } catch (Exception exception) {
+            String message = "select " + reference;
             throw new ArchetypeServiceException(
-                    ArchetypeServiceException.ErrorCode.FailedToExecuteQuery,
-                    exception);
+                    ArchetypeServiceException.ErrorCode.FailedToExecuteQuery, exception, message);
         }
     }
 
@@ -342,8 +342,7 @@ public class ArchetypeService implements IArchetypeService {
             return dao.get(query);
         } catch (Exception exception) {
             throw new ArchetypeServiceException(
-                    ArchetypeServiceException.ErrorCode.FailedToExecuteQuery,
-                    exception);
+                    ArchetypeServiceException.ErrorCode.FailedToExecuteQuery, exception, query.toString());
         }
     }
 
@@ -362,18 +361,15 @@ public class ArchetypeService implements IArchetypeService {
      * @param nodes the collection node names
      * @return a page of objects that match the query criteria
      */
-    public IPage<IMObject> get(IArchetypeQuery query,
-                               Collection<String> nodes) {
+    public IPage<IMObject> get(IArchetypeQuery query, Collection<String> nodes) {
         if (log.isDebugEnabled()) {
-            log.debug("ArchetypeService.get: query=" + query
-                      + ", nodes=" + nodes);
+            log.debug("ArchetypeService.get: query=" + query + ", nodes=" + nodes);
         }
         try {
             return dao.get(query, nodes);
         } catch (Exception exception) {
-            throw new ArchetypeServiceException(
-                    ArchetypeServiceException.ErrorCode.FailedToExecuteQuery,
-                    exception);
+            throw new ArchetypeServiceException(ArchetypeServiceException.ErrorCode.FailedToExecuteQuery, exception,
+                                                query.toString());
         }
     }
 
@@ -391,9 +387,8 @@ public class ArchetypeService implements IArchetypeService {
         try {
             return dao.getObjects(query);
         } catch (Exception exception) {
-            throw new ArchetypeServiceException(
-                    ArchetypeServiceException.ErrorCode.FailedToExecuteQuery,
-                    exception);
+            throw new ArchetypeServiceException(ArchetypeServiceException.ErrorCode.FailedToExecuteQuery, exception,
+                                                query.toString());
         }
     }
 
@@ -405,19 +400,16 @@ public class ArchetypeService implements IArchetypeService {
      * @return the nodes for each object that matches the query criteria
      * @throws ArchetypeServiceException if the query fails
      */
-    public IPage<NodeSet> getNodes(IArchetypeQuery query,
-                                   Collection<String> nodes) {
+    public IPage<NodeSet> getNodes(IArchetypeQuery query, Collection<String> nodes) {
         if (log.isDebugEnabled()) {
-            log.debug("ArchetypeService.get: query " + query
-                      + ", nodes=" + nodes);
+            log.debug("ArchetypeService.get: query " + query + ", nodes=" + nodes);
         }
 
         try {
             return dao.getNodes(query, nodes);
         } catch (Exception exception) {
-            throw new ArchetypeServiceException(
-                    ArchetypeServiceException.ErrorCode.FailedToExecuteQuery,
-                    exception, query.toString());
+            throw new ArchetypeServiceException(ArchetypeServiceException.ErrorCode.FailedToExecuteQuery, exception,
+                                                query.toString());
         }
     }
 
