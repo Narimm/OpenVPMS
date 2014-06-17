@@ -17,13 +17,7 @@
 package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
-import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.table.NameDescObjectSetTableModel;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
@@ -36,93 +30,17 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
  *
  * @author Tim Anderson
  */
-public class EntityBrowser extends QueryBrowserAdapter<ObjectSet, Entity> {
-
-    /**
-     * The query.
-     */
-    private EntityQuery query;
-
-    /**
-     * The context.
-     */
-    private final Context context;
-
-    /**
-     * The table model.
-     */
-    private final NameDescObjectSetTableModel model;
+public class EntityBrowser extends AbstractEntityBrowser<Entity> {
 
 
     /**
-     * Constructs an {@code EntityBrowser}.
+     * Constructs an {@link EntityBrowser}.
      *
      * @param query   the query
      * @param context the layout context
      */
-    public EntityBrowser(EntityQuery query, LayoutContext context) {
-        this.query = query;
-        this.context = context.getContext();
-        boolean showActive = query.getActive() == BaseArchetypeConstraint.State.BOTH;
-        model = new NameDescObjectSetTableModel("entity", true, showActive);
-        setBrowser(createBrowser(query, context));
-    }
-
-    /**
-     * Returns the query.
-     *
-     * @return the query
-     */
-    public Query<Entity> getQuery() {
-        return query;
-    }
-
-    /**
-     * Returns the result set.
-     * <p/>
-     * Note that this is a snapshot of the browser's result set. Iterating over it will not affect the browser.
-     *
-     * @return the result set
-     */
-    public ResultSet<Entity> getResultSet() {
-        return new EntityResultSetAdapter((EntityObjectSetResultSet) getBrowser().getResultSet(), context);
-    }
-
-    /**
-     * Converts an object.
-     *
-     * @param set the object to convert
-     * @return the converted object
-     */
-    protected Entity convert(ObjectSet set) {
-        IMObjectReference ref = set.getReference("entity.reference");
-        return (Entity) IMObjectHelper.getObject(ref, context);
-    }
-
-    /**
-     * Creates a table browser that changes the model depending on how many archetypes are being queried
-     *
-     * @param query   the query
-     * @param context the layout context
-     * @return a new browser
-     */
-    private Browser<ObjectSet> createBrowser(final EntityQuery query, LayoutContext context) {
-        Query<ObjectSet> delegate = query.getQuery();
-        return new AbstractQueryBrowser<ObjectSet>(delegate, delegate.getDefaultSortConstraint(), model, context) {
-            /**
-             * Performs the query.
-             *
-             * @return the query result set
-             */
-            @Override
-            protected ResultSet<ObjectSet> doQuery() {
-                ResultSet<ObjectSet> result = super.doQuery();
-                boolean showArchetype = query.getShortName() == null && query.getShortNames().length > 1;
-                model.showArchetype(showArchetype);
-                model.setShowActive(query.getActive() == BaseArchetypeConstraint.State.BOTH);
-                return result;
-            }
-        };
+    public EntityBrowser(EntityQuery<Entity> query, LayoutContext context) {
+        super(query, context);
     }
 
 }

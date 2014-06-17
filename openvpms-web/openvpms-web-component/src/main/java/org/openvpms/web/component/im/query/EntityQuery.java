@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -29,7 +29,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
  *
  * @author Tim Anderson
  */
-public class EntityQuery extends QueryAdapter<ObjectSet, Entity> {
+public class EntityQuery<T extends Entity> extends QueryAdapter<ObjectSet, T> {
 
     /**
      * The context.
@@ -77,7 +77,8 @@ public class EntityQuery extends QueryAdapter<ObjectSet, Entity> {
      * @param object the object to check
      * @return {@code true} if the object is selected by the query
      */
-    public boolean selects(Entity object) {
+    @Override
+    public boolean selects(T object) {
         return ((EntityObjectSetQuery) getQuery()).selects(object);
     }
 
@@ -87,8 +88,9 @@ public class EntityQuery extends QueryAdapter<ObjectSet, Entity> {
      * @param set the set to convert
      * @return the converted set
      */
-    protected ResultSet<Entity> convert(ResultSet<ObjectSet> set) {
-        return new EntityResultSetAdapter((EntityObjectSetResultSet) set, context);
+    @Override
+    protected ResultSet<T> convert(ResultSet<ObjectSet> set) {
+        return new EntityResultSetAdapter<T>((EntityObjectSetResultSet) set, context);
     }
 
 }
