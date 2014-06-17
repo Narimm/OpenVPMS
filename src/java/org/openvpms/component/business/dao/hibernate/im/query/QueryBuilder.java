@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -796,7 +796,8 @@ public class QueryBuilder {
         String result;
         TypeSet types = context.getTypeSet(alias);
         if (types == null) {
-            throw new QueryBuilderException(NoNodeDescriptorForName, nodeName);
+            String name = (alias != null) ? alias + "." + nodeName : nodeName;
+            throw new QueryBuilderException(NoNodeDescriptorForName, name);
         }
         NodeDescriptor desc = getMatchingNodeDescriptor(types.getDescriptors(), nodeName);
         if (desc == null) {
