@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -77,22 +77,22 @@ public class RelationshipStateTableModel
     /**
      * Name column index.
      */
-    private static final int NAME_INDEX = 1;
+    protected static final int NAME_INDEX = 1;
 
     /**
      * Description column index.
      */
-    private static final int DESCRIPTION_INDEX = 2;
+    protected static final int DESCRIPTION_INDEX = 2;
 
     /**
      * Entity relationship description index.
      */
-    private static final int DETAIL_INDEX = 3;
+    protected static final int DETAIL_INDEX = 3;
 
     /**
      * The active column index.
      */
-    private static final int ACTIVE_INDEX = 4;
+    protected static final int ACTIVE_INDEX = 4;
 
 
     /**
@@ -181,8 +181,8 @@ public class RelationshipStateTableModel
     }
 
     /**
-     * Returns a viewer for the source or target entity of the relationship,
-     * depending on the {@link #displayTarget} flag.
+     * Returns a viewer for the source or target entity of the relationship, depending on the {@link #displayTarget}
+     * flag.
      *
      * @param state the relationship state
      * @return a viewer for the entity
@@ -198,6 +198,17 @@ public class RelationshipStateTableModel
             name = state.getSourceName();
         }
 
+        return getEntityViewer(ref, name);
+    }
+
+    /**
+     * Returns a viewer for a reference and name.
+     *
+     * @param ref  the reference
+     * @param name the name
+     * @return a new viewer
+     */
+    protected Component getEntityViewer(IMObjectReference ref, String name) {
         ContextSwitchListener link = (!getEnableSelection()) ? listener : null;
         return new IMObjectReferenceViewer(ref, name, link, context).getComponent();
     }

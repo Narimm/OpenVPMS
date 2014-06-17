@@ -291,6 +291,12 @@
                         <constructor-arg index="0" ref="archetypeService"/>
                     </bean>
                 </entry>
+                <entry key="list">
+                    <bean class="org.openvpms.archetype.function.list.ListFunctions">
+                        <constructor-arg index="0" ref="archetypeService"/>
+                        <constructor-arg index="1" ref="lookupService"/>
+                    </bean>
+                </entry>
             </map>
         </constructor-arg>
     </bean>

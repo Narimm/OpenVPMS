@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -65,11 +65,20 @@ public class EntityObjectSetResultSet
     @Override
     protected ArchetypeQuery createQuery() {
         ArchetypeQuery query = super.createQuery();
+        addSelectConstraints(query);
+        return query;
+    }
+
+    /**
+     * Adds the select constraints.
+     *
+     * @param query the query to add the constraints to
+     */
+    protected void addSelectConstraints(ArchetypeQuery query) {
         query.add(new ObjectRefSelectConstraint("entity"));
         query.add(new NodeSelectConstraint("entity.name"));
         query.add(new NodeSelectConstraint("entity.description"));
         query.add(new NodeSelectConstraint("entity.active"));
-        return query;
     }
 
 }
