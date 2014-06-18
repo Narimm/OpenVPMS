@@ -68,7 +68,7 @@ public class ListFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ListFunctions#sortedNamesOf(ExpressionContext, String)} method
+     * Tests the {@link ListFunctions#sortNamesOf(ExpressionContext, String)} method
      */
     @Test
     public void testSortedNamesOf() {
@@ -86,7 +86,7 @@ public class ListFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ListFunctions#sortedNames(List)} and {@link ListFunctions#sortedNames(List, String)} methods.
+     * Tests the {@link ListFunctions#sortNames(List)} and {@link ListFunctions#sortNames(List, String)} methods.
      */
     @Test
     public void testSortedNames() {
