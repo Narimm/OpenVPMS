@@ -23,7 +23,7 @@
               derivedValue="concat(/details/lastName, ',', /details/firstName)"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
-              derivedValue="expr:trim(concat(openvpms:lookup(.,'title'), ' ', /details/firstName, ' ', /details/lastName, expr:concatIf(' (', list:sortedNamesOf('classifications'), ')')),255)"/>
+              derivedValue="expr:trim(concat(openvpms:lookup(.,'title'), ' ', /details/firstName, ' ', /details/lastName, expr:concatIf(' (', list:sortNamesOf('classifications'), ')')),255)"/>
         <node name="title" path="/details/title" type="java.lang.String"
               minCardinality="1" maxlength="15">
             <assertion name="lookup">

@@ -102,12 +102,12 @@ public class ListFunctions {
      * @param node    the collection node name
      * @return the concatenated names, or {@code null} if the context doesn't refer to an {@link IMObject}
      */
-    public String sortedNamesOf(ExpressionContext context, String node) {
+    public String sortNamesOf(ExpressionContext context, String node) {
         Pointer pointer = context.getContextNodePointer();
         Object value = pointer.getValue();
         if (value instanceof IMObject) {
             IMObjectBean bean = new IMObjectBean((IMObject) value, service);
-            return sortedNames(bean.getValues(node, IMObject.class));
+            return sortNames(bean.getValues(node, IMObject.class));
         }
         return null;
     }
@@ -118,8 +118,8 @@ public class ListFunctions {
      * @param objects the objects
      * @return the concatenated names
      */
-    public <T extends IMObject> String sortedNames(List<T> objects) {
-        return sortedNames(objects, SEPARATOR);
+    public <T extends IMObject> String sortNames(List<T> objects) {
+        return sortNames(objects, SEPARATOR);
     }
 
     /**
@@ -130,7 +130,7 @@ public class ListFunctions {
      * @param separator the separator
      * @return the concatenated names
      */
-    public <T extends IMObject> String sortedNames(List<T> objects, String separator) {
+    public <T extends IMObject> String sortNames(List<T> objects, String separator) {
         return names(sort(new ArrayList<T>(objects), "name"), separator);
     }
 
