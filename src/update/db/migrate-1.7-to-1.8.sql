@@ -33,6 +33,22 @@ CREATE TABLE IF NOT EXISTS `entity_link_details` (
   ENGINE =InnoDB
   DEFAULT CHARSET =utf8;
 
+#
+# Update party.organisationPractice for OVPMS-1472 Update to the Customer and Patient Summaries
+#
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    DISTINCT e.entity_id,
+    "showCustomerAccountSummary",
+    "boolean",
+    "true"
+  FROM entities e
+  WHERE e.arch_short_name = "party.organisationPractice"
+        AND NOT exists(SELECT
+                         *
+                       FROM entity_details d
+                       WHERE d.entity_id = e.entity_id AND d.name = "showCustomerAccountSummary");
+
 
 #
 # Migrate act.patientClinicalProblem for OVPMS-1468
