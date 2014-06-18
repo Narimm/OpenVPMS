@@ -71,7 +71,7 @@ public class ListFunctionsTestCase extends ArchetypeServiceTest {
      * Tests the {@link ListFunctions#sortNamesOf(ExpressionContext, String)} method
      */
     @Test
-    public void testSortedNamesOf() {
+    public void testSortNamesOf() {
         Party vet = (Party) create(SupplierArchetypes.SUPPLIER_VET);
         vet.addClassification(createVetSpecialty("Surgery"));
         vet.addClassification(createVetSpecialty("Large Animals"));
@@ -79,9 +79,9 @@ public class ListFunctionsTestCase extends ArchetypeServiceTest {
 
         JXPathContext ctx = JXPathHelper.newContext(vet);
 
-        assertEquals("Large Animals, Snakes, Surgery", ctx.getValue("list:sortedNamesOf('classifications')"));
+        assertEquals("Large Animals, Snakes, Surgery", ctx.getValue("list:sortNamesOf('classifications')"));
 
-        assertEquals("(Large Animals, Snakes, Surgery)", ctx.getValue("expr:concatIf('(', list:sortedNamesOf('classifications'), ')')"));
+        assertEquals("(Large Animals, Snakes, Surgery)", ctx.getValue("expr:concatIf('(', list:sortNamesOf('classifications'), ')')"));
 
     }
 
@@ -89,9 +89,9 @@ public class ListFunctionsTestCase extends ArchetypeServiceTest {
      * Tests the {@link ListFunctions#sortNames(List)} and {@link ListFunctions#sortNames(List, String)} methods.
      */
     @Test
-    public void testSortedNames() {
-        assertEquals("A, B, C", ctx.getValue("list:sortedNames(.)"));
-        assertEquals("A;B;C", ctx.getValue("list:sortedNames(., ';')"));
+    public void testSortNames() {
+        assertEquals("A, B, C", ctx.getValue("list:sortNames(.)"));
+        assertEquals("A;B;C", ctx.getValue("list:sortNames(., ';')"));
     }
 
     /**
