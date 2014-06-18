@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -77,7 +77,19 @@ public class IMObjectViewerDialog extends PopupDialog {
      * @param help    the help context
      */
     public IMObjectViewerDialog(IMObjectViewer viewer, Context context, HelpContext help) {
-        this(context, help);
+        this(viewer, BUTTONS, context, help);
+    }
+
+    /**
+     * Constructs an {@link IMObjectViewerDialog}.
+     *
+     * @param viewer  the viewer to display. May be {@code null}
+     * @param buttons the buttons to display
+     * @param context the context
+     * @param help    the help context
+     */
+    public IMObjectViewerDialog(IMObjectViewer viewer, String[] buttons, Context context, HelpContext help) {
+        this(context, buttons, help);
         if (viewer != null) {
             setViewer(viewer);
         } else {
@@ -93,7 +105,19 @@ public class IMObjectViewerDialog extends PopupDialog {
      * @param help    the help context
      */
     public IMObjectViewerDialog(IMObject object, Context context, HelpContext help) {
-        this(context, help);
+        this(object, BUTTONS, context, help);
+    }
+
+    /**
+     * Constructs an {@link IMObjectViewerDialog}.
+     *
+     * @param object  the object to display. May be {@code null}
+     * @param buttons the buttons to display
+     * @param context the context
+     * @param help    the help context
+     */
+    public IMObjectViewerDialog(IMObject object, String[] buttons, Context context, HelpContext help) {
+        this(context, buttons, help);
         if (object != null) {
             setObject(object);
         } else {
@@ -105,10 +129,11 @@ public class IMObjectViewerDialog extends PopupDialog {
      * Constructs an {@link IMObjectViewerDialog}.
      *
      * @param context the context
+     * @param buttons the buttons to display
      * @param help    the help context
      */
-    private IMObjectViewerDialog(Context context, HelpContext help) {
-        super(null, STYLE, BUTTONS, help);
+    private IMObjectViewerDialog(Context context, String[] buttons, HelpContext help) {
+        super(null, STYLE, buttons, help);
         this.context = context;
         setModal(true);
         setDefaultCloseAction(CANCEL_ID);

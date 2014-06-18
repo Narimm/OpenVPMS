@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.alert;
@@ -22,10 +22,8 @@ import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
-import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.layout.ColumnLayoutData;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -37,6 +35,7 @@ import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 
 import java.util.Collections;
 import java.util.List;
@@ -70,7 +69,7 @@ public class AlertSummary {
     private final HelpContext help;
 
     /**
-     * Constructs an {@code AlertSummary}.
+     * Constructs an {@link AlertSummary}.
      *
      * @param alerts  the alerts
      * @param context the context
@@ -99,6 +98,9 @@ public class AlertSummary {
     public Component getComponent() {
         Column result = ColumnFactory.create();
         Collections.sort(alerts);
+
+        Row title = RowFactory.create(LabelFactory.create("alerts.title"));
+        result.add(title);
         for (int i = 0; i < alerts.size() && i < showCount; ++i) {
             Alert element = alerts.get(i);
             result.add(getButton(element));
@@ -116,16 +118,11 @@ public class AlertSummary {
         right.setLayoutData(rightLayout);
 
         Row row;
-        if (alerts.size() > 4) {
-            Label more = LabelFactory.create("alerts.more", "small.bold");
-            row = RowFactory.create("WideCellSpacing", more, right);
-        } else {
-            row = RowFactory.create(right);
-            ColumnLayoutData col = new ColumnLayoutData();
-            col.setAlignment(Alignment.ALIGN_RIGHT);
-            row.setLayoutData(col);
+        if (alerts.size() > showCount) {
+            row = RowFactory.create(Styles.WIDE_CELL_SPACING, title, right);
+            result.add(row, 0);
         }
-        result.add(row);
+
         return result;
     }
 
