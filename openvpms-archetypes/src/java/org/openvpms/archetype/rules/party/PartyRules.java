@@ -16,6 +16,7 @@
 
 package org.openvpms.archetype.rules.party;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -328,8 +329,20 @@ public class PartyRules {
      *         <em>contact.phoneNumber</em> contact
      */
     public String getTelephone(Party party) {
+        return getTelephone(party, false);
+    }
+
+    /**
+     * Returns a formatted preferred telephone number for a party.
+     *
+     * @param party    the party
+     * @param withName if {@code true} includes the name, if it is not the default value for the contact
+     * @return a formatted telephone number for the party. May be empty if there is no corresponding
+     *         <em>contact.phoneNumber</em> contact
+     */
+    public String getTelephone(Party party, boolean withName) {
         Contact contact = getContact(party, ContactArchetypes.PHONE, null, false);
-        return (contact != null) ? formatPhone(contact) : "";
+        return (contact != null) ? formatPhone(contact, withName) : "";
     }
 
     /**
@@ -360,7 +373,7 @@ public class PartyRules {
     public String getHomeTelephone(Party party) {
         Contact contact = getContact(party, ContactArchetypes.PHONE, "HOME",
                                      false);
-        return (contact != null) ? formatPhone(contact) : "";
+        return (contact != null) ? formatPhone(contact, false) : "";
     }
 
     /**
@@ -392,7 +405,7 @@ public class PartyRules {
     public String getMobileTelephone(Party party) {
         Contact contact = getContact(party, ContactArchetypes.PHONE, "MOBILE",
                                      true);
-        return (contact != null) ? formatPhone(contact) : "";
+        return (contact != null) ? formatPhone(contact, false) : "";
     }
 
     /**
@@ -424,7 +437,7 @@ public class PartyRules {
     public String getWorkTelephone(Party party) {
         Contact contact = getContact(party, ContactArchetypes.PHONE, "WORK",
                                      true);
-        return (contact != null) ? formatPhone(contact) : "";
+        return (contact != null) ? formatPhone(contact, false) : "";
     }
 
     /**
@@ -455,7 +468,7 @@ public class PartyRules {
      */
     public String getSMSTelephone(Party party) {
         Contact contact = (party != null) ? getContact(party, new SMSMatcher(service)) : null;
-        return (contact != null) ? formatPhone(contact) : "";
+        return (contact != null) ? formatPhone(contact, false) : "";
     }
 
     /**
@@ -782,13 +795,21 @@ public class PartyRules {
     /**
      * Returns a formatted telephone number from a <em>contact.phoneNumber</em>.
      *
-     * @param contact the contact
+     * @param contact  the contact
+     * @param withName if {@code true} includes the name, if it is not the default value for the contact
      * @return a formatted telephone number
      */
-    private String formatPhone(Contact contact) {
+    private String formatPhone(Contact contact, boolean withName) {
         IMObjectBean bean = new IMObjectBean(contact, service);
         String areaCode = bean.getString("areaCode");
         String phone = bean.getString("telephoneNumber", "");
+        if (withName) {
+            String name = contact.getName();
+            if (!StringUtils.isEmpty(name) && !hasDefaultValue(contact, "name")) {
+                phone += " (" + name + ")";
+            }
+        }
+
         if (StringUtils.isEmpty(areaCode)) {
             return phone;
         } else {
@@ -796,4 +817,23 @@ public class PartyRules {
         }
     }
 
+    /**
+     * Determines if an object node has its default value.
+     *
+     * @param object the object
+     * @param node   the node name
+     * @return {@code true} if the node has its default value, otherwise {@code false}
+     */
+    private boolean hasDefaultValue(IMObject object, String node) {
+        IMObjectBean objectBean = new IMObjectBean(object, service);
+        if (objectBean.hasNode(node)) {
+            NodeDescriptor descriptor = objectBean.getDescriptor(node);
+            // defaultValue is an xpath expression. Rather than evaluating  it, just support the simple case of a
+            // quoted string.
+            String defaultValue = StringUtils.strip(descriptor.getDefaultValue(), "'");
+            String currentValue = objectBean.getString(node);
+            return ObjectUtils.equals(currentValue, defaultValue);
+        }
+        return false;
+    }
 }
