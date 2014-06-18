@@ -340,7 +340,7 @@ public class SMSEditor extends AbstractModifiable {
     }
 
     /**
-     * Formats a mobile phone number.
+     * Formats a mobile phone number. Adds the name afterward if it is not the default value.
      *
      * @param contact the phone contact
      * @return a formatted number, including an area code, if specified
@@ -353,6 +353,10 @@ public class SMSEditor extends AbstractModifiable {
             phone = Messages.format("phone.withAreaCode", areaCode, phone);
         } else {
             phone = Messages.format("phone.noAreaCode", phone);
+        }
+        String name = contact.getName();
+        if (!StringUtils.isEmpty(name) && bean.hasNode("name") && !bean.isDefaultValue("name")) {
+            phone += " (" + name + ")";
         }
         return phone;
     }
