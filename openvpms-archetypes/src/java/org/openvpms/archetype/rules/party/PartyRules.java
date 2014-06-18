@@ -16,7 +16,6 @@
 
 package org.openvpms.archetype.rules.party;
 
-import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -805,7 +804,7 @@ public class PartyRules {
         String phone = bean.getString("telephoneNumber", "");
         if (withName) {
             String name = contact.getName();
-            if (!StringUtils.isEmpty(name) && !hasDefaultValue(contact, "name")) {
+            if (!StringUtils.isEmpty(name) && bean.hasNode("name") && !bean.isDefaultValue("name")) {
                 phone += " (" + name + ")";
             }
         }
@@ -817,23 +816,4 @@ public class PartyRules {
         }
     }
 
-    /**
-     * Determines if an object node has its default value.
-     *
-     * @param object the object
-     * @param node   the node name
-     * @return {@code true} if the node has its default value, otherwise {@code false}
-     */
-    private boolean hasDefaultValue(IMObject object, String node) {
-        IMObjectBean objectBean = new IMObjectBean(object, service);
-        if (objectBean.hasNode(node)) {
-            NodeDescriptor descriptor = objectBean.getDescriptor(node);
-            // defaultValue is an xpath expression. Rather than evaluating  it, just support the simple case of a
-            // quoted string.
-            String defaultValue = StringUtils.strip(descriptor.getDefaultValue(), "'");
-            String currentValue = objectBean.getString(node);
-            return ObjectUtils.equals(currentValue, defaultValue);
-        }
-        return false;
-    }
 }
