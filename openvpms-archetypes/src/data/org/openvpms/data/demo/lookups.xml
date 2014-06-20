@@ -147,4 +147,30 @@
     <data archetype="lookup.reportType" code="ADMINISTRATION"/>
     <data archetype="lookup.reportType" code="FINANCIAL"/>
     <data archetype="lookup.reportType" code="OTHER" defaultLookup="true"/>
+
+    <data archetype="lookup.fileNameFormat" code="DOC_NAME_DOC_DATE"
+          name="Document name - document date"
+          description="Valid for customer, patient, and supplier documents only"
+          expression="concat($file, ' - ', date:format(openvpms:get(.,'startTime'), 'd MMM yyyy'))"/>
+    <data archetype="lookup.fileNameFormat" code="DOC_NAME_TODAYS_DATE"
+          name="Document name - today's date"
+          description="Valid for all documents"
+          expression="concat($file, ' - ', date:format(java.util.Date.new(), 'd MMM yyyy'))"/>
+    <data archetype="lookup.fileNameFormat" code="DOC_NAME_PATIENT_FULL_NAME_DOC_DATE"
+          name="Document name - patient full name - document date"
+          description="Valid for patient documents only"
+          expression="concat($file, ' - ', $patient.name, ' ', $customer.lastName, ' - ', date:format(openvpms:get(.,'startTime'), 'd MMM yyyy'))"/>
+    <data archetype="lookup.fileNameFormat" code="DOC_NAME_PATIENT_FULL_NAME_TODAYS_DATE"
+          name="Document name - Patient full name - today's date"
+          description="Valid for patient documents only"
+          expression="concat($file, ' - ', $patient.name, ' ', $customer.lastName, ' - ', date:format(java.util.Date.new(), 'd MMM yyyy'))"/>
+    <data archetype="lookup.fileNameFormat" code="DOC_NAME_CUSTOMER_FULL_NAME_DOC_DATE"
+          name="Document name - customer full name - document date"
+          description="Valid for customer documents only"
+          expression="concat($file, ' - ', party:getFullName($customer), ' - ', date:format(openvpms:get(.,'startTime'), 'd MMM yyyy'))"/>
+    <data archetype="lookup.fileNameFormat" code="DOC_NAME_CUSTOMER_FULL_NAME_TODAYS_DATE"
+          name="Document name - customer full name - today's date"
+          description="Valid for customer documents only"
+          expression="concat($file, ' - ', party:getFullName($customer), ' - ', date:format(java.util.Date.new(), 'd MMM yyyy'))"/>
+
 </archetype>

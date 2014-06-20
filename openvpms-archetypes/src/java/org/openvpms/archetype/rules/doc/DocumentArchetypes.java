@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.archetype.rules.doc;
 
@@ -53,4 +53,8 @@ public class DocumentArchetypes {
      */
     public static final String DEFAULT_DOCUMENT = "document.other";
 
+    /**
+     * The file name format lookup archetype.
+     */
+    public static final String FILE_NAME_FORMAT = "lookup.fileNameFormat";
 }

@@ -13,6 +13,7 @@
  *
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.archetype.rules.doc;
 
 import org.junit.Test;
@@ -21,6 +22,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.OrientationRequested;
@@ -35,8 +37,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the {@link DocumentTemplate} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentTemplateTestCase extends ArchetypeServiceTest {
 
@@ -70,6 +71,7 @@ public class DocumentTemplateTestCase extends ArchetypeServiceTest {
         assertNull(template.getMediaSize());
         assertEquals(OrientationRequested.PORTRAIT, template.getOrientationRequested());
         assertTrue(template.getPrinters().isEmpty());
+        assertNull(template.getFileNameExpression());
     }
 
     /**
@@ -143,5 +145,24 @@ public class DocumentTemplateTestCase extends ArchetypeServiceTest {
         assertEquals(2, template.getPrinters().size());
         assertTrue(template.getPrinters().contains(location1Printer));
         assertTrue(template.getPrinters().contains(practicePrinter));
+    }
+
+    /**
+     * Tests the {@link DocumentTemplate#getFileNameExpression()} method.
+     */
+    @Test
+    public void testGetFileNameExpression() {
+        Entity entity = (Entity) create(DocumentArchetypes.DOCUMENT_TEMPLATE);
+        Lookup lookup = (Lookup) create(DocumentArchetypes.FILE_NAME_FORMAT);
+
+        DocumentTemplate template = new DocumentTemplate(entity, getArchetypeService());
+        assertNull(template.getFileNameExpression());
+
+        IMObjectBean bean = new IMObjectBean(lookup);
+        String expression = "concat($file, ' - ', date:format(java.util.Date.new(), 'd MMM yyyy'))";
+        bean.setValue("expression", expression);
+        entity.addClassification(lookup);
+
+        assertEquals(expression, template.getFileNameExpression());
     }
 }
