@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.report;
@@ -34,11 +34,9 @@ import java.util.Set;
 
 
 /**
- * Generates {@link Document}s from one or more objects, using a
- * {@link IMReport}.
+ * Generates {@link Document}s from one or more objects, using a {@link IMReport}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class Reporter<T> {
 
@@ -58,7 +56,7 @@ public abstract class Reporter<T> {
     private final Iterable<T> objects;
 
     /**
-     * The object to generate the document from, or <tt>null</tt> if the
+     * The object to generate the document from, or {@code null} if the
      * document is being generated from a collection.
      */
     private final T object;
@@ -70,7 +68,7 @@ public abstract class Reporter<T> {
 
 
     /**
-     * Constructs a <tt>Reporter</tt> to generate documents from a single object.
+     * Constructs a {@code Reporter} to generate documents from a single object.
      *
      * @param object the object
      */
@@ -81,7 +79,7 @@ public abstract class Reporter<T> {
     }
 
     /**
-     * Constructs a new <tt>Reporter</tt> to generate documents from a
+     * Constructs a new {@code Reporter} to generate documents from a
      * collection of objects.
      *
      * @param objects the objects
@@ -94,7 +92,7 @@ public abstract class Reporter<T> {
     /**
      * Returns the object that the document is being generated from.
      *
-     * @return the object, or <tt>null</tt> if the document is being generated
+     * @return the object, or {@code null} if the document is being generated
      *         from a collection
      */
     public T getObject() {
@@ -114,7 +112,7 @@ public abstract class Reporter<T> {
      * Creates the document.
      * <p/>
      * Documents are formatted according to the default mime type. If the document has an {@link #IS_EMAIL} parameter,
-     * then this will be set <tt>false</tt>.
+     * then this will be set {@code false}.
      *
      * @return the document
      * @throws OpenVPMSException for any error
@@ -126,8 +124,8 @@ public abstract class Reporter<T> {
     /**
      * Creates the document, in the specified mime type.
      *
-     * @param type  the mime type. If <tt>null</tt> the default mime type associated with the report will be used.
-     * @param email if <tt>true</tt> indicates that the document will be emailed. Documents generated from templates
+     * @param type  the mime type. If {@code null} the default mime type associated with the report will be used.
+     * @param email if {@code true} indicates that the document will be emailed. Documents generated from templates
      *              can perform custom formatting
      * @return the document
      * @throws OpenVPMSException for any error
@@ -138,7 +136,10 @@ public abstract class Reporter<T> {
             type = report.getDefaultMimeType();
         }
         Map<String, Object> map = new HashMap<String, Object>(getParameters(email));
-        return report.generate(getObjects().iterator(), map, type);
+
+        Document document = report.generate(getObjects().iterator(), map, type);
+        setName(document);
+        return document;
     }
 
     /**
@@ -155,7 +156,7 @@ public abstract class Reporter<T> {
      * Sets parameters to pass to the report.
      *
      * @param parameters a map of parameter names and their values, to pass to
-     *                   the report. May be <tt>null</tt>
+     *                   the report. May be {@code null}
      */
     public void setParameters(Map<String, Object> parameters) {
         this.parameters = parameters;
@@ -165,7 +166,7 @@ public abstract class Reporter<T> {
      * Returns a map of parameters names and their values, to pass to the
      * report.
      *
-     * @return a map of parameter names and their values. May be <tt>null</tt>
+     * @return a map of parameter names and their values. May be {@code null}
      */
     public Map<String, Object> getParameters() {
         return parameters;
@@ -202,7 +203,7 @@ public abstract class Reporter<T> {
      * Returns the report parameters.
      *
      * @param email if the report has an {@link #IS_EMAIL} parameter, then this will be supplied with the value of
-     *              <tt>email</tt>. This enables reports to be customised for email vs printing.
+     *              {@code email}. This enables reports to be customised for email vs printing.
      * @return the report parameters
      */
     protected Map<String, Object> getParameters(boolean email) {
@@ -217,6 +218,19 @@ public abstract class Reporter<T> {
             result = parameters;
         }
         return result;
+    }
+
+    /**
+     * Updates the document name.
+     * <p/>
+     * This can be used to update the document name from its default value, prior to returning it to the caller.
+     * <p/>
+     * This implementation is a no-op.
+     *
+     * @param document the document to update
+     */
+    protected void setName(Document document) {
+        // no-op
     }
 
 }
