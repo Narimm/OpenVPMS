@@ -1,39 +1,39 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.report;
 
+import org.apache.commons.io.FilenameUtils;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.web.component.im.doc.FileNameFormatter;
 
 
 /**
  * Base class for implementations that generate {@link Document}s using a
  * template.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class TemplatedReporter<T> extends Reporter<T> {
 
     /**
-     * The document template entity to use. May be <tt>null</tt>
+     * The document template entity to use. May be {@code null}
      */
     private DocumentTemplate template;
 
@@ -44,7 +44,7 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
 
 
     /**
-     * Constructs a <tt>TemplatedReporter</tt> for a single object.
+     * Constructs a {@link TemplatedReporter} for a single object.
      *
      * @param object   the object
      * @param template the document template to use
@@ -55,7 +55,7 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
     }
 
     /**
-     * Constructs a <tt>TemplatedReporter</tt> for a single object.
+     * Constructs a {@code TemplatedReporter} for a single object.
      *
      * @param object  the object
      * @param locator the document template locator
@@ -66,7 +66,7 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
     }
 
     /**
-     * Constructs a <tt>TemplatedReporter</tt> to print a collection of objects.
+     * Constructs a {@code TemplatedReporter} to print a collection of objects.
      *
      * @param objects  the objects to print
      * @param template the document template to use
@@ -77,7 +77,7 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
     }
 
     /**
-     * Constructs a <tt>TemplatedReporter</tt> to print a collection of objects.
+     * Constructs a {@code TemplatedReporter} to print a collection of objects.
      *
      * @param objects the objects to print
      * @param locator the document template locator
@@ -99,7 +99,7 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
     /**
      * Returns the document template.
      *
-     * @return the document template, or <tt>null</tt> if none can be found
+     * @return the document template, or {@code null} if none can be found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public DocumentTemplate getTemplate() {
@@ -112,7 +112,7 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
     /**
      * Returns the document template associated with the template entity.
      *
-     * @return the document, or <tt>null</tt> if none can be found
+     * @return the document, or {@code null} if none can be found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Document getTemplateDocument() {
@@ -123,9 +123,29 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
     /**
      * Registers the document template.
      *
-     * @param template the template to use. May be <tt>null</tt>
+     * @param template the template to use. May be {@code null}
      */
     protected void setTemplate(DocumentTemplate template) {
         this.template = template;
+    }
+
+    /**
+     * Updates the document name.
+     *
+     * @param document the document to update
+     */
+    @Override
+    protected void setName(Document document) {
+        DocumentTemplate template = getTemplate();
+        if (template != null) {
+            Object value = getObject();
+            IMObject object = (value instanceof IMObject) ? (IMObject) value : null;
+            if (value instanceof IMObject) {
+                String fileName = new FileNameFormatter().format(template.getName(), object, template);
+                String extension = FilenameUtils.getExtension(document.getName());
+                document.setName(fileName + "." + extension);
+            }
+            super.setName(document);
+        }
     }
 }
