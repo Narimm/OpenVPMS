@@ -82,7 +82,6 @@
                     <property name="8" value="8"/>
                     <property name="9" value="9"/>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="reportType" displayName="Report Type" path="/details/reportType" type="java.lang.String"
@@ -90,7 +89,6 @@
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
                 <property name="source" value="lookup.reportType"/>
-                <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
         <node name="printMode" displayName="Preferred Print Mode" path="/details/printMode" type="java.lang.String"
@@ -113,7 +111,6 @@
                     <property name="LETTER" value="Letter"/>
                     <property name="CUSTOM" value="Custom"/>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="orientation" path="/details/orientation" type="java.lang.String"
@@ -123,7 +120,6 @@
                     <property name="PORTRAIT" value="Portrait"/>
                     <property name="LANDSCAPE" value="Landscape"/>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="copies" path="/details/copies" type="java.lang.Integer" minCardinality="0" defaultValue="1"/>
@@ -132,14 +128,12 @@
         <node name="paperWidth" displayName="Paper Width" path="/details/paperWidth" type="java.math.BigDecimal"
               defaultValue="0.0"/>
         <node name="paperUnits" displayName="Paper Units" path="/details/paperUnits" type="java.lang.String"
-              minCardinality="0"
-              defaultValue="'MM'">
+              minCardinality="0" defaultValue="'MM'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="MM" value="Millimetres"/>
                     <property name="INCH" value="Inches"/>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="emailSubject" path="/details/emailSubject" type="java.lang.String" minCardinality="0"
@@ -147,24 +141,20 @@
         <node name="emailText" displayName="Email Body" path="/details/emailText" type="java.lang.String"
               minCardinality="0"
               maxLength="1000"/>
+        <node name="fileNameFormat" path="/classifications" parentChild="false" type="java.util.HashSet"
+              baseName="Classification" minCardinality="0" maxCardinality="1"
+              filter="lookup.fileNameFormat"/>
+
         <node name="printers" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.documentTemplatePrinter">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.documentTemplatePrinter"/>
+                        <property name="shortName" value="entityRelationship.documentTemplatePrinter"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <!--
-         This node is now implicit. There is currently no way of representing it.
-        <node name="content" path="/participations" type="java.util.HashSet"
-              minCardinality="1" maxCardinality="1"
-              filter="participation.document"/
-         -->
     </archetype>
 </archetypes>
