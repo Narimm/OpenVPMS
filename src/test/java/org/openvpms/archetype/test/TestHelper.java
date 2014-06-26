@@ -218,10 +218,25 @@ public class TestHelper extends Assert {
      * @return a new email contact
      */
     public static Contact createEmailContact(String address) {
+        return createEmailContact(address, true, null);
+    }
+
+    /**
+     * Creates a new <em>contact.email</em>
+     *
+     * @param address   the phone number
+     * @param preferred if {@code true}, flags the contact as preferred
+     * @param purpose   the contact purpose. May be {@code null}
+     * @return a new email contact
+     */
+    public static Contact createEmailContact(String address, boolean preferred, String purpose) {
         Contact contact = (Contact) create(ContactArchetypes.EMAIL);
         IMObjectBean bean = new IMObjectBean(contact);
         bean.setValue("emailAddress", address);
-        bean.setValue("preferred", true);
+        bean.setValue("preferred", preferred);
+        if (purpose != null) {
+            contact.addClassification(getLookup(ContactArchetypes.PURPOSE, purpose));
+        }
         return contact;
     }
 
