@@ -84,6 +84,7 @@ public class AbstractStatementTest extends AbstractCustomerAccountTest {
     protected Party getPractice() {
         if (practice == null) {
             practice = (Party) create("party.organisationPractice");
+            practice.setName("Z Test Practice");
         }
         return practice;
     }

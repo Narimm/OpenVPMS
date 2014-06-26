@@ -13,14 +13,14 @@
  *
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.archetype.rules.party;
 
 
 /**
  * Contact archetypes.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ContactArchetypes {
 
@@ -51,5 +51,10 @@ public class ContactArchetypes {
      * Location contact archetype short name.
      */
     public static final String LOCATION = "contact.location";
+
+    /**
+     * Contact purpose lookup archetype short name.
+     */
+    public static final String PURPOSE = "lookup.contactPurpose";
 
 }

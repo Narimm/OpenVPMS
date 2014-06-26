@@ -515,7 +515,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      * @return the lookup
      */
     private Lookup getContactPurpose(String purpose) {
-        return TestHelper.getLookup("lookup.contactPurpose", purpose);
+        return TestHelper.getLookup(ContactArchetypes.PURPOSE, purpose);
     }
 
     /**
