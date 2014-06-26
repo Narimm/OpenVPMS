@@ -285,6 +285,10 @@
         <property name="mask" value="Ctrl-Shift"/>
     </bean>
 
+    <bean id="customerRules" class="org.openvpms.archetype.rules.party.CustomerRules">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
     <bean id="patientRules" class="org.openvpms.archetype.rules.patient.PatientRules">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>

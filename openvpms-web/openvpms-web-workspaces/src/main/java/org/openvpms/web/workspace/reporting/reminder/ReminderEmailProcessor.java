@@ -13,19 +13,16 @@
  *
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
-import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
-import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
-import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -40,6 +37,8 @@ import org.openvpms.web.component.im.report.IMObjectReporter;
 import org.openvpms.web.component.im.report.ObjectSetReporter;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.reporting.ReportingException;
+import org.openvpms.web.workspace.reporting.email.EmailAddress;
+import org.openvpms.web.workspace.reporting.email.PracticeEmailAddresses;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -47,9 +46,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import javax.mail.internet.MimeMessage;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.ReminderMissingDocTemplate;
@@ -74,15 +71,9 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
     private final DocumentHandlers handlers;
 
     /**
-     * The default email address.
+     * The practice email addresses.
      */
-    private final Email defaultAddress;
-
-    /**
-     * Email addresses keyed on practice/practice location reference.
-     */
-    private final Map<IMObjectReference, Email> addresses = new HashMap<IMObjectReference, Email>();
-
+    private final PracticeEmailAddresses addresses;
 
     /**
      * Constructs a {@code ReminderEmailProcessor}.
@@ -98,17 +89,7 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
         this.sender = sender;
         handlers = ServiceHelper.getDocumentHandlers();
 
-        ReminderRules rules = new ReminderRules(ServiceHelper.getArchetypeService(),
-                                                ServiceHelper.getBean(PatientRules.class));
-        defaultAddress = getEmail(practice, true, rules);
-
-        PracticeRules practiceRules = ServiceHelper.getBean(PracticeRules.class);
-        for (Party location : practiceRules.getLocations(practice)) {
-            Email address = getEmail(location, false, rules);
-            if (address != null) {
-                addresses.put(location.getObjectReference(), address);
-            }
-        }
+        addresses = new PracticeEmailAddresses(practice, "REMINDER");
     }
 
     /**
@@ -128,14 +109,14 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
         }
 
         try {
-            Email from = getFromAddress(event.getCustomer());
+            EmailAddress from = addresses.getAddress(event.getCustomer());
             IMObjectBean bean = new IMObjectBean(contact);
             String to = bean.getString("emailAddress");
 
             MimeMessage message = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setValidateAddresses(true);
-            helper.setFrom(from.address, from.name);
+            helper.setFrom(from.getAddress(), from.getName());
             helper.setTo(to);
 
             String subject = documentTemplate.getEmailSubject();
@@ -194,65 +175,5 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
         return result;
     }
 
-    /**
-     * Returns the from address to use for a customer.
-     * <p/>
-     * If the customer has a practice location, any reminder
-     *
-     * @param customer the customer
-     * @return the from address
-     */
-    private Email getFromAddress(Party customer) {
-        IMObjectBean bean = new IMObjectBean(customer);
-        IMObjectReference locationRef = bean.getNodeTargetObjectRef("location");
-        Email result = addresses.get(locationRef);
-        if (result == null) {
-            result = defaultAddress;
-        }
-        return result;
-    }
-
-    /**
-     * Returns the email address for a practice/practice location.
-     *
-     * @param practice the practice/practice location
-     * @param fail     if {@code true} throw an exception if the address is invalid
-     * @param rules    the rules
-     * @return the address, or {@code null} if a valid address is not found and {@code fail} is {@code false}
-     */
-    private Email getEmail(Party practice, boolean fail, ReminderRules rules) {
-        Contact contact = rules.getEmailContact(practice.getContacts());
-        if (contact == null) {
-            if (fail) {
-                throw new ReportingException(ReportingException.ErrorCode.NoReminderContact, practice.getName());
-            }
-            return null;
-        }
-        IMObjectBean bean = new IMObjectBean(contact);
-        String address = bean.getString("emailAddress");
-        if (StringUtils.isEmpty(address)) {
-            if (fail) {
-                throw new ReportingException(ReportingException.ErrorCode.InvalidEmailAddress, address,
-                                             practice.getName());
-            }
-            return null;
-        }
-        return new Email(address, practice.getName());
-    }
-
-    /**
-     * Email address.
-     */
-    private static class Email {
-
-        public final String address;
-
-        public final String name;
-
-        public Email(String address, String name) {
-            this.address = address;
-            this.name = name;
-        }
-    }
 
 }
