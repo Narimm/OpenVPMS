@@ -16,7 +16,6 @@
 
 package org.openvpms.web.workspace.reporting.statement;
 
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.component.processor.ProcessorListener;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
@@ -24,12 +23,10 @@ import org.openvpms.archetype.rules.finance.statement.Statement;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessor;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessorException;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
-import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -159,19 +156,6 @@ class StatementGenerator extends AbstractStatementGenerator {
             throw new StatementProcessorException(StatementProcessorException.ErrorCode.InvalidConfiguration,
                                                   "Context has no practice");
         }
-        Contact email = getEmail(practice);
-        if (email == null) {
-            throw new StatementProcessorException(StatementProcessorException.ErrorCode.InvalidConfiguration,
-                                                  "Practice " + practice.getName()
-                                                  + " has no email contact for statements");
-        }
-        IMObjectBean bean = new IMObjectBean(email);
-        String address = bean.getString("emailAddress");
-        String name = practice.getName();
-        if (StringUtils.isEmpty(address)) {
-            throw new StatementProcessorException(StatementProcessorException.ErrorCode.InvalidConfiguration,
-                                                  "Practice " + practice.getName() + " email contact address is empty");
-        }
 
         processor = new StatementProcessor(date, practice, ServiceHelper.getArchetypeService(),
                                            ServiceHelper.getLookupService(),
@@ -184,21 +168,9 @@ class StatementGenerator extends AbstractStatementGenerator {
             processor.addListener(printer);
             printer.setUpdatePrinted(false);
         } else {
-            StatementEmailProcessor mailer = new StatementEmailProcessor(ServiceHelper.getMailSender(), address, name,
-                                                                         practice);
+            StatementEmailProcessor mailer = new StatementEmailProcessor(ServiceHelper.getMailSender(), practice);
             processor.addListener(new StatementDelegator(printer, mailer));
         }
-    }
-
-    /**
-     * Returns an email contact for the practice.
-     *
-     * @param practice the practice
-     * @return an email contact, or {@code null} if none is configured
-     */
-    private Contact getEmail(Party practice) {
-        PartyRules rules = new PartyRules(ServiceHelper.getArchetypeService());
-        return rules.getContact(practice, ContactArchetypes.EMAIL, "BILLING");
     }
 
     private class StatementDelegator implements ProcessorListener<Statement> {

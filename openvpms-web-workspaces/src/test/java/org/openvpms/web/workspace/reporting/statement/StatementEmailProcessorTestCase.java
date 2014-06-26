@@ -103,6 +103,8 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         Date statementDate = getDate("2007-01-01");
 
         Party practice = getPractice();
+        practice.addContact(TestHelper.createEmailContact("foo@vet.com"));
+
         Party customer = getCustomer();
         addCustomerEmail(customer);
         save(customer);
@@ -133,9 +135,8 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         });
         processor.process(customer);
         assertEquals(1, statements.size());
-        StatementEmailProcessor emailprocessor =
-                new StatementEmailProcessor(sender, "Foo", "foo@bar.com", getPractice());
-        emailprocessor.process(statements.get(0));
+        StatementEmailProcessor emailProcessor = new StatementEmailProcessor(sender, practice);
+        emailProcessor.process(statements.get(0));
         Mockito.verify(sender, times(1)).send(mimeMessage);
     }
 
