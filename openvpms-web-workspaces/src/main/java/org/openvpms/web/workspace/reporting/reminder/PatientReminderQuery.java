@@ -42,7 +42,6 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
-import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
@@ -51,6 +50,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
+
+import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
 
 
 /**
@@ -139,8 +140,7 @@ public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
         dateRange.setTo(calendarTo.getTime());
 
         locationSelector = new LocationSelectField();
-        Row locationRow = RowFactory.create(Styles.CELL_SPACING,
-                                            LabelFactory.create("reporting.customer.location", Styles.BOLD),
+        Row locationRow = RowFactory.create(CELL_SPACING, LabelFactory.create("reporting.customer.location"),
                                             locationSelector);
         container.add(locationRow);
     }
