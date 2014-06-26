@@ -64,19 +64,22 @@ public class FileNameFormatter {
 
     /**
      * Formats a file name using the jxpath expression returned by {@link DocumentTemplate#getFileNameExpression()}.
+     * <p/>
+     * Any extension is removed from the original file name.
      *
      * @param name     the original file name. The base name of this is passed to the expression in the {@code $file}
      *                 variable
      * @param object   the context object. If this an act, any related customer, patient, or supplier will be passed as
      *                 the variables $customer, $patient, and $supplier respectively.
      * @param template the document template
-     * @return the formatted name, or {@code name} if the template doesn't specify a format, or generation fails
+     * @return the formatted name, or the base name of {@code name} if the template doesn't specify a format or
+     *         generation fails
      */
     public String format(String name, IMObject object, DocumentTemplate template) {
         String result;
+        String file = FilenameUtils.getBaseName(name);
         String expression = template.getFileNameExpression();
         if (!StringUtils.isEmpty(expression)) {
-            String file = FilenameUtils.getBaseName(name);
             JXPathContext context = JXPathHelper.newContext(object != null ? object : new Object());
             FileNameVariables variables = new FileNameVariables(archetypeService,
                                                                 lookups);
@@ -94,8 +97,8 @@ public class FileNameFormatter {
                 if (bean.hasNode("customer")) {
                     customer = (Party) bean.getNodeParticipant("customer");
                 } else if (patient != null) {
-                    customer = ServiceHelper.getBean(PatientRules.class).getOwner(patient, act.getActivityStartTime(),
-                                                                                  false);
+                    PatientRules rules = ServiceHelper.getBean(PatientRules.class);
+                    customer = rules.getOwner(patient, act.getActivityStartTime(), false);
                 }
                 if (bean.hasNode("supplier")) {
                     supplier = (Party) bean.getNodeParticipant("supplier");
@@ -107,16 +110,22 @@ public class FileNameFormatter {
             variables.declareVariable("file", file);
             try {
                 Object value = context.getValue(expression);
-                result = (value != null) ? clean(value.toString()) : name;
+                result = (value != null) ? clean(value.toString()) : file;
             } catch (Throwable exception) {
-                result = name;
+                result = file;
             }
         } else {
-            result = name;
+            result = file;
         }
         return result;
     }
 
+    /**
+     * Replaces illegal characters with underscores.
+     *
+     * @param name the name to clean
+     * @return the name with illegal characters replaced with underscores
+     */
     private String clean(String name) {
         return name.replaceAll(ILLEGAL_CHARACTERS, "_");
     }
