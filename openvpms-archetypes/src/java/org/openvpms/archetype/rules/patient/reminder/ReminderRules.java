@@ -11,13 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.party.Contacts;
+import org.openvpms.archetype.rules.party.PurposeMatcher;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -35,7 +37,6 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -85,7 +86,12 @@ public class ReminderRules {
     }
 
     /**
-     * Constructs a {@code ReminderRules}.
+     * The reminder contact classification code.
+     */
+    private static final String REMINDER = "REMINDER";
+
+    /**
+     * Constructs a {@link ReminderRules}.
      *
      * @param service      the archetype service
      * @param patientRules the patient rules
@@ -95,9 +101,9 @@ public class ReminderRules {
     }
 
     /**
-     * Creates a new {@code ReminderRules}.
-     * A reminder type cache can be specified to cache reminders. By default,
-     * no cache is used.
+     * Constructs a {@link ReminderRules}.
+     * <p/>
+     * A reminder type cache can be specified to cache reminders. By default, no cache is used.
      *
      * @param service       the archetype service
      * @param reminderTypes a cache for reminder types. If {@code null}, no caching is used
@@ -421,10 +427,16 @@ public class ReminderRules {
     }
 
     /**
-     * Returns the first contact with classification 'REMINDER', or; the
-     * preferred contact.location if no contact has this classification,
-     * or; the first contact.location if none is preferred, or; the first
-     * location if there are no contact.locations.
+     * Returns a contact for reminders.
+     * <p/>
+     * This returns:
+     * <ol>
+     * <li>the first location contact with classification 'REMINDER'; or </li>
+     * <li>any contact with classification 'REMINDER'; or</li>
+     * <li>the preferred location contact if no contact has a REMINDER classification; or</li>
+     * <li>any preferred contact if there is no preferred location contact; or</li>
+     * <li>the first available contact if there is no preferred contact.</li>
+     * </ol>
      *
      * @param contacts the contacts
      * @return a contact, or {@code null} if none is found
@@ -738,61 +750,24 @@ public class ReminderRules {
      * classification.
      *
      * @param contacts   the contacts
-     * @param anyContact if {@code true} any contact with a 'REMINDER'
-     *                   classification will be returned. If there is
-     *                   no 'REMINDER' contact, the first preferred contact
-     *                   with the short name will be returned. If there is
-     *                   no preferred contact then the first contact matching
-     *                   the short name will be returned. If there is no
-     *                   contact matching the short name, the first preferred
-     *                   contact will be returned.
-     *                   If {@code false} only those contacts of type
-     *                   <em>shortName</em> will be returned
-     * @param shortNames the archetype shortname of the preferred contact
+     * @param anyContact if {@code true} any contact with a 'REMINDER classification will be returned.
+     * @param shortName  the archetype shortname of the preferred contact
      * @return a contact, or {@code null} if none is found
      */
-    private Contact getContact(Set<Contact> contacts, boolean anyContact, String... shortNames) {
-        Contact reminder = null;
-        Contact preferred = null;
-        Contact fallback = null;
-        for (Contact contact : contacts) {
-            IMObjectBean bean = new IMObjectBean(contact, service);
-            if (bean.isA(shortNames) || anyContact) {
-                if (reminder == null || !TypeHelper.isA(reminder, shortNames)) {
-                    List<Lookup> purposes = bean.getValues("purposes", Lookup.class);
-                    for (Lookup purpose : purposes) {
-                        if ("REMINDER".equals(purpose.getCode())) {
-                            reminder = contact;
-                            break;
-                        }
-                    }
-                }
-
-                if (preferred == null || !TypeHelper.isA(preferred, shortNames)) {
-                    if (bean.hasNode("preferred") && bean.getBoolean("preferred")) {
-                        preferred = contact;
-                    }
-                }
-                if (fallback == null || !TypeHelper.isA(fallback, shortNames)) {
-                    fallback = contact;
+    private Contact getContact(Set<Contact> contacts, boolean anyContact, String shortName) {
+        List<Contact> list = Contacts.sort(contacts); // sort to make it deterministic
+        Contact result = Contacts.find(list, new PurposeMatcher(shortName, REMINDER, service));
+        if (result == null && anyContact) {
+            result = Contacts.find(list, new PurposeMatcher("contact.*", REMINDER, service));
+            if (result == null) {
+                // no contact found with reminder purpose, so use the preferred contact with the specified short name.
+                result = Contacts.find(list, new PurposeMatcher(shortName, null, false, service));
+                if (result == null) {
+                    // no contact found with the short name, so use the first available preferred contact, or
+                    // if none preferred, the first available
+                    result = Contacts.find(list, new PurposeMatcher("contact.*", null, false, service));
                 }
             }
-        }
-        Contact result;
-        if (reminder != null) {
-            result = reminder;
-        } else if (preferred != null && fallback != null) {
-            if (TypeHelper.isA(preferred, shortNames)) {
-                result = preferred;
-            } else if (TypeHelper.isA(fallback, shortNames)) {
-                result = fallback;
-            } else {
-                result = preferred;
-            }
-        } else if (preferred != null) {
-            result = preferred;
-        } else {
-            result = fallback;
         }
         return result;
     }
