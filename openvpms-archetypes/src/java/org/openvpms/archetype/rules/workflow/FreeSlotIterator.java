@@ -70,8 +70,8 @@ class FreeSlotIterator implements Iterator<Slot> {
                             IArchetypeService service) {
         IMObjectBean bean = new IMObjectBean(schedule, service);
 
-        long scheduleStart = getTime(bean.getDate("startTime")); // the time that the schedule starts at
-        long scheduleEnd = getTime(bean.getDate("endTime"));     // the time that the schedule ends at
+        long scheduleStart = getScheduleTime(bean.getDate("startTime")); // the time that the schedule starts at
+        long scheduleEnd = getScheduleTime(bean.getDate("endTime"));     // the time that the schedule ends at
 
         Iterator<ObjectSet> queryIterator = createFreeSlotIterator(schedule, fromDate, toDate, service);
         Iterator<Slot> slotIterator = createFreeSlotAdapter(queryIterator);
@@ -266,17 +266,25 @@ class FreeSlotIterator implements Iterator<Slot> {
     }
 
     /**
-     * Returns the time portion of a date/time, in milliseconds.
+     * Returns a schedule start or end time, in milliseconds.
      *
      * @param date the date/time
-     * @return the time, in milliseconds, or {@code -1} if the date is {@code null}
+     * @return the time, in milliseconds, or {@code -1} if the date is {@code null} or is 00:00 or 24:00
      */
-    private long getTime(Date date) {
+    private long getScheduleTime(Date date) {
+        long result = -1;
         if (date != null) {
-            return new DateTime(date).getMillisOfDay();
+            DateTime dateTime = new DateTime(date);
+            if (dateTime.getDayOfMonth() < 2) {     // 24 hour schedule represented as 1970-02-01 0:0:0
+                result = dateTime.getMillisOfDay();
+                if (result == 0) {
+                    result = -1;
+                }
+            }
         }
-        return -1;
+        return result;
     }
+
 
     /**
      * An iterator that filters slots that fall outside a time range, and splits slots that overlap the time range.
@@ -467,6 +475,18 @@ class FreeSlotIterator implements Iterator<Slot> {
             return dateTime.toDate();
         }
 
+        /**
+         * Returns the time portion of a date/time, in milliseconds.
+         *
+         * @param date the date/time
+         * @return the time, in milliseconds, or {@code -1} if the date is {@code null}
+         */
+        private long getTime(Date date) {
+            if (date != null) {
+                return new DateTime(date).getMillisOfDay();
+            }
+            return -1;
+        }
 
         /**
          * Predicate to exclude slots outside a time range.

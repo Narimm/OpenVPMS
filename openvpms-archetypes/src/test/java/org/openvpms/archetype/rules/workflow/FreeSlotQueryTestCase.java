@@ -308,6 +308,42 @@ public class FreeSlotQueryTestCase extends ArchetypeServiceTest {
         Iterator<Slot> query = createIterator("2014-01-01", "2014-01-03", schedule);
         checkSlot(query, schedule, "2014-01-01 09:00:00", "2014-01-01 17:00:00");
         checkSlot(query, schedule, "2014-01-02 09:00:00", "2014-01-02 17:00:00");
+        assertFalse(query.hasNext());
+    }
+
+    /**
+     * Verifies that slots are returned when a schedule starts at 0:00 and ends at 24:00.
+     */
+    @Test
+    public void testFindFreeSlotFor24HourSchedule() {
+        Party schedule = createSchedule("00:00:00", "24:00:00");
+        Iterator<Slot> query = createIterator("2014-01-01", "2014-01-03", schedule);
+        checkSlot(query, schedule, "2014-01-01 00:00:00", "2014-01-03 00:00:00");
+        assertFalse(query.hasNext());
+    }
+
+    /**
+     * Verifies that slots are returned when a schedule starts at 0:00.
+     */
+    @Test
+    public void testFindFreeSlotFor0HourStart() {
+        Party schedule = createSchedule("00:00:00", "17:00:00");
+        Iterator<Slot> query = createIterator("2014-01-01", "2014-01-03", schedule);
+        checkSlot(query, schedule, "2014-01-01 00:00:00", "2014-01-01 17:00:00");
+        checkSlot(query, schedule, "2014-01-02 00:00:00", "2014-01-02 17:00:00");
+        assertFalse(query.hasNext());
+    }
+
+    /**
+     * Verifies that slots are returned when a schedule ends at 24:00.
+     */
+    @Test
+    public void testFindFreeSlotFor24HourEnd() {
+        Party schedule = createSchedule("09:00:00", "24:00:00");
+        Iterator<Slot> query = createIterator("2014-01-01", "2014-01-03", schedule);
+        checkSlot(query, schedule, "2014-01-01 09:00:00", "2014-01-02 00:00:00");
+        checkSlot(query, schedule, "2014-01-02 09:00:00", "2014-01-03 00:00:00");
+        assertFalse(query.hasNext());
     }
 
     /**
