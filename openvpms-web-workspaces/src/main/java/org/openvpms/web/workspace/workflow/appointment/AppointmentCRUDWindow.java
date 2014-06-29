@@ -205,6 +205,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         buttons.setEnabled(CHECKIN_ID, checkInEnabled);
         buttons.setEnabled(CONSULT_ID, checkoutConsultEnabled);
         buttons.setEnabled(CHECKOUT_ID, checkoutConsultEnabled);
+        buttons.setEnabled(OVER_THE_COUNTER_ID, browser.isAppointmentsSelected());
     }
 
     /**
@@ -264,14 +265,16 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * Invoked to copy an appointment.
      */
     private void onCopy() {
-        browser.clearMarked();
-        PropertySet selected = browser.getSelected();
-        Act appointment = browser.getAct(selected);
-        if (appointment != null) {
-            browser.setMarked(selected, false);
-        } else {
-            InformationDialog.show(Messages.get("workflow.scheduling.appointment.copy.title"),
-                                   Messages.get("workflow.scheduling.appointment.copy.select"));
+        if (browser.isAppointmentsSelected()) {
+            browser.clearMarked();
+            PropertySet selected = browser.getSelected();
+            Act appointment = browser.getAct(selected);
+            if (appointment != null) {
+                browser.setMarked(selected, false);
+            } else {
+                InformationDialog.show(Messages.get("workflow.scheduling.appointment.copy.title"),
+                                       Messages.get("workflow.scheduling.appointment.copy.select"));
+            }
         }
     }
 
@@ -279,19 +282,21 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * Invoked to cut an appointment.
      */
     private void onCut() {
-        browser.clearMarked();
-        PropertySet selected = browser.getSelected();
-        Act appointment = browser.getAct(selected);
-        if (appointment != null) {
-            if (AppointmentStatus.PENDING.equals(appointment.getStatus())) {
-                browser.setMarked(selected, true);
+        if (browser.isAppointmentsSelected()) {
+            browser.clearMarked();
+            PropertySet selected = browser.getSelected();
+            Act appointment = browser.getAct(selected);
+            if (appointment != null) {
+                if (AppointmentStatus.PENDING.equals(appointment.getStatus())) {
+                    browser.setMarked(selected, true);
+                } else {
+                    InformationDialog.show(Messages.get("workflow.scheduling.appointment.cut.title"),
+                                           Messages.get("workflow.scheduling.appointment.cut.pending"));
+                }
             } else {
                 InformationDialog.show(Messages.get("workflow.scheduling.appointment.cut.title"),
-                                       Messages.get("workflow.scheduling.appointment.cut.pending"));
+                                       Messages.get("workflow.scheduling.appointment.cut.select"));
             }
-        } else {
-            InformationDialog.show(Messages.get("workflow.scheduling.appointment.cut.title"),
-                                   Messages.get("workflow.scheduling.appointment.cut.select"));
         }
     }
 
@@ -307,30 +312,32 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * </ul>
      */
     private void onPaste() {
-        if (browser.getMarked() == null) {
-            InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
-                                   Messages.get("workflow.scheduling.appointment.paste.select"));
-        } else {
-            Act appointment = browser.getAct(browser.getMarked());
-            Entity schedule = browser.getSelectedSchedule();
-            Date startTime = browser.getSelectedTime();
-            if (appointment == null) {
+        if (browser.isAppointmentsSelected()) {
+            if (browser.getMarked() == null) {
                 InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
-                                       Messages.get("workflow.scheduling.appointment.paste.noexist"));
-                onRefresh(appointment); // force redraw
-                browser.clearMarked();
-            } else if (browser.isCut() && !AppointmentStatus.PENDING.equals(appointment.getStatus())) {
-                InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
-                                       Messages.get("workflow.scheduling.appointment.paste.pending"));
-                onRefresh(appointment); // force redraw
-                browser.clearMarked();
-            } else if (schedule == null || startTime == null) {
-                InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
-                                       Messages.get("workflow.scheduling.appointment.paste.noslot"));
-            } else if (browser.isCut()) {
-                cut(appointment, schedule, startTime);
+                                       Messages.get("workflow.scheduling.appointment.paste.select"));
             } else {
-                copy(appointment, schedule, startTime);
+                Act appointment = browser.getAct(browser.getMarked());
+                Entity schedule = browser.getSelectedSchedule();
+                Date startTime = browser.getSelectedTime();
+                if (appointment == null) {
+                    InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
+                                           Messages.get("workflow.scheduling.appointment.paste.noexist"));
+                    onRefresh(appointment); // force redraw
+                    browser.clearMarked();
+                } else if (browser.isCut() && !AppointmentStatus.PENDING.equals(appointment.getStatus())) {
+                    InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
+                                           Messages.get("workflow.scheduling.appointment.paste.pending"));
+                    onRefresh(appointment); // force redraw
+                    browser.clearMarked();
+                } else if (schedule == null || startTime == null) {
+                    InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
+                                           Messages.get("workflow.scheduling.appointment.paste.noslot"));
+                } else if (browser.isCut()) {
+                    cut(appointment, schedule, startTime);
+                } else {
+                    copy(appointment, schedule, startTime);
+                }
             }
         }
     }
