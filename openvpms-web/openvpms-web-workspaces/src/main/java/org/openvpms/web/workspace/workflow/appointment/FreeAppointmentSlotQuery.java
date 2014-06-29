@@ -105,7 +105,7 @@ class FreeAppointmentSlotQuery extends ScheduleQuery {
         toTime = createTime("toTime", Messages.get("workflow.scheduling.appointment.find.toTime"));
         duration = new SimpleProperty("duration", null, Integer.class,
                                       Messages.get("workflow.scheduling.appointment.find.duration"));
-        durationUnits = new SimpleProperty("duration", null, String.class);
+        durationUnits = new SimpleProperty("duration", null, DateUnits.class);
         setScheduleView(view);
         setSchedule(schedule);
     }
@@ -121,7 +121,7 @@ class FreeAppointmentSlotQuery extends ScheduleQuery {
         if (schedule != null) {
             IMObjectBean bean = new IMObjectBean(schedule);
             duration.setValue(bean.getInt("slotSize"));
-            durationUnits.setValue(bean.getString("slotUnits"));
+            durationUnits.setValue(DateUnits.valueOf(bean.getString("slotUnits")));
         } else {
             int minSlotSize = 0;
             String minSlotUnits = DateUnits.MINUTES.toString();
@@ -138,7 +138,7 @@ class FreeAppointmentSlotQuery extends ScheduleQuery {
                 }
             }
             duration.setValue(minSlotSize);
-            durationUnits.setValue(minSlotUnits);
+            durationUnits.setValue(DateUnits.valueOf(minSlotUnits));
         }
     }
 
