@@ -16,6 +16,8 @@ The scripts are:
                                 complaint codes.
                                 This excludes 'Active Non-referral' presenting complaints which essentially duplicate
                                 the 'Active referral' ones.
+. lookups.pl                  - produces dataload compatible output to load lookup.diagnosisVeNom and
+                                lookup.presentingComplaintVeNom lookups.
 
 Note that the perl scripts require the Text::CSV module. If this is not installed, run the following:
 
