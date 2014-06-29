@@ -14,11 +14,15 @@ change to:
 1.1 Requirements
 - OpenVPMS requires the following to be installed:
 
-  - Java Platform, Standard Edition 7 or higher
+  - Java Platform, Standard Edition 7.
     The Java Runtime Environment (JRE) is the minimum requirement.
     See http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
-  - MySQL 5.1.53 or higher
+    NOTE: Java 8 is not yet supported.
+
+  - MySQL 5.1.x or 5.5.x
+    Version 5.1.53 is the minimum requirement.
+
     See http://dev.mysql.com/downloads/mysql/5.1.html
 
     Download the MySQL Community Server 'Generally Available (GA) Release'
@@ -32,12 +36,12 @@ change to:
 
     This may be included in the MySQL server installation.
 
-  - Tomcat 6.0 or higher
+  - Tomcat 6.x or Tomcat 7.x
     See http://tomcat.apache.org/download-60.cgi
 
     On Windows, select the 32-bit/64-bit Windows Service Installer
 
-  - OpenOffice 4.0.0 or higher
+  - OpenOffice 4.0.x
     See http://www.openoffice.org/download/
 
   - iReport Designer 3.7.6 or higher
