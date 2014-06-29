@@ -67,6 +67,7 @@
           minDenomination="0.10"/>
     <data archetype="lookup.appointmentReason" code="CHECKUP" defaultLookup="true"/>
     <data archetype="lookup.appointmentReason" code="VACCINATION"/>
+    <data archetype="lookup.appointmentReason" code="SURGERY"/>
     <data archetype="lookup.appointmentReason" code="OTHER"/>
     <data archetype="lookup.messageReason" code="PHONE" name="Phone Call" defaultLookup="true"/>
     <data archetype="lookup.messageReason" code="OTHER" name="Other"/>
