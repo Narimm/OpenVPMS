@@ -94,15 +94,15 @@ public class PatientEditor extends AbstractIMObjectEditor {
             }
         });
         Property breed = getProperty("breed");
-        Property otherBreed = getProperty("otherBreed");
+        Property newBreed = getProperty("newBreed");
         breedEditor = new BreedEditor(breed, patient);
 
-        if (StringUtils.isEmpty(breed.getString()) && !StringUtils.isEmpty(otherBreed.getString())) {
-            breedEditor.selectOther();
+        if (StringUtils.isEmpty(breed.getString()) && !StringUtils.isEmpty(newBreed.getString())) {
+            breedEditor.selectNewBreed();
         }
 
-        // need to add a listener with the component as both 'None' and 'Other' are represented using null
-        // so switching from 'None' to 'Other' or vice versa won't trigger any event on the property
+        // need to add a listener with the component as both 'None' and 'New Breed' are represented using null
+        // so switching from 'None' to 'New Breed' or vice versa won't trigger any event on the property
         breedEditor.getComponent().addActionListener(new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
@@ -199,14 +199,14 @@ public class PatientEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Invoked when the breed changes. If it is 'Other', displays the 'otherBreed' node.
+     * Invoked when the breed changes. If it is 'New Breed', displays the 'newBreed' node.
      */
     private void breedChanged() {
-        boolean other = breedEditor.isOther();
-        if (!other) {
-            getProperty("otherBreed").setValue(null);
+        boolean newBreed = breedEditor.isNewBreed();
+        if (!newBreed) {
+            getProperty("newBreed").setValue(null);
         }
-        strategy.updateOtherBreed(other);
+        strategy.updateNewBreed(newBreed);
     }
 
     /**

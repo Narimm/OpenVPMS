@@ -50,11 +50,9 @@ import java.util.List;
 public class PatientLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
-     * Default nodes to render.
+     * The nodes, excluding custom fields.
      */
-    private static final ArchetypeNodes NODES = new ArchetypeNodes();
-
-    private static final ArchetypeNodes NO_CUSTOM_NODES = new ArchetypeNodes(NODES).exclude("customFields");
+    private static final ArchetypeNodes NO_CUSTOM_NODES = new ArchetypeNodes().exclude("customFields");
 
     /**
      * The customField node editor, if the object is being edited.
@@ -72,9 +70,9 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
     private ComponentState customFieldState;
 
     /**
-     * The other breed field.
+     * The new breed field.
      */
-    private ComponentState otherBreedState;
+    private ComponentState newBreedState;
 
     /**
      * The index of the custom fields tab, or {@code -1} if it is not displayed.
@@ -136,14 +134,14 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
 
 
     /**
-     * Determines if the 'otherBreed' field should be visible.
+     * Determines if the 'newBreed' field should be visible.
      *
-     * @param show if {@code true} display the other breed
+     * @param show if {@code true} display the new breed
      */
-    public void updateOtherBreed(boolean show) {
-        if (otherBreedState != null) {
-            otherBreedState.getLabel().setVisible(show);
-            otherBreedState.getComponent().setVisible(show);
+    public void updateNewBreed(boolean show) {
+        if (newBreedState != null) {
+            newBreedState.getLabel().setVisible(show);
+            newBreedState.getComponent().setVisible(show);
         }
     }
 
@@ -162,20 +160,20 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         customFieldsTab = -1;
         Property breed = properties.get("breed");
-        Property otherBreed = properties.get("otherBreed");
-        otherBreedState = createComponent(otherBreed, object, context);
-        boolean show = StringUtils.isEmpty(breed.getString()) && !StringUtils.isEmpty(otherBreed.getString());
+        Property newBreed = properties.get("newBreed");
+        newBreedState = createComponent(newBreed, object, context);
+        boolean show = StringUtils.isEmpty(breed.getString()) && !StringUtils.isEmpty(newBreed.getString());
         if (show && !context.isEdit()) {
             Property copy = new SimpleProperty(breed);
-            copy.setValue(Messages.get("patient.otherbreed"));
+            copy.setValue(Messages.get("patient.newbreed"));
             addComponent(createComponent(copy, object, context));
         }
-        updateOtherBreed(show);
-        addComponent(otherBreedState);
+        updateNewBreed(show);
+        addComponent(newBreedState);
         if (hideCustomFields || !hasCustomFields(object)) {
             nodes = NO_CUSTOM_NODES;
         } else {
-            nodes = NODES;
+            nodes = DEFAULT_NODES;
         }
         return super.apply(object, properties, parent, context);
     }
@@ -288,7 +286,7 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
      * with it.
      *
      * @param object the object. Must be an {@link Entity}.
-     * @return {@code true</em> if there is any <em>entity.customPatient*</em>
+     * @return {@code true} if there is any <em>entity.customPatient*</em>
      *         associated with the object
      */
     private boolean hasCustomFields(IMObject object) {
