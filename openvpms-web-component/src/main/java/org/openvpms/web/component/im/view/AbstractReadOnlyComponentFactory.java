@@ -192,7 +192,6 @@ public abstract class AbstractReadOnlyComponentFactory
                     result = create(value, parent).getComponent();
                 } else {
                     result = getEmptyCollectionViewer();
-
                 }
             }
         } else if (property.getMinCardinality() == 0 && property.getMaxCardinality() == 0) {

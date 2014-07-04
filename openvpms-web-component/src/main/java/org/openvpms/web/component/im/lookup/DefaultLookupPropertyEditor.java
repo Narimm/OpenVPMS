@@ -28,12 +28,23 @@ import org.openvpms.web.component.property.Property;
 public class DefaultLookupPropertyEditor extends PropertyComponentEditor implements LookupPropertyEditor {
 
     /**
-     * Constructs an {@link DefaultLookupPropertyEditor}.
+     * Constructs a {@link DefaultLookupPropertyEditor}.
      *
      * @param property the property being edited
+     * @param parent   the parent object
      */
     public DefaultLookupPropertyEditor(Property property, IMObject parent) {
-        super(property, LookupFieldFactory.create(property, parent));
+        this(property, LookupFieldFactory.create(property, parent));
+    }
+
+    /**
+     * Constructs a {@link DefaultLookupPropertyEditor}.
+     *
+     * @param property  the property being edited
+     * @param component the edit component
+     */
+    public DefaultLookupPropertyEditor(Property property, LookupField component) {
+        super(property, component);
     }
 
 }

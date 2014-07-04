@@ -105,7 +105,7 @@ public class SimpleProperty extends AbstractProperty {
 
 
     /**
-     * Constructs a {@code SimpleProperty}.
+     * Constructs a {@link SimpleProperty}.
      *
      * @param name the property name
      * @param type the property type
@@ -115,7 +115,7 @@ public class SimpleProperty extends AbstractProperty {
     }
 
     /**
-     * Constructs a {@code SimpleProperty}.
+     * Constructs a {@link SimpleProperty}.
      *
      * @param name  the property name
      * @param value the property value. May be {@code null}
@@ -126,7 +126,7 @@ public class SimpleProperty extends AbstractProperty {
     }
 
     /**
-     * Constructs a {@code SimpleProperty}.
+     * Constructs a {@link SimpleProperty}.
      *
      * @param name        the property name
      * @param value       the property value. May be {@code null}
@@ -138,7 +138,7 @@ public class SimpleProperty extends AbstractProperty {
     }
 
     /**
-     * Constructs a {@code SimpleProperty}.
+     * Constructs a {@link SimpleProperty}.
      *
      * @param name        the property name
      * @param value       the property value. May be {@code null}
@@ -152,6 +152,25 @@ public class SimpleProperty extends AbstractProperty {
         this.type = type;
         this.displayName = displayName;
         this.readOnly = readOnly;
+    }
+
+    /**
+     * Constructs a {@link SimpleProperty} from another property.
+     *
+     * @param property the property
+     */
+    public SimpleProperty(Property property) {
+        this.name = property.getName();
+        this.type = property.getType();
+        this.displayName = property.getDisplayName();
+        this.description = property.getDescription();
+        this.value = property.getValue();
+        this.minLength = property.getMinLength();
+        this.maxLength = property.getMaxLength();
+        this.readOnly = property.isReadOnly();
+        this.hidden = property.isHidden();
+        this.required = property.isRequired();
+        this.shortNames = property.getArchetypeRange();
     }
 
     /**
