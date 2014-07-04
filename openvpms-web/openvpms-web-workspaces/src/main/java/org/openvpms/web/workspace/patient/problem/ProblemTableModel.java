@@ -25,7 +25,9 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.LookupNameHelper;
+import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryTableModel;
 
@@ -55,6 +57,36 @@ public class ProblemTableModel extends AbstractPatientHistoryTableModel {
     @Override
     protected String getReason(Act act) {
         return LookupNameHelper.getName(act, "reason");
+    }
+
+    /**
+     * Returns a component for a parent act.
+     *
+     * @param bean the parent act
+     * @param row  the current row
+     * @return a component representing the act
+     * @throws OpenVPMSException for any error
+     */
+    @Override
+    protected Component formatParent(ActBean bean, int row) {
+        Component result;
+        String presentingComplaint = LookupNameHelper.getName(bean.getAct(), "presentingComplaint");
+
+        if (presentingComplaint != null) {
+            String date = formatDateRange(bean);
+            String title = formatParentText(bean, row);
+            Label dateLabel = LabelFactory.create(null, Styles.BOLD);
+            Label titleLabel = LabelFactory.create(null, Styles.BOLD);
+            Label complaintLabel = LabelFactory.create();
+
+            dateLabel.setText(date);
+            titleLabel.setText(title);
+            complaintLabel.setText(Messages.format("patient.record.summary.presentingComplaint", presentingComplaint));
+            result = GridFactory.create(2, dateLabel, titleLabel, LabelFactory.create(), complaintLabel);
+        } else {
+            result = super.formatParent(bean, row);
+        }
+        return result;
     }
 
     /**

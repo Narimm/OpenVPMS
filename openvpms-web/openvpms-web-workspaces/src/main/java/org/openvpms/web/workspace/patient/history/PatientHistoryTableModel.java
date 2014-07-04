@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.patient.history;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -32,6 +33,10 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.util.LookupNameHelper;
+import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
 
@@ -90,6 +95,8 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
             detail = getMedicationDetail(bean);
         } else if (bean.isA(CustomerAccountArchetypes.INVOICE_ITEM)) {
             detail = getInvoiceItemDetail(bean);
+        } else if (bean.isA(PatientArchetypes.CLINICAL_PROBLEM)) {
+            detail = getProblemDetail(bean);
         } else {
             detail = super.formatItem(bean, row);
         }
@@ -136,6 +143,24 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
 
         }
         return getTextDetail(text);
+    }
+
+    /**
+     * Returns a component for the detail of an act.patientClinicalProblem.
+     *
+     * @param bean the problem
+     * @return a new component
+     */
+    private Component getProblemDetail(ActBean bean) {
+        Act act = bean.getAct();
+        Component result = getTextDetail(act);
+        String presentingComplaint = LookupNameHelper.getName(act, "presentingComplaint");
+        if (presentingComplaint != null) {
+            Label label = LabelFactory.create();
+            label.setText(Messages.format("patient.record.summary.presentingComplaint", presentingComplaint));
+            result = ColumnFactory.create(Styles.CELL_SPACING, result, label);
+        }
+        return result;
     }
 
     /**
