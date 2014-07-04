@@ -39,7 +39,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * An editor for the patient 'breed' property that adds an 'Other' to allow a custom breed to be specified.
+ * An editor for the patient 'breed' property that adds a 'New Breed' to allow a custom breed to be specified.
  *
  * @author Tim Anderson
  */
@@ -61,20 +61,23 @@ public class BreedEditor extends DefaultLookupPropertyEditor {
     }
 
     /**
-     * Determines if 'Other' is selected.
+     * Determines if 'New Breed' is selected.
      *
-     * @return {@code true} if 'Other' is selected, otherwise {@code false}
+     * @return {@code true} if 'New Breed' is selected, otherwise {@code false}
      */
-    public boolean isOther() {
+    public boolean isNewBreed() {
         LookupField field = getComponent();
         BreedLookupListModel model = (BreedLookupListModel) field.getModel();
-        return model.isOther(field.getSelectedIndex());
+        return model.isNewBreed(field.getSelectedIndex());
     }
 
-    public void selectOther() {
+    /**
+     * Selects the 'New Breed' cell.
+     */
+    public void selectNewBreed() {
         LookupField field = getComponent();
         BreedLookupListModel model = (BreedLookupListModel) field.getModel();
-        field.setSelectedIndex(model.getOtherIndex());
+        field.setSelectedIndex(model.getNewBreedIndex());
     }
 
     /**
@@ -109,9 +112,9 @@ public class BreedEditor extends DefaultLookupPropertyEditor {
                 = ComparatorUtils.nullLowComparator(ComparatorUtils.<String>naturalComparator());
 
         /**
-         * The index of 'Other' in the breed list.
+         * The index of 'New Breed' in the breed list.
          */
-        private int otherIndex;
+        private int newBreedIndex;
 
         /**
          * Constructs a {@link BreedLookupListModel}.
@@ -124,22 +127,22 @@ public class BreedEditor extends DefaultLookupPropertyEditor {
         }
 
         /**
-         * Determines if the specified index indicates 'Other'.
+         * Determines if the specified index indicates 'New Breed'.
          *
          * @param index the index
-         * @return {@code true} if the index indicates 'Other'
+         * @return {@code true} if the index indicates 'New Breed'
          */
-        public boolean isOther(int index) {
-            return index == otherIndex;
+        public boolean isNewBreed(int index) {
+            return index == newBreedIndex;
         }
 
         /**
-         * Returns the 'Other' breed index.
+         * Returns the 'New Breed' breed index.
          *
          * @return the index
          */
-        public int getOtherIndex() {
-            return otherIndex;
+        public int getNewBreedIndex() {
+            return newBreedIndex;
         }
 
         /**
@@ -152,9 +155,9 @@ public class BreedEditor extends DefaultLookupPropertyEditor {
         @Override
         protected void initObjects(List<? extends Lookup> objects, boolean all, boolean none) {
             super.initObjects(objects, all, none);
-            Lookup other = new Lookup(null, null, BreedLookupListCellRenderer.OTHER);
+            Lookup newBreed = new Lookup(null, null, BreedLookupListCellRenderer.NEW_BREED);
             List<Lookup> lookups = getObjects();
-            otherIndex = Collections.binarySearch(lookups, other, new Comparator<Lookup>() {
+            newBreedIndex = Collections.binarySearch(lookups, newBreed, new Comparator<Lookup>() {
                 @Override
                 public int compare(Lookup o1, Lookup o2) {
                     String name1 = o1 != null ? o1.getName() : null;
@@ -162,16 +165,16 @@ public class BreedEditor extends DefaultLookupPropertyEditor {
                     return COMPARATOR.compare(name1, name2);
                 }
             });
-            if (otherIndex < 0) {
-                otherIndex = -otherIndex - 1;
-                lookups.add(otherIndex, null);
+            if (newBreedIndex < 0) {
+                newBreedIndex = -newBreedIndex - 1;
+                lookups.add(newBreedIndex, null);
             }
         }
     }
 
     private static class BreedLookupListCellRenderer extends LookupListCellRenderer {
 
-        public static final String OTHER = Messages.get("patient.otherbreed");
+        public static final String NEW_BREED = Messages.get("patient.newbreed");
 
         /**
          * Renders an item in a list.
@@ -185,8 +188,8 @@ public class BreedEditor extends DefaultLookupPropertyEditor {
         public Object getListCellRendererComponent(Component list, Object value, int index) {
             AbstractListComponent component = ((AbstractListComponent) list);
             ListModel model = component.getModel();
-            if (model instanceof BreedLookupListModel && ((BreedLookupListModel) model).isOther(index)) {
-                return new BoldListCell(OTHER);
+            if (model instanceof BreedLookupListModel && ((BreedLookupListModel) model).isNewBreed(index)) {
+                return new BoldListCell(NEW_BREED);
             }
             return super.getListCellRendererComponent(list, value, index);
         }
