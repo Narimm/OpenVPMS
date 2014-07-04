@@ -28,16 +28,16 @@
               filter="participation.patient" hidden="true"/>
         <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
-        <node name="reason" displayName="Diagnosis" path="/reason" type="java.lang.String" minCardinality="1">
-            <assertion name="lookup">
-                <property name="type" value="lookup"/>
-                <property name="source" value="lookup.diagnosis*"/>
-            </assertion>
-        </node>
         <node name="presentingComplaint" path="/details/presentingComplaint" type="java.lang.String" minCardinality="0">
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
                 <property name="source" value="lookup.presentingComplaint*"/>
+            </assertion>
+        </node>
+        <node name="reason" displayName="Diagnosis" path="/reason" type="java.lang.String" minCardinality="1">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.diagnosis*"/>
             </assertion>
         </node>
         <node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'UNRESOLVED'">
