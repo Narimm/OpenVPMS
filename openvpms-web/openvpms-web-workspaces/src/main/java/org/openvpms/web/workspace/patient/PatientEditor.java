@@ -16,6 +16,8 @@
 
 package org.openvpms.web.workspace.patient;
 
+import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -29,11 +31,13 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.EntityRelationshipCollectionTargetEditor;
 import org.openvpms.web.component.im.relationship.RelationshipCollectionTargetEditor;
 import org.openvpms.web.component.im.util.IMObjectCreator;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.DatePropertyTransformer;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
@@ -61,6 +65,11 @@ public class PatientEditor extends AbstractIMObjectEditor {
     private RelationshipCollectionTargetEditor customFieldEditor;
 
     /**
+     * The breed editor.
+     */
+    private BreedEditor breedEditor;
+
+    /**
      * The layout strategy.
      */
     private PatientLayoutStrategy strategy;
@@ -82,6 +91,22 @@ public class PatientEditor extends AbstractIMObjectEditor {
         getProperty("species").addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 speciesChanged();
+            }
+        });
+        Property breed = getProperty("breed");
+        Property otherBreed = getProperty("otherBreed");
+        breedEditor = new BreedEditor(breed, patient);
+
+        if (StringUtils.isEmpty(breed.getString()) && !StringUtils.isEmpty(otherBreed.getString())) {
+            breedEditor.selectOther();
+        }
+
+        // need to add a listener with the component as both 'None' and 'Other' are represented using null
+        // so switching from 'None' to 'Other' or vice versa won't trigger any event on the property
+        breedEditor.getComponent().addActionListener(new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                breedChanged();
             }
         });
 
@@ -106,6 +131,7 @@ public class PatientEditor extends AbstractIMObjectEditor {
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         if (strategy == null) {
             strategy = new PatientLayoutStrategy(customFieldEditor);
+            strategy.addComponent(new ComponentState(breedEditor));
         }
         return strategy;
     }
@@ -166,7 +192,21 @@ public class PatientEditor extends AbstractIMObjectEditor {
      * Invoked when the species changes. Updates the customFields node.
      */
     private void speciesChanged() {
+        // need to refresh explicitly as it is not hooked in to AbstractIMObjectEditors lookup refresh
+        breedEditor.getComponent().refresh();
+        breedChanged();
         updateCustomFields();
+    }
+
+    /**
+     * Invoked when the breed changes. If it is 'Other', displays the 'otherBreed' node.
+     */
+    private void breedChanged() {
+        boolean other = breedEditor.isOther();
+        if (!other) {
+            getProperty("otherBreed").setValue(null);
+        }
+        strategy.updateOtherBreed(other);
     }
 
     /**
@@ -198,5 +238,6 @@ public class PatientEditor extends AbstractIMObjectEditor {
         List<IMObject> result = customFieldEditor.getObjects();
         return !result.isEmpty() ? (Entity) result.get(0) : null;
     }
+
 
 }

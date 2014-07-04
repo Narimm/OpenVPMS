@@ -20,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.bound.Binder;
 import org.openvpms.web.component.bound.SelectFieldBinder;
+import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.property.Property;
 
 
@@ -64,7 +65,17 @@ public class BoundLookupField extends LookupField {
      * @param all      if {@code true}, add a localised "All"
      */
     public BoundLookupField(Property property, LookupQuery source, boolean all) {
-        super(source, all, !property.isRequired());
+        this(property, new LookupListModel(source, all, !property.isRequired()));
+    }
+
+    /**
+     * Constructs a {@link BoundLookupField}.
+     *
+     * @param property the property to bind
+     * @param model    the model
+     */
+    public BoundLookupField(Property property, LookupListModel model) {
+        super(model);
         binder = new SelectFieldBinder(this, property);
         if (!StringUtils.isEmpty(property.getDescription())) {
             setToolTipText(property.getDescription());
