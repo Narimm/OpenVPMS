@@ -13,10 +13,11 @@
   ~
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="party.patientpet.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party"
-               displayName="Patient(Pet)">
+               displayName="Patient (Pet)">
         <node name="id" path="/id"
               type="java.lang.Long" readOnly="true"/>
         <node name="name" path="/name" type="java.lang.String"
@@ -25,12 +26,12 @@
         </node>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
-              derivedValue="concat(openvpms:lookup(.,'sex'), ' ', /details/colour, ' ', openvpms:lookup(.,'breed'), ' (',party:identities(),')')"/>
+              derivedValue="concat(openvpms:lookup(.,'sex'), expr:concatIf(' ', /details/colour), ' ',
+                            openvpms:lookup(.,'breed'), expr:concatIf(' (',party:identities(),')'))"/>
         <node name="species" path="/details/species" type="java.lang.String" minCardinality="1">
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
                 <property name="source" value="lookup.species"/>
-                <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
         <node name="breed" path="/details/breed" type="java.lang.String">
@@ -39,9 +40,9 @@
                 <property name="relationship"
                           value="lookupRelationship.speciesBreed"/>
                 <property name="value" value="/details/species"/>
-                <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
+        <node name="newBreed" path="/details/newBreed" type="java.lang.String" minCardinality="0"/>
         <node name="colour" path="/details/colour" type="java.lang.String"
               maxLength="30">
             <assertion name="propercase"/>
@@ -53,7 +54,6 @@
                     <property name="FEMALE" value="Female"/>
                     <property name="UNSPECIFIED" value="Unspecified"/>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="desexed" path="/details/desexed" type="java.lang.Boolean"
@@ -86,7 +86,6 @@
                                   value="entityRelationship.patientLocation"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active customer relationship</errorMessage>
@@ -110,7 +109,6 @@
                                   value="entityIdentity.petTag"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="referrals" path="/entityRelationships"
@@ -128,7 +126,6 @@
                                   value="entityRelationship.referredTo"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="discounts" path="/entityRelationships"
@@ -142,7 +139,6 @@
                                   value="entityRelationship.discountPatient"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="customFields" path="/entityRelationships"
@@ -156,7 +152,6 @@
                                   value="entityRelationship.customPatientFields"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
     </archetype>
