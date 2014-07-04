@@ -125,8 +125,8 @@ public class ArchetypeNodes {
         this.second = nodes.second;
         this.includeSimpleNodes = new LinkedHashSet<String>(nodes.includeSimpleNodes);
         this.includeComplexNodes = new LinkedHashSet<String>(nodes.includeComplexNodes);
-        this.exclude = new HashSet<String>(exclude);
-        this.excludeIfEmpty = new HashSet<String>(excludeIfEmpty);
+        this.exclude = new HashSet<String>(nodes.exclude);
+        this.excludeIfEmpty = new HashSet<String>(nodes.excludeIfEmpty);
         this.order = new ArrayList<String>(nodes.order);
     }
 
