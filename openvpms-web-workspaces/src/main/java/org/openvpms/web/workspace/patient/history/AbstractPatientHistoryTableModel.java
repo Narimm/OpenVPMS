@@ -329,16 +329,22 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * @throws OpenVPMSException for any error
      */
     protected Component formatParent(ActBean bean, int row) {
-        Act act = bean.getAct();
+        String date = formatDateRange(bean);
+        String text = formatParentText(bean, row);
+        Label summary = LabelFactory.create(null, Styles.BOLD);
+        summary.setText(Messages.format("patient.record.summary.datedTitle", date, text));
+        return summary;
+    }
+
+    /**
+     * Formats an act date range.
+     *
+     * @param bean the act
+     * @return the date range
+     */
+    protected String formatDateRange(ActBean bean) {
         String started = null;
         String completed = null;
-        String clinician;
-        String reason = getReason(bean.getAct());
-        if (StringUtils.isEmpty(reason)) {
-            reason = Messages.get("patient.record.summary.reason.none");
-        }
-        String status = ArchetypeServiceFunctions.lookup(act, "status");
-
         Date startTime = bean.getDate("startTime");
         if (startTime != null) {
             started = DateFormatter.formatDate(startTime, false);
@@ -349,19 +355,33 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
             completed = DateFormatter.formatDate(endTime, false);
         }
 
-        clinician = getClinician(bean, row);
-        String age = getAge(bean);
-
         String text;
         if (completed == null || ObjectUtils.equals(started, completed)) {
-            text = Messages.format("patient.record.summary.singleDate", started, reason, clinician, status, age);
+            text = Messages.format("patient.record.summary.singleDate", started);
         } else {
-            text = Messages.format("patient.record.summary.dateRange", started, completed, reason, clinician, status,
-                                   age);
+            text = Messages.format("patient.record.summary.dateRange", started, completed);
         }
-        Label summary = LabelFactory.create(null, Styles.BOLD);
-        summary.setText(text);
-        return summary;
+        return text;
+    }
+
+    /**
+     * Formats the text for a parent act.
+     *
+     * @param bean the act
+     * @param row  the current row
+     * @return the formatted text
+     */
+    protected String formatParentText(ActBean bean, int row) {
+        Act act = bean.getAct();
+        String clinician;
+        String reason = getReason(bean.getAct());
+        if (StringUtils.isEmpty(reason)) {
+            reason = Messages.get("patient.record.summary.reason.none");
+        }
+        String status = ArchetypeServiceFunctions.lookup(act, "status");
+        clinician = getClinician(bean, row);
+        String age = getAge(bean);
+        return Messages.format("patient.record.summary.title", reason, clinician, status, age);
     }
 
     /**
