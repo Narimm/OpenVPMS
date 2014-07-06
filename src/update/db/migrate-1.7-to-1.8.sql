@@ -145,6 +145,66 @@ WHERE a.act_id = d.act_id AND a.act_id = p.act_id
 DROP TABLE migrate_problems;
 
 #
+#
+DROP TABLE IF EXISTS file_name_formats;
+CREATE TABLE file_name_formats (
+  code        VARCHAR(255) PRIMARY KEY,
+  name        VARCHAR(255),
+  description VARCHAR(255),
+  expression  VARCHAR(5000)
+);
+
+#
+# Add file name formats, for OVPMS-1483
+#
+INSERT INTO file_name_formats (code, name, description, expression)
+  VALUES ("DOC_NAME_DOC_DATE", "Document name - document date", "Valid for customer, patient, and supplier documents only", "concat($file, ' - ', date:format(openvpms:get(.,'startTime'), 'd MMM yyyy'))"),
+  ("DOC_NAME_TODAYS_DATE", "Document name - today's date", "Valid for all documents", "concat($file, ' - ', date:format(java.util.Date.new(), 'd MMM yyyy'))"),
+  ("DOC_NAME_PATIENT_FULL_NAME_DOC_DATE", "Document name - patient full name - document date", "Valid for patient documents only", "concat($file, ' - ', $patient.name, ' ', $customer.lastName, ' - ', date:format(openvpms:get(.,'startTime'), 'd MMM yyyy'))"),
+  ("DOC_NAME_PATIENT_FULL_NAME_TODAYS_DATE", "Document name - patient full name - today's date", "Valid for patient documents only", "concat($file, ' - ', $patient.name, ' ', $customer.lastName, ' - ', date:format(java.util.Date.new(), 'd MMM yyyy'))"),
+  ("DOC_NAME_CUSTOMER_FULL_NAME_DOC_DATE", "Document name - customer full name - document date", "Valid for customer documents only", "concat($file, ' - ', party:getPartyFullName($customer), ' - ', date:format(openvpms:get(.,'startTime'), 'd MMM yyyy'))"),
+  ("DOC_NAME_CUSTOMER_FULL_NAME_TODAYS_DATE", "Document name - customer full name - today's date", "Valid for customer documents only", "concat($file, ' - ', party:getPartyFullName($customer), ' - ', date:format(java.util.Date.new(), 'd MMM yyyy'))"),
+  ("DOC_NAME_SUPPLIER_FULL_NAME_DOC_DATE", "Document name - supplier full name - document date", "Valid for supplier documents only", "concat($file, ' - ', party:getPartyFullName($supplier), ' - ', date:format(openvpms:get(.,'startTime'), 'd MMM yyyy'))"),
+  ("DOC_NAME_SUPPLIER_FULL_NAME_TODAYS_DATE", "Document name - supplier full name - today's date", "Valid for supplier documents only", "concat($file, ' - ', party:getPartyFullName($supplier), ' - ', date:format(java.util.Date.new(), 'd MMM yyyy'))");
+
+INSERT INTO lookups (version, linkId, arch_short_name, active, arch_version, code, name, description, default_lookup)
+  SELECT
+    0,
+    UUID(),
+    'lookup.fileNameFormat',
+    1,
+    '1.0',
+    code,
+    name,
+    description,
+    0
+  FROM (SELECT
+          code,
+          name,
+          description
+        FROM file_name_formats a
+        WHERE NOT exists(SELECT
+                           *
+                         FROM lookups e
+                         WHERE e.arch_short_name = 'lookup.fileNameFormat' AND e.code = a.code)) l;
+
+INSERT INTO lookup_details (lookup_id, name, type, value)
+  SELECT
+    l.lookup_id,
+    "expression",
+    "string",
+    a.expression
+  FROM file_name_formats a,
+    lookups l
+  WHERE a.code = l.code AND l.arch_short_name = "lookup.fileNameFormat"
+        AND NOT exists(SELECT
+                         *
+                       FROM lookup_details d
+                       WHERE d.lookup_id = l.lookup_id AND d.name = 'expression');
+
+DROP TABLE file_name_formats;
+
+#
 # Add VeNom diagnosis codes for OVPMS-1468
 #
 DROP TABLE IF EXISTS venom_diagnosis;
