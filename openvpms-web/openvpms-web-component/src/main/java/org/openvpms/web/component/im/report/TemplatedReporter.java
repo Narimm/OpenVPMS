@@ -23,6 +23,8 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.component.im.doc.FileNameFormatter;
 
+import java.util.Iterator;
+
 
 /**
  * Base class for implementations that generate {@link Document}s using a
@@ -139,8 +141,15 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
         DocumentTemplate template = getTemplate();
         if (template != null) {
             Object value = getObject();
-            IMObject object = (value instanceof IMObject) ? (IMObject) value : null;
+            if (value == null) {
+                Iterator<T> iterator = getObjects().iterator();
+                if (iterator.hasNext()) {
+                    // use the first object in the list to format the file name
+                    value = iterator.next();
+                }
+            }
             if (value instanceof IMObject) {
+                IMObject object = (IMObject) value;
                 String fileName = new FileNameFormatter().format(template.getName(), object, template);
                 String extension = FilenameUtils.getExtension(document.getName());
                 document.setName(fileName + "." + extension);
