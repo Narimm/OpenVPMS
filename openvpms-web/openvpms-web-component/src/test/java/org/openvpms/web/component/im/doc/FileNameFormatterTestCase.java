@@ -58,11 +58,14 @@ public class FileNameFormatterTestCase extends AbstractAppTest {
     public void testCustomerFormat() {
         DocumentTemplate template = createTemplate("concat($file, ' - ', party:getPartyFullName($customer))");
         Party customer = TestHelper.createCustomer("Foo", "Bar", true);
+        IMObjectBean bean = new IMObjectBean(customer);
+        bean.setValue("title", null);
+        bean.save();
         FileNameFormatter formatter = new FileNameFormatter();
         Act act = (Act) create(CustomerArchetypes.DOCUMENT_LETTER);
-        ActBean bean = new ActBean(act);
-        bean.setNodeParticipant("customer", customer);
-        assertEquals("Statement - Mr Foo Bar", formatter.format("Statement.pdf", act, template));
+        ActBean actBean = new ActBean(act);
+        actBean.setNodeParticipant("customer", customer);
+        assertEquals("Statement - Foo Bar", formatter.format("Statement.pdf", act, template));
     }
 
     /**
