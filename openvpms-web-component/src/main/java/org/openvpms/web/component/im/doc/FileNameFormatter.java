@@ -20,6 +20,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Variables;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -52,7 +54,12 @@ public class FileNameFormatter {
     /**
      * Characters to exclude from file names.
      */
-    private static final String ILLEGAL_CHARACTERS = "\\|/|:|\\*|\\?|<|>|\\|";
+    private static final String ILLEGAL_CHARACTERS = "\\\\|/|:|\\*|\\?|<|>|\\|";
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(FileNameFormatter.class);
 
     /**
      * Constructs an {@link FileNameFormatter}.
@@ -70,7 +77,7 @@ public class FileNameFormatter {
      * @param name     the original file name. The base name of this is passed to the expression in the {@code $file}
      *                 variable
      * @param object   the context object. If this an act, any related customer, patient, or supplier will be passed as
-     *                 the variables $customer, $patient, and $supplier respectively.
+     *                 the variables $customer, $patient, and $supplier respectively. May be {@code null}
      * @param template the document template
      * @return the formatted name, or the base name of {@code name} if the template doesn't specify a format or
      *         generation fails
@@ -81,8 +88,7 @@ public class FileNameFormatter {
         String expression = template.getFileNameExpression();
         if (!StringUtils.isEmpty(expression)) {
             JXPathContext context = JXPathHelper.newContext(object != null ? object : new Object());
-            FileNameVariables variables = new FileNameVariables(archetypeService,
-                                                                lookups);
+            FileNameVariables variables = new FileNameVariables(archetypeService, lookups);
             context.setVariables(variables);
             Party patient = null;
             Party customer = null;
@@ -112,6 +118,7 @@ public class FileNameFormatter {
                 Object value = context.getValue(expression);
                 result = (value != null) ? clean(value.toString()) : file;
             } catch (Throwable exception) {
+                log.error("Failed to evaluate expression: " + expression, exception);
                 result = file;
             }
         } else {
@@ -162,8 +169,7 @@ public class FileNameFormatter {
         }
 
         /**
-         * Defines a new variable with the specified value or modifies
-         * the value of an existing variable.
+         * Defines a new variable with the specified value or modifies the value of an existing variable.
          * May throw UnsupportedOperationException.
          *
          * @param varName variable name

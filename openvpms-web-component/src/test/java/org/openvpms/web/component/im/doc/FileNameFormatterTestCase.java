@@ -17,10 +17,17 @@
 package org.openvpms.web.component.im.doc;
 
 import org.junit.Test;
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
+import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.test.AbstractAppTest;
 
@@ -34,13 +41,101 @@ import static org.junit.Assert.assertNull;
  */
 public class FileNameFormatterTestCase extends AbstractAppTest {
 
+    /**
+     * Tests formatting when there is no context object.
+     */
     @Test
-    public void testFileNameFormatter() {
-        DocumentTemplate template1 = createTemplate("$file");
+    public void testSimpleFormat() {
+        DocumentTemplate template = createTemplate("$file");
         FileNameFormatter formatter = new FileNameFormatter();
-        assertEquals("foo", formatter.format("foo.txt", null, template1));
+        assertEquals("foo", formatter.format("foo.txt", null, template));
     }
 
+    /**
+     * Tests formatting when the format uses a customer.
+     */
+    @Test
+    public void testCustomerFormat() {
+        DocumentTemplate template = createTemplate("concat($file, ' - ', party:getPartyFullName($customer))");
+        Party customer = TestHelper.createCustomer("Foo", "Bar", true);
+        FileNameFormatter formatter = new FileNameFormatter();
+        Act act = (Act) create(CustomerArchetypes.DOCUMENT_LETTER);
+        ActBean bean = new ActBean(act);
+        bean.setNodeParticipant("customer", customer);
+        assertEquals("Statement - Mr Foo Bar", formatter.format("Statement.pdf", act, template));
+    }
+
+    /**
+     * Tests formatting when the format uses a patient.
+     */
+    @Test
+    public void testPatientFormat() {
+        DocumentTemplate template = createTemplate("concat($file, ' - ', $patient.name)");
+        Party patient = TestHelper.createPatient();
+        patient.setName("Fido");
+        save(patient);
+        FileNameFormatter formatter = new FileNameFormatter();
+        Act act = (Act) create(PatientArchetypes.DOCUMENT_LETTER);
+        ActBean bean = new ActBean(act);
+        bean.setNodeParticipant("patient", patient);
+        assertEquals("Referral - Fido", formatter.format("Referral.pdf", act, template));
+    }
+
+    /**
+     * Tests formatting when the format uses a customer and patient.
+     */
+    @Test
+    public void testCustomerPatientFormat() {
+        DocumentTemplate template = createTemplate("concat($file, ' - ', $patient.name, ' ', $customer.lastName)");
+        Party customer = TestHelper.createCustomer("Foo", "Bar", true);
+        Party patient = TestHelper.createPatient(customer);
+        patient.setName("Fido");
+        save(patient);
+        FileNameFormatter formatter = new FileNameFormatter();
+        Act act = (Act) create(PatientArchetypes.DOCUMENT_LETTER);
+        ActBean bean = new ActBean(act);
+        bean.setNodeParticipant("patient", patient);
+        assertEquals("Referral - Fido Bar", formatter.format("Referral.pdf", act, template));
+    }
+
+    /**
+     * Tests formatting when the format uses a supplier.
+     */
+    @Test
+    public void testSupplierFormat() {
+        DocumentTemplate template = createTemplate("concat($supplier.name, ' ', $file)");
+        Party supplier = (Party) create(SupplierArchetypes.SUPPLIER_VET_PRACTICE);
+        supplier.setName("Eastside");
+        save(supplier);
+        FileNameFormatter formatter = new FileNameFormatter();
+        Act act = (Act) create(SupplierArchetypes.DOCUMENT_LETTER);
+        ActBean bean = new ActBean(act);
+        bean.setNodeParticipant("supplier", supplier);
+        assertEquals("Eastside Referral", formatter.format("Referral.pdf", act, template));
+    }
+
+    /**
+     * Verifies that illegal characters are replaced with underscores.
+     */
+    @Test
+    public void testIllegalCharacters() {
+        DocumentTemplate template = createTemplate("concat($file, ' - ', $patient.name)");
+        Party patient = TestHelper.createPatient();
+        patient.setName("\\/:*?<>|");
+        save(patient);
+        FileNameFormatter formatter = new FileNameFormatter();
+        Act act = (Act) create(PatientArchetypes.DOCUMENT_LETTER);
+        ActBean bean = new ActBean(act);
+        bean.setNodeParticipant("patient", patient);
+        assertEquals("Referral - ________", formatter.format("Referral.pdf", act, template));
+    }
+
+    /**
+     * Creates a document template.
+     *
+     * @param expression the file name formatter expression.
+     * @return a new template
+     */
     private DocumentTemplate createTemplate(String expression) {
         Entity entity = (Entity) create(DocumentArchetypes.DOCUMENT_TEMPLATE);
         Lookup lookup = (Lookup) create(DocumentArchetypes.FILE_NAME_FORMAT);
