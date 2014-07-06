@@ -162,16 +162,24 @@
           description="Valid for patient documents only"
           expression="concat($file, ' - ', $patient.name, ' ', $customer.lastName, ' - ', date:format(openvpms:get(.,'startTime'), 'd MMM yyyy'))"/>
     <data archetype="lookup.fileNameFormat" code="DOC_NAME_PATIENT_FULL_NAME_TODAYS_DATE"
-          name="Document name - Patient full name - today's date"
+          name="Document name - patient full name - today's date"
           description="Valid for patient documents only"
           expression="concat($file, ' - ', $patient.name, ' ', $customer.lastName, ' - ', date:format(java.util.Date.new(), 'd MMM yyyy'))"/>
     <data archetype="lookup.fileNameFormat" code="DOC_NAME_CUSTOMER_FULL_NAME_DOC_DATE"
           name="Document name - customer full name - document date"
           description="Valid for customer documents only"
-          expression="concat($file, ' - ', party:getFullName($customer), ' - ', date:format(openvpms:get(.,'startTime'), 'd MMM yyyy'))"/>
+          expression="concat($file, ' - ', party:getPartyFullName($customer), ' - ', date:format(openvpms:get(.,'startTime'), 'd MMM yyyy'))"/>
     <data archetype="lookup.fileNameFormat" code="DOC_NAME_CUSTOMER_FULL_NAME_TODAYS_DATE"
           name="Document name - customer full name - today's date"
           description="Valid for customer documents only"
-          expression="concat($file, ' - ', party:getFullName($customer), ' - ', date:format(java.util.Date.new(), 'd MMM yyyy'))"/>
+          expression="concat($file, ' - ', party:getPartyFullName($customer), ' - ', date:format(java.util.Date.new(), 'd MMM yyyy'))"/>
+    <data archetype="lookup.fileNameFormat" code="DOC_NAME_SUPPLIER_FULL_NAME_DOC_DATE"
+          name="Document name - supplier full name - document date"
+          description="Valid for supplier documents only"
+          expression="concat($file, ' - ', party:getPartyFullName($supplier), ' - ', date:format(openvpms:get(.,'startTime'), 'd MMM yyyy'))"/>
+    <data archetype="lookup.fileNameFormat" code="DOC_NAME_SUPPLIER_FULL_NAME_TODAYS_DATE"
+          name="Document name - supplier full name - today's date"
+          description="Valid for supplier documents only"
+          expression="concat($file, ' - ', party:getPartyFullName($supplier), ' - ', date:format(java.util.Date.new(), 'd MMM yyyy'))"/>
 
 </archetype>
