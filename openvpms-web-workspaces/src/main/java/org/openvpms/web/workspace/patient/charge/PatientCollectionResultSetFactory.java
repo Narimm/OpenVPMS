@@ -20,7 +20,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.edit.AbstractCollectionResultSetFactory;
+import org.openvpms.web.component.im.edit.ActCollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectTableCollectionEditor;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class PatientCollectionResultSetFactory extends AbstractCollectionResultSetFactory {
+public class PatientCollectionResultSetFactory extends ActCollectionResultSetFactory {
 
     /**
      * The context.
