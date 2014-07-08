@@ -5943,4 +5943,114 @@
         <data collection="classifications" archetype="lookup.productGroup" childId="id:ANAESTHETIC"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P864" source="id:Medications"/>
+
+    <data id="P900" archetype="product.medication" name="Fel-O-Vax 3">
+        <data collection="prices" archetype="productPrice.unitPrice" cost="09.00" price="15.40"/>
+    </data>
+    <data id="P901" archetype="product.medication" name="Fel-O-Vax 4">
+        <data collection="prices" archetype="productPrice.unitPrice" cost="10.00" price="16.90"/>
+    </data>
+    <data id="P902" archetype="product.medication" name="Fel-O-Vax 5">
+        <data collection="prices" archetype="productPrice.unitPrice" cost="12.00" price="23.85"/>
+    </data>
+    <data id="P903" archetype="product.medication" name="Fel-O-Vax FIV">
+
+    </data>
+    <data id="P904" archetype="product.medication" name="Fel-O-Vax LvK">
+
+    </data>
+    <data id="P905" archetype="product.medication" name="Ingelvac CircoFLEX">
+
+    </data>
+    <data id="P906" archetype="product.medication" name="Sputolysin">
+
+    </data>
+
+    <data id="MAN1" archetype="party.supplierManufacturer" name="Boehringer Ingleheim"/>
+    <data id="BATCH1" archetype="entity.productBatch" name="1234567890">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="23/01/2015" source="id:BATCH1"
+              target="id:P900"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH1" target="id:MAN1"/>
+    </data>
+    <data id="BATCH2" archetype="entity.productBatch" name="1234567891">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="12/02/2015" source="id:BATCH2"
+              target="id:P900"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH2" target="id:MAN1"/>
+    </data>
+    <data id="BATCH3" archetype="entity.productBatch" name="1234567892">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="04/03/2015" source="id:BATCH3"
+              target="id:P900"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH3" target="id:MAN1"/>
+    </data>
+    <data id="BATCH4" archetype="entity.productBatch" name="1234567893">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="17/04/2015" source="id:BATCH4"
+              target="id:P900"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH4" target="id:MAN1"/>
+    </data>
+    <data id="BATCH5" archetype="entity.productBatch" name="1234567894">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="13/05/2015" source="id:BATCH5"
+              target="id:P900"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH5" target="id:MAN1"/>
+    </data>
+    <data id="BATCH6" archetype="entity.productBatch" name="1234567895">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="14/06/2015" source="id:BATCH6"
+              target="id:P900"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH6" target="id:MAN1"/>
+    </data>
+    <data id="BATCH7" archetype="entity.productBatch" name="1234567896">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="16/07/2015" source="id:BATCH7"
+              target="id:P901"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH7" target="id:MAN1"/>
+    </data>
+    <data id="BATCH8" archetype="entity.productBatch" name="1234567897">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="03/08/2015" source="id:BATCH8"
+              target="id:P901"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH8" target="id:MAN1"/>
+    </data>
+    <data id="BATCH9" archetype="entity.productBatch" name="2234567890">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="23/01/2015" source="id:BATCH9"
+              target="id:P902"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH9" target="id:MAN1"/>
+    </data>
+    <data id="BATCH10" archetype="entity.productBatch" name="2234567891">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="12/02/2015" source="id:BATCH10"
+              target="id:P902"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH10" target="id:MAN1"/>
+    </data>
+    <data id="BATCH11" archetype="entity.productBatch" name="2234567892">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="04/03/2015" source="id:BATCH11"
+              target="id:P903"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH11" target="id:MAN1"/>
+    </data>
+    <data id="BATCH12" archetype="entity.productBatch" name="2234567893">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="17/04/2015" source="id:BATCH12"
+              target="id:P903"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH12" target="id:MAN1"/>
+    </data>
+    <data id="BATCH13" archetype="entity.productBatch" name="2234567894">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="13/05/2015" source="id:BATCH13"
+              target="id:P904"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH13" target="id:MAN1"/>
+    </data>
+    <data id="BATCH14" archetype="entity.productBatch" name="2234567895">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="14/06/2015" source="id:BATCH14"
+              target="id:P905"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH14" target="id:MAN1"/>
+    </data>
+    <data id="BATCH15" archetype="entity.productBatch" name="2234567896">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="16/07/2015" source="id:BATCH15"
+              target="id:P905"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH15" target="id:MAN1"/>
+    </data>
+    <data id="BATCH16" archetype="entity.productBatch" name="2234567897">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="03/08/2015" source="id:BATCH16"
+              target="id:P905"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH16" target="id:MAN1"/>
+    </data>
+    <data id="BATCH17" archetype="entity.productBatch" name="2234567898">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="03/08/2015" source="id:BATCH17"
+              target="id:P906"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH17" target="id:MAN1"/>
+    </data>
+
 </archetype>

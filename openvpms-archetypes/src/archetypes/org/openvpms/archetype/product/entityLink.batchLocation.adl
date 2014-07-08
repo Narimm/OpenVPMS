@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="entityLink.batchLocation.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.common.EntityLink"
@@ -20,8 +21,9 @@
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
               derivedValue="'Batch Stock Location'"/>
-        <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
-              derivedValue="/name"/>
+        <node name="description" type="java.lang.String"
+              path="/description" hidden="true" derived="true"
+              derivedValue="concat(/name, ' (', date:formatDate(/activeStartTime), ' - ', date:formatDate(/activeEndTime), ')')"/>
         <node name="source" displayName="Batch" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference"
               minCardinality="1">
@@ -44,5 +46,9 @@
                 </propertyList>
             </assertion>
         </node>
+        <node displayName="From Date" name="activeStartTime" path="/activeStartTime" type="java.util.Date"
+              minCardinality="1" defaultValue="java.util.Date.new()"/>
+        <node displayName="To Date" name="activeEndTime" path="/activeEndTime"
+              type="java.util.Date" minCardinality="0"/>
     </archetype>
 </archetypes>

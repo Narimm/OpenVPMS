@@ -26,7 +26,8 @@
         <node name="product" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
               minCardinality="1" maxCardinality="1" filter="entityLink.batchProduct"/>
         <node name="manufacturer" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
-              minCardinality="0" maxCardinality="1"
-              filter="entityLink.batchManufacturer"/>
+              minCardinality="0" maxCardinality="1" filter="entityLink.batchManufacturer"/>
+        <node name="stockLocations" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="0" maxCardinality="*" filter="entityLink.batchLocation"/>
     </archetype>
 </archetypes>
