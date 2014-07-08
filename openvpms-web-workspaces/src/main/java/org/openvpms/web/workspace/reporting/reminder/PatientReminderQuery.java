@@ -123,7 +123,7 @@ public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
 
         container.add(reminderTypeRow);
 
-        dateRange = new DateRange(getFocusGroup(), false);
+        dateRange = new DateRange(false);
         container.add(dateRange.getComponent());
 
         // default dueFrom to the 1st of next month

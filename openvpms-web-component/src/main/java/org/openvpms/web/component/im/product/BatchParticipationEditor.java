@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.product;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
@@ -56,6 +57,15 @@ public class BatchParticipationEditor extends ParticipationEditor<Entity> {
     }
 
     /**
+     * Sets the stock location.
+     *
+     * @param stockLocation the stock location. May be {@code null}
+     */
+    public void setStockLocation(IMObjectReference stockLocation) {
+        getEntityEditor().setStockLocation(stockLocation);
+    }
+
+    /**
      * Creates a new object reference editor.
      *
      * @param property the reference property
@@ -77,4 +87,5 @@ public class BatchParticipationEditor extends ParticipationEditor<Entity> {
     protected BatchReferenceEditor getEntityEditor() {
         return (BatchReferenceEditor) super.getEntityEditor();
     }
+
 }

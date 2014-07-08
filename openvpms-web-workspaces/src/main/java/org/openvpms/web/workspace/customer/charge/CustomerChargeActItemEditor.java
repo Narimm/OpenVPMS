@@ -303,7 +303,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         batchListener = new ModifiableListener() {
             @Override
             public void modified(Modifiable modifiable) {
-                updateMedicationBatch();
+                updateMedicationBatch(getStockLocationRef());
             }
         };
     }
@@ -406,6 +406,15 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     public List<Act> getReminders() {
         return (reminders != null) ? reminders.getCurrentActs() : Collections.<Act>emptyList();
+    }
+
+    /**
+     * Returns a reference to the stock location.
+     *
+     * @return the stock location reference, or {@code null} if there is none
+     */
+    public IMObjectReference getStockLocationRef() {
+        return getParticipantRef("stockLocation");
     }
 
     /**
@@ -529,7 +538,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 }
             });
         }
-        updateBatch(getProduct());
+        updateBatch(getProduct(), getStockLocationRef());
     }
 
     /**
@@ -588,9 +597,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 unitPrice.setValue(BigDecimal.ZERO);
                 unitCost.setValue(BigDecimal.ZERO);
             }
-            updateStockLocation(product);
+            IMObjectReference stockLocation = updateStockLocation(product);
             updateSellingUnits(product);
-            updateBatch(product);
+            updateBatch(product, stockLocation);
         }
         notifyProductListener(product);
     }
@@ -910,15 +919,17 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Updates the batch.
      *
-     * @param product the product. May be {@code null}
+     * @param product       the product. May be {@code null}
+     * @param stockLocation the stock location. May be {@code null}
      */
-    private void updateBatch(Product product) {
+    private void updateBatch(Product product, IMObjectReference stockLocation) {
         BatchParticipationEditor batchEditor = getBatchEditor();
         if (batchEditor != null) {
             try {
                 batchEditor.removeModifiableListener(batchListener);
+                batchEditor.setStockLocation(stockLocation);
                 batchEditor.setProduct(product);
-                updateMedicationBatch();
+                updateMedicationBatch(stockLocation);
             } finally {
                 batchEditor.addModifiableListener(batchListener);
             }
@@ -1051,14 +1062,17 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Updates the medication batch from the invoice.
+     *
+     * @param stockLocation the stock location. May be {@code null}
      */
-    private void updateMedicationBatch() {
+    private void updateMedicationBatch(IMObjectReference stockLocation) {
         BatchParticipationEditor batchEditor = getBatchEditor();
         if (batchEditor != null && dispensing != null) {
             dispensing.removeModifiableListener(dispensingListener);
             try {
                 for (PatientMedicationActEditor editor : getMedicationActEditors()) {
                     editor.setBatch(batchEditor.getEntity());
+                    editor.setStockLocation(stockLocation);
                 }
                 dispensing.refresh();
             } finally {
@@ -1215,8 +1229,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Updates the stock location associated with the product.
      *
      * @param product the new product
+     * @return the stock location. May be {@code null}
      */
-    private void updateStockLocation(Product product) {
+    private IMObjectReference updateStockLocation(Product product) {
         Party stockLocation = null;
         if (TypeHelper.isA(product, MEDICATION, MERCHANDISE)) {
             Act parent = (Act) getParent();
@@ -1234,6 +1249,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         } else {
             bean.removeParticipation(STOCK_LOCATION_PARTICIPATION);
         }
+        return stockLocation != null ? stockLocation.getObjectReference() : null;
     }
 
     /**

@@ -81,6 +81,11 @@ class BatchReferenceEditor extends AbstractPropertyEditor implements IMObjectRef
     private Product product;
 
     /**
+     * The stock location.
+     */
+    private IMObjectReference stockLocation;
+
+    /**
      * The current batch.
      */
     private Entity batch;
@@ -135,22 +140,6 @@ class BatchReferenceEditor extends AbstractPropertyEditor implements IMObjectRef
             }
         };
         updateText();
-    }
-
-    /**
-     * Updates the field with the current batch.
-     */
-    private void updateText() {
-        try {
-            input.removeModifiableListener(listener);
-            if (batch != null) {
-                input.setValue(batch.getName());
-            } else {
-                input.setValue(null);
-            }
-        } finally {
-            input.addModifiableListener(listener);
-        }
     }
 
     /**
@@ -244,6 +233,15 @@ class BatchReferenceEditor extends AbstractPropertyEditor implements IMObjectRef
     }
 
     /**
+     * Sets the stock location, used to constrain batch searches.
+     *
+     * @param stockLocation the stock location. May be {@code null}
+     */
+    public void setStockLocation(IMObjectReference stockLocation) {
+        this.stockLocation = stockLocation;
+    }
+
+    /**
      * Validates the object.
      *
      * @param validator the validator
@@ -256,6 +254,11 @@ class BatchReferenceEditor extends AbstractPropertyEditor implements IMObjectRef
 
     /**
      * Determines if the reference is valid.
+     * <p/>
+     * This ensures that if a batch and product exists, there is a relationship between them.
+     * <p/>
+     * It could also verify that there is a relationship between batch and stock location, but this is less critical
+     * and may interfere with how users manage batches (i.e. delete stock location relationship rather than deactivate).
      *
      * @param validator the validator
      * @return {@code true} if the reference is valid, otherwise {@code false}
@@ -290,6 +293,22 @@ class BatchReferenceEditor extends AbstractPropertyEditor implements IMObjectRef
     }
 
     /**
+     * Updates the field with the current batch.
+     */
+    private void updateText() {
+        try {
+            input.removeModifiableListener(listener);
+            if (batch != null) {
+                input.setValue(batch.getName());
+            } else {
+                input.setValue(null);
+            }
+        } finally {
+            input.addModifiableListener(listener);
+        }
+    }
+
+    /**
      * Updates the product batches.
      * <p/>
      * If there are multiple batches associated with the product, renders a drop down containing them beside the text
@@ -312,7 +331,7 @@ class BatchReferenceEditor extends AbstractPropertyEditor implements IMObjectRef
             } else if (batchNumber != null && !batchNumber.endsWith("*")) {
                 batchNumber = batchNumber + "*";
             }
-            ProductBatchResultSet set = new ProductBatchResultSet(batchNumber, product, expiryDate, 5);
+            ProductBatchResultSet set = new ProductBatchResultSet(batchNumber, product, expiryDate, stockLocation, 5);
             if (set.hasNext()) {
                 IPage<Entity> next = set.next();
                 List<Entity> results = next.getResults();
@@ -326,7 +345,7 @@ class BatchReferenceEditor extends AbstractPropertyEditor implements IMObjectRef
                 }
             } else if (!StringUtils.isEmpty(batchNumber)) {
                 // no match on the input batch number, so create a dropdown of all batches for the product and expiry
-                set = new ProductBatchResultSet(null, product, expiryDate, 5);
+                set = new ProductBatchResultSet(null, product, expiryDate, stockLocation, 5);
                 if (set.hasNext()) {
                     table = createTable(set);
                 }

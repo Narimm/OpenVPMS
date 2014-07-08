@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -120,21 +121,23 @@ public class PatientMedicationActEditor extends PatientActEditor {
             }
         };
 
+        boolean updated = false;
         if (parent != null) {
             ActBean bean = new ActBean(parent);
             if (bean.hasNode("product")) {
                 // update the product from the parent
                 Product product = (Product) getObject(bean.getNodeParticipantRef("product"));
                 if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
-                    setProduct(product);
+                    updated = setProduct(product);
                     if (bean.hasNode("quantity")) {
                         setQuantity(bean.getBigDecimal("quantity"));
                     }
                 } else {
-                    setProduct(null);
+                    updated = setProduct(null);
                 }
             }
-        } else {
+        }
+        if (!updated) {
             Product product = getProduct();
             updateDispensingUnits(product);
             updateUsageNotes(product);
@@ -145,13 +148,16 @@ public class PatientMedicationActEditor extends PatientActEditor {
      * Updates the product.
      *
      * @param product the product. May be {@code null}
+     * @return {@code true} if the product was modified
      */
-    public void setProduct(Product product) {
-        if (setParticipant("product", product)) {
+    public boolean setProduct(Product product) {
+        boolean result = setParticipant("product", product);
+        if (result) {
             if (getProductEditor() == null) {
                 productModified(product); // only invoke if the product participation changed
             }
         }
+        return result;
     }
 
     /**
@@ -211,6 +217,17 @@ public class PatientMedicationActEditor extends PatientActEditor {
         label.setValue(instructions);
     }
 
+    /**
+     * Sets the stock location, used to constrain batch searches.
+     *
+     * @param stockLocation the stock location. May be {@code null}
+     */
+    public void setStockLocation(IMObjectReference stockLocation) {
+        BatchParticipationEditor batchEditor = getBatchEditor();
+        if (batchEditor != null) {
+            batchEditor.setStockLocation(stockLocation);
+        }
+    }
 
     /**
      * Sets the batch.

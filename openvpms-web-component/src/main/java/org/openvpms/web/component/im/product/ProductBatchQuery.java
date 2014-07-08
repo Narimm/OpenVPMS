@@ -19,22 +19,33 @@ package org.openvpms.web.component.im.product;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.layout.GridLayoutData;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.stock.StockArchetypes;
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.AbstractEntityQuery;
 import org.openvpms.web.component.im.query.DateRange;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.select.AbstractIMObjectSelectorListener;
+import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.TextComponentFactory;
 import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.echo.text.TextField;
+import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.Date;
 
@@ -61,27 +72,43 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
     private DateRange expiryDate;
 
     /**
-     * The manufacturer filter.
+     * The stock location selector.
      */
-    private TextField manufacturer;
+    private IMObjectSelector<Party> stockLocation;
+
+    /**
+     * The manufacturer selector.
+     */
+    private IMObjectSelector<Party> manufacturer;
+
+    /**
+     * The short names to query.
+     */
+    private static final String[] SHORT_NAMES = new String[]{ProductArchetypes.PRODUCT_BATCH};
 
     /**
      * Constructs a {@link ProductBatchQuery}.
      *
+     * @param context the layout context
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
-    public ProductBatchQuery() {
-        this(new String[]{ProductArchetypes.PRODUCT_BATCH});
-    }
+    public ProductBatchQuery(LayoutContext context) {
+        super(SHORT_NAMES);
+        stockLocation = new IMObjectSelector<Party>(Messages.get("product.stockLocation"),
+                                                    new DefaultLayoutContext(context, context.getHelpContext()),
+                                                    StockArchetypes.STOCK_LOCATION);
+        stockLocation.setObject(context.getContext().getStockLocation());
+        manufacturer = new IMObjectSelector<Party>(Messages.get("product.batch.manufacturer"),
+                                                   new DefaultLayoutContext(context, context.getHelpContext()),
+                                                   SupplierArchetypes.MANUFACTURER);
 
-    /**
-     * Constructs a {@link ProductBatchQuery}.
-     *
-     * @param shortNames the short names
-     * @throws ArchetypeQueryException if the short names don't match any archetypes
-     */
-    public ProductBatchQuery(String[] shortNames) {
-        super(shortNames);
+        AbstractIMObjectSelectorListener<Party> listener = new AbstractIMObjectSelectorListener<Party>() {
+            public void selected(Party object) {
+                onQuery();
+            }
+        };
+        stockLocation.setListener(listener);
+        manufacturer.setListener(listener);
     }
 
     /**
@@ -112,24 +139,6 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
     }
 
     /**
-     * Sets the manufacturer name.
-     *
-     * @param manufacturer the manufacturer name. May be {@code null}
-     */
-    public void setManufacturer(String manufacturer) {
-        getManufacturerField().setText(manufacturer);
-    }
-
-    /**
-     * Returns the manufacturer name.
-     *
-     * @return the manufacturer name. May be {@code null}
-     */
-    public String getManufacturer() {
-        return getManufacturerField().getText();
-    }
-
-    /**
      * Sets the date that products must expire on or after.
      *
      * @param date the expiry date
@@ -139,22 +148,32 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
     }
 
     /**
+     * Creates a container component to lay out the query component in.
+     *
+     * @return a new container
+     */
+    @Override
+    protected Component createContainer() {
+        return GridFactory.create(6);
+    }
+
+    /**
      * Lays out the component in a container, and sets focus on the search field.
      *
      * @param container the container
      */
     protected void doLayout(Component container) {
-        addShortNameSelector(container);
         addSearchField(container);
+        addExpiryDate(container);
         if (product == null) {
             addProductName(container);
         }
-        addExpiryDate(container);
-        addManufacturer(container);
+        addStockLocation(container);
         addActive(container);
-        FocusHelper.setFocus(getSearchField());
+        addManufacturer(container);
         getExpiryDate().setFrom(DateRules.getToday());
         getExpiryDate().setTo(null);
+        FocusHelper.setFocus(getSearchField());
     }
 
     /**
@@ -175,31 +194,13 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
     }
 
     /**
-     * Returns the manufacturer field.
-     *
-     * @return the manufacturer field
-     */
-    protected TextField getManufacturerField() {
-        if (manufacturer == null) {
-            manufacturer = TextComponentFactory.create();
-            manufacturer.addActionListener(new ActionListener() {
-                @Override
-                public void onAction(ActionEvent event) {
-                    onQuery();
-                }
-            });
-        }
-        return manufacturer;
-    }
-
-    /**
      * Returns the expiry date range.
      *
      * @return the expiry date range
      */
     protected DateRange getExpiryDate() {
         if (expiryDate == null) {
-            expiryDate = new DateRange(getFocusGroup(), false) {
+            expiryDate = new DateRange(false) {
                 @Override
                 protected ComponentState createFromDate(Property from) {
                     ComponentState fromDate = super.createFromDate(from);
@@ -232,16 +233,21 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
     }
 
     /**
+     * Adds the stock location field to a container.
+     *
+     * @param container the container
+     */
+    protected void addStockLocation(Component container) {
+        addSelector(stockLocation, container);
+    }
+
+    /**
      * Adds the manufacturer field to a container.
      *
      * @param container the container
      */
     protected void addManufacturer(Component container) {
-        Label label = LabelFactory.create("product.batch.manufacturer");
-        container.add(label);
-        TextField field = getManufacturerField();
-        container.add(field);
-        getFocusGroup().add(field);
+        addSelector(manufacturer, container);
     }
 
     /**
@@ -250,7 +256,9 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
      * @param container the container
      */
     protected void addExpiryDate(Component container) {
-        container.add(getExpiryDate().getComponent());
+        DateRange dateRange = getExpiryDate();
+        dateRange.setContainer(container);
+        getFocusGroup().add(dateRange.getFocusGroup());
     }
 
 
@@ -263,11 +271,35 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
     @Override
     protected ResultSet<Entity> createResultSet(SortConstraint[] sort) {
         String productName = getWildcardedText(getProductField());
-        String manufacturer = getWildcardedText(getManufacturerField());
         Date from = getExpiryDate().getFrom();
         Date to = getExpiryDate().getTo();
-        return new ProductBatchResultSet(getArchetypeConstraint(), getValue(), product, productName, from, to,
-                                         manufacturer, sort, getMaxResults());
+        IMObjectReference location = stockLocation.getObject() != null
+                                     ? stockLocation.getObject().getObjectReference() : null;
+        return new ProductBatchResultSet(getArchetypeConstraint(), getValue(), product, productName,
+                                         from, to, location, null, manufacturer.getObject(), sort,
+                                         getMaxResults());
+    }
+
+    /**
+     * Adds a selector field.
+     * <p/>
+     * This spans 4 columns to reduce the overall width of the display.
+     *
+     * @param selector  the selector
+     * @param container the container
+     */
+    private void addSelector(IMObjectSelector<Party> selector, Component container) {
+        Label label = LabelFactory.create();
+        label.setText(selector.getType());
+        container.add(label);
+        Component component = selector.getComponent();
+        container.add(component);
+        GridLayoutData layoutData = new GridLayoutData();
+        layoutData.setColumnSpan(3);
+        component.setLayoutData(layoutData);
+
+        selector.getSelect().setFocusTraversalParticipant(false);
+        getFocusGroup().add(selector.getFocusGroup());
     }
 
 }
