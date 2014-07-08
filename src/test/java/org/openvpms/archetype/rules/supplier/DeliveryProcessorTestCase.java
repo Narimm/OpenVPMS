@@ -1,40 +1,48 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductSupplier;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -43,6 +51,21 @@ import static org.junit.Assert.assertNull;
  * @author Tim Anderson
  */
 public class DeliveryProcessorTestCase extends AbstractSupplierTest {
+
+    /**
+     * The product rules.
+     */
+    private ProductRules rules;
+
+    /**
+     * Sets up the test case.
+     */
+    @Override
+    @Before
+    public void setUp() {
+        super.setUp();
+        rules = new ProductRules(getArchetypeService());
+    }
 
     /**
      * Tests the {@link DeliveryProcessor} when invoked via the <em>archetypeService.save.act.supplierDelivery</em> and
@@ -349,8 +372,72 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
         checkPrice(product, new BigDecimal("0.80"), new BigDecimal("1.60"));
     }
 
-    private void checkPrice(Product product, BigDecimal cost,
-                            BigDecimal price) {
+    /**
+     * Verifies that batches are created when a delivery is finalised.
+     */
+    @Test
+    public void testBatchCreation() {
+        Party manufacturer = (Party) create(SupplierArchetypes.MANUFACTURER);
+        manufacturer.setName("Z Manufacturer");
+        save(manufacturer);
+
+        // create a new delivery associated with the order item
+        FinancialAct item1 = createDeliveryItem("batch1", null, null);
+        Date expiry2 = TestHelper.getDate("2015-01-01");
+        Date expiry3 = TestHelper.getDate("2015-06-01");
+        Date expiry4 = TestHelper.getDate("2016-01-01");
+        FinancialAct item2 = createDeliveryItem(null, expiry2, null);
+        FinancialAct item3 = createDeliveryItem("batch3", expiry3, manufacturer);
+        FinancialAct item4 = createDeliveryItem("batch4", expiry4, manufacturer);
+
+        Entity batch4 = rules.createBatch(getProduct(), "batch4", expiry4, manufacturer);
+        save(batch4);
+
+        FinancialAct delivery1 = createDelivery(item1, item2, item3, item4);
+        delivery1.setStatus(ActStatus.POSTED);
+        save(delivery1);
+        checkBatch("batch1", null, null);
+        checkBatch(null, expiry2, null);
+        checkBatch("batch3", expiry3, manufacturer);
+        Entity actual = checkBatch("batch4", expiry4, manufacturer); // should be updated with the stock location
+        assertEquals(batch4, actual);
+    }
+
+    /**
+     * Verifies a batch exists with the specified attributes.
+     *
+     * @param batchNumber  the batch number. May be {@code null}
+     * @param expiryDate   the batch expiry date. May be {@code null}
+     * @param manufacturer the batch manufacturer. May be {@code null}
+     * @return the batch
+     */
+    private Entity checkBatch(String batchNumber, Date expiryDate, Party manufacturer) {
+        List<Entity> batches = rules.getBatches(getProduct(), batchNumber, expiryDate, manufacturer);
+        assertEquals(1, batches.size());
+        EntityBean bean = new EntityBean(batches.get(0));
+        if (batchNumber != null) {
+            assertEquals(batchNumber, bean.getString("name"));
+        } else {
+            assertEquals(getProduct().getName(), bean.getString("name"));
+        }
+        assertEquals(manufacturer, bean.getNodeTargetObject("manufacturer"));
+
+        List<EntityLink> product = bean.getValues("product", EntityLink.class);
+        assertEquals(1, product.size());
+        IMObjectBean productBean = new IMObjectBean(product.get(0));
+        assertEquals(expiryDate, productBean.getDate("activeEndTime"));
+        assertTrue(bean.getNodeTargetEntityRefs("stockLocations").contains(getStockLocation().getObjectReference()));
+        return bean.getEntity();
+    }
+
+    /**
+     * Verifies a product has a single price with the expected cost and price.
+     *
+     * @param product the product
+     * @param cost    the expected cost
+     * @param price   the expected price
+     */
+    private void checkPrice(Product product, BigDecimal cost, BigDecimal price) {
         product = get(product); // reload product
         Set<ProductPrice> prices = product.getProductPrices();
         assertEquals(1, prices.size());
@@ -441,6 +528,26 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
         ProductSupplier ps = rules.createProductSupplier(product, supplier);
         ps.setPackageUnits(PACKAGE_UNITS);
         return ps;
+    }
+
+    /**
+     * Creates a delivery item with batch details.
+     *
+     * @param batchNumber  the batch number. May be {@code null}
+     * @param expiryDate   the expiry date. May be {@code null}
+     * @param manufacturer the manufacturer. May be {@code null}
+     * @return a new delivery item
+     */
+    protected FinancialAct createDeliveryItem(String batchNumber, Date expiryDate, Party manufacturer) {
+        FinancialAct item = createItem(SupplierArchetypes.DELIVERY_ITEM, BigDecimal.ONE, 1, BigDecimal.TEN,
+                                       BigDecimal.ZERO);
+        ActBean bean = new ActBean(item);
+        bean.setValue("batchNumber", batchNumber);
+        bean.setValue("expiryDate", expiryDate);
+        if (manufacturer != null) {
+            bean.setNodeParticipant("manufacturer", manufacturer);
+        }
+        return item;
     }
 
 }
