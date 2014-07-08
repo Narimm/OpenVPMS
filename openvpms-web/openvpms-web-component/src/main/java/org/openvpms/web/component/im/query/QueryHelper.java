@@ -35,6 +35,12 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import static org.openvpms.component.system.common.query.Constraints.and;
+import static org.openvpms.component.system.common.query.Constraints.gte;
+import static org.openvpms.component.system.common.query.Constraints.isNull;
+import static org.openvpms.component.system.common.query.Constraints.lte;
+import static org.openvpms.component.system.common.query.Constraints.or;
+
 
 /**
  * Query helper.
@@ -149,8 +155,19 @@ public class QueryHelper {
      * @return a new constraint
      */
     public static IConstraint createDateRangeConstraint(Date date) {
-        return Constraints.and(Constraints.lte("startTime", date),
-                               Constraints.or(Constraints.gte("endTime", date), Constraints.isNull("endTime")));
+        return createDateRangeConstraint(date, "startTime", "endTime");
+    }
+
+    /**
+     * Helper to create a date range constraint on two nodes, where the end time may be null.
+     *
+     * @param date the date
+     * @param from the from node name
+     * @param to   the to node name
+     * @return a new constraint
+     */
+    public static IConstraint createDateRangeConstraint(Date date, String from, String to) {
+        return and(lte(from, date), or(gte(to, date), isNull(to)));
     }
 
     /**
@@ -164,9 +181,9 @@ public class QueryHelper {
     public static IConstraint createDateRangeConstraint(Date from, Date to) {
         IConstraint result;
         if (to != null) {
-            result = Constraints.or(createDateRangeConstraint(from), createDateRangeConstraint(to));
+            result = or(createDateRangeConstraint(from), createDateRangeConstraint(to));
         } else {
-            result = Constraints.or(Constraints.gte("startTime", from), createDateRangeConstraint(from));
+            result = or(gte("startTime", from), createDateRangeConstraint(from));
         }
         return result;
     }
@@ -197,14 +214,14 @@ public class QueryHelper {
             result = null;
         } else if (from != null && to == null) {
             from = DateRules.getDate(from);
-            result = Constraints.gte(node, from);
+            result = gte(node, from);
         } else if (from == null) {
             to = DateRules.getNextDate(to);
             result = Constraints.lt(node, to);
         } else {
             from = DateRules.getDate(from);
             to = DateRules.getNextDate(to);
-            result = Constraints.and(Constraints.gte(node, from), Constraints.lt(node, to));
+            result = and(gte(node, from), Constraints.lt(node, to));
         }
         return result;
     }

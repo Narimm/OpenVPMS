@@ -17,6 +17,7 @@
 package org.openvpms.web.component.im.query;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
@@ -470,8 +471,12 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
      */
     protected void addActive(Component container) {
         container.add(LabelFactory.create(ACTIVE_ID));
-        container.add(getActiveSelector());
-        focusGroup.add(activeSelector);
+        Component component = getActiveSelector();
+        focusGroup.add(component);
+        if (container instanceof Grid) {
+            component = RowFactory.create(component);  // force minimum width display
+        }
+        container.add(component);
     }
 
     /**

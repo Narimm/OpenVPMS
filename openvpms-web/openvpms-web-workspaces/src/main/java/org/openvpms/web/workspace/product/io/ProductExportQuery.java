@@ -340,14 +340,10 @@ public class ProductExportQuery extends ProductQuery {
      * @param container the container to add the range to
      */
     private void addDateRange(final Component container) {
-        range = new DateRange(getFocusGroup(), false) {
-            @Override
-            protected Component getContainer() {
-                return container;
-            }
-        };
-        range.getComponent();
+        range = new DateRange(false);
+        range.setContainer(container);
         range.setEnabled(prices == Prices.RANGE);
+        getFocusGroup().add(range.getFocusGroup());
     }
 
     /**

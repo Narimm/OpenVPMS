@@ -18,6 +18,9 @@ package org.openvpms.web.workspace.product.batch;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.product.ProductBatchQuery;
+import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.workspace.ResultSetCRUDWorkspace;
 
 /**
@@ -37,4 +40,13 @@ public class BatchWorkspace extends ResultSetCRUDWorkspace<Entity> {
         setArchetypes(Entity.class, "entity.productBatch");
     }
 
+    /**
+     * Creates a new query to populate the browser.
+     *
+     * @return a new query
+     */
+    @Override
+    protected Query<Entity> createQuery() {
+        return new ProductBatchQuery(new DefaultLayoutContext(getContext(), getHelpContext()));
+    }
 }

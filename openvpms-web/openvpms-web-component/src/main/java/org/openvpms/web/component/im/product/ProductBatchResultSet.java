@@ -20,6 +20,8 @@ import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
@@ -35,9 +37,15 @@ import org.openvpms.web.component.im.util.VirtualNodeSortConstraint;
 
 import java.util.Date;
 
+import static org.openvpms.component.system.common.query.Constraints.and;
 import static org.openvpms.component.system.common.query.Constraints.eq;
+import static org.openvpms.component.system.common.query.Constraints.idEq;
 import static org.openvpms.component.system.common.query.Constraints.isNull;
 import static org.openvpms.component.system.common.query.Constraints.join;
+import static org.openvpms.component.system.common.query.Constraints.leftJoin;
+import static org.openvpms.component.system.common.query.Constraints.notExists;
+import static org.openvpms.component.system.common.query.Constraints.or;
+import static org.openvpms.component.system.common.query.Constraints.subQuery;
 
 /**
  * An {@link ResultSet} for <em>entity.productBatch</em> entities.
@@ -45,8 +53,6 @@ import static org.openvpms.component.system.common.query.Constraints.join;
  * @author Tim Anderson
  */
 public class ProductBatchResultSet extends EntityResultSet<Entity> {
-
-    private static final String EXPIRY_DATE = "activeEndTime";
 
     /**
      * The product, used to filter on batches belonging to a single product. May be {@code null}
@@ -59,6 +65,16 @@ public class ProductBatchResultSet extends EntityResultSet<Entity> {
     private final String productName;
 
     /**
+     * The stock location to filter on. May be {@code null}.
+     */
+    private final IMObjectReference stockLocation;
+
+    /**
+     * The date the stock location must be active on. May be {@code null}
+     */
+    private final Date stockActive;
+
+    /**
      * The start of the expiry date range. If non-null, only includes those batches expiring after {@code from}.
      */
     private final Date from;
@@ -69,9 +85,14 @@ public class ProductBatchResultSet extends EntityResultSet<Entity> {
     private final Date to;
 
     /**
-     * Used to filter batches on associated manufacturer name. May be {@code null}.
+     * Used to filter batches by manufacturer name. May be {@code null}.
      */
-    private final String manufacturer;
+    private final Party manufacturer;
+
+    /**
+     * The expiry date node name.
+     */
+    private static final String EXPIRY_DATE = "activeEndTime";
 
     /**
      * Expiry date sort constraint. Sorts on ascending expiry date.
@@ -83,33 +104,42 @@ public class ProductBatchResultSet extends EntityResultSet<Entity> {
     /**
      * Constructs a {@link ProductBatchResultSet}.
      *
-     * @param value   the value to query on. May be {@code null}
-     * @param product the product to search on. May be {@code null}
-     * @param rows    the maximum no. of rows per page
+     * @param value         the value to query on. May be {@code null}
+     * @param product       the product to search on. May be {@code null}
+     * @param stockLocation the stock location to limit batches to. May be {@code null}
+     * @param rows          the maximum no. of rows per page
      */
-    public ProductBatchResultSet(String value, Product product, Date from, int rows) {
-        this(Constraints.shortName(ProductArchetypes.PRODUCT_BATCH), value, product, null, from, null, null,
-             EXPIRY_DATES, rows);
+    public ProductBatchResultSet(String value, Product product, Date from, IMObjectReference stockLocation,
+                                 int rows) {
+        this(Constraints.shortName(ProductArchetypes.PRODUCT_BATCH), value, product, null, from, null, stockLocation,
+             from, null, EXPIRY_DATES, rows);
     }
 
     /**
      * Constructs a {@link ProductBatchResultSet}.
      *
-     * @param archetypes   the archetypes to query
-     * @param value        the value to query on. May be {@code null}
-     * @param product      the product to search on. May be {@code null}
-     * @param productName  the product name to search on. May be {@code null}
-     * @param manufacturer the manufacturer to search on. May be {@code null}
-     * @param sort         the sort criteria. May be {@code null}
-     * @param rows         the maximum no. of rows per page
+     * @param archetypes    the archetypes to query
+     * @param value         the value to query on. May be {@code null}
+     * @param product       the product to search on. May be {@code null}
+     * @param productName   the product name to search on. May be {@code null}
+     * @param from          the expiry date start range. May be {@code null}
+     * @param to            the expiry date to range. May be {@code null}
+     * @param stockLocation the stock location to limit batches to. May be {@code null}
+     * @param stockActive   the date the stock location must be active on. May be {@code null}
+     * @param manufacturer  the manufacturer to search on. May be {@code null}
+     * @param sort          the sort criteria. May be {@code null}
+     * @param rows          the maximum no. of rows per page
      */
     public ProductBatchResultSet(ShortNameConstraint archetypes, String value, Product product, String productName,
-                                 Date from, Date to, String manufacturer, SortConstraint[] sort, int rows) {
+                                 Date from, Date to, IMObjectReference stockLocation, Date stockActive,
+                                 Party manufacturer, SortConstraint[] sort, int rows) {
         super(archetypes, value, false, null, sort, rows, true);
         this.product = product;
         this.productName = productName;
         this.from = DateRules.getDate(from);
         this.to = DateRules.getPreviousDate(to); // createDateConstraint() uses < to + 1
+        this.stockLocation = stockLocation;
+        this.stockActive = stockActive;
         this.manufacturer = manufacturer;
     }
 
@@ -121,6 +151,7 @@ public class ProductBatchResultSet extends EntityResultSet<Entity> {
     @Override
     protected ArchetypeQuery createQuery() {
         ArchetypeQuery query = super.createQuery();
+        query.getArchetypeConstraint().setAlias("b");
         JoinConstraint productJoin = null;
         if (product != null || productName != null || from != null || to != null) {
             productJoin = join("product", "product");
@@ -141,8 +172,20 @@ public class ProductBatchResultSet extends EntityResultSet<Entity> {
             }
             query.add(productJoin);
         }
+        if (stockLocation != null) {
+            query.add(leftJoin("stockLocations", "l"));
+            IConstraint location = eq("l.target", stockLocation);
+            if (stockActive != null) {
+                IConstraint active = QueryHelper.createDateRangeConstraint(stockActive, "l.activeStartTime",
+                                                                           "l.activeEndTime");
+                location = and(location, active);
+            }
+            query.add(or(location,
+                         notExists(subQuery(ProductArchetypes.PRODUCT_BATCH, "b2").add(
+                                 join("stockLocations", "l2").add(idEq("b", "b2"))))));
+        }
         if (manufacturer != null) {
-            query.add(join("manufacturer").add(join("target", "t2").add(eq("name", manufacturer))));
+            query.add(join("manufacturer").add(eq("target", manufacturer)));
         }
         for (SortConstraint sort : getSortConstraints()) {
             if (sort instanceof VirtualNodeSortConstraint) {

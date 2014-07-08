@@ -43,7 +43,9 @@ import org.openvpms.web.component.property.TimePropertyTransformer;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleQuery;
@@ -187,28 +189,28 @@ class FreeAppointmentSlotQuery extends ScheduleQuery {
     @Override
     protected void doLayout(final Component container) {
         super.doLayout(container);
-        dateRange = new DateRange(getFocusGroup(), false) {
-            @Override
-            protected Component getContainer() {
-                // will lay the date range out in the supplied container instead of creating its own
-                return container;
-            }
-        };
+
+        dateRange = new DateRange(false);
+        dateRange.setContainer(container);
         if (date != null) {
             dateRange.setFrom(date);
         } else {
             dateRange.setFrom(new Date());
         }
         dateRange.setTo(DateRules.getDate(dateRange.getFrom(), 1, DateUnits.MONTHS));
-        dateRange.getComponent();
+        FocusGroup group = getFocusGroup();
+        group.add(dateRange.getFocusGroup());
         addTime(fromTime, container);
         addTime(toTime, container);
         Label durationLabel = LabelFactory.create();
         durationLabel.setText(duration.getDisplayName());
         container.add(durationLabel);
 
-        container.add(RowFactory.create(Styles.CELL_SPACING, BoundTextComponentFactory.createNumeric(duration, 5),
-                                        createDurationUnits()));
+        TextField durationField = BoundTextComponentFactory.createNumeric(duration, 5);
+        SelectField unitsField = createDurationUnits();
+        group.add(durationField);
+        group.add(unitsField);
+        container.add(RowFactory.create(Styles.CELL_SPACING, durationField, unitsField));
     }
 
     /**
