@@ -19,6 +19,7 @@ package org.openvpms.archetype.rules.practice;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.finance.deposit.DepositTestHelper;
+import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -159,6 +160,23 @@ public class LocationRulesTestCase extends ArchetypeServiceTest {
                                             getArchetypeService());
 
         assertEquals(view2, rules.getDefaultWorkListView(location));
+    }
+
+    /**
+     * Tests the {@link LocationRules#getDefaultStockLocation(Party)}
+     * and {@link LocationRules#getDefaultStockLocationRef(Party)} methods.
+     */
+    @Test
+    public void testGetStockLocation() {
+        Party location = TestHelper.createLocation();
+        assertNull(rules.getDefaultStockLocation(location));
+        assertNull(rules.getDefaultStockLocationRef(location));
+        Party stockLocation = ProductTestHelper.createStockLocation();
+        EntityBean bean = new EntityBean(location);
+        bean.addNodeTarget("stockLocations", stockLocation);
+
+        assertEquals(stockLocation, rules.getDefaultStockLocation(location));
+        assertEquals(stockLocation.getObjectReference(), rules.getDefaultStockLocationRef(location));
     }
 
     /**

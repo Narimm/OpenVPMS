@@ -131,20 +131,20 @@ public class LocationRules {
      * @return the default stock location reference, or {@code null} if none is found
      */
     public IMObjectReference getDefaultStockLocationRef(Party location) {
-        return EntityRelationshipHelper.getDefaultTargetRef(location, "stockLocations", false, service);
+        return EntityRelationshipHelper.getDefaultTargetRef(location, "stockLocations", true, service);
     }
 
     /**
      * Returns the default stock location associated with a location.
      * <p/>
      * NOTE: retrieval of stock locations may be an expensive operation,
-     * due to the no. of relationhips to products.
+     * due to the no. of relationships to products.
      *
      * @param location the location
      * @return the default location or {@code null} if none is found
      */
     public Party getDefaultStockLocation(Party location) {
-        return (Party) EntityRelationshipHelper.getDefaultTarget(location, "stockLocations", false, service);
+        return (Party) EntityRelationshipHelper.getDefaultTarget(location, "stockLocations", true, service);
     }
 
     /**
