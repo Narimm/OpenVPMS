@@ -20,6 +20,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -123,7 +124,8 @@ public class PricingGroupFilter {
      * @return the filter component
      */
     public Component getComponent() {
-        final PricingGroupSelectField filter = new PricingGroupSelectField(pricingGroup.getGroup(), true);
+        Lookup group = (pricingGroup != null) ? pricingGroup.getGroup() : null;
+        final PricingGroupSelectField filter = new PricingGroupSelectField(group, true);
         filter.addActionListener(new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {

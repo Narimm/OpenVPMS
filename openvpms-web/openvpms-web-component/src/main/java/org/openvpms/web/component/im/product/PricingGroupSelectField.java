@@ -45,6 +45,8 @@ public class PricingGroupSelectField extends SelectField {
         setCellRenderer(LookupListCellRenderer.INSTANCE);
         if (initialSelection != null) {
             setSelectedItem(initialSelection.getCode());
+        } else if (all) {
+            setSelectedIndex(getModel().getAllIndex());
         }
     }
 
@@ -67,7 +69,7 @@ public class PricingGroupSelectField extends SelectField {
             return PricingGroup.ALL;
         }
         int index = getSelectedIndex();
-        return (index >= 0) ? new PricingGroup(getModel().getLookup(index), false) : null;
+        return (index >= 0) ? new PricingGroup(getModel().getLookup(index), true) : null;
     }
 
     /**
