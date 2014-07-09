@@ -93,8 +93,8 @@
     <data archetype="lookup.contactPurpose" code="MOBILE"/>
     <data archetype="lookup.contactPurpose" code="POSTAL"/>
     <data archetype="lookup.contactPurpose" code="CORRESPONDENCE"/>
-    <data archetype="lookup.contactPurpose" code="REMINDER"/>
-    <data archetype="lookup.contactPurpose" code="BILLING"/>
+    <data id="REMINDER" archetype="lookup.contactPurpose" code="REMINDER"/>
+    <data id="BILLING" archetype="lookup.contactPurpose" code="BILLING"/>
     <data archetype="lookup.customerType" code="SMALL_ANIMAL"/>
     <data archetype="lookup.customerType" code="LARGE_ANIMAL"/>
     <data archetype="lookup.customerType" code="STUD"/>
@@ -148,6 +148,9 @@
     <data archetype="lookup.reportType" code="ADMINISTRATION"/>
     <data archetype="lookup.reportType" code="FINANCIAL"/>
     <data archetype="lookup.reportType" code="OTHER" defaultLookup="true"/>
+
+    <data archetype="lookup.pricingGroup" code="MAIN" name="Main Pricing Group"/>
+    <data archetype="lookup.pricingGroup" code="BRANCH" name="Branch Pricing Group"/>
 
     <data archetype="lookup.fileNameFormat" code="DOC_NAME_DOC_DATE"
           name="Document name - document date"
