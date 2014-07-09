@@ -51,7 +51,7 @@ public class PricingGroupHelper {
             LocationRules rules = ServiceHelper.getBean(LocationRules.class);
             result = rules.getPricingGroup(location);
         }
-        return new PricingGroup(result);
+        return (result != null) ? new PricingGroup(result) : null;
     }
 
     /**
