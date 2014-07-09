@@ -5944,6 +5944,12 @@
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P864" source="id:Medications"/>
 
+    <data id="P865" archetype="product.priceTemplate" name="Standard Surgery Fee">
+        <data collection="prices" archetype="productPrice.fixedPrice" name="Long Operation" price="300"/>
+        <data collection="prices" archetype="productPrice.fixedPrice" name="Medium Operation" price="150"/>
+        <data collection="prices" archetype="productPrice.fixedPrice" name="Short Operation" price="75"/>
+    </data>
+
     <data id="P900" archetype="product.medication" name="Fel-O-Vax 3">
         <data collection="prices" archetype="productPrice.unitPrice" cost="09.00" price="15.40"/>
     </data>

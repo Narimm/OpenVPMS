@@ -20,10 +20,20 @@
         <data collection="contacts" archetype="contact.location" address="123 Boronia Road" suburb="Boronia" state="VIC"
               postcode="3088"/>
     </data>
-    <data id="OL1" archetype="party.organisationLocation" name="Main Clinic" stockControl="true">
+    <data id="OL1" archetype="party.organisationLocation" name="Main Clinic" stockControl="true"
+          mailHost="mail.bigpond.com" mailUsername="opv.demo@bigpond.com" mailPassword="sample">
         <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97628777"/>
+        <data collection="contacts" archetype="contact.phoneNumber" telephoneNumber="041312345"/>
         <data collection="contacts" archetype="contact.location" address="123 Boronia Road" suburb="Boronia" state="VIC"
               postcode="3088"/>
+        <data collection="contacts" archetype="contact.email" name="Main Clinic Accounts"
+              emailAddress="billing.opv.demo@gmail.com">
+            <data collection="purposes" archetype="lookup.contactPurpose" childId="id:BILLING"/>
+        </data>
+        <data collection="contacts" archetype="contact.email" name="Main Clinic Reminders"
+              emailAddress="reminder.opv.demo@gmail.com">
+            <data collection="purposes" archetype="lookup.contactPurpose" childId="id:REMINDER"/>
+        </data>
     </data>
     <data id="OL2" archetype="party.organisationLocation" name="Branch Clinic" stockControl="true">
         <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97629865"/>
