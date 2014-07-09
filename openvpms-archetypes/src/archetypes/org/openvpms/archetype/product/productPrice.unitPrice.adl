@@ -19,8 +19,8 @@
                latest="true"
                type="org.openvpms.component.business.domain.im.product.ProductPrice" displayName="Product Unit Price">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
-        <node name="name" path="/name" type="java.lang.String" derived="true" hidden="true"
-              minCardinality="1" derivedValue="'Unit Price'"/>
+        <node name="name" path="/name" type="java.lang.String" derived="true" minCardinality="1"
+              derivedValue="'Unit Price'"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" minCardinality="1" derived="true"
               derivedValue="concat('$ ',/price, ' ',openvpms:lookup(.,'uom'),' (',date:formatDate(/fromDate), ' - ',date:formatDate(/toDate),')')"/>
