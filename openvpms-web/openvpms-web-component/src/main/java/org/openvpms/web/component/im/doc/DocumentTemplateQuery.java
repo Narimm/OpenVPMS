@@ -26,6 +26,7 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.AbstractFilteredResultSet;
 import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
+import org.openvpms.web.component.im.query.LocalSortResultSet;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -75,7 +76,8 @@ public class DocumentTemplateQuery extends AbstractIMObjectQuery<Entity> {
      */
     @Override
     public ResultSet<Entity> query(SortConstraint[] sort) {
-        ResultSet<Entity> result = super.query(sort);
+        ResultSet<Entity> result = new LocalSortResultSet<Entity>(super.query(null));
+        result.sort(sort);
 
         if (types.length != 0) {
             result = new AbstractFilteredResultSet<Entity>(result) {

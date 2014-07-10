@@ -80,10 +80,8 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * Returns the sort criteria.
      *
      * @param column    the primary sort column
-     * @param ascending if {@code true} sort in ascending order; otherwise
-     *                  sort in {@code descending} order
-     * @return the sort criteria, or {@code null} if the column isn't
-     *         sortable
+     * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
+     * @return the sort criteria, or {@code null} if the column isn't sortable
      */
     @Override
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
@@ -91,12 +89,8 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
         TableColumn col = getColumn(column);
         if (col instanceof DescriptorTableColumn) {
             DescriptorTableColumn descCol = (DescriptorTableColumn) col;
-            if (descCol.isSortable()) {
-                List<SortConstraint> list = getSortConstraints(descCol, ascending);
-                result = list.toArray(new SortConstraint[list.size()]);
-            } else {
-                result = null;
-            }
+            List<SortConstraint> list = getSortConstraints(descCol, ascending);
+            result = (list != null) ? list.toArray(new SortConstraint[list.size()]) : null;
         } else {
             result = super.getSortConstraints(column, ascending);
         }
@@ -105,12 +99,17 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
 
     /**
      * Returns the sort constraints, given a primary sort column.
+     * <p/>
+     * If the column is not sortable, this implementation returns null.
      *
      * @param primary   the primary sort column
      * @param ascending whether to sort in ascending or descending order
-     * @return the sort constraints
+     * @return the sort criteria, or {@code null} if the column isn't sortable
      */
     protected List<SortConstraint> getSortConstraints(DescriptorTableColumn primary, boolean ascending) {
+        if (!primary.isSortable()) {
+            return null;
+        }
         if (primary.getName().equals("description")) {
             return getSortConstraints(primary, ascending, "name", "id");
         }
