@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.openoffice;
@@ -296,7 +296,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
             PrintService service = OpenOfficeHelper.getPrintService();
             connection = OpenOfficeHelper.getConnectionPool().getConnection();
             doc = create(objects, parameters, connection);
-            service.print(doc, properties.getPrinterName(), properties.getCopies(), true);
+            service.print(doc, properties, true);
         } catch (OpenOfficeException exception) {
             throw new ReportException(exception, FailedToPrintReport, exception.getMessage());
         } finally {
