@@ -108,6 +108,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         });
         context = new LocalContext();
         context.setPractice(getPractice());
+        Party location = TestHelper.createLocation();
+        context.setLocation(location);
     }
 
     /**

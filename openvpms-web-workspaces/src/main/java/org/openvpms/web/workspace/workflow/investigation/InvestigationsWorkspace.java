@@ -11,26 +11,29 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.investigation;
 
-import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
+import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.DefaultContextSwitchListener;
+import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
+import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.view.TableComponentFactory;
+import org.openvpms.web.component.im.query.QueryBrowser;
+import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.mail.MailContext;
-import org.openvpms.web.echo.factory.GroupBoxFactory;
-import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.workspace.reporting.AbstractReportingWorkspace;
+import org.openvpms.web.component.workspace.CRUDWindow;
+import org.openvpms.web.component.workspace.ResultSetCRUDWorkspace;
+import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.patient.CustomerPatientSummary;
+import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 
 
 /**
@@ -38,39 +41,58 @@ import org.openvpms.web.workspace.reporting.AbstractReportingWorkspace;
  *
  * @author Tim Anderson
  */
-public class InvestigationsWorkspace extends AbstractReportingWorkspace<Act> {
+public class InvestigationsWorkspace extends ResultSetCRUDWorkspace<Act> {
 
     /**
-     * Constructs an {@code InvestigationsWorkspace}.
+     * Constructs an {@link InvestigationsWorkspace}.
      *
      * @param context     the context
      * @param mailContext the mail context
      */
     public InvestigationsWorkspace(Context context, MailContext mailContext) {
-        super("workflow", "investigation", Act.class, context, mailContext);
+        super("workflow", "investigation", context);
+        setArchetypes(Archetypes.create(InvestigationArchetypes.PATIENT_INVESTIGATION, Act.class));
+        setMailContext(mailContext);
     }
 
     /**
-     * Lays out the components.
+     * Renders the workspace summary.
      *
-     * @param container the container
-     * @param group     the focus group
+     * @return the component representing the workspace summary, or {@code null} if there is no summary
      */
     @Override
-    protected void doLayout(Component container, FocusGroup group) {
-        Query<Act> query = new InvestigationsQuery();
+    public Component getSummary() {
+        CRUDWindow<Act> window = getCRUDWindow();
+        if (window != null) {
+            CustomerPatientSummaryFactory factory = ServiceHelper.getBean(CustomerPatientSummaryFactory.class);
+            CustomerPatientSummary summary = factory.createCustomerPatientSummary(getContext(), getHelpContext());
+            return summary.getSummary(window.getObject());
+        }
+        return null;
+    }
 
-        // create a layout context, with hyperlinks enabled
-        LayoutContext context = new DefaultLayoutContext(getContext(), getHelpContext());
-        TableComponentFactory factory = new TableComponentFactory(context);
-        context.setComponentFactory(factory);
-        context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
+    /**
+     * Creates a new query to populate the browser.
+     *
+     * @return a new query
+     */
+    @Override
+    protected Query<Act> createQuery() {
+        return new InvestigationsQuery(new DefaultLayoutContext(getContext(), getHelpContext()));
+    }
 
-        InvestigationsTableModel model = new InvestigationsTableModel(context);
-        Browser<Act> browser = new DefaultIMObjectTableBrowser<Act>(query, model, context);
-        GroupBox box = GroupBoxFactory.create(browser.getComponent());
-        container.add(box);
-        group.add(browser.getFocusGroup());
+    /**
+     * Creates a new browser.
+     *
+     * @param query the query
+     * @return a new browser
+     */
+    @Override
+    protected Browser<Act> createBrowser(Query<Act> query) {
+        DefaultLayoutContext layoutContext = new DefaultLayoutContext(getContext(), getHelpContext());
+        layoutContext.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
+        IMObjectTableModel<Act> model = new InvestigationsTableModel(layoutContext);
+        return BrowserFactory.create(query, null, model, layoutContext);
     }
 
     /**
@@ -83,4 +105,34 @@ public class InvestigationsWorkspace extends AbstractReportingWorkspace<Act> {
         return true;
     }
 
+    /**
+     * Creates a new CRUD window.
+     *
+     * @return a new CRUD window
+     */
+    @Override
+    protected CRUDWindow<Act> createCRUDWindow() {
+        QueryBrowser<Act> browser = getBrowser();
+        return new InvestigationCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet(),
+                                           getContext(), getHelpContext());
+    }
+
+    /**
+     * Invoked when a browser object is selected.
+     * <p/>
+     * This implementation sets the object in the CRUD window and if it has been double clicked:
+     * <ul>
+     * <li>pops up an editor, if editing is supported; otherwise
+     * <li>pops up a viewer
+     * </li>
+     *
+     * @param object the selected object
+     */
+    @Override
+    protected void onBrowserSelected(Act object) {
+        super.onBrowserSelected(object);
+        if (updateSummaryOnChildUpdate()) {
+            firePropertyChange(SUMMARY_PROPERTY, null, null);
+        }
+    }
 }

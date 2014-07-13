@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -264,6 +264,27 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
             ++offset;
         }
         return result;
+    }
+
+    /**
+     * Returns a column model index given its node name.
+     *
+     * @param model the model
+     * @param name  the node name
+     * @return the column index, or {@code -1} if a column with the specified name doesn't exist
+     */
+    protected int getColumnModelIndex(TableColumnModel model, String name) {
+        Iterator iterator = model.getColumns();
+        while (iterator.hasNext()) {
+            TableColumn col = (TableColumn) iterator.next();
+            if (col instanceof DescriptorTableColumn) {
+                DescriptorTableColumn descriptorCol = (DescriptorTableColumn) col;
+                if (descriptorCol.getName().equals(name)) {
+                    return descriptorCol.getModelIndex();
+                }
+            }
+        }
+        return -1;
     }
 
     /**
