@@ -43,7 +43,6 @@
                     <property name="PRELIMINARY" value="Preliminary"/>
                     <property name="FINAL" value="Final"/>
                 </propertyList>
-                <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
         <node name="reviewed" path="/printed" type="java.lang.Boolean" defaultValue="false()"/>
@@ -61,6 +60,8 @@
               filter="participation.author" hidden="true"/>
         <node name="fileName" type="java.lang.String" path="/fileName" hidden="true"/>
         <node name="mimeType" type="java.lang.String" path="/mimeType" readOnly="true" hidden="true"/>
+        <node name="location" path="/participations" type="java.util.HashSet" minCardinality="0"
+              maxCardinality="1" filter="participation.location" hidden="true"/>
         <node name="versions" path="/sourceActRelationships" type="java.util.HashSet" minCardinality="0"
               maxCardinality="*" filter="actRelationship.patientInvestigationVersion">
             <assertion name="archetypeRange">
