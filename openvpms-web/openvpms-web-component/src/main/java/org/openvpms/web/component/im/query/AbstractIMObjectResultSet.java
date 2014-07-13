@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.query;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -39,7 +40,7 @@ import java.util.List;
 
 
 /**
- * Result set for {@code IMObject} instances.
+ * Result set for {@link IMObject} instances.
  *
  * @author Tim Anderson
  */
@@ -210,23 +211,6 @@ public abstract class AbstractIMObjectResultSet<T> extends AbstractArchetypeServ
         super.addSortConstraints(query);
         String alias = getArchetypes().getAlias();
         query.add(new NodeSortConstraint(alias, "id"));
-    }
-
-    /**
-     * Attempts to extract an ID from a value.
-     *
-     * @param value the value
-     * @return the corresponding ID, or {@code null} if {@code value} is not a valid ID
-     */
-    protected Long getId(String value) {
-        if (!StringUtils.isEmpty(value)) {
-            value = value.replaceAll(",", "").replaceAll("\\*", ""); // remove any commas and wildcards.
-            try {
-                return Long.valueOf(value);
-            } catch (NumberFormatException ignore) {
-            }
-        }
-        return null;
     }
 
     /**

@@ -308,7 +308,18 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * @return the descriptor column, or {@code null} if none exists
      */
     protected DescriptorTableColumn getColumn(String name) {
-        Iterator iterator = getColumnModel().getColumns();
+        return getColumn(getColumnModel(), name);
+    }
+
+    /**
+     * Returns a column, given its node name.
+     *
+     * @param model the model
+     * @param name  the node name
+     * @return the descriptor column, or {@code null} if none exists
+     */
+    protected DescriptorTableColumn getColumn(TableColumnModel model, String name) {
+        Iterator iterator = model.getColumns();
         while (iterator.hasNext()) {
             TableColumn col = (TableColumn) iterator.next();
             if (col instanceof DescriptorTableColumn) {
@@ -319,6 +330,18 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
             }
         }
         return null;
+    }
+
+    /**
+     * Returns a column model index given its node name.
+     *
+     * @param model the model
+     * @param name  the node name
+     * @return the column index, or {@code -1} if a column with the specified name doesn't exist
+     */
+    protected int getModelIndex(TableColumnModel model, String name) {
+        DescriptorTableColumn column = getColumn(model, name);
+        return (column != null) ? column.getModelIndex() : -1;
     }
 
     /**
