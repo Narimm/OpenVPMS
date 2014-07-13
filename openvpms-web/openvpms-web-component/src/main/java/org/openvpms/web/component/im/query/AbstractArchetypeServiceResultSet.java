@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -264,4 +265,22 @@ public abstract class AbstractArchetypeServiceResultSet<T>
         IPage<IMObject> results = service.get(query);
         return results.getTotalResults();
     }
+
+    /**
+     * Attempts to extract an ID from a value.
+     *
+     * @param value the value
+     * @return the corresponding ID, or <tt>null</tt> if <tt>value</tt> is not a valid ID
+     */
+    protected Long getId(String value) {
+        if (!StringUtils.isEmpty(value)) {
+            value = value.replaceAll(",", "").replaceAll("\\*", ""); // remove any commas and wildcards.
+            try {
+                return Long.valueOf(value);
+            } catch (NumberFormatException ignore) {
+            }
+        }
+        return null;
+    }
+
 }
