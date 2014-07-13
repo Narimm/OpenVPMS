@@ -19,18 +19,12 @@ package org.openvpms.web.workspace.workflow.scheduling;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.archetype.rules.user.UserArchetypes;
-import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.archetype.rules.workflow.ScheduleService;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.util.PropertySet;
-import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
-import org.openvpms.web.component.im.list.IMObjectListModel;
+import org.openvpms.web.component.im.clinician.ClinicianSelectField;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.lookup.NodeLookupQuery;
@@ -39,11 +33,8 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.system.ServiceHelper;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -247,28 +238,12 @@ public abstract class ScheduleServiceQuery extends ScheduleQuery {
      * @return a new clinician selector
      */
     private SelectField createClinicianSelector() {
-        UserRules rules = ServiceHelper.getBean(UserRules.class);
-        List<IMObject> clinicians = new ArrayList<IMObject>();
-        ArchetypeQuery query = new ArchetypeQuery(UserArchetypes.USER, true, true);
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        Iterator<User> iter = new IMObjectQueryIterator<User>(query);
-        while (iter.hasNext()) {
-            User user = iter.next();
-            if (rules.isClinician(user)) {
-                clinicians.add(user);
-            }
-        }
-        IMObjectListModel model
-                = new IMObjectListModel(clinicians, true, false);
-        SelectField result = SelectFieldFactory.create(model);
-        result.setCellRenderer(IMObjectListCellRenderer.NAME);
-
+        SelectField result = new ClinicianSelectField();
         result.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 onQuery();
             }
         });
-
         return result;
     }
 

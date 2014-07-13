@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -24,6 +24,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
 import org.openvpms.web.component.im.edit.EditResultSetDialog;
+import org.openvpms.web.component.im.edit.IMObjectActions;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.query.AbstractArchetypeQuery;
 import org.openvpms.web.component.im.query.Query;
@@ -42,7 +43,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import java.util.List;
 
 /**
- * A {@code CRUDWindow} that supports iteration over a {@link ResultSet}.
+ * A {@link CRUDWindow} that supports iteration over a {@link ResultSet}.
  *
  * @author Tim Anderson
  */
@@ -65,7 +66,7 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
 
 
     /**
-     * Constructs a {@code ResultSetCRUDWindow}.
+     * Constructs a {@link ResultSetCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create instances of
      * @param query      the query. May be {@code null}
@@ -75,7 +76,23 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
      */
     public ResultSetCRUDWindow(Archetypes<T> archetypes, Query<T> query, ResultSet<T> set, Context context,
                                HelpContext help) {
-        super(archetypes, DefaultIMObjectActions.<T>getInstance(), context, help);
+        this(archetypes, DefaultIMObjectActions.<T>getInstance(), query, set, context, help);
+    }
+
+    /**
+     * Constructs a {@link ResultSetCRUDWindow}.
+     *
+     * @param archetypes the archetypes that this may create instances of
+     * @param actions    determines the operations that may be performed on the selected object. If {@code null},
+     *                   actions should be registered via {@link #setActions(IMObjectActions)}
+     * @param query      the query. May be {@code null}
+     * @param set        the result set. May be {@code null}
+     * @param context    the context
+     * @param help       the help context
+     */
+    public ResultSetCRUDWindow(Archetypes<T> archetypes, IMObjectActions<T> actions, Query<T> query, ResultSet<T> set,
+                               Context context, HelpContext help) {
+        super(archetypes, actions, context, help);
         setResultSet(set);
         setQuery(query);
     }

@@ -13,6 +13,7 @@
  *
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient.history;
 
 import org.apache.commons.lang.ObjectUtils;
@@ -87,6 +88,9 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
             }
         };
         getEditors().add(productEditor);
+        if (act.isNew()) {
+            initParticipant("location", context.getContext().getLocation());
+        }
     }
 
     /**
