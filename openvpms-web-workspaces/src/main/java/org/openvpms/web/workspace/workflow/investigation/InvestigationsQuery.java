@@ -78,9 +78,14 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     public static final String[] SHORT_NAMES = new String[]{InvestigationArchetypes.PATIENT_INVESTIGATION};
 
     /**
+     * The locations available to the user.
+     */
+    private final List<Party> locations;
+
+    /**
      * The location selector.
      */
-    private final SelectField location;
+    private final SelectField locationSelector;
 
     /**
      * The clinician selector.
@@ -129,7 +134,8 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         setStatus(INCOMPLETE_STATUS.getCode());
         // TODO - shouldn't need this as its returned by StatusLookupQuery, but addStatusSelector() ignores it
 
-        location = createLocationSelector(context);
+        locations = getLocations(context.getContext());
+        locationSelector = createLocationSelector(locations, context);
         clinician = createClinicianSelector();
         investigationType = createInvestigationTypeSelector(context);
     }
@@ -201,11 +207,11 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
                                  investigationType.getObject());
         addParticipantConstraint(list, "clinician", UserArchetypes.CLINICIAN_PARTICIPATION,
                                  (Entity) clinician.getSelectedItem());
-        addParticipantConstraint(list, "location", "participation.location", (Entity) location.getSelectedItem());
         ParticipantConstraint[] participants = list.toArray(new ParticipantConstraint[list.size()]);
 
-        return new InvestigationResultSet(getArchetypeConstraint(), getValue(), participants, getFrom(), getTo(),
-                                          getStatuses(), getMaxResults(), sort);
+        Party location = (Party) locationSelector.getSelectedItem();
+        return new InvestigationResultSet(getArchetypeConstraint(), getValue(), participants, location, locations,
+                                          getFrom(), getTo(), getStatuses(), getMaxResults(), sort);
     }
 
     /**
@@ -295,18 +301,18 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         Label label = LabelFactory.create();
         label.setText(DescriptorHelper.getDisplayName(PATIENT_INVESTIGATION, "location"));
         container.add(label);
-        container.add(location);
-        getFocusGroup().add(location);
+        container.add(locationSelector);
+        getFocusGroup().add(locationSelector);
     }
 
     /**
      * Creates a field to select the location.
      *
-     * @param context the layout context
+     * @param locations the locations available to the user
+     * @param context   the layout context
      * @return a new selector
      */
-    private SelectField createLocationSelector(LayoutContext context) {
-        List<Party> locations = getLocations(context.getContext());
+    private SelectField createLocationSelector(List<Party> locations, LayoutContext context) {
         IMObjectListModel model = new IMObjectListModel(locations, true, false);
         SelectField result = SelectFieldFactory.create(model);
         result.setSelectedItem(context.getContext().getLocation());
