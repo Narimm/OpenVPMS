@@ -5972,7 +5972,13 @@
 
     </data>
 
-    <data id="MAN1" archetype="party.supplierManufacturer" name="Boehringer Ingleheim"/>
+    <data id="MAN1" archetype="party.supplierManufacturer" name="Boehringer Ingelheim"
+          description="Boehringer Ingelheim Pty Ltd">
+        <data collection="contacts" archetype="contact.location" address="8 Waterloo Roard" suburb="NORTH_RYDE_2113"
+              state="NSW" postcode="2113" preferred="true"/>
+        <data collection="contacts" archetype="contact.phoneNumber" areaCode="02" telephoneNumber="88758800"
+              preferred="true"/>
+    </data>
     <data id="BATCH1" archetype="entity.productBatch" name="1234567890">
         <data collection="product" archetype="entityLink.batchProduct" activeEndTime="23/01/2015" source="id:BATCH1"
               target="id:P900"/>
