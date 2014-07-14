@@ -47,6 +47,7 @@
     <data id="UPWEY_3158" archetype="lookup.suburb" code="UPWEY_3158" name="Upwey" postCode="3158"/>
     <data id="VIEWBANK_3084" archetype="lookup.suburb" code="VIEWBANK_3084" name="Viewbank" postCode="3084"/>
     <data id="WHITTLESEA_3757" archetype="lookup.suburb" code="WHITTLESEA_3757" name="Whittlesea" postCode="3757"/>
+    <data id="NORTH_RYDE_2113" archetype="lookup.suburb" code="NORTH_RYDE_2113" name="North Ryde" postCode="2113"/>
     <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:UPWEY_3158"/>
     <data archetype="lookupRelationship.stateSuburb" source="id:SA" target="id:BLACK_ROCK_5431"/>
     <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:CROYDON_3136"/>
@@ -61,6 +62,7 @@
     <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:UPWEY_3158"/>
     <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:VIEWBANK_3084"/>
     <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:WHITTLESEA_3757"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:NSW" target="id:NORTH_RYDE_2113"/>
     <data archetype="lookup.currency" code="AUD" name="Australian Dollar" defaultLookup="true" roundingMode="HALF_UP"
           minDenomination="0.05"/>
     <data archetype="lookup.currency" code="NZD" name="New Zealand Dollar" roundingMode="HALF_UP"
