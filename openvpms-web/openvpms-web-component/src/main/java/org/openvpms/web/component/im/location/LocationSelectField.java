@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.practice.Location;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.user.UserRules;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -33,6 +34,7 @@ import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.echo.factory.ComponentFactory;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -57,9 +59,13 @@ public class LocationSelectField extends SelectField {
      * Constructs a {@link LocationSelectField}.
      * <p/>
      * This displays all locations for the specified user, or those for the practice if the user doesn't define any.
+     *
+     * @param user     the user. May be {@code null}
+     * @param practice the practice. May be {@code null}
+     * @param all      if {@code true}, add a localised "All"
      */
-    public LocationSelectField(User user, Party practice) {
-        super(createModel(user, practice, false, false));
+    public LocationSelectField(User user, Party practice, boolean all) {
+        super(createModel(user, practice, all, false));
         initialise();
     }
 
@@ -89,6 +95,21 @@ public class LocationSelectField extends SelectField {
     @Override
     public IMObjectListModel getModel() {
         return (IMObjectListModel) super.getModel();
+    }
+
+    /**
+     * Returns the locations.
+     *
+     * @return the locations
+     */
+    public List<Party> getLocations() {
+        List<Party> result = new ArrayList<Party>();
+        for (IMObject object : getModel().getObjects()) {
+            if (object instanceof Party) {
+                result.add((Party) object);
+            }
+        }
+        return result;
     }
 
     /**

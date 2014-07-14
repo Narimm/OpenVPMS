@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -77,7 +78,7 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     /**
      * The location selector.
      */
-    private final SelectField location;
+    private final LocationSelectField locationSelector;
 
     /**
      * The clinician selector.
@@ -126,7 +127,7 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         setStatus(INCOMPLETE_STATUS.getCode());
         // TODO - shouldn't need this as its returned by StatusLookupQuery, but addStatusSelector() ignores it
 
-        location = createLocationSelector(context.getContext());
+        locationSelector = createLocationSelector(context.getContext());
         clinician = createClinicianSelector();
         investigationType = createInvestigationTypeSelector(context);
     }
@@ -198,11 +199,12 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
                                  investigationType.getObject());
         addParticipantConstraint(list, "clinician", UserArchetypes.CLINICIAN_PARTICIPATION,
                                  (Entity) clinician.getSelectedItem());
-        addParticipantConstraint(list, "location", "participation.location", (Entity) location.getSelectedItem());
         ParticipantConstraint[] participants = list.toArray(new ParticipantConstraint[list.size()]);
 
-        return new InvestigationResultSet(getArchetypeConstraint(), getValue(), participants, getFrom(), getTo(),
-                                          getStatuses(), getMaxResults(), sort);
+        Party location = (Party) locationSelector.getSelectedItem();
+        return new InvestigationResultSet(getArchetypeConstraint(), getValue(), participants, location,
+                                          locationSelector.getLocations(), getFrom(), getTo(), getStatuses(),
+                                          getMaxResults(), sort);
     }
 
     /**
@@ -292,8 +294,8 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         Label label = LabelFactory.create();
         label.setText(DescriptorHelper.getDisplayName(PATIENT_INVESTIGATION, "location"));
         container.add(label);
-        container.add(location);
-        getFocusGroup().add(location);
+        container.add(locationSelector);
+        getFocusGroup().add(locationSelector);
     }
 
     /**
@@ -302,8 +304,8 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
      * @param context the context
      * @return a new selector
      */
-    private SelectField createLocationSelector(Context context) {
-        LocationSelectField result = new LocationSelectField(context.getUser(), context.getPractice());
+    private LocationSelectField createLocationSelector(Context context) {
+        LocationSelectField result = new LocationSelectField(context.getUser(), context.getPractice(), true);
         result.setSelectedItem(context.getLocation());
         result.addActionListener(new ActionListener() {
             @Override
@@ -313,7 +315,6 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         });
         return result;
     }
-
 
     /**
      * Creates a new dropdown to select clinicians.
@@ -332,7 +333,8 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
                 clinicians.add(user);
             }
         }
-        IMObjectListModel model = new IMObjectListModel(clinicians, true, false);
+        IMObjectListModel model
+                = new IMObjectListModel(clinicians, true, false);
         SelectField result = SelectFieldFactory.create(model);
         result.setCellRenderer(IMObjectListCellRenderer.NAME);
 
