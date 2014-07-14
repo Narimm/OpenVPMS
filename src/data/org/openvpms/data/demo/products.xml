@@ -6059,4 +6059,10 @@
         <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH17" target="id:MAN1"/>
     </data>
 
+    <data id="INVEST1" archetype="entity.investigationType" name="Histopath Test"/>
+    <data id="INVEST2" archetype="entity.investigationType" name="Lab Test (In House)"/>
+    <data id="INVEST3" archetype="entity.investigationType" name="Radiology (In House)"/>
+    <data id="INVEST4" archetype="entity.investigationType" name="Ultrasound (In House)"/>
+    <data id="INVEST5" archetype="entity.investigationType" name="Rabies Test"/>
+
 </archetype>
