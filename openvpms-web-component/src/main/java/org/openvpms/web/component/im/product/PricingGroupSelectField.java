@@ -47,6 +47,8 @@ public class PricingGroupSelectField extends SelectField {
             setSelectedItem(initialSelection.getCode());
         } else if (all) {
             setSelectedIndex(getModel().getAllIndex());
+        } else if (getModel().size() > 0) {
+            setSelectedIndex(0);
         }
     }
 
