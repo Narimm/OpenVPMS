@@ -94,5 +94,10 @@ public class ScheduleArchetypes {
      * Work list view.
      */
     public static String WORK_LIST_VIEW = "entity.organisationWorkListView";
+
+    /**
+     * Visit reason archetype short name.
+     */
+    public static String VISIT_REASON = "lookup.visitReason";
 }
 
