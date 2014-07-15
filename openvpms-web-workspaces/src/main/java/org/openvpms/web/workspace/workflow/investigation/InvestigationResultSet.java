@@ -81,6 +81,7 @@ public class InvestigationResultSet extends ActResultSet<Act> {
         this.value = value;
         this.location = location;
         this.locations = locations;
+        setDistinct(true);
     }
 
     /**
