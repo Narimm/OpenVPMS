@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -40,7 +40,7 @@ import java.util.Map;
 class AppointmentFactory extends ScheduleEventFactory {
 
     /**
-     * Cache of appointment reason lookup names, keyed on code.
+     * Cache of visit reason lookup names, keyed on code.
      */
     private final Map<String, String> reasonNames = Collections.synchronizedMap(new HashMap<String, String>());
 
@@ -58,7 +58,7 @@ class AppointmentFactory extends ScheduleEventFactory {
     }
 
     /**
-     * Caches an appointment reason.
+     * Caches a visit reason.
      *
      * @param reason the reason to cache
      * @return {@code true} if the reason was already cached
@@ -68,7 +68,7 @@ class AppointmentFactory extends ScheduleEventFactory {
     }
 
     /**
-     * Removes a cached appointment reason.
+     * Removes a cached visit reason.
      *
      * @param reason the reason to remove
      * @return {@code true} if the reason was removed

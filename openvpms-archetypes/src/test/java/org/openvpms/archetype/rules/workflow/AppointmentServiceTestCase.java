@@ -196,7 +196,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
     }
 
     /**
-     * Verifies that a new to lookup.appointmentReason appears in new appointments.
+     * Verifies that a new to lookup.visitReason appears in new appointments.
      */
     @Test
     public void testAddReason() {
@@ -214,7 +214,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
 
         String code = "XREASON" + System.currentTimeMillis();
         String name = "Added reason";
-        TestHelper.getLookup("lookup.appointmentReason", code, name, true);
+        TestHelper.getLookup(ScheduleArchetypes.VISIT_REASON, code, name, true);
 
         Act appointment2 = createAppointment(date2, schedule, patient, false);
         appointment2.setReason(code);
@@ -229,7 +229,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
     }
 
     /**
-     * Verifies that changes to lookup.appointmentReason get reflected in the cached appointments.
+     * Verifies that changes to lookup.visitReason get reflected in the cached appointments.
      */
     @Test
     public void testUpdateReason() {
@@ -257,7 +257,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
     }
 
     /**
-     * Verifies that if a lookup.appointmentReason is removed, the cache is updated.
+     * Verifies that if a lookup.visitReason is removed, the cache is updated.
      * <p/>
      * Strictly speaking, the application shouldn't remove a lookup in use, but if it occurs,
      * this implementation will return null for the reason name.
@@ -272,7 +272,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         Act appointment = createAppointment(date, schedule, patient, false);
         String code = "XREASON" + System.currentTimeMillis();
         String name = "Reason to remove";
-        Lookup reason = TestHelper.getLookup("lookup.appointmentReason", code, name, true);
+        Lookup reason = TestHelper.getLookup(ScheduleArchetypes.VISIT_REASON, code, name, true);
         appointment.setReason(code);
         save(appointment);
 

@@ -67,10 +67,10 @@
           minDenomination="0.05"/>
     <data archetype="lookup.currency" code="NZD" name="New Zealand Dollar" roundingMode="HALF_UP"
           minDenomination="0.10"/>
-    <data archetype="lookup.appointmentReason" code="CHECKUP" defaultLookup="true"/>
-    <data archetype="lookup.appointmentReason" code="VACCINATION"/>
-    <data archetype="lookup.appointmentReason" code="SURGERY"/>
-    <data archetype="lookup.appointmentReason" code="OTHER"/>
+    <data archetype="lookup.visitReason" code="CHECKUP" defaultLookup="true"/>
+    <data archetype="lookup.visitReason" code="VACCINATION"/>
+    <data archetype="lookup.visitReason" code="SURGERY"/>
+    <data archetype="lookup.visitReason" code="OTHER"/>
     <data archetype="lookup.messageReason" code="PHONE" name="Phone Call" defaultLookup="true"/>
     <data archetype="lookup.messageReason" code="OTHER" name="Other"/>
     <data archetype="lookup.uom" code="UNIT" unitCode="EA" defaultLookup="true"/>
