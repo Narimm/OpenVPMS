@@ -198,15 +198,17 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     @Override
     protected void onSaved(Act act, boolean isNew) {
         Act problem;
-        if (!TypeHelper.isA(act, PatientArchetypes.CLINICAL_PROBLEM)) {
-            problem = getProblem(act);
-        } else {
-            problem = act;
-            act = null;
+        if (!TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) {
+            if (!TypeHelper.isA(act, PatientArchetypes.CLINICAL_PROBLEM)) {
+                problem = getProblem(act);
+            } else {
+                problem = act;
+                act = null;
+            }
+            Act event = getEvent();
+            PatientMedicalRecordLinker linker = createMedicalRecordLinker(event, problem, act);
+            Retryer.run(linker);
         }
-        Act event = getEvent();
-        PatientMedicalRecordLinker linker = createMedicalRecordLinker(event, problem, act);
-        Retryer.run(linker);
         super.onSaved(act, isNew);
     }
 
