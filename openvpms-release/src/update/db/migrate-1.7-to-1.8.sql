@@ -51,6 +51,21 @@ INSERT INTO entity_details (entity_id, name, type, value)
 
 
 #
+# Migrate act.patientClinicalEvent, lookup.appointmentReason for OVPMS-1498
+#
+UPDATE acts
+SET title = reason
+WHERE arch_short_name = "act.patientClinicalEvent";
+UPDATE acts
+
+SET reason = null
+WHERE arch_short_name = "act.patientClinicalEvent";
+
+UPDATE lookups
+SET arch_short_name = "lookup.visitReason"
+WHERE arch_short_name = "lookup.appointmentReason";
+
+#
 #
 # Migrate act.patientClinicalProblem for OVPMS-1468
 #
