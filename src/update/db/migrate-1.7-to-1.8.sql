@@ -56,10 +56,10 @@ INSERT INTO entity_details (entity_id, name, type, value)
 UPDATE acts
 SET title = reason
 WHERE arch_short_name = "act.patientClinicalEvent";
-UPDATE acts
 
+UPDATE acts
 SET reason = null
-WHERE arch_short_name = "act.patientClinicalEvent";
+WHERE arch_short_name = "act.patientClinicalEvent" AND title = reason;
 
 UPDATE lookups
 SET arch_short_name = "lookup.visitReason"
