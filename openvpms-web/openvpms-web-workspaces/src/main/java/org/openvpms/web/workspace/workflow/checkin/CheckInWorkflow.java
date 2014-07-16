@@ -133,7 +133,7 @@ public class CheckInWorkflow extends WorkflowImpl {
         String notes = bean.getString("description", "");
         String description = Messages.format("workflow.checkin.task.description", reason, notes);
 
-        initialise(appointment, customer, patient, clinician, description, reason, context);
+        initialise(appointment, customer, patient, clinician, description, appointment.getReason(), context);
     }
 
     /**
@@ -144,7 +144,7 @@ public class CheckInWorkflow extends WorkflowImpl {
      * @param patient         the patient
      * @param clinician       the clinician. May be {@code null}
      * @param taskDescription the description to assign to the <em>act.customerTask</em>. May be {@code null}
-     * @param reason          the description to assign to the <em>act.patientClinicalEvent</em>. May be {@code null}
+     * @param reason          the visit reason code. May be {@code null}
      * @param context         the external context to access and update
      */
     private void initialise(Act appointment, Party customer, Party patient, User clinician, String taskDescription,

@@ -18,9 +18,7 @@ package org.openvpms.web.workspace.patient.problem;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -49,17 +47,6 @@ public class ProblemTableModel extends AbstractPatientHistoryTableModel {
     }
 
     /**
-     * Returns the reason for the parent act.
-     *
-     * @param act the act
-     * @return the reason. May be {@code null}
-     */
-    @Override
-    protected String getReason(Act act) {
-        return LookupNameHelper.getName(act, "reason");
-    }
-
-    /**
      * Returns a component for a parent act.
      *
      * @param bean the parent act
@@ -74,7 +61,7 @@ public class ProblemTableModel extends AbstractPatientHistoryTableModel {
 
         if (presentingComplaint != null) {
             String date = formatDateRange(bean);
-            String title = formatParentText(bean, row);
+            String title = formatProblemText(bean, row);
             Label dateLabel = LabelFactory.create(null, Styles.BOLD);
             Label titleLabel = LabelFactory.create(null, Styles.BOLD);
             Label complaintLabel = LabelFactory.create();
@@ -84,9 +71,28 @@ public class ProblemTableModel extends AbstractPatientHistoryTableModel {
             complaintLabel.setText(Messages.format("patient.record.summary.presentingComplaint", presentingComplaint));
             result = GridFactory.create(2, dateLabel, titleLabel, LabelFactory.create(), complaintLabel);
         } else {
-            result = super.formatParent(bean, row);
+            String date = formatDateRange(bean);
+            String text = formatProblemText(bean, row);
+            Label summary = LabelFactory.create(null, Styles.BOLD);
+            summary.setText(Messages.format("patient.record.summary.datedTitle", date, text));
+            result = summary;
         }
         return result;
+    }
+
+    /**
+     * Formats the text for a clinical event.
+     *
+     * @param bean the act
+     * @param row  the current row
+     * @return the formatted text
+     */
+    protected String formatProblemText(ActBean bean, int row) {
+        String reason = LookupNameHelper.getName(bean.getAct(), "reason");
+        if (reason == null) {
+            reason = LookupNameHelper.getName(bean.getAct(), "presentingComplaint");
+        }
+        return formatParentText(bean, reason, row);
     }
 
     /**
@@ -113,19 +119,10 @@ public class ProblemTableModel extends AbstractPatientHistoryTableModel {
      * @throws OpenVPMSException for any error
      */
     private Component formatEvent(ActBean bean, int row) {
-        Act act = bean.getAct();
-        String reason = act.getReason();
-        if (StringUtils.isEmpty(reason)) {
-            reason = Messages.get("patient.record.summary.reason.none");
-        }
-        String status = LookupNameHelper.getName(act, "status");
-        String clinician = getClinician(bean, row);
-        String age = getAge(bean);
-
-        String text = Messages.format("patient.record.problem.event", reason, clinician, status, age);
-        Label label = LabelFactory.create();
-        label.setText(text);
-        return label;
+        String text = formatEventText(bean, row);
+        Label summary = LabelFactory.create();
+        summary.setText(text);
+        return summary;
     }
 
 }

@@ -52,9 +52,9 @@ import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.AbstractIMObjectTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.ComponentFactory;
-import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.style.UserStyleSheets;
@@ -328,13 +328,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * @return a component representing the act
      * @throws OpenVPMSException for any error
      */
-    protected Component formatParent(ActBean bean, int row) {
-        String date = formatDateRange(bean);
-        String text = formatParentText(bean, row);
-        Label summary = LabelFactory.create(null, Styles.BOLD);
-        summary.setText(Messages.format("patient.record.summary.datedTitle", date, text));
-        return summary;
-    }
+    protected abstract Component formatParent(ActBean bean, int row);
 
     /**
      * Formats an act date range.
@@ -367,14 +361,14 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     /**
      * Formats the text for a parent act.
      *
-     * @param bean the act
-     * @param row  the current row
+     * @param bean   the act
+     * @param reason the reason. May be {@code null}
+     * @param row    the current row
      * @return the formatted text
      */
-    protected String formatParentText(ActBean bean, int row) {
+    protected String formatParentText(ActBean bean, String reason, int row) {
         Act act = bean.getAct();
         String clinician;
-        String reason = getReason(bean.getAct());
         if (StringUtils.isEmpty(reason)) {
             reason = Messages.get("patient.record.summary.reason.none");
         }
@@ -385,13 +379,32 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     }
 
     /**
+     * Formats the text for a clinical event.
+     *
+     * @param bean the act
+     * @param row  the current row
+     * @return the formatted text
+     */
+    protected String formatEventText(ActBean bean, int row) {
+        Act act = bean.getAct();
+        String title = act.getTitle();
+        if (!StringUtils.isEmpty(act.getReason()) && !StringUtils.isEmpty(title)) {
+            String reason = getReason(bean.getAct()) + " - " + title;
+            return formatParentText(bean, reason, row);
+        } else if (!StringUtils.isEmpty(title)) {
+            return formatParentText(bean, title, row);
+        }
+        return formatParentText(bean, null, row);
+    }
+
+    /**
      * Returns the reason for the parent act.
      *
      * @param act the act
      * @return the reason. May be {@code null}
      */
     protected String getReason(Act act) {
-        return act.getReason();
+        return LookupNameHelper.getName(act, "reason");
     }
 
     /**
