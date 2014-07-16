@@ -75,6 +75,7 @@ public class InvestigationResultSet extends ActResultSet<Act> {
         super(archetypes, value, participants, from, to, statuses, false, null, pageSize, sort);
         this.location = location;
         this.locations = locations;
+        setDistinct(true);
     }
 
     /**
