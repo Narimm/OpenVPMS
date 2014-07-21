@@ -108,6 +108,10 @@
                         <property name="shortName"
                                   value="entityIdentity.petTag"/>
                     </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="entityIdentity.rabiesTag"/>
+                    </propertyMap>
                 </propertyList>
             </assertion>
         </node>
