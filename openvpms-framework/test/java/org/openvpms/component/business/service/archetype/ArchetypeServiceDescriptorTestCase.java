@@ -1,24 +1,21 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
@@ -41,12 +38,19 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 
 /**
  * Test the persistence side of the archetype service
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 @ContextConfiguration("archetype-service-appcontext.xml")
 public class ArchetypeServiceDescriptorTestCase extends AbstractArchetypeServiceTest {
@@ -104,11 +108,19 @@ public class ArchetypeServiceDescriptorTestCase extends AbstractArchetypeService
 
         NodeDescriptor ndesc = createNodeDescriptor("name", "/name",
                                                     "java.lang.String", 1, 1);
+        ndesc.setDescription("The name node");
         desc.addNodeDescriptor(ndesc);
         save(desc);
         ArchetypeDescriptor reloaded = get(desc);
         assertNotNull(reloaded);
         assertEquals(1, reloaded.getNodeDescriptors().size());
+        ndesc = reloaded.getNodeDescriptor("name");
+        assertEquals("name", ndesc.getName());
+        assertEquals("/name", ndesc.getPath());
+        assertEquals("java.lang.String", ndesc.getType());
+        assertEquals(1, ndesc.getMinCardinality());
+        assertEquals(1, ndesc.getMaxCardinality());
+        assertEquals("The name node", ndesc.getDescription());
 
         ArchetypeQuery query = new ArchetypeQuery("descriptor.archetype", false, true)
                 .add(new NodeConstraint("type", desc.getName()));
