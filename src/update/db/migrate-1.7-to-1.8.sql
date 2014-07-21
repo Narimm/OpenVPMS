@@ -34,6 +34,13 @@ CREATE TABLE IF NOT EXISTS `entity_link_details` (
   DEFAULT CHARSET =utf8;
 
 #
+# Add description column to node_descriptors for OBF-229
+#
+ALTER TABLE node_descriptors
+ADD COLUMN description VARCHAR(255) DEFAULT NULL
+AFTER name;
+
+#
 # Update party.organisationPractice for OVPMS-1472 Update to the Customer and Patient Summaries
 #
 INSERT INTO entity_details (entity_id, name, type, value)
