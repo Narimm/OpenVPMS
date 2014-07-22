@@ -546,9 +546,9 @@
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CWRKTAS"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SWRKTAS"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RWRKTAS"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CEMESS"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SEMESS"/>
-        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:REMESS"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CWRKMSG"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SWRKMSG"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RWRKMSG"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CTILLB"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:STILLB"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CBANKD"/>
