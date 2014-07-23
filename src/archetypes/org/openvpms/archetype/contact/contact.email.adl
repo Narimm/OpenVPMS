@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="contact.email.1.0" latest="true" primary="false"
                type="org.openvpms.component.business.domain.im.party.Contact" displayName="Email Contact">
@@ -23,6 +24,11 @@
               derivedValue="concat(/details/emailAddress,' ',party:getContactPurposes())"/>
         <node name="emailAddress" path="/details/emailAddress"
               type="java.lang.String" minCardinality="1">
+            <assertion name="regularExpression">
+                <!-- From http://www.w3.org/TR/html5/forms.html#valid-e-mail-address -->
+                <property name="expression"
+                          value="^[a-zA-Z0-9.!#$%&amp;'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"/>
+            </assertion>
         </node>
         <node name="preferred" path="/details/preferred" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="startDate" path="/activeStartTime"
