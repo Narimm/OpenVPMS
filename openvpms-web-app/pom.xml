@@ -99,7 +99,7 @@
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/localisation</outputDirectory>
-                                    <includes>**/messages.properties</includes>
+                                    <includes>**/messages*.properties</includes>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
