@@ -28,6 +28,7 @@
                 <!-- From http://www.w3.org/TR/html5/forms.html#valid-e-mail-address -->
                 <property name="expression"
                           value="^[a-zA-Z0-9.!#$%&amp;'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"/>
+                <errorMessage>Invalid Email Address</errorMessage>
             </assertion>
         </node>
         <node name="preferred" path="/details/preferred" type="java.lang.Boolean" defaultValue="true()"/>
