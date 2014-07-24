@@ -21,6 +21,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.RadioButton;
 import nextapp.echo2.app.button.ButtonGroup;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
@@ -33,6 +34,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.retry.Retryer;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
@@ -45,6 +47,7 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.workspace.patient.PatientMedicalRecordLinker;
 import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryCRUDWindow;
 
@@ -157,7 +160,7 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
             final Act event = getLatestEvent(getContext().getPatient());
             if (event != null) {
                 // there is an existing event for the patient. Prompt to add the problem to this visit, or a new one.
-                final VisitSelectionDialog dialog = new VisitSelectionDialog(event.getDescription());
+                final VisitSelectionDialog dialog = new VisitSelectionDialog(event, getHelpContext());
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
                     public void onOK() {
@@ -309,10 +312,11 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         /**
          * Constructs a {@link VisitSelectionDialog}.
          *
-         * @param visit the existing visit description
+         * @param event the existing event
+         * @param help  the help context
          */
-        public VisitSelectionDialog(String visit) {
-            super(Messages.get("patient.record.problem.selectVisit.title"), OK_CANCEL);
+        public VisitSelectionDialog(Act event, HelpContext help) {
+            super(Messages.get("patient.record.problem.selectVisit.title"), OK_CANCEL, help.subtopic("selectVisit"));
             setModal(true);
             ButtonGroup group = new ButtonGroup();
             ActionListener listener = new ActionListener() {
@@ -321,7 +325,7 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
                 }
             };
             RadioButton existingVisit = ButtonFactory.create(null, group, listener);
-            existingVisit.setText(visit);
+            existingVisit.setText(getEventDescription(event));
             existingVisit.setSelected(true);
             newVisit = ButtonFactory.create("patient.record.problem.selectVisit.new", group, listener);
             existingVisit.setGroup(group);
@@ -340,6 +344,26 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
          */
         public boolean createVisit() {
             return newVisit.isSelected();
+        }
+
+        /**
+         * Formats a clinical event description.
+         *
+         * @param act the event
+         * @return the description
+         */
+        private String getEventDescription(Act act) {
+            String result;
+            String title = act.getTitle();
+            String date = DateFormatter.formatDate(act.getActivityStartTime(), false);
+            if (!StringUtils.isEmpty(act.getReason()) && !StringUtils.isEmpty(title)) {
+                result = date + ": " + LookupNameHelper.getName(act, "reason") + " - " + title;
+            } else if (!StringUtils.isEmpty(title)) {
+                result = date + ": " + title;
+            } else {
+                result = date;
+            }
+            return result;
         }
     }
 }
