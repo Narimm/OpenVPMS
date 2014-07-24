@@ -93,15 +93,29 @@ public class EstimateInvoicer {
     public void invoice(Act estimate, AbstractCustomerChargeActEditor editor) {
         ActBean bean = new ActBean(estimate);
         ActRelationshipCollectionEditor items = editor.getItems();
+
+        // if there is an existing empty editor, populate it first
+        IMObjectEditor currentEditor = editor.getItems().getCurrentEditor();
+        CustomerChargeActItemEditor useFirst = null;
+        if (currentEditor instanceof CustomerChargeActItemEditor &&
+            ((CustomerChargeActItemEditor) currentEditor).getProductRef() == null) {
+            useFirst = (CustomerChargeActItemEditor) currentEditor;
+        }
         for (Act estimationItem : bean.getNodeActs("items")) {
             ActBean itemBean = new ActBean(estimationItem);
-            Act act = (Act) items.create();
-            if (act == null) {
-                throw new IllegalStateException("Failed to create charge item");
+            CustomerChargeActItemEditor itemEditor;
+            if (useFirst != null) {
+                itemEditor = useFirst;
+                useFirst = null;
+            } else {
+                Act act = (Act) items.create();
+                if (act == null) {
+                    throw new IllegalStateException("Failed to create charge item");
+                }
+                itemEditor = (CustomerChargeActItemEditor) items.getEditor(act);
+                itemEditor.getComponent();
+                items.addEdited(itemEditor);
             }
-            CustomerChargeActItemEditor itemEditor = (CustomerChargeActItemEditor) items.getEditor(act);
-            itemEditor.getComponent();
-            items.addEdited(itemEditor);
             itemEditor.setPatientRef(itemBean.getNodeParticipantRef("patient"));
             itemEditor.setQuantity(itemBean.getBigDecimal("highQty"));
 
