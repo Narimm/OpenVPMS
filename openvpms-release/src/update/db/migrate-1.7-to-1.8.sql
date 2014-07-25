@@ -36,9 +36,26 @@ CREATE TABLE IF NOT EXISTS `entity_link_details` (
 #
 # Add description column to node_descriptors for OBF-229
 #
-ALTER TABLE node_descriptors
-ADD COLUMN description VARCHAR(255) DEFAULT NULL
-AFTER name;
+DELIMITER $$
+CREATE PROCEDURE alter_node_descriptors()
+  BEGIN
+    DECLARE _count INT;
+    SET _count = (SELECT
+                    COUNT(*)
+                  FROM INFORMATION_SCHEMA.COLUMNS
+                  WHERE TABLE_NAME = 'node_descriptors' AND
+                        COLUMN_NAME = 'description');
+    IF _count = 0
+    THEN
+      ALTER TABLE node_descriptors
+      ADD COLUMN description VARCHAR(255) DEFAULT NULL
+      AFTER name;
+    END IF;
+  END $$
+DELIMITER ;
+
+CALL alter_node_descriptors();
+DROP PROCEDURE alter_node_descriptors;
 
 #
 # Update party.organisationPractice for OVPMS-1472 Update to the Customer and Patient Summaries
