@@ -27,10 +27,15 @@ import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.JoinConstraint;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -251,6 +256,63 @@ public class QueryHelper {
         linkJoin.add(targetJoin);
         acts.add(linkJoin);
         query.add(Constraints.sort(targetJoin.getAlias(), "name", ascending));
+    }
+
+    /**
+     * Returns the page that an object would fall on.
+     *
+     * @param query      the query. Note that this is modified
+     * @param pageSize   the page size
+     * @param id         the object identifier
+     * @param key        the key to find
+     * @param node       the object node to compare with the key. The results must be sorted on this node
+     * @param comparator the comparator to compare the key and node values. Must reflect the order of the results
+     * @return the page that an object would fall on, if present
+     */
+    public static <T extends Comparable> int getPage(ArchetypeQuery query, int pageSize, final long id,
+                                                     final T key, final String node, final Comparator<T> comparator) {
+        int result = 0;
+        query.getArchetypeConstraint().setAlias("a");
+        query.add(new NodeSelectConstraint("id"));
+        query.add(new NodeSelectConstraint(node));
+        final ObjectSet keySet = new ObjectSet();
+        final String name = "a." + node;
+        keySet.set("a.id", id);
+        keySet.set(name, key);
+        ArchetypeQueryResultSet<ObjectSet> set = new ArchetypeQueryResultSet<ObjectSet>(query, pageSize,
+                                                                                        new ObjectSetQueryExecutor());
+
+        Comparator<ObjectSet> c = new Comparator<ObjectSet>() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public int compare(ObjectSet o1, ObjectSet o2) {
+                T v1 = (T) o1.get(name);
+                T v2 = (T) o2.get(name);
+                int result = comparator.compare(v1, v2);
+                if (result == 0) {
+                    long id1 = o1.getLong("a.id");
+                    long id2 = o2.getLong("a.id");
+                    result = (id1 < id2) ? -1 : ((id1 == id2) ? 0 : 1);
+                    // TODO - replace with Long.compare() when demo site updated to JDK 7
+                }
+                return result;
+            }
+        };
+        while (set.hasNext()) {
+            IPage<ObjectSet> page = set.next();
+            int index = Collections.binarySearch(page.getResults(), keySet, c);
+            if (index >= 0) {
+                break;
+            } else {
+                index = -index - 1;
+                if (index < page.getResults().size()) {
+                    // item would be on this page, but is not present
+                    break;
+                }
+            }
+            ++result;
+        }
+        return result;
     }
 
     /**

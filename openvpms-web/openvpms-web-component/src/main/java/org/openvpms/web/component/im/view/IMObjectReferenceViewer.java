@@ -11,13 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
 
+import echopointng.LabelEx;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -28,8 +30,8 @@ import org.openvpms.web.component.app.DefaultContextSwitchListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
-import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 
 
@@ -69,6 +71,11 @@ public class IMObjectReferenceViewer {
      * The style name.
      */
     private String style;
+
+    /**
+     * The width, in pixels.
+     */
+    private int width = -1;
 
 
     /**
@@ -188,19 +195,18 @@ public class IMObjectReferenceViewer {
                 button.setText(text);
                 button.addActionListener(linkListener);
                 button.setFocusTraversalParticipant(false);
-                // wrap in a row so the button renders to its minimum width
-                result = RowFactory.create(button);
+                if (width != -1) {
+                    button.setWidth(new Extent(width));
+                    result = button;
+                } else {
+                    // wrap in a row so the button renders to its minimum width
+                    result = RowFactory.create(button);
+                }
             } else {
-                Label label = (style != null)
-                              ? LabelFactory.create(null, style)
-                              : LabelFactory.create();
-                label.setText(text);
-                result = label;
+                result = createLabel(text);
             }
         } else {
-            Label label = LabelFactory.create();
-            label.setText(Messages.get("imobject.none"));
-            result = label;
+            result = createLabel(Messages.get("imobject.none"));
         }
         return result;
 
@@ -225,4 +231,41 @@ public class IMObjectReferenceViewer {
         }
     }
 
+    /**
+     * Sets the width of the viewer, in pixels.
+     *
+     * @param width the width or {@code -1} to have a dynamic width
+     */
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    /**
+     * Returns the width of the viewer, in pixels.
+     *
+     * @return the width or {@code -1} indicating a dynamic width
+     */
+    public int getWidth() {
+        return width;
+    }
+
+    /**
+     * Creates a label.
+     *
+     * @param text the text
+     * @return the label
+     */
+    private Label createLabel(String text) {
+        Label result;
+        if (width > 0) {
+            LabelEx label = new LabelEx();
+            label.setWidth(new Extent(width));
+            result = label;
+        } else {
+            result = new Label();
+        }
+        result.setStyleName(style != null ? style : Styles.DEFAULT);
+        result.setText(text);
+        return result;
+    }
 }

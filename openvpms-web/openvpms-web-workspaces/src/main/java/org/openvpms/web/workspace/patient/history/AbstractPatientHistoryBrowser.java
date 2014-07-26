@@ -17,16 +17,28 @@
 package org.openvpms.web.workspace.patient.history;
 
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.collections4.ComparatorUtils;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
+import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.echo.event.ActionListener;
 
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -52,12 +64,32 @@ public abstract class AbstractPatientHistoryBrowser extends IMObjectTableBrowser
     /**
      * Select an object.
      *
-     * @param object the object to select
+     * @param object the object to select. May be {@code null} to deselect the current selection
+     * @return {@code true} if the object was selected, {@code false} if it doesn't exist in the current view
      */
     @Override
-    public void setSelected(Act object) {
-        super.setSelected(object);
+    public boolean setSelected(Act object) {
+        return setSelected(object, false);
+    }
+
+    /**
+     * Select an object.
+     *
+     * @param object the object to select. May be {@code null} to deselect the current selection
+     * @param find   if {@code true}, page through the result set looking for the object. Note: only works for parent
+     *               acts
+     * @return {@code true} if the object was selected, {@code false} if it doesn't exist in the current view
+     */
+    public boolean setSelected(Act object, boolean find) {
+        boolean result = super.setSelected(object);
+        if (!result && find) {
+            int page = getPage(object);
+            if (getTable().getModel().setPage(page)) {
+                result = super.setSelected(object);
+            }
+        }
         onSelected();
+        return result;
     }
 
     /**
@@ -163,6 +195,34 @@ public abstract class AbstractPatientHistoryBrowser extends IMObjectTableBrowser
     @Override
     protected AbstractPatientHistoryTableModel getTableModel() {
         return (AbstractPatientHistoryTableModel) super.getTableModel();
+    }
+
+    /**
+     * Determines the page that an object appears on.
+     *
+     * @param object the object
+     * @return the page
+     */
+    protected int getPage(Act object) {
+        int page = 0;
+        ActBean bean = new ActBean(object);
+        IMObjectReference patient = bean.getNodeParticipantRef("patient");
+        if (patient != null) {
+            ArchetypeQuery query = new ArchetypeQuery(object.getArchetypeId());
+            query.add(new ParticipantConstraint("patient", PatientArchetypes.PATIENT_PARTICIPATION, patient));
+            for (SortConstraint sort : ActQuery.DESCENDING_START_TIME) {
+                query.add(sort);
+            }
+            Comparator<Date> comparator = ComparatorUtils.reversedComparator(new Comparator<Date>() {
+                @Override
+                public int compare(Date o1, Date o2) {
+                    return DateRules.compareTo(o1, o2);
+                }
+            });
+            page = QueryHelper.getPage(query, getQuery().getMaxResults(), object.getId(), object.getActivityStartTime(),
+                                       "startTime", comparator);
+        }
+        return page;
     }
 
     /**

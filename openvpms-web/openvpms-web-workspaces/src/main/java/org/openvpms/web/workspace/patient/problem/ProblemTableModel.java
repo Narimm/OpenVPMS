@@ -16,15 +16,18 @@
 
 package org.openvpms.web.workspace.patient.problem;
 
+import echopointng.LabelEx;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.LookupNameHelper;
-import org.openvpms.web.echo.factory.GridFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryTableModel;
@@ -44,6 +47,23 @@ public class ProblemTableModel extends AbstractPatientHistoryTableModel {
      */
     public ProblemTableModel(LayoutContext context) {
         super(PatientArchetypes.CLINICAL_PROBLEM, context);
+    }
+
+    /**
+     * Returns a component for the act type.
+     * <p/>
+     * This indents the type depending on the act's depth in the act hierarchy.
+     *
+     * @param bean the act
+     * @param row  the current row
+     * @return a component representing the act type
+     */
+    @Override
+    protected Component getType(ActBean bean, int row) {
+        if (bean.isA(PatientArchetypes.CLINICAL_EVENT)) {
+            return getHyperlinkedType(bean, row);
+        }
+        return super.getType(bean, row);
     }
 
     /**
@@ -69,7 +89,16 @@ public class ProblemTableModel extends AbstractPatientHistoryTableModel {
             dateLabel.setText(date);
             titleLabel.setText(title);
             complaintLabel.setText(Messages.format("patient.record.summary.presentingComplaint", presentingComplaint));
-            result = GridFactory.create(2, dateLabel, titleLabel, LabelFactory.create(), complaintLabel);
+
+            // hack to pad the presenting complaint to line up with the item text
+            Row row1 = RowFactory.create(Styles.CELL_SPACING, dateLabel, titleLabel);
+            Row padding = RowFactory.create(Styles.INSET, new Label(""));
+            LabelEx spacer1 = new LabelEx("");
+            LabelEx spacer2 = new LabelEx("");
+            spacer1.setStyleName("MedicalRecordSummary.date");
+            spacer2.setStyleName("MedicalRecordSummary.type");
+            Row row2 = RowFactory.create(Styles.CELL_SPACING, padding, spacer1, spacer2, complaintLabel);
+            result = ColumnFactory.create(Styles.CELL_SPACING, row1, row2);
         } else {
             String date = formatDateRange(bean);
             String text = formatProblemText(bean, row);

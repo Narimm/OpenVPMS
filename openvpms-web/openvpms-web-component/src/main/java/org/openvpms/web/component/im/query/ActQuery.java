@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -40,6 +40,14 @@ import java.util.Date;
  * @author Tim Anderson
  */
 public abstract class ActQuery<T> extends AbstractArchetypeQuery<T> {
+
+    /**
+     * The default sort constraint. Sorts on descending start time and ascending id.
+     */
+    public static final SortConstraint[] DESCENDING_START_TIME = {
+            new NodeSortConstraint("startTime", false),
+            new NodeSortConstraint("id")
+    };
 
     /**
      * The participant node name.
@@ -76,14 +84,6 @@ public abstract class ActQuery<T> extends AbstractArchetypeQuery<T> {
      */
     private LookupField statusSelector;
 
-    /**
-     * The default sort constraint.
-     */
-    private static final SortConstraint[] DEFAULT_SORT = {
-            new NodeSortConstraint("startTime", false),
-            new NodeSortConstraint("id")
-    };
-
 
     /**
      * Constructs an {@link ActQuery}.
@@ -101,7 +101,7 @@ public abstract class ActQuery<T> extends AbstractArchetypeQuery<T> {
         setParticipantConstraint(entity, participant, participation);
         this.statusLookups = statuses;
         this.statuses = new String[0];
-        setDefaultSortConstraint(DEFAULT_SORT);
+        setDefaultSortConstraint(DESCENDING_START_TIME);
     }
 
     /**
@@ -134,7 +134,7 @@ public abstract class ActQuery<T> extends AbstractArchetypeQuery<T> {
         setParticipantConstraint(entity, participant, participation);
         this.statuses = statuses;
         statusLookups = null;
-        setDefaultSortConstraint(DEFAULT_SORT);
+        setDefaultSortConstraint(DESCENDING_START_TIME);
     }
 
     /**

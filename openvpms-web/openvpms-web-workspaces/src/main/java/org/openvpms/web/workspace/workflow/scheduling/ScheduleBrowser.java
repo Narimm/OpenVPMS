@@ -154,9 +154,10 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     /**
      * Select an object.
      *
-     * @param object the object to select. May be {@code null}
+     * @param object the object to select. May be {@code null} to deselect the current selection
+     * @return {@code true} if the object was selected, {@code false} if it doesn't exist in the current view
      */
-    public void setSelected(PropertySet object) {
+    public boolean setSelected(PropertySet object) {
         boolean found = false;
         selected = object;
         if (selected != null) {
@@ -178,6 +179,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
             selectedSchedule = null;
             getTable().getSelectionModel().clearSelection();
         }
+        return found;
     }
 
     /**

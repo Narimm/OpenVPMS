@@ -21,10 +21,13 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -155,6 +158,20 @@ public class RecordBrowser extends TabbedBrowser<Act> {
         prescriptionArchetypes = Archetypes.create(PatientArchetypes.PRESCRIPTION, Act.class);
 
         LayoutContext layout = new DefaultLayoutContext(context, help);
+        layout.setContextSwitchListener(new ContextSwitchListener() {
+            @Override
+            public void switchTo(IMObject object) {
+                if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_PROBLEM)) {
+                    showProblem((Act) object);
+                } else if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_EVENT)) {
+                    showEvent((Act) object);
+                }
+            }
+
+            @Override
+            public void switchTo(String shortName) {
+            }
+        });
 
         history = createHistoryBrowser(query, layout);
         historyIndex = addBrowser(Messages.get("button.summary"), history);
@@ -379,6 +396,26 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      */
     protected CRUDWindow<Act> createPrescriptionCRUDWindow(Context context, HelpContext help) {
         return new PatientPrescriptionCRUDWindow(prescriptionArchetypes, context, help.subtopic("prescription"));
+    }
+
+    /**
+     * Switches to the history browser, selecting an event.
+     *
+     * @param object the event
+     */
+    private void showEvent(Act object) {
+        history.setSelected(object, true);
+        setSelectedBrowser(historyIndex);
+    }
+
+    /**
+     * Switches to the problem browser, selecting a problem.
+     *
+     * @param object the problem
+     */
+    private void showProblem(Act object) {
+        problems.setSelected(object, true);
+        setSelectedBrowser(problemIndex);
     }
 
 }

@@ -25,8 +25,7 @@ import java.util.List;
 /**
  * Browser for objects matching query criteria.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public interface Browser<T> {
 
@@ -40,17 +39,17 @@ public interface Browser<T> {
     /**
      * Returns the selected object.
      *
-     * @return the selected object, or <code>null</code> if none has been
-     *         selected.
+     * @return the selected object, or {@code null} if none has been selected.
      */
     T getSelected();
 
     /**
      * Select an object.
      *
-     * @param object the object to select
+     * @param object the object to select. May be {@code null} to deselect the current selection
+     * @return {@code true} if the object was selected, {@code false} if it doesn't exist in the current view
      */
-    void setSelected(T object);
+    boolean setSelected(T object);
 
     /**
      * Returns the objects matching the query.

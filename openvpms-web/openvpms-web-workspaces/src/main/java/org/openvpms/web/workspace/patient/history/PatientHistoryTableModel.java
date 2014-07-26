@@ -65,6 +65,26 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
     }
 
     /**
+     * Returns a component for the act type.
+     * <p/>
+     * This indents the type depending on the acts depth in the act hierarchy.
+     *
+     * @param bean the act
+     * @param row  the current row
+     * @return a component representing the act type
+     */
+    @Override
+    protected Component getType(ActBean bean, int row) {
+        Component result;
+        if (bean.isA(PatientArchetypes.CLINICAL_PROBLEM)) {
+            result = getHyperlinkedType(bean, row);
+        } else {
+            result = super.getType(bean, row);
+        }
+        return result;
+    }
+
+    /**
      * Returns the name of an act to display in the Type column.
      *
      * @param bean the act
