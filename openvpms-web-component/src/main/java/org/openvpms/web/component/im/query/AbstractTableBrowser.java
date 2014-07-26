@@ -114,10 +114,11 @@ public abstract class AbstractTableBrowser<T> extends AbstractBrowser<T> {
     /**
      * Select an object.
      *
-     * @param object the object to select
+     * @param object the object to select. May be {@code null} to deselect the current selection
+     * @return {@code true} if the object was selected, {@code false} if it doesn't exist in the current view
      */
-    public void setSelected(T object) {
-        getTable().getTable().setSelected(object);
+    public boolean setSelected(T object) {
+        return getTable().getTable().setSelected(object);
     }
 
     /**

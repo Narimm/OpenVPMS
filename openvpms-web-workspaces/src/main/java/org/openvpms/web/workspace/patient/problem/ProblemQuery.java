@@ -52,6 +52,15 @@ import org.openvpms.web.resource.i18n.Messages;
 public class ProblemQuery extends DateRangeActQuery<Act> {
 
     /**
+     * Sort such that Unresolved acts are displayed first, ordered on most recent timestamp.
+     */
+    public static final SortConstraint[] SORT = {
+            new NodeSortConstraint("status", false),
+            new NodeSortConstraint("startTime", false),
+            new NodeSortConstraint("id")
+    };
+
+    /**
      * The set of possible act item short names.
      */
     private String[] shortNames;
@@ -88,16 +97,6 @@ public class ProblemQuery extends DateRangeActQuery<Act> {
 
 
     /**
-     * Sort such that Unresolved acts are displayed first, ordered on most recent timestamp.
-     */
-    private static final SortConstraint[] SORT_CONSTRAINTS = {
-            new NodeSortConstraint("status", false),
-            new NodeSortConstraint("startTime", false),
-            new NodeSortConstraint("id")
-    };
-
-
-    /**
      * Constructs a {@link ProblemQuery}.
      *
      * @param patient the patient to query
@@ -118,7 +117,7 @@ public class ProblemQuery extends DateRangeActQuery<Act> {
         shortNameSelector.addActionListener(listener);
         shortNameSelector.setCellRenderer(new ShortNameListCellRenderer());
         setAuto(true);
-        setDefaultSortConstraint(SORT_CONSTRAINTS);
+        setDefaultSortConstraint(SORT);
     }
 
     /**
