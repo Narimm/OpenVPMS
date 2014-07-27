@@ -121,6 +121,24 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
     }
 
     /**
+     * Determines if all dates are being selected.
+     *
+     * @return {@code true} if all dates are being selected
+     */
+    public boolean getAllDates() {
+        return getDateRange().getAllDates();
+    }
+
+    /**
+     * Sets the state of the <em>allDates</em> checkbox, if present.
+     *
+     * @param selected the state of the <em>allDates</em> checkbox
+     */
+    public void setAllDates(boolean selected) {
+        getDateRange().setAllDates(selected);
+    }
+
+    /**
      * Returns the 'from' date.
      *
      * @return the 'from' date, or {@code null} to query all dates

@@ -20,8 +20,8 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.DateRangeActQuery;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
-import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
@@ -44,7 +44,7 @@ public abstract class AbstractPatientHistoryBrowser extends IMObjectTableBrowser
      * @param model   the table model
      * @param context the layout context
      */
-    public AbstractPatientHistoryBrowser(Query<Act> query, AbstractPatientHistoryTableModel model,
+    public AbstractPatientHistoryBrowser(DateRangeActQuery<Act> query, AbstractPatientHistoryTableModel model,
                                          LayoutContext context) {
         super(query, model, context);
     }
@@ -72,6 +72,13 @@ public abstract class AbstractPatientHistoryBrowser extends IMObjectTableBrowser
         boolean result = super.setSelected(object);
         if (!result && find) {
             int page = getPage(object);
+            DateRangeActQuery<Act> query = getQuery();
+            if (!query.getAllDates()) {
+                // widen the query
+                query.setAllDates(true);
+                query();
+            }
+
             if (getTable().getModel().setPage(page)) {
                 result = super.setSelected(object);
             }
@@ -145,6 +152,16 @@ public abstract class AbstractPatientHistoryBrowser extends IMObjectTableBrowser
      * @return the event, or {@code null} if none is found
      */
     public abstract Act getEvent(Act act);
+
+    /**
+     * Returns the query.
+     *
+     * @return the query
+     */
+    @Override
+    public DateRangeActQuery<Act> getQuery() {
+        return (DateRangeActQuery<Act>) super.getQuery();
+    }
 
     /**
      * Creates a new paged table.
