@@ -18,7 +18,6 @@ package org.openvpms.web.workspace.patient.visit;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
@@ -30,7 +29,7 @@ import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 import java.util.List;
 
 /**
- * A patient medical record browser that provides CRUD operations.
+ * A patient history browser that provides CRUD operations.
  *
  * @author Tim Anderson
  */
@@ -45,17 +44,6 @@ public class VisitHistoryBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
      * The initial event.
      */
     private Act event;
-
-    /**
-     * Constructs a {@link VisitHistoryBrowserCRUDWindow}.
-     *
-     * @param query   the patient medical record query
-     * @param context the context
-     * @param help    the help context
-     */
-    public VisitHistoryBrowserCRUDWindow(PatientHistoryQuery query, Context context, HelpContext help) {
-        this(query, new PatientHistoryBrowser(query, new DefaultLayoutContext(context, help)), context, help);
-    }
 
     /**
      * Constructs a {@link VisitHistoryBrowserCRUDWindow}.
@@ -152,15 +140,16 @@ public class VisitHistoryBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
     }
 
     /**
-     * Selects the current object. If the object is "double clicked", edits it.
+     * Selects the current object.
      *
      * @param object the selected object
      */
     @Override
-    protected void onSelected(Act object) {
+    protected void select(Act object) {
+        super.select(object);
         PatientHistoryBrowser browser = getBrowser();
         AbstractPatientHistoryCRUDWindow window = getWindow();
         window.setEvent(browser.getEvent(object));
-        super.onSelected(object);
     }
+
 }

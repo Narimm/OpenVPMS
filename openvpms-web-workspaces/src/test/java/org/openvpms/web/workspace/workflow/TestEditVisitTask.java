@@ -20,11 +20,14 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.ContextSwitchListener;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.customer.charge.ChargeEditorQueue;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
+import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 import org.openvpms.web.workspace.patient.visit.VisitCRUDWindow;
 import org.openvpms.web.workspace.patient.visit.VisitChargeCRUDWindow;
@@ -69,7 +72,7 @@ public class TestEditVisitTask extends EditVisitTask implements EditorQueueHandl
                                             final HelpContext help) {
         return new VisitEditor(customer, patient, event, invoice, context, context.getHelpContext()) {
             @Override
-            protected VisitHistoryBrowserCRUDWindow createHistoryBrowserCRUDWindow(Context context) {
+            protected VisitHistoryBrowserCRUDWindow createHistoryBrowserCRUDWindow(Context context, ContextSwitchListener listener) {
                 return new TestVisitBrowserCRUDWindow(getQuery(), context);
             }
 
@@ -94,7 +97,9 @@ public class TestEditVisitTask extends EditVisitTask implements EditorQueueHandl
          * @param context the context
          */
         public TestVisitBrowserCRUDWindow(PatientHistoryQuery query, Context context) {
-            super(query, context, new HelpContext("foo", null));
+            super(query, new PatientHistoryBrowser(query,
+                                                   new DefaultLayoutContext(context, new HelpContext("foo", null))),
+                  context, new HelpContext("foo", null));
         }
 
         protected VisitCRUDWindow createWindow(Context context) {

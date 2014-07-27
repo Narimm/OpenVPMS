@@ -137,6 +137,16 @@ public class PatientHistoryBrowser extends AbstractPatientHistoryBrowser {
     }
 
     /**
+     * Determines the page that an object appears on.
+     *
+     * @param object the object
+     * @return the page
+     */
+    protected int getPage(Act object) {
+        return getQuery().getPage(object);
+    }
+
+    /**
      * Creates a new table model.
      *
      * @param context the layout context

@@ -16,19 +16,17 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.apache.commons.collections4.ComparatorUtils;
 import org.junit.Test;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 
 import java.util.Comparator;
-import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
 import static org.openvpms.archetype.rules.patient.PatientTestHelper.createEvent;
@@ -42,7 +40,7 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
 public class QueryHelperTestCase extends ArchetypeServiceTest {
 
     /**
-     * Tests the {@link QueryHelper#getPage(ArchetypeQuery, int, long, Comparable, String, Comparator)} method.
+     * Tests the {@link QueryHelper#getPage(IMObject, ArchetypeQuery, int, String, boolean, Comparator)} method.
      */
     @Test
     public void testGetPage() {
@@ -57,21 +55,12 @@ public class QueryHelperTestCase extends ArchetypeServiceTest {
         // check query on ascending start time
         ArchetypeQuery query1 = new ArchetypeQuery(PatientArchetypes.CLINICAL_EVENT);
         query1.add(new ParticipantConstraint("patient", PatientArchetypes.PATIENT_PARTICIPATION, patient));
-        query1.add(new NodeSortConstraint("startTime"));
-        query1.add(new NodeSortConstraint("id"));
 
-        Comparator<Date> comparator = new Comparator<Date>() {
-            @Override
-            public int compare(Date o1, Date o2) {
-                return DateRules.compareTo(o1, o2);
-            }
-        };
-
-        checkPage(0, query1, act1, comparator);
-        checkPage(0, query1, act2, comparator);
-        checkPage(1, query1, act3, comparator);
-        checkPage(1, query1, act4, comparator);
-        checkPage(2, query1, act5, comparator);
+        checkPage(0, query1, act1, true);
+        checkPage(0, query1, act2, true);
+        checkPage(1, query1, act3, true);
+        checkPage(1, query1, act4, true);
+        checkPage(2, query1, act5, true);
 
         // check query on descending start time. Also need to reverse the comparator
         ArchetypeQuery query2 = new ArchetypeQuery(PatientArchetypes.CLINICAL_EVENT);
@@ -79,25 +68,23 @@ public class QueryHelperTestCase extends ArchetypeServiceTest {
         query2.add(new NodeSortConstraint("startTime", false));
         query2.add(new NodeSortConstraint("id"));
 
-        Comparator<Date> reverse = ComparatorUtils.reversedComparator(comparator);
-
-        checkPage(0, query2, act5, reverse);
-        checkPage(0, query2, act4, reverse);
-        checkPage(1, query2, act3, reverse);
-        checkPage(1, query2, act2, reverse);
-        checkPage(2, query2, act1, reverse);
+        checkPage(0, query2, act5, false);
+        checkPage(0, query2, act4, false);
+        checkPage(1, query2, act3, false);
+        checkPage(1, query2, act2, false);
+        checkPage(2, query2, act1, false);
     }
 
     /**
      * Verifies that an act appears on the expected page, when the page size is 2.
      *
-     * @param expected   the expected page
-     * @param query      the query
-     * @param act        the act to find
-     * @param comparator the comparator
+     * @param expected  the expected page
+     * @param query     the query
+     * @param act       the act to find
+     * @param ascending if {@code true} sort on {@code node} in ascending order, else use descending order
      */
-    private void checkPage(int expected, ArchetypeQuery query, Act act, Comparator<Date> comparator) {
-        int page = QueryHelper.getPage(query, 2, act.getId(), act.getActivityStartTime(), "startTime", comparator);
+    private void checkPage(int expected, ArchetypeQuery query, Act act, boolean ascending) {
+        int page = QueryHelper.getPage(act, query, 2, "startTime", ascending, PageLocator.DATE_COMPARATOR);
         assertEquals(expected, page);
     }
 

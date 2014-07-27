@@ -13,6 +13,7 @@
  *
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient.visit;
 
 import nextapp.echo2.app.Component;
@@ -162,7 +163,7 @@ public class BrowserCRUDWindow<T extends Act> implements VisitEditorTab {
     public void setSelected(T object) {
         browser.setSelected(object);
         if (window != null) {
-            window.setObject(browser.getSelected());
+            select(browser.getSelected());
         }
     }
 
@@ -202,9 +203,14 @@ public class BrowserCRUDWindow<T extends Act> implements VisitEditorTab {
             public void selected(T object) {
                 onSelected(object);
             }
+
+            @Override
+            public void browsed(T object) {
+                onBrowsed(object);
+            }
         });
         if (window != null) {
-            window.setObject(browser.getSelected());
+            select(browser.getSelected());
         }
     }
 
@@ -244,16 +250,36 @@ public class BrowserCRUDWindow<T extends Act> implements VisitEditorTab {
      * @param object the selected object
      */
     protected void onSelected(T object) {
-        window.setObject(object);
+        select(object);
         if (click.isDoubleClick(object.getId())) {
             window.edit();
         }
     }
 
     /**
+     * Selects the current object.
+     *
+     * @param object the selected object
+     */
+    protected void select(T object) {
+        window.setObject(object);
+    }
+
+    /**
+     * Invoked when a browser object is viewed (aka 'browsed').
+     * <p/>
+     * This implementation sets the object in the CRUD window.
+     *
+     * @param object the selected object
+     */
+    protected void onBrowsed(T object) {
+        select(object);
+    }
+
+    /**
      * Refresh the browser.
      *
-     * @param object the object to select. May be <tt>null</tt>
+     * @param object the object to select. May be {@code null}
      */
     private void refreshBrowser(T object) {
         browser.query();

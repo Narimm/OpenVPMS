@@ -139,8 +139,13 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
                         }
                     }
                 }
+            } else if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) {
+                result = act;
             } else {
-                result = getTableModel().getParent(act, PatientArchetypes.CLINICAL_EVENT);
+                ActBean bean = new ActBean(act);
+                if (bean.getNodeSourceObjectRef("event") != null) {
+                    result = getTableModel().getParent(act, PatientArchetypes.CLINICAL_EVENT);
+                }
             }
         }
         return result;
@@ -170,6 +175,16 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
     protected void initTable(PagedIMTable<Act> table) {
         super.initTable(table);
         table.getTable().setDefaultRenderer(Object.class, RENDERER);
+    }
+
+    /**
+     * Determines the page that an object appears on.
+     *
+     * @param object the object
+     * @return the page
+     */
+    protected int getPage(Act object) {
+        return ((ProblemQuery) getQuery()).getPage(object);
     }
 
     private class PagedProblemTableModel extends PagedActHierarchyTableModel<Act> {

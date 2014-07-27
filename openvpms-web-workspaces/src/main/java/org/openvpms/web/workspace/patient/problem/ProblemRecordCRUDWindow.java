@@ -91,6 +91,8 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         if (object != null) {
             if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_PROBLEM)) {
                 setProblem(object);
+            } else if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_EVENT)) {
+                setProblem(null); // can't determine which problem to use.
             } else {
                 setProblem(getSource(object, PatientArchetypes.CLINICAL_PROBLEM));
             }
@@ -104,6 +106,15 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      */
     public void setProblem(Act problem) {
         this.problem = problem;
+    }
+
+    /**
+     * Returns the current patient clinical problem.
+     *
+     * @return the current problem. May be {@code null}
+     */
+    public Act getProblem() {
+        return problem;
     }
 
     /**
@@ -276,18 +287,6 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     private static class ProblemActions extends ActActions<Act> {
 
         public static final ProblemActions INSTANCE = new ProblemActions();
-
-        /**
-         * Determines if an act can be edited.
-         *
-         * @param act the act to check
-         * @return {@code true}
-         */
-        @Override
-        public boolean canEdit(Act act) {
-            // @todo fix when statuses are sorted out
-            return true;
-        }
 
         /**
          * Determines if an act can be deleted.

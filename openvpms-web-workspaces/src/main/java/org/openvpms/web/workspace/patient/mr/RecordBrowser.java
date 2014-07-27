@@ -48,17 +48,19 @@ import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 import org.openvpms.web.workspace.patient.problem.ProblemBrowser;
 import org.openvpms.web.workspace.patient.problem.ProblemQuery;
 import org.openvpms.web.workspace.patient.problem.ProblemRecordCRUDWindow;
+import org.openvpms.web.workspace.patient.visit.VisitEditor;
 
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_PARTICIPATION;
 
 
 /**
  * Patient record browser.
+ * <p/>
+ * TODO - refactor along the lines of {@link VisitEditor}.
  *
  * @author Tim Anderson
  */
 public class RecordBrowser extends TabbedBrowser<Act> {
-
 
     /**
      * The document archetypes.
@@ -161,11 +163,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
         layout.setContextSwitchListener(new ContextSwitchListener() {
             @Override
             public void switchTo(IMObject object) {
-                if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_PROBLEM)) {
-                    showProblem((Act) object);
-                } else if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_EVENT)) {
-                    showEvent((Act) object);
-                }
+                followHyperlink(object);
             }
 
             @Override
@@ -182,6 +180,20 @@ public class RecordBrowser extends TabbedBrowser<Act> {
         chargesIndex = addBrowser(Messages.get("button.charges"), createChargeBrowser(patient, layout));
         prescriptionIndex = addBrowser(Messages.get("button.prescriptions"),
                                        createPrescriptionBrowser(patient, layout));
+    }
+
+    /**
+     * Displays the history tab.
+     */
+    public void showHistory() {
+        setSelectedBrowser(historyIndex);
+    }
+
+    /**
+     * Displays the problems tab.
+     */
+    public void showProblems() {
+        setSelectedBrowser(problemIndex);
     }
 
     /**
@@ -244,6 +256,15 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      */
     public PatientHistoryBrowser getHistory() {
         return history;
+    }
+
+    /**
+     * Returns the problems browser.
+     *
+     * @return te problems browser
+     */
+    public ProblemBrowser getProblems() {
+        return problems;
     }
 
     /**
@@ -399,13 +420,32 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     }
 
     /**
+     * Follow a hyperlink.
+     * <p/>
+     * If the object is a:
+     * <ul>
+     * <li>problem, the Problems tab will be shown, and the problem selected</li>
+     * <li>event, the Summary tab will be shown, and the event selected</li>
+     * </ul>
+     *
+     * @param object the object to display
+     */
+    protected void followHyperlink(IMObject object) {
+        if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_PROBLEM)) {
+            showProblem((Act) object);
+        } else if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_EVENT)) {
+            showEvent((Act) object);
+        }
+    }
+
+    /**
      * Switches to the history browser, selecting an event.
      *
      * @param object the event
      */
     private void showEvent(Act object) {
+        showHistory();
         history.setSelected(object, true);
-        setSelectedBrowser(historyIndex);
     }
 
     /**
@@ -414,8 +454,8 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      * @param object the problem
      */
     private void showProblem(Act object) {
+        showProblems();
         problems.setSelected(object, true);
-        setSelectedBrowser(problemIndex);
     }
 
 }
