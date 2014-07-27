@@ -58,8 +58,8 @@ import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
 import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryCRUDWindow;
 import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
-import org.openvpms.web.workspace.patient.history.PatientHistoryQueryFactory;
 import org.openvpms.web.workspace.patient.mr.PatientDocumentQuery;
+import org.openvpms.web.workspace.patient.mr.PatientQueryFactory;
 import org.openvpms.web.workspace.patient.problem.ProblemBrowser;
 import org.openvpms.web.workspace.patient.problem.ProblemQuery;
 import org.openvpms.web.workspace.patient.problem.ProblemRecordCRUDWindow;
@@ -205,7 +205,7 @@ public class VisitEditor {
         this.context = context;
         this.help = help;
 
-        query = PatientHistoryQueryFactory.create(patient, context.getPractice());
+        query = PatientQueryFactory.createHistoryQuery(patient, context.getPractice());
         query.setAllDates(true);
         query.setFrom(event.getActivityStartTime());
         query.setTo(DateRules.getDate(event.getActivityStartTime(), 1, DateUnits.DAYS));
@@ -543,7 +543,7 @@ public class VisitEditor {
      * @param listener listener for context switch events. May be {@code null}
      */
     protected VisitProblemBrowserCRUDWindow createProblemBrowserCRUDWindow(Context context, ContextSwitchListener listener) {
-        ProblemQuery query = new ProblemQuery(context.getPatient());
+        ProblemQuery query = PatientQueryFactory.createProblemQuery(patient, context.getPractice());
         DefaultLayoutContext layout = new DefaultLayoutContext(context, help);
         layout.setContextSwitchListener(listener);
         ProblemBrowser browser = new ProblemBrowser(query, layout);

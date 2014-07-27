@@ -148,15 +148,6 @@ public class PatientHistoryQuery extends DateRangeActQuery<Act> {
     }
 
     /**
-     * Sets the state of the <em>allDates</em> checkbox, if present.
-     *
-     * @param selected the state of the <em>allDates</em> checkbox
-     */
-    public void setAllDates(boolean selected) {
-        getDateRange().setAllDates(selected);
-    }
-
-    /**
      * Determines if the visit items are being sorted ascending or descending.
      *
      * @param ascending if {@code true} visit items are to be sorted ascending; {@code false} if descending

@@ -40,7 +40,6 @@ import org.openvpms.web.workspace.patient.PatientRecordCRUDWindow;
 import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryCRUDWindow;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
-import org.openvpms.web.workspace.patient.history.PatientHistoryQueryFactory;
 import org.openvpms.web.workspace.patient.problem.ProblemRecordCRUDWindow;
 import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 
@@ -156,7 +155,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      * @return a new query
      */
     protected ActQuery<Act> createQuery() {
-        return PatientHistoryQueryFactory.create(getObject(), getContext().getPractice());
+        return PatientQueryFactory.createHistoryQuery(getObject(), getContext().getPractice());
     }
 
     /**
