@@ -107,6 +107,7 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
             // ensure the table model has the selected child act short names prior to performing the query
             ProblemQuery query = (ProblemQuery) getQuery();
             pagedModel.setShortNames(query.getActItemShortNames());
+            pagedModel.setSortAscending(query.isSortAscending());
         }
         super.query();
     }
@@ -161,6 +162,7 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
     protected PagedIMTable<Act> createTable(IMTableModel<Act> model) {
         ProblemQuery query = (ProblemQuery) getQuery();
         pagedModel = new PagedProblemTableModel(model, query, getContext().getContext());
+        pagedModel.setSortAscending(query.isSortAscending());
         PagedIMTable<Act> result = super.createTable(pagedModel);
         initTable(result);
         return result;
