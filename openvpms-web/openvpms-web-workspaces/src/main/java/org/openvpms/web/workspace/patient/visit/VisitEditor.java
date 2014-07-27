@@ -21,14 +21,18 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ChangeEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
@@ -131,7 +135,7 @@ public class VisitEditor {
     /**
      * The problem CRUD window, or {@code null} if problem view is disabled.
      */
-    private BrowserCRUDWindow<Act> problemWindow;
+    private VisitProblemBrowserCRUDWindow problemWindow;
 
     /**
      * The invoice CRUD window.
@@ -206,12 +210,27 @@ public class VisitEditor {
         query.setFrom(event.getActivityStartTime());
         query.setTo(DateRules.getDate(event.getActivityStartTime(), 1, DateUnits.DAYS));
 
-        historyWindow = createHistoryBrowserCRUDWindow(context);
+        boolean showProblems = showProblems(context);
+        ContextSwitchListener listener = null;
+        if (showProblems) {
+            listener = new ContextSwitchListener() {
+                @Override
+                public void switchTo(IMObject object) {
+                    followHyperlink(object);
+                }
+
+                @Override
+                public void switchTo(String shortName) {
+                }
+            };
+        }
+
+        historyWindow = createHistoryBrowserCRUDWindow(context, listener);
         historyWindow.setEvent(event);
         historyWindow.setSelected(event);
 
-        if (showProblems(context)) {
-            problemWindow = createProblemBrowserCRUDWindow(context);
+        if (showProblems) {
+            problemWindow = createProblemBrowserCRUDWindow(context, listener);
         }
 
         chargeWindow = createVisitChargeCRUDWindow(event, context);
@@ -254,12 +273,21 @@ public class VisitEditor {
     }
 
     /**
+     * Returns the problem browser.
+     *
+     * @return the problem browser, or {@code null} if it has been suppressed
+     */
+    public ProblemBrowser getProblemBrowser() {
+        return problemWindow != null ? problemWindow.getBrowser() : null;
+    }
+
+    /**
      * Returns the problem CRUD window.
      *
      * @return the problem CRUD window, or {@code null} if it has been suppressed
      */
     public ProblemRecordCRUDWindow getProblemWindow() {
-        return problemWindow != null ? (ProblemRecordCRUDWindow) problemWindow.getWindow() : null;
+        return problemWindow != null ? problemWindow.getWindow() : null;
     }
 
     /**
@@ -483,12 +511,16 @@ public class VisitEditor {
     /**
      * Creates a new visit browser CRUD window.
      *
-     * @param context the context
+     * @param context  the context
+     * @param listener listener for context switch events. May be {@code null}
      * @return a new visit browser CRUD window
      */
-    protected VisitHistoryBrowserCRUDWindow createHistoryBrowserCRUDWindow(Context context) {
+    protected VisitHistoryBrowserCRUDWindow createHistoryBrowserCRUDWindow(Context context,
+                                                                           ContextSwitchListener listener) {
+        DefaultLayoutContext layout = new DefaultLayoutContext(context, help.subtopic("summary"));
+        layout.setContextSwitchListener(listener);
         VisitHistoryBrowserCRUDWindow result = new VisitHistoryBrowserCRUDWindow(
-                query, context, help.subtopic("summary"));
+                query, new PatientHistoryBrowser(query, layout), context, layout.getHelpContext());
         result.setId(HISTORY_TAB);
         return result;
     }
@@ -507,12 +539,16 @@ public class VisitEditor {
     /**
      * Creates a new problem browser CRUD window.
      *
-     * @param context the context
+     * @param context  the context
+     * @param listener listener for context switch events. May be {@code null}
      */
-    protected BrowserCRUDWindow<Act> createProblemBrowserCRUDWindow(Context context) {
+    protected VisitProblemBrowserCRUDWindow createProblemBrowserCRUDWindow(Context context, ContextSwitchListener listener) {
         ProblemQuery query = new ProblemQuery(context.getPatient());
-        ProblemBrowser browser = new ProblemBrowser(query, new DefaultLayoutContext(context, help));
-        BrowserCRUDWindow<Act> result = new BrowserCRUDWindow<Act>(browser, new ProblemRecordCRUDWindow(context, help));
+        DefaultLayoutContext layout = new DefaultLayoutContext(context, help);
+        layout.setContextSwitchListener(listener);
+        ProblemBrowser browser = new ProblemBrowser(query, layout);
+        VisitProblemBrowserCRUDWindow result = new VisitProblemBrowserCRUDWindow(
+                browser, new ProblemRecordCRUDWindow(context, help));
         result.setId(PROBLEM_TAB);
         return result;
     }
@@ -760,6 +796,28 @@ public class VisitEditor {
      */
     private void updateVisitStatus() {
         Retryer.run(new VisitStatusUpdater());
+    }
+
+    /**
+     * Follow a hyperlink.
+     * <p/>
+     * If the object is a:
+     * <ul>
+     * <li>problem, the Problems tab will be shown, and the problem selected</li>
+     * <li>event, the Summary tab will be shown, and the event selected</li>
+     * </ul>
+     *
+     * @param object the object to display
+     */
+    protected void followHyperlink(IMObject object) {
+        if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_PROBLEM) && problemWindow != null) {
+            selectTab(PROBLEM_TAB);
+            ProblemBrowser browser = problemWindow.getBrowser();
+            browser.setSelected((Act) object, true);
+        } else if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_EVENT)) {
+            selectTab(HISTORY_TAB);
+            getHistoryBrowser().setSelected((Act) object, true);
+        }
     }
 
     private class VisitStatusUpdater extends AbstractRetryable {

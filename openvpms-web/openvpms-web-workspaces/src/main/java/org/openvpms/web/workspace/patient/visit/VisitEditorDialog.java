@@ -142,6 +142,9 @@ public class VisitEditorDialog extends PopupDialog {
             case VisitEditor.HISTORY_TAB:
                 onHistorySelected();
                 break;
+            case VisitEditor.PROBLEM_TAB:
+                onProblemsSelected();
+                break;
             case VisitEditor.INVOICE_TAB:
                 onInvoiceSelected();
                 break;
@@ -201,6 +204,16 @@ public class VisitEditorDialog extends PopupDialog {
      */
     private void onHistorySelected() {
         setHistoryButtons();
+    }
+
+    /**
+     * Invoked when the problems tab is selected.
+     * <p/>
+     * Updates the dialog buttons
+     */
+    private void onProblemsSelected() {
+        ButtonSet buttons = setDefaultButtons(false);
+        editor.setButtons(buttons);
     }
 
     /**

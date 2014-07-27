@@ -41,6 +41,7 @@ import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryCRUDWindow;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQueryFactory;
+import org.openvpms.web.workspace.patient.problem.ProblemRecordCRUDWindow;
 import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 
 
@@ -210,18 +211,28 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      */
     @Override
     protected void onBrowserSelected(Act act) {
-        CRUDWindow<Act> window = getCRUDWindow();
         super.onBrowserSelected(act);
-        if (window instanceof PatientRecordCRUDWindow) {
-            Act event = getBrowser().getEvent(act);
-            ((PatientRecordCRUDWindow) window).setEvent(event);
-            if (window instanceof AbstractPatientHistoryCRUDWindow) {
-                long id = (act != null) ? act.getId() : 0;
-                if (click.isDoubleClick(id)) { // avoid holding onto the act
-                    window.edit();
-                }
+        updateSelection(act);
+        CRUDWindow<Act> window = getCRUDWindow();
+        if (window instanceof AbstractPatientHistoryCRUDWindow) {
+            long id = (act != null) ? act.getId() : 0;
+            if (click.isDoubleClick(id)) { // avoid holding onto the act
+                window.edit();
             }
         }
+    }
+
+    /**
+     * Invoked when a browser object is viewed (aka 'browsed').
+     * <p/>
+     * This implementation sets the object in the CRUD window.
+     *
+     * @param object the selected object
+     */
+    @Override
+    protected void onBrowserViewed(Act object) {
+        super.onBrowserViewed(object);
+        updateSelection(object);
     }
 
     /**
@@ -277,6 +288,27 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
         }
         setCRUDWindow(window);
         setWorkspace(createWorkspace());
+    }
+
+    /**
+     * Updates the current selection.
+     * <p/>
+     * TODO - this needs to be cleaned up. The CRUD window needs to be hooked directly into the browsers.
+     * Main limitation at present is that CRUD window is created independently of the browser, and the workspace
+     * acts as the intermediary. Should be refactored along the lines of VisitEditor
+     *
+     * @param object the selected act
+     */
+    private void updateSelection(Act object) {
+        CRUDWindow<Act> window = getCRUDWindow();
+        if (window instanceof PatientRecordCRUDWindow) {
+            Act event = getBrowser().getEvent(object);
+            ((PatientRecordCRUDWindow) window).setEvent(event);
+        }
+        if (window instanceof ProblemRecordCRUDWindow) {
+            Act selectedParent = getBrowser().getProblems().getSelectedParent();
+            ((ProblemRecordCRUDWindow) window).setProblem(selectedParent);
+        }
     }
 
 }
