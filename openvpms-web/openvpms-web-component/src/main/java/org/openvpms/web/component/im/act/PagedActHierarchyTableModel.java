@@ -51,6 +51,11 @@ public class PagedActHierarchyTableModel<T extends Act>
     private final Context context;
 
     /**
+     * Determines if items are being sorted ascending or descending.
+     */
+    private boolean sortAscending = true;
+
+    /**
      * Constructs a {@code PagedActHierarchyTableModel}.
      *
      * @param model      the underlying table model
@@ -87,6 +92,24 @@ public class PagedActHierarchyTableModel<T extends Act>
     }
 
     /**
+     * Determines if the visit items are being sorted ascending or descending.
+     *
+     * @param ascending if {@code true} visit items are to be sorted ascending; {@code false} if descending
+     */
+    public void setSortAscending(boolean ascending) {
+        sortAscending = ascending;
+    }
+
+    /**
+     * Determines if the visit items are being sorted ascending or descending.
+     *
+     * @return {@code true} if visit items are to be sorted ascending; {@code false} if descending
+     */
+    public boolean isSortAscending() {
+        return sortAscending;
+    }
+
+    /**
      * Sets the objects for the current page.
      *
      * @param objects the objects to set
@@ -119,7 +142,10 @@ public class PagedActHierarchyTableModel<T extends Act>
      * @return a new iterator
      */
     protected ActHierarchyIterator<T> createIterator(List<T> objects, String[] shortNames) {
-        return new ActHierarchyIterator<T>(objects, shortNames, maxDepth);
+        ActHierarchyFilter<T> filter = new ActHierarchyFilter<T>(shortNames, true);
+        filter.setSortItemsAscending(sortAscending);
+        return new ActHierarchyIterator<T>(objects, filter, maxDepth);
     }
+
 
 }
