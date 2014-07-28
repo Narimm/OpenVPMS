@@ -135,9 +135,9 @@ public class ProblemQuery extends DateRangeActQuery<Act> {
     }
 
     /**
-     * Determines if the visit items are being sorted ascending or descending.
+     * Determines if the problem items are being sorted ascending or descending.
      *
-     * @param ascending if {@code true} visit items are to be sorted ascending; {@code false} if descending
+     * @param ascending if {@code true} problem items are to be sorted ascending; {@code false} if descending
      */
     public void setSortAscending(boolean ascending) {
         sortAscending = ascending;
@@ -147,9 +147,9 @@ public class ProblemQuery extends DateRangeActQuery<Act> {
     }
 
     /**
-     * Determines if the visit items are being sorted ascending or descending.
+     * Determines if the problem items are being sorted ascending or descending.
      *
-     * @return {@code true} if visit items are being sorted ascending; {@code false} if descending
+     * @return {@code true} if problem items are being sorted ascending; {@code false} if descending
      */
     public boolean isSortAscending() {
         return sortAscending;

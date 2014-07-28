@@ -110,6 +110,15 @@ public class PagedActHierarchyTableModel<T extends Act>
     }
 
     /**
+     * Returns the maximum depth in the hierarchy to display.
+     *
+     * @return the maximum depth in the hierarchy to display or {@code -1} to indicate unlimited depth
+     */
+    public int getMaxDepth() {
+        return maxDepth;
+    }
+
+    /**
      * Sets the objects for the current page.
      *
      * @param objects the objects to set
