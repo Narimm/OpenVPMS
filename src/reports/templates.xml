@@ -186,6 +186,14 @@
               docType="document.other"
               description="Lists patient clinical events"/>
 
+    <template name="Patient Clinical Problems"
+              archetype="act.patientClinicalProblem"
+              reportType="PATIENT"
+              path="Patient Clinical Problem A4.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Lists patient clinical problems"/>
+
     <template name="Patient Reminders Report"
               archetype="act.patientReminder"
               reportType="PATIENT"
