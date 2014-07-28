@@ -27,15 +27,21 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.component.im.print.IMObjectReportPrinter;
+import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.retry.Retryer;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
@@ -67,6 +73,11 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      * The current problem.
      */
     private Act problem;
+
+    /**
+     * The query, for printing.
+     */
+    private ProblemQuery query;
 
 
     /**
@@ -115,6 +126,41 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      */
     public Act getProblem() {
         return problem;
+    }
+
+    /**
+     * Sets the current query, for printing.
+     *
+     * @param query the query
+     */
+    public void setQuery(ProblemQuery query) {
+        this.query = query;
+    }
+
+    /**
+     * Invoked when the 'print' button is pressed.
+     * This implementation prints the current summary list, rather than
+     * the selected item.
+     */
+    @Override
+    protected void onPrint() {
+        if (query != null) {
+            try {
+                Context context = getContext();
+                ProblemFilter filter = new ProblemFilter(query.getActItemShortNames(), query.isSortAscending());
+                Iterable<Act> summary = new ProblemHierarchyIterator(query, filter);
+                DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_PROBLEM,
+                                                                                     context);
+                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(summary, locator, context);
+                String title = Messages.get("patient.record.problem.print");
+                HelpContext help = getHelpContext().topic(PatientArchetypes.CLINICAL_PROBLEM + "/print");
+                InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, context, help);
+                iPrinter.setMailContext(getMailContext());
+                iPrinter.print();
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
+            }
+        }
     }
 
     /**

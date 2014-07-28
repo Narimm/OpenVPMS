@@ -137,6 +137,78 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
         return new ActIterator(maxDepth);
     }
 
+    /**
+     * Returns the filter.
+     *
+     * @return the filter
+     */
+    protected ActHierarchyFilter<T> getFilter() {
+        return filter;
+    }
+
+    /**
+     * Flattens the tree of child acts beneath the specified root.
+     * <p/>
+     * Child acts are filtered using the {@link #filter}, and recursively processed up to depth maxDepth.
+     * The result is an in-order traversal of the tree.
+     *
+     * @param root the root element
+     * @return the flattened tree
+     */
+    protected List<T> flattenTree(T root) {
+        Node<T> tree = new Node<T>(root);
+        Map<T, Node<T>> nodes = new HashMap<T, Node<T>>();
+        buildTree(root, root, 2, maxDepth, tree, nodes); // root elements are depth = 1
+        List<T> result = new ArrayList<T>();
+        return flattenTree(tree, result);
+    }
+
+    /**
+     * Performs an in-order traversal of a tree, collecting the values in the passed list.
+     *
+     * @param tree   the tree
+     * @param values the collected values
+     * @return the collected values
+     */
+    protected List<T> flattenTree(Node<T> tree, List<T> values) {
+        values.add(tree.value);
+        for (Node<T> child : tree.children) {
+            flattenTree(child, values);
+        }
+        return values;
+    }
+
+    /**
+     * Builds a tree of acts given a parent. Where acts are linked to multiple parent acts, only one instance
+     * will be recorded in the resulting tree; that which has the maximum depth.
+     *
+     * @param act      the parent act
+     * @param root     the root act
+     * @param depth    the current depth
+     * @param maxDepth the maximum depth to build to, or {@code -1} if there is no depth restriction
+     * @param parent   the parent node
+     * @param nodes    a map of value to node, for quick searches
+     */
+    private void buildTree(T act, T root, int depth, int maxDepth, Node<T> parent, Map<T, Node<T>> nodes) {
+        List<T> children = filter.filter(act, root);
+        for (T child : new ArrayList<T>(children)) {
+            Node<T> node = nodes.get(child);
+            if (node != null) {
+                if (node.getDepth() < depth) {
+                    node.remove();
+                    parent.add(node);
+                }
+            } else {
+                node = new Node<T>(parent, child);
+                nodes.put(child, node);
+                if (depth < maxDepth || maxDepth == -1) {
+                    buildTree(child, root, depth + 1, maxDepth, node, nodes);
+                }
+            }
+        }
+    }
+
+
     private class ActIterator implements Iterator<T> {
 
         /**
@@ -232,68 +304,6 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
             }
             current = child.next();
             return true;
-        }
-
-        /**
-         * Flattens the tree of child acts beneath the specified root.
-         * <p/>
-         * Child acts are filtered using the {@link #filter}, and recursively processed up to depth maxDepth.
-         * The result is an in-order traversal of the tree.
-         *
-         * @param root the root element
-         * @return the flattened tree
-         */
-        private List<T> flattenTree(T root) {
-            Node<T> tree = new Node<T>(root);
-            Map<T, Node<T>> nodes = new HashMap<T, Node<T>>();
-            buildTree(root, root, 2, maxDepth, tree, nodes); // root elements are depth = 1
-            List<T> result = new ArrayList<T>();
-            return flattenTree(tree, result);
-        }
-
-        /**
-         * Performs an in-order traversal of a tree, collecting the values in the passed list.
-         *
-         * @param tree   the tree
-         * @param values the collected values
-         * @return the collected values
-         */
-        private List<T> flattenTree(Node<T> tree, List<T> values) {
-            values.add(tree.value);
-            for (Node<T> child : tree.children) {
-                flattenTree(child, values);
-            }
-            return values;
-        }
-
-        /**
-         * Builds a tree of acts given a parent. Where acts are linked to multiple parent acts, only one instance
-         * will be recorded in the resulting tree; that which has the maximum depth.
-         *
-         * @param act      the parent act
-         * @param root     the root act
-         * @param depth    the current depth
-         * @param maxDepth the maximum depth to build to, or {@code -1} if there is no depth restriction
-         * @param parent   the parent node
-         * @param nodes    a map of value to node, for quick searches
-         */
-        private void buildTree(T act, T root, int depth, int maxDepth, Node<T> parent, Map<T, Node<T>> nodes) {
-            List<T> children = filter.filter(act, root);
-            for (T child : new ArrayList<T>(children)) {
-                Node<T> node = nodes.get(child);
-                if (node != null) {
-                    if (node.getDepth() < depth) {
-                        node.remove();
-                        parent.add(node);
-                    }
-                } else {
-                    node = new Node<T>(parent, child);
-                    nodes.put(child, node);
-                    if (depth < maxDepth || maxDepth == -1) {
-                        buildTree(child, root, depth + 1, maxDepth, node, nodes);
-                    }
-                }
-            }
         }
 
     }

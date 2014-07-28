@@ -119,7 +119,7 @@ public class ProblemTableModel extends AbstractPatientHistoryTableModel {
     protected String formatProblemText(ActBean bean, int row) {
         String reason = LookupNameHelper.getName(bean.getAct(), "reason");
         if (reason == null) {
-            reason = LookupNameHelper.getName(bean.getAct(), "presentingComplaint");
+            reason = Messages.get("patient.record.summary.diagnosis.none");
         }
         return formatParentText(bean, reason, row);
     }

@@ -314,6 +314,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     protected CRUDWindow<Act> createProblemRecordCRUDWindow(Context context, HelpContext help) {
         ProblemRecordCRUDWindow result = new ProblemRecordCRUDWindow(context, help);
         result.setEvent(getEvent(null));
+        result.setQuery(problems.getQuery());
         return result;
     }
 
