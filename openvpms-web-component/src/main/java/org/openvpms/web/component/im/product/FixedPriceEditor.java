@@ -26,11 +26,13 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
+import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.RowFactory;
@@ -119,6 +121,10 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
         date = new Date();
 
         field = BoundTextComponentFactory.createNumeric(property, 10);
+        if (property.isReadOnly()) {
+            // can select prices from the dropdown, but not edit the price directly
+            field.setEnabled(false);
+        }
         focus = new FocusGroup(property.getDisplayName());
         focus.add(field);
         container = RowFactory.create(field);
@@ -244,7 +250,9 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     private PagedIMTable<ProductPrice> createPriceTable(List<ProductPrice> prices) {
         ResultSet<ProductPrice> set = new IMObjectListResultSet<ProductPrice>(
                 new ArrayList<ProductPrice>(prices), 20);
-        final PagedIMTable<ProductPrice> table = new PagedIMTable<ProductPrice>(new PriceTableModel(context), set);
+        LayoutContext tableContext = new DefaultLayoutContext(context);
+        tableContext.setComponentFactory(new TableComponentFactory(tableContext));
+        final PagedIMTable<ProductPrice> table = new PagedIMTable<ProductPrice>(new PriceTableModel(tableContext), set);
         table.getTable().addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 onSelected(table.getTable().getSelected());
