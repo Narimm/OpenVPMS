@@ -27,7 +27,7 @@
               filter="participation.patient"/>
         <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
-        <node name="note" path="/details/note" type="java.lang.String" maxLength="5000"/>
+        <node name="notes" path="/details/notes" type="java.lang.String" maxLength="5000"/>
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.clinician"/>
         <node name="event" path="/targetActRelationships" type="java.util.HashSet" baseName="TargetActRelationship"
