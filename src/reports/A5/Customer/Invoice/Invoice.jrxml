@@ -70,8 +70,8 @@
                     <printWhenExpression><![CDATA[$P{IsEmail}.equals(Boolean.TRUE)]]></printWhenExpression>
                 </reportElement>
                 <textElement/>
-                <text>
-                    <![CDATA[This is automatically hidden when printing. See the "Print When Expression" property for more details.]]></text>
+                <text><![CDATA[
+                    This is automatically hidden when printing. See the "Print When Expression" property for more details.]]></text>
             </staticText>
             <staticText>
                 <reportElement x="10" y="10" width="341" height="24">
@@ -216,7 +216,7 @@
                 </textElement>
                 <text><![CDATA[Page]]></text>
             </staticText>
-            <textField isBlankWhenNull="false">
+            <textField isBlankWhenNull="true">
                 <reportElement key="textField-9" x="36" y="40" width="167" height="13"/>
                 <textElement verticalAlignment="Bottom"/>
                 <textFieldExpression class="java.lang.String">
@@ -237,7 +237,7 @@
     <detail>
         <band height="13" splitType="Stretch">
             <subreport isUsingCache="true">
-                <reportElement key="subreport-1" x="0" y="0" width="355" height="10"/>
+                <reportElement key="subreport-1" x="0" y="0" width="361" height="10" isPrintWhenDetailOverflows="true"/>
                 <dataSourceExpression>
                     <![CDATA[$P{dataSource}.getDataSource("items", new String[]{"target.patient.entity.name", "target.startTime"})]]></dataSourceExpression>
                 <returnValue subreportVariable="SUM_target.discount" toVariable="TOTAL_DISCOUNT" calculation="Sum"/>
@@ -253,9 +253,9 @@
         <band splitType="Stretch"/>
     </pageFooter>
     <summary>
-        <band height="132" splitType="Stretch">
+        <band height="146" splitType="Stretch">
             <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-                <reportElement key="textField-5" x="12" y="88" width="333" height="20" isRemoveLineWhenBlank="true"/>
+                <reportElement key="textField-5" x="14" y="88" width="333" height="20" isRemoveLineWhenBlank="true"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -268,7 +268,7 @@
                 <textFieldExpression class="java.lang.String"><![CDATA[$F{notes}]]></textFieldExpression>
             </textField>
             <staticText>
-                <reportElement key="staticText-4" x="12" y="45" width="121" height="17"/>
+                <reportElement key="staticText-4" x="14" y="45" width="121" height="17"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -371,7 +371,7 @@
                 <textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{allocatedAmount}]]></textFieldExpression>
             </textField>
             <staticText>
-                <reportElement key="staticText-10" x="12" y="61" width="163" height="17" isRemoveLineWhenBlank="true">
+                <reportElement key="staticText-10" x="14" y="61" width="163" height="17" isRemoveLineWhenBlank="true">
                     <printWhenExpression>
                         <![CDATA[new Boolean($V{TOTAL_DISCOUNT}.compareTo(BigDecimal.ZERO) != 0)]]></printWhenExpression>
                 </reportElement>
@@ -401,11 +401,19 @@
                 <textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{TOTAL_DISCOUNT}]]></textFieldExpression>
             </textField>
             <subreport isUsingCache="false">
-                <reportElement x="0" y="118" width="345" height="11"/>
+                <reportElement positionType="Float" x="0" y="127" width="361" height="11" isRemoveLineWhenBlank="true"/>
                 <dataSourceExpression>
                     <![CDATA[$P{dataSource}.getExpressionDataSource("reminder:getReminders(., 1, 'YEARS')")]]></dataSourceExpression>
                 <subreportExpression class="net.sf.jasperreports.engine.JasperReport">
                     <![CDATA["Invoice Reminders.jrxml"]]></subreportExpression>
+            </subreport>
+            <subreport isUsingCache="true">
+                <reportElement key="" positionType="Float" x="0" y="112" width="361" height="11"
+                               isRemoveLineWhenBlank="true"/>
+                <dataSourceExpression>
+                    <![CDATA[$P{dataSource}.getDataSource("customerNotes", new String[]{"target.patient.entity.name", "target.startTime"})]]></dataSourceExpression>
+                <subreportExpression class="net.sf.jasperreports.engine.JasperReport">
+                    <![CDATA["Invoice Notes.jrxml"]]></subreportExpression>
             </subreport>
         </band>
     </summary>
