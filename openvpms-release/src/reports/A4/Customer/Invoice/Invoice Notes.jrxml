@@ -33,7 +33,7 @@
         <![CDATA[]]>
     </queryString>
     <field name="target.patient.entity.name" class="java.lang.String"/>
-    <field name="target.notes" class="java.lang.String"/>
+    <field name="target.note" class="java.lang.String"/>
     <sortField name="target.patient.entity.name"/>
     <group name="patientGroup">
         <groupExpression><![CDATA[$F{target.patient.entity.name}]]></groupExpression>
@@ -92,7 +92,7 @@
             <textField isStretchWithOverflow="true" isBlankWhenNull="true">
                 <reportElement x="78" y="2" width="457" height="16"/>
                 <textElement/>
-                <textFieldExpression class="java.lang.String"><![CDATA[$F{target.notes}]]></textFieldExpression>
+                <textFieldExpression class="java.lang.String"><![CDATA[$F{target.note}]]></textFieldExpression>
             </textField>
         </band>
     </detail>
