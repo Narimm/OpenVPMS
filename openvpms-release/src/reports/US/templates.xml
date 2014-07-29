@@ -42,6 +42,14 @@
               docType="document.other"
               description="Customer invoice items - LETTER"/>
 
+    <template name="Invoice Notes"
+              archetype="SUBREPORT"
+              reportType="CUSTOMER"
+              path="Customer/Invoice/Invoice Notes.jrxml"
+              mimeType="text/xml"
+              docType="document.other"
+              description="Customer invoice notes - LETTER"/>
+
     <template name="Invoice Reminders"
               archetype="SUBREPORT"
               reportType="CUSTOMER"
