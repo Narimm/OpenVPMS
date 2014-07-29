@@ -400,11 +400,15 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         private String getEventDescription(Act act) {
             String result;
             String title = act.getTitle();
+            String reason = LookupNameHelper.getName(act, "reason");
             String date = DateFormatter.formatDate(act.getActivityStartTime(), false);
-            if (!StringUtils.isEmpty(act.getReason()) && !StringUtils.isEmpty(title)) {
-                result = date + ": " + LookupNameHelper.getName(act, "reason") + " - " + title;
+            if (!StringUtils.isEmpty(reason) && !StringUtils.isEmpty(title)) {
+                result = Messages.format("patient.record.problem.selectVisit.datedReasonAndSummary", date, reason,
+                                         title);
+            } else if (!StringUtils.isEmpty(reason)) {
+                result = Messages.format("patient.record.problem.selectVisit.datedReason", date, reason);
             } else if (!StringUtils.isEmpty(title)) {
-                result = date + ": " + title;
+                result = Messages.format("patient.record.problem.selectVisit.datedReason", date, title);
             } else {
                 result = date;
             }
