@@ -54,7 +54,7 @@
 	l.name as uom,
 	sl.name as stockLocation,
 	coalesce(d2.value, 0.00) as currentStock,
-	ppd.value as cost
+	min(ppd.value) as cost
 from entities e
 join products p on e.entity_id = p.product_id
 join entity_relationships s on s.source_id = e.entity_id
@@ -80,15 +80,21 @@ left join lookups locationPricingGroup on plc.lookup_id = locationPricingGroup.l
 left join product_prices pp on pp.product_id = p.product_id
 	and pp.arch_short_name = "productPrice.unitPrice"
 left join product_price_classifications ppc on pp.product_price_id = ppc.product_price_id
-	and ppc.lookup_id = locationPricingGroup.lookup_id
 left join product_price_details ppd on ppd.product_price_id = pp.product_price_id
 where e.name like $P{Product Name}
 	and e.active = 1
 	and ((e.arch_short_name = "product.medication" and $P{Include Medications})
 		or (e.arch_short_name = "product.merchandise" and $P{Include Merchandise}))
+ 	and (locationPricingGroup.lookup_id is null or locationPricingGroup.lookup_id = ppc.lookup_id or not exists (
+	        select *
+	        from product_price_classifications ppc
+	        join lookups l on ppc.lookup_id = l.lookup_id and l.arch_short_name = "lookup.pricingGroup"
+	        where ppc.product_price_id = pp.product_price_id))
 	and pp.end_time is null
 	and ppd.name = "cost"
-order by sl.name, e.name]]>
+group by sl.name, e.name
+order by sl.name, e.name, e.entity_id
+]]>
     </queryString>
     <field name="pid" class="java.lang.Long"/>
     <field name="product" class="java.lang.String"/>
