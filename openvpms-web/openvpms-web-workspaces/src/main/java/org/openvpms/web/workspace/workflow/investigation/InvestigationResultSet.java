@@ -86,7 +86,6 @@ public class InvestigationResultSet extends ActResultSet<Act> {
     @Override
     protected ArchetypeQuery createQuery() {
         ArchetypeQuery query = super.createQuery();
-        query.getArchetypeConstraint().setAlias("i1");
         String value = getValue();
         if (!StringUtils.isEmpty(value) && getId(value) == null) {
             query.add(join("patient").add(join("entity").add(eq("name", value))));
@@ -98,7 +97,8 @@ public class InvestigationResultSet extends ActResultSet<Act> {
             OrConstraint or = new OrConstraint();
             or.add(getLocations());
             or.add(notExists(subQuery(InvestigationArchetypes.PATIENT_INVESTIGATION, "i2").add(
-                    join("location").add(join("entity").add(idEq("i1", "i2"))))));
+                    join("location").add(join("entity").add(idEq("act", "i2"))))));
+            // NB: "act" alias comes from ActQuery. TODO - brittle
             query.add(or);
         }
         return query;
