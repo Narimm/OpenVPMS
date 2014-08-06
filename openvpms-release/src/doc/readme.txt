@@ -146,31 +146,46 @@ change to:
 
 1.7 Document Templates
 
-  Document templates used for invoices, payments etc., are located in <OPENVPMS_HOME>/reports.
+  Document templates used for invoices, payments etc., are located in:
+      <OPENVPMS_HOME>/reports
+
   These need to be loaded prior to use.
   This can be done using the 'templateload' script. E.g:
 
   > cd <OPENVPMS_HOME>/bin
-  > templateload ../reports/templates.xml
+  > templateload ../reports/templates-X.xml
 
-  For users in the US, templates in LETTER format can be loaded by running:
-  > cd <OPENVPMS_HOME>/bin
-  > templateload ../reports/US/templates.xml
+  Where X is:
+       A4 to load the A4 template set
+       A5 to load the A5 template set
+       Letter to load the Letter (ie US) template
 
   NOTES:
-  * if a template has been already loaded, it will be replaced.
-  * not all templates are available in LETTER format
+  * If a template has been already loaded, it will be replaced.
+  * Not all templates are available in all formats, however a complete set
+    is loaded. Thus if you load the A5 set you will find that some templates
+    are in A4 format.
+    To clarify the situation, the description field indicates the paper size
+    if it is not A4.  Eg " Medical Records (A5)"
+  * Three drug label formats are available, Dymo, Epson, and 1.8x3.1.  If
+    you load the Letter set you will get the latter, if you load A4 or A5 you
+    will get Dymo.
+  * Not everything is loaded. For example the Samples and the Patient
+    Reminder Post Cards are not.
 
-  After installation, templates can be updated using via Administration|Templates.
+  After installation, templates can be updated using via
+  Administration|Templates.
 
-  The templates need to be customised to add practice logos etc. Templates with a:
-  - .doc or .odt extension can be customised in OpenOffice Writer or Microsoft Word
+  The templates need to be customised to add practice logos etc. Templates
+  with a:
+  - .doc or .odt extension can be customised in OpenOffice Writer or
+     Microsoft Word
   - .jrxml extension can be customised in iReport Designer
 
   See also:
-  - http://www.openvpms.org/documentation/csh/1.7/introduction/reporting
-  - http://www.openvpms.org/documentation/csh/1.7/reference/reportsForms
-  - http://www.openvpms.org/documentation/csh/1.7/admin/template
+  - http://www.openvpms.org/documentation/csh/1.8/introduction/reporting
+  - http://www.openvpms.org/documentation/csh/1.8/reference/reportsForms
+  - http://www.openvpms.org/documentation/csh/1.8/admin/template
 
 1.8 Testing the installation
 
@@ -187,7 +202,7 @@ change to:
   These instructions assume that:
   1. The previous OpenVPMS installation is available in <OPENVPMS_PREV>.
      E.g. on Windows:
-        c:\OpenVPMS\openvpms-release-1.6
+        c:\OpenVPMS\openvpms-release-1.7
   2. The new installation will be located in <OPENVPMS_HOME>.
      E.g. on Windows:
         c:\OpenVPMS\openvpms-release-1.7
