@@ -122,7 +122,9 @@
     </bean>
 
     <bean id="customerAccountRules" class="org.openvpms.archetype.rules.finance.account.CustomerAccountRules">
+        <constructor-arg ref="defaultArchetypeService"/>
         <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="txnManager"/>
     </bean>
 
     <!-- The JXPathHelper class, used to register extension functions -->
