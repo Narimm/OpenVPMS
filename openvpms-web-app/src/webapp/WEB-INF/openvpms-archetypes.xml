@@ -84,7 +84,9 @@
     </bean>
 
     <bean id="customerAccountRules" class="org.openvpms.archetype.rules.finance.account.CustomerAccountRules">
+        <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="txnManager"/>
     </bean>
 
     <bean id="estimateRules" class="org.openvpms.archetype.rules.finance.estimate.EstimateRules">
