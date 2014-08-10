@@ -33,6 +33,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -146,7 +147,7 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
     public void setUp() {
         taxType = TestHelper.createTaxType(BigDecimal.TEN);
         Party practice = (Party) create("party.organisationPractice");
-        rules = new CustomerTaxRules(practice);
+        rules = new CustomerTaxRules(practice, getArchetypeService(), LookupServiceHelper.getLookupService());
     }
 
     /**

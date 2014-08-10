@@ -62,8 +62,7 @@ import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchet
 /**
  * {@link IMObjectCopyHandler} that creates reversals for customer acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-12-12 04:10:40Z $
+ * @author Tim Anderson
  */
 class CustomerActReversalHandler extends ActCopyHandler {
 
@@ -92,14 +91,13 @@ class CustomerActReversalHandler extends ActCopyHandler {
 
 
     /**
-     * Constructs a new <tt>CustomerActReversalHandler</tt>.
+     * Constructs a {@link CustomerActReversalHandler}.
      *
      * @param act the act to reverse
      */
     public CustomerActReversalHandler(Act act) {
         super(TYPE_MAP);
-        setReverse(TypeHelper.isA(act, CREDIT, REFUND, CREDIT_ADJUST,
-                                  BAD_DEBT));
+        setReverse(TypeHelper.isA(act, CREDIT, REFUND, CREDIT_ADJUST, BAD_DEBT));
     }
 
     /**
@@ -107,10 +105,8 @@ class CustomerActReversalHandler extends ActCopyHandler {
      *
      * @param object  the source object
      * @param service the archetype service
-     * @return <tt>object</tt> if the object shouldn't be copied,
-     *         <tt>null</tt> if it should be replaced with
-     *         <tt>null</tt>, or a new instance if the object should be
-     *         copied
+     * @return {@code object} if the object shouldn't be copied, {@code null} if it should be replaced with
+     *         {@code null}, or a new instance if the object should be copied
      */
     @Override
     public IMObject getObject(IMObject object, IArchetypeService service) {
@@ -129,16 +125,15 @@ class CustomerActReversalHandler extends ActCopyHandler {
      *
      * @param archetype the archetype descriptor
      * @param node      the node descriptor
-     * @param source    if <tt>true</tt> the node is the source; otherwise its
-     *                  the target
-     * @return <tt>true</tt> if the node is copyable; otherwise <tt>false</tt>
+     * @param source    if {@code true} the node is the source; otherwise its the target
+     * @return {@code true} if the node is copyable; otherwise {@code false}
      */
     @Override
-    protected boolean isCopyable(ArchetypeDescriptor archetype,
-                                 NodeDescriptor node, boolean source) {
+    protected boolean isCopyable(ArchetypeDescriptor archetype, NodeDescriptor node, boolean source) {
         String name = node.getName();
         if ("credit".equals(name) || "allocatedAmount".equals(name)
-            || "accountBalance".equals(name) || "allocation".equals(name)) {
+            || "accountBalance".equals(name) || "allocation".equals(name) || "reversals".equals(name)
+            || "reverses".equals(name) || "hide".equals(name)) {
             return false;
         } else {
             return super.isCopyable(archetype, node, source);

@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="act.customerAccountClosingBalance.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Closing Balance">
@@ -31,6 +32,8 @@
         <node name="credit" path="/credit" type="java.lang.Boolean"
               defaultValue="true()" readOnly="true"/>
         <node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="hide" path="/details/hide" type="java.lang.Boolean" defaultValue="false()" hidden="true"
+              readOnly="true"/>
         <node name="status" path="/status" type="java.lang.String" minCardinality="1" readOnly="true"
               defaultValue="'POSTED'">
             <assertion name="lookup.local">
