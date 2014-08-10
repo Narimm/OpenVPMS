@@ -39,6 +39,8 @@
               path="Customer/Invoice/A4/Invoice.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Invoice Items" archetype="SUBREPORT" reportType="CUSTOMER" description="Invoice Items"
               path="Customer/Invoice/A4/Invoice Items.jrxml" mimeType="text/xml" docType="document.other"/>
+    <template name="Invoice Notes" archetype="SUBREPORT" reportType="CUSTOMER" description="Invoice Notes"
+              path="Customer/Invoice/A4/Invoice Notes.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Invoice Reminders" archetype="SUBREPORT" reportType="CUSTOMER" description="Invoice Reminders"
               path="Customer/Invoice/A4/Invoice Reminders.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Receipt" archetype="act.customerAccountPayment" reportType="CUSTOMER" description="Receipt"
@@ -65,7 +67,7 @@
     <template name="Medical Records" archetype="act.patientClinicalEvent" reportType="PATIENT"
               description="Medical Records" path="Patient/Medical Records/A4/Medical Records.jrxml" mimeType="text/xml"
               docType="document.other"/>
-    <template name="Problems" archetype="act.patientClinicalProblem" reportType="PATIENT" description="Problems (A4)"
+    <template name="Problems" archetype="act.patientClinicalProblem" reportType="PATIENT" description="Problems"
               path="Patient/Medical Records/A4/Problems.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Prescription" archetype="act.patientPrescription" reportType="PATIENT" description="Prescription"
               path="Patient/Medical Records/A4/Prescription.odt" mimeType="application/vnd.oasis.opendocument.text"
