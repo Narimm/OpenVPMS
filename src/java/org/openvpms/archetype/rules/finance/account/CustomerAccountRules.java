@@ -16,6 +16,7 @@
 
 package org.openvpms.archetype.rules.finance.account;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -41,6 +42,10 @@ import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.RelationalOp;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -67,19 +72,37 @@ public class CustomerAccountRules {
     private final IArchetypeService service;
 
     /**
+     * The rule based archetype service.
+     */
+    private final IArchetypeRuleService ruleService;
+
+    /**
+     * The transaction manager.
+     */
+    private final PlatformTransactionManager transactionManager;
+
+    /**
      * Balance calculator.
      */
     private final BalanceCalculator calculator;
 
 
     /**
-     * Constructs a {@code CustomerAccountRules}.
+     * Constructs a {@link CustomerAccountRules}.
      *
-     * @param service the archetype service
+     * @param service            the archetype service
+     * @param ruleService        the rule based archetype service
+     * @param transactionManager the transaction manager
      */
-    public CustomerAccountRules(IArchetypeRuleService service) {
+    public CustomerAccountRules(IArchetypeService service, IArchetypeRuleService ruleService,
+                                PlatformTransactionManager transactionManager) {
         // NOTE: need an IArchetypeRuleService as the reverse() methods need to fire rules to update the balance
+        if (service instanceof IArchetypeRuleService) {
+            throw new IllegalArgumentException("Argument 'service' should not implement IArchetypeRuleService");
+        }
         this.service = service;
+        this.ruleService = ruleService;
+        this.transactionManager = transactionManager;
         calculator = new BalanceCalculator(service);
     }
 
@@ -313,6 +336,28 @@ public class CustomerAccountRules {
     }
 
     /**
+     * Determines if an act has been reversed.
+     *
+     * @param act the act
+     * @return {@code true} if the act has been reversed
+     */
+    public boolean isReversed(FinancialAct act) {
+        ActBean bean = new ActBean(act, service);
+        return bean.hasNode("reversal") && !bean.getValues("reversal").isEmpty();
+    }
+
+    /**
+     * Determines if an act is a reversal of another.
+     *
+     * @param act the act
+     * @return {@code true} if the act is a reversal
+     */
+    public boolean isReversal(FinancialAct act) {
+        ActBean bean = new ActBean(act, service);
+        return bean.hasNode("reverses") && !bean.getValues("reverses").isEmpty();
+    }
+
+    /**
      * Reverses an act.
      *
      * @param act       the act to reverse
@@ -321,7 +366,7 @@ public class CustomerAccountRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public FinancialAct reverse(FinancialAct act, Date startTime) {
-        return reverse(act, startTime, null);
+        return reverse(act, startTime, null, null, false);
     }
 
     /**
@@ -334,24 +379,88 @@ public class CustomerAccountRules {
      * @param startTime the start time of the reversal
      * @param notes     notes indicating the reason for the reversal, to set the 'notes' node if the act has one.
      *                  May be {@code null}
+     * @param reference the reference. If {@code null}, the act identifier will be used
+     * @param hide      if {@code true}, hide the reversal iff the act being reversed isn't already hidden
      * @return the reversal of {@code act}
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public FinancialAct reverse(FinancialAct act, Date startTime, String notes) {
+    public FinancialAct reverse(final FinancialAct act, Date startTime, String notes, String reference, boolean hide) {
+        final ActBean original = new ActBean(act, service);
+        if (!original.getValues("reversal").isEmpty()) {
+            throw new IllegalStateException("Act=" + act.getId() + " has already been reversed");
+        }
         IMObjectCopier copier = new IMObjectCopier(new CustomerActReversalHandler(act));
-        List<IMObject> objects = copier.apply(act);
+        final List<IMObject> objects = copier.apply(act);
         FinancialAct reversal = (FinancialAct) objects.get(0);
         ActBean bean = new ActBean(reversal, service);
-        if (bean.hasNode("notes")) {
-            bean.setValue("notes", notes);
-        }
+        bean.setValue("reference", !StringUtils.isEmpty(reference) ? reference : act.getId());
+        bean.setValue("notes", notes);
         reversal.setStatus(FinancialActStatus.POSTED);
         reversal.setActivityStartTime(startTime);
-        if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE)) {
-            removeInvoiceFromPatientHistory(act, objects);
+
+        original.addNodeRelationship("reversal", reversal);
+
+        if (hide && !original.getBoolean("hide")) {
+            bean.setValue("hide", hide);
+            original.setValue("hide", hide);
         }
-        service.save(objects);
+
+        // This smells. The original act needs to be saved without using the rule based archetype service, to avoid
+        // triggering rules. The other acts need to be saved with rules enabled, in order to update the balance.
+        // TODO
+        TransactionTemplate template = new TransactionTemplate(transactionManager);
+        template.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                original.save();
+
+                if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE)) {
+                    removeInvoiceFromPatientHistory(act, objects);
+                }
+                ruleService.save(objects);
+            }
+        });
         return reversal;
+    }
+
+    /**
+     * Sets the hidden state of a reversed/reversal act.
+     *
+     * @param act  the act
+     * @param hide if {@code true}, hide the act in customer statements, else show it
+     */
+    public void setHidden(FinancialAct act, boolean hide) {
+        if (canHide(act)) {
+            ActBean bean = new ActBean(act, service);
+            // NOTE: must use non-rule based service to avoid balance recalculation
+            if (hide != bean.getBoolean("hide")) {
+                bean.setValue("hide", hide);
+                bean.save();
+            }
+        }
+    }
+
+    /**
+     * Determines if an act is hidden in customer statements.
+     *
+     * @param act the act
+     * @return {@code true} if the {@code hide} node is {@code true}
+     */
+    public boolean isHidden(Act act) {
+        ActBean bean = new ActBean(act, service);
+        return bean.hasNode("hide") && bean.getBoolean("hide");
+    }
+
+    /**
+     * Determines if an act can be hidden in customer statements.
+     * <p/>
+     * Note that this doesn't take into account the hidden state of related acts.
+     *
+     * @param act the act
+     * @return {@code true} if the act isn't hidden, and is reversed or a reversal
+     */
+    public boolean canHide(FinancialAct act) {
+        return isReversed(act) || isReversal(act);
     }
 
     /**

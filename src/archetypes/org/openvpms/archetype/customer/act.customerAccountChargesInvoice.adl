@@ -80,6 +80,8 @@
         <node name="credit" path="/credit" type="java.lang.Boolean"
               defaultValue="false()" readOnly="true"/>
         <node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="hide" path="/details/hide" type="java.lang.Boolean" defaultValue="false()" hidden="true"
+              readOnly="true"/>
         <node name="customer" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
               filter="participation.customer" hidden="true"/>
@@ -107,5 +109,11 @@
         <node name="allocation" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
               filter="actRelationship.customerAccountAllocation" hidden="true"/>
+        <node name="reversal" path="/sourceActRelationships"
+              type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="1"
+              filter="actRelationship.customerAccountReversal" hidden="true"/>
+        <node name="reverses" path="/targetActRelationships"
+              type="java.util.HashSet" baseName="TargetActRelationship" minCardinality="0" maxCardinality="1"
+              filter="actRelationship.customerAccountReversal" hidden="true"/>
     </archetype>
 </archetypes>
