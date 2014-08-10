@@ -22,6 +22,9 @@
               rightMargin="30" topMargin="20" bottomMargin="20">
     <property name="ireport.scriptlethandling" value="0"/>
     <property name="ireport.encoding" value="UTF-8"/>
+    <property name="ireport.zoom" value="1.0"/>
+    <property name="ireport.x" value="0"/>
+    <property name="ireport.y" value="0"/>
     <import value="net.sf.jasperreports.engine.*"/>
     <import value="java.util.*"/>
     <import value="net.sf.jasperreports.engine.data.*"/>
@@ -31,7 +34,6 @@
             <![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
         <defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
     </parameter>
-
     <field name="customer.name" class="java.lang.String"/>
     <field name="balance" class="java.math.BigDecimal"/>
     <field name="overdueBalance" class="java.math.BigDecimal"/>
@@ -199,7 +201,7 @@
     </columnHeader>
     <detail>
         <band height="16" splitType="Stretch">
-            <textField isBlankWhenNull="false">
+            <textField isBlankWhenNull="true">
                 <reportElement key="textField-1" x="4" y="2" width="125" height="13"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -210,7 +212,7 @@
                 <textElement/>
                 <textFieldExpression class="java.lang.String"><![CDATA[$F{customer.name}]]></textFieldExpression>
             </textField>
-            <textField isBlankWhenNull="false">
+            <textField isBlankWhenNull="true">
                 <reportElement key="textField-2" x="310" y="2" width="60" height="13"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -221,7 +223,7 @@
                 <textElement textAlignment="Right"/>
                 <textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{balance}]]></textFieldExpression>
             </textField>
-            <textField pattern="#,##0.00" isBlankWhenNull="false">
+            <textField pattern="#,##0.00" isBlankWhenNull="true">
                 <reportElement key="textField-3" x="191" y="2" width="54" height="13"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -232,7 +234,7 @@
                 <textElement textAlignment="Right"/>
                 <textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{overdueBalance}]]></textFieldExpression>
             </textField>
-            <textField pattern="#,##0.00" isBlankWhenNull="false">
+            <textField pattern="#,##0.00" isBlankWhenNull="true">
                 <reportElement key="textField-4" x="245" y="2" width="54" height="13"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -243,7 +245,7 @@
                 <textElement textAlignment="Right"/>
                 <textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{creditBalance}]]></textFieldExpression>
             </textField>
-            <textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+            <textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
                 <reportElement key="textField-5" x="437" y="2" width="86" height="13"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -254,7 +256,7 @@
                 <textElement/>
                 <textFieldExpression class="java.util.Date"><![CDATA[$F{lastPaymentDate}]]></textFieldExpression>
             </textField>
-            <textField pattern="#,##0.00" isBlankWhenNull="false">
+            <textField pattern="#,##0.00" isBlankWhenNull="true">
                 <reportElement key="textField-6" x="378" y="2" width="52" height="13"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -266,7 +268,7 @@
                 <textFieldExpression class="java.math.BigDecimal">
                     <![CDATA[$F{lastPaymentAmount}]]></textFieldExpression>
             </textField>
-            <textField pattern="#,##0.00" isBlankWhenNull="false">
+            <textField pattern="#,##0.00" isBlankWhenNull="true">
                 <reportElement key="textField-8" x="129" y="2" width="62" height="13"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
