@@ -27,6 +27,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.IMObjectActions;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
@@ -70,10 +71,11 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
 
 
     /**
-     * Constructs an {@code ActCRUDWindow}.
+     * Constructs an {@link ActCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
-     * @param actions    determines the operations that may be performed on the selected object
+     * @param actions    determines the operations that may be performed on the selected object. If {@code null},
+     *                   actions should be registered via {@link #setActions(IMObjectActions)}
      * @param context    the context
      * @param help       the help context
      */
