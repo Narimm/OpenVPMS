@@ -24,7 +24,7 @@
     <property name="ireport.encoding" value="UTF-8"/>
     <property name="ireport.zoom" value="1.1000000000000008"/>
     <property name="ireport.x" value="0"/>
-    <property name="ireport.y" value="0"/>
+    <property name="ireport.y" value="48"/>
     <import value="org.openvpms.component.business.domain.im.party.Party"/>
     <import value="net.sf.jasperreports.engine.*"/>
     <import value="java.util.*"/>
@@ -43,7 +43,7 @@
     <field name="customer.entity.name" class="java.lang.String"/>
     <field name="customer.entity" class="org.openvpms.component.business.domain.im.party.Party"/>
     <field name="startTime" class="java.util.Date"/>
-    <field name="uid" class="java.lang.Long"/>
+    <field name="id" class="java.lang.Long"/>
     <field name="tax" class="java.math.BigDecimal"/>
     <field name="notes" class="java.lang.String"/>
     <field name="[party:getBillingAddress(openvpms:get(.,&apos;customer.entity&apos;))]" class="java.lang.String"/>
@@ -58,6 +58,7 @@
     <field name="customer.entity.initials" class="java.lang.String"/>
     <field name="customer.entity.title" class="java.lang.String"/>
     <field name="customer.entity.lastName" class="java.lang.String"/>
+    <field name="hide" class="java.lang.Boolean"/>
     <variable name="statementFromTime" class="java.util.Date" resetType="None" calculation="First">
         <variableExpression><![CDATA[$F{startTime}]]></variableExpression>
     </variable>
@@ -87,8 +88,8 @@
                     <printWhenExpression><![CDATA[$P{IsEmail}.equals(Boolean.TRUE)]]></printWhenExpression>
                 </reportElement>
                 <textElement/>
-                <text>
-                    <![CDATA[This is automatically hidden when printing. See the "Print When Expression" property for more details.]]></text>
+                <text><![CDATA[
+                    This is automatically hidden when printing. See the "Print When Expression" property for more details.]]></text>
             </staticText>
             <staticText>
                 <reportElement x="10" y="10" width="517" height="24">
@@ -140,7 +141,7 @@
                 </textElement>
                 <text><![CDATA[From:]]></text>
             </staticText>
-            <textField isBlankWhenNull="false">
+            <textField isBlankWhenNull="true">
                 <reportElement key="textField-1" x="52" y="38" width="253" height="19"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -220,7 +221,7 @@
                 </textElement>
                 <text><![CDATA[To:]]></text>
             </staticText>
-            <textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
+            <textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
                 <reportElement key="textField-10" x="52" y="54" width="253" height="40"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -297,6 +298,7 @@
     </columnHeader>
     <detail>
         <band height="21" splitType="Stretch">
+            <printWhenExpression><![CDATA[$F{hide}.equals(Boolean.FALSE)]]></printWhenExpression>
             <textField pattern="MM/dd/yyyy" isBlankWhenNull="false">
                 <reportElement key="textField" x="14" y="1" width="75" height="13"/>
                 <box>
@@ -405,7 +407,7 @@
     </pageFooter>
     <lastPageFooter>
         <band height="269" splitType="Stretch">
-            <textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
+            <textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
                 <reportElement key="textField-2" x="14" y="114" width="269" height="33"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -520,10 +522,10 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement/>
-                <text>
-                    <![CDATA[REMITTANCE ADVICE                           Please Cut off and send with Payment]]></text>
+                <text><![CDATA[
+                    REMITTANCE ADVICE                           Please Cut off and send with Payment]]></text>
             </staticText>
-            <textField isBlankWhenNull="false">
+            <textField isBlankWhenNull="true">
                 <reportElement key="textField-8" x="14" y="101" width="269" height="13"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
