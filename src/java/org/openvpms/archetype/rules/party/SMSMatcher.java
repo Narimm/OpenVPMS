@@ -25,7 +25,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
  *
  * @author Tim Anderson
  */
-public class SMSMatcher extends ContactMatcher {
+public class SMSMatcher extends PurposeMatcher {
 
     /**
      * Constructs an {@link SMSMatcher}.
@@ -33,7 +33,18 @@ public class SMSMatcher extends ContactMatcher {
      * @param service the archetype service
      */
     public SMSMatcher(IArchetypeService service) {
-        super(ContactArchetypes.PHONE, service);
+        this(null, false, service);
+    }
+
+    /**
+     * Constructs an {@link SMSMatcher}.
+     *
+     * @param purpose the contact purpose. May be {@code null}
+     * @param exact   if {@code true} the contact must contain the purpose in order to be considered a match
+     * @param service the archetype service
+     */
+    public SMSMatcher(String purpose, boolean exact, IArchetypeService service) {
+        super(ContactArchetypes.PHONE, purpose, exact, service);
     }
 
     /**
@@ -44,20 +55,10 @@ public class SMSMatcher extends ContactMatcher {
      */
     @Override
     public boolean matches(Contact contact) {
-        boolean result = super.matches(contact);
+        boolean result = matchesShortName(contact);
         if (result) {
             IMObjectBean bean = createBean(contact);
-            if (bean.getBoolean("sms")) {
-                if (isPreferred(bean)) {
-                    result = true;
-                    setMatch(0, contact);
-                } else {
-                    result = false;
-                    setMatch(1, contact);
-                }
-            } else {
-                result = false;
-            }
+            result = bean.getBoolean("sms") && matchesPurpose(contact);
         }
         return result;
     }

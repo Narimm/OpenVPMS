@@ -70,31 +70,39 @@ public class PurposeMatcher extends ContactMatcher {
      */
     @Override
     public boolean matches(Contact contact) {
+        return super.matches(contact) && matchesPurpose(contact);
+    }
+
+    /**
+     * Determines if a contact matches the criteria.
+     *
+     * @param contact the contact
+     * @return {@code true} if the contact is an exact match; otherwise {@code false}
+     */
+    protected boolean matchesPurpose(Contact contact) {
         boolean best = false;
-        if (super.matches(contact)) {
-            boolean preferred = isPreferred(contact);
-            if (purpose != null) {
-                if (hasContactPurpose(contact, purpose)) {
-                    if (preferred) {
-                        setMatch(0, contact);
-                        best = true;
-                    } else {
-                        setMatch(1, contact);
-                    }
-                } else if (!exact) {
-                    if (preferred) {
-                        setMatch(2, contact);
-                    } else {
-                        setMatch(3, contact);
-                    }
-                }
-            } else {
+        boolean preferred = isPreferred(contact);
+        if (purpose != null) {
+            if (hasContactPurpose(contact, purpose)) {
                 if (preferred) {
                     setMatch(0, contact);
                     best = true;
                 } else {
                     setMatch(1, contact);
                 }
+            } else if (!exact) {
+                if (preferred) {
+                    setMatch(2, contact);
+                } else {
+                    setMatch(3, contact);
+                }
+            }
+        } else {
+            if (preferred) {
+                setMatch(0, contact);
+                best = true;
+            } else {
+                setMatch(1, contact);
             }
         }
         return best;
