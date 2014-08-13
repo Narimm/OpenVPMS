@@ -35,6 +35,7 @@ public class ReportingException extends OpenVPMSException {
         NoEmailContact,
         InvalidEmailAddress,
         TemplateMissingEmailText,
+        TemplateMissingSMSText,
         FailedToProcessReminder,
         ReminderMissingDocTemplate,
         NoGroupedReminderTemplate

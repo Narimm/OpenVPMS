@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.type;
@@ -26,7 +26,7 @@ import org.openvpms.web.component.property.ModifiableListener;
 /**
  * An editor for <em>entityRelationship.reminderTypeTemplate</em> relationships.
  * <p/>
- * This ensures that one of the <em>list</em> and <em>export</em> nodes may be true, but not both.
+ * This ensures that only one of the <em>list</em>, <em>export</em> and <em>sms</em> nodes may be true.
  *
  * @author Tim Anderson
  */
@@ -53,6 +53,12 @@ public class ReminderTypeTemplateEditor extends EntityRelationshipEditor {
                 onExportChanged();
             }
         });
+        getProperty("sms").addModifiableListener(new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                onSMSChanged();
+            }
+        });
     }
 
     /**
@@ -64,6 +70,7 @@ public class ReminderTypeTemplateEditor extends EntityRelationshipEditor {
         Boolean list = (Boolean) getProperty("list").getValue();
         if (list != null && list) {
             getProperty("export").setValue(false);
+            getProperty("sms").setValue(false);
         }
     }
 
@@ -76,6 +83,20 @@ public class ReminderTypeTemplateEditor extends EntityRelationshipEditor {
         Boolean export = (Boolean) getProperty("export").getValue();
         if (export != null && export) {
             getProperty("list").setValue(false);
+            getProperty("sms").setValue(false);
+        }
+    }
+
+    /**
+     * Invoked when the SMS node changes.
+     * <p/>
+     * If true, ensures that the list node is {@code false}
+     */
+    private void onSMSChanged() {
+        Boolean sms = (Boolean) getProperty("sms").getValue();
+        if (sms != null && sms) {
+            getProperty("list").setValue(false);
+            getProperty("export").setValue(false);
         }
     }
 }
