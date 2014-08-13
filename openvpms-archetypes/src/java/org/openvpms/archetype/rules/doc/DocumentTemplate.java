@@ -422,6 +422,24 @@ public class DocumentTemplate {
     }
 
     /**
+     * Returns the text to use when the template is sent via SMS.
+     *
+     * @return the SMS text. May be {@code null}
+     */
+    public String getSMS() {
+        return bean.getString("sms");
+    }
+
+    /**
+     * Sets the text to use when the the template is sent via SMS.
+     *
+     * @param text the text. May be {@code null}
+     */
+    public void setSMS(String text) {
+        bean.setValue("sms", text);
+    }
+
+    /**
      * Returns the media size.
      *
      * @return the media size for the template, or {@code null} if none is defined

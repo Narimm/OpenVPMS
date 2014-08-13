@@ -141,6 +141,8 @@
         <node name="emailText" displayName="Email Body" path="/details/emailText" type="java.lang.String"
               minCardinality="0"
               maxLength="1000"/>
+        <node name="sms" displayName="SMS" path="/details/sms" type="java.lang.String"
+              minCardinality="0" maxLength="160"/>
         <node name="fileNameFormat" path="/classifications" parentChild="false" type="java.util.HashSet"
               baseName="Classification" minCardinality="0" maxCardinality="1"
               filter="lookup.fileNameFormat"/>

@@ -62,7 +62,7 @@ public class TestReminderGenerator {
         }
 
         Entity[] reminderTypes = new Entity[10];
-        Entity documentTemplate = createDocumentTemplate();
+        Entity documentTemplate = ReminderTestHelper.createDocumentTemplate();
         for (int i = 0; i < reminderTypes.length; ++i) {
             Entity reminderType = ReminderTestHelper.createReminderType();
             ReminderTestHelper.addTemplate(reminderType, documentTemplate, 0, 1, DateUnits.DAYS);
@@ -79,42 +79,4 @@ public class TestReminderGenerator {
         }
     }
 
-    /**
-     * Creates an <em>entity.documentTemplate</em> with associated document.
-     *
-     * @return the new template
-     */
-    private static Entity createDocumentTemplate() {
-        String file = "/vaccination first reminder.odt";
-        String mimeType = "application/vnd.oasis.opendocument.text";
-        InputStream stream = TestReminderGenerator.class.getResourceAsStream(file);
-        assertNotNull(stream);
-
-        DocumentHandlers handlers = new DocumentHandlers();
-        DocumentHandler handler = handlers.get(file, mimeType);
-        Document document = handler.create(file, stream, mimeType, -1);
-
-        Entity template = (Entity) TestHelper.create(DocumentArchetypes.DOCUMENT_TEMPLATE);
-        EntityBean bean = new EntityBean(template);
-        bean.setValue("name", "XDocumentTemplate");
-        bean.setValue("archetype", PatientArchetypes.DOCUMENT_FORM);
-        bean.save();
-
-        DocumentAct act = (DocumentAct) TestHelper.create(DocumentArchetypes.DOCUMENT_TEMPLATE_ACT);
-        act.setFileName(document.getName());
-        act.setMimeType(document.getMimeType());
-
-        act.setDescription(DescriptorHelper.getDisplayName(document));
-        act.setDocument(document.getObjectReference());
-        ActBean actBean = new ActBean(act);
-        actBean.addNodeParticipation("template", template);
-
-        String name = template.getName();
-        if (name == null) {
-            name = document.getName();
-        }
-        template.setName(name);
-        TestHelper.save(document, template, act);
-        return template;
-    }
 }

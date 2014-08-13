@@ -20,6 +20,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.Contacts;
 import org.openvpms.archetype.rules.party.PurposeMatcher;
+import org.openvpms.archetype.rules.party.SMSMatcher;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -459,6 +460,19 @@ public class ReminderRules {
     }
 
     /**
+     * Returns the first SMS phone contact with classification 'REMINDER' or the preferred phone contact if no contact
+     * has this classification.
+     *
+     * @param contacts the contacts
+     * @return a contact, or {@code null} if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Contact getSMSContact(Set<Contact> contacts) {
+        List<Contact> list = Contacts.sort(contacts); // sort to make it deterministic
+        return Contacts.find(list, new SMSMatcher(REMINDER, false, service));
+    }
+
+    /**
      * Returns the first email contact with classification 'REMINDER' or the
      * preferred email contact if no contact has this classification.
      *
@@ -745,9 +759,8 @@ public class ReminderRules {
     }
 
     /**
-     * Returns the first contact with classification 'REMINDER' or the
-     * preferred contact with the specified short name if no contact has this
-     * classification.
+     * Returns the first contact with classification 'REMINDER' or the preferred contact with the specified short name
+     * if no contact has this classification.
      *
      * @param contacts   the contacts
      * @param anyContact if {@code true} any contact with a 'REMINDER classification will be returned.
