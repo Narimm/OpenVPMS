@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -36,6 +36,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
@@ -329,7 +330,8 @@ public class PatientReminderTableModel extends AbstractActTableModel {
      */
     private ReminderProcessor getProcessor(int row) {
         if (processor == null || row < lastRow) {
-            processor = new ReminderProcessor(null, null, new Date(), ServiceHelper.getArchetypeService(),
+            boolean disableSMS = !SMSHelper.isSMSEnabled(getLayoutContext().getContext().getPractice());
+            processor = new ReminderProcessor(null, null, new Date(), disableSMS, ServiceHelper.getArchetypeService(),
                                               patientRules);
             processor.setEvaluateFully(true);
         }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -36,6 +36,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
+import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
@@ -150,9 +151,12 @@ class ResendReminderDialog extends PopupDialog {
         IMObjectBean bean = new IMObjectBean(reminder);
         int reminderCount = bean.getInt("reminderCount");
         PatientRules rules = new PatientRules(ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService());
+        boolean disableSMS = !SMSHelper.isSMSEnabled(context.getPractice());
+
         ReminderProcessor processor = new ReminderProcessor(reminder.getActivityStartTime(),
                                                             reminder.getActivityEndTime(),
                                                             reminder.getActivityStartTime(),
+                                                            disableSMS,
                                                             ServiceHelper.getArchetypeService(),
                                                             rules);
         processor.setEvaluateFully(true);
@@ -301,7 +305,7 @@ class ResendReminderDialog extends PopupDialog {
     }
 
     /**
-     * Returns the location and email contacts for a customer.
+     * Returns the location, email and SMS contacts for a customer.
      *
      * @param customer the customer
      * @return a list of location and email contacts
@@ -311,6 +315,11 @@ class ResendReminderDialog extends PopupDialog {
         for (Contact contact : customer.getContacts()) {
             if (TypeHelper.isA(contact, ContactArchetypes.LOCATION, ContactArchetypes.EMAIL)) {
                 result.add(contact);
+            } else if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
+                IMObjectBean bean = new IMObjectBean(contact);
+                if (bean.getBoolean("sms")) {
+                    result.add(contact);
+                }
             }
         }
         return result;
