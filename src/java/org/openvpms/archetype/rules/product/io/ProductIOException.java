@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -34,7 +34,7 @@ public class ProductIOException extends OpenVPMSException {
         InvalidValue,
         InvalidLine,
         InvalidName,
-        NotFound,
+        ProductNotFound,
         UnrecognisedDocument,
         InvalidColumn,
         ReadError,
@@ -47,7 +47,9 @@ public class ProductIOException extends OpenVPMSException {
         CannotCloseExistingPrice,
         FromDateGreaterThanToDate,
         DuplicateFixedPrice,
-        DuplicateUnitPrice
+        DuplicateUnitPrice,
+        StockLocationNotFound,
+        UnexpectedValue
     }
 
     /**

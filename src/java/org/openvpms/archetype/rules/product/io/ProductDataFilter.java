@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.openvpms.archetype.rules.product.io.ProductIOException.ErrorCode.InvalidName;
-import static org.openvpms.archetype.rules.product.io.ProductIOException.ErrorCode.NotFound;
+import static org.openvpms.archetype.rules.product.io.ProductIOException.ErrorCode.ProductNotFound;
 
 
 /**
@@ -79,7 +79,8 @@ public class ProductDataFilter {
             if (iterator.hasNext()) {
                 Product product = iterator.next();
                 if (!StringUtils.equalsIgnoreCase(product.getName(), data.getName())) {
-                    addError(errors, data, new ProductIOException(InvalidName, data.getLine(), product.getName()));
+                    addError(errors, data, new ProductIOException(InvalidName, data.getLine(), product.getName(),
+                                                                  data.getName()));
                 } else {
                     try {
                         ProductData modified = comparer.compare(product, data);
@@ -91,7 +92,7 @@ public class ProductDataFilter {
                     }
                 }
             } else {
-                addError(errors, data, new ProductIOException(NotFound, data.getLine()));
+                addError(errors, data, new ProductIOException(ProductNotFound, data.getLine()));
             }
         }
         return new ProductDataSet(output, errors);

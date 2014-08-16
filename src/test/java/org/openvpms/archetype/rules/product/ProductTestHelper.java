@@ -11,17 +11,23 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
 
 import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Product test helper methods.
@@ -29,6 +35,33 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
  * @author Tim Anderson
  */
 public class ProductTestHelper {
+
+    /**
+     * Helper to create a product linked to a product type.
+     *
+     * @param productType the product type
+     * @return a new product
+     */
+    public static Product createProduct(Entity productType) {
+        Product product = TestHelper.createProduct();
+        EntityBean bean = new EntityBean(productType);
+        bean.addRelationship("entityRelationship.productTypeProduct", product);
+        TestHelper.save(productType, product);
+        return product;
+    }
+
+    /**
+     * Creates a new product type.
+     *
+     * @param name the product type name
+     * @return a new product type
+     */
+    public static Entity createProductType(String name) {
+        Entity result = (Entity) TestHelper.create(ProductArchetypes.PRODUCT_TYPE);
+        result.setName(name);
+        TestHelper.save(result);
+        return result;
+    }
 
     /**
      * Creates a stock location.
@@ -59,4 +92,28 @@ public class ProductTestHelper {
         product.addClassification(lookup);
         TestHelper.save(product);
     }
+
+    /**
+     * Initialises the quantity for the product and stock location.
+     *
+     * @param product       the product
+     * @param stockLocation the stock location
+     * @param quantity      the quantity
+     * @return the <em>entityRelationship.productStockLocation</em> relationship
+     */
+    public static EntityRelationship setStockQuantity(Product product, Party stockLocation, BigDecimal quantity) {
+        EntityBean bean = new EntityBean(product);
+        List<EntityRelationship> stockLocations = bean.getNodeRelationships("stockLocations");
+        EntityRelationship relationship;
+        if (stockLocations.isEmpty()) {
+            relationship = bean.addNodeRelationship("stockLocations", stockLocation);
+        } else {
+            relationship = stockLocations.get(0);
+        }
+        IMObjectBean relBean = new IMObjectBean(relationship);
+        relBean.setValue("quantity", quantity);
+        TestHelper.save(product, stockLocation);
+        return relationship;
+    }
+
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.history;
@@ -21,14 +21,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
-import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 
 import java.util.Date;
@@ -217,12 +216,7 @@ public class HistoryFunctionsTestCase extends ArchetypeServiceTest {
      * @return a new product
      */
     private Product createProduct(Entity productType) {
-        Product product = TestHelper.createProduct();
-        EntityBean bean = new EntityBean(productType);
-        bean.addRelationship("entityRelationship.productTypeProduct", product);
-        bean.save();
-        save(product);
-        return product;
+        return ProductTestHelper.createProduct(productType);
     }
 
     /**
@@ -232,10 +226,7 @@ public class HistoryFunctionsTestCase extends ArchetypeServiceTest {
      * @return a new product type
      */
     private Entity createProductType(String name) {
-        Entity result = (Entity) create(ProductArchetypes.PRODUCT_TYPE);
-        result.setName(name);
-        save(result);
-        return result;
+        return ProductTestHelper.createProductType(name);
     }
 
 }

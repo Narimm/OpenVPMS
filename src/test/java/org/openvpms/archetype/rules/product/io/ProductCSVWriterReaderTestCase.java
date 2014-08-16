@@ -396,9 +396,9 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         csv.writeNext(data);
         csv.close();
 
-        DocumentHandler handler = handlers.get("Dummy.csv", ProductCSVWriter.MIME_TYPE);
+        DocumentHandler handler = handlers.get("Dummy.csv", ProductCSVReader.MIME_TYPE);
         Document document = handler.create("Dummy.csv", new ByteArrayInputStream(writer.toString().getBytes("UTF-8")),
-                                           ProductCSVWriter.MIME_TYPE, -1);
+                                           ProductCSVReader.MIME_TYPE, -1);
         ProductCSVReader reader = new ProductCSVReader(handlers);
         return reader.read(document);
     }

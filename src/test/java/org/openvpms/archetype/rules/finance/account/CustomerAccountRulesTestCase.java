@@ -38,7 +38,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
@@ -1065,18 +1064,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     private EntityRelationship initStockQuantity(BigDecimal quantity) {
         Product product = get(getProduct());
         Party stockLocation = get(getStockLocation());
-        EntityBean bean = new EntityBean(product);
-        List<EntityRelationship> stockLocations = bean.getNodeRelationships("stockLocations");
-        EntityRelationship relationship;
-        if (stockLocations.isEmpty()) {
-            relationship = bean.addNodeRelationship("stockLocations", stockLocation);
-        } else {
-            relationship = stockLocations.get(0);
-        }
-        IMObjectBean relBean = new IMObjectBean(relationship);
-        relBean.setValue("quantity", quantity);
-        save(product, stockLocation);
-        return relationship;
+        return ProductTestHelper.setStockQuantity(product, stockLocation, quantity);
     }
 
     /**
