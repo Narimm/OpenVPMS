@@ -62,7 +62,7 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="reminderExportFormat" path="/details/reminderExportFormat"
+        <node name="fileExportFormat" path="/details/fileExportFormat"
               type="java.lang.String" minCardinality="0" defaultValue='COMMA'>
             <assertion name="lookup.local">
                 <propertyList name="entries">
