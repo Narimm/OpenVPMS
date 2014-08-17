@@ -41,6 +41,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import static org.openvpms.archetype.rules.product.io.AbstractCSVReader.MIME_TYPE;
+
 /**
  * Writes product data as a CSV document.
  *
@@ -57,10 +59,6 @@ public class ProductCSVWriter implements ProductWriter {
             "Fixed Price Groups", "Unit Price Id", "Unit Price", "Unit Cost", "Unit Price Max Discount",
             "Unit Price Start Date", "Unit Price End Date", "Unit Price Groups", "Tax Rate", "Notes"};
 
-    /**
-     * The mime type of the exported document.
-     */
-    public static final String MIME_TYPE = "text/csv";
 
     /**
      * The archetype service.
@@ -83,7 +81,7 @@ public class ProductCSVWriter implements ProductWriter {
     private final DocumentHandlers handlers;
 
     /**
-     * Field separator.
+     * Default field separator.
      */
     static final char SEPARATOR = ',';
 
