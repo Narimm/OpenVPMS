@@ -11,26 +11,42 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.stock;
 
+import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.stock.StockUpdater;
+import org.openvpms.archetype.rules.stock.io.StockData;
+import org.openvpms.archetype.rules.stock.io.StockDataImporter;
+import org.openvpms.archetype.rules.stock.io.StockDataSet;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
+import org.openvpms.web.component.im.doc.DocumentUploadListener;
+import org.openvpms.web.component.im.doc.UploadDialog;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
+import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.retry.Retryable;
 import org.openvpms.web.component.retry.Retryer;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.ActCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
+import org.openvpms.web.echo.dialog.InformationDialog;
+import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+
+import java.util.List;
 
 
 /**
@@ -39,6 +55,16 @@ import org.openvpms.web.system.ServiceHelper;
  * @author Tim Anderson
  */
 public class StockCRUDWindow extends ActCRUDWindow<Act> {
+
+    /**
+     * Export button identifier.
+     */
+    private static final String EXPORT_ID = "button.export";
+
+    /**
+     * Import button identifier.
+     */
+    private static final String IMPORT_ID = "button.import";
 
     /**
      * Constructs a {@code StockCRUDWindow}.
@@ -61,6 +87,21 @@ public class StockCRUDWindow extends ActCRUDWindow<Act> {
         super.layoutButtons(buttons);
         buttons.add(createPostButton());
         buttons.add(createPrintButton());
+        boolean admin = UserHelper.isAdmin(getContext().getUser());
+        if (admin) {
+            buttons.add(ButtonFactory.create(EXPORT_ID, new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    onExport();
+                }
+            }));
+            buttons.add(ButtonFactory.create(IMPORT_ID, new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    onImport();
+                }
+            }));
+        }
     }
 
     /**
@@ -86,8 +127,7 @@ public class StockCRUDWindow extends ActCRUDWindow<Act> {
     }
 
     /**
-     * Creates a new edit dialog with Apply button disabled for <em>POSTED</em>
-     * acts, to workaround OVPMS-733.
+     * Creates a new edit dialog with Apply button disabled for <em>POSTED</em> acts, to workaround OVPMS-733.
      *
      * @param editor the editor
      */
@@ -111,4 +151,64 @@ public class StockCRUDWindow extends ActCRUDWindow<Act> {
             }
         });
     }
+
+    /**
+     * Invoked when the "export" button is pressed.
+     */
+    private void onExport() {
+        HelpContext help = getHelpContext().subtopic("export");
+        StockExportDialog dialog = new StockExportDialog(createLayoutContext(help), help);
+        dialog.show();
+    }
+
+    /**
+     * Invoked when the "import" button is pressed.
+     */
+    private void onImport() {
+        final HelpContext help = getHelpContext().subtopic("import");
+        DocumentUploadListener listener = new DocumentUploadListener() {
+
+            @Override
+            protected void upload(Document document) {
+                try {
+                    importDocument(document, help);
+                } catch (Throwable exception) {
+                    ErrorHelper.show(exception);
+                }
+            }
+        };
+        UploadDialog dialog = new UploadDialog(listener, help.subtopic("upload"));
+        dialog.show();
+    }
+
+    /**
+     * Imports a document.
+     *
+     * @param document the document to import
+     * @param help     the help context
+     */
+    private void importDocument(Document document, HelpContext help) {
+        StockDataImporter importer = new StockDataImporter(
+                ServiceHelper.getArchetypeService(), ServiceHelper.getBean(DocumentHandlers.class),
+                StockIOHelper.getFieldSeparator(getContext().getPractice()));
+        String reason = Messages.format("product.stock.import.reason", document.getName());
+        if (reason.length() > 255) {
+            // TODO - should be determined by descriptor
+            reason = reason.substring(0, 255);
+        }
+        StockDataSet data = importer.load(document, getContext().getUser(), reason);
+        if (data.getAdjustment() != null) {
+            onRefresh(data.getAdjustment());
+        } else {
+            if (!data.getErrors().isEmpty()) {
+                List<StockData> errors = data.getErrors();
+                StockImportErrorDialog dialog = new StockImportErrorDialog(errors, help.subtopic("errors"));
+                dialog.show();
+            } else {
+                InformationDialog.show(Messages.get("product.stock.import.title"),
+                                       Messages.get("product.stock.import.nochanges"));
+            }
+        }
+    }
+
 }
