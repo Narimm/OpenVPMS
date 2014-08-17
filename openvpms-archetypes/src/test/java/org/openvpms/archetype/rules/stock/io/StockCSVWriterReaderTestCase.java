@@ -69,7 +69,7 @@ public class StockCSVWriterReaderTestCase extends ArchetypeServiceTest {
 
         StockCSVWriter writer = new StockCSVWriter(handlers, ',');
         Document document = writer.write("test.csv", Arrays.asList(data).iterator());
-        StockCSVReader reader = new StockCSVReader(handlers);
+        StockCSVReader reader = new StockCSVReader(handlers, ',');
         StockDataSet read = reader.read(document);
         assertEquals(1, read.getData().size());
         assertEquals(0, read.getErrors().size());
@@ -176,7 +176,7 @@ public class StockCSVWriterReaderTestCase extends ArchetypeServiceTest {
      */
     private StockDataSet createStockDataSet(String[] data) throws IOException {
         Document document = createCSV(data, handlers);
-        StockCSVReader reader = new StockCSVReader(handlers);
+        StockCSVReader reader = new StockCSVReader(handlers, ',');
         return reader.read(document);
     }
 

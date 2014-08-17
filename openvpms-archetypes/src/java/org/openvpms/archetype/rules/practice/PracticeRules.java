@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.practice;
@@ -131,6 +131,21 @@ public class PracticeRules {
             return DateRules.getDate(startDate, period, DateUnits.valueOf(units));
         }
         return startDate;
+    }
+
+    /**
+     * Returns the field separator to use when exporting files.
+     *
+     * @param practice the practice
+     * @return the field separator
+     */
+    public char getExportFileFieldSeparator(Party practice) {
+        char separator = ',';
+        IMObjectBean bean = new IMObjectBean(practice, service);
+        if ("TAB".equals(bean.getString("fileExportFormat"))) {
+            separator = '\t';
+        }
+        return separator;
     }
 
 }

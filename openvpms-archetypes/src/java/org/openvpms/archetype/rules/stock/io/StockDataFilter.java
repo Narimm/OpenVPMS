@@ -161,7 +161,8 @@ class StockDataFilter {
         if (iterator.hasNext()) {
             IMObject object = iterator.next();
             if (!name.equalsIgnoreCase(object.getName())) {
-                throw new ProductIOException(ProductIOException.ErrorCode.InvalidName, line, name);
+                throw new ProductIOException(ProductIOException.ErrorCode.InvalidName, line, object.getName(),
+                                             name);
             }
             return object.getObjectReference();
         }
