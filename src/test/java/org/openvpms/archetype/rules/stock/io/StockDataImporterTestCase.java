@@ -66,7 +66,7 @@ public class StockDataImporterTestCase extends ArchetypeServiceTest {
     @Before
     public void setUp() {
         handlers = new DocumentHandlers();
-        importer = new StockDataImporter(getArchetypeService(), handlers);
+        importer = new StockDataImporter(getArchetypeService(), handlers, ',');
         user = TestHelper.createUser();
     }
 
@@ -153,6 +153,24 @@ public class StockDataImporterTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies an error is raised if a stock location identifier doesn't correspond to the stock location name.
+     */
+    @Test
+    public void testDifferentStockLocationName() {
+        Party location = ProductTestHelper.createStockLocation();
+        location.setName("Old name");
+        StockData data = createStockData(location, TestHelper.createProduct(), "Mls", BigDecimal.ONE, BigDecimal.TEN);
+        location.setName("New name");
+        save(location);
+        Document document = createCSV(Arrays.asList(data));
+        StockDataSet set = importer.load(document, user, "A note");
+        assertEquals(1, set.getErrors().size());
+        assertEquals("Expected 'New name' but got 'Old name'", set.getErrors().get(0).getError());
+        assertEquals(0, set.getData().size());
+        assertNull(set.getAdjustment());
+    }
+
+    /**
      * Verifies an error is raised if a product is missing.
      */
     @Test
@@ -165,6 +183,26 @@ public class StockDataImporterTestCase extends ArchetypeServiceTest {
         StockDataSet set = importer.load(document, user, "A note");
         assertEquals(1, set.getErrors().size());
         assertEquals("Product not found", set.getErrors().get(0).getError());
+        assertEquals(0, set.getData().size());
+        assertNull(set.getAdjustment());
+    }
+
+    /**
+     * Verifies an error is raised if a product identifier doesn't correspond to the product name.
+     */
+    @Test
+    public void testDifferentProductName() {
+        Party location = ProductTestHelper.createStockLocation();
+        Product product = TestHelper.createProduct();
+        product.setName("Old name");
+        save(product);
+        StockData data = createStockData(location, product, "Mls", BigDecimal.ONE, BigDecimal.TEN);
+        product.setName("New name");
+        save(product);
+        Document document = createCSV(Arrays.asList(data));
+        StockDataSet set = importer.load(document, user, "A note");
+        assertEquals(1, set.getErrors().size());
+        assertEquals("Expected 'New name' but got 'Old name'", set.getErrors().get(0).getError());
         assertEquals(0, set.getData().size());
         assertNull(set.getAdjustment());
     }
@@ -188,8 +226,8 @@ public class StockDataImporterTestCase extends ArchetypeServiceTest {
     /**
      * Creates a new {@link StockData}.
      *
-     * @param stockLocation the sto
-     * @param product
+     * @param stockLocation the stock location
+     * @param product       the product
      * @param sellingUnits  the product selling units
      * @param quantity      the current stock quantity
      * @param newQuantity   the new stock quantity

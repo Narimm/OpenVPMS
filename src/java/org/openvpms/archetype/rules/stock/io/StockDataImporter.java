@@ -47,6 +47,11 @@ public class StockDataImporter {
     private DocumentHandlers handlers;
 
     /**
+     * The field separator.
+     */
+    private final char separator;
+
+    /**
      * The data filter.
      */
     private StockDataFilter filter;
@@ -54,12 +59,14 @@ public class StockDataImporter {
     /**
      * Constructs an {@link StockDataImporter}.
      *
-     * @param service  the archetype service
-     * @param handlers the document handlers
+     * @param service   the archetype service
+     * @param handlers  the document handlers
+     * @param separator the field separator
      */
-    public StockDataImporter(IArchetypeService service, DocumentHandlers handlers) {
+    public StockDataImporter(IArchetypeService service, DocumentHandlers handlers, char separator) {
         this.service = service;
         this.handlers = handlers;
+        this.separator = separator;
         filter = new StockDataFilter(service);
     }
 
@@ -72,7 +79,7 @@ public class StockDataImporter {
      * @return the stock data. This will contain an <em>act.stockAdjust</em> if the load was successful
      */
     public StockDataSet load(Document document, User author, String reason) {
-        StockCSVReader reader = new StockCSVReader(handlers);
+        StockCSVReader reader = new StockCSVReader(handlers, separator);
         StockDataSet data = reader.read(document);
         if (data.getErrors().isEmpty() && !data.getData().isEmpty()) {
             data = filter.filter(data.getData());

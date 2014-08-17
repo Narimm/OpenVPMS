@@ -50,14 +50,21 @@ public abstract class AbstractCSVReader {
     private final String[] header;
 
     /**
+     * The field separator.
+     */
+    private final char separator;
+
+    /**
      * Constructs an {@link AbstractCSVReader}.
      *
-     * @param handlers the document handlers
-     * @param header   the expected CSV header
+     * @param handlers  the document handlers
+     * @param header    the expected CSV header
+     * @param separator the field separator
      */
-    public AbstractCSVReader(DocumentHandlers handlers, String[] header) {
+    public AbstractCSVReader(DocumentHandlers handlers, String[] header, char separator) {
         this.handlers = handlers;
         this.header = header;
+        this.separator = separator;
     }
 
     /**
@@ -69,7 +76,7 @@ public abstract class AbstractCSVReader {
     protected List<String[]> readLines(Document document) {
         try {
             DocumentHandler documentHandler = handlers.get(document);
-            CSVReader reader = new CSVReader(new InputStreamReader(documentHandler.getContent(document)));
+            CSVReader reader = new CSVReader(new InputStreamReader(documentHandler.getContent(document)), separator);
             String[] first = reader.readNext();
             if (first.length < header.length) {
                 throw new ProductIOException(ProductIOException.ErrorCode.UnrecognisedDocument, 1, document.getName());

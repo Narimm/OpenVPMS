@@ -71,10 +71,11 @@ public class StockCSVReader extends AbstractCSVReader {
     /**
      * Constructs a {@link StockCSVReader}.
      *
-     * @param handlers the document handlers
+     * @param handlers  the document handlers
+     * @param separator the field separator
      */
-    public StockCSVReader(DocumentHandlers handlers) {
-        super(handlers, StockCSVWriter.HEADER);
+    public StockCSVReader(DocumentHandlers handlers, char separator) {
+        super(handlers, StockCSVWriter.HEADER, separator);
     }
 
     /**

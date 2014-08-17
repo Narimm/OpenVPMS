@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -137,10 +137,7 @@ public class ReminderCSVExporter implements ReminderExporter {
         char separator = ',';
         Party practice = practiceRules.getPractice();
         if (practice != null) {
-            IMObjectBean bean = new IMObjectBean(practice, service);
-            if ("TAB".equals(bean.getString("reminderExportFormat"))) {
-                separator = '\t';
-            }
+            return practiceRules.getExportFileFieldSeparator(practice);
         }
         return separator;
     }

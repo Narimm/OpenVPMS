@@ -168,7 +168,7 @@ public class ProductCSVReader extends AbstractCSVReader implements ProductReader
      * @param handlers the document handlers
      */
     public ProductCSVReader(DocumentHandlers handlers) {
-        super(handlers, ProductCSVWriter.HEADER);
+        super(handlers, ProductCSVWriter.HEADER, ProductCSVWriter.SEPARATOR);
     }
 
     /**
