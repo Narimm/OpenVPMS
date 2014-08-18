@@ -18,12 +18,16 @@ package org.openvpms.web.workspace.product.stock;
 
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.rules.stock.StockUpdater;
 import org.openvpms.archetype.rules.stock.io.StockData;
 import org.openvpms.archetype.rules.stock.io.StockDataImporter;
 import org.openvpms.archetype.rules.stock.io.StockDataSet;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.doc.DocumentUploadListener;
@@ -188,13 +192,15 @@ public class StockCRUDWindow extends ActCRUDWindow<Act> {
      * @param help     the help context
      */
     private void importDocument(Document document, HelpContext help) {
+        IArchetypeService service = ServiceHelper.getArchetypeService();
         StockDataImporter importer = new StockDataImporter(
-                ServiceHelper.getArchetypeService(), ServiceHelper.getBean(DocumentHandlers.class),
+                service, ServiceHelper.getBean(DocumentHandlers.class),
                 StockIOHelper.getFieldSeparator(getContext().getPractice()));
         String reason = Messages.format("product.stock.import.reason", document.getName());
-        if (reason.length() > 255) {
-            // TODO - should be determined by descriptor
-            reason = reason.substring(0, 255);
+        NodeDescriptor node = DescriptorHelper.getNode(StockArchetypes.STOCK_ADJUST, "reason", service);
+        int maxLength = node != null ? node.getMaxLength() : 255;
+        if (maxLength > 0 && reason.length() > maxLength) {
+            reason = reason.substring(0, maxLength);
         }
         StockDataSet data = importer.load(document, getContext().getUser(), reason);
         if (data.getAdjustment() != null) {
