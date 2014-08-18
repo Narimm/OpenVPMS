@@ -75,11 +75,14 @@ class StockDataFilter {
                 } else {
                     checkStockLocation(data, stockLocationId, stockLocationName);
                 }
+                // make sure the product can be resolved. Do this prior to checking quantities to ensure errors aren't
+                // excluded
+                data.setProduct(getProduct(data));
+
                 BigDecimal quantity = data.getQuantity();
                 BigDecimal newQuantity = data.getNewQuantity();
                 if (quantity.compareTo(newQuantity) != 0) {
                     data.setStockLocation(stockLocation);
-                    data.setProduct(getProduct(data));
                     output.add(data);
                 }
             } catch (ProductIOException exception) {

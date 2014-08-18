@@ -207,6 +207,23 @@ public class StockDataImporterTestCase extends ArchetypeServiceTest {
         assertNull(set.getAdjustment());
     }
 
+    /**
+     * Verifies an error is raised if quantities are the same, but products are different..
+     */
+    @Test
+    public void testMissingProductForSameQuantities() {
+        Party location = ProductTestHelper.createStockLocation();
+        Product product = TestHelper.createProduct();
+        StockData data = createStockData(location, product, "Mls", BigDecimal.ONE, BigDecimal.ONE);
+        remove(product);
+        Document document = createCSV(Arrays.asList(data));
+        StockDataSet set = importer.load(document, user, "A note");
+        assertEquals(1, set.getErrors().size());
+        assertEquals("Product not found", set.getErrors().get(0).getError());
+        assertEquals(0, set.getData().size());
+        assertNull(set.getAdjustment());
+    }
+
     private Document createCSV(List<StockData> data) {
         StockCSVWriter writer = new StockCSVWriter(handlers, ',');
         return writer.write("test.csv", data.iterator());
