@@ -90,7 +90,7 @@ SET arch_short_name = "lookup.visitReason"
 WHERE arch_short_name = "lookup.appointmentReason";
 
 #
-# Migrate party.organisationPractice for OIVPMS-1511
+# Migrate party.organisationPractice for OVPMS-1511
 #
 UPDATE entities e
   JOIN entity_details d
