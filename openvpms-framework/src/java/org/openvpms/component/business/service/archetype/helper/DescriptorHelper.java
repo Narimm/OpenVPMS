@@ -661,5 +661,18 @@ public final class DescriptorHelper {
         return result.toArray(new String[result.size()]);
     }
 
+    /**
+     * Returns the node descriptor for the named archetype and node.
+     *
+     * @param shortName the archetype short name
+     * @param node      the node name
+     * @param service   the archetype service
+     * @return the node, or {@code null} if none is found
+     */
+    public static NodeDescriptor getNode(String shortName, String node, IArchetypeService service) {
+        ArchetypeDescriptor descriptor = getArchetypeDescriptor(shortName, service);
+        return (descriptor != null) ? descriptor.getNodeDescriptor(node) : null;
+    }
+
 }
 
