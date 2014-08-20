@@ -161,7 +161,7 @@ change to:
        Letter to load the Letter (ie US) template
 
   NOTES:
-  * If a template has been already loaded, it will be replaced.
+  * If a template with the same name has been already loaded, it will be replaced
   * Not all templates are available in all formats, however a complete set
     is loaded. Thus if you load the A5 set you will find that some templates
     are in A4 format.
@@ -285,50 +285,39 @@ change to:
 
 2.8 Upgrading from older releases of OpenVPMS
 
-  Upgrading from OpenVPMS 1.6 or earlier requires data migration scripts to be
-  run.
-  These are located in the <OPENVPMS_HOME>/update/db directory.
-  See the following sections to migrate data from a particular release.
-  Once complete, continue with step 2.3.
+  Upgrading from OpenVPMS 1.7 or earlier requires data migration scripts to be
+  run. Once this has been done, continue with step 2.3.
 
-  1. Upgrading from OpenVPMS 1.5 or 1.6
-     Run:
+  The scripts are located in the <OPENVPMS_HOME>/update/db directory.
+  With the exception of the 1.5 to 1.6 release (where there was no change to the
+  database structure), there is one sql script per release.
+
+  The sql scripts are:
+     migrate-1.0-to-1.1.sql
+     migrate-1.1-to-1.2.sql
+     migrate-1.2-to-1.3.sql
+     migrate-1.3-to-1.4.sql
+     migrate-1.4-to-1.5.sql
+     migrate-1.6-to-1.7.sql
+     migrate-1.7-to-1.8.sql
+
+  You need to run each relevant one in turn using the mysql utility.
+
+  Hence if you are upgrading from OpenVPMS 1.7, run:
+     > mysql -u openvpms -p openvpms < migrate-1.7-to-1.8.sql
+
+  If you are upgrading from OpenVPMS 1.5 or 1.6, run:
      > mysql -u openvpms -p openvpms < migrate-1.6-to-1.7.sql
+     > mysql -u openvpms -p openvpms < migrate-1.7-to-1.8.sql
 
-  2. Upgrading from OpenVPMS 1.4
-     Run:
-     > mysql -u openvpms -p openvpms < migrate-1.4-to-1.5.sql
-     > mysql -u openvpms -p openvpms < migrate-1.6-to-1.7.sql
-
-  3. Upgrading from OpenVPMS 1.3
-     Run:
-     > mysql -u openvpms -p openvpms < migrate-1.3-to-1.4.sql
-     > mysql -u openvpms -p openvpms < migrate-1.4-to-1.5.sql
-     > mysql -u openvpms -p openvpms < migrate-1.6-to-1.7.sql
-
-  4. Upgrading from OpenVPMS 1.2
-     Run:
-     > mysql -u openvpms -p openvpms < migrate-1.2-to-1.3.sql
-     > mysql -u openvpms -p openvpms < migrate-1.3-to-1.4.sql
-     > mysql -u openvpms -p openvpms < migrate-1.4-to-1.5.sql
-     > mysql -u openvpms -p openvpms < migrate-1.6-to-1.7.sql
-
-  5. Upgrading from OpenVPMS 1.1
-     Run:
-     > mysql -u openvpms -p openvpms < migrate-1.1-to-1.2.sql
-     > mysql -u openvpms -p openvpms < migrate-1.2-to-1.3.sql
-     > mysql -u openvpms -p openvpms < migrate-1.3-to-1.4.sql
-     > mysql -u openvpms -p openvpms < migrate-1.4-to-1.5.sql
-     > mysql -u openvpms -p openvpms < migrate-1.6-to-1.7.sql
-
-  6. Upgrading from OpenVPMS 1.0
-     Run:
+  If you are upgrading from OpenVPMS 1.0 - you need the lot, so run:
      > mysql -u openvpms -p openvpms < migrate-1.0-to-1.1.sql
      > mysql -u openvpms -p openvpms < migrate-1.1-to-1.2.sql
      > mysql -u openvpms -p openvpms < migrate-1.2-to-1.3.sql
      > mysql -u openvpms -p openvpms < migrate-1.3-to-1.4.sql
      > mysql -u openvpms -p openvpms < migrate-1.4-to-1.5.sql
      > mysql -u openvpms -p openvpms < migrate-1.6-to-1.7.sql
+     > mysql -u openvpms -p openvpms < migrate-1.7-to-1.8.sql
 
 3. Subscription
 
