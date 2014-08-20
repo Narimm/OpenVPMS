@@ -1208,6 +1208,13 @@
         </properties>
     </style>
 
+    <style name="MediumDialog" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${dialog.medium.width}"/>
+            <property name="height" value="${dialog.medium.height}"/>
+        </properties>
+    </style>
+
     <style name="Palette" type="nextapp.echo2.app.Row">
         <propertiesr>
             <property name="insets" value="${padding.medium}"/>
