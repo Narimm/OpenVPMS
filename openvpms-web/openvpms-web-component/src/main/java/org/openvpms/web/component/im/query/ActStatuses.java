@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -29,8 +27,7 @@ import java.util.List;
 /**
  * Helper to retrieve act status lookups for selection by {@link ActQuery}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ActStatuses implements LookupQuery {
 
@@ -57,8 +54,7 @@ public class ActStatuses implements LookupQuery {
 
 
     /**
-     * Creates a new <tt>ActStatuses</tt> selecting all lookups from the
-     * status node of the specified archetype.
+     * Constructs an {@link ActStatuses} selecting all lookups from the status node of the specified archetype.
      *
      * @param shortName the archetype short name
      */
@@ -67,21 +63,20 @@ public class ActStatuses implements LookupQuery {
     }
 
     /**
-     * Creates a new <tt>ActStatuses</tt> selecting lookups from the
-     * status node of the specified archetype.
+     * Constructs an {@link ActStatuses} selecting lookups from the status node of the specified archetype.
      *
      * @param shortName the archetype short name
-     * @param exclude   the act status to exclude. May be <tt>null</tt>
+     * @param exclude   the act status to exclude. May be {@code null}
      */
     public ActStatuses(String shortName, String exclude) {
         this(new NodeLookupQuery(shortName, "status"), exclude);
     }
 
     /**
-     * Creates a new <tt>ActStatuses</tt>.
+     * Constructs an {@link ActStatuses}.
      *
      * @param lookups the lookups
-     * @param exclude the act status to exclude. May be <tt>null</tt>
+     * @param exclude the act status to exclude. May be {@code null}
      */
     public ActStatuses(LookupQuery lookups, String exclude) {
         if (exclude != null) {
@@ -95,7 +90,7 @@ public class ActStatuses implements LookupQuery {
      * Sets the default status, overriding that returned by
      * {@link LookupQuery#getDefault()}.
      *
-     * @param lookup the default lookup. May be <tt>null</tt>
+     * @param lookup the default lookup. May be {@code null}
      */
     public void setDefault(Lookup lookup) {
         useDefault = true;
@@ -106,7 +101,7 @@ public class ActStatuses implements LookupQuery {
      * Sets the default status, overriding that returned by
      * {@link LookupQuery#getDefault()}.
      *
-     * @param code the default lookup code. May be <tt>null</tt>
+     * @param code the default lookup code. May be {@code null}
      */
     public void setDefault(String code) {
         useDefault = true;
@@ -124,10 +119,20 @@ public class ActStatuses implements LookupQuery {
     /**
      * Returns the default status.
      *
-     * @return the default status, or <tt>null</tt> if none is defined
+     * @return the default status, or {@code null} if none is defined
      */
     public Lookup getDefault() {
         return (useDefault) ? defaultLookup : lookups.getDefault();
+    }
+
+    /**
+     * Returns the default status code.
+     *
+     * @return the default status code, or {@code null} if none is defined
+     */
+    public String getDefaultCode() {
+        Lookup result = getDefault();
+        return result != null ? result.getCode() : null;
     }
 
     /**
@@ -142,7 +147,7 @@ public class ActStatuses implements LookupQuery {
     /**
      * Returns the excluded status code.
      *
-     * @return the excluded status code. May be <tt>null</tt>
+     * @return the excluded status code. May be {@code null}
      */
     public String getExcluded() {
         return exclude;

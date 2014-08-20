@@ -100,7 +100,8 @@ public abstract class ActQuery<T> extends AbstractArchetypeQuery<T> {
         super(shortNames, type);
         setParticipantConstraint(entity, participant, participation);
         this.statusLookups = statuses;
-        this.statuses = new String[0];
+        String defaultStatus = (statusLookups != null) ? statusLookups.getDefaultCode() : null;
+        this.statuses = defaultStatus != null ? new String[]{defaultStatus} : new String[0];
         setDefaultSortConstraint(DESCENDING_START_TIME);
     }
 
@@ -378,21 +379,14 @@ public abstract class ActQuery<T> extends AbstractArchetypeQuery<T> {
                     onStatusChanged();
                 }
             });
-            if (statuses != null) {
-                if (statuses.length == 0) {
-                    updateStatusSelector(null);
-                } else if (statuses.length == 1) {
-                    updateStatusSelector(statuses[0]);
-                }
+            if (statuses != null && statuses.length == 1) {
+                updateStatusSelector(statuses[0]);
             } else {
                 String defaultStatus = statusSelector.getSelectedCode();
                 if (defaultStatus != null) {
                     setStatus(defaultStatus);
                 }
             }
-        }
-
-        if (statusSelector != null) {
             container.add(LabelFactory.create("actquery.status"));
             container.add(statusSelector);
             getFocusGroup().add(statusSelector);
