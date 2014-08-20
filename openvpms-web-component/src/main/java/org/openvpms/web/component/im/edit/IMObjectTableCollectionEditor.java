@@ -120,7 +120,7 @@ public abstract class IMObjectTableCollectionEditor extends IMTableCollectionEdi
             }
             table.setSelected(object);
         }
-        enableNavigation(table.getSelected() != null);
+        enableNavigation(table.getSelected() != null, true);
     }
 
     /**

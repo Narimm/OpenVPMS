@@ -701,18 +701,34 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
      * @param enable if {@code true} enable buttons (subject to criteria), otherwise disable them
      */
     protected void enableNavigation(boolean enable) {
+        enableNavigation(enable, enable);
+    }
+
+    /**
+     * Enable/disables the buttons.
+     * <p/>
+     * This allows the Add button to be enabled independently of the other buttons.
+     * <p/>
+     * Note that the delete button is enabled if {@link #getCurrentEditor()} or {@link #getSelected()} return non-null.
+     *
+     * @param enable    if {@code true}, enable buttons (subject to criteria), otherwise disable them
+     * @param enableAdd if {@code true}, enable the add button (subject to criteria), otherwise disable it
+     */
+    protected void enableNavigation(boolean enable, boolean enableAdd) {
         if (buttons != null) {
-            boolean add = enable;
+            boolean add = enableAdd;
             boolean delete = getCurrentEditor() != null || getSelected() != null;
             boolean previous = enable;
             boolean next = enable;
-            if (enable) {
+            if (enable || add) {
                 CollectionProperty property = getCollection();
                 int maxSize = property.getMaxCardinality();
                 add = (maxSize == -1 || property.size() < maxSize);
-                TableNavigator navigator = getTable().getNavigator();
-                previous = navigator.hasPreviousRow();
-                next = navigator.hasNextRow();
+                if (enable) {
+                    TableNavigator navigator = getTable().getNavigator();
+                    previous = navigator.hasPreviousRow();
+                    next = navigator.hasNextRow();
+                }
             }
             buttons.getButtons().setEnabled(ADD_ID, add);
             buttons.getButtons().setEnabled(DELETE_ID, delete);
