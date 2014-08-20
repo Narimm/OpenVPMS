@@ -116,9 +116,13 @@ public class ClearTillDialog extends AbstractClearTillDialog {
             IMObject account = IMObjectHelper.getObject(relationship.getTarget(), context);
             if (account.isActive()) {
                 accounts.add(account);
-                IMObjectBean defBean = new IMObjectBean(relationship);
-                if (defBean.getBoolean("default") || selected == null) {
+                if (selected == null) {
                     selected = account;
+                } else {
+                    IMObjectBean defBean = new IMObjectBean(relationship);
+                    if (defBean.getBoolean("default")) {
+                        selected = account;
+                    }
                 }
             }
         }
