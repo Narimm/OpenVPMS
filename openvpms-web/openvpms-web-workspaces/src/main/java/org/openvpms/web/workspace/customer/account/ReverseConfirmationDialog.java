@@ -81,6 +81,7 @@ public class ReverseConfirmationDialog extends ConfirmationDialog {
     public ReverseConfirmationDialog(String title, String message, HelpContext help, String notes, String reference,
                                      boolean canHide) {
         super(title, message, help);
+        setStyleName("MediumDialog");
         ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(CustomerAccountArchetypes.INVOICE);
 
         notesProperty = createProperty("notes", notes, archetype, 300);
