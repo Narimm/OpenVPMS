@@ -455,7 +455,7 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
         final String expected = "select documentAct0 from "
                                 + DocumentActDO.class.getName() + " as documentAct0 "
                                 + "where (documentAct0.archetypeId.shortName = :shortName0 and "
-                                + "documentAct0.document.id in (:document0, :document1))";
+                                + "documentAct0.document.id in (:document0))";
         ArchetypeId id = new ArchetypeId("document.common.1.0");
         Document d1 = new Document(id);
         Document d2 = new Document(id);
