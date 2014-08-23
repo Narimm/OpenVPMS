@@ -1,25 +1,26 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
 
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.query.IArchetypeQuery;
+import org.openvpms.component.system.common.query.NamedQuery;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -29,8 +30,7 @@ import java.util.Map;
 /**
  * Patient relationship rules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientRelationshipRules {
 
@@ -87,6 +87,33 @@ public class PatientRelationshipRules {
                 }
             }
         }
+    }
+
+    /**
+     * Returns a query to query patient relationships for a customer.
+     * <p/>
+     * The query needs to be executed using {@link ObjectSetQueryIterator}.
+     * <p/>
+     * The returned sets contain:
+     * <ul>
+     * <li>relationship.id - the relationship id</li>
+     * <li>patient.id - the patient id</li>
+     * <li>patient.name - the patient name</li>
+     * <li>patient.description - the patient description</li>
+     * <li>patient.active- the patient active flag</li>
+     * <li>patient.deceased- the patient deceased flag</li>
+     * </ul>
+     *
+     * @param customer               the customer
+     * @param relationshipShortNames the relationship archetypes to query
+     * @return a new query
+     */
+    public static IArchetypeQuery createPatientRelationshipQuery(Party customer, String[] relationshipShortNames) {
+        NamedQuery query = new NamedQuery("getPatientRelationships", "relationship.id", "patient.id", "patient.name",
+                                          "patient.description", "patient.active", "patient.deceased");
+        query.setParameter("customerId", customer.getId());
+        query.setParameter("shortNames", relationshipShortNames);
+        return query;
     }
 
     /**
