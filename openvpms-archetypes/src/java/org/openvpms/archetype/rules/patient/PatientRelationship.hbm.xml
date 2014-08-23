@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <sql-query name="getPatientRelationships">
+        <return-scalar column="relationshipId" type="long"/>
+        <return-scalar column="patientId" type="long"/>
+        <return-scalar column="name" type="string"/>
+        <return-scalar column="description" type="string"/>
+        <return-scalar column="active" type="boolean"/>
+        <return-scalar column="deceased" type="boolean"/>
+        <![CDATA[
+select r.entity_relationship_id as relationshipId, e.entity_id as patientId, e.name, e.description, e.active,
+       d.value as deceased
+from entity_relationships r
+join entities e on e.arch_short_name = "party.patientpet" and r.target_id = e.entity_id
+left join entity_details d on e.entity_id = d.entity_id and d.name = "deceased"
+where r.source_id = :customerId and r.arch_short_name in (:shortNames)
+order by r.entity_relationship_id
+        ]]>
+    </sql-query>
+
+</hibernate-mapping>
