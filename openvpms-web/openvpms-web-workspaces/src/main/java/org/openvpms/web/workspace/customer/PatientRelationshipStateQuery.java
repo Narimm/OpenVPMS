@@ -11,33 +11,22 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
 
-import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientRelationshipRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.NodeSet;
-import org.openvpms.component.system.common.query.NodeSetQueryIterator;
-import org.openvpms.component.system.common.query.RelationalOp;
-import org.openvpms.web.component.im.relationship.RelationshipState;
+import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.web.component.im.relationship.RelationshipStateFactory;
 import org.openvpms.web.component.im.relationship.RelationshipStateQuery;
-import org.openvpms.web.system.ServiceHelper;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -72,66 +61,34 @@ public class PatientRelationshipStateQuery extends RelationshipStateQuery {
      * @param relationshipShortNames the relationship short names
      * @param factory                the factory
      */
-    public PatientRelationshipStateQuery(Entity entity, List<IMObject> relationships, String[] relationshipShortNames,
-                                         RelationshipStateFactory factory) {
+    protected PatientRelationshipStateQuery(Entity entity, List<IMObject> relationships, String[] relationshipShortNames,
+                                            RelationshipStateFactory factory) {
         super(entity, relationships, relationshipShortNames, factory);
     }
 
     /**
-     * Queries all those {@link RelationshipState} instances corresponding to the relationships supplied at
-     * construction.
+     * Creates a new archetype query returning the relationship id,
+     * and the name and active nodes for the secondary object.
      *
-     * @return the matching {@link RelationshipState} instances, keyed on their associated relationships
-     * @throws ArchetypeServiceException for any archetype service error
+     * @return a new archetype query
      */
     @Override
-    public Map<IMObjectRelationship, RelationshipState> query() {
-        Map<IMObjectRelationship, RelationshipState> result = super.query();
-        checkDeceased(result);
-        return result;
+    protected IArchetypeQuery createQuery() {
+        if (TypeHelper.isA(getParent(), PatientArchetypes.PATIENT)) {
+            return super.createQuery();
+        }
+        // pull in the relationship details and the patient deceased flag
+        return PatientRelationshipRules.createPatientRelationshipQuery((Party) getParent(),
+                                                                       getRelationshipShortNames());
     }
 
     /**
-     * For each relationship, checks if the patient is deceased. If so, marks
-     * them deceased and inactive.
+     * Returns the query alias for the secondary (i.e non parent) object.
      *
-     * @param states the set of relationship states
+     * @return the alias
      */
-    private void checkDeceased(Map<IMObjectRelationship, RelationshipState> states) {
-        if (TypeHelper.isA(getParent(), "party.patientpet")) {
-            // if the entity is the patient, update the states using the its deceased state
-            PatientRules rules = ServiceHelper.getBean(PatientRules.class);
-            boolean deceased = rules.isDeceased((Party) getParent());
-            if (deceased) {
-                for (RelationshipState state : states.values()) {
-                    PatientRelationshipState pState = (PatientRelationshipState) state;
-                    pState.setDeceased(true);
-                }
-            }
-        } else if (!states.isEmpty()) {
-            // build a map of patient ids to their corresponding states
-            Map<Long, PatientRelationshipState> patients = new HashMap<Long, PatientRelationshipState>();
-            for (RelationshipState state : states.values()) {
-                long id = (parentIsSource()) ? state.getTargetId() : state.getSourceId();
-                patients.put(id, (PatientRelationshipState) state);
-            }
-
-            // query each matching patient on id
-            ArchetypeQuery query = new ArchetypeQuery(getShortNames(), false, false);
-            query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-            List<String> nodes = Arrays.asList("id", "deceased");
-            query.add(new NodeConstraint("id", RelationalOp.IN, patients.keySet().toArray()));
-            Iterator<NodeSet> iter = new NodeSetQueryIterator(query, nodes);
-            while (iter.hasNext()) {
-                NodeSet set = iter.next();
-                boolean deceased = set.getBoolean("deceased");
-                if (deceased) {
-                    long id = set.getLong("id");
-                    PatientRelationshipState state = patients.get(id);
-                    state.setDeceased(true);
-                }
-            }
-        }
+    @Override
+    protected String getSecondaryAlias() {
+        return !TypeHelper.isA(getParent(), PatientArchetypes.PATIENT) ? "patient" : super.getSecondaryAlias();
     }
-
 }
