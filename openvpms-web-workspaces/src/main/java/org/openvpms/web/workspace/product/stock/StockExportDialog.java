@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.stock.io.StockCSVWriter;
 import org.openvpms.archetype.rules.stock.io.StockData;
 import org.openvpms.archetype.rules.util.FileNameHelper;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.ResultSetIterator;
@@ -94,12 +95,15 @@ public class StockExportDialog extends BrowserDialog<StockData> {
      */
     private void onExport() {
         StockExportQuery query = ((StockExportBrowser) getBrowser()).getQuery();
-        StockCSVWriter exporter = new StockCSVWriter(ServiceHelper.getBean(DocumentHandlers.class), separator);
-        String name = "stock-" + FileNameHelper.clean(query.getStockLocation().getName()) + "-"
-                      + new java.sql.Date(System.currentTimeMillis()).toString() + ".csv";
+        Party stockLocation = query.getStockLocation();
+        if (stockLocation != null) {
+            StockCSVWriter exporter = new StockCSVWriter(ServiceHelper.getBean(DocumentHandlers.class), separator);
+            String name = "stock-" + FileNameHelper.clean(stockLocation.getName()) + "-"
+                          + new java.sql.Date(System.currentTimeMillis()).toString() + ".csv";
 
-        Document document = exporter.write(name, new ResultSetIterator<StockData>(query.query()));
-        DownloadServlet.startDownload(document);
+            Document document = exporter.write(name, new ResultSetIterator<StockData>(query.query()));
+            DownloadServlet.startDownload(document);
+        }
     }
 
 
