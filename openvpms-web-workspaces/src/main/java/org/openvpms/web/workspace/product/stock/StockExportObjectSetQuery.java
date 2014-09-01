@@ -222,6 +222,9 @@ public class StockExportObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
      */
     private void addStockLocationSelector(Component container) {
         final SelectField field = createObjectSelector(StockArchetypes.STOCK_LOCATION, false, stockLocation);
+        if (stockLocation == null) {
+            setStockLocation((Party) field.getSelectedItem());
+        }
         field.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 setStockLocation((Party) field.getSelectedItem());
@@ -241,6 +244,9 @@ public class StockExportObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
      */
     private void addProductTypeSelector(Component container) {
         final SelectField field = createObjectSelector(ProductArchetypes.PRODUCT_TYPE, true, productType);
+        if (productType == null) {
+            setProductType((Entity) field.getSelectedItem());
+        }
         field.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 setProductType((Entity) field.getSelectedItem());
@@ -260,6 +266,9 @@ public class StockExportObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
      */
     private void addIncomeTypeSelector(Component container) {
         final SelectField field = createLookupSelector("lookup.productIncomeType", incomeType);
+        if (incomeType == null) {
+            setIncomeType((String) field.getSelectedItem());
+        }
         field.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 setProductGroup((String) field.getSelectedItem());
@@ -279,6 +288,9 @@ public class StockExportObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
      */
     private void addProductGroupSelector(Component container) {
         final SelectField field = createLookupSelector("lookup.productGroup", productGroup);
+        if (productGroup == null) {
+            setProductGroup((String) field.getSelectedItem());
+        }
         field.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 setProductGroup((String) field.getSelectedItem());
