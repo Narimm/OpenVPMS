@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
     <archetype name="entity.discountType.1.0" latest="true"
@@ -32,8 +32,8 @@
                 <propertyList name="entries">
                     <property name="FIXED" value="Fixed"/>
                     <property name="PERCENTAGE" value="Percentage"/>
+                    <property name="COST_RATE" value="At-cost + Rate + Tax"/>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="rate" path="/details/rate"

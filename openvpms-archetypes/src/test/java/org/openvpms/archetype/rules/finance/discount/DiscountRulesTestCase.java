@@ -1,29 +1,25 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.discount;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.math.MathRules;
+import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -39,12 +35,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 
 /**
  * Tests the {@link DiscountRules} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DiscountRulesTestCase extends ArchetypeServiceTest {
 
@@ -59,9 +58,29 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
     private Entity discount5;
 
     /**
+     * At-cost discount, with 0% rate.
+     */
+    private Entity costDiscount0;
+
+    /**
+     * At-cost discount, with 10% rate.
+     */
+    private Entity costDiscount10;
+
+    /**
      * 15% group discount type.
      */
     private Entity discountGroup;
+
+    /**
+     * Cost discount group.
+     */
+    private Entity costDiscountGroup;
+
+    /**
+     * The practice.
+     */
+    private Party practice;
 
     /**
      * The rules.
@@ -75,56 +94,95 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
 
 
     /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        discount10 = createDiscount(BigDecimal.TEN, true, DiscountRules.PERCENTAGE);
+        discount5 = createDiscount(new BigDecimal("5"), true, DiscountRules.PERCENTAGE);
+        costDiscount0 = createDiscount(BigDecimal.ZERO, true, DiscountRules.COST_RATE);
+        costDiscount10 = createDiscount(BigDecimal.TEN, true, DiscountRules.COST_RATE);
+        discountGroup = createDiscountGroup(discount10, discount5);
+        costDiscountGroup = createDiscountGroup(costDiscount0, costDiscount10);
+
+        rules = new DiscountRules();
+
+        // set up practice with 10% tax rate
+        practice = (Party) TestHelper.create(PracticeArchetypes.PRACTICE);
+        practice.addClassification(TestHelper.createTaxType(BigDecimal.TEN));
+    }
+
+    /**
      * Tests the {@link DiscountRules#calculateDiscount} method when the intersection of customer, patient, and product
      * discounts result in no discount.
      */
     @Test
     public void testCalculateDiscountForNoDiscounts() {
-        checkCalculateDiscount(ProductArchetypes.MEDICATION);
-        checkCalculateDiscount(ProductArchetypes.MERCHANDISE);
-        checkCalculateDiscount(ProductArchetypes.SERVICE);
+        checkCalculatePercentageDiscountForNoDiscount(ProductArchetypes.MEDICATION);
+        checkCalculatePercentageDiscountForNoDiscount(ProductArchetypes.MERCHANDISE);
+        checkCalculatePercentageDiscountForNoDiscount(ProductArchetypes.SERVICE);
+
+        checkCalculateCostRateDiscountForNoDiscount(ProductArchetypes.MEDICATION);
+        checkCalculateCostRateDiscountForNoDiscount(ProductArchetypes.MERCHANDISE);
+        checkCalculateCostRateDiscountForNoDiscount(ProductArchetypes.SERVICE);
     }
 
     /**
-     * Tests the {@link DiscountRules#calculateDiscount} method where the product has a 10% discount.
+     * Tests the {@link DiscountRules#calculateDiscount} method where the product has a discount.
      */
     @Test
     public void testCalculateDiscountForProductDiscount() {
-        checkCalculateDiscountForProductDiscount(ProductArchetypes.MEDICATION);
-        checkCalculateDiscountForProductDiscount(ProductArchetypes.MERCHANDISE);
-        checkCalculateDiscountForProductDiscount(ProductArchetypes.SERVICE);
+        checkCalculatePercentageDiscountForProductDiscount(ProductArchetypes.MEDICATION);
+        checkCalculatePercentageDiscountForProductDiscount(ProductArchetypes.MERCHANDISE);
+        checkCalculatePercentageDiscountForProductDiscount(ProductArchetypes.SERVICE);
+
+        checkCalculateCostDiscountForProductDiscount(ProductArchetypes.MEDICATION);
+        checkCalculateCostDiscountForProductDiscount(ProductArchetypes.MERCHANDISE);
+        checkCalculateCostDiscountForProductDiscount(ProductArchetypes.SERVICE);
     }
 
     /**
-     * Tests the {@link DiscountRules#calculateDiscount} method where the product type has an associated 10% discount.
+     * Tests the {@link DiscountRules#calculateDiscount} method where the product type has a discount.
      */
     @Test
     public void testCalculateDiscountForProductTypeDiscount() {
-        checkCalculateDiscountForProductTypeDiscount(ProductArchetypes.MEDICATION);
-        checkCalculateDiscountForProductTypeDiscount(ProductArchetypes.MERCHANDISE);
-        checkCalculateDiscountForProductTypeDiscount(ProductArchetypes.SERVICE);
+        checkCalculatePercentageDiscountForProductTypeDiscount(ProductArchetypes.MEDICATION);
+        checkCalculatePercentageDiscountForProductTypeDiscount(ProductArchetypes.MERCHANDISE);
+        checkCalculatePercentageDiscountForProductTypeDiscount(ProductArchetypes.SERVICE);
+
+        checkCalculateCostDiscountForProductTypeDiscount(ProductArchetypes.MEDICATION);
+        checkCalculateCostDiscountForProductTypeDiscount(ProductArchetypes.MERCHANDISE);
+        checkCalculateCostDiscountForProductTypeDiscount(ProductArchetypes.SERVICE);
     }
 
     /**
-     * Tests the {@link DiscountRules#calculateDiscount}  method where the product has a 10% discount, and the product
-     * type has a 5% discount.
+     * Tests the {@link DiscountRules#calculateDiscount}  method where both the product and product type have
+     * different discounts.
      */
     @Test
     public void testCalculateDiscountForProductProductTypeDiscount() {
-        checkCalculateDiscountForProductProductTypeDiscount(ProductArchetypes.MEDICATION);
-        checkCalculateDiscountForProductProductTypeDiscount(ProductArchetypes.MERCHANDISE);
-        checkCalculateDiscountForProductProductTypeDiscount(ProductArchetypes.SERVICE);
+        checkCalculatePercentageDiscountForProductProductTypeDiscount(ProductArchetypes.MEDICATION);
+        checkCalculatePercentageDiscountForProductProductTypeDiscount(ProductArchetypes.MERCHANDISE);
+        checkCalculatePercentageDiscountForProductProductTypeDiscount(ProductArchetypes.SERVICE);
+
+        checkCalculateCostDiscountForProductProductTypeDiscount(ProductArchetypes.MEDICATION);
+        checkCalculateCostDiscountForProductProductTypeDiscount(ProductArchetypes.MERCHANDISE);
+        checkCalculateCostDiscountForProductProductTypeDiscount(ProductArchetypes.SERVICE);
     }
 
     /**
-     * Tests the {@link DiscountRules#calculateDiscount}  method where the discount has a 10% discount that applies only
-     * to the unit * price.
+     * Tests the {@link DiscountRules#calculateDiscount} method where the discount has a discount that applies only
+     * to the unit price.
      */
     @Test
     public void testCalculateDiscountForProductWithNoFixedDiscount() {
-        checkCalculateDiscountForProductWithNoFixedDiscount(ProductArchetypes.MEDICATION);
-        checkCalculateDiscountForProductWithNoFixedDiscount(ProductArchetypes.MERCHANDISE);
-        checkCalculateDiscountForProductWithNoFixedDiscount(ProductArchetypes.SERVICE);
+        checkCalculatePercentageDiscountForProductWithNoFixedDiscount(ProductArchetypes.MEDICATION);
+        checkCalculatePercentageDiscountForProductWithNoFixedDiscount(ProductArchetypes.MERCHANDISE);
+        checkCalculatePercentageDiscountForProductWithNoFixedDiscount(ProductArchetypes.SERVICE);
+
+        checkCalculateCostDiscountForProductWithNoFixedDiscount(ProductArchetypes.MEDICATION);
+        checkCalculateCostDiscountForProductWithNoFixedDiscount(ProductArchetypes.MERCHANDISE);
+        checkCalculateCostDiscountForProductWithNoFixedDiscount(ProductArchetypes.SERVICE);
     }
 
     /**
@@ -133,9 +191,9 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testCalculateDiscountForMaxDiscount() {
-        checkCalculateDiscountForMaxDiscount(ProductArchetypes.MEDICATION);
-        checkCalculateDiscountForMaxDiscount(ProductArchetypes.MERCHANDISE);
-        checkCalculateDiscountForMaxDiscount(ProductArchetypes.SERVICE);
+        checkCalculatePercentageDiscountForMaxDiscount(ProductArchetypes.MEDICATION);
+        checkCalculatePercentageDiscountForMaxDiscount(ProductArchetypes.MERCHANDISE);
+        checkCalculatePercentageDiscountForMaxDiscount(ProductArchetypes.SERVICE);
     }
 
     /**
@@ -168,15 +226,17 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         checkCalculateDiscountForDummyProduct(ProductArchetypes.TEMPLATE);
     }
 
-    /**
-     * Sets up the test case.
-     */
-    @Before
-    public void setUp() {
-        discount10 = createDiscount(BigDecimal.TEN, true);
-        discount5 = createDiscount(new BigDecimal("5"), true);
-        discountGroup = createDiscountGroup(discount10, discount5);
-        rules = new DiscountRules();
+    @Test
+    public void testMultipleCostDiscountsWithSameRate() {
+        Entity discount1 = createDiscount(BigDecimal.ZERO, true, DiscountRules.COST_RATE);
+        Entity discount2 = createDiscount(BigDecimal.ZERO, false, DiscountRules.COST_RATE);
+
+        Party customer = createCustomerWithDiscount(discount1, discount2);
+        Party patient = createPatient();
+        Product product = createProductWithDiscounts(ProductArchetypes.MEDICATION, discount1, discount2);
+
+        Date now = new Date();
+        checkCalculateCostDiscount(now, customer, patient, product, new BigDecimal("1.20"));
     }
 
     /**
@@ -185,7 +245,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      *
      * @param shortName the product archetype short name
      */
-    private void checkCalculateDiscount(String shortName) {
+    private void checkCalculatePercentageDiscountForNoDiscount(String shortName) {
         Party custNoDisc = createCustomer();
         Party custWithDisc = createCustomerWithDiscount(discount10);
         Party patientNoDisc = createPatient();
@@ -195,11 +255,34 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         Product productWith5Disc = createProductWithDiscounts(shortName, discount5);
 
         Date now = new Date();
-        checkCalculateDiscount(now, custNoDisc, patientNoDisc, productNoDisc, BigDecimal.ZERO);
-        checkCalculateDiscount(now, custWithDisc, patientNoDisc, productNoDisc, BigDecimal.ZERO);
-        checkCalculateDiscount(now, custWithDisc, patientWithDisc, productNoDisc, BigDecimal.ZERO);
-        checkCalculateDiscount(now, custNoDisc, patientNoDisc, productWith10Disc, BigDecimal.ZERO);
-        checkCalculateDiscount(now, custWithDisc, patientWithDisc, productWith5Disc, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientNoDisc, productNoDisc, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientNoDisc, productNoDisc, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientWithDisc, productNoDisc, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientNoDisc, productWith10Disc, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientWithDisc, productWith5Disc, BigDecimal.ZERO);
+    }
+
+    /**
+     * Tests the {@link DiscountRules#calculateDiscount} method when the intersection of customer, patient, and product
+     * discounts result in no discount.
+     *
+     * @param shortName the product archetype short name
+     */
+    private void checkCalculateCostRateDiscountForNoDiscount(String shortName) {
+        Party custNoDisc = createCustomer();
+        Party custWithDisc = createCustomerWithDiscount(costDiscount0);
+        Party patientNoDisc = createPatient();
+        Party patientWithDisc = createPatientWithDiscount(costDiscount0);
+        Product productNoDisc = createProduct(shortName);
+        Product productWith0Disc = createProductWithDiscounts(shortName, costDiscount0);
+        Product productWith10Disc = createProductWithDiscounts(shortName, costDiscount10);
+
+        Date now = new Date();
+        checkCalculatePercentageDiscount(now, custNoDisc, patientNoDisc, productNoDisc, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientNoDisc, productNoDisc, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientWithDisc, productNoDisc, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientNoDisc, productWith0Disc, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientWithDisc, productWith10Disc, BigDecimal.ZERO);
     }
 
     /**
@@ -207,7 +290,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      *
      * @param shortName the product archetype short name
      */
-    private void checkCalculateDiscountForProductDiscount(String shortName) {
+    private void checkCalculatePercentageDiscountForProductDiscount(String shortName) {
         BigDecimal cents10 = new BigDecimal("0.10");
         BigDecimal cents5 = new BigDecimal("0.05");
         Party custNoDisc = createCustomer();
@@ -217,10 +300,10 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         Product product = createProductWithDiscounts(shortName, discount10);
 
         Date now = new Date();
-        checkCalculateDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
-        checkCalculateDiscount(now, custWithDisc, patientNoDisc, product, cents10);
-        checkCalculateDiscount(now, custNoDisc, patientWithDisc, product, cents10);
-        checkCalculateDiscount(now, custWithDisc, patientWithDisc, product, cents10);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientNoDisc, product, cents10);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientWithDisc, product, cents10);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientWithDisc, product, cents10);
 
         // now expire the product discount by setting the end time of the
         // discount relationship, and verify the discount no longer applies
@@ -229,10 +312,10 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         r.setActiveEndTime(new Date(now.getTime() - 1));
         bean.save();
 
-        checkCalculateDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
-        checkCalculateDiscount(now, custWithDisc, patientNoDisc, product, BigDecimal.ZERO);
-        checkCalculateDiscount(now, custNoDisc, patientWithDisc, product, BigDecimal.ZERO);
-        checkCalculateDiscount(now, custWithDisc, patientWithDisc, product, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientNoDisc, product, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientWithDisc, product, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientWithDisc, product, BigDecimal.ZERO);
 
         // add a new 5% discount to the product, customer and patient
         addDiscount(product, discount5, null);
@@ -240,10 +323,54 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         addDiscount(custWithDisc, discount5, null);
 
         now = new Date();
-        checkCalculateDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
-        checkCalculateDiscount(now, custWithDisc, patientNoDisc, product, cents5);
-        checkCalculateDiscount(now, custNoDisc, patientWithDisc, product, cents5);
-        checkCalculateDiscount(now, custWithDisc, patientWithDisc, product, cents5);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientNoDisc, product, cents5);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientWithDisc, product, cents5);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientWithDisc, product, cents5);
+    }
+
+    /**
+     * Tests the {@link DiscountRules#calculateDiscount} method where the product has an at-cost discount.
+     *
+     * @param shortName the product archetype short name
+     */
+    private void checkCalculateCostDiscountForProductDiscount(String shortName) {
+        BigDecimal four60 = new BigDecimal("4.60");
+        BigDecimal three06 = new BigDecimal("3.06");
+        Party custNoDisc = createCustomer();
+        Party custWithDisc = createCustomerWithDiscount(costDiscount0);
+        Party patientNoDisc = createPatient();
+        Party patientWithDisc = createPatientWithDiscount(costDiscount0);
+        Product product = createProductWithDiscounts(shortName, costDiscount0);
+
+        Date now = new Date();
+        checkCalculateCostDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
+        checkCalculateCostDiscount(now, custWithDisc, patientNoDisc, product, four60);
+        checkCalculateCostDiscount(now, custNoDisc, patientWithDisc, product, four60);
+        checkCalculateCostDiscount(now, custWithDisc, patientWithDisc, product, four60);
+
+        // now expire the product discount by setting the end time of the
+        // discount relationship, and verify the discount no longer applies
+        EntityBean bean = new EntityBean(product);
+        EntityRelationship r = bean.getRelationship(costDiscount0);
+        r.setActiveEndTime(new Date(now.getTime() - 1));
+        bean.save();
+
+        checkCalculateCostDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
+        checkCalculateCostDiscount(now, custWithDisc, patientNoDisc, product, BigDecimal.ZERO);
+        checkCalculateCostDiscount(now, custNoDisc, patientWithDisc, product, BigDecimal.ZERO);
+        checkCalculateCostDiscount(now, custWithDisc, patientWithDisc, product, BigDecimal.ZERO);
+
+        // add a new cost + 10% discount to the product, customer and patient
+        addDiscount(product, costDiscount10, null);
+        addDiscount(patientWithDisc, costDiscount10, null);
+        addDiscount(custWithDisc, costDiscount10, null);
+
+        now = new Date();
+        checkCalculateCostDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
+        checkCalculateCostDiscount(now, custWithDisc, patientNoDisc, product, three06);
+        checkCalculateCostDiscount(now, custNoDisc, patientWithDisc, product, three06);
+        checkCalculateCostDiscount(now, custWithDisc, patientWithDisc, product, three06);
     }
 
     /**
@@ -251,7 +378,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      *
      * @param shortName the product archetype short name
      */
-    private void checkCalculateDiscountForProductTypeDiscount(String shortName) {
+    private void checkCalculatePercentageDiscountForProductTypeDiscount(String shortName) {
         BigDecimal cents10 = new BigDecimal("0.10");
         BigDecimal cents5 = new BigDecimal("0.05");
         Party custNoDisc = createCustomer();
@@ -261,10 +388,10 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         Product product = createProductWithProductTypeDiscount(shortName, discount10);
 
         Date now = new Date();
-        checkCalculateDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
-        checkCalculateDiscount(now, custWithDisc, patientNoDisc, product, cents10);
-        checkCalculateDiscount(now, custNoDisc, patientWithDisc, product, cents10);
-        checkCalculateDiscount(now, custWithDisc, patientWithDisc, product, cents10);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientNoDisc, product, cents10);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientWithDisc, product, cents10);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientWithDisc, product, cents10);
 
         // now expire the product type discount by setting the end time of the
         // discount relationship, and verify the discount no longer applies
@@ -275,10 +402,10 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         r.setActiveEndTime(new Date(now.getTime() - 1000));
         bean.save();
 
-        checkCalculateDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
-        checkCalculateDiscount(now, custWithDisc, patientNoDisc, product, BigDecimal.ZERO);
-        checkCalculateDiscount(now, custNoDisc, patientWithDisc, product, BigDecimal.ZERO);
-        checkCalculateDiscount(now, custWithDisc, patientWithDisc, product, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientNoDisc, product, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientWithDisc, product, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientWithDisc, product, BigDecimal.ZERO);
 
         // add a new 5% discount to the product type, customer and patient
         addDiscount(productType, discount5, null);
@@ -286,10 +413,57 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         addDiscount(custWithDisc, discount5, null);
 
         now = new Date();
-        checkCalculateDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
-        checkCalculateDiscount(now, custWithDisc, patientNoDisc, product, cents5);
-        checkCalculateDiscount(now, custNoDisc, patientWithDisc, product, cents5);
-        checkCalculateDiscount(now, custWithDisc, patientWithDisc, product, cents5);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientNoDisc, product, cents5);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientWithDisc, product, cents5);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientWithDisc, product, cents5);
+    }
+
+    /**
+     * Tests the {@link DiscountRules#calculateDiscount} method where the product type has an associated at-cost
+     * discount.
+     *
+     * @param shortName the product archetype short name
+     */
+    private void checkCalculateCostDiscountForProductTypeDiscount(String shortName) {
+        BigDecimal four60 = new BigDecimal("4.60");
+        BigDecimal three06 = new BigDecimal("3.06");
+        Party custNoDisc = createCustomer();
+        Party custWithDisc = createCustomerWithDiscount(costDiscount0);
+        Party patientNoDisc = createPatient();
+        Party patientWithDisc = createPatientWithDiscount(costDiscount0);
+        Product product = createProductWithProductTypeDiscount(shortName, costDiscount0);
+
+        Date now = new Date();
+        checkCalculateCostDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
+        checkCalculateCostDiscount(now, custWithDisc, patientNoDisc, product, four60);
+        checkCalculateCostDiscount(now, custNoDisc, patientWithDisc, product, four60);
+        checkCalculateCostDiscount(now, custWithDisc, patientWithDisc, product, four60);
+
+        // now expire the product type discount by setting the end time of the
+        // discount relationship, and verify the discount no longer applies
+        EntityBean bean = new EntityBean(product);
+        Entity productType = bean.getNodeSourceEntity("type");
+        bean = new EntityBean(productType);
+        EntityRelationship r = bean.getRelationship(costDiscount0);
+        r.setActiveEndTime(new Date(now.getTime() - 1000));
+        bean.save();
+
+        checkCalculateCostDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
+        checkCalculateCostDiscount(now, custWithDisc, patientNoDisc, product, BigDecimal.ZERO);
+        checkCalculateCostDiscount(now, custNoDisc, patientWithDisc, product, BigDecimal.ZERO);
+        checkCalculateCostDiscount(now, custWithDisc, patientWithDisc, product, BigDecimal.ZERO);
+
+        // add a new cost + 10% discount to the product, customer and patient
+        addDiscount(productType, costDiscount10, null);
+        addDiscount(patientWithDisc, costDiscount10, null);
+        addDiscount(custWithDisc, costDiscount10, null);
+
+        now = new Date();
+        checkCalculateCostDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
+        checkCalculateCostDiscount(now, custWithDisc, patientNoDisc, product, three06);
+        checkCalculateCostDiscount(now, custNoDisc, patientWithDisc, product, three06);
+        checkCalculateCostDiscount(now, custWithDisc, patientWithDisc, product, three06);
     }
 
     /**
@@ -298,7 +472,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      *
      * @param shortName the product archetype short name
      */
-    private void checkCalculateDiscountForProductProductTypeDiscount(String shortName) {
+    private void checkCalculatePercentageDiscountForProductProductTypeDiscount(String shortName) {
         BigDecimal cents10 = new BigDecimal("0.10");
         BigDecimal cents15 = new BigDecimal("0.15");
         Party custNoDisc = createCustomer();
@@ -309,20 +483,43 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         addDiscount(product, discount10, null);
 
         Date now = new Date();
-        checkCalculateDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
-        checkCalculateDiscount(now, custWithDisc, patientNoDisc, product, cents15);
-        checkCalculateDiscount(now, custNoDisc, patientWithDisc, product, cents10);
-        checkCalculateDiscount(now, custWithDisc, patientWithDisc, product, cents15);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientNoDisc, product, cents15);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientWithDisc, product, cents10);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientWithDisc, product, cents15);
+    }
+
+    /**
+     * Tests the {@link DiscountRules#calculateDiscount}  method where the product has an at-cost discount, and the
+     * product type has a cost + 10% discount.
+     *
+     * @param shortName the product archetype short name
+     */
+    private void checkCalculateCostDiscountForProductProductTypeDiscount(String shortName) {
+        BigDecimal four60 = new BigDecimal("4.60");
+        BigDecimal three06 = new BigDecimal("3.06");
+        Party custNoDisc = createCustomer();
+        Party custWithDisc = createCustomerWithDiscount(costDiscountGroup);
+        Party patientNoDisc = createPatient();
+        Party patientWithDisc = createPatientWithDiscount(costDiscount10);
+        Product product = createProductWithProductTypeDiscount(shortName, costDiscount0);
+        addDiscount(product, costDiscount10, null);
+
+        Date now = new Date();
+        checkCalculateCostDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
+        checkCalculateCostDiscount(now, custWithDisc, patientNoDisc, product, four60);
+        checkCalculateCostDiscount(now, custNoDisc, patientWithDisc, product, three06);
+        checkCalculateCostDiscount(now, custWithDisc, patientWithDisc, product, four60);
     }
 
     /**
      * Tests the {@link DiscountRules#calculateDiscount}  method where the discount has a 10% discount that applies only
-     * to the unit * price.
+     * to the unit price.
      *
      * @param shortName the product archetype shortname
      */
-    private void checkCalculateDiscountForProductWithNoFixedDiscount(String shortName) {
-        Entity discount = createDiscount(BigDecimal.TEN, false);
+    private void checkCalculatePercentageDiscountForProductWithNoFixedDiscount(String shortName) {
+        Entity discount = createDiscount(BigDecimal.TEN, false, DiscountRules.PERCENTAGE);
         BigDecimal cents5 = new BigDecimal("0.05");
         Party custNoDisc = createCustomer();
         Party custWithDisc = createCustomerWithDiscount(discount);
@@ -331,10 +528,32 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         Product product = createProductWithDiscounts(shortName, discount, discount10);
 
         Date now = new Date();
-        checkCalculateDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
-        checkCalculateDiscount(now, custWithDisc, patientNoDisc, product, cents5);
-        checkCalculateDiscount(now, custNoDisc, patientWithDisc, product, cents5);
-        checkCalculateDiscount(now, custWithDisc, patientWithDisc, product, cents5);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientNoDisc, product, cents5);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientWithDisc, product, cents5);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientWithDisc, product, cents5);
+    }
+
+    /**
+     * Tests the {@link DiscountRules#calculateDiscount}  method where the discount has an at-cost discount that applies
+     * only to the unit price.
+     *
+     * @param shortName the product archetype shortname
+     */
+    private void checkCalculateCostDiscountForProductWithNoFixedDiscount(String shortName) {
+        Entity discount = createDiscount(BigDecimal.ZERO, false, DiscountRules.COST_RATE);
+        BigDecimal one20 = new BigDecimal("1.20");
+        Party custNoDisc = createCustomer();
+        Party custWithDisc = createCustomerWithDiscount(discount);
+        Party patientNoDisc = createPatient();
+        Party patientWithDisc = createPatientWithDiscount(discount);
+        Product product = createProductWithDiscounts(shortName, discount, discount10);
+
+        Date now = new Date();
+        checkCalculateCostDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
+        checkCalculateCostDiscount(now, custWithDisc, patientNoDisc, product, one20);
+        checkCalculateCostDiscount(now, custNoDisc, patientWithDisc, product, one20);
+        checkCalculateCostDiscount(now, custWithDisc, patientWithDisc, product, one20);
     }
 
     /**
@@ -343,7 +562,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      *
      * @param shortName the product archetype short name
      */
-    private void checkCalculateDiscountForMaxDiscount(String shortName) {
+    private void checkCalculatePercentageDiscountForMaxDiscount(String shortName) {
         BigDecimal cents10 = new BigDecimal("0.10");
         BigDecimal percent10 = new BigDecimal("10.00");
         Party custNoDisc = createCustomer();
@@ -354,10 +573,11 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         addDiscount(product, discount10, null);
 
         Date now = new Date();
-        checkCalculateDiscount(now, custNoDisc, patientNoDisc, product, percent10, percent10, BigDecimal.ZERO);
-        checkCalculateDiscount(now, custWithDisc, patientNoDisc, product, percent10, percent10, cents10);
-        checkCalculateDiscount(now, custNoDisc, patientWithDisc, product, percent10, percent10, cents10);
-        checkCalculateDiscount(now, custWithDisc, patientWithDisc, product, percent10, percent10, cents10);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientNoDisc, product, percent10, percent10,
+                                         BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientNoDisc, product, percent10, percent10, cents10);
+        checkCalculatePercentageDiscount(now, custNoDisc, patientWithDisc, product, percent10, percent10, cents10);
+        checkCalculatePercentageDiscount(now, custWithDisc, patientWithDisc, product, percent10, percent10, cents10);
     }
 
     /**
@@ -406,13 +626,12 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         Party customer = createCustomer();
         Party patient = createPatient();
         Product product = createProduct(shortName);
-        checkCalculateDiscount(new Date(), customer, patient, product, BigDecimal.ZERO);
+        checkCalculatePercentageDiscount(new Date(), customer, patient, product, BigDecimal.ZERO);
     }
 
     /**
-     * Verifies that the discount is calculated correctly by
-     * {@link DiscountRules#calculateDiscount},
-     * for an act with a total value of <code>1.00</code>.
+     * Verifies that the percentage discount is calculated correctly by {@link DiscountRules#calculateDiscount},
+     * for an act with a total value of {@code 1.00}.
      *
      * @param date             the date, used to determine if a discount applies
      * @param customer         the customer
@@ -420,15 +639,14 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      * @param product          the product
      * @param expectedDiscount the expected discount
      */
-    private void checkCalculateDiscount(Date date, Party customer, Party patient, Product product,
-                                        BigDecimal expectedDiscount) {
-        checkCalculateDiscount(date, customer, patient, product, HUNDRED, HUNDRED, expectedDiscount);
+    private void checkCalculatePercentageDiscount(Date date, Party customer, Party patient, Product product,
+                                                  BigDecimal expectedDiscount) {
+        checkCalculatePercentageDiscount(date, customer, patient, product, HUNDRED, HUNDRED, expectedDiscount);
     }
 
     /**
-     * Verifies that the discount is calculated correctly by
-     * {@link DiscountRules#calculateDiscount},
-     * for an act with a total value of <code>1.00</code>.
+     * Verifies that the percentage discount is calculated correctly by {@link DiscountRules#calculateDiscount},
+     * for an act with a total value of {@code 1.00}.
      *
      * @param date             the date, used to determine if a discount applies
      * @param patient          the patient
@@ -438,19 +656,62 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      * @param maxUnitDiscount  the maximum unit price discount %
      * @param expectedDiscount the expected discount
      */
-    private void checkCalculateDiscount(Date date, Party customer,
-                                        Party patient,
-                                        Product product,
-                                        BigDecimal maxFixedDiscount,
-                                        BigDecimal maxUnitDiscount,
-                                        BigDecimal expectedDiscount) {
+    private void checkCalculatePercentageDiscount(Date date, Party customer,
+                                                  Party patient,
+                                                  Product product,
+                                                  BigDecimal maxFixedDiscount,
+                                                  BigDecimal maxUnitDiscount,
+                                                  BigDecimal expectedDiscount) {
+        BigDecimal fixedCost = BigDecimal.ZERO;
+        BigDecimal unitCost = BigDecimal.ZERO;
         BigDecimal fixedPrice = new BigDecimal("0.50");
         BigDecimal unitPrice = new BigDecimal("0.50");
         BigDecimal quantity = BigDecimal.ONE;
+        BigDecimal discount = rules.calculateDiscount(date, practice, customer, patient, product, fixedCost,
+                                                      unitCost, fixedPrice, unitPrice,
+                                                      quantity, maxFixedDiscount, maxUnitDiscount);
+        checkEquals(expectedDiscount, discount);
+    }
 
-        BigDecimal discount = rules.calculateDiscount(
-                date, customer, patient, product, fixedPrice, unitPrice,
-                quantity, maxFixedDiscount, maxUnitDiscount);
+    /**
+     * Verifies that the cost discount is calculated correctly by {@link DiscountRules#calculateDiscount},
+     * for an act with a total value of {@code 20.00}.
+     *
+     * @param date             the date, used to determine if a discount applies
+     * @param customer         the customer
+     * @param patient          the patient
+     * @param product          the product
+     * @param expectedDiscount the expected discount
+     */
+    private void checkCalculateCostDiscount(Date date, Party customer, Party patient, Product product,
+                                            BigDecimal expectedDiscount) {
+        checkCalculateCostDiscount(date, customer, patient, product, HUNDRED, HUNDRED, expectedDiscount);
+    }
+
+    /**
+     * Verifies that the cost discount is calculated correctly by {@link DiscountRules#calculateDiscount},
+     * for an act with a total value of {@code 20.00}.
+     *
+     * @param date             the date, used to determine if a discount applies
+     * @param patient          the patient
+     * @param customer         the customer
+     * @param product          the product
+     * @param maxFixedDiscount the maximum fixed price discount %
+     * @param maxUnitDiscount  the maximum unit price discount %
+     * @param expectedDiscount the expected discount
+     */
+    private void checkCalculateCostDiscount(Date date, Party customer, Party patient, Product product,
+                                            BigDecimal maxFixedDiscount, BigDecimal maxUnitDiscount,
+                                            BigDecimal expectedDiscount) {
+        BigDecimal fixedCost = new BigDecimal("6.00");
+        BigDecimal unitCost = new BigDecimal("4.00");
+        BigDecimal fixedPrice = new BigDecimal("10.00");
+        BigDecimal unitPrice = new BigDecimal("5.00");
+        BigDecimal quantity = BigDecimal.valueOf(2);
+
+        BigDecimal discount = rules.calculateDiscount(date, practice, customer, patient, product, fixedCost, unitCost,
+                                                      fixedPrice, unitPrice, quantity, maxFixedDiscount,
+                                                      maxUnitDiscount);
         checkEquals(expectedDiscount, discount);
     }
 
@@ -550,7 +811,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      * Helper to create and save a product with discounts.
      *
      * @param shortName the product archetype short name
-     * @param endTime   the discount end time. May be <tt>null</tt>
+     * @param endTime   the discount end time. May be {@code null}
      * @param discounts the discounts
      * @return a new product
      */
@@ -588,7 +849,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      *
      * @param entity   the entity
      * @param discount the discount to add
-     * @param endTime  the end time of the discount. May be <tt>null</tt>
+     * @param endTime  the end time of the discount. May be {@code null}
      */
     private void addDiscount(Entity entity, Entity discount, Date endTime) {
         EntityBean bean = new EntityBean(entity);
@@ -613,18 +874,18 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      * Helper to create and save a new discount type entity.
      *
      * @param rate          the discount rate
-     * @param fixedDiscount determines if the discount applies to the fixed
-     *                      price. If <tt>false</tt> it only applies to the
-     *                      unit price
+     * @param fixedDiscount determines if the discount applies to the fixed price. If {@code false} it only applies to
+     *                      the unit price
+     * @param type          the discount type
      * @return a new discount
      */
-    private Entity createDiscount(BigDecimal rate, boolean fixedDiscount) {
+    private Entity createDiscount(BigDecimal rate, boolean fixedDiscount, String type) {
         Entity discount = (Entity) create("entity.discountType");
         IMObjectBean bean = new IMObjectBean(discount);
-        bean.setValue("name", "XDISCOUNT_RULES_TESTCASE_"
-                              + Math.abs(new Random().nextInt()));
+        bean.setValue("name", "XDISCOUNT_RULES_TESTCASE_" + Math.abs(new Random().nextInt()));
         bean.setValue("rate", rate);
         bean.setValue("discountFixed", fixedDiscount);
+        bean.setValue("type", type);
         save(discount);
         return discount;
     }
@@ -638,8 +899,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
     private Entity createDiscountGroup(Entity... discounts) {
         Entity result = (Entity) create("entity.discountGroupType");
         EntityBean bean = new EntityBean(result);
-        bean.setValue("name", "XDISCOUNT_RULES_TESTCASE_"
-                              + Math.abs(new Random().nextInt()));
+        bean.setValue("name", "XDISCOUNT_RULES_TESTCASE_" + Math.abs(new Random().nextInt()));
         for (Entity discount : discounts) {
             bean.addRelationship("entityRelationship.discountType", discount);
         }
