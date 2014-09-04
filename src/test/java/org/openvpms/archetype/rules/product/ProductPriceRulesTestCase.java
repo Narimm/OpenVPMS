@@ -227,6 +227,17 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
     }
 
     /**
+     * Tests the {@link ProductPriceRules#calcMaxDiscount(BigDecimal)} method.
+     */
+    @Test
+    public void testCalcMaxDiscount() {
+        checkEquals(ProductPriceRules.DEFAULT_MAX_DISCOUNT, rules.calcMaxDiscount(BigDecimal.ZERO));
+        checkEquals(new BigDecimal("33.3"), rules.calcMaxDiscount(BigDecimal.valueOf(50)));
+        checkEquals(new BigDecimal(50), rules.calcMaxDiscount(BigDecimal.valueOf(100)));
+        checkEquals(new BigDecimal("66.7"), rules.calcMaxDiscount(BigDecimal.valueOf(200)));
+    }
+
+    /**
      * Sets up the test case.
      * <p/>
      * This sets up the practice to have a 10% tax on all products.
