@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -67,8 +67,8 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * Constructs an {@link ActItemEditor}.
      *
      * @param act     the act to edit
-     * @param parent  the parent act.
-     * @param context the layout context. May be {@code null}
+     * @param parent  the parent act. May be {@code null}
+     * @param context the layout context
      */
     public ActItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
@@ -345,6 +345,16 @@ public abstract class ActItemEditor extends AbstractActEditor {
      */
     protected BigDecimal getMaxDiscount(ProductPrice price) {
         return (price != null) ? rules.getMaxDiscount(price) : ProductPriceRules.DEFAULT_MAX_DISCOUNT;
+    }
+
+    /**
+     * Returns the cost for a product
+     *
+     * @param price the price. May be {@code null}
+     * @return the cost for a product.
+     */
+    protected BigDecimal getCostPrice(ProductPrice price) {
+        return (price != null) ? rules.getCostPrice(price) : BigDecimal.ZERO;
     }
 
     /**

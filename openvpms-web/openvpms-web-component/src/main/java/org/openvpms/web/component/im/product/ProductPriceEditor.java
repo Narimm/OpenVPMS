@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -121,7 +121,7 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Updates the price.
+     * Updates the price and maximum discount.
      */
     private void updatePrice() {
         try {
@@ -129,13 +129,15 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
             property.removeModifiableListener(priceListener);
             property.setValue(calculatePrice());
             property.addModifiableListener(priceListener);
+            Property maxDiscount = getProperty("maxDiscount");
+            maxDiscount.setValue(calculateDiscount(maxDiscount.getBigDecimal()));
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
     }
 
     /**
-     * Recalculates the markup when the price is updated.
+     * Recalculates the markup when the price is updated, and adjusts the maximum discount.
      */
     private void updateMarkup() {
         try {
@@ -143,6 +145,8 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
             property.removeModifiableListener(markupListener);
             property.setValue(calculateMarkup());
             property.addModifiableListener(markupListener);
+            Property maxDiscount = getProperty("maxDiscount");
+            maxDiscount.setValue(calculateDiscount(maxDiscount.getBigDecimal()));
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
@@ -191,13 +195,33 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
     }
 
     /**
+     * Calculates the maximum discount.
+     * <p/>
+     * If the current maximum discount is zero, this is left unchanged, otherwise it is determined from the
+     * current markup using {@link ProductPriceRules#calcMaxDiscount(BigDecimal)}.
+     *
+     * @param maxDiscount the current maximum discount
+     * @return the new maximum discount
+     */
+    private BigDecimal calculateDiscount(BigDecimal maxDiscount) {
+        BigDecimal result;
+        if (maxDiscount.compareTo(BigDecimal.ZERO) == 0) {
+            result = BigDecimal.ZERO;
+        } else {
+            BigDecimal markup = getValue("markup");
+            result = rules.calcMaxDiscount(markup);
+        }
+        return result;
+    }
+
+    /**
      * Returns the decimal value of a property.
      *
      * @param name the property name
      * @return the property value
      */
     private BigDecimal getValue(String name) {
-        BigDecimal value = (BigDecimal) getProperty(name).getValue();
+        BigDecimal value = getProperty(name).getBigDecimal();
         return (value == null) ? BigDecimal.ZERO : value;
     }
 
