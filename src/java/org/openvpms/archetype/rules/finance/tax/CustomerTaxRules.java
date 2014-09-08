@@ -150,6 +150,20 @@ public class CustomerTaxRules extends TaxRules {
     }
 
     /**
+     * Returns the tax rate of a product, minus any taxes the customer is exempt from, expressed as a percentage.
+     *
+     * @param product  the product
+     * @param customer the customer
+     * @return the tax rate
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public BigDecimal getTaxRate(Product product, Party customer) {
+        Collection<Lookup> rates = new ArrayList<Lookup>(getProductTaxRates(product));
+        rates.removeAll(getTaxExemptions(customer));
+        return getTaxRate(rates);
+    }
+
+    /**
      * Calculates the tax for an act, given a list of tax rate classifications.
      * <p/>
      * The tax amount will be calculated and stored in the tax node of the act.
