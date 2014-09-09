@@ -59,6 +59,11 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
      */
     private CustomerTaxRules rules;
 
+    /**
+     * The practice.
+     */
+    private Party practice;
+
 
     /**
      * Tests the {@link CustomerTaxRules#calculateTax(FinancialAct, Party)}
@@ -141,12 +146,37 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link CustomerTaxRules#getTaxRate(Product, Party)} method.
+     */
+    @Test
+    public void testGetTaxRate() {
+        Party customer = createCustomer();
+        Product product = createProduct();
+
+        // none of customer, product, or practice have tax classifications
+        checkEquals(BigDecimal.ZERO, rules.getTaxRate(product, customer));
+
+        // add a 10% tax to practice
+        practice.addClassification(taxType);
+
+        // need to refresh cache
+        rules = new CustomerTaxRules(practice, getArchetypeService(), LookupServiceHelper.getLookupService());
+
+        // product is now charged at 10% tax rate
+        checkEquals(BigDecimal.TEN, rules.getTaxRate(product, customer));
+
+        // make customer tax exempt
+        customer.addClassification(taxType);
+        checkEquals(BigDecimal.ZERO, rules.getTaxRate(product, customer));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
         taxType = TestHelper.createTaxType(BigDecimal.TEN);
-        Party practice = (Party) create("party.organisationPractice");
+        practice = (Party) create("party.organisationPractice");
         rules = new CustomerTaxRules(practice, getArchetypeService(), LookupServiceHelper.getLookupService());
     }
 
