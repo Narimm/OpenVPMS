@@ -201,6 +201,32 @@ public class EstimateItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Returns the fixed cost.
+     * <p/>
+     * TODO - estimates lose the fixed cost if the fixed price is changed
+     *
+     * @return the fixed cost
+     */
+    @Override
+    protected BigDecimal getFixedCost() {
+        ProductPrice price = getFixedProductPrice(getProduct());
+        return getCostPrice(price);
+    }
+
+    /**
+     * Returns the unit cost.
+     * <p/>
+     * TODO - estimates lose the unit cost if the unit price is changed
+     *
+     * @return the unit cost
+     */
+    @Override
+    protected BigDecimal getUnitCost() {
+        ProductPrice price = getUnitProductPrice(getProduct());
+        return getCostPrice(price);
+    }
+
+    /**
      * Creates the layout strategy.
      *
      * @param fixedPrice the fixed price editor
