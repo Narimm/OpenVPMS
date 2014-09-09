@@ -109,6 +109,15 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
     }
 
     /**
+     * Returns the query.
+     *
+     * @return the query
+     */
+    public Query<T> getQuery() {
+        return query;
+    }
+
+    /**
      * Sets the result set.
      *
      * @param set the result set
