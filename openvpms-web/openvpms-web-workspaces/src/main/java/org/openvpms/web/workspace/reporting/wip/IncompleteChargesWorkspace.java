@@ -11,38 +11,26 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.wip;
 
-import echopointng.GroupBox;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.DefaultContextSwitchListener;
+import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.print.IMObjectReportPrinter;
-import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
+import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
-import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.query.QueryBrowser;
+import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
-import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.mail.MailContext;
-import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.echo.button.ButtonSet;
-import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.factory.GroupBoxFactory;
-import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.workspace.reporting.AbstractReportingWorkspace;
+import org.openvpms.web.component.workspace.CRUDWindow;
+import org.openvpms.web.component.workspace.ResultSetCRUDWorkspace;
 
 
 /**
@@ -50,13 +38,7 @@ import org.openvpms.web.workspace.reporting.AbstractReportingWorkspace;
  *
  * @author Tim Anderson
  */
-public class IncompleteChargesWorkspace extends AbstractReportingWorkspace<Act> {
-
-    /**
-     * The query.
-     */
-    private Query<Act> query;
-
+public class IncompleteChargesWorkspace extends ResultSetCRUDWorkspace<Act> {
 
     /**
      * Constructs an {@code IncompleteChargesWorkspace}.
@@ -64,59 +46,55 @@ public class IncompleteChargesWorkspace extends AbstractReportingWorkspace<Act> 
      * @param context the context
      */
     public IncompleteChargesWorkspace(Context context, MailContext mailContext) {
-        super("reporting", "wip", Act.class, context, mailContext);
+        super("reporting", "wip", context);
+        setArchetypes(Archetypes.create(IncompleteChargesQuery.SHORT_NAMES, Act.class));
+        setMailContext(mailContext);
     }
 
     /**
-     * Lays out the components.
+     * Creates a new query to populate the browser.
      *
-     * @param container the container
-     * @param group     the focus group
+     * @return a new query
      */
     @Override
-    protected void doLayout(Component container, FocusGroup group) {
-        LayoutContext context = new DefaultLayoutContext(getContext(), getHelpContext());
-        IMObjectComponentFactory factory = new TableComponentFactory(context);
-        context.setComponentFactory(factory);
-        context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
-
-        query = new IncompleteChargesQuery();
-        Browser<Act> browser = new DefaultIMObjectTableBrowser<Act>(query, new IncompleteChargesTableModel(context),
-                                                                    context);
-        GroupBox box = GroupBoxFactory.create(browser.getComponent());
-        container.add(box);
-        group.add(browser.getFocusGroup());
+    protected Query<Act> createQuery() {
+        return new IncompleteChargesQuery(new DefaultLayoutContext(getContext(), getHelpContext()));
     }
 
     /**
-     * Lays out the buttons.
+     * Creates a new browser.
      *
-     * @param buttons the button set
+     * @param query the query
+     * @return a new browser
      */
-    protected void layoutButtons(ButtonSet buttons) {
-        buttons.add("report", new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onReport();
-            }
-        });
+    @Override
+    protected Browser<Act> createBrowser(Query<Act> query) {
+        DefaultLayoutContext layoutContext = new DefaultLayoutContext(getContext(), getHelpContext());
+        layoutContext.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
+        IMObjectTableModel<Act> model = new IncompleteChargesTableModel(layoutContext);
+        return BrowserFactory.create(query, null, model, layoutContext);
     }
 
     /**
-     * Invoked when the 'Report' button is pressed.
+     * Determines if the workspace should be refreshed.
+     *
+     * @return {@code true}
      */
-    private void onReport() {
-        try {
-            Context context = getContext();
-            DocumentTemplateLocator locator = new ContextDocumentTemplateLocator("WORK_IN_PROGRESS_CHARGES", context);
-            IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(query, locator, context);
-            String title = Messages.get("reporting.wip.print");
-            InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, context,
-                                                                               getHelpContext().subtopic("report"));
-            iPrinter.setMailContext(getMailContext());
-            iPrinter.print();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
+    @Override
+    protected boolean refreshWorkspace() {
+        return true;
+    }
+
+    /**
+     * Creates a new CRUD window.
+     *
+     * @return a new CRUD window
+     */
+    @Override
+    protected CRUDWindow<Act> createCRUDWindow() {
+        QueryBrowser<Act> browser = getBrowser();
+        return new IncompleteChargesCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet(),
+                                               getContext(), getHelpContext());
     }
 
     class IncompleteChargesTableModel extends AbstractActTableModel {

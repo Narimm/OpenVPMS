@@ -73,6 +73,7 @@
 
     <bean id="discountRules" class="org.openvpms.archetype.rules.finance.discount.DiscountRules">
         <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="lookupService"/>
     </bean>
 
     <bean id="locationRules" class="org.openvpms.archetype.rules.practice.LocationRules">
