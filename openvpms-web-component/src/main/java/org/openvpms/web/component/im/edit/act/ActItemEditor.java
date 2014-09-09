@@ -365,6 +365,16 @@ public abstract class ActItemEditor extends AbstractActEditor {
     }
 
     /**
+     * Returns the cost for a product
+     *
+     * @param price the price. May be {@code null}
+     * @return the cost for a product.
+     */
+    protected BigDecimal getCostPrice(ProductPrice price) {
+        return (price != null) ? rules.getCostPrice(price) : BigDecimal.ZERO;
+    }
+
+    /**
      * Returns the product editor.
      *
      * @return the product editor, or {@code null} if none exists

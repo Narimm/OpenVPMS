@@ -31,6 +31,7 @@ import org.openvpms.web.component.im.product.FixedPriceEditor;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -53,6 +54,10 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      */
     private ProductPrice unitProductPrice;
 
+    /**
+     * The practice.
+     */
+    private final Party practice;
 
     /**
      * Constructs a {@link PriceActItemEditor}.
@@ -68,6 +73,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
         Product product = getProduct();
         fixedEditor = new FixedPriceEditor(fixedPrice, getPricingLocation(), context);
         fixedEditor.setProduct(product);
+        practice = context.getContext().getPractice();
     }
 
     /**
@@ -174,7 +180,8 @@ public abstract class PriceActItemEditor extends ActItemEditor {
             BigDecimal fixedPrice = getFixedPrice();
             BigDecimal unitPrice = getUnitPrice();
             BigDecimal quantity = getQuantity();
-            DiscountRules rules = new DiscountRules();
+            DiscountRules rules = new DiscountRules(ServiceHelper.getArchetypeService(),
+                                                    ServiceHelper.getLookupService());
             Date startTime = getStartTime();
             if (startTime == null) {
                 Act parent = (Act) getParent();
@@ -182,8 +189,9 @@ public abstract class PriceActItemEditor extends ActItemEditor {
             }
             ProductPrice fixedProductPrice = getFixedProductPrice(product);
             ProductPrice unitProductPrice = getUnitProductPrice(product);
-            amount = rules.calculateDiscount(startTime, customer, patient, product, fixedPrice,
-                                             unitPrice, quantity, getMaxDiscount(fixedProductPrice),
+            amount = rules.calculateDiscount(startTime, practice, customer, patient, product,
+                                             getCostPrice(fixedProductPrice), getCostPrice(unitProductPrice),
+                                             fixedPrice, unitPrice, quantity, getMaxDiscount(fixedProductPrice),
                                              getMaxDiscount(unitProductPrice));
         }
         return amount;
