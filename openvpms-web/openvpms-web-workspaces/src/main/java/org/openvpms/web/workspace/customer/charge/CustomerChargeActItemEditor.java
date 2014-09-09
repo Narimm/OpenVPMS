@@ -600,6 +600,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             IMObjectReference stockLocation = updateStockLocation(product);
             updateSellingUnits(product);
             updateBatch(product, stockLocation);
+            updateDiscount();
         }
         notifyProductListener(product);
     }
