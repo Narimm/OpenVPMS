@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.discount;
 
+import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -23,11 +24,11 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -64,29 +65,40 @@ import static org.openvpms.component.system.common.query.RelationalOp.LTE;
 public class DiscountRules {
 
     /**
+     * Percentage discount type.
+     */
+    public static final String PERCENTAGE = "PERCENTAGE";
+
+    /**
+     * Fixed discount type.
+     */
+    public static final String FIXED = "FIXED";
+
+    /**
+     * At-cost with rate discount type.
+     */
+    public static final String COST_RATE = "COST_RATE";
+
+    /**
      * The archetype service.
      */
     private final IArchetypeService service;
 
     /**
-     * Percentage discount type.
+     * The lookup service.
      */
-    private static final String PERCENTAGE = "PERCENTAGE";
+    private final ILookupService lookups;
+
 
     /**
-     * Constructs a new <tt>DiscountRules</tt>.
-     */
-    public DiscountRules() {
-        this(ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Constructs a new <tt>DiscountRules</tt>.
+     * Constructs a {@link DiscountRules}.
      *
      * @param service the archetype service
+     * @param lookups the lookup service
      */
-    public DiscountRules(IArchetypeService service) {
+    public DiscountRules(IArchetypeService service, ILookupService lookups) {
         this.service = service;
+        this.lookups = lookups;
     }
 
     /**
@@ -104,23 +116,21 @@ public class DiscountRules {
      * customer/patient entities</li>
      * </ol>
      * The rates associated with the remaining discountTypes are used to
-     * calculate the discount amount. The discount amount is the sum of:
+     * calculate the discount amount.
      * <p/>
-     * <tt>(fixedPrice * discountRate/100) + qty * (unitPrice * discountRate/100)</tt>
-     * </p>
-     * <br/>
-     * for each rate. If the discount amount exceeds the maximum discount
-     * calculated by:
+     * If the discount amount exceeds the maximum discount calculated by:
      * <p/>
-     * <tt>(fixedPrice * maxFixedPriceDiscount/100) + qty * (unitPrice * maxUnitPriceDiscount/100)</tt>
+     * <code>(fixedPrice * maxFixedPriceDiscount/100) + qty * (unitPrice * maxUnitPriceDiscount/100)</code>
      * <p/>
      * then the maximum discount amount will be returned.
      *
-     * @param date                  the date, used to determine if a discount
-     *                              applies
+     * @param date                  the date, used to determine if a discount applies
+     * @param practice              the practice. May be {@code null}
      * @param customer              the customer
-     * @param patient               the patient. May be <tt>null</tt>
+     * @param patient               the patient. May be {@code null}
      * @param product               the product
+     * @param fixedCost             the fixed cost
+     * @param unitCost              the unit cost
      * @param fixedPrice            the fixed amount
      * @param unitPrice             the unit price
      * @param quantity              the quantity
@@ -129,14 +139,18 @@ public class DiscountRules {
      * @return the discount amount
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public BigDecimal calculateDiscount(Date date, Party customer,
-                                        Party patient, Product product,
-                                        BigDecimal fixedPrice,
-                                        BigDecimal unitPrice,
+    public BigDecimal calculateDiscount(Date date, Party practice, Party customer, Party patient, Product product,
+                                        BigDecimal fixedCost, BigDecimal unitCost,
+                                        BigDecimal fixedPrice, BigDecimal unitPrice,
                                         BigDecimal quantity,
-                                        BigDecimal maxFixedPriceDiscount,
-                                        BigDecimal maxUnitPriceDiscount) {
+                                        BigDecimal maxFixedPriceDiscount, BigDecimal maxUnitPriceDiscount) {
         BigDecimal discount;
+        BigDecimal taxRate = BigDecimal.ZERO;
+        if (practice != null) {
+            TaxRules taxRules = new TaxRules(practice, service, lookups);
+            taxRate = taxRules.getTaxRate(product);
+        }
+
         if (fixedPrice.compareTo(BigDecimal.ZERO) == 0
             && (unitPrice.compareTo(BigDecimal.ZERO) == 0 || quantity.compareTo(BigDecimal.ZERO) == 0)) {
             discount = BigDecimal.ZERO;
@@ -145,7 +159,8 @@ public class DiscountRules {
             if (discounts.isEmpty()) {
                 discount = BigDecimal.ZERO;
             } else {
-                discount = calculateDiscountAmount(fixedPrice, unitPrice, quantity, discounts);
+                discount = calculateDiscountAmount(fixedPrice, unitPrice, fixedCost, unitCost, quantity,
+                                                   taxRate, discounts);
                 BigDecimal maxDiscount = calculateMaxDiscount(fixedPrice, unitPrice, quantity, maxFixedPriceDiscount,
                                                               maxUnitPriceDiscount);
                 if (discount.compareTo(maxDiscount) > 0) {
@@ -167,7 +182,7 @@ public class DiscountRules {
      *
      * @param date     the date, used to determine if a discount applies
      * @param customer the customer
-     * @param patient  the patient. May be <tt>null</tt>
+     * @param patient  the patient. May be {@code null}
      * @param product  the product
      * @return the discount entities
      * @throws ArchetypeServiceException for any archetype service error
@@ -196,43 +211,94 @@ public class DiscountRules {
     }
 
     /**
-     * Calculates the discount amount for an act, given a list of discount
-     * classifications.
-     * The discount amount is the sum of:
-     * <tt>(fixedPrice * discountRate/100) + qty * (unitPrice * discountRate/100)</tt>
-     * for each rate.
+     * Calculates the discount amount for an act, given a list of discounts.
+     * <p/>
+     * If there are multiple COST_RATE discounts, all bar the one that gives the best discount will be excluded.
      *
      * @param fixedPrice the fixed price
      * @param unitPrice  the unit price
+     * @param fixedCost  the fixed cost price
+     * @param unitCost   the unit cost price
      * @param quantity   the quantity
-     * @param discounts  a set of <em>entity.discountType</em>s
+     * @param discounts  a set of <em>entity.discountType</em>s. This list is modified if there are multiple
+     *                   COST_RATE discounts
      * @return the discount amount for the act
      */
-    private BigDecimal calculateDiscountAmount(BigDecimal fixedPrice, BigDecimal unitPrice, BigDecimal quantity,
+    private BigDecimal calculateDiscountAmount(BigDecimal fixedPrice, BigDecimal unitPrice, BigDecimal fixedCost,
+                                               BigDecimal unitCost, BigDecimal quantity, BigDecimal taxRate,
                                                List<Entity> discounts) {
         BigDecimal result = BigDecimal.ZERO;
+        Entity lastCostDiscount = null;
+        BigDecimal lastCostRate = null;
+        boolean lastCostDiscountFixed = false;
 
+        // ensure there is only one COST_RATE discount present. This selects the one with the lowest rate hence giving
+        // the greatest discount
+        for (Entity discount : discounts.toArray(new Entity[discounts.size()])) {
+            IMObjectBean discountBean = new IMObjectBean(discount, service);
+            String discountType = discountBean.getString("type");
+            if (COST_RATE.equals(discountType)) {
+                BigDecimal rate = discountBean.getBigDecimal("rate", BigDecimal.ZERO);
+                boolean discountFixed = discountBean.getBoolean("discountFixed");
+                if (lastCostDiscount == null || lessThan(rate, lastCostRate, discountFixed, lastCostDiscountFixed)) {
+                    if (lastCostDiscount != null) {
+                        discounts.remove(lastCostDiscount);
+                    }
+                    lastCostDiscount = discount;
+                    lastCostRate = rate;
+                    lastCostDiscountFixed = discountFixed;
+                } else {
+                    discounts.remove(discount);
+                }
+            }
+        }
         for (Entity discount : discounts) {
             IMObjectBean discountBean = new IMObjectBean(discount, service);
             String discountType = discountBean.getString("type");
             BigDecimal rate = discountBean.getBigDecimal("rate", BigDecimal.ZERO);
-            Boolean discountFixed = discountBean.getBoolean("discountFixed");
+            boolean discountFixed = discountBean.getBoolean("discountFixed");
             BigDecimal dFixedPrice;
             if (discountFixed) {
-                dFixedPrice = calcDiscount(fixedPrice, rate, discountType);
+                BigDecimal fixedQty = new BigDecimal(quantity.compareTo(BigDecimal.ZERO)).abs();
+                dFixedPrice = fixedQty.multiply(calcDiscount(fixedCost, fixedPrice, rate, taxRate, discountType));
             } else {
                 dFixedPrice = BigDecimal.ZERO;
             }
-            BigDecimal dUnitPrice = calcDiscount(unitPrice, rate, discountType);
+            BigDecimal dUnitPrice = calcDiscount(unitCost, unitPrice, rate, taxRate, discountType);
             BigDecimal amount;
-            if (PERCENTAGE.equals(discountType)) {
-                amount = quantity.multiply(dUnitPrice).add(dFixedPrice);
+            if (PERCENTAGE.equals(discountType) || COST_RATE.equals(discountType)) {
+                if (quantity.compareTo(BigDecimal.ZERO) == 0) {
+                    amount = BigDecimal.ZERO;
+                } else {
+                    amount = quantity.abs().multiply(dUnitPrice).add(dFixedPrice);
+                }
             } else {
                 amount = dUnitPrice.add(dFixedPrice);
             }
             result = result.add(amount);
         }
         return result;
+    }
+
+    /**
+     * Determines if a cost rate discount is less than another.
+     * If the rates are the same, the discount flags are used.
+     *
+     * @param costRate1      the first cost rate
+     * @param costRate2      the second cost rate
+     * @param discountFixed1 the first cost rate "discount fixed" flag
+     * @param discountFixed2 the second cost rate "discount fixed" flag
+     * @return <ul>
+     *         <li>{@code true} if {@code costRate1 < codeRate2}; or</li>
+     *         <li>{@code true} if {@code costRate1 == codeRate2} && discountFixed1 == false && discountFixed2 == true;
+     *         </li>
+     *         <li>{@code false} otherwise</li>
+     *         </ul>
+     */
+    private boolean lessThan(BigDecimal costRate1, BigDecimal costRate2,
+                             boolean discountFixed1, boolean discountFixed2) {
+        int comp = costRate1.compareTo(costRate2);
+        return comp < 0 || comp == 0 && (!discountFixed1 && discountFixed2);
     }
 
     /**
@@ -256,17 +322,30 @@ public class DiscountRules {
     }
 
     /**
-     * Helper to calculates amount * discountRate/100, to 3 decimal places.
+     * Calculates the discount for the given {@code discountType}.
+     * <ul>
+     * <li>PERCENTAGE - {@code result = price * rate / 100} </li>
+     * <li>COST_RATE  - {@code discountedCostPrice = costPrice + (costPrice * rate / 100)} <br/>
+     * {@code result = price - (discountedCostPrice + (discountedCostPrice * taxRate / 100)}</li>
+     * <li>FIXED - {@code result = rate}</li>
+     * </ul>
      *
-     * @param amount       the amount
+     * @param costPrice    the cost price
+     * @param price        the price
      * @param rate         the rate
+     * @param taxRate      the taxRate expressed as a percentage
      * @param discountType the discount type
      * @return amount * discountRate/100
      */
-    private BigDecimal calcDiscount(BigDecimal amount, BigDecimal rate, String discountType) {
+    private BigDecimal calcDiscount(BigDecimal costPrice, BigDecimal price, BigDecimal rate, BigDecimal taxRate,
+                                    String discountType) {
         BigDecimal result;
         if (PERCENTAGE.equals(discountType)) {
-            return calcDiscount(amount, rate);
+            result = calcDiscount(price, rate);
+        } else if (COST_RATE.equals(discountType)) {
+            BigDecimal discountedCostPrice = costPrice.add(calcDiscount(costPrice, rate));
+            // subtract cost+rate+tax to generate discount
+            result = price.subtract(discountedCostPrice.add(calcDiscount(discountedCostPrice, taxRate)));
         } else {
             result = rate;
         }
@@ -287,10 +366,10 @@ public class DiscountRules {
     }
 
     /**
-     * Returns a set of references to <em>entity.disccountType</em> references
+     * Returns a set of references to <em>entity.discountType</em> references
      * for a party.
      *
-     * @param party          the party. May be <tt>null</tt>
+     * @param party          the party. May be {@code null}
      * @param date           the date that the discounts apply to
      * @param discountGroups the discount group cache
      * @return a set of <em>entity.discountType</em> references for the party
