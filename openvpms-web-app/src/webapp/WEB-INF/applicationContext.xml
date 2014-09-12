@@ -26,6 +26,7 @@
     <import resource="openvpms-reports.xml"/>
     <import resource="openvpms-esci.xml"/>
     <import resource="openvpms-sms.xml"/>
+    <import resource="openvpms-hl7.xml"/>
     <import resource="openvpms-authentication.xml"/>
     <import resource="openvpms-web-app.xml"/>
 
