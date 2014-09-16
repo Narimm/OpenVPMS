@@ -34,6 +34,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.hl7.PharmacyOrderService;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditorFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -124,7 +125,8 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                 }
             });
 
-            orderPlacer = new PharmacyOrderPlacer(customer, location, getLayoutContext().getCache());
+            orderPlacer = new PharmacyOrderPlacer(customer, location, getLayoutContext().getCache(),
+                                                  ServiceHelper.getBean(PharmacyOrderService.class));
             orderPlacer.initialise(getItems().getActs());
         }
     }
