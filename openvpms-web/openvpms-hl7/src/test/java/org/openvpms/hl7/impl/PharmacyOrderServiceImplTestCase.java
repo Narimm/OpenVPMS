@@ -1,9 +1,28 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.hl7.impl;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.hl7.PatientContext;
@@ -30,6 +49,11 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
     private Product product;
 
     /**
+     * The pharmacy.
+     */
+    private Party pharmacy;
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -37,7 +61,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
     public void setUp() {
         super.setUp();
         orderService = new PharmacyOrderServiceImpl(getArchetypeService(), LookupServiceHelper.getLookupService(),
-                                                    getConnectors(), getManager());
+                                                    getConnectors(), getDispatcher());
         product = TestHelper.createProduct();
         product.setName("Valium 2mg");
         IMObjectBean productBean = new IMObjectBean(product);
@@ -45,10 +69,14 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
         productBean.setValue("sellingUnits", TestHelper.getLookup("lookup.uom", "BOX", "Box", true).getCode());
         productBean.setValue("dispInstructions", "Give 1 tablet once daily");
         product.setId(4001);
+        pharmacy = (Party) create("party.organisationPharmacy");
+        EntityBean bean = new EntityBean(pharmacy);
+        bean.addNodeTarget("connection", getSender().getReference());
     }
 
     /**
-     * Tests the {@link PharmacyOrderServiceImpl#createOrder(PatientContext, Product, BigDecimal, long, Date)} method.
+     * Tests the {@link PharmacyOrderService#createOrder(PatientContext, Product, BigDecimal, long, Date, Entity)}
+     * method.
      *
      * @throws Exception for any error
      */
@@ -63,12 +91,13 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
-        orderService.createOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date);
+        orderService.createOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, pharmacy);
         checkMessage(expected);
     }
 
     /**
-     * Tests the {@link PharmacyOrderServiceImpl#updateOrder(PatientContext, Product, BigDecimal, long, Date)} method.
+     * Tests the {@link PharmacyOrderService#updateOrder(PatientContext, Product, BigDecimal, long, Date, Entity)}
+     * method.
      *
      * @throws Exception for any error
      */
@@ -83,12 +112,13 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
-        orderService.updateOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date);
+        orderService.updateOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, pharmacy);
         checkMessage(expected);
     }
 
     /**
-     * Tests the {@link PharmacyOrderServiceImpl#updateOrder(PatientContext, Product, BigDecimal, long, Date)} method.
+     * Tests the {@link PharmacyOrderService#updateOrder(PatientContext, Product, BigDecimal, long, Date, Entity)}
+     * method.
      *
      * @throws Exception for any error
      */
@@ -103,7 +133,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
-        orderService.cancelOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date);
+        orderService.cancelOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, pharmacy);
         checkMessage(expected);
     }
 }

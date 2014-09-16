@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.DefaultHapiContext;
@@ -7,6 +23,8 @@ import ca.uhn.hl7v2.app.Connection;
 import ca.uhn.hl7v2.llp.LLPException;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.util.idgenerator.IDGenerator;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.hl7.Connector;
 import org.openvpms.hl7.MLLPSender;
 
@@ -33,6 +51,11 @@ public class MessageDispatcherImpl implements MessageDispatcher {
 
     private List<ConnectorManagerListener> listeners
             = Collections.synchronizedList(new ArrayList<ConnectorManagerListener>());
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(MessageDispatcherImpl.class);
 
     /**
      * Constructs a {@link MessageDispatcherImpl}.
@@ -76,6 +99,27 @@ public class MessageDispatcherImpl implements MessageDispatcher {
     }
 
     /**
+     * Queues a message to a connector.
+     *
+     * @param message   the message to queue
+     * @param connector the connector
+     */
+    @Override
+    public void queue(Message message, Connector connector) {
+        try {
+            if (connector instanceof MLLPSender) {
+                populate(message, (MLLPSender) connector);
+                Message response = sendAndReceive(message, (MLLPSender) connector);
+                for (ConnectorManagerListener listener : listeners) {
+                    listener.sent(message, response);
+                }
+            }
+        } catch (Throwable exception) {
+            throw new IllegalStateException(exception);
+        }
+    }
+
+    /**
      * Queues a message to be sent via multiple connectors.
      *
      * @param message    the message to queue
@@ -83,18 +127,8 @@ public class MessageDispatcherImpl implements MessageDispatcher {
      */
     @Override
     public void queue(Message message, List<Connector> connectors) {
-        try {
-            for (Connector connector : connectors) {
-                if (connector instanceof MLLPSender) {
-                    populate(message, (MLLPSender) connector);
-                    Message response = sendAndReceive(message, (MLLPSender) connector);
-                    for (ConnectorManagerListener listener : listeners) {
-                        listener.sent(message, response);
-                    }
-                }
-            }
-        } catch (Throwable exception) {
-            throw new IllegalStateException(exception);
+        for (Connector connector : connectors) {
+            queue(message, connector);
         }
     }
 
@@ -113,8 +147,33 @@ public class MessageDispatcherImpl implements MessageDispatcher {
 
     protected Message sendAndReceive(Message message, MLLPSender sender)
             throws HL7Exception, LLPException, IOException {
+        boolean debug = log.isDebugEnabled();
+        if (debug) {
+            log("sending", message);
+        }
         Connection connection = messageContext.newClient(sender.getHost(), sender.getPort(), false);
         connection.getInitiator().setTimeout(30, TimeUnit.SECONDS);
-        return connection.getInitiator().sendAndReceive(message);
+        Message response = connection.getInitiator().sendAndReceive(message);
+        if (debug) {
+            log("response", response);
+        }
+        return response;
+    }
+
+    /**
+     * Logs a message.
+     *
+     * @param prefix  the logging prefix
+     * @param message the message
+     */
+    protected void log(String prefix, Message message) {
+        String formatted;
+        try {
+            formatted = message.encode();
+            formatted = formatted.replaceAll("\\r", "\n");
+        } catch (HL7Exception exception) {
+            formatted = exception.getMessage();
+        }
+        log.debug(prefix + ": " + formatted);
     }
 }

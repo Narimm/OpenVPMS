@@ -23,15 +23,20 @@
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
-    <bean name="hl7ConnectorManager" class="org.openvpms.hl7.impl.MessageDispatcherImpl">
-        <constructor-arg ref="hl7Connectors"/>
-    </bean>
+    <bean name="hl7messageDispatcher" class="org.openvpms.hl7.impl.MessageDispatcherImpl"/>
 
     <bean class="org.openvpms.hl7.impl.AdmissionServiceImpl">
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="lookupService"/>
         <constructor-arg ref="hl7Connectors"/>
-        <constructor-arg ref="hl7ConnectorManager"/>
+        <constructor-arg ref="hl7messageDispatcher"/>
+    </bean>
+
+    <bean class="org.openvpms.hl7.impl.PharmacyOrderServiceImpl">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="hl7Connectors"/>
+        <constructor-arg ref="hl7messageDispatcher"/>
     </bean>
 
     <bean class="org.openvpms.hl7.PatientContextFactory">
