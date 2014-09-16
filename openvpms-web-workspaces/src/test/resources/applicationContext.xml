@@ -313,6 +313,34 @@
         <constructor-arg ref="archetypeService"/>
     </bean>
 
+
+    <bean name="hl7Connectors" class="org.openvpms.hl7.impl.ConnectorsImpl">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
+    <bean name="hl7messageDispatcher" class="org.openvpms.hl7.impl.MessageDispatcherImpl"/>
+
+    <bean class="org.openvpms.hl7.PatientContextFactory">
+        <constructor-arg ref="patientRules"/>
+        <constructor-arg ref="customerRules"/>
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+    </bean>
+
+    <bean class="org.openvpms.hl7.impl.AdmissionServiceImpl">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="hl7Connectors"/>
+        <constructor-arg ref="hl7messageDispatcher"/>
+    </bean>
+
+    <bean class="org.openvpms.hl7.impl.PharmacyOrderServiceImpl">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="hl7Connectors"/>
+        <constructor-arg ref="hl7messageDispatcher"/>
+    </bean>
+
     <!-- ================================================================== -->
     <!--                        REPORTING                                   -->
     <!-- ================================================================== -->

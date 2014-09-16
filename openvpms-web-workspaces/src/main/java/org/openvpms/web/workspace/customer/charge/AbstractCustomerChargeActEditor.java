@@ -86,6 +86,11 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     private ActRelationshipCollectionEditor documents;
 
     /**
+     * The pharmacy order placer, used to place orders when invoicing.
+     */
+    private PharmacyOrderPlacer orderPlacer;
+
+    /**
      * Constructs an {@link AbstractCustomerChargeActEditor}.
      *
      * @param act     the act to edit
@@ -107,8 +112,10 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     public AbstractCustomerChargeActEditor(FinancialAct act, IMObject parent,
                                            LayoutContext context, boolean addDefaultItem) {
         super(act, parent, context);
-        initParticipant("customer", context.getContext().getCustomer());
-        initParticipant("location", context.getContext().getLocation());
+        Party customer = context.getContext().getCustomer();
+        Party location = context.getContext().getLocation();
+        initParticipant("customer", customer);
+        initParticipant("location", location);
         this.addDefaultItem = addDefaultItem;
         if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE)) {
             getItems().setTemplateProductListener(new TemplateProductListener() {
@@ -116,6 +123,9 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                     templateProductExpanded(product);
                 }
             });
+
+            orderPlacer = new PharmacyOrderPlacer(customer, location, getLayoutContext().getCache());
+            orderPlacer.initialise(getItems().getActs());
         }
     }
 
@@ -308,6 +318,10 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                 }
                 if (chargeContext != null) {
                     chargeContext.save();
+                }
+
+                if (TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE)) {
+                    orderPlacer.order(getItems().getActs(), changes);
                 }
             }
         } finally {
