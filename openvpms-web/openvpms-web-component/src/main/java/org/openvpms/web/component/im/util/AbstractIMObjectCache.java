@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
@@ -28,8 +26,7 @@ import java.util.Map;
 /**
  * Abstract implementation of the {@link IMObjectCache} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class AbstractIMObjectCache implements IMObjectCache {
 
@@ -44,7 +41,7 @@ public class AbstractIMObjectCache implements IMObjectCache {
     private final IArchetypeService service;
 
     /**
-     * Constructs an <tt>AbstractIMObjectCache</tt>
+     * Constructs an {@link AbstractIMObjectCache}
      *
      * @param cache   the cache
      * @param service the archetype service
@@ -77,8 +74,8 @@ public class AbstractIMObjectCache implements IMObjectCache {
      * <p/>
      * If the object isn't cached, it will be retrieved from the archetype service and added to the cache if it exists.
      *
-     * @param reference the object reference. May be <tt>null</tt>
-     * @return the object corresponding to <tt>reference</tt> or <tt>null</tt> if none exists
+     * @param reference the object reference. May be {@code null}
+     * @return the object corresponding to {@code reference} or {@code null} if none exists
      */
     public IMObject get(IMObjectReference reference) {
         IMObject result = null;
@@ -92,5 +89,13 @@ public class AbstractIMObjectCache implements IMObjectCache {
             }
         }
         return result;
+    }
+
+    /**
+     * Clears the cache.
+     */
+    @Override
+    public void clear() {
+        cache.clear();
     }
 }

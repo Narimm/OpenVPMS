@@ -77,11 +77,11 @@ public class PharmacyOrderPlacer {
      * @param location the location
      * @param cache    the object cache
      */
-    public PharmacyOrderPlacer(Party customer, Party location, IMObjectCache cache) {
+    public PharmacyOrderPlacer(Party customer, Party location, IMObjectCache cache, PharmacyOrderService service) {
         this.customer = customer;
         this.location = location;
         this.cache = cache;
-        service = ServiceHelper.getBean(PharmacyOrderService.class);
+        this.service = service;
         factory = ServiceHelper.getBean(PatientContextFactory.class);
     }
 
@@ -108,22 +108,27 @@ public class PharmacyOrderPlacer {
     public void order(List<Act> items, PatientHistoryChanges changes) {
         for (Act act : items) {
             Order order = getOrder(act);
+            Order existing = orders.get(act.getId());
             if (order != null) {
-                Order existing = orders.get(act.getId());
                 if (existing != null) {
                     if (needsCancel(existing, order)) {
-                        PatientContext context = getPatientContext(existing, changes, act);
+                        PatientContext context = getPatientContext(order, changes, act);
                         service.cancelOrder(context, existing.getProduct(), existing.getQuantity(),
                                             existing.getId(), act.getActivityStartTime(), existing.getPharmacy());
                         createOrder(order, changes, act);
                     } else if (needsUpdate(existing, order)) {
-                        PatientContext context = getPatientContext(existing, changes, act);
+                        PatientContext context = getPatientContext(order, changes, act);
                         service.updateOrder(context, order.getProduct(), order.getQuantity(),
                                             order.getId(), act.getActivityStartTime(), order.getPharmacy());
                     }
                 } else {
                     createOrder(order, changes, act);
                 }
+            } else if (existing != null) {
+                // new product is not dispensed via a pharmacy
+                PatientContext context = getPatientContext(existing, changes, act);
+                service.cancelOrder(context, existing.getProduct(), existing.getQuantity(),
+                                    existing.getId(), act.getActivityStartTime(), existing.getPharmacy());
             }
         }
     }
@@ -163,9 +168,11 @@ public class PharmacyOrderPlacer {
 
     private void createOrder(Order order, PatientHistoryChanges changes, Act item) {
         PatientContext patientContext = getPatientContext(order, changes, item);
-        service.createOrder(patientContext, order.getProduct(), order.getQuantity(), order.getId(),
-                            item.getActivityStartTime(),
-                            order.getPharmacy());
+        if (patientContext != null) {
+            service.createOrder(patientContext, order.getProduct(), order.getQuantity(), order.getId(),
+                                item.getActivityStartTime(),
+                                order.getPharmacy());
+        }
     }
 
     private PatientContext getPatientContext(Order order, PatientHistoryChanges changes, Act item) {
