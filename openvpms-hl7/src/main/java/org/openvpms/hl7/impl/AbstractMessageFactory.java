@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.HL7Exception;
@@ -108,13 +124,28 @@ abstract class AbstractMessageFactory {
         message.initQuickstart(messageCode, triggerEvent, "P");
     }
 
-
-    protected void populate(PID pid, PatientContext context) throws HL7Exception {
-        pidPopulator.populate(pid, context);
+    /**
+     * Populates a PID segment.
+     *
+     * @param pid     the segment
+     * @param context the patient context
+     * @param config  the message population configuration
+     * @throws HL7Exception for any error
+     */
+    protected void populate(PID pid, PatientContext context, MessageConfig config) throws HL7Exception {
+        pidPopulator.populate(pid, context, config);
     }
 
-    protected void populate(PV1 pv1, PatientContext context) throws HL7Exception {
-        pv1Populator.populate(pv1, context);
+    /**
+     * Populates a PV1 segment.
+     *
+     * @param pv1     the segment
+     * @param context the patient context
+     * @param config  the message population configuration
+     * @throws HL7Exception for any error
+     */
+    protected void populate(PV1 pv1, PatientContext context, MessageConfig config) throws HL7Exception {
+        pv1Populator.populate(pv1, context, config);
     }
 
     /**
@@ -140,7 +171,7 @@ abstract class AbstractMessageFactory {
      * @param al1 the segment
      * @param act the alert act
      * @param id  the segment identifier
-     * @throws DataTypeException
+     * @throws DataTypeException for any error
      */
     protected void populateAllergy(AL1 al1, Act act, int id) throws DataTypeException {
         al1.getSetIDAL1().setValue(Integer.toString(id));

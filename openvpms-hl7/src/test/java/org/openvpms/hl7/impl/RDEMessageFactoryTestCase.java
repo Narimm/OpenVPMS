@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.DefaultHapiContext;
@@ -18,6 +34,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
+import static org.openvpms.hl7.impl.PopulateHelper.populateDTM;
 
 /**
  * Tests the {@link RDEMessageFactory} class.
@@ -64,70 +81,76 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
     }
 
     /**
-     * Tests the {@link RDEMessageFactory#createOrder(PatientContext, Product, BigDecimal, long, Date)} method.
+     * Tests the {@link RDEMessageFactory#createOrder(PatientContext, Product, BigDecimal, long, Date, MessageConfig)} method.
      *
      * @throws Exception for any error
      */
     @Test
     public void testCreateOrder() throws Exception {
-        String expected = "MSH|^~\\&|||||20140825090000+1000||RDE^O11^RDE_O11|1200022|P|2.5\r" +
+        String expected = "MSH|^~\\&|||||20140825090000.105+1000||RDE^O11^RDE_O11|1200022|P|2.5\r" +
                           "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "AL1|1||||Penicillin\r" +
                           "AL1|2||||Pollen\r" +
-                          "ORC|NW|10231|||||||20140825090200+1000|2001^Blogs^Joe\r" +
+                          "ORC|NW|10231|||||||20140825090200.11+1000|2001^Blogs^Joe\r" +
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
-        Date date = getDatetime("2014-08-25 09:02:00").getTime();
-        Message order = messageFactory.createOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date);
+        MessageConfig config = new MessageConfig();
+        Date date = getDatetime("2014-08-25 09:02:00.110").getTime();
+        Message order = messageFactory.createOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, config);
         MSH msh = (MSH) order.get("MSH");
-        msh.getDateTimeOfMessage().getTime().setValue(getDatetime("2014-08-25 09:00:00"));
+        populateDTM(msh.getDateTimeOfMessage().getTime(), getDatetime("2014-08-25 09:00:00.105"), config);
         String encode = order.encode();
         assertEquals(expected, encode);
     }
 
     /**
-     * Tests the {@link RDEMessageFactory#updateOrder(PatientContext, Product, BigDecimal, long, Date)} method.
+     * Tests the {@link RDEMessageFactory#updateOrder(PatientContext, Product, BigDecimal, long, Date, MessageConfig)} method.
      *
      * @throws Exception for any error
      */
     @Test
     public void testUpdateOrder() throws Exception {
-        String expected = "MSH|^~\\&|||||20140825090000+1000||RDE^O11^RDE_O11|1200022|P|2.5\r" +
-                          "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
-                          "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
+        String expected = "MSH|^~\\&|||||20140825090000.105||RDE^O11^RDE_O11|1200022|P|2.5\r" +
+                          "PID|1||1001||Bar^Fido||20140701000000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500\r" +
                           "AL1|1||||Penicillin\r" +
                           "AL1|2||||Pollen\r" +
-                          "ORC|RP|10231|||||||20140825090200+1000|2001^Blogs^Joe\r" +
+                          "ORC|RP|10231|||||||20140825090200|2001^Blogs^Joe\r" +
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
-        Message order = messageFactory.updateOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date);
+        MessageConfig config = new MessageConfig();
+        config.setIncludeTimeZone(false);
+        Message order = messageFactory.updateOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, config);
         MSH msh = (MSH) order.get("MSH");
-        msh.getDateTimeOfMessage().getTime().setValue(getDatetime("2014-08-25 09:00:00"));
+        populateDTM(msh.getDateTimeOfMessage().getTime(), getDatetime("2014-08-25 09:00:00.105"), config);
         String encode = order.encode();
         assertEquals(expected, encode);
     }
 
     /**
-     * Tests the {@link RDEMessageFactory#cancelOrder(PatientContext, Product, BigDecimal, long, Date)} method.
+     * Tests the {@link RDEMessageFactory#cancelOrder(PatientContext, Product, BigDecimal, long, MessageConfig, Date)} method.
      *
      * @throws Exception for any error
      */
     @Test
     public void testCancelOrder() throws Exception {
-        String expected = "MSH|^~\\&|||||20140825090000+1000||RDE^O11^RDE_O11|1200022|P|2.5\r" +
-                          "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
-                          "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
+        String expected = "MSH|^~\\&|||||20140825090000||RDE^O11^RDE_O11|1200022|P|2.5\r" +
+                          "PID|1||1001||Bar^Fido||20140701000000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500\r" +
                           "AL1|1||||Penicillin\r" +
                           "AL1|2||||Pollen\r" +
-                          "ORC|CA|10231|||||||20140825090200+1000|2001^Blogs^Joe\r" +
+                          "ORC|CA|10231|||||||20140825090200|2001^Blogs^Joe\r" +
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
-        Message order = messageFactory.cancelOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date);
+        MessageConfig config = new MessageConfig();
+        config.setIncludeMillis(false);
+        config.setIncludeTimeZone(false);
+        Message order = messageFactory.cancelOrder(getContext(), product, BigDecimal.valueOf(2), 10231, config, date);
         MSH msh = (MSH) order.get("MSH");
-        msh.getDateTimeOfMessage().getTime().setValue(getDatetime("2014-08-25 09:00:00"));
+        populateDTM(msh.getDateTimeOfMessage().getTime(), getDatetime("2014-08-25 09:00:00.105"), config);
         String encode = order.encode();
         assertEquals(expected, encode);
     }

@@ -17,9 +17,8 @@
 package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.model.Message;
+import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import org.openvpms.hl7.Connector;
-
-import java.util.List;
 
 /**
  * Manages sending HL7 messages.
@@ -47,14 +46,25 @@ public interface MessageDispatcher {
      *
      * @param message   the message to queue
      * @param connector the connector
+     * @param config    the message population configuration
      */
-    void queue(Message message, Connector connector);
+    void queue(Message message, Connector connector, MessageConfig config);
 
     /**
-     * Queues a message to be sent via multiple connectors.
+     * Registers an application to handle messages from the specified connector.
+     * <p/>
+     * Only one application can be registered to handle messages.
      *
-     * @param message    the message to queue
-     * @param connectors the connectors
+     * @param connector the connector
+     * @param receiver  the receiver
      */
-    void queue(Message message, List<Connector> connectors);
+    void listen(Connector connector, ReceivingApplication receiver) throws InterruptedException;
+
+    /**
+     * Stop receiving messages from a connector.
+     *
+     * @param connector the connector
+     */
+    void stop(Connector connector);
+
 }

@@ -71,7 +71,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
         product.setId(4001);
         pharmacy = (Party) create("party.organisationPharmacy");
         EntityBean bean = new EntityBean(pharmacy);
-        bean.addNodeTarget("connection", getSender().getReference());
+        bean.addNodeTarget("orderConnection", getSender().getReference());
     }
 
     /**

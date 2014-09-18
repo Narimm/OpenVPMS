@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.HapiContext;
@@ -43,29 +59,31 @@ public class ADTMessageFactory extends AbstractMessageFactory {
      * Creates an ADT A01 message.
      *
      * @param context the patient context
+     * @param config  the message population configuration
      * @return a new message
      */
-    public Message createAdmit(PatientContext context) {
-        return createADT_A01(context, "A01");
+    public Message createAdmit(PatientContext context, MessageConfig config) {
+        return createADT_A01(context, "A01", config);
     }
 
     /**
      * Creates an ADT A11 message.
      *
      * @param context the patient context
+     * @param config  the message population configuration
      * @return a new message
      */
-    public Message createCancelAdmit(PatientContext context) {
+    public Message createCancelAdmit(PatientContext context, MessageConfig config) {
         ADT_A09 adt = new ADT_A09(getModelClassFactory());
         try {
             init(adt, "ADT", "A11");
-            populate(adt.getPID(), context);
-            populate(adt.getPV1(), context);
+            populate(adt.getPID(), context, config);
+            populate(adt.getPV1(), context, config);
 
             BigDecimal weight = context.getPatientWeight();
             if (weight != null) {
                 OBX obx = adt.getOBX(0);
-                populateWeight(obx, context, adt, weight);
+                populateWeight(obx, context, adt, weight, config);
             }
         } catch (Exception exception) {
             throw new IllegalStateException(exception.getMessage());
@@ -77,23 +95,24 @@ public class ADTMessageFactory extends AbstractMessageFactory {
      * Creates an ADT A03 message.
      *
      * @param context the patient context
+     * @param config  the message population configuration
      * @return a new message
      */
-    public Message createDischarge(PatientContext context) {
+    public Message createDischarge(PatientContext context, MessageConfig config) {
         ADT_A03 adt = new ADT_A03(getModelClassFactory());
         try {
             init(adt, "ADT", "A03");
-            populate(adt.getPID(), context);
-            populate(adt.getPV1(), context);
+            populate(adt.getPID(), context, config);
+            populate(adt.getPV1(), context, config);
 
             BigDecimal weight = context.getPatientWeight();
             if (weight != null) {
                 OBX obx = adt.getOBX(0);
-                populateWeight(obx, context, adt, weight);
+                populateWeight(obx, context, adt, weight, config);
             }
             populateAllergies(adt, context);
         } catch (Exception exception) {
-            throw new IllegalStateException(exception.getMessage());
+            throw new IllegalStateException(exception.getMessage(), exception);
         }
         return adt;
     }
@@ -102,10 +121,11 @@ public class ADTMessageFactory extends AbstractMessageFactory {
      * Creates an ADT A08 message.
      *
      * @param context the patient context
+     * @param config  the message population configuration
      * @return a new message
      */
-    public Message createUpdate(PatientContext context) {
-        return createADT_A01(context, "A08");
+    public Message createUpdate(PatientContext context, MessageConfig config) {
+        return createADT_A01(context, "A08", config);
     }
 
     /**
@@ -113,19 +133,20 @@ public class ADTMessageFactory extends AbstractMessageFactory {
      *
      * @param context      the patient context
      * @param triggerEvent the trigger event
+     * @param config       the message population configuration
      * @return a new message
      */
-    private Message createADT_A01(PatientContext context, String triggerEvent) {
+    private Message createADT_A01(PatientContext context, String triggerEvent, MessageConfig config) {
         ADT_A01 adt = new ADT_A01(getModelClassFactory());
         try {
             init(adt, "ADT", triggerEvent);
-            populate(adt.getPID(), context);
-            populate(adt.getPV1(), context);
+            populate(adt.getPID(), context, config);
+            populate(adt.getPV1(), context, config);
 
             BigDecimal weight = context.getPatientWeight();
             if (weight != null) {
                 OBX obx = adt.getOBX(0);
-                populateWeight(obx, context, adt, weight);
+                populateWeight(obx, context, adt, weight, config);
             }
             populateAllergies(adt, context);
         } catch (Exception exception) {
@@ -141,10 +162,11 @@ public class ADTMessageFactory extends AbstractMessageFactory {
      * @param context the patient context
      * @param message the parent message
      * @param weight  the weight, in kilograms
+     * @param config  the message population configuration
      * @throws DataTypeException for any data error
      */
-    private void populateWeight(OBX obx, PatientContext context, Message message, BigDecimal weight)
-            throws DataTypeException {
+    private void populateWeight(OBX obx, PatientContext context, Message message, BigDecimal weight,
+                                MessageConfig config) throws DataTypeException {
         obx.getSetIDOBX().setValue("1");
         obx.getValueType().setValue("NM");
         CE identifier = obx.getObservationIdentifier();
@@ -155,7 +177,7 @@ public class ADTMessageFactory extends AbstractMessageFactory {
         Varies observationValue = obx.getObservationValue(0);
         nm.setValue(weight.toString());
         observationValue.setData(nm);
-        obx.getDateTimeOfTheObservation().getTime().setValue(context.getWeighDate());
+        PopulateHelper.populateDTM(obx.getDateTimeOfTheObservation().getTime(), context.getWeighDate(), config);
 
         obx.getUnits().getIdentifier().setValue("kg");
         obx.getUnits().getText().setValue("kilogram");    // ISO 2955-1983

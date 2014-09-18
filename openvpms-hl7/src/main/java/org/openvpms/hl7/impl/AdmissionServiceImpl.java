@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.model.Message;
@@ -31,6 +47,7 @@ public class AdmissionServiceImpl implements AdmissionService {
      */
     private ADTMessageFactory factory;
 
+
     /**
      * Constructs an {@link AdmissionServiceImpl}.
      *
@@ -55,8 +72,11 @@ public class AdmissionServiceImpl implements AdmissionService {
     public void admitted(PatientContext context) {
         List<Connector> senders = connectors.getSenders(context.getLocation());
         if (!senders.isEmpty()) {
-            Message message = factory.createAdmit(context);
-            queue(message, senders);
+            for (Connector connector : senders) {
+                MessageConfig config = MessageConfigFactory.create(connector);
+                Message message = factory.createAdmit(context, config);
+                queue(message, connector, config);
+            }
         }
     }
 
@@ -70,8 +90,11 @@ public class AdmissionServiceImpl implements AdmissionService {
     public void admissionCancelled(PatientContext context) {
         List<Connector> senders = connectors.getSenders(context.getLocation());
         if (!senders.isEmpty()) {
-            Message message = factory.createCancelAdmit(context);
-            queue(message, senders);
+            for (Connector connector : senders) {
+                MessageConfig config = MessageConfigFactory.create(connector);
+                Message message = factory.createCancelAdmit(context, config);
+                queue(message, connector, config);
+            }
         }
     }
 
@@ -84,8 +107,11 @@ public class AdmissionServiceImpl implements AdmissionService {
     public void discharged(PatientContext context) {
         List<Connector> senders = connectors.getSenders(context.getLocation());
         if (!senders.isEmpty()) {
-            Message message = factory.createDischarge(context);
-            queue(message, senders);
+            for (Connector connector : senders) {
+                MessageConfig config = MessageConfigFactory.create(connector);
+                Message message = factory.createDischarge(context, config);
+                queue(message, connector, config);
+            }
         }
     }
 
@@ -98,19 +124,23 @@ public class AdmissionServiceImpl implements AdmissionService {
     public void updated(PatientContext context) {
         List<Connector> senders = connectors.getSenders(context.getLocation());
         if (!senders.isEmpty()) {
-            Message message = factory.createUpdate(context);
-            queue(message, senders);
+            for (Connector connector : senders) {
+                MessageConfig config = MessageConfigFactory.create(connector);
+                Message message = factory.createUpdate(context, config);
+                queue(message, connector, config);
+            }
         }
     }
 
     /**
      * Queues a message for dispatch.
      *
-     * @param message    the message to queue
-     * @param connectors the connectors to send to
+     * @param message   the message to queue
+     * @param connector the connector
+     * @param config    the message config
      */
-    protected void queue(Message message, List<Connector> connectors) {
-        manager.queue(message, connectors);
+    protected void queue(Message message, Connector connector, MessageConfig config) {
+        manager.queue(message, connector, config);
     }
 
 }

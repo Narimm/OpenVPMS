@@ -20,19 +20,25 @@ import ca.uhn.hl7v2.DefaultHapiContext;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.app.Connection;
+import ca.uhn.hl7v2.app.HL7Service;
 import ca.uhn.hl7v2.llp.LLPException;
 import ca.uhn.hl7v2.model.Message;
+import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import ca.uhn.hl7v2.util.idgenerator.IDGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.hl7.Connector;
+import org.openvpms.hl7.MLLPReceiver;
 import org.openvpms.hl7.MLLPSender;
+import org.springframework.beans.factory.DisposableBean;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -41,16 +47,18 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @author Tim Anderson
  */
-public class MessageDispatcherImpl implements MessageDispatcher {
+public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean {
 
     private final HeaderPopulator populator;
 
-    private HapiContext messageContext;
+    private final HapiContext messageContext;
 
     private AtomicLong sequence = new AtomicLong(1);
 
     private List<ConnectorManagerListener> listeners
             = Collections.synchronizedList(new ArrayList<ConnectorManagerListener>());
+
+    private final Map<Integer, HL7Service> services = new HashMap<Integer, HL7Service>();
 
     /**
      * The logger.
@@ -93,7 +101,11 @@ public class MessageDispatcherImpl implements MessageDispatcher {
         listeners.remove(listener);
     }
 
-
+    /**
+     * Returns the message context.
+     *
+     * @return the message context
+     */
     public HapiContext getMessageContext() {
         return messageContext;
     }
@@ -103,12 +115,13 @@ public class MessageDispatcherImpl implements MessageDispatcher {
      *
      * @param message   the message to queue
      * @param connector the connector
+     * @param config    the message population configuration
      */
     @Override
-    public void queue(Message message, Connector connector) {
+    public void queue(Message message, Connector connector, MessageConfig config) {
         try {
             if (connector instanceof MLLPSender) {
-                populate(message, (MLLPSender) connector);
+                populate(message, (MLLPSender) connector, config);
                 Message response = sendAndReceive(message, (MLLPSender) connector);
                 for (ConnectorManagerListener listener : listeners) {
                     listener.sent(message, response);
@@ -120,15 +133,69 @@ public class MessageDispatcherImpl implements MessageDispatcher {
     }
 
     /**
-     * Queues a message to be sent via multiple connectors.
+     * Registers an application to handle messages from the specified connector.
+     * <p/>
+     * Only one application can be registered to handle messages.
      *
-     * @param message    the message to queue
-     * @param connectors the connectors
+     * @param connector the connector
+     * @param receiver  the receiver
+     * @throws IllegalStateException if the connector is registered
      */
     @Override
-    public void queue(Message message, List<Connector> connectors) {
-        for (Connector connector : connectors) {
-            queue(message, connector);
+    public void listen(Connector connector, ReceivingApplication receiver) throws InterruptedException {
+        if (connector instanceof MLLPReceiver) {
+            int port = ((MLLPReceiver) connector).getPort();
+            HL7Service service;
+            synchronized (services) {
+                service = services.get(port);
+                if (service == null || !service.isRunning()) {
+                    service = messageContext.newServer(port, false);
+                } else {
+                    throw new IllegalStateException("Already receiving requests on port " + port);
+                }
+            }
+            service.registerApplication(receiver);
+            service.startAndWait();
+            synchronized (services) {
+                if (service.isRunning()) {
+                    services.put(port, service);
+                }
+            }
+        }
+    }
+
+    /**
+     * Stops listening to messages from a connector.
+     *
+     * @param connector the connector
+     */
+    @Override
+    public void stop(Connector connector) {
+        if (connector instanceof MLLPReceiver) {
+            int port = ((MLLPReceiver) connector).getPort();
+            synchronized (services) {
+                HL7Service service = services.get(port);
+                if (service != null) {
+                    service.stopAndWait();
+                }
+                services.remove(port);
+            }
+        }
+    }
+
+    /**
+     * Invoked by a BeanFactory on destruction of a singleton.
+     *
+     * @throws Exception in case of shutdown errors.
+     *                   Exceptions will get logged but not rethrown to allow
+     *                   other beans to release their resources too.
+     */
+    @Override
+    public void destroy() throws Exception {
+        synchronized (services) {
+            for (HL7Service service : services.values()) {
+                service.stop();
+            }
         }
     }
 
@@ -140,10 +207,17 @@ public class MessageDispatcherImpl implements MessageDispatcher {
         return sequence.incrementAndGet();
     }
 
-    private void populate(Message message, MLLPSender sender) throws HL7Exception {
-        populator.populate(message, sender, getTimestamp(), getSequence(sender));
+    /**
+     * Populates the header of a message.
+     *
+     * @param message the message
+     * @param sender  the sender
+     * @param config  the message population configuration
+     * @throws HL7Exception for any error
+     */
+    private void populate(Message message, MLLPSender sender, MessageConfig config) throws HL7Exception {
+        populator.populate(message, sender, getTimestamp(), getSequence(sender), config);
     }
-
 
     protected Message sendAndReceive(Message message, MLLPSender sender)
             throws HL7Exception, LLPException, IOException {
@@ -176,4 +250,5 @@ public class MessageDispatcherImpl implements MessageDispatcher {
         }
         log.debug(prefix + ": " + formatted);
     }
+
 }

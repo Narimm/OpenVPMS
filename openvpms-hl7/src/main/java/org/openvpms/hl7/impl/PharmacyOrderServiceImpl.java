@@ -88,8 +88,9 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
                             Date date, Entity pharmacy) {
         Connector connector = getConnector(pharmacy);
         if (connector != null) {
-            Message message = factory.createOrder(context, product, quantity, placerOrderNumber, date);
-            dispatcher.queue(message, connector);
+            MessageConfig config = MessageConfigFactory.create(connector);
+            Message message = factory.createOrder(context, product, quantity, placerOrderNumber, date, config);
+            dispatcher.queue(message, connector, config);
         }
     }
 
@@ -108,8 +109,9 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
                             Date date, Entity pharmacy) {
         Connector connector = getConnector(pharmacy);
         if (connector != null) {
-            Message message = factory.updateOrder(context, product, quantity, placerOrderNumber, date);
-            dispatcher.queue(message, connector);
+            MessageConfig config = MessageConfigFactory.create(connector);
+            Message message = factory.updateOrder(context, product, quantity, placerOrderNumber, date, config);
+            dispatcher.queue(message, connector, config);
         }
     }
 
@@ -128,8 +130,9 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
                             Date date, Entity pharmacy) {
         Connector connector = getConnector(pharmacy);
         if (connector != null) {
-            Message message = factory.cancelOrder(context, product, quantity, placerOrderNumber, date);
-            dispatcher.queue(message, connector);
+            MessageConfig config = MessageConfigFactory.create(connector);
+            Message message = factory.cancelOrder(context, product, quantity, placerOrderNumber, config, date);
+            dispatcher.queue(message, connector, config);
         }
     }
 
@@ -141,7 +144,7 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
      */
     private Connector getConnector(Entity pharmacy) {
         IMObjectBean bean = new IMObjectBean(pharmacy, service);
-        IMObjectReference connector = bean.getNodeTargetObjectRef("connection");
+        IMObjectReference connector = bean.getNodeTargetObjectRef("orderConnection");
         return (connector != null) ? connectors.getConnector(connector) : null;
     }
 

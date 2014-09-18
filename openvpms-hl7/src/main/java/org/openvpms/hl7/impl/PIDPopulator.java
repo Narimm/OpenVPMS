@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.HL7Exception;
@@ -10,6 +26,8 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.hl7.PatientContext;
+
+import static org.openvpms.hl7.impl.PopulateHelper.populateDTM;
 
 /**
  * Populates a {@code PID} segment.
@@ -39,7 +57,15 @@ class PIDPopulator {
         this.lookups = lookups;
     }
 
-    public void populate(PID pid, PatientContext context) throws HL7Exception {
+    /**
+     * Populate a PID segment.
+     *
+     * @param pid     the segment
+     * @param context the patient context
+     * @param config  the message population configuration
+     * @throws HL7Exception for any error
+     */
+    public void populate(PID pid, PatientContext context, MessageConfig config) throws HL7Exception {
         pid.getSetIDPID().setValue("1");
 
         pid.getPatientIdentifierList(0).getIDNumber().setValue(Long.toString(context.getPatientId()));
@@ -48,7 +74,7 @@ class PIDPopulator {
         patientName.getFamilyName().getSurname().setValue(context.getPatientLastName());
         patientName.getGivenName().setValue(context.getPatientFirstName());
 
-        pid.getDateTimeOfBirth().getTime().setValue(context.getDateOfBirth());
+        populateDTM(pid.getDateTimeOfBirth().getTime(), context.getDateOfBirth(), config);
 
         pid.getAdministrativeSex().setValue(context.getPatientSex());
 
@@ -60,10 +86,17 @@ class PIDPopulator {
         pid.getPhoneNumberHome(0).getTelephoneNumber().setValue(context.getHomePhone());
         pid.getPhoneNumberBusiness(0).getTelephoneNumber().setValue(context.getWorkPhone());
 
-        setSpecies(pid, context);
-        setBreed(pid, context);
+        populateSpecies(pid, context);
+        populateBreed(pid, context);
     }
 
+    /**
+     * Populates an address.
+     *
+     * @param address the address
+     * @param home    the home contact
+     * @throws HL7Exception for any error
+     */
     private void populateAddress(XAD address, Contact home) throws HL7Exception {
         IMObjectBean bean = new IMObjectBean(home, service);
         address.getStreetAddress().getStreetOrMailingAddress().setValue(bean.getString("address"));
@@ -72,7 +105,14 @@ class PIDPopulator {
         address.getStateOrProvince().setValue(lookups.getName(home, "state"));
     }
 
-    private void setSpecies(PID pid, PatientContext context) throws HL7Exception {
+    /**
+     * Populates the species.
+     *
+     * @param pid     the segment
+     * @param context the patient context
+     * @throws HL7Exception for any error
+     */
+    private void populateSpecies(PID pid, PatientContext context) throws HL7Exception {
         String species = context.getSpeciesCode();
         if (species != null) {
             CE code = pid.getSpeciesCode();
@@ -82,7 +122,14 @@ class PIDPopulator {
         }
     }
 
-    private void setBreed(PID pid, PatientContext context) throws HL7Exception {
+    /**
+     * Populates the breed.
+     *
+     * @param pid     the segment
+     * @param context the patient context
+     * @throws HL7Exception for any error
+     */
+    private void populateBreed(PID pid, PatientContext context) throws HL7Exception {
         String breed = context.getBreedCode();
         if (breed != null) {
             CE code = pid.getBreedCode();
