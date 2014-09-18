@@ -31,6 +31,8 @@ import org.openvpms.hl7.PharmacyOrderService;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * Tests the {@link PharmacyOrderServiceImpl} class.
  *
@@ -92,8 +94,10 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
         orderService.createOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, pharmacy);
+        assertTrue(getDispatcher().waitForMessages(30));
         checkMessage(expected);
     }
+
 
     /**
      * Tests the {@link PharmacyOrderService#updateOrder(PatientContext, Product, BigDecimal, long, Date, Entity)}
@@ -113,6 +117,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
         orderService.updateOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, pharmacy);
+        assertTrue(getDispatcher().waitForMessages(30));
         checkMessage(expected);
     }
 
@@ -134,6 +139,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
         orderService.cancelOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, pharmacy);
+        assertTrue(getDispatcher().waitForMessages(30));
         checkMessage(expected);
     }
 }

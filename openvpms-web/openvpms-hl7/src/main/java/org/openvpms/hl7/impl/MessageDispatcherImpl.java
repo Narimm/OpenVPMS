@@ -27,18 +27,23 @@ import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import ca.uhn.hl7v2.util.idgenerator.IDGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.hl7.Connector;
 import org.openvpms.hl7.MLLPReceiver;
 import org.openvpms.hl7.MLLPSender;
 import org.springframework.beans.factory.DisposableBean;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -49,16 +54,31 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean {
 
+    /**
+     * The message header populator.
+     */
     private final HeaderPopulator populator;
 
+    /**
+     * The message context.
+     */
     private final HapiContext messageContext;
 
-    private AtomicLong sequence = new AtomicLong(1);
+    /**
+     * Used to assign the message control id.
+     */
+    private AtomicLong seed = new AtomicLong(0);
 
     private List<ConnectorManagerListener> listeners
             = Collections.synchronizedList(new ArrayList<ConnectorManagerListener>());
 
+    private final Map<IMObjectReference, Queue> queueMap = new HashMap<IMObjectReference, Queue>();
+
     private final Map<Integer, HL7Service> services = new HashMap<Integer, HL7Service>();
+
+    private final ExecutorService executor;
+
+    private volatile boolean shutdown = false;
 
     /**
      * The logger.
@@ -79,6 +99,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
                 return "";
             }
         });
+        executor = Executors.newSingleThreadExecutor();
     }
 
     /**
@@ -122,10 +143,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
         try {
             if (connector instanceof MLLPSender) {
                 populate(message, (MLLPSender) connector, config);
-                Message response = sendAndReceive(message, (MLLPSender) connector);
-                for (ConnectorManagerListener listener : listeners) {
-                    listener.sent(message, response);
-                }
+                queue(message, (MLLPSender) connector);
             }
         } catch (Throwable exception) {
             throw new IllegalStateException(exception);
@@ -192,6 +210,23 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
      */
     @Override
     public void destroy() throws Exception {
+        shutdown = true;
+        executor.shutdown(); // Disable new tasks from being submitted
+        try {
+            // Wait a while for existing tasks to terminate
+            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                executor.shutdownNow(); // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled
+                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                    System.err.println("Pool did not terminate");
+                }
+            }
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            executor.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+        }
         synchronized (services) {
             for (HL7Service service : services.values()) {
                 service.stop();
@@ -204,7 +239,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
     }
 
     protected long getSequence(Connector connector) {
-        return sequence.incrementAndGet();
+        return seed.incrementAndGet();
     }
 
     /**
@@ -219,8 +254,117 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
         populator.populate(message, sender, getTimestamp(), getSequence(sender), config);
     }
 
-    protected Message sendAndReceive(Message message, MLLPSender sender)
+    protected void queue(Message message, final MLLPSender sender)
             throws HL7Exception, LLPException, IOException {
+        Queue queue;
+        synchronized (queueMap) {
+            queue = queueMap.get(sender.getReference());
+            if (queue == null) {
+                queue = new Queue(sender);
+                queueMap.put(sender.getReference(), queue);
+            } else {
+                queue.setConnector(sender);
+            }
+        }
+
+        queue.add(message.encode());
+        schedule();
+    }
+
+    private void schedule() {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                sendAll();
+            }
+        });
+    }
+
+    /**
+     * Sends all queued messages.
+     */
+    private void sendAll() {
+        boolean processed;
+        int waiting;
+        long minWait;
+        do {
+            processed = false;
+            waiting = 0;
+            minWait = 0;
+            List<Queue> queues;
+            synchronized (queueMap) {
+                queues = new ArrayList<Queue>(queueMap.values());
+            }
+            for (Queue queue : queues) {
+                // process each queue in a round robin fashion
+                long wait = queue.getWaitUntil();
+                if (wait == -1 || wait <= System.currentTimeMillis()) {
+                    processed |= sendFirst(queue);
+                } else {
+                    ++waiting;
+                    if (minWait == 0 || wait < minWait) {
+                        minWait = wait;
+                    }
+                }
+            }
+        } while (processed && !shutdown);
+        if (waiting != 0 && !shutdown) {
+            long wait = minWait - System.currentTimeMillis();
+            if (wait > 0) {
+                try {
+                    Thread.sleep(wait);
+                } catch (InterruptedException ignore) {
+                    // do nothing
+                }
+            }
+            schedule();
+        }
+    }
+
+    /**
+     * Sends the first message in a queue, if any are present.
+     *
+     * @param queue the queue
+     * @return {@code true} if there was a message
+     */
+    private boolean sendFirst(Queue queue) {
+        boolean processed = false;
+        String queued = queue.peekFirst();
+        if (queued != null) {
+            processed = true;
+            Message message = null;
+            try {
+                message = messageContext.getPipeParser().parse(queued);
+            } catch (HL7Exception exception) {
+                exception.printStackTrace();
+                queue.processed();
+            }
+            if (message != null) {
+                try {
+                    Message response = send(message, queue.getConnector());
+                    queue.processed();
+                    notifyAll(message, response);
+                } catch (Throwable exception) {
+                    // failed to send the message, so don't queue for another 30 seconds
+                    queue.setWaitUntil(System.currentTimeMillis() + 30 * 1000);
+                    exception.printStackTrace();
+                }
+            }
+        }
+        return processed;
+    }
+
+    /**
+     * Sends a message, and returns the response.
+     *
+     * @param message the message to send
+     * @param sender  the sender configuration
+     * @return the response
+     * @throws HL7Exception if the connection can not be initialised for any reason
+     * @throws LLPException for any LLP error
+     * @throws IOException  for any I/O error
+     */
+    protected Message send(Message message, MLLPSender sender) throws HL7Exception, LLPException, IOException {
         boolean debug = log.isDebugEnabled();
         if (debug) {
             log("sending", message);
@@ -251,4 +395,53 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
         log.debug(prefix + ": " + formatted);
     }
 
+    private void notifyAll(Message message, Message response) {
+        for (ConnectorManagerListener listener : listeners.toArray(new ConnectorManagerListener[listeners.size()])) {
+            listener.sent(message, response);
+        }
+    }
+
+    private static class Queue {
+
+        private Deque<String> queue = new ArrayDeque<String>();
+        private MLLPSender connector;
+
+        private long waitUntil = -1;
+
+
+        public Queue(MLLPSender connector) {
+            this.connector = connector;
+        }
+
+        public synchronized void add(String message) {
+            queue.addLast(message);
+        }
+
+        public synchronized String peekFirst() {
+            return queue.peekFirst();
+        }
+
+        public synchronized void processed() {
+            queue.pollFirst();
+            waitUntil = -1;
+        }
+
+        public synchronized void setConnector(MLLPSender connector) {
+            this.connector = connector;
+        }
+
+        public synchronized MLLPSender getConnector() {
+            return connector;
+        }
+
+        public synchronized void setWaitUntil(long millis) {
+            this.waitUntil = millis;
+        }
+
+        public synchronized long getWaitUntil() {
+            return waitUntil;
+        }
+
+
+    }
 }

@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Enter description.
@@ -43,6 +45,7 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
 
     private long sequence = -1;
 
+    private Semaphore semaphore = new Semaphore(0);
 
     /**
      * Constructs an {@link TestMessageDispatcher}.
@@ -52,24 +55,29 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
     }
 
     /**
-     * Queues a message to a connector.
+     * Waits at most {@code time} seconds for a message to be sent.
      *
-     * @param message   the message to queue
-     * @param connector the connector
-     * @param config    the message population configuration
+     * @param time the no. of seconds to wait
+     * @return {@code true} if a message was sent
      */
-    @Override
-    public void queue(Message message, Connector connector, MessageConfig config) {
-        super.queue(message, connector, config);
-        messages.add(message);
+    public boolean waitForMessages(int time) {
+        boolean result = false;
+        try {
+            if (semaphore.tryAcquire(time, TimeUnit.SECONDS)) {
+                result = true;
+                semaphore.release();
+            }
+        } catch (InterruptedException ignore) {
+            // do nothing
+        }
+        return result;
     }
 
-    @Override
-    protected Message sendAndReceive(Message message, MLLPSender sender)
-            throws HL7Exception, LLPException, IOException {
-        return message.generateACK();
-    }
-
+    /**
+     * Returns the sent messages.
+     *
+     * @return the sent messages
+     */
     public List<Message> getMessages() {
         return messages;
     }
@@ -83,6 +91,14 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
     }
 
     @Override
+    protected Message send(Message message, MLLPSender sender) throws HL7Exception, LLPException, IOException {
+        messages.add(message);
+        semaphore.release();
+        return message.generateACK();
+    }
+
+
+    @Override
     protected Date getTimestamp() {
         return timestamp != null ? timestamp : super.getTimestamp();
     }
@@ -91,4 +107,5 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
     protected long getSequence(Connector connector) {
         return sequence != -1 ? sequence : super.getSequence(connector);
     }
+
 }
