@@ -22,6 +22,8 @@ import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.hl7.AdmissionService;
 import org.openvpms.hl7.PatientContext;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * Tests the {@link AdmissionServiceImpl}.
  *
@@ -60,6 +62,7 @@ public class AdmissionServiceImplTestCase extends AbstractServiceTest {
                           "AL1|2||||Pollen\r";
 
         admissionService.admitted(getContext());
+        assertTrue(getDispatcher().waitForMessages(30));
         checkMessage(expected);
     }
 
@@ -77,6 +80,7 @@ public class AdmissionServiceImplTestCase extends AbstractServiceTest {
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r";
 
         admissionService.admissionCancelled(getContext());
+        assertTrue(getDispatcher().waitForMessages(30));
         checkMessage(expected);
     }
 
@@ -96,6 +100,7 @@ public class AdmissionServiceImplTestCase extends AbstractServiceTest {
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r";
 
         admissionService.discharged(getContext());
+        assertTrue(getDispatcher().waitForMessages(30));
         checkMessage(expected);
     }
 
@@ -115,6 +120,7 @@ public class AdmissionServiceImplTestCase extends AbstractServiceTest {
                           "AL1|2||||Pollen\r";
 
         admissionService.updated(getContext());
+        assertTrue(getDispatcher().waitForMessages(30));
         checkMessage(expected);
     }
 
