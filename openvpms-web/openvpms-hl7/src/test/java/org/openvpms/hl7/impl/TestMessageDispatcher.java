@@ -56,10 +56,11 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
      *
      * @param message   the message to queue
      * @param connector the connector
+     * @param config    the message population configuration
      */
     @Override
-    public void queue(Message message, Connector connector) {
-        super.queue(message, connector);
+    public void queue(Message message, Connector connector, MessageConfig config) {
+        super.queue(message, connector, config);
         messages.add(message);
     }
 

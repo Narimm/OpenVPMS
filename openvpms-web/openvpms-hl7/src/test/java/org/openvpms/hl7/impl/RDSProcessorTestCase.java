@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.DefaultHapiContext;
@@ -70,16 +86,18 @@ public class RDSProcessorTestCase extends AbstractMessageTest {
         productBean.setValue("dispInstructions", "Give 1 tablet once daily");
         product.setId(4001);
 
+        MessageConfig config = new MessageConfig();
         String fillerOrderNumber = "90032145";
         RDS_O13 message = new RDS_O13(hapiContext.getModelClassFactory());
         message.initQuickstart("RDS", "O13", "P");
         HeaderPopulator header = new HeaderPopulator();
         PIDPopulator pid = new PIDPopulator(getArchetypeService(), LookupServiceHelper.getLookupService());
         PV1Populator pv1 = new PV1Populator();
-        header.populate(message, new MLLPSender("107.23.104.102", 2026, "VPMS", "VPMS", "Cubex", "Cubex"),
-                        getDatetime("2014-08-27 09:10:00").getTime(), 7000023);
-        pid.populate(message.getPATIENT().getPID(), getContext());
-        pv1.populate(message.getPATIENT().getPATIENT_VISIT().getPV1(), getContext());
+        header.populate(message, new MLLPSender("107.23.104.102", 2026, "VPMS", "VPMS", "Cubex", "Cubex",
+                                                new IMObjectReference("entity.connectorSenderHL7MLLPType", -1)),
+                        getDatetime("2014-08-27 09:10:00").getTime(), 7000023, config);
+        pid.populate(message.getPATIENT().getPID(), getContext(), config);
+        pv1.populate(message.getPATIENT().getPATIENT_VISIT().getPV1(), getContext(), config);
         RXD rxd = message.getORDER().getRXD();
         PopulateHelper.populateProduct(rxd.getDispenseGiveCode(), product);
         rxd.getSubstanceLotNumber(0).setValue("LOT12345678");
@@ -93,7 +111,7 @@ public class RDSProcessorTestCase extends AbstractMessageTest {
         ft1.getTransactionDate().getRangeStartDateTime().getTime().setValue(getDatetime("2014-08-25 09:30:00"));
         ft1.getTransactionType().setValue("CG");
         ft1.getTransactionQuantity().setValue("2");
-        PopulateHelper.populateClinicianSegment(ft1.getOrderedByCode(0), getContext());
+        PopulateHelper.populateClinician(ft1.getOrderedByCode(0), getContext());
         ft1.getFillerOrderNumber().getEntityIdentifier().setValue(fillerOrderNumber);
         PopulateHelper.populateProduct(ft1.getTransactionCode(), product);
 
@@ -101,7 +119,7 @@ public class RDSProcessorTestCase extends AbstractMessageTest {
         orc.getPlacerOrderNumber().getEntityIdentifier().setValue(Long.toString(10231));
         orc.getFillerOrderNumber().getEntityIdentifier().setValue(fillerOrderNumber);
         orc.getDateTimeOfTransaction().getTime().setValue(getDatetime("2014-08-25 09:02:00"));
-        PopulateHelper.populateClinicianSegment(orc.getEnteredBy(0), getContext());
+        PopulateHelper.populateClinician(orc.getEnteredBy(0), getContext());
 
 
         RXE rxe = message.getORDER().getENCODING().getRXE();

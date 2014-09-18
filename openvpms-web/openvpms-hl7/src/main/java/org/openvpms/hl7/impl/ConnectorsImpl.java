@@ -17,60 +17,46 @@
 package org.openvpms.hl7.impl;
 
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.hl7.Connector;
+import org.openvpms.hl7.MLLPReceiver;
 import org.openvpms.hl7.MLLPSender;
-import org.springframework.beans.factory.DisposableBean;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Enter description.
+ * Default implementation of the {@link Connectors} interface.
  *
  * @author Tim Anderson
  */
-public class ConnectorsImpl implements Connectors, DisposableBean {
-
-    private static final String SENDER_HL7_MLLP = "entity.connectorSenderHL7MLLPType";
-    private static final String SHORT_NAME = "entity.connector*Type";
-    private final IArchetypeService service;
-
-    private Map<Long, Connector> senders = Collections.synchronizedMap(new HashMap<Long, Connector>());
-    private final IArchetypeServiceListener listener;
-
-    public ConnectorsImpl(IArchetypeService service) {
-        this.service = service;
-        listener = new AbstractArchetypeServiceListener() {
-            @Override
-            public void saved(IMObject object) {
-                addConnector(object);
-            }
-
-            @Override
-            public void removed(IMObject object) {
-                removeConnector(object);
-            }
-        };
-        service.addListener(SHORT_NAME, listener);
-    }
+public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> implements Connectors {
 
     /**
-     * Invoked by a BeanFactory on destruction of a singleton.
+     * The connectors, keyed on id.
      */
-    @Override
-    public void destroy() {
-        service.removeListener(SHORT_NAME, listener);
+    private final Map<Long, State> connectors = new HashMap<Long, State>();
+
+    private static final String SENDER_HL7_MLLP = "entity.connectorSenderHL7MLLPType";
+
+    private static final String RECEIVER_HL7_MLLP = "entity.connectorReceiverHL7MLLPType";
+
+    private static final String SHORT_NAME = "entity.connector*Type";
+
+
+    /**
+     * Constructs a {@link ConnectorsImpl}.
+     *
+     * @param service the archetype service
+     */
+    public ConnectorsImpl(IArchetypeService service) {
+        super(service, SHORT_NAME, Entity.class);
     }
 
     /**
@@ -81,10 +67,16 @@ public class ConnectorsImpl implements Connectors, DisposableBean {
      */
     @Override
     public Connector getConnector(IMObjectReference reference) {
-        Connector connector = senders.get(reference.getId());
-        if (connector == null) {
-            IMObject object = service.get(reference);
-            if (object != null && object.isActive()) {
+        Connector connector = null;
+        State state;
+        synchronized (connectors) {
+            state = connectors.get(reference.getId());
+        }
+        if (state != null) {
+            connector = state.connector;
+        } else {
+            Entity object = get(reference);
+            if (object != null) {
                 connector = addConnector(object);
             }
         }
@@ -99,7 +91,7 @@ public class ConnectorsImpl implements Connectors, DisposableBean {
      */
     @Override
     public List<Connector> getSenders(Party location) {
-        EntityBean bean = new EntityBean(location, service);
+        EntityBean bean = new EntityBean(location, getService());
         List<IMObjectReference> refs = bean.getNodeTargetEntityRefs("connectors");
         List<Connector> result = new ArrayList<Connector>();
         for (IMObjectReference ref : refs) {
@@ -113,17 +105,68 @@ public class ConnectorsImpl implements Connectors, DisposableBean {
         return result;
     }
 
-    private Connector addConnector(IMObject object) {
-        Connector connector = null;
-        if (TypeHelper.isA(object, SENDER_HL7_MLLP)) {
-            connector = new MLLPSender((Entity) object, service);
-            senders.put(object.getId(), connector);
+    /**
+     * Adds an object to the cache.
+     * <p/>
+     * Implementations may ignore the object if it is older than any cached instance, or is inactive
+     *
+     * @param object the object to add
+     */
+    @Override
+    protected void add(Entity object) {
+        addConnector(object);
+    }
+
+    /**
+     * Removes an object.
+     *
+     * @param object the object to remove
+     */
+    @Override
+    protected void remove(Entity object) {
+        synchronized (connectors) {
+            connectors.remove(object.getId());
         }
-        return connector;
     }
 
-    private void removeConnector(IMObject object) {
-        senders.remove(object.getId());
+    private Connector addConnector(Entity object) {
+        Connector result = null;
+        if (!object.isActive()) {
+            remove(object);
+        } else {
+            synchronized (connectors) {
+                State state = connectors.get(object.getId());
+                if (state == null || state.version < object.getVersion()) {
+                    result = create(object);
+                    if (result != null) {
+                        connectors.put(object.getId(), new State(result, object.getVersion()));
+                    }
+                }
+            }
+        }
+        return result;
     }
 
+    private Connector create(Entity object) {
+        Connector result = null;
+        if (TypeHelper.isA(object, SENDER_HL7_MLLP)) {
+            result = MLLPSender.create(object, getService());
+        } else if (TypeHelper.isA(object, RECEIVER_HL7_MLLP)) {
+            result = MLLPReceiver.create(object, getService());
+        }
+        return result;
+    }
+
+    private static class State {
+
+        private final long version;
+
+        private final Connector connector;
+
+        public State(Connector connector, long version) {
+            this.connector = connector;
+            this.version = version;
+        }
+
+    }
 }

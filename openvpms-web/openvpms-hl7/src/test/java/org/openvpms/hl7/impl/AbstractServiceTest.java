@@ -59,7 +59,8 @@ public abstract class AbstractServiceTest extends AbstractMessageTest {
     public void setUp() {
         super.setUp();
 
-        sender = new MLLPSender("dummy", 2026, "VPMS", "Main Clinic", "Cubex", "Cubex");
+        sender = new MLLPSender("dummy", 2026, "VPMS", "Main Clinic", "Cubex", "Cubex", true, true,
+                                new IMObjectReference("entity.connectorSenderHL7MLLPType", -1));
 
         connectors = new Connectors() {
 

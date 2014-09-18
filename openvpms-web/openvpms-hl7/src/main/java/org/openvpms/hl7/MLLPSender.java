@@ -16,59 +16,136 @@
 
 package org.openvpms.hl7;
 
+import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 /**
- * Enter description.
+ * HLL7 MLLP Sender.
  *
  * @author Tim Anderson
  */
 public class MLLPSender extends Connector {
 
-    private String host;
+    /**
+     * The host to connect to.
+     */
+    private final String host;
 
-    private int port;
+    /**
+     * The port to connect to.
+     */
+    private final int port;
+
+    /**
+     * Determines if milliseconds should be included in date/times.
+     */
+    private final boolean includeMillis;
+
+    /**
+     * Determines if time/zones should be included in date/times.
+     */
+    private final boolean includeTimeZone;
 
     private final IMObjectReference reference;
 
+
+    /**
+     * Constructs an {@link MLLPSender}.
+     *
+     * @param host                 the host to connect to
+     * @param port                 the port to connect to
+     * @param sendingApplication   the sending application
+     * @param sendingFacility      the sending facility
+     * @param receivingApplication the receiving application
+     * @param receivingFacility    the receiving facility
+     * @param reference
+     */
     public MLLPSender(String host, int port, String sendingApplication, String sendingFacility,
-                      String receivingApplication, String receivingFacility) {
-        setHost(host);
-        setPort(port);
-        setSendingApplication(sendingApplication);
-        setSendingFacility(sendingFacility);
-        setReceivingApplication(receivingApplication);
-        setReceivingFacility(receivingFacility);
-        reference = new IMObjectReference("entity.connectorSenderHL7MLLPType", -1);
+                      String receivingApplication, String receivingFacility, IMObjectReference reference) {
+        this(host, port, sendingApplication, sendingFacility, receivingApplication, receivingFacility, true,
+             true, reference);
     }
 
-    public MLLPSender(Entity object, IArchetypeService service) {
+    public MLLPSender(String host, int port, String sendingApplication, String sendingFacility,
+                      String receivingApplication, String receivingFacility, boolean includeMillis,
+                      boolean includeTimeZone, IMObjectReference reference) {
+        super(sendingApplication, sendingFacility, receivingApplication, receivingFacility);
+        this.host = host;
+        this.port = port;
+        this.includeMillis = includeMillis;
+        this.includeTimeZone = includeTimeZone;
+        this.reference = reference;
+    }
+
+    /**
+     * Creates an {@link MLLPSender} from an <em>entity.connectorSenderHL7MLLPType</em>.
+     *
+     * @param object  the configuration
+     * @param service the archetype service
+     * @return a new {@link MLLPSender}
+     */
+    public static MLLPSender create(Entity object, IArchetypeService service) {
         IMObjectBean bean = new IMObjectBean(object, service);
-        setHost(bean.getString("host"));
-        setPort(bean.getInt("port"));
-        setSendingApplication(bean.getString("sendingApplication"));
-        setReceivingApplication(bean.getString("receivingApplication"));
-        setReceivingFacility(bean.getString("receivingFacility"));
-        reference = object.getObjectReference();
+        return new MLLPSender(bean.getString("host"), bean.getInt("port"), bean.getString("sendingApplication"),
+                              bean.getString("sendingFacility"), bean.getString("receivingApplication"),
+                              bean.getString("receivingFacility"), bean.getBoolean("includeMillis"),
+                              bean.getBoolean("includeTimeZone"), object.getObjectReference());
     }
 
+    /**
+     * Returns the host to connect to.
+     *
+     * @return the host
+     */
     public String getHost() {
         return host;
     }
 
-    public void setHost(String host) {
-        this.host = host;
-    }
-
+    /**
+     * Returns the port to connect to.
+     *
+     * @return the port
+     */
     public int getPort() {
         return port;
     }
 
-    public void setPort(int port) {
-        this.port = port;
+    /**
+     * Determines if milliseconds should be included in date/times.
+     *
+     * @return {@code true} if milliseconds should be included in date/times
+     */
+    public boolean isIncludeMillis() {
+        return includeMillis;
+    }
+
+    /**
+     * Determines if timezones should be included in date/times.
+     *
+     * @return {@code true} if timezones should be included in date/times
+     */
+    public boolean isIncludeTimeZone() {
+        return includeTimeZone;
+    }
+
+    /**
+     * Indicates whether some other object is "equal to" this one.
+     *
+     * @param obj the reference object with which to compare.
+     * @return {@code true} if this object is the same as the obj argument; {@code false} otherwise.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        boolean result = super.equals(obj) && obj instanceof MLLPSender;
+        if (result) {
+            MLLPSender other = (MLLPSender) obj;
+            result = port == other.port && ObjectUtils.equals(host, other.host);
+        }
+        return result;
     }
 
     /**
@@ -79,5 +156,16 @@ public class MLLPSender extends Connector {
     @Override
     public IMObjectReference getReference() {
         return reference;
+    }
+
+    /**
+     * Builds the hash code.
+     *
+     * @param builder the hash code builder
+     * @return the builder
+     */
+    @Override
+    protected HashCodeBuilder hashCode(HashCodeBuilder builder) {
+        return super.hashCode(builder).append(host).append(port);
     }
 }

@@ -19,11 +19,11 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean name="hl7Connectors" class="org.openvpms.hl7.impl.ConnectorsImpl">
+    <bean id="hl7Connectors" class="org.openvpms.hl7.impl.ConnectorsImpl">
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
-    <bean name="hl7messageDispatcher" class="org.openvpms.hl7.impl.MessageDispatcherImpl"/>
+    <bean id="hl7messageDispatcher" class="org.openvpms.hl7.impl.MessageDispatcherImpl"/>
 
     <bean class="org.openvpms.hl7.impl.AdmissionServiceImpl">
         <constructor-arg ref="archetypeRuleService"/>
@@ -37,6 +37,17 @@
         <constructor-arg ref="lookupService"/>
         <constructor-arg ref="hl7Connectors"/>
         <constructor-arg ref="hl7messageDispatcher"/>
+    </bean>
+
+    <bean id="hl7Parmacies" class="org.openvpms.hl7.impl.PharmaciesImpl">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean class="org.openvpms.hl7.impl.PharmacyDispenseServiceImpl">
+        <constructor-arg ref="hl7Parmacies"/>
+        <constructor-arg ref="hl7Connectors"/>
+        <constructor-arg ref="hl7messageDispatcher"/>
+        <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
     <bean class="org.openvpms.hl7.PatientContextFactory">

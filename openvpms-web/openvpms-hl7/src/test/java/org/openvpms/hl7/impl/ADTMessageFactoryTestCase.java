@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.DefaultHapiContext;
@@ -15,6 +31,7 @@ import org.openvpms.hl7.PatientContext;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
+import static org.openvpms.hl7.impl.PopulateHelper.populateDTM;
 
 /**
  * Tests the {@link ADTMessageFactory} class.
@@ -48,28 +65,28 @@ public class ADTMessageFactoryTestCase extends AbstractMessageTest {
     }
 
     /**
-     * Tests the {@link ADTMessageFactory#createAdmit(PatientContext)} method.
+     * Tests the {@link ADTMessageFactory#createAdmit(PatientContext, MessageConfig)} method.
      *
      * @throws HL7Exception for any HL7 error
      */
     @Test
     public void testCreateAdmit() throws HL7Exception {
-        String expected = "MSH|^~\\&|||||20140825090000+1000||ADT^A01^ADT_A01|1200022|P|2.5\r" +
+        String expected = "MSH|^~\\&|||||20140825090000.105+1000||ADT^A01^ADT_A01|1200022|P|2.5\r" +
                           "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r" +
                           "AL1|1||||Penicillin\r" +
                           "AL1|2||||Pollen\r";
-
-        Message admit = messageFactory.createAdmit(getContext());
+        MessageConfig config = new MessageConfig();
+        Message admit = messageFactory.createAdmit(getContext(), config);
         MSH msh = (MSH) admit.get("MSH");
-        msh.getDateTimeOfMessage().getTime().setValue(getDatetime("2014-08-25 09:00:00"));
+        msh.getDateTimeOfMessage().getTime().setValue(getDatetime("2014-08-25 09:00:00.105"));
         String encode = admit.encode();
         assertEquals(expected, encode);
     }
 
     /**
-     * Tests the {@link ADTMessageFactory#createCancelAdmit(PatientContext)} method.
+     * Tests the {@link ADTMessageFactory#createCancelAdmit(PatientContext, MessageConfig)} method.
      *
      * @throws HL7Exception for any HL7 error
      */
@@ -79,40 +96,43 @@ public class ADTMessageFactoryTestCase extends AbstractMessageTest {
                           "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r";
-
-        Message admit = messageFactory.createCancelAdmit(getContext());
+        MessageConfig config = new MessageConfig();
+        config.setIncludeMillis(false);
+        Message admit = messageFactory.createCancelAdmit(getContext(), config);
         MSH msh = (MSH) admit.get("MSH");
-        msh.getDateTimeOfMessage().getTime().setValue(getDatetime("2014-08-25 09:00:00"));
+        populateDTM(msh.getDateTimeOfMessage().getTime(), getDatetime("2014-08-25 09:00:00.105"), config);
         String encode = admit.encode();
         assertEquals(expected, encode);
     }
 
     /**
-     * Tests the {@link ADTMessageFactory#createDischarge(PatientContext)} method.
+     * Tests the {@link ADTMessageFactory#createDischarge(PatientContext, MessageConfig)} method.
      *
      * @throws HL7Exception for any HL7 error
      */
     @Test
     public void testCreateDischarge() throws HL7Exception {
-        String expected = "MSH|^~\\&|||||20140825090000+1000||ADT^A03^ADT_A03|1200022|P|2.5\r" +
-                          "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
-                          "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000|20140825100500+1000\r" +
+        String expected = "MSH|^~\\&|||||20140825090000||ADT^A03^ADT_A03|1200022|P|2.5\r" +
+                          "PID|1||1001||Bar^Fido||20140701000000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500|20140825100500\r" +
                           "AL1|1||||Penicillin\r" +
                           "AL1|2||||Pollen\r" +
-                          "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r";
-
+                          "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700\r";
+        MessageConfig config = new MessageConfig();
+        config.setIncludeMillis(false);
+        config.setIncludeTimeZone(false);
         PatientContext context = getContext();
         Act visit = context.getVisit();
         visit.setActivityEndTime(getDatetime("2014-08-25 10:05:00").getTime());
-        Message admit = messageFactory.createDischarge(context);
+        Message admit = messageFactory.createDischarge(context, config);
         MSH msh = (MSH) admit.get("MSH");
-        msh.getDateTimeOfMessage().getTime().setValue(getDatetime("2014-08-25 09:00:00"));
+        populateDTM(msh.getDateTimeOfMessage().getTime(), getDatetime("2014-08-25 09:00:00.105"), config);
         String encode = admit.encode();
         assertEquals(expected, encode);
     }
 
     /**
-     * Tests the {@link ADTMessageFactory#createUpdate(PatientContext)}.
+     * Tests the {@link ADTMessageFactory#createUpdate(PatientContext, MessageConfig)}.
      *
      * @throws HL7Exception for any HL7 error
      */
@@ -125,7 +145,8 @@ public class ADTMessageFactoryTestCase extends AbstractMessageTest {
                           "AL1|1||||Penicillin\r" +
                           "AL1|2||||Pollen\r";
 
-        Message admit = messageFactory.createUpdate(getContext());
+        MessageConfig config = new MessageConfig();
+        Message admit = messageFactory.createUpdate(getContext(), config);
         MSH msh = (MSH) admit.get("MSH");
         msh.getDateTimeOfMessage().getTime().setValue(getDatetime("2014-08-25 09:00:00"));
         String encode = admit.encode();
