@@ -125,8 +125,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                 }
             });
 
-            orderPlacer = new PharmacyOrderPlacer(customer, location, getLayoutContext().getCache(),
-                                                  ServiceHelper.getBean(PharmacyOrderService.class));
+            orderPlacer = createPharmacyOrderPlacer(customer, location);
             orderPlacer.initialise(getItems().getActs());
         }
     }
@@ -335,6 +334,24 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
+     * Deletes the object.
+     * <p/>
+     * This uses {@link #deleteChildren()} to delete the children prior to
+     * invoking {@link #deleteObject()}.
+     *
+     * @return {@code true} if the delete was successful
+     * @throws IllegalStateException if the act is POSTED
+     */
+    @Override
+    protected boolean doDelete() {
+        boolean deleted = super.doDelete();
+        if (deleted && orderPlacer != null) {
+            orderPlacer.cancel();
+        }
+        return deleted;
+    }
+
+    /**
      * Links the charge items to their corresponding clinical events.
      *
      * @param changes the patient history changes
@@ -417,6 +434,18 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     protected ActRelationshipCollectionEditor createDocumentsEditor(Act act, CollectionProperty documents) {
         return (ActRelationshipCollectionEditor) IMObjectCollectionEditorFactory.create(documents, act,
                                                                                         getLayoutContext());
+    }
+
+    /**
+     * Creates a new {@link PharmacyOrderPlacer}.
+     *
+     * @param customer the customer
+     * @param location the practice location
+     * @return a new pharmacy order placer
+     */
+    protected PharmacyOrderPlacer createPharmacyOrderPlacer(Party customer, Party location) {
+        return new PharmacyOrderPlacer(customer, location, getLayoutContext().getCache(),
+                                       ServiceHelper.getBean(PharmacyOrderService.class));
     }
 
     /**

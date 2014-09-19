@@ -59,11 +59,15 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelper.checkOrder;
+import static org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelper.createPharmacy;
+import static org.openvpms.web.workspace.customer.charge.TestPharmacyOrderService.Order;
 
 /**
  * Tests the {@link CustomerChargeActEditor} class.
@@ -410,6 +414,8 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
 
     /**
      * Verifies that the {@link CustomerChargeActEditor#delete()} method deletes an invoice and its item.
+     * <p/>
+     * If any pharmacy orders have been created, these are cancelled.
      */
     @Test
     public void testDeleteInvoice() {
@@ -419,12 +425,13 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         BigDecimal itemTotal = BigDecimal.valueOf(11);
         BigDecimal total = itemTotal.multiply(BigDecimal.valueOf(3));
 
-        Product product1 = createProduct(ProductArchetypes.MEDICATION, fixedPrice);
+        Entity pharmacy = CustomerChargeTestHelper.createPharmacy();
+        Product product1 = createProduct(ProductArchetypes.MEDICATION, fixedPrice, pharmacy);
         Entity reminderType1 = addReminder(product1);
         Entity investigationType1 = addInvestigation(product1);
         Entity template1 = addTemplate(product1);
 
-        Product product2 = createProduct(ProductArchetypes.MERCHANDISE, fixedPrice);
+        Product product2 = createProduct(ProductArchetypes.MERCHANDISE, fixedPrice, pharmacy);
         Entity reminderType2 = addReminder(product2);
         Entity investigationType2 = addInvestigation(product2);
         Entity investigationType3 = addInvestigation(product2);
@@ -452,6 +459,10 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         FinancialAct item3 = (FinancialAct) item3Editor.getObject();
 
         assertTrue(SaveHelper.save(editor));
+        List<Order> orders = editor.getPharmacyOrderService().getOrders();
+        assertEquals(2, orders.size());
+        editor.getPharmacyOrderService().clear();
+
         BigDecimal balance = (charge.isCredit()) ? total.negate() : total;
         checkBalance(customer, balance, BigDecimal.ZERO);
 
@@ -495,6 +506,14 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         for (FinancialAct item : items) {
             assertNull(get(item));
         }
+
+        orders = editor.getPharmacyOrderService().getOrders(true);
+        assertEquals(2, orders.size());
+        checkOrder(orders.get(0), Order.Type.CANCEL, patient, product1, quantity, item1.getId(),
+                   item1.getActivityStartTime(), clinician, pharmacy);
+        checkOrder(orders.get(1), Order.Type.CANCEL, patient, product2, quantity, item2.getId(),
+                   item2.getActivityStartTime(), clinician, pharmacy);
+
         assertNull(get(investigation1));
         assertNotNull(get(investigation2));
         assertNull(get(investigation3));
@@ -780,6 +799,77 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
+     * Verifies that changing a quantity on a pharmacy order sends an update.
+     */
+    @Test
+    public void testChangePharmacyOrderQuantity() {
+        Entity pharmacy = createPharmacy();
+        Product product = createProduct(ProductArchetypes.MEDICATION, TEN, pharmacy);
+
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        ChargeEditorQueue queue = editor.getQueue();
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        CustomerChargeActItemEditor itemEditor = addItem(editor, patient, product, TEN, queue);
+        Act item = (Act) itemEditor.getObject();
+        assertTrue(SaveHelper.save(editor));
+
+        List<Order> orders = editor.getPharmacyOrderService().getOrders(true);
+        assertEquals(1, orders.size());
+        checkOrder(orders.get(0), Order.Type.CREATE, patient, product, TEN, item.getId(),
+                   item.getActivityStartTime(), clinician, pharmacy);
+        editor.getPharmacyOrderService().clear();
+
+        itemEditor.setQuantity(ONE);
+        assertTrue(SaveHelper.save(editor));
+
+        orders = editor.getPharmacyOrderService().getOrders(true);
+        assertEquals(1, orders.size());
+        checkOrder(orders.get(0), Order.Type.UPDATE, patient, product, ONE, item.getId(),
+                   item.getActivityStartTime(), clinician, pharmacy);
+    }
+
+    /**
+     * Verifies that deleting an invoice item with a pharmacy order cancels the order.
+     */
+    @Test
+    public void testDeleteInvoiceItemWithPharmacyOrder() {
+        Entity pharmacy = createPharmacy();
+        Product product1 = createProduct(ProductArchetypes.MEDICATION, TEN, pharmacy);
+        Product product2 = createProduct(ProductArchetypes.MERCHANDISE, TEN, pharmacy);
+
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        ChargeEditorQueue queue = editor.getQueue();
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        Act item1 = (Act) addItem(editor, patient, product1, TEN, queue).getObject();
+        Act item2 = (Act) addItem(editor, patient, product2, ONE, queue).getObject();
+        assertTrue(SaveHelper.save(editor));
+
+        List<Order> orders = editor.getPharmacyOrderService().getOrders(true);
+        assertEquals(2, orders.size());
+        checkOrder(orders.get(0), Order.Type.CREATE, patient, product1, TEN, item1.getId(),
+                   item1.getActivityStartTime(), clinician, pharmacy);
+        checkOrder(orders.get(1), Order.Type.CREATE, patient, product2, ONE, item2.getId(),
+                   item2.getActivityStartTime(), clinician, pharmacy);
+        editor.getPharmacyOrderService().clear();
+
+        editor.delete(item1);
+        assertTrue(SaveHelper.save(editor));
+
+        orders = editor.getPharmacyOrderService().getOrders(true);
+        assertEquals(1, orders.size());
+        checkOrder(orders.get(0), Order.Type.CANCEL, patient, product2, ONE, item2.getId(),
+                   item2.getActivityStartTime(), clinician, pharmacy);
+    }
+
+    /**
      * Verifies that an unsaved charge item can be deleted, when there is a prescription associated with the item's
      * product.
      */
@@ -888,16 +978,17 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         BigDecimal itemTotal = BigDecimal.valueOf(11);
         BigDecimal tax = itemTax.multiply(BigDecimal.valueOf(3));
         BigDecimal total = itemTotal.multiply(BigDecimal.valueOf(3));
+        Entity pharmacy = CustomerChargeTestHelper.createPharmacy();
 
         boolean invoice = TypeHelper.isA(charge, CustomerAccountArchetypes.INVOICE);
 
-        Product product1 = createProduct(ProductArchetypes.MEDICATION, fixedPrice);
+        Product product1 = createProduct(ProductArchetypes.MEDICATION, fixedPrice, pharmacy);
         addReminder(product1);
         addInvestigation(product1);
         addTemplate(product1);
         int product1Acts = invoice ? 4 : 0;
 
-        Product product2 = createProduct(ProductArchetypes.MERCHANDISE, fixedPrice);
+        Product product2 = createProduct(ProductArchetypes.MERCHANDISE, fixedPrice, pharmacy);
         addReminder(product2);
         addInvestigation(product2);
         addTemplate(product2);
@@ -920,8 +1011,8 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         assertTrue(editor.isValid());
 
         BigDecimal quantity = ONE;
-        addItem(editor, patient, product1, quantity, queue);
-        addItem(editor, patient, product2, quantity, queue);
+        Act item1 = (Act) addItem(editor, patient, product1, quantity, queue).getObject();
+        Act item2 = (Act) addItem(editor, patient, product2, quantity, queue).getObject();
         addItem(editor, patient, product3, quantity, queue);
 
         assertTrue(editor.isValid());
@@ -931,6 +1022,18 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         editor.setStatus(ActStatus.POSTED);
         assertTrue(editor.save());
         checkBalance(customer, BigDecimal.ZERO, balance);
+
+        if (invoice) {
+            List<Order> orders = editor.getPharmacyOrderService().getOrders(true);
+            assertEquals(2, orders.size());
+            checkOrder(orders.get(0), Order.Type.CREATE, patient, product1, quantity, item1.getId(),
+                       item1.getActivityStartTime(), clinician, pharmacy);
+            checkOrder(orders.get(1), Order.Type.CREATE, patient, product2, quantity, item2.getId(),
+                       item2.getActivityStartTime(), clinician, pharmacy);
+            editor.getPharmacyOrderService().clear();
+        } else {
+            assertNull(editor.getPharmacyOrderService());
+        }
 
         charge = get(charge);
         ActBean bean = new ActBean(charge);
