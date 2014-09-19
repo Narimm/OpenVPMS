@@ -24,7 +24,9 @@
         <node name="description" type="java.lang.String"
               path="/description" hidden="true"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
-        <node name="connection" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
-              minCardinality="0" maxCardinality="1" filter="entityLink.pharmacyConnector"/>
+        <node name="orderConnection" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="0" maxCardinality="1" filter="entityLink.pharmacyOrderConnector"/>
+        <node name="dispenseConnection" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="0" maxCardinality="1" filter="entityLink.pharmacyDispenseConnector"/>
     </archetype>
 </archetypes>
