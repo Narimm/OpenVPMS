@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -41,8 +42,10 @@ import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
@@ -250,4 +253,41 @@ public class CustomerChargeTestHelper {
         return createPrice(product, ProductArchetypes.UNIT_PRICE, cost, price, practice);
     }
 
+    /**
+     * Creates a new <em>party.organisationPharmacy</em>.
+     *
+     * @return a new pharmacy
+     */
+    public static Entity createPharmacy() {
+        Entity pharmacy = (Entity) TestHelper.create("party.organisationPharmacy");
+        pharmacy.setName("ZPharmacy");
+        TestHelper.save(pharmacy);
+        return pharmacy;
+    }
+
+    /**
+     * Verifies an order matches that expected.
+     *
+     * @param order             the order
+     * @param type              the expected type
+     * @param patient           the expected patient
+     * @param product           the expected product
+     * @param quantity          the expected quantity
+     * @param placerOrderNumber the expected placer order number
+     * @param date              the expected date
+     * @param clinician         the expected clinician
+     * @param pharmacy          the expected pharmacy
+     */
+    public static void checkOrder(TestPharmacyOrderService.Order order, TestPharmacyOrderService.Order.Type type,
+                                  Party patient, Product product, BigDecimal quantity,
+                                  long placerOrderNumber, Date date, User clinician, Entity pharmacy) {
+        assertEquals(type, order.getType());
+        assertEquals(patient, order.getPatient());
+        assertEquals(product, order.getProduct());
+        assertTrue(quantity.compareTo(order.getQuantity()) == 0);
+        assertEquals(placerOrderNumber, order.getPlacerOrderNumber());
+        assertEquals(date, order.getDate());
+        assertEquals(clinician, order.getClinician());
+        assertEquals(pharmacy, order.getPharmacy());
+    }
 }

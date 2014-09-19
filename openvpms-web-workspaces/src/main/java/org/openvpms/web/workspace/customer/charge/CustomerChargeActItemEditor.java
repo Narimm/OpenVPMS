@@ -550,12 +550,12 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     protected void productModified(Product product) {
         super.productModified(product);
 
+        // update the layout if nodes require filtering
+        updateLayout(product);
+
         updatePatientMedication(product);
         updateInvestigations(product);
         updateReminders(product);
-
-        // update the layout if nodes require filtering
-        updateLayout(product);
 
         Property discount = getProperty("discount");
         discount.setValue(BigDecimal.ZERO);

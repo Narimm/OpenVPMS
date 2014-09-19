@@ -26,26 +26,27 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.hl7.PatientContext;
-import org.openvpms.hl7.PharmacyOrderService;
 import org.openvpms.web.component.im.util.DefaultIMObjectCache;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.junit.Assert.assertEquals;
+import static org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelper.checkOrder;
+import static org.openvpms.web.workspace.customer.charge.TestPharmacyOrderService.Order.Type.CANCEL;
+import static org.openvpms.web.workspace.customer.charge.TestPharmacyOrderService.Order.Type.CREATE;
+import static org.openvpms.web.workspace.customer.charge.TestPharmacyOrderService.Order.Type.UPDATE;
 
 /**
  * Tests the {@link PharmacyOrderPlacer}.
@@ -77,7 +78,7 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
     /**
      * The order service.
      */
-    private OrderService service;
+    private TestPharmacyOrderService service;
 
     /**
      * The order placer.
@@ -95,16 +96,9 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
         patient = TestHelper.createPatient(true);
         location = TestHelper.createLocation();
         clinician = TestHelper.createClinician();
-        pharmacy = createPharmacy();
-        service = new OrderService();
+        pharmacy = CustomerChargeTestHelper.createPharmacy();
+        service = new TestPharmacyOrderService();
         placer = new PharmacyOrderPlacer(customer, location, new DefaultIMObjectCache(), service);
-    }
-
-    private Entity createPharmacy() {
-        Entity pharmacy = (Entity) create("party.organisationPharmacy");
-        pharmacy.setName("ZPharmacy");
-        save(pharmacy);
-        return pharmacy;
     }
 
     /**
@@ -124,12 +118,12 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
 
         placer.order(Arrays.asList(item1, item2, item3), changes);
 
-        List<Order> orders = service.getOrders();
+        List<TestPharmacyOrderService.Order> orders = service.getOrders();
         assertEquals(2, orders.size());
-        checkOrder(orders.get(0), Order.Type.CREATE, patient, product1, ONE, item1.getId(),
-                   item1.getActivityStartTime(), clinician, pharmacy);
-        checkOrder(orders.get(1), Order.Type.CREATE, patient, product2, TEN, item2.getId(),
-                   item2.getActivityStartTime(), clinician, pharmacy);
+        checkOrder(orders.get(0), CREATE, patient, product1, ONE, item1.getId(), item1.getActivityStartTime(),
+                   clinician, pharmacy);
+        checkOrder(orders.get(1), CREATE, patient, product2, TEN, item2.getId(), item2.getActivityStartTime(),
+                   clinician, pharmacy);
     }
 
     /**
@@ -145,24 +139,25 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
         placer.initialise(items);
 
         PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
-        item.setQuantity(BigDecimal.TEN);
+        item.setQuantity(TEN);
 
         placer.order(items, changes);
 
-        List<Order> orders = service.getOrders();
+        List<TestPharmacyOrderService.Order> orders = service.getOrders();
         assertEquals(1, orders.size());
-        checkOrder(orders.get(0), Order.Type.UPDATE, patient, product, TEN, item.getId(),
+        checkOrder(orders.get(0), UPDATE, patient, product, TEN, item.getId(),
                    item.getActivityStartTime(), clinician, pharmacy);
     }
 
     /**
-     * Verifies that when a patient is changed, an update order is placed.
+     * Verifies that when a patient is changed, a cancellation and new order is generated.
      */
     @Test
     public void testChangePatient() {
         Product product = createProduct(pharmacy);
+        Act event1 = PatientTestHelper.createEvent(patient, clinician);
+        FinancialAct item = createItem(product, ONE, event1);
         Party patient2 = TestHelper.createPatient(true);
-        FinancialAct item = createItem(product, ONE);
 
         List<Act> items = Arrays.<Act>asList(item);
         placer.initialise(items);
@@ -171,15 +166,17 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
         ActBean bean = new ActBean(item);
         bean.setNodeParticipant("patient", patient2);
 
-        Act event = PatientTestHelper.createEvent(patient2, clinician);
-        addChargeItem(event, item);
-        save(event, item);
+        Act event2 = PatientTestHelper.createEvent(patient2, clinician);
+        addChargeItem(event2, item);
+        save(event2, item);
 
         placer.order(items, changes);
 
-        List<Order> orders = service.getOrders();
-        assertEquals(1, orders.size());
-        checkOrder(orders.get(0), Order.Type.UPDATE, patient2, product, ONE, item.getId(),
+        List<TestPharmacyOrderService.Order> orders = service.getOrders();
+        assertEquals(2, orders.size());
+        checkOrder(orders.get(0), CANCEL, patient, product, ONE, item.getId(),
+                   item.getActivityStartTime(), clinician, pharmacy);
+        checkOrder(orders.get(1), CREATE, patient2, product, ONE, item.getId(),
                    item.getActivityStartTime(), clinician, pharmacy);
     }
 
@@ -202,9 +199,11 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
 
         placer.order(items, changes);
 
-        List<Order> orders = service.getOrders();
-        assertEquals(1, orders.size());
-        checkOrder(orders.get(0), Order.Type.UPDATE, patient, product2, ONE, item.getId(),
+        List<TestPharmacyOrderService.Order> orders = service.getOrders();
+        assertEquals(2, orders.size());
+        checkOrder(orders.get(0), CANCEL, patient, product1, ONE, item.getId(),
+                   item.getActivityStartTime(), clinician, pharmacy);
+        checkOrder(orders.get(1), CREATE, patient, product2, ONE, item.getId(),
                    item.getActivityStartTime(), clinician, pharmacy);
     }
 
@@ -227,9 +226,9 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
 
         placer.order(items, changes);
 
-        List<Order> orders = service.getOrders();
+        List<TestPharmacyOrderService.Order> orders = service.getOrders();
         assertEquals(1, orders.size());
-        checkOrder(orders.get(0), Order.Type.CANCEL, patient, product1, ONE, item.getId(),
+        checkOrder(orders.get(0), CANCEL, patient, product1, ONE, item.getId(),
                    item.getActivityStartTime(), clinician, pharmacy);
     }
 
@@ -246,7 +245,7 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
         List<Act> items = Arrays.<Act>asList(item);
         placer.initialise(items);
 
-        Entity pharmacy2 = createPharmacy();
+        Entity pharmacy2 = CustomerChargeTestHelper.createPharmacy();
         Product product2 = createProduct(pharmacy2);
 
         ActBean bean = new ActBean(item);
@@ -255,11 +254,11 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
         PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
         placer.order(items, changes);
 
-        List<Order> orders = service.getOrders();
+        List<TestPharmacyOrderService.Order> orders = service.getOrders();
         assertEquals(2, orders.size());
-        checkOrder(orders.get(0), Order.Type.CANCEL, patient, product1, ONE, item.getId(),
+        checkOrder(orders.get(0), CANCEL, patient, product1, ONE, item.getId(),
                    item.getActivityStartTime(), clinician, pharmacy);
-        checkOrder(orders.get(1), Order.Type.CREATE, patient, product2, ONE, item.getId(),
+        checkOrder(orders.get(1), CREATE, patient, product2, ONE, item.getId(),
                    item.getActivityStartTime(), clinician, pharmacy2);
     }
 
@@ -283,35 +282,59 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
 
         placer.order(items, changes);
 
-        List<Order> orders = service.getOrders();
+        List<TestPharmacyOrderService.Order> orders = service.getOrders();
         assertEquals(1, orders.size());
-        checkOrder(orders.get(0), Order.Type.UPDATE, patient, product, ONE, item.getId(),
+        checkOrder(orders.get(0), UPDATE, patient, product, ONE, item.getId(),
                    item.getActivityStartTime(), clinician2, pharmacy);
     }
 
     /**
-     * Verifies an order matches that expected.
-     *
-     * @param order             the order
-     * @param type              the expected type
-     * @param patient           the expected patient
-     * @param product           the expected product
-     * @param quantity          the expected quantity
-     * @param placerOrderNumber the expected placer order number
-     * @param date              the expected date
-     * @param clinician         the expected clinician
-     * @param pharmacy          the expected pharmacy
+     * Verifies that if an item is removed, a cancellation is generated.
      */
-    private void checkOrder(Order order, Order.Type type, Party patient, Product product, BigDecimal quantity,
-                            long placerOrderNumber, Date date, User clinician, Entity pharmacy) {
-        assertEquals(type, order.type);
-        assertEquals(patient, order.patient);
-        assertEquals(product, order.product);
-        checkEquals(quantity, order.quantity);
-        assertEquals(placerOrderNumber, order.placerOrderNumber);
-        assertEquals(date, order.date);
-        assertEquals(clinician, order.clinician);
-        assertEquals(pharmacy, order.pharmacy);
+    @Test
+    public void testOrderWithCancel() {
+        Product product1 = createProduct(pharmacy);
+        Product product2 = createProduct(pharmacy);
+        Act event = PatientTestHelper.createEvent(patient, clinician);
+        Act item1 = createItem(product1, ONE, event);
+        Act item2 = createItem(product2, TEN, event);
+
+        placer.initialise(Arrays.asList(item1));
+
+        PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
+        placer.order(Arrays.asList(item2), changes);
+
+        List<TestPharmacyOrderService.Order> orders = service.getOrders();
+        assertEquals(2, orders.size());
+        checkOrder(orders.get(0), CREATE, patient, product2, TEN, item2.getId(),
+                   item2.getActivityStartTime(), clinician, pharmacy);
+        checkOrder(orders.get(1), CANCEL, patient, product1, ONE, item1.getId(),
+                   item1.getActivityStartTime(), clinician, pharmacy);
+    }
+
+    /**
+     * Tests the {@link PharmacyOrderPlacer#cancel} method.
+     */
+    @Test
+    public void testCancel() {
+        Product product1 = createProduct(pharmacy);
+        Product product2 = createProduct(pharmacy);
+        Product product3 = TestHelper.createProduct(); // not ordered via a pharmacy
+        Act event = PatientTestHelper.createEvent(patient, clinician);
+        Act item1 = createItem(product1, ONE, event);
+        Act item2 = createItem(product2, TEN, event);
+        Act item3 = createItem(product3, BigDecimal.valueOf(2), event);
+
+        List<Act> items = Arrays.asList(item1, item2, item3);
+        placer.initialise(items);
+        placer.cancel();
+
+        List<TestPharmacyOrderService.Order> orders = service.getOrders(true);
+        assertEquals(2, orders.size());
+        checkOrder(orders.get(0), CANCEL, patient, product1, ONE, item1.getId(), item1.getActivityStartTime(),
+                   clinician, pharmacy);
+        checkOrder(orders.get(1), CANCEL, patient, product2, TEN, item2.getId(), item2.getActivityStartTime(),
+                   clinician, pharmacy);
     }
 
     /**
@@ -335,6 +358,10 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
      * @param item  the charge item
      */
     private void addChargeItem(Act event, FinancialAct item) {
+        ActBean itemBean = new ActBean(item);
+        for (IMObject object : itemBean.getValues("event")) {
+            itemBean.removeValue("event", object);
+        }
         ActBean bean = new ActBean(event);
         bean.addNodeRelationship("chargeItems", item);
         save(event, item);
@@ -371,107 +398,4 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
         return product;
     }
 
-    private static class Order {
-
-        enum Type {
-            CREATE,
-            UPDATE,
-            CANCEL
-        }
-
-        private final Type type;
-
-        private final Party patient;
-
-        private final Product product;
-
-        private final BigDecimal quantity;
-
-        private final long placerOrderNumber;
-
-        private final Date date;
-
-        private final User clinician;
-
-        private final Entity pharmacy;
-
-        public Order(Type type, Party patient, Product product, BigDecimal quantity, long placerOrderNumber,
-                     Date date, User clinician, Entity pharmacy) {
-            this.type = type;
-            this.patient = patient;
-            this.product = product;
-            this.quantity = quantity;
-            this.placerOrderNumber = placerOrderNumber;
-            this.date = date;
-            this.clinician = clinician;
-            this.pharmacy = pharmacy;
-        }
-
-    }
-
-    private static class OrderService implements PharmacyOrderService {
-
-        private List<Order> orders = new ArrayList<Order>();
-
-        /**
-         * Creates an order, placing it with the specified pharmacy.
-         *
-         * @param context           the patient context
-         * @param product           the product to order
-         * @param quantity          the quantity to order
-         * @param placerOrderNumber the placer order number, to uniquely identify the order
-         * @param date              the order date
-         * @param pharmacy          the pharmacy. A <em>party.organisationPharmacy</em>
-         */
-        @Override
-        public void createOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                                Date date, Entity pharmacy) {
-            orders.add(new Order(Order.Type.CREATE, context.getPatient(), product, quantity, placerOrderNumber, date,
-                                 context.getClinician(), pharmacy));
-        }
-
-        /**
-         * Updates an order.
-         *
-         * @param context           the patient context
-         * @param product           the product to order
-         * @param quantity          the quantity to order
-         * @param placerOrderNumber the placer order number, to uniquely identify the order
-         * @param date              the order date
-         * @param pharmacy          the pharmacy. A <em>party.organisationPharmacy</em>
-         */
-        @Override
-        public void updateOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                                Date date, Entity pharmacy) {
-            orders.add(new Order(Order.Type.UPDATE, context.getPatient(), product, quantity, placerOrderNumber, date,
-                                 context.getClinician(), pharmacy));
-        }
-
-        /**
-         * Cancels an order.
-         *
-         * @param context           the patient context
-         * @param product           the product to order
-         * @param quantity          the quantity to order
-         * @param placerOrderNumber the placer order number, to uniquely identify the order
-         * @param date              the order date
-         * @param pharmacy          the pharmacy. A <em>party.organisationPharmacy</em>
-         */
-        @Override
-        public void cancelOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                                Date date, Entity pharmacy) {
-            orders.add(new Order(Order.Type.CANCEL, context.getPatient(), product, quantity, placerOrderNumber, date,
-                                 context.getClinician(), pharmacy));
-        }
-
-        /**
-         * Returns the orders.
-         *
-         * @return the orders
-         */
-        public List<Order> getOrders() {
-            return orders;
-        }
-
-    }
 }

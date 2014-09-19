@@ -18,8 +18,10 @@ package org.openvpms.web.workspace.customer.charge;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -37,6 +39,10 @@ import org.openvpms.web.component.im.util.IMObjectCache;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,11 +69,25 @@ public class PharmacyOrderPlacer {
      */
     private final IMObjectCache cache;
 
+    /**
+     * The orders, keyed on invoice item id.
+     */
     private Map<Long, Order> orders = new HashMap<Long, Order>();
 
+    /**
+     * The pharmacy order service.
+     */
     private final PharmacyOrderService service;
 
+    /**
+     * The patient context factory.
+     */
     private final PatientContextFactory factory;
+
+    /**
+     * Medical record rules, used to retrieve events.
+     */
+    private final MedicalRecordRules rules;
 
 
     /**
@@ -83,6 +103,7 @@ public class PharmacyOrderPlacer {
         this.cache = cache;
         this.service = service;
         factory = ServiceHelper.getBean(PatientContextFactory.class);
+        rules = ServiceHelper.getBean(MedicalRecordRules.class);
     }
 
     /**
@@ -101,45 +122,52 @@ public class PharmacyOrderPlacer {
 
     /**
      * Places any orders required by charge items.
+     * <p/>
+     * If items have been removed since initialisation, those items will be cancelled.
      *
      * @param items   the charge items
      * @param changes patient history changes, used to obtain patient events
      */
     public void order(List<Act> items, PatientHistoryChanges changes) {
+        List<Long> ids = new ArrayList<Long>(orders.keySet());
         for (Act act : items) {
+            long id = act.getId();
+            ids.remove(id);
             Order order = getOrder(act);
-            Order existing = orders.get(act.getId());
+            Order existing = orders.get(id);
             if (order != null) {
                 if (existing != null) {
                     if (needsCancel(existing, order)) {
-                        PatientContext context = getPatientContext(order, changes, act);
-                        service.cancelOrder(context, existing.getProduct(), existing.getQuantity(),
-                                            existing.getId(), act.getActivityStartTime(), existing.getPharmacy());
-                        createOrder(order, changes, act);
+                        cancelOrder(existing, changes);
+                        createOrder(order, changes);
                     } else if (needsUpdate(existing, order)) {
-                        PatientContext context = getPatientContext(order, changes, act);
-                        service.updateOrder(context, order.getProduct(), order.getQuantity(),
-                                            order.getId(), act.getActivityStartTime(), order.getPharmacy());
+                        updateOrder(changes, order);
                     }
                 } else {
-                    createOrder(order, changes, act);
+                    createOrder(order, changes);
                 }
+                orders.put(id, order);
             } else if (existing != null) {
                 // new product is not dispensed via a pharmacy
-                PatientContext context = getPatientContext(existing, changes, act);
-                service.cancelOrder(context, existing.getProduct(), existing.getQuantity(),
-                                    existing.getId(), act.getActivityStartTime(), existing.getPharmacy());
+                cancelOrder(existing, changes);
             }
+        }
+        for (long id : ids) {
+            Order existing = orders.remove(id);
+            cancelOrder(existing, changes);
         }
     }
 
-    public void cancel(List<Act> items, PatientHistoryChanges changes) {
-        for (Act act : items) {
-            Order order = getOrder(act);
-            if (order != null) {
-                PatientContext context = getPatientContext(order, changes, act);
+    /**
+     * Cancel orders.
+     */
+    public void cancel() {
+        Map<IMObjectReference, Act> events = new HashMap<IMObjectReference, Act>();
+        for (Order order : orders.values()) {
+            PatientContext context = getPatientContext(order, events);
+            if (context != null) {
                 service.cancelOrder(context, order.getProduct(), order.getQuantity(),
-                                    order.getId(), act.getActivityStartTime(), order.getPharmacy());
+                                    order.getId(), order.getStartTime(), order.getPharmacy());
             }
         }
     }
@@ -157,7 +185,9 @@ public class PharmacyOrderPlacer {
                     if (patient != null) {
                         BigDecimal quantity = bean.getBigDecimal("quantity", BigDecimal.ZERO);
                         User clinician = (User) getObject(bean.getNodeParticipantRef("clinician"));
-                        result = new Order(act.getId(), product, patient, quantity, clinician, pharmacy);
+                        IMObjectReference event = bean.getNodeSourceObjectRef("event");
+                        result = new Order(act.getId(), act.getActivityStartTime(), product, patient, quantity,
+                                           clinician, pharmacy, event);
                     }
                 }
             }
@@ -165,23 +195,80 @@ public class PharmacyOrderPlacer {
         return result;
     }
 
-
-    private void createOrder(Order order, PatientHistoryChanges changes, Act item) {
-        PatientContext patientContext = getPatientContext(order, changes, item);
-        if (patientContext != null) {
-            service.createOrder(patientContext, order.getProduct(), order.getQuantity(), order.getId(),
-                                item.getActivityStartTime(),
-                                order.getPharmacy());
-        }
-    }
-
-    private PatientContext getPatientContext(Order order, PatientHistoryChanges changes, Act item) {
+    private PatientContext getPatientContext(Order order, PatientHistoryChanges changes) {
         PatientContext result = null;
-        Act event = changes.getLinkedEvent(item);
+        List<Act> events = changes.getEvents(order.getPatient().getObjectReference());
+        Act event;
+        if (events == null || events.isEmpty()) {
+            event = changes.getEvent(order.getEvent());
+        } else {
+            event = Collections.max(events, new Comparator<Act>() {
+                @Override
+                public int compare(Act o1, Act o2) {
+                    return DateRules.compareDateTime(o1.getActivityStartTime(), o2.getActivityStartTime(), true);
+                }
+            });
+        }
         if (event != null) {
             result = factory.createContext(order.getPatient(), customer, event, location, order.getClinician());
         }
         return result;
+    }
+
+    private PatientContext getPatientContext(Order order, Map<IMObjectReference, Act> events) {
+        PatientContext result = null;
+        Act event = events.get(order.getEvent());
+        if (event == null) {
+            event = (Act) getObject(order.getEvent());
+        }
+        if (event == null) {
+            event = rules.getEvent(order.getPatient(), order.getStartTime());
+        }
+        if (event != null) {
+            events.put(order.getEvent(), event);
+        }
+        if (event != null) {
+            result = factory.createContext(order.getPatient(), customer, event, location, order.getClinician());
+        }
+        return result;
+    }
+
+    /**
+     * Creates an order.
+     *
+     * @param order   the order
+     * @param changes the changes
+     */
+    private void createOrder(Order order, PatientHistoryChanges changes) {
+        PatientContext patientContext = getPatientContext(order, changes);
+        if (patientContext != null) {
+            service.createOrder(patientContext, order.getProduct(), order.getQuantity(), order.getId(),
+                                order.getStartTime(), order.getPharmacy());
+        }
+    }
+
+    /**
+     * Updates an order.
+     *
+     * @param order   the order
+     * @param changes the changes
+     */
+    private void updateOrder(PatientHistoryChanges changes, Order order) {
+        PatientContext context = getPatientContext(order, changes);
+        service.updateOrder(context, order.getProduct(), order.getQuantity(), order.getId(), order.getStartTime(),
+                            order.getPharmacy());
+    }
+
+    /**
+     * Cancel an order.
+     *
+     * @param order   the order
+     * @param changes the changes
+     */
+    private void cancelOrder(Order order, PatientHistoryChanges changes) {
+        PatientContext context = getPatientContext(order, changes);
+        service.cancelOrder(context, order.getProduct(), order.getQuantity(), order.getId(), order.getStartTime(),
+                            order.getPharmacy());
     }
 
     /**
@@ -192,9 +279,7 @@ public class PharmacyOrderPlacer {
      * @return {@code true} if the existing order needs updating
      */
     private boolean needsUpdate(Order existing, Order order) {
-        return !ObjectUtils.equals(existing.getPatient(), order.getPatient())
-               || !ObjectUtils.equals(existing.getProduct(), order.getProduct())
-               || existing.getQuantity().compareTo(order.getQuantity()) != 0
+        return existing.getQuantity().compareTo(order.getQuantity()) != 0
                || !ObjectUtils.equals(existing.getClinician(), order.getClinician());
     }
 
@@ -206,7 +291,9 @@ public class PharmacyOrderPlacer {
      * @return {@code true} if the existing order needs cancelling
      */
     private boolean needsCancel(Order existing, Order order) {
-        return !ObjectUtils.equals(existing.getPharmacy(), order.getPharmacy());
+        return !ObjectUtils.equals(existing.getPatient(), order.getPatient())
+               || !ObjectUtils.equals(existing.getProduct(), order.getProduct())
+               || !ObjectUtils.equals(existing.getPharmacy(), order.getPharmacy());
     }
 
     /**
@@ -235,6 +322,8 @@ public class PharmacyOrderPlacer {
 
         private final long id;
 
+        private final Date startTime;
+
         private Product product;
 
         private final Party patient;
@@ -245,13 +334,18 @@ public class PharmacyOrderPlacer {
 
         private final User clinician;
 
-        public Order(long id, Product product, Party patient, BigDecimal quantity, User clinician, Entity pharmacy) {
-            this.pharmacy = pharmacy;
+        private final IMObjectReference event;
+
+        public Order(long id, Date startTime, Product product, Party patient, BigDecimal quantity, User clinician,
+                     Entity pharmacy, IMObjectReference event) {
             this.id = id;
+            this.startTime = startTime;
             this.product = product;
             this.patient = patient;
             this.quantity = quantity;
+            this.pharmacy = pharmacy;
             this.clinician = clinician;
+            this.event = event;
         }
 
         public Party getPatient() {
@@ -277,5 +371,14 @@ public class PharmacyOrderPlacer {
         public User getClinician() {
             return clinician;
         }
+
+        public IMObjectReference getEvent() {
+            return event;
+        }
+
+        public Date getStartTime() {
+            return startTime;
+        }
     }
+
 }
