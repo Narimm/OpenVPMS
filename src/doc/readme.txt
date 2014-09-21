@@ -265,10 +265,18 @@ change to:
      and build <TOMCAT_HOME>/webapps/openvpms
 
 2.6 Customisation
+  If you use customised versions of the standard archetypes, or have added
+  archetypes, these will need to be loaded.
+  For modified versions of the standard archetypes, be sure to incorporate
+  any changes that have been made.
+  You should then use archload to load these archetypes - or if you have
+  only a few, use Administration|Archetypes|Import.
+
   If you have customised versions of propercase.properties, help.properties, or
   messages.properties you need to install these in
   <TOMCAT_HOME>/webapps/openvpms/WEB-INF/classes/localisation
-  You can simply overwrite the default propercase.properties with your own version.
+  You can simply overwrite the default propercase.properties with your own
+  version.
   However, help.properties and messages.properties will need to be edited to
   bring your adjustments into the current versions.
   
