@@ -341,6 +341,15 @@ public class PatientContext {
     }
 
     /**
+     * Returns the customer.
+     *
+     * @return the customer
+     */
+    public Party getCustomer() {
+        return customer;
+    }
+
+    /**
      * Returns the location name.
      *
      * @return the location name

@@ -48,6 +48,7 @@
         <constructor-arg ref="hl7Connectors"/>
         <constructor-arg ref="hl7messageDispatcher"/>
         <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="patientRules"/>
     </bean>
 
     <bean class="org.openvpms.hl7.PatientContextFactory">

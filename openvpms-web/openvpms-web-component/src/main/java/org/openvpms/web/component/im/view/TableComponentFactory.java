@@ -64,6 +64,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
     protected Component createLookup(Property property, IMObject context) {
         Label result = LabelFactory.create();
         result.setText(LookupNameHelper.getName(context, property.getName()));
+        result.setEnabled(false);
         return result;
     }
 

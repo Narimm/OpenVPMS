@@ -17,6 +17,7 @@
 package org.openvpms.hl7.impl;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.hl7.AdmissionService;
@@ -44,6 +45,9 @@ public class AdmissionServiceImplTestCase extends AbstractServiceTest {
         super.setUp();
         ILookupService lookups = LookupServiceHelper.getLookupService();
         admissionService = new AdmissionServiceImpl(getArchetypeService(), lookups, getConnectors(), getDispatcher());
+
+        PatientContext context = getContext();
+        Mockito.when(context.getPatientId()).thenReturn(1001L);
     }
 
     /**
@@ -55,7 +59,7 @@ public class AdmissionServiceImplTestCase extends AbstractServiceTest {
     public void testAdmitted() throws Exception {
         String expected = "MSH|^~\\&|VPMS|Main Clinic|Cubex|Cubex|20140825085900+1000||ADT^A01^ADT_A01|1200022|P|2.5||||||UTF-8\r" +
                           "EVN|A01|20140825085900+1000|||||Main Clinic\r" +
-                          "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r" +
                           "AL1|1||||Penicillin\r" +
@@ -75,7 +79,7 @@ public class AdmissionServiceImplTestCase extends AbstractServiceTest {
     public void testAdmissionCancelled() throws Exception {
         String expected = "MSH|^~\\&|VPMS|Main Clinic|Cubex|Cubex|20140825085900+1000||ADT^A11^ADT_A09|1200022|P|2.5||||||UTF-8\r" +
                           "EVN|A11|20140825085900+1000|||||Main Clinic\r" +
-                          "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r";
 
@@ -93,7 +97,7 @@ public class AdmissionServiceImplTestCase extends AbstractServiceTest {
     public void testDischarged() throws Exception {
         String expected = "MSH|^~\\&|VPMS|Main Clinic|Cubex|Cubex|20140825085900+1000||ADT^A03^ADT_A03|1200022|P|2.5||||||UTF-8\r" +
                           "EVN|A03|20140825085900+1000|||||Main Clinic\r" +
-                          "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "AL1|1||||Penicillin\r" +
                           "AL1|2||||Pollen\r" +
@@ -113,7 +117,7 @@ public class AdmissionServiceImplTestCase extends AbstractServiceTest {
     public void testUpdated() throws Exception {
         String expected = "MSH|^~\\&|VPMS|Main Clinic|Cubex|Cubex|20140825085900+1000||ADT^A08^ADT_A01|1200022|P|2.5||||||UTF-8\r" +
                           "EVN|A08|20140825085900+1000|||||Main Clinic\r" +
-                          "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r" +
                           "AL1|1||||Penicillin\r" +

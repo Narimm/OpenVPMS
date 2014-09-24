@@ -18,6 +18,7 @@ package org.openvpms.hl7.impl;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -74,6 +75,9 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
         pharmacy = (Party) create("party.organisationPharmacy");
         EntityBean bean = new EntityBean(pharmacy);
         bean.addNodeTarget("orderConnection", getSender().getReference());
+
+        PatientContext context = getContext();
+        Mockito.when(context.getPatientId()).thenReturn(1001L);
     }
 
     /**
@@ -85,7 +89,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
     @Test
     public void testCreateOrder() throws Exception {
         String expected = "MSH|^~\\&|VPMS|Main Clinic|Cubex|Cubex|20140825085900+1000||RDE^O11^RDE_O11|1200022|P|2.5||||||UTF-8\r" +
-                          "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "AL1|1||||Penicillin\r" +
                           "AL1|2||||Pollen\r" +
@@ -108,7 +112,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
     @Test
     public void testUpdateOrder() throws Exception {
         String expected = "MSH|^~\\&|VPMS|Main Clinic|Cubex|Cubex|20140825085900+1000||RDE^O11^RDE_O11|1200022|P|2.5||||||UTF-8\r" +
-                          "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "AL1|1||||Penicillin\r" +
                           "AL1|2||||Pollen\r" +
@@ -130,7 +134,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
     @Test
     public void testCancelOrder() throws Exception {
         String expected = "MSH|^~\\&|VPMS|Main Clinic|Cubex|Cubex|20140825085900+1000||RDE^O11^RDE_O11|1200022|P|2.5||||||UTF-8\r" +
-                          "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "AL1|1||||Penicillin\r" +
                           "AL1|2||||Pollen\r" +

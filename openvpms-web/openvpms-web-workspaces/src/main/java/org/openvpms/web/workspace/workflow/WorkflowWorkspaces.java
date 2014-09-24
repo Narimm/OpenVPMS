@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow;
@@ -22,6 +22,7 @@ import org.openvpms.web.component.workspace.AbstractWorkspaces;
 import org.openvpms.web.workspace.workflow.appointment.AppointmentWorkspace;
 import org.openvpms.web.workspace.workflow.investigation.InvestigationsWorkspace;
 import org.openvpms.web.workspace.workflow.messaging.MessagingWorkspace;
+import org.openvpms.web.workspace.workflow.order.OrderWorkspace;
 import org.openvpms.web.workspace.workflow.worklist.TaskWorkspace;
 
 
@@ -42,6 +43,8 @@ public class WorkflowWorkspaces extends AbstractWorkspaces {
         addWorkspace(new AppointmentWorkspace(context));
         addWorkspace(new TaskWorkspace(context));
         addWorkspace(new MessagingWorkspace(context));
-        addWorkspace(new InvestigationsWorkspace(context, new PracticeMailContext(context)));
+        PracticeMailContext mailContext = new PracticeMailContext(context);
+        addWorkspace(new InvestigationsWorkspace(context, mailContext));
+        addWorkspace(new OrderWorkspace(context, mailContext));
     }
 }

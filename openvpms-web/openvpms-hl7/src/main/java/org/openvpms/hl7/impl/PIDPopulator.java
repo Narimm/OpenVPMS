@@ -68,7 +68,7 @@ class PIDPopulator {
     public void populate(PID pid, PatientContext context, MessageConfig config) throws HL7Exception {
         pid.getSetIDPID().setValue("1");
 
-        pid.getPatientIdentifierList(0).getIDNumber().setValue(Long.toString(context.getPatientId()));
+        pid.getPatientID().getIDNumber().setValue(Long.toString(context.getPatientId()));
 
         XPN patientName = pid.getPatientName(0);
         patientName.getFamilyName().getSurname().setValue(context.getPatientLastName());
