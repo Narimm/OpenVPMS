@@ -232,7 +232,7 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
      * @return a new dialog
      */
     protected EditResultSetDialog<T> createEditResultSetDialog(T object, String title) {
-        return new EditResultSetDialog<T>(title, object, set, getContext(), getHelpContext());
+        return new EditResultSetDialog<T>(title, object, set, getActions(), getContext(), getHelpContext());
     }
 
     /**

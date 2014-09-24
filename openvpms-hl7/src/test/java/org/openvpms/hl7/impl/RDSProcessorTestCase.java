@@ -19,54 +19,138 @@ package org.openvpms.hl7.impl;
 import ca.uhn.hl7v2.DefaultHapiContext;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
-import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.model.v25.message.ACK;
 import ca.uhn.hl7v2.model.v25.message.RDS_O13;
 import ca.uhn.hl7v2.model.v25.segment.FT1;
 import ca.uhn.hl7v2.model.v25.segment.ORC;
 import ca.uhn.hl7v2.model.v25.segment.RXD;
 import ca.uhn.hl7v2.model.v25.segment.RXE;
 import ca.uhn.hl7v2.util.idgenerator.IDGenerator;
+import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.hl7.MLLPSender;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
+
 
 /**
- * Enter description.
+ * Tests the {@link RDSProcessor}.
  *
  * @author Tim Anderson
  */
 public class RDSProcessorTestCase extends AbstractMessageTest {
 
-    @Test
-    public void testMissingPatient() throws HL7Exception, IOException {
+    /**
+     * The patient rules.
+     */
+    private PatientRules rules;
 
-        RDSProcessor processor = new RDSProcessor(getArchetypeService()) {
-            @Override
-            protected Party getPatient(IMObjectReference reference) {
-                return null;
-            }
-        };
-        RDS_O13 rds = createRDS();
-        log("RDS: ", rds);
-        Message response = processor.process(rds);
-        assertTrue(response instanceof ACK);
-        ACK ack = (ACK) response;
-        assertEquals("AR", ack.getMSA().getAcknowledgmentCode().getValue());
+    /**
+     * The product.
+     */
+    private Product product;
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    @Override
+    public void setUp() {
+        super.setUp();
+        rules = new PatientRules(getArchetypeService(), LookupServiceHelper.getLookupService());
+
+        product = TestHelper.createProduct(ProductArchetypes.MEDICATION, null, false);
+        product.setName("Valium 2mg");
+
+        IMObjectBean productBean = new IMObjectBean(product);
+        productBean.setValue("dispensingUnits", TestHelper.getLookup("lookup.uom", "TAB", "Tablets", true).getCode());
+        productBean.setValue("sellingUnits", TestHelper.getLookup("lookup.uom", "BOX", "Box", true).getCode());
+        productBean.setValue("dispInstructions", "Give 1 tablet once daily");
+        productBean.save();
     }
 
+    /**
+     * Verifies that orders are created from dispense messages.
+     */
+    @Test
+    public void testCreateOrder() throws HL7Exception, IOException {
+        RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules);
+        RDS_O13 rds = createRDS();
+        log("RDS: ", rds);
+        List<Act> acts = processor.process(rds);
+        assertEquals(2, acts.size());
+        ActBean order = new ActBean(acts.get(0));
+        ActBean item = new ActBean(acts.get(1));
+        Party customer = getContext().getCustomer();
+        Party patient = getContext().getPatient();
+        assertEquals(customer.getObjectReference(), order.getNodeParticipantRef("customer"));
+        assertEquals(patient.getObjectReference(), item.getNodeParticipantRef("patient"));
+        assertEquals(product.getObjectReference(), item.getNodeParticipantRef("product"));
+        checkEquals(BigDecimal.valueOf(2), item.getBigDecimal("quantity"));
+        assertEquals("90032145", item.getString("reference"));
+        save(acts);
+    }
+
+    /**
+     * Verifies that orders are created from dispense messages.
+     */
+    @Test
+    public void testUnknownPatient() throws HL7Exception, IOException {
+        RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules);
+        RDS_O13 rds = createRDS();
+        rds.getPATIENT().getPID().getPatientID().getIDNumber().setValue("UNKNOWN");
+        log("RDS: ", rds);
+        List<Act> acts = processor.process(rds);
+        assertEquals(2, acts.size());
+        ActBean order = new ActBean(acts.get(0));
+        ActBean item = new ActBean(acts.get(1));
+        assertNull(order.getNodeParticipantRef("customer"));
+        assertNull(item.getNodeParticipantRef("patient"));
+        assertEquals(product.getObjectReference(), item.getNodeParticipantRef("product"));
+        checkEquals(BigDecimal.valueOf(2), item.getBigDecimal("quantity"));
+        assertEquals("90032145", item.getString("reference"));
+        assertEquals("Unknown patient, Id='UNKNOWN', name='Fido Bar'", order.getString("notes"));
+        save(acts);
+    }
+
+    /**
+     * Verifies that orders are created from dispense messages.
+     */
+    @Test
+    public void testUnknownProduct() throws HL7Exception, IOException {
+        RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules);
+        RDS_O13 rds = createRDS();
+        rds.getORDER().getRXD().getDispenseGiveCode().getIdentifier().setValue("UNKNOWN");
+        log("RDS: ", rds);
+        List<Act> acts = processor.process(rds);
+        assertEquals(2, acts.size());
+        ActBean order = new ActBean(acts.get(0));
+        ActBean item = new ActBean(acts.get(1));
+        Party customer = getContext().getCustomer();
+        Party patient = getContext().getPatient();
+        assertEquals(customer.getObjectReference(), order.getNodeParticipantRef("customer"));
+        assertEquals(patient.getObjectReference(), item.getNodeParticipantRef("patient"));
+        assertNull(item.getNodeParticipantRef("product"));
+        checkEquals(BigDecimal.valueOf(2), item.getBigDecimal("quantity"));
+        assertEquals("90032145", item.getString("reference"));
+        assertEquals("Unknown Dispense Give Code, id='UNKNOWN', name='Valium 2mg'", order.getString("notes"));
+        save(acts);
+    }
 
     private RDS_O13 createRDS() throws IOException, HL7Exception {
         ILookupService lookups = LookupServiceHelper.getLookupService();
@@ -78,13 +162,6 @@ public class RDSProcessorTestCase extends AbstractMessageTest {
             }
         });
 
-        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION, null, false);
-        product.setName("Valium 2mg");
-        IMObjectBean productBean = new IMObjectBean(product);
-        productBean.setValue("dispensingUnits", TestHelper.getLookup("lookup.uom", "TAB", "Tablets", true).getCode());
-        productBean.setValue("sellingUnits", TestHelper.getLookup("lookup.uom", "BOX", "Box", true).getCode());
-        productBean.setValue("dispInstructions", "Give 1 tablet once daily");
-        product.setId(4001);
 
         MessageConfig config = new MessageConfig();
         String fillerOrderNumber = "90032145";
@@ -121,7 +198,6 @@ public class RDSProcessorTestCase extends AbstractMessageTest {
         orc.getDateTimeOfTransaction().getTime().setValue(getDatetime("2014-08-25 09:02:00"));
         PopulateHelper.populateClinician(orc.getEnteredBy(0), getContext());
 
-
         RXE rxe = message.getORDER().getENCODING().getRXE();
         PopulateHelper.populateProduct(rxe.getGiveCode(), product);
         IMObjectBean bean = new IMObjectBean(product, getArchetypeService());
@@ -135,7 +211,6 @@ public class RDSProcessorTestCase extends AbstractMessageTest {
         String dispensingInstructions = bean.getString("dispInstructions");
         if (dispensingInstructions != null) {
             rxe.getProviderSAdministrationInstructions(0).getIdentifier().setValue(dispensingInstructions);
-            // rxe.getProviderSAdministrationInstructions(0).getText().setValue(dispensingInstructions);
         }
         rxe.getDispenseAmount().setValue("2");
         if (sellingCode != null) {

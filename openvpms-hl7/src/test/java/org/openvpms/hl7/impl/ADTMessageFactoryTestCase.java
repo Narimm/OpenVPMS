@@ -24,6 +24,7 @@ import ca.uhn.hl7v2.model.v25.segment.MSH;
 import ca.uhn.hl7v2.util.idgenerator.IDGenerator;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.hl7.PatientContext;
@@ -62,6 +63,9 @@ public class ADTMessageFactoryTestCase extends AbstractMessageTest {
 
         messageFactory = new ADTMessageFactory(hapiContext, getArchetypeService(),
                                                LookupServiceHelper.getLookupService());
+
+        PatientContext context = getContext();
+        Mockito.when(context.getPatientId()).thenReturn(1001L);
     }
 
     /**
@@ -72,7 +76,7 @@ public class ADTMessageFactoryTestCase extends AbstractMessageTest {
     @Test
     public void testCreateAdmit() throws HL7Exception {
         String expected = "MSH|^~\\&|||||20140825090000.105+1000||ADT^A01^ADT_A01|1200022|P|2.5\r" +
-                          "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r" +
                           "AL1|1||||Penicillin\r" +
@@ -93,7 +97,7 @@ public class ADTMessageFactoryTestCase extends AbstractMessageTest {
     @Test
     public void testCreateCancelAdmit() throws HL7Exception {
         String expected = "MSH|^~\\&|||||20140825090000+1000||ADT^A11^ADT_A09|1200022|P|2.5\r" +
-                          "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r";
         MessageConfig config = new MessageConfig();
@@ -113,7 +117,7 @@ public class ADTMessageFactoryTestCase extends AbstractMessageTest {
     @Test
     public void testCreateDischarge() throws HL7Exception {
         String expected = "MSH|^~\\&|||||20140825090000||ADT^A03^ADT_A03|1200022|P|2.5\r" +
-                          "PID|1||1001||Bar^Fido||20140701000000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PID|1|1001|||Bar^Fido||20140701000000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500|20140825100500\r" +
                           "AL1|1||||Penicillin\r" +
                           "AL1|2||||Pollen\r" +
@@ -139,7 +143,7 @@ public class ADTMessageFactoryTestCase extends AbstractMessageTest {
     @Test
     public void testCreateUpdate() throws HL7Exception {
         String expected = "MSH|^~\\&|||||20140825090000+1000||ADT^A08^ADT_A01|1200022|P|2.5\r" +
-                          "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r" +
                           "AL1|1||||Penicillin\r" +

@@ -67,6 +67,11 @@ public abstract class AbstractEditDialog extends PopupDialog {
     private final Context context;
 
     /**
+     * The current help context.
+     */
+    private HelpContext helpContext;
+
+    /**
      * Edit dialog style name.
      */
     protected static final String STYLE = "EditDialog";
@@ -218,10 +223,24 @@ public abstract class AbstractEditDialog extends PopupDialog {
 
     /**
      * Sets the editor.
+     * <p/>
+     * If there is an existing editor, its selection path will be set on the editor.
      *
      * @param editor the editor. May be {@code null}
      */
     protected void setEditor(IMObjectEditor editor) {
+        IMObjectEditor previous = this.editor;
+        List<Selection> path = (editor != null && previous != null) ? previous.getSelectionPath() : null;
+        setEditor(editor, path);
+    }
+
+    /**
+     * Sets the editor.
+     *
+     * @param editor the editor. May be {@code null}
+     * @param path   the selection path. May be {@code null}
+     */
+    protected void setEditor(IMObjectEditor editor, List<Selection> path) {
         IMObjectEditor previous = this.editor;
         if (editor != null) {
             setTitle(editor.getTitle());
@@ -234,9 +253,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
                     });
         }
         this.editor = editor;
-        List<Selection> path;
         if (previous != null) {
-            path = previous.getSelectionPath();
             removeEditor(previous);
         } else {
             path = null;
@@ -319,13 +336,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @param editor the editor
      */
     protected void addEditor(IMObjectEditor editor) {
-        getEditorContainer().add(editor.getComponent());
-        getFocusGroup().add(0, editor.getFocusGroup());
-
-        if (getParent() != null) {
-            // focus in the editor
-            editor.getFocusGroup().setFocus();
-        }
+        setComponent(editor.getComponent(), editor.getFocusGroup(), editor.getHelpContext());
     }
 
     /**
@@ -334,8 +345,36 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @param editor the editor to remove
      */
     protected void removeEditor(IMObjectEditor editor) {
-        getEditorContainer().remove(editor.getComponent());
-        getFocusGroup().remove(editor.getFocusGroup());
+        removeComponent(editor.getComponent(), editor.getFocusGroup());
+    }
+
+    /**
+     * Sets the component.
+     *
+     * @param component the component
+     * @param group     the focus group
+     * @param context   the help context
+     */
+    protected void setComponent(Component component, FocusGroup group, HelpContext context) {
+        getContainer().add(component);
+        getFocusGroup().add(0, group);
+        if (getParent() != null) {
+            // focus in the component
+            group.setFocus();
+        }
+        helpContext = context;
+    }
+
+    /**
+     * Removes the component.
+     *
+     * @param component the component
+     * @param group     the focus group
+     */
+    protected void removeComponent(Component component, FocusGroup group) {
+        getContainer().remove(component);
+        getFocusGroup().remove(group);
+        helpContext = null;
     }
 
     /**
@@ -345,7 +384,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
      *
      * @return the editor container
      */
-    protected Component getEditorContainer() {
+    protected Component getContainer() {
         return getLayout();
     }
 
@@ -364,7 +403,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @param event the component change event
      */
     protected void onComponentChange(PropertyChangeEvent event) {
-        Component container = getEditorContainer();
+        Component container = getContainer();
         container.remove((Component) event.getOldValue());
         container.add((Component) event.getNewValue());
     }
@@ -388,14 +427,12 @@ public abstract class AbstractEditDialog extends PopupDialog {
 
     /**
      * Returns the help context.
-     * <p/>
-     * This implementation returns the help context of the editor, if one is registered
      *
      * @return the help context
      */
     @Override
     public HelpContext getHelpContext() {
-        return (editor != null) ? editor.getHelpContext() : super.getHelpContext();
+        return (helpContext != null) ? helpContext : super.getHelpContext();
     }
 
     /**

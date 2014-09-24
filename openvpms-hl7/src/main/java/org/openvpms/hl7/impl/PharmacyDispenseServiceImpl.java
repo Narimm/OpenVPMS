@@ -16,13 +16,18 @@
 
 package org.openvpms.hl7.impl;
 
+import ca.uhn.hl7v2.AcknowledgmentCode;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Message;
+import ca.uhn.hl7v2.model.v25.message.RDS_O13;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import ca.uhn.hl7v2.protocol.ReceivingApplicationException;
 import ca.uhn.hl7v2.protocol.Transportable;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -65,6 +70,11 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
     private final IArchetypeService service;
 
     /**
+     * The payment processor.
+     */
+    private final RDSProcessor processor;
+
+    /**
      * The pharmacies that are being listened to.
      */
     private final Map<Long, Connector> listening = Collections.synchronizedMap(new HashMap<Long, Connector>());
@@ -87,13 +97,16 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
      * @param dispatcher the dispatcher
      * @param connectors the connectors
      * @param service    the archetype service
+     * @param rules      the patient rules
      */
     public PharmacyDispenseServiceImpl(Pharmacies pharmacies, MessageDispatcher dispatcher,
-                                       Connectors connectors, IArchetypeService service) {
+                                       Connectors connectors, IArchetypeService service,
+                                       PatientRules rules) {
         this.pharmacies = pharmacies;
         this.dispatcher = dispatcher;
         this.connectors = connectors;
         this.service = service;
+        processor = new RDSProcessor(service, rules);
 
         // NOTE: methods may be called before construction is complete
         for (Entity pharmacy : pharmacies.getPharmacies()) {
@@ -121,7 +134,7 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
     public void destroy() {
         pharmacies.removeListener(listener);
 
-        List<Connector> connectors = new ArrayList<Connector>(listening.values());
+        List<Connector> connectors = getConnectors();
         for (Connector connector : connectors) {
             dispatcher.stop(connector);
         }
@@ -131,7 +144,7 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
      * Uses the contents of the message for whatever purpose the application
      * has for this message, and returns an appropriate response message.
      *
-     * @param theMessage  an inbound HL7 message
+     * @param message     an inbound HL7 message
      * @param theMetadata message metadata (which may include information about where the message comes
      *                    from, etc).  This is the same metadata as in {@link Transportable#getMetadata()}.
      * @return an appropriate application response (for example an application ACK or query response).
@@ -141,25 +154,50 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
      * @throws HL7Exception                  if there is a problem with the message
      */
     @Override
-    public Message processMessage(Message theMessage, Map<String, Object> theMetadata)
+    public Message processMessage(Message message, Map<String, Object> theMetadata)
             throws ReceivingApplicationException, HL7Exception {
-        log(theMessage);
+        log(message);
+        RDS_O13 dispense = (RDS_O13) message;
+        String sendingFacility = dispense.getMSH().getSendingFacility().getName();
+        String sendingApplication = dispense.getMSH().getSendingApplication().getName();
+        String receivingFacility = dispense.getMSH().getReceivingFacility().getName();
+        String receivingApplication = dispense.getMSH().getReceivingApplication().getName();
+        boolean found = false;
+        for (Connector connector : getConnectors()) {
+            if (ObjectUtils.equals(sendingFacility, connector.getSendingFacility())
+                && ObjectUtils.equals(sendingApplication, connector.getSendingApplication())
+                && ObjectUtils.equals(receivingFacility, connector.getReceivingFacility())
+                && ObjectUtils.equals(receivingApplication, connector.getReceivingApplication())) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            try {
+                return message.generateACK(AcknowledgmentCode.AR, new HL7Exception("Unrecognised application details"));
+            } catch (IOException exception) {
+                throw new HL7Exception(exception);
+            }
+        }
+
         try {
-            return theMessage.generateACK();
-        } catch (IOException e) {
-            throw new HL7Exception(e);
+            List<Act> order = processor.process((RDS_O13) message);
+            service.save(order);
+            return message.generateACK();
+        } catch (IOException exception) {
+            throw new HL7Exception(exception);
         }
     }
 
     /**
-     * @param theMessage an inbound HL7 message
-     * @return true if this ReceivingApplication wishes to accept the message.  By returning
-     *         true, this Application declares itself the recipient of the message, accepts
-     *         responsibility for it, and must be able to respond appropriately to the sending system.
+     * Determines if this can process a message.
+     *
+     * @param message an inbound HL7 message
+     * @return {@code true} if this ReceivingApplication wishes to accept the message.
      */
     @Override
-    public boolean canProcess(Message theMessage) {
-        return true;
+    public boolean canProcess(Message message) {
+        return message instanceof RDS_O13;
     }
 
     /**
@@ -223,6 +261,15 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
         EntityBean bean = new EntityBean(pharmacy, service);
         IMObjectReference ref = bean.getNodeTargetObjectRef("dispenseConnection");
         return (ref != null) ? connectors.getConnector(ref) : null;
+    }
+
+    /**
+     * Returns the connector.
+     *
+     * @return the connectors
+     */
+    private List<Connector> getConnectors() {
+        return new ArrayList<Connector>(listening.values());
     }
 
     /**

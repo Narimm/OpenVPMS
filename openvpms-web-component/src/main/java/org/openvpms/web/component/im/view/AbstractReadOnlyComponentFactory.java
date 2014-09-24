@@ -16,7 +16,6 @@
 
 package org.openvpms.web.component.im.view;
 
-import echopointng.RichTextArea;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -42,8 +41,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public abstract class AbstractReadOnlyComponentFactory
-        extends AbstractIMObjectComponentFactory {
+public abstract class AbstractReadOnlyComponentFactory extends AbstractIMObjectComponentFactory {
 
     /**
      * The layout strategy factory.
@@ -89,7 +87,6 @@ public abstract class AbstractReadOnlyComponentFactory
      */
     public ComponentState create(Property property, IMObject context) {
         Component component = null;
-        boolean enable = false;
         if (!property.isLookup()) {
             component = create(property); // isString() returns true for lookups
         }
@@ -100,21 +97,15 @@ public abstract class AbstractReadOnlyComponentFactory
             } else if (property.isCollection()) {
                 component = getCollectionViewer((CollectionProperty) property, context);
                 // need to enable this otherwise table selection is disabled
-                enable = true;
             } else if (property.isObjectReference()) {
                 component = getObjectViewer(property, context);
                 // need to enable this for hyperlinks to work
-                enable = true;
             } else {
                 Label label = LabelFactory.create();
                 label.setText("No viewer for type " + property.getType());
                 component = label;
             }
         }
-        if (component instanceof RichTextArea) {
-            ((RichTextArea) component).setEditable(enable);
-        }
-        component.setEnabled(enable);
         component.setFocusTraversalParticipant(false);
         return new ComponentState(component, property);
     }
