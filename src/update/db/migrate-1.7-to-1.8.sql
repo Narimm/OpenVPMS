@@ -58,6 +58,20 @@ CALL alter_node_descriptors();
 DROP PROCEDURE alter_node_descriptors;
 
 #
+# Migrate lookup.macroReport report node, for OBF-232
+#
+UPDATE lookup_details d, lookups l
+SET d.type = "object-reference",
+  d.value =  concat(substring_index(substring_index(d.value, "<shortName>", -1), "</shortName>", 1), ':',
+                    substring_index(substring_index(d.value, "<id>", -1), "</id>", 1), ':',
+                    substring_index(substring_index(d.value, "<linkId>", -1), "</linkId>", 1))
+WHERE l.lookup_id = d.lookup_id
+      AND arch_short_name = "lookup.macroReport"
+      AND d.name = "report"
+      AND d.type = "org.openvpms.component.business.domain.im.common.IMObjectReference"
+      AND d.value LIKE "<org.openvpms.component.business.domain.im.common.IMObjectReference>%";
+
+#
 # Update party.organisationPractice for OVPMS-1472 Update to the Customer and Patient Summaries
 #
 INSERT INTO entity_details (entity_id, name, type, value)
