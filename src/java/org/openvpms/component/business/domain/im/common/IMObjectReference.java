@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -101,6 +101,23 @@ public class IMObjectReference implements Serializable, Cloneable {
      */
     public IMObjectReference(ArchetypeId archetypeId, long id) {
         this(archetypeId, id, null);
+    }
+
+    /**
+     * Constructs an {@link IMObjectReference} for the specified archetype short name, persistent id, and link id.
+     *
+     * @param shortName the archetype short name of the object
+     * @param id        the persistent identity of the object
+     * @param linkId    the link identifier. May be {@code null}
+     * @throws IllegalArgumentException if the archetype id is {@code null}
+     */
+    public IMObjectReference(String shortName, long id, String linkId) {
+        if (shortName == null) {
+            throw new IllegalArgumentException("Invalid argument 'shortName'");
+        }
+        archetypeId = new ArchetypeId(shortName);
+        setId(id);
+        setLinkId(linkId);
     }
 
     /**
@@ -214,7 +231,40 @@ public class IMObjectReference implements Serializable, Cloneable {
      */
     @Override
     public String toString() {
-        return archetypeId.toString() + ':' + id + ':' + linkId;
+        return archetypeId.getShortName() + ':' + id + ((linkId != null) ? ':' + linkId : "");
+    }
+
+    /**
+     * Constructs a {@link IMObjectReference} from a string.
+     *
+     * @param value the string form of the reference. May be {@code null}
+     * @return the reference or {@code null} if {@code value} is null
+     * @throws IllegalArgumentException if the value is invalid
+     */
+    public static IMObjectReference fromString(String value) {
+        IMObjectReference result = null;
+        if (value != null) {
+            int first = value.indexOf(':');
+            if (first == -1) {
+                throw new IllegalArgumentException("Invalid object reference: " + value);
+            }
+            String shortName = value.substring(0, first);
+            int second = value.indexOf(':', first + 1);
+            String id;
+            String linkId = null;
+            if (second != -1) {
+                id = value.substring(first + 1, second);
+                linkId = value.substring(second + 1);
+            } else {
+                id = value.substring(first + 1);
+            }
+            try {
+                result = new IMObjectReference(shortName, Long.valueOf(id), linkId);
+            } catch (NumberFormatException exception) {
+                throw new IllegalArgumentException("Invalid object reference: " + value);
+            }
+        }
+        return result;
     }
 
     /* (non-Javadoc)
