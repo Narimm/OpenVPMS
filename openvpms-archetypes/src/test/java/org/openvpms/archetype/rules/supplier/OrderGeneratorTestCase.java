@@ -299,6 +299,40 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
     }
 
     /**
+     * Verifies that the supplier on an product-stock location relationship is selected over the preferred supplier.
+     */
+    @Test
+    public void testStockLocationSupplier() {
+        OrderGenerator generator = new OrderGenerator(taxRules, getArchetypeService());
+        Party stockLocation = SupplierTestHelper.createStockLocation();
+        Party supplier1 = TestHelper.createSupplier();
+        Party supplier2 = TestHelper.createSupplier();
+        Product product1 = TestHelper.createProduct();
+
+        addProductSupplierRelationship(product1, supplier1, true, new BigDecimal("2.0"), 1);
+        addProductSupplierRelationship(product1, supplier2, false, new BigDecimal("3.0"), 1);
+        addProductStockLocationRelationship(product1, stockLocation, supplier2, 1, 10, 5);
+        save(product1, supplier1, supplier2, stockLocation);
+
+        // supplier1 has preferred flag set, but should be ignored as the product-stock location specifies supplier
+        List<FinancialAct> order1 = generator.createOrder(supplier1, stockLocation, false);
+        assertEquals(0, order1.size());
+
+        // verify order created for supplier2
+        List<FinancialAct> order2 = generator.createOrder(supplier2, stockLocation, false);
+        assertEquals(2, order2.size());
+        FinancialAct act = order2.get(0);
+        FinancialAct item1 = order2.get(1);
+        ActBean bean = new ActBean(act);
+        checkEquals(new BigDecimal("29.70"), act.getTotal());
+        checkEquals(new BigDecimal("2.70"), act.getTaxAmount());
+        assertTrue(bean.isA(SupplierArchetypes.ORDER));
+        assertEquals(supplier2.getObjectReference(), bean.getNodeParticipantRef("supplier"));
+        assertTrue(TypeHelper.isA(item1, SupplierArchetypes.ORDER_ITEM));
+        save(order2);
+    }
+
+    /**
      * Verifies the values in a {@code Stock} match that expected.
      *
      * @param stock         the stock to check
@@ -427,18 +461,30 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
      */
     private void addRelationships(Product product, Party stockLocation, Party supplier, boolean preferred,
                                   int quantity, int idealQty, int criticalQty, BigDecimal unitPrice, int packageSize) {
+        addProductStockLocationRelationship(product, stockLocation, null, quantity, idealQty, criticalQty);
+        addProductSupplierRelationship(product, supplier, preferred, unitPrice, packageSize);
+    }
+
+    private void addProductSupplierRelationship(Product product, Party supplier, boolean preferred, BigDecimal unitPrice,
+                                                int packageSize) {
         EntityBean bean = new EntityBean(product);
-
-        IMObjectBean productStockLocation = new IMObjectBean(bean.addNodeRelationship("stockLocations", stockLocation));
-        productStockLocation.setValue("quantity", quantity);
-        productStockLocation.setValue("idealQty", idealQty);
-        productStockLocation.setValue("criticalQty", criticalQty);
-
         ProductSupplier ps = new ProductSupplier(bean.addNodeRelationship("suppliers", supplier));
         ps.setPreferred(preferred);
         ps.setPackageSize(packageSize);
         ps.setNettPrice(unitPrice);
+        save(product, supplier);
+    }
 
-        save(product, stockLocation, supplier);
+    private void addProductStockLocationRelationship(Product product, Party stockLocation, Party supplier,
+                                                     int quantity, int idealQty, int criticalQty) {
+        EntityBean bean = new EntityBean(product);
+        IMObjectBean productStockLocation = new IMObjectBean(bean.addNodeRelationship("stockLocations", stockLocation));
+        if (supplier != null) {
+            productStockLocation.setValue("supplier", supplier.getObjectReference());
+        }
+        productStockLocation.setValue("quantity", quantity);
+        productStockLocation.setValue("idealQty", idealQty);
+        productStockLocation.setValue("criticalQty", criticalQty);
+        save(product, stockLocation);
     }
 }

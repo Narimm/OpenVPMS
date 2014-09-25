@@ -1,4 +1,5 @@
 <?xml version='1.0'?>
+
 <!--
   ~ Version: 1.0
   ~
@@ -60,9 +61,12 @@
         join    entity_relationships productSupplier on product.entity_id = productSupplier.source_id
                     and productSupplier.arch_short_name = "entityRelationship.productSupplier"
                     and productSupplier.target_id = :supplierId
-        join    entity_relationship_details preferred
+        left outer join entity_relationship_details supplier
+                    on supplier.entity_relationship_id = productStock.entity_relationship_id
+                    and supplier.name = "supplier"
+        left outer join entity_relationship_details preferred
                     on preferred.entity_relationship_id = productSupplier.entity_relationship_id
-                    and preferred.name = "preferred" and preferred.value = "true"
+                    and preferred.name = "preferred"
         left outer join entity_relationship_details quantity
                     on quantity.entity_relationship_id = productStock.entity_relationship_id
                     and quantity.name = "quantity"
@@ -133,6 +137,7 @@
 where   product.active = 1
                 and convert(idealQty.value, decimal) <> 0.0
                 and (convert(quantity.value, decimal) < convert(idealQty.value, decimal))
+                and (supplier.value = :supplier or (supplier.value is null and preferred.value = "true"))
         ]]>
     </sql-query>
 
