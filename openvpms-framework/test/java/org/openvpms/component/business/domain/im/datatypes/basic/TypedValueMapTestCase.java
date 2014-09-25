@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.datatypes.basic;
 
 import com.thoughtworks.xstream.converters.extended.SqlTimestampConverter;
 import org.junit.Test;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -36,8 +37,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the {@link TypedValueMap} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class TypedValueMapTestCase {
 
@@ -73,6 +73,7 @@ public class TypedValueMapTestCase {
         SqlTimestampConverter converter = new SqlTimestampConverter();
         Date date = new Timestamp(System.currentTimeMillis());
         String dateStr = converter.toString(date);
+        IMObjectReference ref = new IMObjectReference("party.supplierperson", 10001, "fffab");
 
         Map<String, TypedValue> underlying = new HashMap<String, TypedValue>();
         underlying.put("a", new TypedValue("boolean", "false"));
@@ -80,6 +81,7 @@ public class TypedValueMapTestCase {
         underlying.put("c", new TypedValue("string", "astring"));
         underlying.put("d", new TypedValue("big-decimal", "10.0"));
         underlying.put("e", new TypedValue("sql-timestamp", dateStr));
+        underlying.put("f", new TypedValue("object-reference", "party.supplierperson:10001:fffab"));
 
         TypedValueMap map = new TypedValueMap(underlying);
         check(map, underlying, "a", false);
@@ -87,6 +89,7 @@ public class TypedValueMapTestCase {
         check(map, underlying, "c", "astring");
         check(map, underlying, "d", new BigDecimal("10.0"));
         check(map, underlying, "e", date);
+        check(map, underlying, "f", ref);
     }
 
     /**
