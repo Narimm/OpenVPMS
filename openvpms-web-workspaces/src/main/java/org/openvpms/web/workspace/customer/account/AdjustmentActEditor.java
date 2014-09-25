@@ -33,25 +33,23 @@ import java.math.BigDecimal;
 
 
 /**
- * An editor of acts of type <em>act.customerAccountBadDebt</em>,
- * <em>act.customerAccountCreditAdjust</em>, or
+ * An editor of acts of type <em>act.customerAccountBadDebt</em>, <em>act.customerAccountCreditAdjust</em>, or
  * <em>act.customerAccountDebitAdjust</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class AdjustmentActEditor extends AccountActEditor {
 
     /**
-     * Construct a new <tt>AdjustmentActEditor</tt>.
+     * Constructs a {@link AdjustmentActEditor}.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <tt>null</tt>
-     * @param context the layout context. May be <tt>null</tt>
+     * @param parent  the parent object. May be {@code null}
+     * @param context the layout context. May be {@code null}
      */
-    public AdjustmentActEditor(Act act, IMObject parent,
-                               LayoutContext context) {
+    public AdjustmentActEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
+        initParticipant("location", context.getContext().getLocation());
 
         recalculateTax();  // recalculate tax, as per OVPMS-334
 
