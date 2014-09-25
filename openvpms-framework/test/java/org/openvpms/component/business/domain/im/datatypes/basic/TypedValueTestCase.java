@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.datatypes.basic;
@@ -19,6 +19,8 @@ package org.openvpms.component.business.domain.im.datatypes.basic;
 import com.thoughtworks.xstream.converters.extended.SqlTimestampConverter;
 import com.thoughtworks.xstream.io.StreamException;
 import org.junit.Test;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 
 import java.math.BigDecimal;
@@ -37,8 +39,7 @@ import static org.junit.Assert.fail;
 /**
  * Tests the {@link TypedValue} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class TypedValueTestCase {
 
@@ -72,6 +73,8 @@ public class TypedValueTestCase {
         check("sql-time", time, "12:15:45");
         check("sql-date", sqlDate, "2006-06-12");
         check("money", new Money("0.0"), "0.0");
+        check("object-reference", new IMObjectReference(new ArchetypeId("party.supplierorganisation"), 10001, "fffab"),
+              "party.supplierorganisation:10001:fffab");
     }
 
     /**

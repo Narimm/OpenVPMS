@@ -1,24 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.datatypes.basic;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.SingleValueConverter;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
@@ -37,7 +36,7 @@ import com.thoughtworks.xstream.converters.basic.URLConverter;
 import com.thoughtworks.xstream.converters.extended.SqlDateConverter;
 import com.thoughtworks.xstream.converters.extended.SqlTimeConverter;
 import com.thoughtworks.xstream.converters.extended.SqlTimestampConverter;
-import com.thoughtworks.xstream.core.BaseException;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 
 import java.math.BigDecimal;
@@ -52,11 +51,10 @@ import java.util.Map;
 
 /**
  * Helper to convert objects to and from strings.
- * This uses converters from <tt>XStream</tt> which have clearer conversion
- * behaviours than those provided by <tt>BeanUtils</tt>.
+ * This uses converters from {@code XStream} which have clearer conversion
+ * behaviours than those provided by {@code BeanUtils}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 @SuppressWarnings("HardCodedStringLiteral")
 public class TypedValueConverter {
@@ -80,13 +78,13 @@ public class TypedValueConverter {
     /**
      * Serializes an object to string.
      * Simple objects are serialized using
-     * <tt>SingleValueConverter.toString(Object)</tt> methods provided the
-     * <tt>XStream</tt> framework. Complex objects, or those for which no
+     * {@code SingleValueConverter.toString(Object)} methods provided the
+     * {@code XStream} framework. Complex objects, or those for which no
      * converter is available are serialized to XML.
      *
-     * @param object the object to serialize. May be <tt>null</tt>
-     * @return the serialized object, or <tt>null</tt>
-     * @throws BaseException if the object cannot be serialized
+     * @param object the object to serialize. May be {@code null}
+     * @return the serialized object, or {@code null}
+     * @throws XStreamException if the object cannot be serialized
      */
     public static String toString(Object object) {
         if (object == null) {
@@ -103,11 +101,10 @@ public class TypedValueConverter {
     /**
      * Deserializes an object from a string.
      *
-     * @param string the string to convert. May be <tt>null</tt>
-     * @param type   the symbolic type of the object, as returned by
-     *               {@link #getType}.
-     * @return the deserialized object, or <tt>null</tt>
-     * @throws BaseException if the object cannot be deserialized
+     * @param string the string to convert. May be {@code null}
+     * @param type   the symbolic type of the object, as returned by {@link #getType}
+     * @return the deserialized object, or {@code null}
+     * @throws XStreamException if the object cannot be serialized
      */
     public static Object fromString(String string, String type) {
         if (string == null) {
@@ -123,7 +120,7 @@ public class TypedValueConverter {
     /**
      * Returns a symbolic type for an object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      * @return the symbolic type for the object
      */
     public static String getType(Object object) {
@@ -161,6 +158,7 @@ public class TypedValueConverter {
         addConverter(Time.class, "sql-time", new SqlTimeConverter());
         addConverter(java.sql.Date.class, "sql-date", new SqlDateConverter());
         addConverter(Money.class, "money", new MoneyConverter());
+        addConverter(IMObjectReference.class, "object-reference", new IMObjectReferenceConverter());
     }
 
     /**
@@ -218,6 +216,19 @@ public class TypedValueConverter {
         @Override
         public Object fromString(String str) {
             return new Money(str);
+        }
+    }
+
+    private static class IMObjectReferenceConverter extends AbstractSingleValueConverter {
+
+        @Override
+        public boolean canConvert(Class type) {
+            return type.equals(IMObjectReference.class);
+        }
+
+        @Override
+        public Object fromString(String str) {
+            return IMObjectReference.fromString(str);
         }
     }
 
