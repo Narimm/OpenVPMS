@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.map.invoice;
 
@@ -80,8 +78,7 @@ import static org.junit.Assert.fail;
 /**
  * Tests the {@link InvoiceMapperImpl} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class InvoiceMapperTestCase extends AbstractInvoiceTest {
 
@@ -664,6 +661,80 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
+     * Verifies that an inactive product is not used if it matches on reorder code.
+     */
+    @Test
+    public void testInactiveProductMatchOnReorderCode() {
+        InvoiceMapper mapper = createMapper();
+        Product product = getProduct();
+
+        String reorderCode = "ABCD";
+
+        product.setActive(false);
+        addProductSupplierRelationship(product, getSupplier(), reorderCode, 1, PACKAGE_UNITS, new BigDecimal("1.4"));
+
+        FinancialAct item = createOrderItem(product, BigDecimal.ONE, 1, BigDecimal.ONE, reorderCode);
+        FinancialAct order = createOrder(item);
+
+        // create an invoice that references the order, but not the order items, and exclude the BuyersItemID.
+        // This forces order item and product matching on reorder code.
+        InvoiceLineType line1 = createInvoiceLine("1", item);
+        assertEquals(0, line1.getOrderLineReference().size());
+        line1.getOrderLineReference().add(createOrderLineReference(-1, order));
+        line1.getItem().setBuyersItemIdentification(null);
+        assertEquals(reorderCode, line1.getItem().getSellersItemIdentification().getID().getValue());
+        Invoice invoice = createInvoice(getSupplier(), getStockLocation(), line1);
+
+        // map the invoice to a delivery
+        Delivery delivery = mapper.map(invoice, getSupplier(), getStockLocation(), null);
+        assertNull(delivery.getOrder());
+        save(delivery.getActs());
+        assertEquals(1, delivery.getDeliveryItems().size());
+        FinancialAct deliveryItem = delivery.getDeliveryItems().get(0);
+
+        // verify the delivery item has no product, and that the reorder code is populated
+        ActBean bean = new ActBean(deliveryItem);
+        assertNull(bean.getNodeParticipantRef("product"));
+        assertEquals(reorderCode, bean.getString("reorderCode"));
+
+        // verify there is a relationship between the delivery and the order, but not the delivery item and order item
+        checkDeliveryOrderRelationship(delivery.getDelivery(), order);
+        assertFalse(bean.hasRelationship(SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP, item));
+    }
+
+    /**
+     * Verifies that if there are two order lines for the same product, and the invoice only invoices one,
+     * it is matched on quantity.
+     */
+    @Test
+    public void testDuplicateOrderLinesSingleInvoiceLineNoOrderLineReferences() {
+        InvoiceMapper mapper = createMapper();
+        Product product = getProduct();
+
+        // create an order with 2 items for the same product
+        FinancialAct item1 = createOrderItem(product, BigDecimal.TEN, 1, BigDecimal.ONE, "product1");
+        FinancialAct item2 = createOrderItem(product, BigDecimal.ONE, 1, BigDecimal.ONE, "product1");
+        FinancialAct order = createOrder(item1, item2);
+
+        // create an invoice that references the order, but not the order items.
+        InvoiceLineType line1 = createInvoiceLine("1", item2);
+        assertEquals(0, line1.getOrderLineReference().size());
+        line1.getOrderLineReference().add(createOrderLineReference(-1, order));
+        Invoice invoice = createInvoice(getSupplier(), getStockLocation(), line1);
+
+        // map the invoice to a delivery
+        Delivery delivery = mapper.map(invoice, getSupplier(), getStockLocation(), null);
+        assertNull(delivery.getOrder());
+        save(delivery.getActs());
+        assertEquals(1, delivery.getDeliveryItems().size());
+        FinancialAct deliveryItem1 = delivery.getDeliveryItems().get(0);
+
+        // verify there is a relationship between the delivery and the order, and the delivery items and order item2
+        checkDeliveryOrderRelationship(delivery.getDelivery(), order);
+        checkDeliveryOrderItemRelationship(deliveryItem1, item2);
+    }
+
+    /**
      * Verifies that the list price in delivery items is set to:
      * <ol>
      * <li>the wholesale price from the invoice line, if present; or
@@ -1153,7 +1224,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     /**
      * Checks the delivery status of an order.
      *
-     * @param order the order
+     * @param order  the order
      * @param status the expected status
      */
     private void checkDeliveryStatus(FinancialAct order, DeliveryStatus status) {
@@ -1219,18 +1290,34 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Adds a product/supplier relatiobship.
+     * Adds a product/supplier relationship.
      *
      * @param product      the product
      * @param supplier     the supplier
      * @param packageSize  the package size
      * @param packageUnits the package units
-     * @param listPrice    the list price. May be <tt>null</tt>
+     * @param listPrice    the list price. May be {@code null}
      */
     private void addProductSupplierRelationship(Product product, Party supplier, int packageSize, String packageUnits,
                                                 BigDecimal listPrice) {
+        addProductSupplierRelationship(product, supplier, null, packageSize, packageUnits, listPrice);
+    }
+
+    /**
+     * Adds a product/supplier relationship.
+     *
+     * @param product      the product
+     * @param supplier     the supplier
+     * @param reorderCode  the reorder code. May be {@code null}
+     * @param packageSize  the package size
+     * @param packageUnits the package units
+     * @param listPrice    the list price. May be {@code null}
+     */
+    private void addProductSupplierRelationship(Product product, Party supplier, String reorderCode, int packageSize,
+                                                String packageUnits, BigDecimal listPrice) {
         ProductRules rules = new ProductRules();
         ProductSupplier ps = rules.createProductSupplier(product, supplier);
+        ps.setReorderCode(reorderCode);
         ps.setPackageSize(packageSize);
         ps.setPackageUnits(packageUnits);
         ps.setListPrice(listPrice);
@@ -1275,7 +1362,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      * Creates an order reference.
      *
      * @param order the order
-     * @return a new <tt>OrderReferenceType</tt>
+     * @return a new {@code OrderReferenceType}
      */
     private OrderReferenceType createOrderReference(FinancialAct order) {
         return UBLHelper.createOrderReference(order.getId());
@@ -1285,7 +1372,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      * Creates an order line reference.
      *
      * @param orderItem the order item
-     * @return a new <tt>OrderLineReferenceType</tt>
+     * @return a new {@code OrderLineReferenceType}
      */
     private OrderLineReferenceType createOrderLineReference(FinancialAct orderItem) {
         return createOrderLineReference(orderItem, null);
@@ -1295,8 +1382,8 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      * Creates an order line reference that optionally references the order.
      *
      * @param orderItem the order item
-     * @param order     the order. May be <tt>null</tt>
-     * @return a new <tt>OrderLineReferenceType</tt>
+     * @param order     the order. May be {@code null}
+     * @return a new {@code OrderLineReferenceType}
      */
     private OrderLineReferenceType createOrderLineReference(FinancialAct orderItem, FinancialAct order) {
         return createOrderLineReference(orderItem.getId(), order);
@@ -1305,9 +1392,9 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     /**
      * Creates an order line reference that optionally references the order.
      *
-     * @param lineId the order line identifier, or <tt>-1</tt> if it is not known
-     * @param order  the order. May be <tt>null</tt>
-     * @return a new <tt>OrderLineReferenceType</tt>
+     * @param lineId the order line identifier, or {@code -1} if it is not known
+     * @param order  the order. May be {@code null}
+     * @return a new {@code OrderLineReferenceType}
      */
     private OrderLineReferenceType createOrderLineReference(long lineId, FinancialAct order) {
         OrderLineReferenceType result = new OrderLineReferenceType();
