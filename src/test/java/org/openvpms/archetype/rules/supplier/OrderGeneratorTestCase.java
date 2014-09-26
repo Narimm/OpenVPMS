@@ -16,6 +16,7 @@
 
 package org.openvpms.archetype.rules.supplier;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
@@ -23,21 +24,23 @@ import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -147,6 +150,53 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
     }
 
     /**
+     * Verifies that inactive products, or products with inactive product-supplier or product-stock location
+     * relationships are ignored.
+     */
+    @Test
+    public void testGetOrderableStockIgnoresInactiveProducts() {
+        OrderGenerator generator = new OrderGenerator(taxRules, getArchetypeService());
+        Party stockLocation = SupplierTestHelper.createStockLocation();
+        Party supplier1 = TestHelper.createSupplier();
+        Product product1 = TestHelper.createProduct();
+        Product product2 = TestHelper.createProduct();
+        Product product3 = TestHelper.createProduct();
+
+        addRelationships(product1, stockLocation, supplier1, true, 1, 10, 6);
+        ProductSupplier ps = addRelationships(product2, stockLocation, supplier1, true, 2, 10, 5);
+        addProductSupplierRelationship(product3, supplier1, true, BigDecimal.ONE, 1);
+        EntityRelationship er = addProductStockLocationRelationship(product3, stockLocation, null, 1, 10, 5);
+
+        supplier1 = get(supplier1);
+        List<Stock> stock = generator.getOrderableStock(supplier1, stockLocation, false);
+        assertEquals(3, stock.size());
+        checkStock(stock, product1, supplier1, stockLocation, 1, 0, 9);
+        checkStock(stock, product2, supplier1, stockLocation, 2, 0, 8);
+        checkStock(stock, product3, supplier1, stockLocation, 1, 0, 9);
+
+        // disable product1, and verify product2 and product3 are returned
+        product1.setActive(false);
+        save(product1);
+        stock = generator.getOrderableStock(supplier1, stockLocation, false);
+        assertEquals(2, stock.size());
+        checkStock(stock, product2, supplier1, stockLocation, 2, 0, 8);
+        checkStock(stock, product3, supplier1, stockLocation, 1, 0, 9);
+
+        // disable the product-supplier relationship for product2
+        ps.setActiveEndTime(new Date(System.currentTimeMillis() - 1000));
+        ps.save();
+        stock = generator.getOrderableStock(supplier1, stockLocation, false);
+        assertEquals(1, stock.size());
+        checkStock(stock, product3, supplier1, stockLocation, 1, 0, 9);
+
+        // disable the product-stock location relationship for product3
+        er.setActiveEndTime(new Date(System.currentTimeMillis() - 1000));
+        save(er);
+        stock = generator.getOrderableStock(supplier1, stockLocation, false);
+        assertEquals(0, stock.size());
+    }
+
+    /**
      * Tests creation of an order based on the amount of stock on hand.
      */
     @Test
@@ -162,15 +212,12 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
 
         List<FinancialAct> order = generator.createOrder(supplier, stockLocation, false);
         assertEquals(3, order.size());
-        FinancialAct act = order.get(0);
-        FinancialAct item1 = order.get(1);
-        FinancialAct item2 = order.get(2);
-        checkEquals(new BigDecimal("29.70"), act.getTotal());
-        checkEquals(new BigDecimal("2.70"), act.getTaxAmount());
-        assertTrue(TypeHelper.isA(act, SupplierArchetypes.ORDER));
-        assertTrue(TypeHelper.isA(item1, SupplierArchetypes.ORDER_ITEM));
-        assertTrue(TypeHelper.isA(item2, SupplierArchetypes.ORDER_ITEM));
         save(order);
+        BigDecimal total = new BigDecimal("29.70");
+        BigDecimal tax = new BigDecimal("2.70");
+        checkOrder(order.get(0), supplier, stockLocation, total, tax);
+        checkOrderItem(order, product1, BigDecimal.valueOf(9), new BigDecimal("19.80"), new BigDecimal("1.80"));
+        checkOrderItem(order, product2, BigDecimal.valueOf(9), new BigDecimal("9.90"), new BigDecimal("0.90"));
     }
 
     /**
@@ -188,15 +235,11 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
 
         List<FinancialAct> order = generator.createOrder(supplier, stockLocation, false);
         assertEquals(2, order.size());
-        FinancialAct act = order.get(0);
-        FinancialAct item1 = order.get(1);
-        checkEquals(new BigDecimal("2.20"), act.getTotal());
-        checkEquals(new BigDecimal("0.20"), act.getTaxAmount());
-        checkEquals(BigDecimal.ONE, item1.getQuantity());
-        assertTrue(TypeHelper.isA(act, SupplierArchetypes.ORDER));
-        assertTrue(TypeHelper.isA(item1, SupplierArchetypes.ORDER_ITEM));
         save(order);
-
+        BigDecimal total = new BigDecimal("2.20");
+        BigDecimal tax = new BigDecimal("0.20");
+        checkOrder(order.get(0), supplier, stockLocation, total, tax);
+        checkOrderItem(order.get(1), product1, BigDecimal.ONE, total, tax);
     }
 
     /**
@@ -212,16 +255,14 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
 
         addRelationships(product1, stockLocation, supplier, true, 0, 22, 22, new BigDecimal("2.0"), 10);
 
+        BigDecimal total = new BigDecimal("6.60");
+        BigDecimal tax = new BigDecimal("0.60");
+
         List<FinancialAct> order = generator.createOrder(supplier, stockLocation, false);
         assertEquals(2, order.size());
-        FinancialAct act = order.get(0);
-        FinancialAct item1 = order.get(1);
-        checkEquals(new BigDecimal("6.60"), act.getTotal());
-        checkEquals(new BigDecimal("0.60"), act.getTaxAmount());
-        checkEquals(BigDecimal.valueOf(3), item1.getQuantity());
-        assertTrue(TypeHelper.isA(act, SupplierArchetypes.ORDER));
-        assertTrue(TypeHelper.isA(item1, SupplierArchetypes.ORDER_ITEM));
         save(order);
+        checkOrder(order.get(0), supplier, stockLocation, total, tax);
+        checkOrderItem(order.get(1), product1, BigDecimal.valueOf(3), total, tax);
     }
 
     /**
@@ -242,18 +283,9 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
         addRelationships(product, stockLocation, supplier, true, 0, quantity.intValue(), 0, new BigDecimal("12.24"), 1);
 
         List<FinancialAct> order = generator.createOrder(supplier, stockLocation, false);
-        assertEquals(2, order.size());
-        FinancialAct act = order.get(0);
-        FinancialAct item1 = order.get(1);
-        checkEquals(total, act.getTotal());
-        checkEquals(taxAmount, act.getTaxAmount());
-        checkEquals(quantity, item1.getQuantity());
-        checkEquals(total, item1.getTotal());
-        checkEquals(taxAmount, item1.getTaxAmount());
-        checkEquals(quantity, item1.getQuantity());
-        assertTrue(TypeHelper.isA(act, SupplierArchetypes.ORDER));
-        assertTrue(TypeHelper.isA(item1, SupplierArchetypes.ORDER_ITEM));
         save(order);
+        checkOrder(order.get(0), supplier, stockLocation, total, taxAmount);
+        checkOrderItem(order.get(1), product, quantity, total, taxAmount);
     }
 
     /**
@@ -285,17 +317,9 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
 
         List<FinancialAct> order = generator.createOrder(supplier, stockLocation, true);
         assertEquals(2, order.size());
-        FinancialAct act = order.get(0);
-        FinancialAct item1 = order.get(1);
-        checkEquals(total, act.getTotal());
-        checkEquals(taxAmount, act.getTaxAmount());
-        checkEquals(quantity, item1.getQuantity());
-        checkEquals(total, item1.getTotal());
-        checkEquals(taxAmount, item1.getTaxAmount());
-        checkEquals(quantity, item1.getQuantity());
-        assertTrue(TypeHelper.isA(act, SupplierArchetypes.ORDER));
-        assertTrue(TypeHelper.isA(item1, SupplierArchetypes.ORDER_ITEM));
         save(order);
+        checkOrder(order.get(0), supplier, stockLocation, total, taxAmount);
+        checkOrderItem(order.get(1), product, quantity, total, taxAmount);
     }
 
     /**
@@ -318,18 +342,122 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
         List<FinancialAct> order1 = generator.createOrder(supplier1, stockLocation, false);
         assertEquals(0, order1.size());
 
+        BigDecimal total = new BigDecimal("29.70");
+        BigDecimal tax = new BigDecimal("2.70");
+
         // verify order created for supplier2
         List<FinancialAct> order2 = generator.createOrder(supplier2, stockLocation, false);
         assertEquals(2, order2.size());
-        FinancialAct act = order2.get(0);
-        FinancialAct item1 = order2.get(1);
-        ActBean bean = new ActBean(act);
-        checkEquals(new BigDecimal("29.70"), act.getTotal());
-        checkEquals(new BigDecimal("2.70"), act.getTaxAmount());
-        assertTrue(bean.isA(SupplierArchetypes.ORDER));
-        assertEquals(supplier2.getObjectReference(), bean.getNodeParticipantRef("supplier"));
-        assertTrue(TypeHelper.isA(item1, SupplierArchetypes.ORDER_ITEM));
         save(order2);
+        checkOrder(order2.get(0), supplier2, stockLocation, total, tax);
+        checkOrderItem(order2.get(1), product1, BigDecimal.valueOf(9), total, tax);
+    }
+
+    /**
+     * Verifies that if a product has 2 supplier has product supplier relationships to the same supplier,
+     * the preferred one is chosen.
+     */
+    @Test
+    public void testMultipleProductSupplierRelationshipsForProductSelectsPreferred() {
+        OrderGenerator generator = new OrderGenerator(taxRules, getArchetypeService());
+        Party stockLocation = SupplierTestHelper.createStockLocation();
+        Party supplier1 = TestHelper.createSupplier();
+        Product product1 = TestHelper.createProduct();
+
+        addProductSupplierRelationship(product1, supplier1, true, new BigDecimal("2.0"), 1);
+        addProductSupplierRelationship(product1, supplier1, false, new BigDecimal("3.0"), 1);
+        addProductStockLocationRelationship(product1, stockLocation, null, 1, 10, 5);
+
+        List<FinancialAct> order = generator.createOrder(supplier1, stockLocation, false);
+        assertEquals(2, order.size());
+        save(order);
+        BigDecimal total = new BigDecimal("19.80");
+        BigDecimal tax = new BigDecimal("1.80");
+        checkOrder(order.get(0), supplier1, stockLocation, total, tax);
+        checkOrderItem(order.get(1), product1, BigDecimal.valueOf(9), total, tax);
+    }
+
+    /**
+     * Verifies that if a product has multiple preferred product-supplier relationships, the one with the lowest
+     * id is chosen.
+     */
+    @Test
+    public void testMultiplePreferredProductSupplierRelationshipsSelectsLowestId() {
+        OrderGenerator generator = new OrderGenerator(taxRules, getArchetypeService());
+        Party stockLocation = SupplierTestHelper.createStockLocation();
+        Party supplier1 = TestHelper.createSupplier();
+        Product product1 = TestHelper.createProduct();
+
+        addProductSupplierRelationship(product1, supplier1, true, new BigDecimal("2.0"), 1);
+        addProductSupplierRelationship(product1, supplier1, true, new BigDecimal("3.0"), 1);
+        addProductStockLocationRelationship(product1, stockLocation, null, 1, 10, 5);
+
+        List<FinancialAct> order = generator.createOrder(supplier1, stockLocation, false);
+        assertEquals(2, order.size());
+        save(order);
+        BigDecimal total = new BigDecimal("19.80");
+        BigDecimal tax = new BigDecimal("1.80");
+        checkOrder(order.get(0), supplier1, stockLocation, total, tax);
+        checkOrderItem(order.get(1), product1, BigDecimal.valueOf(9), total, tax);
+    }
+
+    /**
+     * Verifies an order matches that expected.
+     *
+     * @param order         the order
+     * @param supplier      the expected supplier
+     * @param stockLocation the expected stock location
+     * @param total         the expected total
+     * @param tax           the expected tax
+     */
+    private void checkOrder(FinancialAct order, Party supplier, Party stockLocation, BigDecimal total, BigDecimal tax) {
+        ActBean bean = new ActBean(order);
+        assertTrue(bean.isA(SupplierArchetypes.ORDER));
+        assertEquals(supplier.getObjectReference(), bean.getNodeParticipantRef("supplier"));
+        assertEquals(stockLocation.getObjectReference(), bean.getNodeParticipantRef("stockLocation"));
+        checkEquals(total, order.getTotal());
+        checkEquals(tax, order.getTaxAmount());
+    }
+
+    /**
+     * Verifies an order item is present in an order
+     *
+     * @param order    the order
+     * @param product  the expected product
+     * @param quantity the expected quantity
+     * @param total    the expected total
+     * @param tax      the expected tax
+     */
+    private void checkOrderItem(List<FinancialAct> order, Product product, BigDecimal quantity, BigDecimal total,
+                                BigDecimal tax) {
+        for (FinancialAct act : order) {
+            ActBean bean = new ActBean(act);
+            if (bean.isA(SupplierArchetypes.ORDER_ITEM) && ObjectUtils.equals(product.getObjectReference(),
+                                                                              bean.getNodeParticipantRef("product"))) {
+                checkOrderItem(act, product, quantity, total, tax);
+                return;
+            }
+        }
+        fail("Order item not found");
+    }
+
+    /**
+     * Verifies an order item matches that expected.
+     *
+     * @param item     the order item
+     * @param product  the expected product
+     * @param quantity the expected quantity
+     * @param total    the expected total
+     * @param tax      the expected tax
+     */
+    private void checkOrderItem(FinancialAct item, Product product, BigDecimal quantity,
+                                BigDecimal total, BigDecimal tax) {
+        ActBean bean = new ActBean(item);
+        assertTrue(bean.isA(SupplierArchetypes.ORDER_ITEM));
+        assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
+        checkEquals(quantity, item.getQuantity());
+        checkEquals(total, item.getTotal());
+        checkEquals(tax, item.getTaxAmount());
     }
 
     /**
@@ -440,11 +568,12 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
      * @param quantity      the quantity
      * @param idealQty      the ideal quantity
      * @param criticalQty   the critical quantity
+     * @return the product-supplier relationship
      */
-    private void addRelationships(Product product, Party stockLocation, Party supplier, boolean preferred,
-                                  int quantity, int idealQty, int criticalQty) {
-        addRelationships(product, stockLocation, supplier, preferred, quantity, idealQty, criticalQty, BigDecimal.ONE,
-                         1);
+    private ProductSupplier addRelationships(Product product, Party stockLocation, Party supplier, boolean preferred,
+                                             int quantity, int idealQty, int criticalQty) {
+        return addRelationships(product, stockLocation, supplier, preferred, quantity, idealQty, criticalQty,
+                                BigDecimal.ONE, 1);
     }
 
     /**
@@ -458,27 +587,42 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
      * @param idealQty      the ideal quantity
      * @param criticalQty   the critical quantity
      * @param unitPrice     the unit price
+     * @return the product-supplier relationship
      */
-    private void addRelationships(Product product, Party stockLocation, Party supplier, boolean preferred,
-                                  int quantity, int idealQty, int criticalQty, BigDecimal unitPrice, int packageSize) {
+    private ProductSupplier addRelationships(Product product, Party stockLocation, Party supplier, boolean preferred,
+                                             int quantity, int idealQty, int criticalQty, BigDecimal unitPrice,
+                                             int packageSize) {
         addProductStockLocationRelationship(product, stockLocation, null, quantity, idealQty, criticalQty);
-        addProductSupplierRelationship(product, supplier, preferred, unitPrice, packageSize);
+        return addProductSupplierRelationship(product, supplier, preferred, unitPrice, packageSize);
     }
 
-    private void addProductSupplierRelationship(Product product, Party supplier, boolean preferred, BigDecimal unitPrice,
-                                                int packageSize) {
+    /**
+     * Adds a product-supplier relationship.
+     *
+     * @param product     the product
+     * @param supplier    the supplier
+     * @param preferred   indiciates if its the preferred relationship
+     * @param unitPrice   the unit price
+     * @param packageSize the package size
+     * @return the relationship
+     */
+    private ProductSupplier addProductSupplierRelationship(Product product, Party supplier, boolean preferred,
+                                                           BigDecimal unitPrice,
+                                                           int packageSize) {
         EntityBean bean = new EntityBean(product);
         ProductSupplier ps = new ProductSupplier(bean.addNodeRelationship("suppliers", supplier));
         ps.setPreferred(preferred);
         ps.setPackageSize(packageSize);
         ps.setNettPrice(unitPrice);
         save(product, supplier);
+        return ps;
     }
 
-    private void addProductStockLocationRelationship(Product product, Party stockLocation, Party supplier,
-                                                     int quantity, int idealQty, int criticalQty) {
+    private EntityRelationship addProductStockLocationRelationship(Product product, Party stockLocation, Party supplier,
+                                                                   int quantity, int idealQty, int criticalQty) {
         EntityBean bean = new EntityBean(product);
-        IMObjectBean productStockLocation = new IMObjectBean(bean.addNodeRelationship("stockLocations", stockLocation));
+        EntityRelationship relationship = bean.addNodeRelationship("stockLocations", stockLocation);
+        IMObjectBean productStockLocation = new IMObjectBean(relationship);
         if (supplier != null) {
             productStockLocation.setValue("supplier", supplier.getObjectReference());
         }
@@ -486,5 +630,6 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
         productStockLocation.setValue("idealQty", idealQty);
         productStockLocation.setValue("criticalQty", criticalQty);
         save(product, stockLocation);
+        return relationship;
     }
 }
