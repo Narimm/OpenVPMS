@@ -147,6 +147,7 @@ class PreferredSupplierEditor extends AbstractIMObjectReferenceEditor<Party> {
             };
             // TODO - EntityQuery should be parameterised
             Query entities = new EntityQuery(set, getContext());
+            entities.setAuto(true);
             result = entities;
         } else if (allowAll) {
             result = super.createQuery(name);
