@@ -1,20 +1,19 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.esci.adapter.map.invoice;
 
 import org.apache.commons.lang.StringUtils;
@@ -52,10 +51,9 @@ import java.util.List;
 
 
 /**
- * Wrapper for the <tt>InvoiceLineType</tt> class.
+ * Wrapper for the {@code InvoiceLineType} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class UBLInvoiceLine extends UBLFinancialType {
 
@@ -97,7 +95,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
 
 
     /**
-     * Constructs an <tt>UBLInvoiceLine</tt>.
+     * Constructs a {@link UBLInvoiceLine}.
      *
      * @param line             the invoice line
      * @param parent           the parent invoice
@@ -145,7 +143,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
     /**
      * Returns the order reference.
      *
-     * @return the order reference, or <tt>null</tt> if there is no associated order
+     * @return the order reference, or {@code null} if there is no associated order
      */
     public IMObjectReference getOrderReference() {
         IMObjectReference result = null;
@@ -162,10 +160,10 @@ public class UBLInvoiceLine extends UBLFinancialType {
     /**
      * Returns the order item reference.
      * <p/>
-     * <em>NOTE:</em> an item reference with a id of <tt>-1</tt> indicates that only the order is known, and that
+     * <em>NOTE:</em> an item reference with a id of {@code -1} indicates that only the order is known, and that
      * the item must be matched on product and quantity.
      *
-     * @return the order item reference, or <tt>null</tt> if there is no associated order item
+     * @return the order item reference, or {@code null} if there is no associated order item
      */
     public IMObjectReference getOrderItemReference() {
         IMObjectReference result = null;
@@ -180,7 +178,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
     /**
      * Returns the order line reference.
      *
-     * @return the order line reference, or <tt>null</tt> none is present
+     * @return the order line reference, or {@code null} none is present
      * @throws ESCIAdapterException if the reference is incorrectly specified
      */
     public OrderLineReferenceType getOrderLineReference() {
@@ -199,7 +197,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
     /**
      * Returns the associated order, if one is explicitly reference.
      *
-     * @return the order, or <tt>null</tt> if the invoice line isn't associated with an order
+     * @return the order, or {@code null} if the invoice line isn't associated with an order
      * @throws ESCIAdapterException      if the order was specified, but could not be found
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -219,7 +217,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
     /**
      * Returns the associated order item.
      *
-     * @return the order item, or <tt>null</tt> if there is no associated order item
+     * @return the order item, or {@code null} if there is no associated order item
      * @throws ESCIAdapterException if the order item is specified incorrectly, or the referenced order item cannot be
      *                              found
      */
@@ -277,7 +275,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * provided. It will use BuyersItemIdentification in preference to SellersItemIdentification.
      *
      * @param supplier the supplier
-     * @return the corresponding product, or <tt>null</tt> if the reference product is not found
+     * @return the corresponding product, or {@code null} if the reference product is not found
      * @throws ESCIAdapterException      if the product is incorrectly specified
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -303,7 +301,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * <p/>
      * This corresponds to <em>InvoiceLine/Item/BuyersItemIdentification/ID</em>.
      *
-     * @return the buyer's item identifier, or <tt>-1</tt> if none was specified
+     * @return the buyer's item identifier, or {@code -1} if none was specified
      * @throws ESCIAdapterException if there is no item or the identifier was incorrectly specified
      */
     public long getBuyersItemID() {
@@ -321,7 +319,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * </p>
      * This corresponds to <em>InvoiceLine/Item/SellersItemIdentification/ID</em>.
      *
-     * @return the sellers's item identifier, or <tt>null</tt> if none was specified
+     * @return the sellers's item identifier, or {@code null} if none was specified
      * @throws ESCIAdapterException if there is no item or the identifier is incorrectly specified
      */
     public String getSellersItemID() {
@@ -337,7 +335,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
     /**
      * Returns the item's name.
      *
-     * @return the item name, or <tt>null</tt> if one was not specified
+     * @return the item name, or {@code null} if one was not specified
      */
     public String getItemName() {
         ItemType item = getItem();
@@ -347,7 +345,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
     /**
      * Returns the package size.
      *
-     * @return the package size, or <tt>0.0</tt> if none was specified
+     * @return the package size, or {@code 0.0} if none was specified
      */
     public BigDecimal getPackSizeNumeric() {
         PackSizeNumericType packSize = getItem().getPackSizeNumeric();
@@ -357,7 +355,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
     /**
      * Returns the package quantity.
      *
-     * @return the package quantity, or <tt>null</tt> if none was specified
+     * @return the package quantity, or {@code null} if none was specified
      */
     public BigDecimal getPackQuantity() {
         PackQuantityType quantity = getItem().getPackQuantity();
@@ -367,7 +365,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
     /**
      * Returns the package quantity unit code.
      *
-     * @return the package quantity unit code, or <tt>null</tt> if none was specified
+     * @return the package quantity unit code, or {@code null} if none was specified
      * @throws ESCIAdapterException if the PackQuantity is specified without the unitCode
      */
     public String getPackQuantityUnitCode() {
@@ -394,7 +392,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * This looks for a single PricingReference/AlternativeConditionPrice. If present, it must have a PriceTypeCode
      * of "WH" (wholesale).
      *
-     * @return the list price, <tt>null</tt> if no list price is specified
+     * @return the list price, {@code null} if no list price is specified
      */
     public BigDecimal getWholesalePrice() {
         BigDecimal result = null;
@@ -418,7 +416,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
     /**
      * Returns the base quantity.
      *
-     * @return the base quantity. May be <tt>null</tt>
+     * @return the base quantity. May be {@code null}
      */
     public BigDecimal getBaseQuantity() {
         BaseQuantityType quantity = line.getPrice().getBaseQuantity();
@@ -428,7 +426,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
     /**
      * Returns the base quantity unit code.
      *
-     * @return the base quantity unit code. May be <tt>null</tt>
+     * @return the base quantity unit code. May be {@code null}
      */
     public String getBaseQuantityUnitCode() {
         BaseQuantityType quantity = line.getPrice().getBaseQuantity();
@@ -451,7 +449,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * This corresponds to <em>TaxTotal/TaxSubtotal</em> (i.e only one TaxTotal with one TaxSubtotal is
      * supported).
      *
-     * @return the tax sub total, or <tt>null</tt> if no tax is specified
+     * @return the tax sub total, or {@code null} if no tax is specified
      * @throws ESCIAdapterException if the tax is incorrectly specified
      */
     public UBLTaxSubtotal getTaxSubtotal() {
@@ -462,7 +460,7 @@ public class UBLInvoiceLine extends UBLFinancialType {
      * Returns a product given its id.
      *
      * @param id the product identifier
-     * @return the corresponding product, or <tt>null</tt> if it can't be found
+     * @return the corresponding product, or {@code null} if it can't be found
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected Product getProduct(long id) {
@@ -473,11 +471,11 @@ public class UBLInvoiceLine extends UBLFinancialType {
     /**
      * Returns a product for a given supplier, given its re-order code.
      * <p/>
-     * This returns the first product maching the re-order code.
+     * This returns the first product matching the re-order code.
      *
      * @param reorderCode the product's reorder code
      * @param supplier    the supplier
-     * @return the corresponding product, or <tt>null</tt> if it can't be found
+     * @return the corresponding product, or {@code null} if it can't be found or is inactive
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected Product getProduct(String reorderCode, Party supplier) {
@@ -485,8 +483,9 @@ public class UBLInvoiceLine extends UBLFinancialType {
         List<ProductSupplier> list = supplierRules.getProductSuppliers(supplier);
         for (ProductSupplier ps : list) {
             if (StringUtils.equals(reorderCode, ps.getReorderCode())) {
-                result = ps.getProduct();
-                if (result != null) {
+                Product product = ps.getProduct();
+                if (product != null && product.isActive()) {
+                    result = product;
                     break;
                 }
             }
