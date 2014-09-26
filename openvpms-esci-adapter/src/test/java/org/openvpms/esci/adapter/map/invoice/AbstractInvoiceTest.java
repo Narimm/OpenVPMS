@@ -11,8 +11,9 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.esci.adapter.map.invoice;
 
 import org.junit.Before;
@@ -20,6 +21,7 @@ import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductRules;
+import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -478,6 +480,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         mapper.setCurrencies(new Currencies());
         mapper.setArchetypeService(getArchetypeService());
         mapper.setBeanFactory(new IMObjectBeanFactory(getArchetypeService()));
+        mapper.setSupplierRules(new SupplierRules(getArchetypeService()));
         return mapper;
     }
 
