@@ -15,6 +15,7 @@
   ~
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <!DOCTYPE hibernate-mapping PUBLIC
         '-//Hibernate/Hibernate Mapping DTD 3.0//EN'
         'http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd'>
@@ -24,6 +25,7 @@
         <return-scalar column="productId" type="long"/>
         <return-scalar column="productShortName" type="string"/>
         <return-scalar column="productLinkId" type="string"/>
+        <return-scalar column="productSupplierId" type="long"/>
         <return-scalar column="quantity" type="big_decimal"/>
         <return-scalar column="idealQty" type="big_decimal"/>
         <return-scalar column="criticalQty" type="big_decimal"/>
@@ -41,6 +43,7 @@
         select  product.entity_id as productId,
                 product.arch_short_name as productShortName,
                 product.linkId as productLinkId,
+                productSupplier.entity_relationship_id as productSupplierId,
                 quantity.value as quantity,
                 idealQty.value as idealQty,
                 criticalQty.value as criticalQty,
@@ -58,9 +61,13 @@
         join    entity_relationships productStock on product.entity_id = productStock.source_id
                     and productStock.arch_short_name = "entityRelationship.productStockLocation"
                     and productStock.target_id = :stockLocationId
+                    and (productStock.active_start_time is null or productStock.active_start_time <= now())
+                    and (productStock.active_end_time is null or productStock.active_end_time > now())
         join    entity_relationships productSupplier on product.entity_id = productSupplier.source_id
                     and productSupplier.arch_short_name = "entityRelationship.productSupplier"
                     and productSupplier.target_id = :supplierId
+                    and (productSupplier.active_start_time is null or productSupplier.active_start_time <= now())
+                    and (productSupplier.active_end_time is null or productSupplier.active_end_time > now())
         left outer join entity_relationship_details supplier
                     on supplier.entity_relationship_id = productStock.entity_relationship_id
                     and supplier.name = "supplier"

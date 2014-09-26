@@ -39,6 +39,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +66,7 @@ class OrderGenerator {
      * Column names returned by the getStockToOrderByStockLocationAndSupplier named query.
      */
     private static final List<String> NAMES = Arrays.asList("productId", "productShortName", "productLinkId",
-                                                            "quantity", "idealQty",
+                                                            "productSupplierId", "quantity", "idealQty",
                                                             "criticalQty", "packageSize", "packageUnits",
                                                             "reorderCode", "reorderDesc",
                                                             "nettPrice", "listPrice", "orderedQty", "receivedQty",
@@ -97,7 +98,7 @@ class OrderGenerator {
      * @return the orderable stock
      */
     public List<Stock> getOrderableStock(Party supplier, Party stockLocation, boolean belowIdealQuantity) {
-        List<Stock> result = new ArrayList<Stock>();
+        HashMap<Long, Stock> result = new LinkedHashMap<Long, Stock>();
         Map<String, Object> parameters = new HashMap<String, Object>();
         parameters.put("stockLocationId", stockLocation.getId());
         parameters.put("supplierId", supplier.getId());
@@ -110,11 +111,22 @@ class OrderGenerator {
             if (product != null) {
                 Stock stock = getStock(set, product, supplier, stockLocation, belowIdealQuantity);
                 if (stock != null) {
-                    result.add(stock);
+                    Stock existing = result.get(product.getId());
+                    if (existing != null) {
+                        log.warn("Multiple preferred product-supplier relationships for the same product and supplier. "
+                                 + "Relationship with lowest productSupplierId is used.\n"
+                                 + "Stock 1=" + existing + "\n"
+                                 + "Stock 2=" + stock);
+                        if (existing.getProductSupplierId() > stock.getProductSupplierId()) {
+                            result.put(product.getId(), stock);
+                        }
+                    } else {
+                        result.put(product.getId(), stock);
+                    }
                 }
             }
         }
-        return result;
+        return new ArrayList<Stock>(result.values());
     }
 
     /**
@@ -183,6 +195,7 @@ class OrderGenerator {
     private Stock getStock(ObjectSet set, Product product, Party supplier, Party stockLocation,
                            boolean belowIdealQuantity) {
         Stock stock = null;
+        long productSupplierId = set.getLong("productSupplierId");
         BigDecimal quantity = getDecimal("quantity", set);
         BigDecimal idealQty = getDecimal("idealQty", set);
         BigDecimal criticalQty = getDecimal("criticalQty", set);
@@ -218,8 +231,8 @@ class OrderGenerator {
             }
             if (!MathRules.equals(ZERO, toOrder) && (belowIdealQuantity && current.compareTo(idealQty) <= 0
                                                      || (current.compareTo(criticalQty) <= 0))) {
-                stock = new Stock(product, stockLocation, supplier, quantity, idealQty, onOrder, toOrder,
-                                  reorderCode, reorderDesc, size, packageUnits, nettPrice, listPrice);
+                stock = new Stock(product, stockLocation, supplier, productSupplierId, quantity, idealQty,
+                                  onOrder, toOrder, reorderCode, reorderDesc, size, packageUnits, nettPrice, listPrice);
             }
         } else {
             if (log.isDebugEnabled()) {
