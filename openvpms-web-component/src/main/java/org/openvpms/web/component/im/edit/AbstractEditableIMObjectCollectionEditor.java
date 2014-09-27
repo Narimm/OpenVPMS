@@ -28,6 +28,7 @@ import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 
@@ -219,6 +220,22 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
             editors.add(getCurrentEditor());
         }
         return editors;
+    }
+
+    /**
+     * Returns the objects in the collection.
+     * <p/>
+     * This includes the object of the current editor, which may be uncommitted.
+     *
+     * @return the objects
+     */
+    @Override
+    public Collection<IMObject> getCurrentObjects() {
+        Set<IMObject> result = new LinkedHashSet<IMObject>(getCollectionPropertyEditor().getObjects());
+        if (editor != null) {
+            result.add(editor.getObject());
+        }
+        return result;
     }
 
     /**
