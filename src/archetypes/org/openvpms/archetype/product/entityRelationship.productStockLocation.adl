@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="entityRelationship.productStockLocation.1.0"
                latest="true"
@@ -64,6 +65,16 @@
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+        <node name="supplier" displayName="Preferred Supplier" path="/details/supplier"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="0">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="party.supplierorganisation"/>
+                    </propertyMap>
+                </propertyList>
             </assertion>
         </node>
     </archetype>
