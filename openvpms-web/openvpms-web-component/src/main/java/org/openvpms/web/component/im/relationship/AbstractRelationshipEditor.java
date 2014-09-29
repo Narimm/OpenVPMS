@@ -217,12 +217,20 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
     }
 
     /**
+     * Returns the archetype nodes to display.
+     *
+     * @return the nodes
+     */
+    protected ArchetypeNodes getArchetypeNodes() {
+        return nodes;
+    }
+
+    /**
      * Relationship layout strategy. Displays the source/target nodes before any others.
      * <p/>
      * If there is only a single node, this is rendered without any label.
      */
     protected class LayoutStrategy extends AbstractLayoutStrategy {
-
 
         /**
          * Constructs a {@code LayoutStrategy}.

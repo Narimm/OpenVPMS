@@ -24,6 +24,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.query.AbstractArchetypeServiceResultSet;
 import org.openvpms.web.component.im.query.AbstractFilteredResultSet;
 import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
 import org.openvpms.web.component.im.query.LocalSortResultSet;
@@ -107,8 +108,13 @@ public class DocumentTemplateQuery extends AbstractIMObjectQuery<Entity> {
     @Override
     public boolean selects(IMObjectReference reference) {
         if (types.length == 0) {
-            return super.selects(reference);
+            ResultSet<Entity> set = super.query(); // to avoid wrapping the set in LocalSortResultSet
+            if (set instanceof AbstractArchetypeServiceResultSet) {
+                ((AbstractArchetypeServiceResultSet<Entity>) set).setReferenceConstraint(reference);
+                return set.hasNext();
+            }
         }
         return QueryHelper.selects(query(), reference);
     }
+
 }

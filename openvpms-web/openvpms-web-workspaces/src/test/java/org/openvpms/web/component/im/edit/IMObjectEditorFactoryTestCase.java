@@ -37,6 +37,7 @@ import org.openvpms.web.component.im.product.ProductEditor;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.product.ProductPriceEditor;
 import org.openvpms.web.component.im.product.ProductReminderRelationshipEditor;
+import org.openvpms.web.component.im.product.ProductStockLocationEditor;
 import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
@@ -129,6 +130,8 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
             } else if (shortName.equals("entityRelationship.scheduleDocumentTemplate") ||
                        shortName.equals("entityRelationship.worklistDocumentTemplate")) {
                 checkCreate(shortName, ScheduleTemplateRelationshipEditor.class);
+            } else if (shortName.equals("entityRelationship.productStockLocation")) {
+                checkCreate(shortName, ProductStockLocationEditor.class);
             } else {
                 checkCreate(shortName, EntityRelationshipEditor.class);
             }

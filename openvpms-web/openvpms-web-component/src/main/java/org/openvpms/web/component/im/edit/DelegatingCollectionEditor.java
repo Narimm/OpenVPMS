@@ -339,6 +339,18 @@ public abstract class DelegatingCollectionEditor implements EditableIMObjectColl
     }
 
     /**
+     * Returns the objects in the collection.
+     * <p/>
+     * This includes the object of the current editor, which may be uncommitted.
+     *
+     * @return the objects
+     */
+    @Override
+    public Collection<IMObject> getCurrentObjects() {
+        return editor.getCurrentObjects();
+    }
+
+    /**
      * Registers the editor to delegate to.
      *
      * @param editor the editor to delegate to

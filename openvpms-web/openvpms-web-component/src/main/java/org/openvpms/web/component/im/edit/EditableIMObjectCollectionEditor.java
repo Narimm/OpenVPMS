@@ -99,4 +99,13 @@ public interface EditableIMObjectCollectionEditor extends IMObjectCollectionEdit
      * @return editors for items in the collection and editors for items not yet committed to the collection
      */
     Collection<IMObjectEditor> getEditors();
+
+    /**
+     * Returns the objects in the collection.
+     * <p/>
+     * This includes the object of the current editor, which may be uncommitted.
+     *
+     * @return the objects
+     */
+    Collection<IMObject> getCurrentObjects();
 }
