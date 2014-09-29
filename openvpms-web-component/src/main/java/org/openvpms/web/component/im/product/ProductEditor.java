@@ -22,6 +22,8 @@ import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -31,7 +33,12 @@ import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.EditableIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.relationship.MultipleEntityRelationshipCollectionEditor;
+import org.openvpms.web.component.im.relationship.RelationshipCollectionEditor;
+import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Validator;
@@ -66,9 +73,24 @@ public class ProductEditor extends AbstractIMObjectEditor {
      * @param parent        the parent object. May be {@code null}
      * @param layoutContext the layout context. May be {@code null}.
      */
-    public ProductEditor(Product object, IMObject parent,
-                         LayoutContext layoutContext) {
+    public ProductEditor(Product object, IMObject parent, LayoutContext layoutContext) {
         super(object, parent, layoutContext);
+        CollectionProperty suppliers = getCollectionProperty("suppliers");
+        CollectionProperty stock = getCollectionProperty("stockLocations");
+        if (suppliers != null && stock != null) {
+            RelationshipCollectionEditor stockLocations
+                    = new MultipleEntityRelationshipCollectionEditor(stock, object, getLayoutContext()) {
+                @Override
+                protected IMObjectEditor createEditor(IMObject object, LayoutContext context) {
+                    IMObjectEditor editor = super.createEditor(object, context);
+                    if (editor instanceof ProductStockLocationEditor) {
+                        ((ProductStockLocationEditor) editor).setProductEditor(ProductEditor.this);
+                    }
+                    return editor;
+                }
+            };
+            getEditors().add(stockLocations);
+        }
         updater = new ProductPriceUpdater(ServiceHelper.getCurrencies(), ServiceHelper.getArchetypeService(),
                                           ServiceHelper.getLookupService());
     }
@@ -89,13 +111,47 @@ public class ProductEditor extends AbstractIMObjectEditor {
     }
 
     /**
+     * Returns the product supplier references.
+     *
+     * @return the product supplier references
+     */
+    public List<IMObjectReference> getSuppliers() {
+        List<IMObjectReference> result = new ArrayList<IMObjectReference>();
+        EditableIMObjectCollectionEditor suppliers = (EditableIMObjectCollectionEditor) getEditor("suppliers");
+        if (suppliers != null) {
+            for (IMObject object : suppliers.getCurrentObjects()) {
+                IMObjectRelationship relationship = (IMObjectRelationship) object;
+                IMObjectReference target = relationship.getTarget();
+                if (target != null) {
+                    result.add(target);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        IMObjectLayoutStrategy strategy = super.createLayoutStrategy();
+        RelationshipCollectionEditor stockLocations = (RelationshipCollectionEditor) getEditor("stockLocations", false);
+        if (stockLocations != null) {
+            strategy.addComponent(new ComponentState(stockLocations));
+        }
+        return strategy;
+    }
+
+    /**
      * Invoked when layout has completed. This can be used to perform
      * processing that requires all editors to be created.
      */
     @Override
     protected void onLayoutCompleted() {
-        IMObjectCollectionEditor editor = (IMObjectCollectionEditor) getEditor(
-                "suppliers");
+        IMObjectCollectionEditor editor = (IMObjectCollectionEditor) getEditor("suppliers");
         if (editor != null) {
             editor.addModifiableListener(new ModifiableListener() {
                 public void modified(Modifiable modifiable) {

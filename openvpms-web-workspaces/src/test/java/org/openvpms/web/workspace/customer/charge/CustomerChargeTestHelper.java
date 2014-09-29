@@ -261,6 +261,8 @@ public class CustomerChargeTestHelper {
     public static Entity createPharmacy() {
         Entity pharmacy = (Entity) TestHelper.create("party.organisationPharmacy");
         pharmacy.setName("ZPharmacy");
+        EntityBean bean = new EntityBean(pharmacy);
+        bean.addNodeTarget("user", TestHelper.createUser());
         TestHelper.save(pharmacy);
         return pharmacy;
     }
