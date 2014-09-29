@@ -39,6 +39,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +66,7 @@ class OrderGenerator {
      * Column names returned by the getStockToOrderByStockLocationAndSupplier named query.
      */
     private static final List<String> NAMES = Arrays.asList("productId", "productShortName", "productLinkId",
-                                                            "quantity", "idealQty",
+                                                            "productSupplierId", "quantity", "idealQty",
                                                             "criticalQty", "packageSize", "packageUnits",
                                                             "reorderCode", "reorderDesc",
                                                             "nettPrice", "listPrice", "orderedQty", "receivedQty",
@@ -97,65 +98,35 @@ class OrderGenerator {
      * @return the orderable stock
      */
     public List<Stock> getOrderableStock(Party supplier, Party stockLocation, boolean belowIdealQuantity) {
-        List<Stock> result = new ArrayList<Stock>();
+        HashMap<Long, Stock> result = new LinkedHashMap<Long, Stock>();
         Map<String, Object> parameters = new HashMap<String, Object>();
         parameters.put("stockLocationId", stockLocation.getId());
         parameters.put("supplierId", supplier.getId());
+        parameters.put("supplier", supplier.getObjectReference().toString());
         NamedQuery query = new NamedQuery("getStockToOrderByStockLocationAndSupplier", NAMES, parameters);
         ObjectSetQueryIterator iterator = new ObjectSetQueryIterator(service, query);
         while (iterator.hasNext()) {
             ObjectSet set = iterator.next();
             Product product = (Product) getObject("product", set);
             if (product != null) {
-                BigDecimal quantity = getDecimal("quantity", set);
-                BigDecimal idealQty = getDecimal("idealQty", set);
-                BigDecimal criticalQty = getDecimal("criticalQty", set);
-                int packageSize = set.getInt("packageSize");
-                String packageUnits = set.getString("packageUnits");
-                String reorderCode = set.getString("reorderCode");
-                String reorderDesc = set.getString("reorderDesc");
-                BigDecimal nettPrice = getDecimal("nettPrice", set);
-                BigDecimal listPrice = getDecimal("listPrice", set);
-                BigDecimal orderedQty = getDecimal("orderedQty", set);
-                BigDecimal receivedQty = getDecimal("receivedQty", set);
-                BigDecimal cancelledQty = getDecimal("cancelledQty", set);
-                int orderPackageSize = set.getInt("orderPackageSize");
-                int size = (packageSize != 0) ? packageSize : orderPackageSize;
-                if (size != 0) {
-                    BigDecimal decSize = BigDecimal.valueOf(size);
-                    BigDecimal onOrder = orderedQty.subtract(receivedQty).subtract(cancelledQty).multiply(decSize);
-
-                    BigDecimal current = quantity.add(onOrder); // the on-hand and on-order stock
-                    BigDecimal toOrder = ZERO;
-                    BigDecimal units = idealQty.subtract(current); // no. of units required to get to idealQty
-                    if (!MathRules.equals(ZERO, units)) {
-                        // Round up as the desired no. may be less than a packageSize, but must order a whole pack.
-                        toOrder = units.divide(decSize, 0, RoundingMode.UP);
-                    }
-
-                    if (log.isDebugEnabled()) {
-                        log.debug("Stock: product=" + product.getName() + " (" + product.getId()
-                                  + "), location=" + stockLocation.getName() + " (" + stockLocation.getId()
-                                  + "), supplier=" + supplier.getName() + " (" + supplier.getId()
-                                  + "), onHand=" + quantity + ", onOrder=" + onOrder + ", toOrder=" + toOrder
-                                  + ", idealQty=" + idealQty + ", criticalQty=" + criticalQty);
-                    }
-                    if (!MathRules.equals(ZERO, toOrder) && (belowIdealQuantity && current.compareTo(idealQty) <= 0
-                                                             || (current.compareTo(criticalQty) <= 0))) {
-                        result.add(new Stock(product, stockLocation, supplier, quantity, idealQty, onOrder, toOrder,
-                                             reorderCode, reorderDesc, size, packageUnits, nettPrice, listPrice));
-                    }
-                } else {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Cannot order product=" + product.getName() + " (" + product.getId()
-                                  + ") at location=" + stockLocation.getName() + " (" + stockLocation.getId()
-                                  + ") from supplier=" + supplier.getName() + " (" + supplier.getId()
-                                  + ") - no package size");
+                Stock stock = getStock(set, product, supplier, stockLocation, belowIdealQuantity);
+                if (stock != null) {
+                    Stock existing = result.get(product.getId());
+                    if (existing != null) {
+                        log.warn("Multiple preferred product-supplier relationships for the same product and supplier. "
+                                 + "Relationship with lowest productSupplierId is used.\n"
+                                 + "Stock 1=" + existing + "\n"
+                                 + "Stock 2=" + stock);
+                        if (existing.getProductSupplierId() > stock.getProductSupplierId()) {
+                            result.put(product.getId(), stock);
+                        }
+                    } else {
+                        result.put(product.getId(), stock);
                     }
                 }
             }
         }
-        return result;
+        return new ArrayList<Stock>(result.values());
     }
 
     /**
@@ -208,6 +179,70 @@ class OrderGenerator {
             result.addAll(items);
         }
         return result;
+    }
+
+    /**
+     * Creates a {@link Stock} from {@code set}, if stock needs to be ordered.
+     *
+     * @param set                the object set
+     * @param product            the product
+     * @param supplier           the product supplier
+     * @param stockLocation      the product stock location
+     * @param belowIdealQuantity if {@code true}, create stock if the current quantity {@code <=} the ideal quantity,
+     *                           create stock if the current quantity {@code <=} the critical quantity
+     * @return the stock, or {@code null} if the requirements for ordering the stock aren't met
+     */
+    private Stock getStock(ObjectSet set, Product product, Party supplier, Party stockLocation,
+                           boolean belowIdealQuantity) {
+        Stock stock = null;
+        long productSupplierId = set.getLong("productSupplierId");
+        BigDecimal quantity = getDecimal("quantity", set);
+        BigDecimal idealQty = getDecimal("idealQty", set);
+        BigDecimal criticalQty = getDecimal("criticalQty", set);
+        int packageSize = set.getInt("packageSize");
+        String packageUnits = set.getString("packageUnits");
+        String reorderCode = set.getString("reorderCode");
+        String reorderDesc = set.getString("reorderDesc");
+        BigDecimal nettPrice = getDecimal("nettPrice", set);
+        BigDecimal listPrice = getDecimal("listPrice", set);
+        BigDecimal orderedQty = getDecimal("orderedQty", set);
+        BigDecimal receivedQty = getDecimal("receivedQty", set);
+        BigDecimal cancelledQty = getDecimal("cancelledQty", set);
+        int orderPackageSize = set.getInt("orderPackageSize");
+        int size = (packageSize != 0) ? packageSize : orderPackageSize;
+        if (size != 0) {
+            BigDecimal decSize = BigDecimal.valueOf(size);
+            BigDecimal onOrder = orderedQty.subtract(receivedQty).subtract(cancelledQty).multiply(decSize);
+
+            BigDecimal current = quantity.add(onOrder); // the on-hand and on-order stock
+            BigDecimal toOrder = ZERO;
+            BigDecimal units = idealQty.subtract(current); // no. of units required to get to idealQty
+            if (!MathRules.equals(ZERO, units)) {
+                // Round up as the desired no. may be less than a packageSize, but must order a whole pack.
+                toOrder = units.divide(decSize, 0, RoundingMode.UP);
+            }
+
+            if (log.isDebugEnabled()) {
+                log.debug("Stock: product=" + product.getName() + " (" + product.getId()
+                          + "), location=" + stockLocation.getName() + " (" + stockLocation.getId()
+                          + "), supplier=" + supplier.getName() + " (" + supplier.getId()
+                          + "), onHand=" + quantity + ", onOrder=" + onOrder + ", toOrder=" + toOrder
+                          + ", idealQty=" + idealQty + ", criticalQty=" + criticalQty);
+            }
+            if (!MathRules.equals(ZERO, toOrder) && (belowIdealQuantity && current.compareTo(idealQty) <= 0
+                                                     || (current.compareTo(criticalQty) <= 0))) {
+                stock = new Stock(product, stockLocation, supplier, productSupplierId, quantity, idealQty,
+                                  onOrder, toOrder, reorderCode, reorderDesc, size, packageUnits, nettPrice, listPrice);
+            }
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("Cannot order product=" + product.getName() + " (" + product.getId()
+                          + ") at location=" + stockLocation.getName() + " (" + stockLocation.getId()
+                          + ") from supplier=" + supplier.getName() + " (" + supplier.getId()
+                          + ") - no package size");
+            }
+        }
+        return stock;
     }
 
     /**
