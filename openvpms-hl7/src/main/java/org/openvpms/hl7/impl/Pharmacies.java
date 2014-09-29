@@ -17,6 +17,7 @@
 package org.openvpms.hl7.impl;
 
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 import java.util.List;
 
@@ -53,6 +54,14 @@ public interface Pharmacies {
      * @return the pharmacies
      */
     List<Entity> getPharmacies();
+
+    /**
+     * Returns a pharmacy given its reference.
+     *
+     * @param reference the pharmacy reference
+     * @return the pharmacy, or {@code null} if none is found
+     */
+    Entity getPharmacy(IMObjectReference reference);
 
     /**
      * Adds a listener to be notified of pharmacy updates.
