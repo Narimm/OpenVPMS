@@ -28,5 +28,8 @@
               minCardinality="0" maxCardinality="1" filter="entityLink.pharmacyOrderConnector"/>
         <node name="dispenseConnection" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
               minCardinality="0" maxCardinality="1" filter="entityLink.pharmacyDispenseConnector"/>
+        <node name="user" path="/entityLinks"
+              type="java.util.HashSet" baseName="EntityLink" minCardinality="1" maxCardinality="1"
+              filter="entityLink.pharmacyUser"/>
     </archetype>
 </archetypes>
