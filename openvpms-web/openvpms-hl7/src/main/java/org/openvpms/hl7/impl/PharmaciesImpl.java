@@ -17,6 +17,7 @@
 package org.openvpms.hl7.impl;
 
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 import java.util.ArrayList;
@@ -52,6 +53,17 @@ public class PharmaciesImpl extends MonitoringIMObjectCache<Entity> implements P
     @Override
     public List<Entity> getPharmacies() {
         return getObjects();
+    }
+
+    /**
+     * Returns a pharmacy given its reference.
+     *
+     * @param reference the pharmacy reference
+     * @return the pharmacy, or {@code null} if none is found
+     */
+    @Override
+    public Entity getPharmacy(IMObjectReference reference) {
+        return getObject(reference);
     }
 
     /**

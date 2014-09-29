@@ -129,7 +129,12 @@ public class RDSProcessor {
             addNote(bean, "Unknown Dispense Give Code, id='" + code.getIdentifier().getValue()
                           + "', name='" + code.getText().getValue() + "'");
         }
-        itemBean.setValue("quantity", new BigDecimal(rxd.getActualDispenseAmount().getValue()));
+        String quantity = rxd.getActualDispenseAmount().getValue();
+        if (StringUtils.isEmpty(quantity)) {
+            itemBean.setValue("quantity", BigDecimal.ZERO);
+        } else {
+            itemBean.setValue("quantity", new BigDecimal(quantity));
+        }
     }
 
     /**

@@ -30,10 +30,14 @@ import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.hl7.Connector;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -158,10 +162,10 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
             throws ReceivingApplicationException, HL7Exception {
         log(message);
         RDS_O13 dispense = (RDS_O13) message;
-        String sendingFacility = dispense.getMSH().getSendingFacility().getName();
-        String sendingApplication = dispense.getMSH().getSendingApplication().getName();
-        String receivingFacility = dispense.getMSH().getReceivingFacility().getName();
-        String receivingApplication = dispense.getMSH().getReceivingApplication().getName();
+        String sendingFacility = dispense.getMSH().getSendingFacility().getNamespaceID().getValue();
+        String sendingApplication = dispense.getMSH().getSendingApplication().getNamespaceID().getValue();
+        String receivingFacility = dispense.getMSH().getReceivingFacility().getNamespaceID().getValue();
+        String receivingApplication = dispense.getMSH().getReceivingApplication().getNamespaceID().getValue();
         boolean found = false;
         for (Connector connector : getConnectors()) {
             if (ObjectUtils.equals(sendingFacility, connector.getSendingFacility())
@@ -180,12 +184,24 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
             }
         }
 
+        IMObjectReference reference = (IMObjectReference) theMetadata.get("pharmacy");
+        Entity pharmacy = pharmacies.getPharmacy(reference);
+        if (pharmacy == null) {
+            throw new HL7Exception("Pharmacy not found");
+        }
+        User user = getUser(pharmacy);
+        if (user == null) {
+            throw new HL7Exception("User not found");
+        }
+
         try {
-            List<Act> order = processor.process((RDS_O13) message);
-            service.save(order);
+            initSecurityContext(user);
+            process((RDS_O13) message);
             return message.generateACK();
         } catch (IOException exception) {
             throw new HL7Exception(exception);
+        } finally {
+            SecurityContextHolder.clearContext();
         }
     }
 
@@ -198,6 +214,19 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
     @Override
     public boolean canProcess(Message message) {
         return message instanceof RDS_O13;
+    }
+
+    /**
+     * Initialises the security context.
+     *
+     * @param user the user
+     */
+    private void initSecurityContext(User user) {
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        UsernamePasswordAuthenticationToken authentication
+                = new UsernamePasswordAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
     }
 
     /**
@@ -222,7 +251,7 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
         if (connector != null) {
             if (listen) {
                 try {
-                    dispatcher.listen(connector, this);
+                    dispatcher.listen(connector, new Receiver(this, pharmacy));
                     listening.put(pharmacy.getId(), connector);
                 } catch (Throwable exception) {
                     log.warn("Failed to start listening to connections from pharmacy, name="
@@ -236,6 +265,29 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
             log.info("Pharmacy (name=" + pharmacy.getName() + ", id=" + pharmacy.getId()
                      + ") has no dispense connection defined, skipping");
         }
+    }
+
+    /**
+     * Processes an RDS message, returning the corresponding <em>act.customerOrderPharmacy</em> and child item
+     * acts.
+     *
+     * @param message the message
+     * @return the pharmacy order acts
+     * @throws HL7Exception any HL7 error
+     */
+    protected List<Act> process(RDS_O13 message) throws HL7Exception {
+        List<Act> order = processor.process(message);
+        service.save(order);
+        return order;
+    }
+
+    /**
+     * Returns the connectors that the service is listening on.
+     *
+     * @return the connectors
+     */
+    protected List<Connector> getConnectors() {
+        return new ArrayList<Connector>(listening.values());
     }
 
     /**
@@ -264,12 +316,12 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
     }
 
     /**
-     * Returns the connector.
-     *
-     * @return the connectors
+     * Returns the user for a pharmacy.
      */
-    private List<Connector> getConnectors() {
-        return new ArrayList<Connector>(listening.values());
+    private User getUser(Entity pharmacy) {
+        EntityBean bean = new EntityBean(pharmacy, service);
+        return (User) bean.getNodeTargetEntity("user");
+
     }
 
     /**
@@ -287,6 +339,48 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
                 formatted = exception.getMessage();
             }
             log.debug("Received message: \n" + formatted);
+        }
+    }
+
+    private static class Receiver implements ReceivingApplication {
+
+        private final ReceivingApplication receiver;
+        private final IMObjectReference reference;
+
+        public Receiver(ReceivingApplication receiver, Entity pharmacy) {
+            this.receiver = receiver;
+            reference = pharmacy.getObjectReference();
+        }
+
+        /**
+         * Uses the contents of the message for whatever purpose the application
+         * has for this message, and returns an appropriate response message.
+         *
+         * @param theMessage  an inbound HL7 message
+         * @param theMetadata message metadata (which may include information about where the message comes
+         *                    from, etc).  This is the same metadata as in {@link Transportable#getMetadata()}.
+         * @return an appropriate application response (for example an application ACK or query response).
+         *         Appropriate responses to different types of incoming messages are defined by HL7.
+         * @throws ReceivingApplicationException if there is a problem internal to the application (for example
+         *                                       a database problem)
+         * @throws HL7Exception                  if there is a problem with the message
+         */
+        @Override
+        public Message processMessage(Message theMessage, Map<String, Object> theMetadata) throws ReceivingApplicationException, HL7Exception {
+            Map<String, Object> copy = new HashMap<String, Object>(theMetadata);
+            copy.put("pharmacy", reference);
+            return receiver.processMessage(theMessage, copy);
+        }
+
+        /**
+         * @param theMessage an inbound HL7 message
+         * @return true if this ReceivingApplication wishes to accept the message.  By returning
+         *         true, this Application declares itself the recipient of the message, accepts
+         *         responsibility for it, and must be able to respond appropriately to the sending system.
+         */
+        @Override
+        public boolean canProcess(Message theMessage) {
+            return receiver.canProcess(theMessage);
         }
     }
 
