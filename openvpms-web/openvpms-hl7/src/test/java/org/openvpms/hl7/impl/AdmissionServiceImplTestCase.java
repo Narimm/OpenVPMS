@@ -62,8 +62,8 @@ public class AdmissionServiceImplTestCase extends AbstractServiceTest {
                           "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r" +
-                          "AL1|1||||Penicillin\r" +
-                          "AL1|2||||Pollen\r";
+                          "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
+                          "AL1|2|MA|^Pollen|U|Produces hives\r";
 
         admissionService.admitted(getContext());
         assertTrue(getDispatcher().waitForMessages(30));
@@ -99,8 +99,8 @@ public class AdmissionServiceImplTestCase extends AbstractServiceTest {
                           "EVN|A03|20140825085900+1000|||||Main Clinic\r" +
                           "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
-                          "AL1|1||||Penicillin\r" +
-                          "AL1|2||||Pollen\r" +
+                          "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
+                          "AL1|2|MA|^Pollen|U|Produces hives\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r";
 
         admissionService.discharged(getContext());
@@ -120,8 +120,8 @@ public class AdmissionServiceImplTestCase extends AbstractServiceTest {
                           "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r" +
-                          "AL1|1||||Penicillin\r" +
-                          "AL1|2||||Pollen\r";
+                          "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
+                          "AL1|2|MA|^Pollen|U|Produces hives\r";
 
         admissionService.updated(getContext());
         assertTrue(getDispatcher().waitForMessages(30));

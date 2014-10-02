@@ -51,7 +51,7 @@ import java.util.TimeZone;
 import static org.openvpms.archetype.test.TestHelper.getLookup;
 
 /**
- * Enter description.
+ * Base class for HL7 message tests.
  *
  * @author Tim Anderson
  */
@@ -109,8 +109,8 @@ public abstract class AbstractMessageTest extends ArchetypeServiceTest {
 
         save(weight);
 
-        createAllergy(patient, "Penicillin");
-        createAllergy(patient, "Pollen");
+        createAllergy(patient, "Penicillin", "Respiratory distress");
+        createAllergy(patient, "Pollen", "Produces hives");
 
         User clinician = TestHelper.createClinician(false);
         clinician.setName("Joe Blogs"); // todo - need separate first, last name fields
@@ -173,13 +173,15 @@ public abstract class AbstractMessageTest extends ArchetypeServiceTest {
      * Helper to create an allergy record for a patient.
      *
      * @param patient the patient
+     * @param reason  the reason
      * @param notes   the allergy notes
      */
-    private void createAllergy(Party patient, String notes) {
+    private void createAllergy(Party patient, String reason, String notes) {
         Act alert = (Act) create(PatientArchetypes.ALERT);
         ActBean bean = new ActBean(alert);
         bean.setValue("alertType", TestHelper.getLookup("lookup.patientAlertType", "ALLERGY").getCode());
         bean.addNodeParticipation("patient", patient);
+        bean.setValue("reason", reason);
         bean.setValue("notes", notes);
         bean.save();
     }

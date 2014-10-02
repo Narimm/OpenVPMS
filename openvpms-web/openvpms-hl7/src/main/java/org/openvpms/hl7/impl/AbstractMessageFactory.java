@@ -176,8 +176,16 @@ abstract class AbstractMessageFactory {
     protected void populateAllergy(AL1 al1, Act act, int id) throws DataTypeException {
         al1.getSetIDAL1().setValue(Integer.toString(id));
         IMObjectBean bean = new IMObjectBean(act, getArchetypeService());
+        al1.getAllergenCodeMnemonicDescription().getText().setValue(bean.getString("reason"));
+
+        al1.getAllergenTypeCode().getIdentifier().setValue("MA");
+        // Miscellaneous allergy - 3.4.6.2 AL1-2 Allergen Type Code
+
+        al1.getAllergySeverityCode().getIdentifier().setValue("U");
+        // Unknown -  3.4.6.4 AL-4 Allergy Severity Code. Could use the alert severity but not really meaningful
+        // as it applies to all allergies
+
         al1.getAllergyReactionCode(0).setValue(bean.getString("notes"));
-        act.getStatus();
     }
 
 }
