@@ -40,18 +40,6 @@ public class MLLPSender extends Connector {
      */
     private final int port;
 
-    /**
-     * Determines if milliseconds should be included in date/times.
-     */
-    private final boolean includeMillis;
-
-    /**
-     * Determines if time/zones should be included in date/times.
-     */
-    private final boolean includeTimeZone;
-
-    private final IMObjectReference reference;
-
 
     /**
      * Constructs an {@link MLLPSender}.
@@ -62,7 +50,7 @@ public class MLLPSender extends Connector {
      * @param sendingFacility      the sending facility
      * @param receivingApplication the receiving application
      * @param receivingFacility    the receiving facility
-     * @param reference
+     * @param reference            the connector reference
      */
     public MLLPSender(String host, int port, String sendingApplication, String sendingFacility,
                       String receivingApplication, String receivingFacility, IMObjectReference reference) {
@@ -70,15 +58,25 @@ public class MLLPSender extends Connector {
              true, reference);
     }
 
+    /**
+     * Constructs a {@link MLLPSender}.
+     *
+     * @param host                 the host to connect to
+     * @param port                 the port to connect to
+     * @param sendingApplication   the sending application
+     * @param sendingFacility      the sending facility
+     * @param receivingApplication the receiving application
+     * @param receivingFacility    the receiving facility
+     * @param includeMillis        if {@code true} include milliseconds in time fields
+     * @param includeTimeZone      if {@code true} include the timezone in date/time fields
+     */
     public MLLPSender(String host, int port, String sendingApplication, String sendingFacility,
                       String receivingApplication, String receivingFacility, boolean includeMillis,
                       boolean includeTimeZone, IMObjectReference reference) {
-        super(sendingApplication, sendingFacility, receivingApplication, receivingFacility);
+        super(sendingApplication, sendingFacility, receivingApplication, receivingFacility, includeMillis,
+              includeTimeZone, reference);
         this.host = host;
         this.port = port;
-        this.includeMillis = includeMillis;
-        this.includeTimeZone = includeTimeZone;
-        this.reference = reference;
     }
 
     /**
@@ -115,24 +113,6 @@ public class MLLPSender extends Connector {
     }
 
     /**
-     * Determines if milliseconds should be included in date/times.
-     *
-     * @return {@code true} if milliseconds should be included in date/times
-     */
-    public boolean isIncludeMillis() {
-        return includeMillis;
-    }
-
-    /**
-     * Determines if timezones should be included in date/times.
-     *
-     * @return {@code true} if timezones should be included in date/times
-     */
-    public boolean isIncludeTimeZone() {
-        return includeTimeZone;
-    }
-
-    /**
      * Indicates whether some other object is "equal to" this one.
      *
      * @param obj the reference object with which to compare.
@@ -146,16 +126,6 @@ public class MLLPSender extends Connector {
             result = port == other.port && ObjectUtils.equals(host, other.host);
         }
         return result;
-    }
-
-    /**
-     * Returns the connector reference.
-     *
-     * @return the connector reference
-     */
-    @Override
-    public IMObjectReference getReference() {
-        return reference;
     }
 
     /**

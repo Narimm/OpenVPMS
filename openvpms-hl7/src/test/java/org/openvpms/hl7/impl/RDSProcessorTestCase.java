@@ -19,6 +19,7 @@ package org.openvpms.hl7.impl;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.v25.message.RDS_O13;
 import org.junit.Test;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -89,6 +90,7 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
         assertEquals(product.getObjectReference(), item.getNodeParticipantRef("product"));
         checkEquals(BigDecimal.valueOf(2), item.getBigDecimal("quantity"));
         assertEquals("90032145", item.getString("reference"));
+        assertEquals(ActStatus.IN_PROGRESS, order.getStatus());
         save(acts);
     }
 

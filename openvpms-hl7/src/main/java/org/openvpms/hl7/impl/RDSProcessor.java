@@ -31,6 +31,7 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -42,7 +43,7 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -81,25 +82,35 @@ public class RDSProcessor {
      * @throws HL7Exception for any HL7 error
      */
     public List<Act> process(RDS_O13 message) throws HL7Exception {
+        List<Act> result = new ArrayList<Act>();
+        if (message.getORDERReps() < 1) {
+            throw new HL7Exception("RDS O13 message contains no order group");
+        }
         PID pid = message.getPATIENT().getPID();
         Act order = (Act) service.create("act.customerOrderPharmacy");
-        Act item = (Act) service.create("act.customerOrderItemPharmacy");
         ActBean bean = new ActBean(order, service);
-        bean.addNodeRelationship("items", item);
-        ActBean itemBean = new ActBean(item, service);
-        Party patient = addPatient(pid, bean, itemBean);
+        Party patient = getPatient(pid, bean);
         if (patient != null) {
             addCustomer(bean, patient);
         }
-        String fillerOrderNumber = message.getORDER().getORC().getFillerOrderNumber().getEntityIdentifier().getValue();
-        if (fillerOrderNumber != null) {
-            itemBean.setValue("reference", fillerOrderNumber);
+        result.add(order);
+        boolean match = true;
+        for (int i = 0; i < message.getORDERReps(); ++i) {
+            RDS_O13_ORDER group = message.getORDER(i);
+            match &= addItem(group, patient, bean, result);
         }
-        addInvoiceItem(message.getORDER().getORC(), bean, itemBean);
-        addProduct(message.getORDER(), bean, itemBean);
-        return Arrays.asList(order, item);
+        if (match) {
+            order.setStatus("INVOICED");
+        }
+        return result;
     }
 
+    /**
+     * Adds the customer to the order, determined by the current patient-owner relationship.
+     *
+     * @param bean    the order bean
+     * @param patient the patient
+     */
     private void addCustomer(ActBean bean, Party patient) {
         Party customer = rules.getOwner(patient);
         if (customer != null) {
@@ -107,11 +118,79 @@ public class RDSProcessor {
         }
     }
 
-    private void addProduct(RDS_O13_ORDER order, ActBean bean, ActBean itemBean) {
-        RXD rxd = order.getRXD();
+    /**
+     * Adds an order item.
+     *
+     * @param group   the order group
+     * @param patient the patient. May be {@code null}
+     * @param bean    the order bean
+     * @param acts    the order acts
+     * @return {@code true} if the item was invoiced
+     */
+    private boolean addItem(RDS_O13_ORDER group, Party patient, ActBean bean, List<Act> acts) {
+        boolean match = false;
+        Act item = (Act) service.create("act.customerOrderItemPharmacy");
+        ActBean itemBean = new ActBean(item, service);
+        if (patient != null) {
+            itemBean.addNodeParticipation("patient", patient);
+        }
+        String fillerOrderNumber = group.getORC().getFillerOrderNumber().getEntityIdentifier().getValue();
+        if (fillerOrderNumber != null) {
+            itemBean.setValue("reference", fillerOrderNumber);
+        }
+        FinancialAct invoiceItem = addInvoiceItem(group.getORC(), bean, itemBean);
+        IMObjectReference invoicedProduct = (invoiceItem != null) ? getInvoicedProduct(invoiceItem) : null;
+        IMObjectReference dispensedProduct = addProduct(group, bean, itemBean);
+        BigDecimal quantity = getQuantity(group);
+        itemBean.setValue("quantity", quantity);
+
+        if (invoiceItem != null && dispensedProduct != null && invoicedProduct != null) {
+            BigDecimal invoicedQty = invoiceItem.getQuantity();
+            if (invoicedQty != null && invoicedQty.compareTo(quantity) == 0
+                && dispensedProduct.equals(invoicedProduct)) {
+                match = true;
+            }
+        }
+        bean.addNodeRelationship("items", item);
+        acts.add(item);
+        return match;
+    }
+
+    /**
+     * Returns the reference to the product that was invoiced.
+     *
+     * @param invoiceItem the invoice item
+     * @return the corresponding product. May be {@code null}
+     */
+    private IMObjectReference getInvoicedProduct(FinancialAct invoiceItem) {
+        ActBean bean = new ActBean(invoiceItem, service);
+        return bean.getNodeParticipantRef("product");
+    }
+
+    /**
+     * Returns the dispensed quantity.
+     *
+     * @param group the order group
+     * @return the dispensed quantity
+     */
+    private BigDecimal getQuantity(RDS_O13_ORDER group) {
+        String quantity = group.getRXD().getActualDispenseAmount().getValue();
+        return StringUtils.isEmpty(quantity) ? BigDecimal.ZERO : new BigDecimal(quantity);
+    }
+
+    /**
+     * Adds the product to the item.
+     *
+     * @param group    the order group
+     * @param bean     the order bean
+     * @param itemBean the order item bean
+     * @return the product reference, or {@code null} if none is found
+     */
+    private IMObjectReference addProduct(RDS_O13_ORDER group, ActBean bean, ActBean itemBean) {
+        RXD rxd = group.getRXD();
         CE code = rxd.getDispenseGiveCode();
         long id = getId(code);
-        IMObjectReference product = null;
+        IMObjectReference result = null;
         if (id != -1) {
             ArchetypeQuery query = new ArchetypeQuery("product.*");
             query.getArchetypeConstraint().setAlias("p");
@@ -120,59 +199,55 @@ public class RDSProcessor {
             ObjectSetQueryIterator iterator = new ObjectSetQueryIterator(service, query);
             if (iterator.hasNext()) {
                 ObjectSet set = iterator.next();
-                product = set.getReference("p.reference");
+                result = set.getReference("p.reference");
             }
         }
-        if (product != null) {
-            itemBean.addNodeParticipation("product", product);
+        if (result != null) {
+            itemBean.addNodeParticipation("product", result);
         } else {
             addNote(bean, "Unknown Dispense Give Code, id='" + code.getIdentifier().getValue()
                           + "', name='" + code.getText().getValue() + "'");
         }
-        String quantity = rxd.getActualDispenseAmount().getValue();
-        if (StringUtils.isEmpty(quantity)) {
-            itemBean.setValue("quantity", BigDecimal.ZERO);
-        } else {
-            itemBean.setValue("quantity", new BigDecimal(quantity));
-        }
+        return result;
     }
 
     /**
-     * Adds a reference to the original invoice item, if any.
+     * Adds a reference to the original invoice item, if any and determine the status.
      *
      * @param orc      the order segment
      * @param bean     the act
      * @param itemBean the item
      */
-    private void addInvoiceItem(ORC orc, ActBean bean, ActBean itemBean) {
+    private FinancialAct addInvoiceItem(ORC orc, ActBean bean, ActBean itemBean) {
+        FinancialAct result = null;
         long id = getId(orc.getPlacerOrderNumber());
+
         if (id != -1) {
             IMObjectReference reference = new IMObjectReference(CustomerAccountArchetypes.INVOICE_ITEM, id);
+            result = (FinancialAct) service.get(reference);
             itemBean.setValue("sourceInvoiceItem", reference);
         } else {
             addNote(bean, "Unknown Placer Order Number: '" + orc.getPlacerOrderNumber().getEntityIdentifier() + "'");
         }
+        return result;
     }
 
     /**
      * Returns the patient associated with a PID segment.
      *
-     * @param pid      the pid
-     * @param bean     the act
-     * @param itemBean the item
+     * @param pid  the pid
+     * @param bean the order act
      * @return the corresponding patient, or {@code null} if none is found
      * @throws HL7Exception if the patient does not exist
      */
-    private Party addPatient(PID pid, ActBean bean, ActBean itemBean) throws HL7Exception {
+    private Party getPatient(PID pid, ActBean bean) throws HL7Exception {
         Party patient = null;
         long id = getId(pid.getPatientID());
         if (id != -1) {
             IMObjectReference reference = new IMObjectReference(PatientArchetypes.PATIENT, id);
             patient = getPatient(reference);
         }
-        if (patient != null) {
-            itemBean.addNodeParticipation("patient", patient);
-        } else {
+        if (patient == null) {
             XPN xpn = pid.getPatientName(0);
             String firstName = xpn.getGivenName().getValue();
             String lastName = xpn.getFamilyName().getSurname().getValue();
@@ -189,6 +264,12 @@ public class RDSProcessor {
         return patient;
     }
 
+    /**
+     * Adds a note to the order.
+     *
+     * @param bean  the order bean
+     * @param value the note to add
+     */
     private void addNote(ActBean bean, String value) {
         String notes = bean.getString("notes");
         if (!StringUtils.isEmpty(notes)) {
@@ -199,22 +280,52 @@ public class RDSProcessor {
         bean.setValue("notes", notes);
     }
 
+    /**
+     * Returns a patient given its reference.
+     *
+     * @param reference the patient reference
+     * @return the corresponding patient or {@code null} if one is found
+     */
     protected Party getPatient(IMObjectReference reference) {
         return (Party) service.get(reference);
     }
 
-    private long getId(CX cx) {
-        return getId(cx.getIDNumber().getValue());
+    /**
+     * Helper to parse an id from an extended composite id.
+     *
+     * @param value the value
+     * @return the id, or {@code -1} if one doesn't exist or can't be parsed
+     */
+    private long getId(CX value) {
+        return getId(value.getIDNumber().getValue());
     }
 
-    private long getId(EI ei) {
-        return getId(ei.getEntityIdentifier().getValue());
+    /**
+     * Helper to parse an id from an entity identifier.
+     *
+     * @param value the value
+     * @return the id, or {@code -1} if one doesn't exist or can't be parsed
+     */
+    private long getId(EI value) {
+        return getId(value.getEntityIdentifier().getValue());
     }
 
-    private long getId(CE ce) {
-        return getId(ce.getIdentifier().getValue());
+    /**
+     * Helper to parse an id from a coded element.
+     *
+     * @param value the value
+     * @return the id, or {@code -1} if one doesn't exist or can't be parsed
+     */
+    private long getId(CE value) {
+        return getId(value.getIdentifier().getValue());
     }
 
+    /**
+     * Helper to parse an id from a string.
+     *
+     * @param value the value to parse
+     * @return the id, or {@code -1} if one doesn't exist or can't be parsed
+     */
     private long getId(String value) {
         long id = -1;
         if (!StringUtils.isEmpty(value)) {
