@@ -21,7 +21,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 /**
- * Represents a HL7 inbound or outbound connector.
+ * Represents an HL7 inbound or outbound connector.
  *
  * @author Tim Anderson
  */
@@ -47,6 +47,21 @@ public abstract class Connector {
      */
     private final String receivingFacility;
 
+    /**
+     * Determines if milliseconds should be included in date/times.
+     */
+    private final boolean includeMillis;
+
+    /**
+     * Determines if time/zones should be included in date/times.
+     */
+    private final boolean includeTimeZone;
+
+    /**
+     * The connector reference.
+     */
+    private final IMObjectReference reference;
+
 
     /**
      * Constructs a {@link Connector}.
@@ -55,13 +70,34 @@ public abstract class Connector {
      * @param sendingFacility      the sending facility
      * @param receivingApplication the receiving application
      * @param receivingFacility    the receiving facility
+     * @param reference            the connector reference
      */
     public Connector(String sendingApplication, String sendingFacility, String receivingApplication,
-                     String receivingFacility) {
+                     String receivingFacility, IMObjectReference reference) {
+        this(sendingApplication, sendingFacility, receivingApplication, receivingFacility, true, true, reference);
+    }
+
+    /**
+     * Constructs a {@link Connector}.
+     *
+     * @param sendingApplication   the sending application
+     * @param sendingFacility      the sending facility
+     * @param receivingApplication the receiving application
+     * @param receivingFacility    the receiving facility
+     * @param includeMillis        if {@code true} include milliseconds in time fields
+     * @param includeTimeZone      if {@code true} include the timezone in date/time fields
+     * @param reference            the connector reference
+     */
+    public Connector(String sendingApplication, String sendingFacility, String receivingApplication,
+                     String receivingFacility, boolean includeMillis, boolean includeTimeZone,
+                     IMObjectReference reference) {
         this.sendingApplication = sendingApplication;
         this.sendingFacility = sendingFacility;
         this.receivingApplication = receivingApplication;
         this.receivingFacility = receivingFacility;
+        this.includeMillis = includeMillis;
+        this.includeTimeZone = includeTimeZone;
+        this.reference = reference;
     }
 
     /**
@@ -101,11 +137,31 @@ public abstract class Connector {
     }
 
     /**
+     * Determines if milliseconds should be included in times.
+     *
+     * @return {@code true} if milliseconds should be included in times
+     */
+    public boolean isIncludeMillis() {
+        return includeMillis;
+    }
+
+    /**
+     * Determines if timezones should be included in date/times.
+     *
+     * @return {@code true} if timezones should be included in date/times
+     */
+    public boolean isIncludeTimeZone() {
+        return includeTimeZone;
+    }
+
+    /**
      * Returns the connector reference.
      *
      * @return the connector reference
      */
-    public abstract IMObjectReference getReference();
+    public IMObjectReference getReference() {
+        return reference;
+    }
 
     /**
      * Indicates whether some other object is "equal to" this one.

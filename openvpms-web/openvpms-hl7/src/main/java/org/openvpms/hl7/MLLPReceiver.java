@@ -34,8 +34,6 @@ public class MLLPReceiver extends Connector {
      */
     private final int port;
 
-    private final IMObjectReference reference;
-
     /**
      * Constructs a {@link MLLPReceiver}.
      *
@@ -47,9 +45,27 @@ public class MLLPReceiver extends Connector {
      */
     public MLLPReceiver(int port, String sendingApplication, String sendingFacility,
                         String receivingApplication, String receivingFacility, IMObjectReference reference) {
-        super(sendingApplication, sendingFacility, receivingApplication, receivingFacility);
+        this(port, sendingApplication, sendingFacility, receivingApplication, receivingFacility, true, true, reference);
+    }
+
+    /**
+     * Constructs a {@link MLLPReceiver}.
+     *
+     * @param port                 the port to listen in
+     * @param sendingApplication   the sending application
+     * @param sendingFacility      the sending facility
+     * @param receivingApplication the receiving application
+     * @param receivingFacility    the receiving facility
+     * @param includeMillis        if {@code true} include milliseconds in time fields
+     * @param includeTimeZone      if {@code true} include the timezone in date/time fields
+     * @param reference            the connector reference
+     */
+    public MLLPReceiver(int port, String sendingApplication, String sendingFacility,
+                        String receivingApplication, String receivingFacility, boolean includeMillis,
+                        boolean includeTimeZone, IMObjectReference reference) {
+        super(sendingApplication, sendingFacility, receivingApplication, receivingFacility, includeMillis,
+              includeTimeZone, reference);
         this.port = port;
-        this.reference = reference;
     }
 
     /**
@@ -63,7 +79,8 @@ public class MLLPReceiver extends Connector {
         IMObjectBean bean = new IMObjectBean(object, service);
         return new MLLPReceiver(bean.getInt("port"), bean.getString("sendingApplication"),
                                 bean.getString("sendingFacility"), bean.getString("receivingApplication"),
-                                bean.getString("receivingFacility"), object.getObjectReference());
+                                bean.getString("receivingFacility"), bean.getBoolean("includeMillis"),
+                                bean.getBoolean("includeTimeZone"), object.getObjectReference());
     }
 
     /**
@@ -88,16 +105,6 @@ public class MLLPReceiver extends Connector {
             result = port == ((MLLPReceiver) obj).port;
         }
         return result;
-    }
-
-    /**
-     * Returns the connector reference.
-     *
-     * @return the connector reference
-     */
-    @Override
-    public IMObjectReference getReference() {
-        return reference;
     }
 
     /**

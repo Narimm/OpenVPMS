@@ -282,16 +282,17 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
      */
     private void select(T object) {
         // make sure the latest instance is being used.
-        IMObject current = IMObjectHelper.reload(object);
-        if (current == null) {
-            ErrorDialog.show(Messages.format("imobject.noexist", DescriptorHelper.getDisplayName(object)));
+        T existing = object;
+        object = IMObjectHelper.reload(object);
+        if (object == null) {
+            ErrorDialog.show(Messages.format("imobject.noexist", DescriptorHelper.getDisplayName(existing)));
         } else {
             List<Selection> path = getSelectionPath();
             if (actions.canEdit(object)) {
                 HelpContext help = getHelpContext().topic(object, "edit");
                 LayoutContext context = new DefaultLayoutContext(true, this.context, help);
                 context.getContext().setCurrent(object); // TODO - requirement for setCurrent()
-                IMObjectEditor editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(current, context);
+                IMObjectEditor editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, context);
                 setViewer(null, null);
                 setEditor(editor, path);
             } else {

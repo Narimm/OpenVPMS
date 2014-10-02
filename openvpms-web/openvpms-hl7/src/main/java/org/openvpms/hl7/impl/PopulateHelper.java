@@ -50,8 +50,11 @@ public class PopulateHelper {
         if (!config.isIncludeTimeZone()) {
             // TODO - doesn't appear to be a clean way of doing this
             String formatted = dtm.getValue();
-            formatted = formatted.substring(0, formatted.indexOf("+"));
-            dtm.setValue(formatted);
+            int index = formatted.indexOf("+");
+            if (index != -1) {
+                formatted = formatted.substring(0, index);
+                dtm.setValue(formatted);
+            }
         }
     }
 
