@@ -79,8 +79,8 @@ public class ADTMessageFactoryTestCase extends AbstractMessageTest {
                           "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r" +
-                          "AL1|1||||Penicillin\r" +
-                          "AL1|2||||Pollen\r";
+                          "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
+                          "AL1|2|MA|^Pollen|U|Produces hives\r";
         MessageConfig config = new MessageConfig();
         Message admit = messageFactory.createAdmit(getContext(), config);
         MSH msh = (MSH) admit.get("MSH");
@@ -119,8 +119,8 @@ public class ADTMessageFactoryTestCase extends AbstractMessageTest {
         String expected = "MSH|^~\\&|||||20140825090000||ADT^A03^ADT_A03|1200022|P|2.5\r" +
                           "PID|1|1001|||Bar^Fido||20140701000000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500|20140825100500\r" +
-                          "AL1|1||||Penicillin\r" +
-                          "AL1|2||||Pollen\r" +
+                          "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
+                          "AL1|2|MA|^Pollen|U|Produces hives\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700\r";
         MessageConfig config = new MessageConfig();
         config.setIncludeMillis(false);
@@ -146,8 +146,8 @@ public class ADTMessageFactoryTestCase extends AbstractMessageTest {
                           "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r" +
-                          "AL1|1||||Penicillin\r" +
-                          "AL1|2||||Pollen\r";
+                          "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
+                          "AL1|2|MA|^Pollen|U|Produces hives\r";
 
         MessageConfig config = new MessageConfig();
         Message admit = messageFactory.createUpdate(getContext(), config);
