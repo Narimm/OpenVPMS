@@ -92,6 +92,7 @@ public abstract class AbstractRDSTest extends AbstractMessageTest {
         pv1.populate(message.getPATIENT().getPATIENT_VISIT().getPV1(), getContext(), config);
         RXD rxd = message.getORDER().getRXD();
         PopulateHelper.populateProduct(rxd.getDispenseGiveCode(), product);
+        PopulateHelper.populateClinician(rxd.getDispensingProvider(0), getContext());
         rxd.getSubstanceLotNumber(0).setValue("LOT12345678");
         rxd.getSubstanceExpirationDate(0).getTime().setValue(getDatetime("2017-08-24 09:00:00"));
         rxd.getSubstanceManufacturerName(0).getIdentifier().setValue("1234");

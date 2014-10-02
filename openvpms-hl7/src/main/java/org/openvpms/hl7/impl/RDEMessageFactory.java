@@ -137,15 +137,12 @@ public class RDEMessageFactory extends AbstractMessageFactory {
                 PopulateHelper.populateClinician(orc.getEnteredBy(0), context);
             }
             RXO rxo = rde.getORDER().getORDER_DETAIL().getRXO();
-            // RXE rxe = rde.getORDER().getRXE();
             PopulateHelper.populateProduct(rxo.getRequestedGiveCode(), product);
-            // populateCE(rxe.getGiveCode(), product.getId(), product.getName());
             IMObjectBean bean = new IMObjectBean(product, getArchetypeService());
             String dispensingCode = bean.getString(DISPENSING_UNITS);
             if (dispensingCode != null) {
                 String dispensingName = getLookupService().getName(product, DISPENSING_UNITS);
                 PopulateHelper.populateCE(rxo.getRequestedGiveUnits(), dispensingCode, dispensingName);
-                // populateCE(rxe.getGiveUnits(), dispensingCode, dispensingName);
             }
             String sellingCode = bean.getString(SELLING_UNITS);
             String dispensingInstructions = bean.getString("dispInstructions");

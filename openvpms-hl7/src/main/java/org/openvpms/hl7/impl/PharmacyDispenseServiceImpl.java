@@ -27,6 +27,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -105,12 +106,12 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
      */
     public PharmacyDispenseServiceImpl(Pharmacies pharmacies, MessageDispatcher dispatcher,
                                        Connectors connectors, IArchetypeService service,
-                                       PatientRules rules) {
+                                       PatientRules rules, UserRules userRules) {
         this.pharmacies = pharmacies;
         this.dispatcher = dispatcher;
         this.connectors = connectors;
         this.service = service;
-        processor = new RDSProcessor(service, rules);
+        processor = new RDSProcessor(service, rules, userRules);
 
         // NOTE: methods may be called before construction is complete
         for (Entity pharmacy : pharmacies.getPharmacies()) {

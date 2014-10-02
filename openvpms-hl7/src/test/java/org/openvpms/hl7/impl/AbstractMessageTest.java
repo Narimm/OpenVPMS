@@ -118,7 +118,6 @@ public abstract class AbstractMessageTest extends ArchetypeServiceTest {
         PatientContextFactory factory = new PatientContextFactory(rules, customerRules, getArchetypeService(), lookups);
         context = factory.createContext(patient, owner, visit, location, clinician);
         context = Mockito.spy(context);
-        Mockito.when(context.getClinicianId()).thenReturn(2001L);
         Mockito.when(context.getVisitId()).thenReturn(3001L);
         HapiContext hapiContext = new DefaultHapiContext();
         hapiContext.getParserConfiguration().setIdGenerator(new IDGenerator() {
