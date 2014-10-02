@@ -20,6 +20,7 @@ import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.v25.datatype.CE;
 import ca.uhn.hl7v2.model.v25.datatype.CX;
 import ca.uhn.hl7v2.model.v25.datatype.EI;
+import ca.uhn.hl7v2.model.v25.datatype.XCN;
 import ca.uhn.hl7v2.model.v25.datatype.XPN;
 import ca.uhn.hl7v2.model.v25.group.RDS_O13_ORDER;
 import ca.uhn.hl7v2.model.v25.message.RDS_O13;
@@ -30,10 +31,13 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -64,14 +68,20 @@ public class RDSProcessor {
     private final PatientRules rules;
 
     /**
+     * The user rules.
+     */
+    private final UserRules userRules;
+
+    /**
      * Constructs a {@link RDSProcessor}.
      *
      * @param service the archetype service
      * @param rules   the patient rules
      */
-    public RDSProcessor(IArchetypeService service, PatientRules rules) {
+    public RDSProcessor(IArchetypeService service, PatientRules rules, UserRules userRules) {
         this.service = service;
         this.rules = rules;
+        this.userRules = userRules;
     }
 
     /**
@@ -140,6 +150,7 @@ public class RDSProcessor {
         }
         FinancialAct invoiceItem = addInvoiceItem(group.getORC(), bean, itemBean);
         IMObjectReference invoicedProduct = (invoiceItem != null) ? getInvoicedProduct(invoiceItem) : null;
+        addClinician(group, bean, itemBean, invoiceItem);
         IMObjectReference dispensedProduct = addProduct(group, bean, itemBean);
         BigDecimal quantity = getQuantity(group);
         itemBean.setValue("quantity", quantity);
@@ -209,6 +220,43 @@ public class RDSProcessor {
                           + "', name='" + code.getText().getValue() + "'");
         }
         return result;
+    }
+
+    /**
+     * Populates the clinician from an order group.
+     * <p/>
+     * If the RXD Dispensing Provider field includes a clinician, this will be used to populate the order item.
+     *
+     * @param group       the order group
+     * @param bean        the order bean
+     * @param itemBean    the order item bean
+     * @param invoiceItem the original invoice item. May be {@code null}
+     */
+    private void addClinician(RDS_O13_ORDER group, ActBean bean, ActBean itemBean, FinancialAct invoiceItem) {
+        XCN dispensingProvider = group.getRXD().getDispensingProvider(0);
+        IMObjectReference clinician = null;
+        long id = getId(dispensingProvider.getIDNumber().getValue());
+        if (id != -1) {
+            IMObjectReference reference = new IMObjectReference(UserArchetypes.USER, id);
+            User user = (User) service.get(reference);
+            if (user != null && userRules.isClinician(user)) {
+                clinician = user.getObjectReference();
+            }
+        } else if (invoiceItem != null) {
+            ActBean invoiceBean = new ActBean(invoiceItem);
+            // propagate the clinician from original invoice item
+            clinician = invoiceBean.getNodeParticipantRef("clinician");
+            if (clinician == null) {
+                // else get it from the parent
+                clinician = bean.getNodeParticipantRef("clinician");
+            }
+        }
+        if (clinician != null) {
+            itemBean.addNodeParticipation("clinician", clinician);
+            if (bean.getNodeParticipantRef("clinician") == null) {
+                bean.addNodeParticipation("clinician", clinician);
+            }
+        }
     }
 
     /**

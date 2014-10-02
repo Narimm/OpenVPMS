@@ -23,6 +23,7 @@ import ca.uhn.hl7v2.model.v25.message.RDS_O13;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -86,11 +87,12 @@ public class PharmacyDispenseServiceImplTestCase extends AbstractRDSTest {
         MessageDispatcher dispatcher = Mockito.mock(MessageDispatcher.class);
         Connectors connectors = Mockito.mock(Connectors.class);
         PatientRules rules = new PatientRules(getArchetypeService(), LookupServiceHelper.getLookupService());
+        UserRules userRules = new UserRules(getArchetypeService());
         final Connector receiver = new MLLPReceiver(10001, "Cubex", "Cubex", "VPMS", "VPMS",
                                                     new IMObjectReference("entity.connectorReceiverHL7MLLPType", -1));
         final List<Act> order = new ArrayList<Act>();
         PharmacyDispenseServiceImpl service = new PharmacyDispenseServiceImpl(pharmacies, dispatcher, connectors,
-                                                                              getArchetypeService(), rules) {
+                                                                              getArchetypeService(), rules, userRules) {
 
             @Override
             protected List<Act> process(RDS_O13 message) throws HL7Exception {
@@ -105,6 +107,7 @@ public class PharmacyDispenseServiceImplTestCase extends AbstractRDSTest {
 
         };
         assertTrue(service.canProcess(rds));
+        log("RDS: ", rds);
         Message response = service.processMessage(rds, new HashMap<String, Object>());
         assertTrue(response instanceof ACK);
         ACK ack = (ACK) response;
@@ -129,8 +132,9 @@ public class PharmacyDispenseServiceImplTestCase extends AbstractRDSTest {
         MessageDispatcher dispatcher = Mockito.mock(MessageDispatcher.class);
         Connectors connectors = Mockito.mock(Connectors.class);
         PatientRules rules = new PatientRules(getArchetypeService(), LookupServiceHelper.getLookupService());
+        UserRules userRules = new UserRules(getArchetypeService());
         PharmacyDispenseServiceImpl service = new PharmacyDispenseServiceImpl(pharmacies, dispatcher, connectors,
-                                                                              getArchetypeService(), rules);
+                                                                              getArchetypeService(), rules, userRules);
         assertTrue(service.canProcess(rds));
         Message response = service.processMessage(rds, new HashMap<String, Object>());
         assertTrue(response instanceof ACK);
@@ -138,6 +142,5 @@ public class PharmacyDispenseServiceImplTestCase extends AbstractRDSTest {
         assertEquals("AR", ack.getMSA().getAcknowledgmentCode().getValue());
         assertEquals("Unrecognised application details", ack.getERR().getHL7ErrorCode().getOriginalText().getValue());
     }
-
 
 }

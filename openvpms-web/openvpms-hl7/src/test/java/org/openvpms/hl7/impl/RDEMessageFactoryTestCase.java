@@ -82,6 +82,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
 
         PatientContext context = getContext();
         Mockito.when(context.getPatientId()).thenReturn(1001L);
+        Mockito.when(context.getClinicianId()).thenReturn(2001L);
     }
 
     /**

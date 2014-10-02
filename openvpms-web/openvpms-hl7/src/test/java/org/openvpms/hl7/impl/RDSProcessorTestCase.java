@@ -21,9 +21,11 @@ import ca.uhn.hl7v2.model.v25.message.RDS_O13;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
@@ -48,6 +50,11 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
     private PatientRules rules;
 
     /**
+     * The user rules.
+     */
+    private UserRules userRules;
+
+    /**
      * The product.
      */
     private Product product;
@@ -64,6 +71,7 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
     public void setUp() {
         super.setUp();
         rules = new PatientRules(getArchetypeService(), LookupServiceHelper.getLookupService());
+        userRules = new UserRules(getArchetypeService());
         product = createProduct();
         try {
             rds = createRDS(product);
@@ -78,16 +86,19 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
      */
     @Test
     public void testCreateOrder() throws HL7Exception, IOException {
-        RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules);
+        RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules, userRules);
         List<Act> acts = processor.process(rds);
         assertEquals(2, acts.size());
         ActBean order = new ActBean(acts.get(0));
         ActBean item = new ActBean(acts.get(1));
         Party customer = getContext().getCustomer();
         Party patient = getContext().getPatient();
+        User clinician = getContext().getClinician();
         assertEquals(customer.getObjectReference(), order.getNodeParticipantRef("customer"));
+        assertEquals(clinician.getObjectReference(), order.getNodeParticipantRef("clinician"));
         assertEquals(patient.getObjectReference(), item.getNodeParticipantRef("patient"));
         assertEquals(product.getObjectReference(), item.getNodeParticipantRef("product"));
+        assertEquals(clinician.getObjectReference(), item.getNodeParticipantRef("clinician"));
         checkEquals(BigDecimal.valueOf(2), item.getBigDecimal("quantity"));
         assertEquals("90032145", item.getString("reference"));
         assertEquals(ActStatus.IN_PROGRESS, order.getStatus());
@@ -99,7 +110,7 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
      */
     @Test
     public void testUnknownPatient() throws HL7Exception, IOException {
-        RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules);
+        RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules, userRules);
         rds.getPATIENT().getPID().getPatientID().getIDNumber().setValue("UNKNOWN");
         log("RDS: ", rds);
         List<Act> acts = processor.process(rds);
@@ -120,7 +131,7 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
      */
     @Test
     public void testUnknownProduct() throws HL7Exception, IOException {
-        RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules);
+        RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules, userRules);
         rds.getORDER().getRXD().getDispenseGiveCode().getIdentifier().setValue("UNKNOWN");
         log("RDS: ", rds);
         List<Act> acts = processor.process(rds);
