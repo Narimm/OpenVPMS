@@ -99,7 +99,16 @@
               defaultValue="false()" readOnly="true" hidden="true"/>
         <node name="dispensing" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="1"
-              filter="actRelationship.invoiceItemDispensing"/>
+              filter="actRelationship.invoiceItemDispensing">
+            <assertion name="archetypeRange">
+                <!-- NOTE - this assertion is only required to force the UI to display the node on a tab -->
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="actRelationship.invoiceItemDispensing"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
         <node name="investigations" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
               filter="actRelationship.invoiceItemInvestigation"/>
