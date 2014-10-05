@@ -59,7 +59,7 @@
         <constructor-arg ref="userRules"/>
     </bean>
 
-    <bean class="org.openvpms.hl7.PatientContextFactory">
+    <bean class="org.openvpms.hl7.patient.PatientContextFactory">
         <constructor-arg ref="patientRules"/>
         <constructor-arg ref="customerRules"/>
         <constructor-arg ref="archetypeRuleService"/>

@@ -20,10 +20,11 @@ import ca.uhn.hl7v2.model.Message;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.hl7.Connector;
-import org.openvpms.hl7.PatientContext;
-import org.openvpms.hl7.PatientInformationService;
+import org.openvpms.hl7.patient.PatientContext;
+import org.openvpms.hl7.patient.PatientEventServices;
+import org.openvpms.hl7.patient.PatientInformationService;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Default implementation of the {@link PatientInformationService}.
@@ -70,13 +71,11 @@ public class PatientInformationServiceImpl implements PatientInformationService 
      */
     @Override
     public void admitted(PatientContext context) {
-        List<Connector> senders = services.getConnections(context.getLocation());
-        if (!senders.isEmpty()) {
-            for (Connector connector : senders) {
-                MessageConfig config = MessageConfigFactory.create(connector);
-                Message message = factory.createAdmit(context, config);
-                queue(message, connector, config);
-            }
+        Collection<Connector> senders = services.getConnections(context.getLocation());
+        for (Connector connector : senders) {
+            MessageConfig config = MessageConfigFactory.create(connector);
+            Message message = factory.createAdmit(context, config);
+            queue(message, connector, config);
         }
     }
 
@@ -88,13 +87,11 @@ public class PatientInformationServiceImpl implements PatientInformationService 
      */
     @Override
     public void admissionCancelled(PatientContext context) {
-        List<Connector> senders = services.getConnections(context.getLocation());
-        if (!senders.isEmpty()) {
-            for (Connector connector : senders) {
-                MessageConfig config = MessageConfigFactory.create(connector);
-                Message message = factory.createCancelAdmit(context, config);
-                queue(message, connector, config);
-            }
+        Collection<Connector> senders = services.getConnections(context.getLocation());
+        for (Connector connector : senders) {
+            MessageConfig config = MessageConfigFactory.create(connector);
+            Message message = factory.createCancelAdmit(context, config);
+            queue(message, connector, config);
         }
     }
 
@@ -105,13 +102,11 @@ public class PatientInformationServiceImpl implements PatientInformationService 
      */
     @Override
     public void discharged(PatientContext context) {
-        List<Connector> senders = services.getConnections(context.getLocation());
-        if (!senders.isEmpty()) {
-            for (Connector connector : senders) {
-                MessageConfig config = MessageConfigFactory.create(connector);
-                Message message = factory.createDischarge(context, config);
-                queue(message, connector, config);
-            }
+        Collection<Connector> senders = services.getConnections(context.getLocation());
+        for (Connector connector : senders) {
+            MessageConfig config = MessageConfigFactory.create(connector);
+            Message message = factory.createDischarge(context, config);
+            queue(message, connector, config);
         }
     }
 
@@ -122,13 +117,11 @@ public class PatientInformationServiceImpl implements PatientInformationService 
      */
     @Override
     public void updated(PatientContext context) {
-        List<Connector> senders = services.getConnections(context.getLocation());
-        if (!senders.isEmpty()) {
-            for (Connector connector : senders) {
-                MessageConfig config = MessageConfigFactory.create(connector);
-                Message message = factory.createUpdate(context, config);
-                queue(message, connector, config);
-            }
+        Collection<Connector> senders = services.getConnections(context.getLocation());
+        for (Connector connector : senders) {
+            MessageConfig config = MessageConfigFactory.create(connector);
+            Message message = factory.createUpdate(context, config);
+            queue(message, connector, config);
         }
     }
 

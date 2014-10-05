@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
-import org.openvpms.hl7.PatientContext;
+import org.openvpms.hl7.patient.PatientContext;
 
 import java.io.IOException;
 

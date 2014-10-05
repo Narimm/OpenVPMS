@@ -32,7 +32,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
-import org.openvpms.hl7.HL7Archetypes;
+import org.openvpms.hl7.util.HL7Archetypes;
 
 import java.io.IOException;
 

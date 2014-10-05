@@ -29,9 +29,9 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctio
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.hl7.PatientContext;
-import org.openvpms.hl7.PatientContextFactory;
-import org.openvpms.hl7.PatientInformationService;
+import org.openvpms.hl7.patient.PatientContext;
+import org.openvpms.hl7.patient.PatientContextFactory;
+import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.EntityQuery;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;

@@ -21,7 +21,7 @@ import ca.uhn.hl7v2.model.v25.datatype.CE;
 import ca.uhn.hl7v2.model.v25.datatype.DTM;
 import ca.uhn.hl7v2.model.v25.datatype.XCN;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.hl7.PatientContext;
+import org.openvpms.hl7.patient.PatientContext;
 
 import java.util.Calendar;
 import java.util.Date;
