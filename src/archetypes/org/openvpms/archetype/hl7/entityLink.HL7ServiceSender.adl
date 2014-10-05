@@ -15,32 +15,30 @@
   -->
 
 <archetypes>
-    <archetype name="entityLink.connectionLocation.1.0" latest="true"
+    <archetype name="entityLink.HL7ServiceSender.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.common.EntityLink"
-               displayName="HL7 Connection Location">
+               displayName="HL7 Service Sender">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
-              derivedValue="'HL7 Connection Location'"/>
+              derivedValue="'Pharmacy Order Connection'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true"/>
-        <node name="source" displayName="Connection" path="/source"
+        <node name="source" displayName="Service" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName" value="entity.HL7Receiver*"/>
-                    </propertyMap>
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="entity.HL7Sender*"/>
+                        <property name="shortName" value="entity.HL7Service*"/>
                     </propertyMap>
                 </propertyList>
             </assertion>
         </node>
-        <node name="target" displayName="Practice Location" path="/target"
-              type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
+        <node name="target" displayName="Connection" path="/target"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference"
+              minCardinality="1">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName" value="party.organisationLocation"/>
+                        <property name="shortName" value="entity.HL7Sender*"/>
                     </propertyMap>
                 </propertyList>
             </assertion>

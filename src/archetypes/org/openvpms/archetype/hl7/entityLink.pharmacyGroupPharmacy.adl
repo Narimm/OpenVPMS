@@ -15,9 +15,9 @@
   -->
 
 <archetypes>
-    <archetype name="entityLink.pharmacyDispenseConnection.1.0" latest="true"
+    <archetype name="entityLink.pharmacyGroupPharmacy.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.common.EntityLink"
-               displayName="Pharmacy Dispense Connection">
+               displayName="Pharmacy">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
               derivedValue="'Pharmacy Dispense Connection'"/>
@@ -27,7 +27,7 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName" value="party.organisationPharmacy"/>
+                        <property name="shortName" value="entity.HL7ServicePharmacyGroup"/>
                     </propertyMap>
                 </propertyList>
             </assertion>
@@ -38,7 +38,7 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName" value="entity.HL7Receiver*"/>
+                        <property name="shortName" value="entity.HL7ServicePharmacy"/>
                     </propertyMap>
                 </propertyList>
             </assertion>
