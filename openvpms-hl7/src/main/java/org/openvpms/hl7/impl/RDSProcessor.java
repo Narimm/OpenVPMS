@@ -88,62 +88,48 @@ public class RDSProcessor {
      * Processes a dispense message.
      *
      * @param message the message
-     * @return the customer order
+     * @return the customer order and/or return
      * @throws HL7Exception for any HL7 error
      */
     public List<Act> process(RDS_O13 message) throws HL7Exception {
-        List<Act> result = new ArrayList<Act>();
         if (message.getORDERReps() < 1) {
             throw new HL7Exception("RDS O13 message contains no order group");
         }
         PID pid = message.getPATIENT().getPID();
-        Act order = (Act) service.create("act.customerOrderPharmacy");
-        ActBean bean = new ActBean(order, service);
-        Party patient = getPatient(pid, bean);
-        if (patient != null) {
-            addCustomer(bean, patient);
-        }
-        result.add(order);
+        State state = getState(pid);
         boolean match = true;
         for (int i = 0; i < message.getORDERReps(); ++i) {
             RDS_O13_ORDER group = message.getORDER(i);
-            match &= addItem(group, patient, bean, result);
+            match &= addItem(group, state);
         }
-        if (match) {
-            order.setStatus("INVOICED");
-        }
-        return result;
-    }
-
-    /**
-     * Adds the customer to the order, determined by the current patient-owner relationship.
-     *
-     * @param bean    the order bean
-     * @param patient the patient
-     */
-    private void addCustomer(ActBean bean, Party patient) {
-        Party customer = rules.getOwner(patient);
-        if (customer != null) {
-            bean.setNodeParticipant("customer", customer);
-        }
+//        if (match) {
+// TODO
+//            order.setStatus("INVOICED");
+//        }
+        return state.getActs();
     }
 
     /**
      * Adds an order item.
      *
-     * @param group   the order group
-     * @param patient the patient. May be {@code null}
-     * @param bean    the order bean
-     * @param acts    the order acts
+     * @param group the order group
+     * @param state the state
      * @return {@code true} if the item was invoiced
      */
-    private boolean addItem(RDS_O13_ORDER group, Party patient, ActBean bean, List<Act> acts) {
+    private boolean addItem(RDS_O13_ORDER group, State state) {
         boolean match = false;
-        Act item = (Act) service.create("act.customerOrderItemPharmacy");
-        ActBean itemBean = new ActBean(item, service);
-        if (patient != null) {
-            itemBean.addNodeParticipation("patient", patient);
+        BigDecimal quantity = getQuantity(group);
+        ActBean bean;
+        ActBean itemBean;
+        if (quantity.signum() >= 0) {
+            bean = state.getOrder();
+            itemBean = state.createOrderItem();
+        } else {
+            bean = state.getReturn();
+            itemBean = state.createReturnItem();
+            quantity = quantity.abs();
         }
+
         String fillerOrderNumber = group.getORC().getFillerOrderNumber().getEntityIdentifier().getValue();
         if (fillerOrderNumber != null) {
             itemBean.setValue("reference", fillerOrderNumber);
@@ -152,7 +138,6 @@ public class RDSProcessor {
         IMObjectReference invoicedProduct = (invoiceItem != null) ? getInvoicedProduct(invoiceItem) : null;
         addClinician(group, bean, itemBean, invoiceItem);
         IMObjectReference dispensedProduct = addProduct(group, bean, itemBean);
-        BigDecimal quantity = getQuantity(group);
         itemBean.setValue("quantity", quantity);
 
         if (invoiceItem != null && dispensedProduct != null && invoicedProduct != null) {
@@ -162,8 +147,6 @@ public class RDSProcessor {
                 match = true;
             }
         }
-        bean.addNodeRelationship("items", item);
-        acts.add(item);
         return match;
     }
 
@@ -281,20 +264,21 @@ public class RDSProcessor {
     }
 
     /**
-     * Returns the patient associated with a PID segment.
+     * Creates a new {@link State} using the PID segment.
      *
-     * @param pid  the pid
-     * @param bean the order act
-     * @return the corresponding patient, or {@code null} if none is found
+     * @param pid the pid
+     * @return a new state
      * @throws HL7Exception if the patient does not exist
      */
-    private Party getPatient(PID pid, ActBean bean) throws HL7Exception {
+    private State getState(PID pid) throws HL7Exception {
         Party patient = null;
+        Party customer = null;
         long id = getId(pid.getPatientID());
         if (id != -1) {
             IMObjectReference reference = new IMObjectReference(PatientArchetypes.PATIENT, id);
             patient = getPatient(reference);
         }
+        String note = null;
         if (patient == null) {
             XPN xpn = pid.getPatientName(0);
             String firstName = xpn.getGivenName().getValue();
@@ -307,15 +291,17 @@ public class RDSProcessor {
             } else {
                 name = firstName;
             }
-            addNote(bean, "Unknown patient, Id='" + pid.getPatientID().getIDNumber() + "', name='" + name + "'");
+            note = "Unknown patient, Id='" + pid.getPatientID().getIDNumber() + "', name='" + name + "'";
+        } else {
+            customer = rules.getOwner(patient);
         }
-        return patient;
+        return new State(patient, customer, note);
     }
 
     /**
-     * Adds a note to the order.
+     * Adds a note to the notes node.
      *
-     * @param bean  the order bean
+     * @param bean  the act bean
      * @param value the note to add
      */
     private void addNote(ActBean bean, String value) {
@@ -384,6 +370,78 @@ public class RDSProcessor {
             }
         }
         return id;
+    }
+
+    private class State {
+
+        private ActBean orderBean;
+
+        private ActBean returnBean;
+
+        private final Party patient;
+
+        private final Party customer;
+
+        private final String note;
+
+        private final List<Act> acts = new ArrayList<Act>();
+
+        public State(Party patient, Party customer, String note) {
+            this.patient = patient;
+            this.customer = customer;
+            this.note = note;
+        }
+
+        public ActBean getOrder() {
+            if (orderBean == null) {
+                orderBean = createParent("act.customerOrderPharmacy");
+            }
+            return orderBean;
+        }
+
+        public ActBean getReturn() {
+            if (returnBean == null) {
+                returnBean = createParent("act.customerReturnPharmacy");
+            }
+            return returnBean;
+        }
+
+        public ActBean createOrderItem() {
+            return createItem("act.customerOrderItemPharmacy", getOrder());
+        }
+
+        public ActBean createReturnItem() {
+            return createItem("act.customerReturnItemPharmacy", getReturn());
+        }
+
+        public List<Act> getActs() {
+            return acts;
+        }
+
+        private ActBean createParent(String shortName) {
+            Act act = (Act) service.create(shortName);
+            ActBean bean = new ActBean(act, service);
+            if (customer != null) {
+                bean.addNodeParticipation("customer", customer);
+            }
+            if (note != null) {
+                addNote(bean, note);
+            }
+            acts.add(act);
+            return bean;
+        }
+
+        private ActBean createItem(String shortName, ActBean parent) {
+            Act act = (Act) service.create(shortName);
+            ActBean bean = new ActBean(act, service);
+            if (patient != null) {
+                bean.addNodeParticipation("patient", patient);
+            }
+            parent.addNodeRelationship("items", act);
+            acts.add(act);
+            return bean;
+        }
+
     }
 
 }

@@ -14,10 +14,11 @@
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.hl7.impl;
+package org.openvpms.hl7.pharmacy;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.hl7.Connector;
 
 import java.util.List;
 
@@ -62,6 +63,23 @@ public interface Pharmacies {
      * @return the pharmacy, or {@code null} if none is found
      */
     Entity getPharmacy(IMObjectReference reference);
+
+    /**
+     * Returns the pharmacy for a practice location, given the pharmacy group.
+     *
+     * @param group    the pharmacy group
+     * @param location the practice location
+     * @return the pharmacy, or {@code null} if none is found
+     */
+    Entity getPharmacy(Entity group, IMObjectReference location);
+
+    /**
+     * Returns the connection to send orders to.
+     *
+     * @param pharmacy the pharmacy
+     * @return the corresponding sender, or {@code null} if none is found
+     */
+    Connector getOrderConnection(Entity pharmacy);
 
     /**
      * Adds a listener to be notified of pharmacy updates.

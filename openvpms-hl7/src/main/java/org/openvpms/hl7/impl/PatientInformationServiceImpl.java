@@ -19,23 +19,23 @@ package org.openvpms.hl7.impl;
 import ca.uhn.hl7v2.model.Message;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.hl7.AdmissionService;
 import org.openvpms.hl7.Connector;
 import org.openvpms.hl7.PatientContext;
+import org.openvpms.hl7.PatientInformationService;
 
 import java.util.List;
 
 /**
- * Default implementation of the {@link AdmissionService}.
+ * Default implementation of the {@link PatientInformationService}.
  *
  * @author Tim Anderson
  */
-public class AdmissionServiceImpl implements AdmissionService {
+public class PatientInformationServiceImpl implements PatientInformationService {
 
     /**
-     * The connectors.
+     * The patient event listeners.
      */
-    private final Connectors connectors;
+    private final PatientEventServices services;
 
     /**
      * The connector manager.
@@ -49,17 +49,17 @@ public class AdmissionServiceImpl implements AdmissionService {
 
 
     /**
-     * Constructs an {@link AdmissionServiceImpl}.
+     * Constructs an {@link PatientInformationServiceImpl}.
      *
-     * @param service    the archetype service
-     * @param lookups    the lookup service
-     * @param connectors the connectors
-     * @param manager    the connector manager
+     * @param service  the archetype service
+     * @param lookups  the lookup service
+     * @param services the patient event listeners
+     * @param manager  the connector manager
      */
-    public AdmissionServiceImpl(IArchetypeService service, ILookupService lookups, Connectors connectors,
-                                MessageDispatcherImpl manager) {
+    public PatientInformationServiceImpl(IArchetypeService service, ILookupService lookups,
+                                         PatientEventServices services, MessageDispatcherImpl manager) {
         this.factory = new ADTMessageFactory(manager.getMessageContext(), service, lookups);
-        this.connectors = connectors;
+        this.services = services;
         this.manager = manager;
     }
 
@@ -70,7 +70,7 @@ public class AdmissionServiceImpl implements AdmissionService {
      */
     @Override
     public void admitted(PatientContext context) {
-        List<Connector> senders = connectors.getSenders(context.getLocation());
+        List<Connector> senders = services.getConnections(context.getLocation());
         if (!senders.isEmpty()) {
             for (Connector connector : senders) {
                 MessageConfig config = MessageConfigFactory.create(connector);
@@ -88,7 +88,7 @@ public class AdmissionServiceImpl implements AdmissionService {
      */
     @Override
     public void admissionCancelled(PatientContext context) {
-        List<Connector> senders = connectors.getSenders(context.getLocation());
+        List<Connector> senders = services.getConnections(context.getLocation());
         if (!senders.isEmpty()) {
             for (Connector connector : senders) {
                 MessageConfig config = MessageConfigFactory.create(connector);
@@ -105,7 +105,7 @@ public class AdmissionServiceImpl implements AdmissionService {
      */
     @Override
     public void discharged(PatientContext context) {
-        List<Connector> senders = connectors.getSenders(context.getLocation());
+        List<Connector> senders = services.getConnections(context.getLocation());
         if (!senders.isEmpty()) {
             for (Connector connector : senders) {
                 MessageConfig config = MessageConfigFactory.create(connector);
@@ -122,7 +122,7 @@ public class AdmissionServiceImpl implements AdmissionService {
      */
     @Override
     public void updated(PatientContext context) {
-        List<Connector> senders = connectors.getSenders(context.getLocation());
+        List<Connector> senders = services.getConnections(context.getLocation());
         if (!senders.isEmpty()) {
             for (Connector connector : senders) {
                 MessageConfig config = MessageConfigFactory.create(connector);

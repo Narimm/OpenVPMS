@@ -18,14 +18,13 @@ package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.model.Message;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.hl7.Connector;
 import org.openvpms.hl7.PatientContext;
-import org.openvpms.hl7.PharmacyOrderService;
+import org.openvpms.hl7.pharmacy.Pharmacies;
+import org.openvpms.hl7.pharmacy.PharmacyOrderService;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -38,14 +37,9 @@ import java.util.Date;
 public class PharmacyOrderServiceImpl implements PharmacyOrderService {
 
     /**
-     * The archetype service.
+     * The pharmacies.
      */
-    private final IArchetypeService service;
-
-    /**
-     * The connectors.
-     */
-    private final Connectors connectors;
+    private final Pharmacies pharmacies;
 
     /**
      * The message dispatcher.
@@ -62,13 +56,12 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
      *
      * @param service    the archetype service
      * @param lookups    the lookup service
-     * @param connectors the connectors
+     * @param pharmacies the pharmacies
      * @param dispatcher the message dispatcher
      */
-    public PharmacyOrderServiceImpl(IArchetypeService service, ILookupService lookups, Connectors connectors,
+    public PharmacyOrderServiceImpl(IArchetypeService service, ILookupService lookups, Pharmacies pharmacies,
                                     MessageDispatcherImpl dispatcher) {
-        this.service = service;
-        this.connectors = connectors;
+        this.pharmacies = pharmacies;
         this.dispatcher = dispatcher;
         factory = new RDEMessageFactory(dispatcher.getMessageContext(), service, lookups);
     }
@@ -137,15 +130,13 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
     }
 
     /**
-     * Returns a connector for a pharmacy.
+     * Returns a connection for a pharmacy.
      *
      * @param pharmacy the pharmacy
-     * @return the connector, or {@code null} if none is found
+     * @return the connection, or {@code null} if none is found
      */
     private Connector getConnector(Entity pharmacy) {
-        IMObjectBean bean = new IMObjectBean(pharmacy, service);
-        IMObjectReference connector = bean.getNodeTargetObjectRef("orderConnection");
-        return (connector != null) ? connectors.getConnector(connector) : null;
+        return pharmacies.getOrderConnection(pharmacy);
     }
 
 }

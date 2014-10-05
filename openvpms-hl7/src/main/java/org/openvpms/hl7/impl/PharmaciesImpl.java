@@ -16,9 +16,14 @@
 
 package org.openvpms.hl7.impl;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.hl7.Connector;
+import org.openvpms.hl7.HL7Archetypes;
+import org.openvpms.hl7.pharmacy.Pharmacies;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,12 +41,26 @@ public class PharmaciesImpl extends MonitoringIMObjectCache<Entity> implements P
     private final List<Listener> listeners = new ArrayList<Listener>();
 
     /**
+     * The services that receive patient events.
+     */
+    private final PatientEventServices services;
+
+    /**
+     * The connectors.
+     */
+    private final Connectors connectors;
+
+    /**
      * Constructs a {@link PharmaciesImpl}.
      *
-     * @param service the archetype service
+     * @param service    the archetype service
+     * @param connectors the connectors
+     * @param services   the services that receive patient events
      */
-    public PharmaciesImpl(IArchetypeService service) {
-        super(service, "party.organisationPharmacy", Entity.class, false);
+    public PharmaciesImpl(IArchetypeService service, Connectors connectors, PatientEventServices services) {
+        super(service, HL7Archetypes.PHARMACY, Entity.class, false);
+        this.connectors = connectors;
+        this.services = services;
         load();
     }
 
@@ -64,6 +83,38 @@ public class PharmaciesImpl extends MonitoringIMObjectCache<Entity> implements P
     @Override
     public Entity getPharmacy(IMObjectReference reference) {
         return getObject(reference);
+    }
+
+    /**
+     * Returns the pharmacy for a practice location, given the pharmacy group.
+     *
+     * @param group    the pharmacy group
+     * @param location the practice location
+     * @return the pharmacy, or {@code null} if none is found
+     */
+    @Override
+    public Entity getPharmacy(Entity group, IMObjectReference location) {
+        EntityBean bean = new EntityBean(group, getService());
+        for (IMObjectReference ref : bean.getNodeTargetEntityRefs("pharmacies")) {
+            Entity pharmacy = getPharmacy(ref);
+            if (pharmacy != null && hasLocation(pharmacy, location)) {
+                return pharmacy;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the connection to send orders to.
+     *
+     * @param pharmacy the pharmacy
+     * @return the corresponding sender, or {@code null} if none is found
+     */
+    @Override
+    public Connector getOrderConnection(Entity pharmacy) {
+        EntityBean bean = new EntityBean(pharmacy, getService());
+        IMObjectReference ref = bean.getNodeTargetObjectRef("sender");
+        return (ref != null) ? connectors.getConnector(ref) : null;
     }
 
     /**
@@ -96,8 +147,9 @@ public class PharmaciesImpl extends MonitoringIMObjectCache<Entity> implements P
      * @param object the object to add
      */
     @Override
-    protected void add(Entity object) {
-        super.add(object);
+    protected void addObject(Entity object) {
+        super.addObject(object);
+        services.add(object);  // register the pharmacy to receive patient information
         for (Listener listener : getListeners()) {
             listener.added(object);
         }
@@ -109,8 +161,9 @@ public class PharmaciesImpl extends MonitoringIMObjectCache<Entity> implements P
      * @param object the object to remove
      */
     @Override
-    protected void remove(Entity object) {
-        super.remove(object);
+    protected void removeObject(Entity object) {
+        super.removeObject(object);
+        services.remove(object);  // de-register the pharmacy so it no longer receives patient events
         for (Listener listener : getListeners()) {
             listener.removed(object);
         }
@@ -127,5 +180,17 @@ public class PharmaciesImpl extends MonitoringIMObjectCache<Entity> implements P
             result = listeners.toArray(new Listener[listeners.size()]);
         }
         return result;
+    }
+
+    /**
+     * Determines if a pharmacy is used to order for a particular practice location.
+     *
+     * @param pharmacy the pharmacy
+     * @param location the location
+     * @return {@code true} if the pharmacy is used to order for the location
+     */
+    private boolean hasLocation(Entity pharmacy, IMObjectReference location) {
+        EntityBean bean = new EntityBean(pharmacy, getService());
+        return ObjectUtils.equals(location, bean.getNodeTargetObjectRef("location"));
     }
 }

@@ -21,7 +21,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 /**
- * Represents an HL7 inbound or outbound connector.
+ * Represents an HL7 inbound or outbound connection.
  *
  * @author Tim Anderson
  */
@@ -58,7 +58,7 @@ public abstract class Connector {
     private final boolean includeTimeZone;
 
     /**
-     * The connector reference.
+     * The connection reference.
      */
     private final IMObjectReference reference;
 

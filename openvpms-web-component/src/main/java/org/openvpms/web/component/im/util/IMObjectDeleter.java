@@ -206,6 +206,20 @@ public abstract class IMObjectDeleter {
     }
 
     /**
+     * Determines if an entity is the target of any entity links.
+     *
+     * @param entity the entity
+     * @return {@code true} if the entity is a target of at least one entity link
+     */
+    protected boolean hasEntityLinks(Entity entity) {
+        ArchetypeQuery query = new ArchetypeQuery("entityLink.*", false, false);
+        query.add(new ObjectRefNodeConstraint("target", entity.getObjectReference()));
+        query.setMaxResults(1);
+        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+        return !service.get(query).getResults().isEmpty();
+    }
+
+    /**
      * Determines if an entity has any relationships where it is the source, and the relationship isn't excluded.
      *
      * @param entity the entity
@@ -222,6 +236,9 @@ public abstract class IMObjectDeleter {
                     break;
                 }
             }
+        }
+        if (!result) {
+            result = hasEntityLinks(entity);
         }
         return result;
     }

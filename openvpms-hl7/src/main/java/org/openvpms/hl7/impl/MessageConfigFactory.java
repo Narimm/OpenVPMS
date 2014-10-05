@@ -17,7 +17,6 @@
 package org.openvpms.hl7.impl;
 
 import org.openvpms.hl7.Connector;
-import org.openvpms.hl7.MLLPSender;
 
 /**
  * Factory for {@link MessageConfig} objects.

@@ -19,12 +19,12 @@ package org.openvpms.hl7.impl;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Message;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.hl7.Connector;
-import org.openvpms.hl7.MLLPSender;
+import org.openvpms.hl7.HL7Archetypes;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -40,6 +40,11 @@ public abstract class AbstractServiceTest extends AbstractMessageTest {
      * The connectors.
      */
     private Connectors connectors;
+
+    /**
+     * The patient event services.
+     */
+    private PatientEventServices eventServices;
 
     /**
      * The connector manager.
@@ -59,8 +64,13 @@ public abstract class AbstractServiceTest extends AbstractMessageTest {
     public void setUp() {
         super.setUp();
 
+        IMObjectReference senderRef = new IMObjectReference(HL7Archetypes.MLLP_SENDER, -1);
         sender = new MLLPSender("dummy", 2026, "VPMS", "Main Clinic", "Cubex", "Cubex", true, true,
-                                new IMObjectReference("entity.connectorSenderHL7MLLPType", -1));
+                                senderRef);
+        Entity service = (Entity) create(HL7Archetypes.PATIENT_EVENT_SERVICE);
+        EntityBean bean = new EntityBean(service);
+        bean.addNodeTarget("sender", senderRef);
+        bean.addNodeTarget("location", getContext().getLocation());
 
         connectors = new Connectors() {
 
@@ -68,13 +78,9 @@ public abstract class AbstractServiceTest extends AbstractMessageTest {
             public Connector getConnector(IMObjectReference reference) {
                 return sender;
             }
-
-            @Override
-            public List<Connector> getSenders(Party location) {
-                return Arrays.<Connector>asList(sender);
-            }
-
         };
+        eventServices = new PatientEventServicesImpl(getArchetypeService(), connectors);
+        eventServices.add(service);
         dispatcher = new TestMessageDispatcher();
         dispatcher.setTimestamp(TestHelper.getDatetime("2014-08-25 08:59:00"));
         dispatcher.setSequence(1200022);
@@ -87,12 +93,21 @@ public abstract class AbstractServiceTest extends AbstractMessageTest {
         });
     }
 
+    /**
+     * Returns the connectors.
+     *
+     * @return the connectors
+     */
     protected Connectors getConnectors() {
         return connectors;
     }
 
     protected Connector getSender() {
         return sender;
+    }
+
+    protected PatientEventServices getEventServices() {
+        return eventServices;
     }
 
     protected TestMessageDispatcher getDispatcher() {

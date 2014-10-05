@@ -14,10 +14,11 @@
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.hl7;
+package org.openvpms.hl7.pharmacy;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.hl7.PatientContext;
 
 import java.math.BigDecimal;
 import java.util.Date;

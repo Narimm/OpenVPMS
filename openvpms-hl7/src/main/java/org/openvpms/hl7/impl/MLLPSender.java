@@ -14,17 +14,18 @@
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.hl7;
+package org.openvpms.hl7.impl;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.hl7.Connector;
 
 /**
- * HLL7 MLLP Sender.
+ * HL7 MLLP Sender.
  *
  * @author Tim Anderson
  */
@@ -50,7 +51,7 @@ public class MLLPSender extends Connector {
      * @param sendingFacility      the sending facility
      * @param receivingApplication the receiving application
      * @param receivingFacility    the receiving facility
-     * @param reference            the connector reference
+     * @param reference            the connection reference
      */
     public MLLPSender(String host, int port, String sendingApplication, String sendingFacility,
                       String receivingApplication, String receivingFacility, IMObjectReference reference) {
@@ -69,6 +70,7 @@ public class MLLPSender extends Connector {
      * @param receivingFacility    the receiving facility
      * @param includeMillis        if {@code true} include milliseconds in time fields
      * @param includeTimeZone      if {@code true} include the timezone in date/time fields
+     * @param reference            the connection reference
      */
     public MLLPSender(String host, int port, String sendingApplication, String sendingFacility,
                       String receivingApplication, String receivingFacility, boolean includeMillis,
@@ -80,14 +82,14 @@ public class MLLPSender extends Connector {
     }
 
     /**
-     * Creates an {@link MLLPSender} from an <em>entity.connectorSenderHL7MLLPType</em>.
+     * Creates an {@link MLLPSender} from an <em>entity.HL7SenderMLLP</em>.
      *
      * @param object  the configuration
      * @param service the archetype service
      * @return a new {@link MLLPSender}
      */
     public static MLLPSender create(Entity object, IArchetypeService service) {
-        IMObjectBean bean = new IMObjectBean(object, service);
+        EntityBean bean = new EntityBean(object, service);
         return new MLLPSender(bean.getString("host"), bean.getInt("port"), bean.getString("sendingApplication"),
                               bean.getString("sendingFacility"), bean.getString("receivingApplication"),
                               bean.getString("receivingFacility"), bean.getBoolean("includeMillis"),

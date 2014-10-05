@@ -21,13 +21,15 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
+import org.openvpms.hl7.HL7Archetypes;
 import org.openvpms.hl7.PatientContext;
-import org.openvpms.hl7.PharmacyOrderService;
+import org.openvpms.hl7.pharmacy.Pharmacies;
+import org.openvpms.hl7.pharmacy.PharmacyOrderService;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -54,7 +56,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
     /**
      * The pharmacy.
      */
-    private Party pharmacy;
+    private Entity pharmacy;
 
     /**
      * Sets up the test case.
@@ -63,8 +65,20 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
     @Override
     public void setUp() {
         super.setUp();
+        pharmacy = (Entity) create(HL7Archetypes.PHARMACY);
+        EntityBean bean = new EntityBean(pharmacy);
+        bean.addNodeTarget("sender", getSender().getReference());
+        bean.addNodeTarget("location", getContext().getLocation());
+
+        Pharmacies pharmacies = new PharmaciesImpl(getArchetypeService(), getConnectors(), getEventServices()) {
+
+            @Override
+            public Entity getPharmacy(Entity group, IMObjectReference location) {
+                return pharmacy;
+            }
+        };
         orderService = new PharmacyOrderServiceImpl(getArchetypeService(), LookupServiceHelper.getLookupService(),
-                                                    getConnectors(), getDispatcher());
+                                                    pharmacies, getDispatcher());
         product = TestHelper.createProduct();
         product.setName("Valium 2mg");
         IMObjectBean productBean = new IMObjectBean(product);
@@ -72,9 +86,6 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
         productBean.setValue("sellingUnits", TestHelper.getLookup("lookup.uom", "BOX", "Box", true).getCode());
         productBean.setValue("dispInstructions", "Give 1 tablet once daily");
         product.setId(4001);
-        pharmacy = (Party) create("party.organisationPharmacy");
-        EntityBean bean = new EntityBean(pharmacy);
-        bean.addNodeTarget("orderConnection", getSender().getReference());
 
         PatientContext context = getContext();
         Mockito.when(context.getPatientId()).thenReturn(1001L);

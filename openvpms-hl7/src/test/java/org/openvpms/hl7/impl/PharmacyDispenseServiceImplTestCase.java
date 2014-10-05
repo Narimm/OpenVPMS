@@ -28,14 +28,14 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.hl7.Connector;
-import org.openvpms.hl7.MLLPReceiver;
+import org.openvpms.hl7.HL7Archetypes;
+import org.openvpms.hl7.pharmacy.Pharmacies;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,7 +62,7 @@ public class PharmacyDispenseServiceImplTestCase extends AbstractRDSTest {
         Product product = createProduct();
         RDS_O13 rds = createRDS(product);
         User user = TestHelper.createUser();
-        final Entity pharmacy = (Party) create("party.organisationPharmacy");
+        final Entity pharmacy = (Entity) create(HL7Archetypes.PHARMACY);
         EntityBean bean = new EntityBean(pharmacy);
         bean.addNodeTarget("user", user);
 
@@ -74,6 +74,16 @@ public class PharmacyDispenseServiceImplTestCase extends AbstractRDSTest {
             @Override
             public Entity getPharmacy(IMObjectReference reference) {
                 return pharmacy;
+            }
+
+            @Override
+            public Entity getPharmacy(Entity group, IMObjectReference location) {
+                return null;
+            }
+
+            @Override
+            public Connector getOrderConnection(Entity pharmacy) {
+                return null;
             }
 
             @Override
@@ -89,7 +99,7 @@ public class PharmacyDispenseServiceImplTestCase extends AbstractRDSTest {
         PatientRules rules = new PatientRules(getArchetypeService(), LookupServiceHelper.getLookupService());
         UserRules userRules = new UserRules(getArchetypeService());
         final Connector receiver = new MLLPReceiver(10001, "Cubex", "Cubex", "VPMS", "VPMS",
-                                                    new IMObjectReference("entity.connectorReceiverHL7MLLPType", -1));
+                                                    new IMObjectReference(HL7Archetypes.MLLP_RECEIVER, -1));
         final List<Act> order = new ArrayList<Act>();
         PharmacyDispenseServiceImpl service = new PharmacyDispenseServiceImpl(pharmacies, dispatcher, connectors,
                                                                               getArchetypeService(), rules, userRules) {

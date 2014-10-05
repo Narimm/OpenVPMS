@@ -18,17 +18,12 @@ package org.openvpms.hl7.impl;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.hl7.Connector;
-import org.openvpms.hl7.MLLPReceiver;
-import org.openvpms.hl7.MLLPSender;
+import org.openvpms.hl7.HL7Archetypes;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,12 +38,6 @@ public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> impl
      */
     private final Map<Long, State> connectors = new HashMap<Long, State>();
 
-    private static final String SENDER_HL7_MLLP = "entity.connectorSenderHL7MLLPType";
-
-    private static final String RECEIVER_HL7_MLLP = "entity.connectorReceiverHL7MLLPType";
-
-    private static final String SHORT_NAME = "entity.connector*Type";
-
 
     /**
      * Constructs a {@link ConnectorsImpl}.
@@ -56,7 +45,7 @@ public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> impl
      * @param service the archetype service
      */
     public ConnectorsImpl(IArchetypeService service) {
-        super(service, SHORT_NAME, Entity.class);
+        super(service, HL7Archetypes.SENDERS, Entity.class);
     }
 
     /**
@@ -84,28 +73,6 @@ public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> impl
     }
 
     /**
-     * Returns sending connectors active at the practice location.
-     *
-     * @param location the location
-     * @return the connectors
-     */
-    @Override
-    public List<Connector> getSenders(Party location) {
-        EntityBean bean = new EntityBean(location, getService());
-        List<IMObjectReference> refs = bean.getNodeTargetEntityRefs("connectors");
-        List<Connector> result = new ArrayList<Connector>();
-        for (IMObjectReference ref : refs) {
-            if (TypeHelper.isA(ref, "entity.connectorSender*")) {
-                Connector connector = getConnector(ref);
-                if (connector != null) {
-                    result.add(connector);
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
      * Adds an object to the cache.
      * <p/>
      * Implementations may ignore the object if it is older than any cached instance, or is inactive
@@ -113,7 +80,7 @@ public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> impl
      * @param object the object to add
      */
     @Override
-    protected void add(Entity object) {
+    protected void addObject(Entity object) {
         addConnector(object);
     }
 
@@ -123,7 +90,7 @@ public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> impl
      * @param object the object to remove
      */
     @Override
-    protected void remove(Entity object) {
+    protected void removeObject(Entity object) {
         synchronized (connectors) {
             connectors.remove(object.getId());
         }
@@ -132,7 +99,7 @@ public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> impl
     private Connector addConnector(Entity object) {
         Connector result = null;
         if (!object.isActive()) {
-            remove(object);
+            removeObject(object);
         } else {
             synchronized (connectors) {
                 State state = connectors.get(object.getId());
@@ -149,9 +116,9 @@ public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> impl
 
     private Connector create(Entity object) {
         Connector result = null;
-        if (TypeHelper.isA(object, SENDER_HL7_MLLP)) {
+        if (TypeHelper.isA(object, HL7Archetypes.MLLP_SENDER)) {
             result = MLLPSender.create(object, getService());
-        } else if (TypeHelper.isA(object, RECEIVER_HL7_MLLP)) {
+        } else if (TypeHelper.isA(object, HL7Archetypes.MLLP_RECEIVER)) {
             result = MLLPReceiver.create(object, getService());
         }
         return result;

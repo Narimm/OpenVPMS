@@ -33,8 +33,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.hl7.Connector;
-import org.openvpms.hl7.MLLPReceiver;
-import org.openvpms.hl7.MLLPSender;
 import org.springframework.beans.factory.DisposableBean;
 
 import java.io.IOException;
