@@ -15,19 +15,20 @@
   -->
 
 <archetypes>
-    <archetype name="party.organisationPharmacy.1.0" latest="true"
-               type="org.openvpms.component.business.domain.im.party.Party" displayName="Pharmacy">
+    <archetype name="entity.HL7ServicePharmacy.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.common.Entity" displayName="Pharmacy">
         <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
-        <node name="name" displayName="Pharmacy Name" type="java.lang.String" path="/name" minCardinality="1">
+        <node name="name" type="java.lang.String" path="/name" minCardinality="1">
             <assertion name="propercase"/>
         </node>
-        <node name="description" type="java.lang.String"
-              path="/description" hidden="true"/>
+        <node name="description" type="java.lang.String" path="/description"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
-        <node name="orderConnection" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
-              minCardinality="0" maxCardinality="1" filter="entityLink.pharmacyOrderConnection"/>
-        <node name="dispenseConnection" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
-              minCardinality="0" maxCardinality="1" filter="entityLink.pharmacyDispenseConnection"/>
+        <node name="sender" displayName="Order Connection" path="/entityLinks" type="java.util.HashSet"
+              baseName="EntityLink" minCardinality="0" maxCardinality="1" filter="entityLink.HL7ServiceSender"/>
+        <node name="receiver" displayName="Dispense Connection" path="/entityLinks" type="java.util.HashSet"
+              baseName="EntityLink" minCardinality="0" maxCardinality="1" filter="entityLink.HL7ServiceReceiver"/>
+        <node name="location" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="1" maxCardinality="1" filter="entityLink.HL7ServiceLocation"/>
         <node name="user" path="/entityLinks"
               type="java.util.HashSet" baseName="EntityLink" minCardinality="1" maxCardinality="1"
               filter="entityLink.pharmacyUser"/>
