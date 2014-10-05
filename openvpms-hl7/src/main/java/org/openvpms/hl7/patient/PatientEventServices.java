@@ -19,7 +19,7 @@ package org.openvpms.hl7.patient;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.hl7.Connector;
+import org.openvpms.hl7.io.Connector;
 
 import java.util.Collection;
 

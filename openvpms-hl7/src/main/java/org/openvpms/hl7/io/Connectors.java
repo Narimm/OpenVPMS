@@ -14,10 +14,9 @@
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.hl7.impl;
+package org.openvpms.hl7.io;
 
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.hl7.Connector;
 
 /**
  * Manages {@link Connectors}.

@@ -18,7 +18,7 @@ package org.openvpms.hl7.pharmacy;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.hl7.Connector;
+import org.openvpms.hl7.io.Connector;
 
 import java.util.List;
 

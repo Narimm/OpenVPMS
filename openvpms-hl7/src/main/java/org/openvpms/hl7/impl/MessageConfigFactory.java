@@ -16,7 +16,7 @@
 
 package org.openvpms.hl7.impl;
 
-import org.openvpms.hl7.Connector;
+import org.openvpms.hl7.io.Connector;
 
 /**
  * Factory for {@link MessageConfig} objects.

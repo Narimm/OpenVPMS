@@ -19,7 +19,7 @@ package org.openvpms.hl7.impl;
 import ca.uhn.hl7v2.model.Message;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.hl7.Connector;
+import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientEventServices;
 import org.openvpms.hl7.patient.PatientInformationService;

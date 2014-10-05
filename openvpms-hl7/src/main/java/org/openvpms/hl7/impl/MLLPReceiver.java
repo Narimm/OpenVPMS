@@ -21,14 +21,14 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.hl7.Connector;
+import org.openvpms.hl7.io.Connector;
 
 /**
  * HL7 MLLP Receiver.
  *
  * @author Tim Anderson
  */
-public class MLLPReceiver extends Connector {
+class MLLPReceiver extends Connector {
 
     /**
      * The port to listen on.

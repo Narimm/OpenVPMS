@@ -18,7 +18,7 @@ package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
-import org.openvpms.hl7.Connector;
+import org.openvpms.hl7.io.Connector;
 
 /**
  * Manages sending HL7 messages.
