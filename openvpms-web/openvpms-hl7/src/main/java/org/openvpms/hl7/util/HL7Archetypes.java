@@ -24,34 +24,48 @@ package org.openvpms.hl7.util;
 public class HL7Archetypes {
 
     /**
+     * The HL7 service archetype short names.
+     */
+    public static final String SERVICES = "entity.HL7Service*";
+
+    /**
      * Patient event service archetype short name.
      */
-    public static String PATIENT_EVENT_SERVICE = "entity.HL7ServicePatientEvent";
+    public static final String PATIENT_EVENT_SERVICE = "entity.HL7ServicePatientEvent";
 
     /**
      * Pharmacy archetype short name.
      */
-    public static String PHARMACY = "entity.HL7ServicePharmacy";
+    public static final String PHARMACY = "entity.HL7ServicePharmacy";
 
     /**
      * Pharmacy group archetype short name.
      */
-    public static String PHARMACY_GROUP = "entity.HL7ServicePharmacyGroup";
+    public static final String PHARMACY_GROUP = "entity.HL7ServicePharmacyGroup";
 
     /**
      * HL7 MLLP sender archetype short name.
      */
-    public static String MLLP_SENDER = "entity.HL7SenderMLLP";
+    public static final String MLLP_SENDER = "entity.HL7SenderMLLP";
 
     /**
      * HL7 MLLP receiver archetype short name.
      */
-    public static String MLLP_RECEIVER = "entity.HL7ReceiverMLLP";
+    public static final String MLLP_RECEIVER = "entity.HL7ReceiverMLLP";
 
-    public static String SENDERS = "entity.HL7Sender*";
+    /**
+     * The send connection archetype short names.
+     */
+    public static final String SENDERS = "entity.HL7Sender*";
 
-    public static String RECEIVERS = "entity.HL7Receiver*";
+    /**
+     * The receive connection archetype short names.
+     */
+    public static final String RECEIVERS = "entity.HL7Receiver*";
 
-    public static String SERVICES = "entity.HL7Service*";
+    /**
+     * The connection archetype short names.
+     */
+    public static final String[] CONNECTIONS = {SENDERS, RECEIVERS};
 
 }

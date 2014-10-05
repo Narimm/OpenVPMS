@@ -45,11 +45,11 @@ public class AdminWorkspaces extends AbstractWorkspaces {
         addWorkspace(new TypeWorkspace(context));
         addWorkspace(new DocumentTemplateWorkspace(context));
         addWorkspace(new LookupWorkspace(context));
+        addWorkspace(new HL7Workspace(context));
         addWorkspace(new UserWorkspace(context));
         addWorkspace(new GroupWorkspace(context));
         addWorkspace(new RoleWorkspace(context));
         addWorkspace(new AuthorityWorkspace(context));
-        addWorkspace(new HL7Workspace(context));
         addWorkspace(new ArchetypeWorkspace(context));
         addWorkspace(new StyleSheetWorkspace(context));
     }

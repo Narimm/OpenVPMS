@@ -45,15 +45,14 @@ public abstract class AbstractViewCRUDWindow<T extends IMObject>
     private Component objectContainer;
 
     /**
-     * The style name.
-     */
-    private static final String STYLE = "CRUDWindow";
-
-    /**
      * The object viewer.
      */
     private IMObjectViewer viewer;
 
+    /**
+     * The style name.
+     */
+    protected static final String STYLE = "CRUDWindow";
 
     /**
      * Constructs an {@link AbstractViewCRUDWindow}.

@@ -97,6 +97,11 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     private User clinician;
 
     /**
+     * The practice location.
+     */
+    private Party location;
+
+    /**
      * The layout context.
      */
     private LayoutContext layoutContext;
@@ -118,7 +123,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         patient = TestHelper.createPatient(customer);
         author = TestHelper.createUser();
         clinician = TestHelper.createClinician();
-        Party location = TestHelper.createLocation();
+        location = TestHelper.createLocation();
 
         layoutContext = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
         layoutContext.getContext().setPractice(getPractice());
@@ -425,7 +430,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         BigDecimal itemTotal = BigDecimal.valueOf(11);
         BigDecimal total = itemTotal.multiply(BigDecimal.valueOf(3));
 
-        Entity pharmacy = CustomerChargeTestHelper.createPharmacy();
+        Entity pharmacy = CustomerChargeTestHelper.createPharmacy(location);
         Product product1 = createProduct(ProductArchetypes.MEDICATION, fixedPrice, pharmacy);
         Entity reminderType1 = addReminder(product1);
         Entity investigationType1 = addInvestigation(product1);
@@ -803,7 +808,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      */
     @Test
     public void testChangePharmacyOrderQuantity() {
-        Entity pharmacy = createPharmacy();
+        Entity pharmacy = createPharmacy(location);
         Product product = createProduct(ProductArchetypes.MEDICATION, TEN, pharmacy);
 
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
@@ -837,7 +842,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      */
     @Test
     public void testDeleteInvoiceItemWithPharmacyOrder() {
-        Entity pharmacy = createPharmacy();
+        Entity pharmacy = createPharmacy(location);
         Product product1 = createProduct(ProductArchetypes.MEDICATION, TEN, pharmacy);
         Product product2 = createProduct(ProductArchetypes.MERCHANDISE, TEN, pharmacy);
 
@@ -978,7 +983,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         BigDecimal itemTotal = BigDecimal.valueOf(11);
         BigDecimal tax = itemTax.multiply(BigDecimal.valueOf(3));
         BigDecimal total = itemTotal.multiply(BigDecimal.valueOf(3));
-        Entity pharmacy = CustomerChargeTestHelper.createPharmacy();
+        Entity pharmacy = CustomerChargeTestHelper.createPharmacy(location);
 
         boolean invoice = TypeHelper.isA(charge, CustomerAccountArchetypes.INVOICE);
 

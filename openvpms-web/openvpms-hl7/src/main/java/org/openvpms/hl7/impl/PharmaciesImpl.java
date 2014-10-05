@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Caches <em>party.organisationPharmacy</em> objects.
+ * Caches <em>entity.HL7ServicePharmacy</em> objects.
  *
  * @author Tim Anderson
  */
