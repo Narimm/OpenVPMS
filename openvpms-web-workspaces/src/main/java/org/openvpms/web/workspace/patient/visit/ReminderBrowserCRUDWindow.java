@@ -13,6 +13,7 @@
  *
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient.visit;
 
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -36,7 +37,7 @@ import org.openvpms.web.echo.help.HelpContext;
  *
  * @author Tim Anderson
  */
-public class ReminderBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
+public class ReminderBrowserCRUDWindow extends VisitBrowserCRUDWindow<Act> {
 
     /**
      * The reminder statuses to query.

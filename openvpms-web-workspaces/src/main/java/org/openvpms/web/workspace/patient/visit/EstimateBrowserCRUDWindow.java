@@ -37,7 +37,7 @@ import org.openvpms.web.echo.help.HelpContext;
  *
  * @author Tim Anderson
  */
-public class EstimateBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
+public class EstimateBrowserCRUDWindow extends VisitBrowserCRUDWindow<Act> {
 
     /**
      * The estimate statuses to query.

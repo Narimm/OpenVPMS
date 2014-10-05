@@ -33,7 +33,7 @@ import org.openvpms.web.workspace.patient.mr.PatientPrescriptionQuery;
  *
  * @author Tim Anderson
  */
-public class PrescriptionBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
+public class PrescriptionBrowserCRUDWindow extends VisitBrowserCRUDWindow<Act> {
 
     /**
      * The parent visit editor.

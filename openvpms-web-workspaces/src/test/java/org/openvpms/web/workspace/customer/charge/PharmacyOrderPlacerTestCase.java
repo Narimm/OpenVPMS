@@ -38,6 +38,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.hl7.impl.PharmaciesImpl;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.patient.PatientContextFactory;
+import org.openvpms.hl7.patient.PatientEventServices;
 import org.openvpms.hl7.pharmacy.Pharmacies;
 import org.openvpms.web.component.im.util.DefaultIMObjectCache;
 import org.openvpms.web.system.ServiceHelper;
@@ -103,9 +104,10 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
         patient = TestHelper.createPatient(true);
         location = TestHelper.createLocation();
         clinician = TestHelper.createClinician();
-        pharmacy = CustomerChargeTestHelper.createPharmacy();
+        pharmacy = CustomerChargeTestHelper.createPharmacy(location);
         service = new TestPharmacyOrderService();
-        Pharmacies pharmacies = new PharmaciesImpl(getArchetypeService(), Mockito.mock(Connectors.class));
+        Pharmacies pharmacies = new PharmaciesImpl(getArchetypeService(), Mockito.mock(Connectors.class),
+                                                   Mockito.mock(PatientEventServices.class));
         PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
         MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
         placer = new PharmacyOrderPlacer(customer, location, new DefaultIMObjectCache(), service, pharmacies, factory,
@@ -256,7 +258,7 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
         List<Act> items = Arrays.<Act>asList(item);
         placer.initialise(items);
 
-        Entity pharmacy2 = CustomerChargeTestHelper.createPharmacy();
+        Entity pharmacy2 = CustomerChargeTestHelper.createPharmacy(location);
         Product product2 = createProduct(pharmacy2);
 
         ActBean bean = new ActBean(item);

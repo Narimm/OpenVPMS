@@ -145,12 +145,12 @@ public class VisitEditor {
     /**
      * The reminders/alerts CRUD window.
      */
-    private BrowserCRUDWindow<Act> reminderWindow;
+    private VisitBrowserCRUDWindow<Act> reminderWindow;
 
     /**
      * The patient document browser window.
      */
-    private BrowserCRUDWindow<DocumentAct> documentWindow;
+    private VisitBrowserCRUDWindow<DocumentAct> documentWindow;
 
     /**
      * The prescription CRUD window.
@@ -584,11 +584,11 @@ public class VisitEditor {
      * @param context the context
      * @return a new window
      */
-    protected BrowserCRUDWindow<DocumentAct> createDocumentBrowserCRUDWindow(Context context) {
+    protected VisitBrowserCRUDWindow<DocumentAct> createDocumentBrowserCRUDWindow(Context context) {
         Query<DocumentAct> query = new PatientDocumentQuery<DocumentAct>(patient);
         Browser<DocumentAct> browser = BrowserFactory.create(query, new DefaultLayoutContext(context, help));
         VisitDocumentCRUDWindow window = new VisitDocumentCRUDWindow(context, help.subtopic("document"));
-        BrowserCRUDWindow<DocumentAct> result = new BrowserCRUDWindow<DocumentAct>(browser, window);
+        VisitBrowserCRUDWindow<DocumentAct> result = new VisitBrowserCRUDWindow<DocumentAct>(browser, window);
         result.setId(DOCUMENT_TAB);
         return result;
     }

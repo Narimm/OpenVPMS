@@ -33,6 +33,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
+import org.openvpms.hl7.util.HL7Archetypes;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.property.DefaultValidator;
@@ -254,14 +255,16 @@ public class CustomerChargeTestHelper {
     }
 
     /**
-     * Creates a new <em>party.organisationPharmacy</em>.
+     * Creates a new <em>entity.HL7ServicePharmacy</em>.
      *
+     * @param location the practice location
      * @return a new pharmacy
      */
-    public static Entity createPharmacy() {
-        Entity pharmacy = (Entity) TestHelper.create("party.organisationPharmacy");
+    public static Entity createPharmacy(Party location) {
+        Entity pharmacy = (Entity) TestHelper.create(HL7Archetypes.PHARMACY);
         pharmacy.setName("ZPharmacy");
         EntityBean bean = new EntityBean(pharmacy);
+        bean.addNodeTarget("location", location);
         bean.addNodeTarget("user", TestHelper.createUser());
         TestHelper.save(pharmacy);
         return pharmacy;

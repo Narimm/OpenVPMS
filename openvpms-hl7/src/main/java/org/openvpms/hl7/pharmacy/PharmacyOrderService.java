@@ -38,7 +38,7 @@ public interface PharmacyOrderService {
      * @param quantity          the quantity to order
      * @param placerOrderNumber the placer order number, to uniquely identify the order
      * @param date              the order date
-     * @param pharmacy          the pharmacy. A <em>party.organisationPharmacy</em>
+     * @param pharmacy          the pharmacy. An <em>entity.HL7ServicePharmacy</em>
      */
     void createOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
                      Date date, Entity pharmacy);
@@ -51,7 +51,7 @@ public interface PharmacyOrderService {
      * @param quantity          the quantity to order
      * @param placerOrderNumber the placer order number, to uniquely identify the order
      * @param date              the order date
-     * @param pharmacy          the pharmacy. A <em>party.organisationPharmacy</em>
+     * @param pharmacy          the pharmacy. An <em>entity.HL7ServicePharmacy</em>
      */
     void updateOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
                      Date date, Entity pharmacy);
@@ -64,7 +64,7 @@ public interface PharmacyOrderService {
      * @param quantity          the quantity to order
      * @param placerOrderNumber the placer order number, to uniquely identify the order
      * @param date              the order date
-     * @param pharmacy          the pharmacy. A <em>party.organisationPharmacy</em>
+     * @param pharmacy          the pharmacy. An <em>entity.HL7ServicePharmacy</em>
      */
     void cancelOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
                      Date date, Entity pharmacy);
