@@ -21,7 +21,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.hl7.Connector;
-import org.openvpms.hl7.HL7Archetypes;
+import org.openvpms.hl7.util.HL7Archetypes;
 
 import java.util.HashMap;
 import java.util.Map;

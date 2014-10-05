@@ -325,7 +325,7 @@
 
     <bean name="hl7messageDispatcher" class="org.openvpms.hl7.impl.MessageDispatcherImpl"/>
 
-    <bean class="org.openvpms.hl7.PatientContextFactory">
+    <bean class="org.openvpms.hl7.patient.PatientContextFactory">
         <constructor-arg ref="patientRules"/>
         <constructor-arg ref="customerRules"/>
         <constructor-arg ref="archetypeService"/>

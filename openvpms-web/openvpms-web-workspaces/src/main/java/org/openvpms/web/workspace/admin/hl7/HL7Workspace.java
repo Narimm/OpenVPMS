@@ -17,7 +17,7 @@
 package org.openvpms.web.workspace.admin.hl7;
 
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.hl7.HL7Archetypes;
+import org.openvpms.hl7.util.HL7Archetypes;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.workspace.ResultSetCRUDWorkspace;
 

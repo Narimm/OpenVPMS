@@ -14,7 +14,7 @@
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.hl7;
+package org.openvpms.hl7.util;
 
 /**
  * HL7 archetypes.

@@ -32,11 +32,11 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.hl7.HL7Archetypes;
-import org.openvpms.hl7.PatientContext;
-import org.openvpms.hl7.PatientContextFactory;
+import org.openvpms.hl7.patient.PatientContext;
+import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.pharmacy.Pharmacies;
 import org.openvpms.hl7.pharmacy.PharmacyOrderService;
+import org.openvpms.hl7.util.HL7Archetypes;
 import org.openvpms.web.component.im.util.IMObjectCache;
 
 import java.math.BigDecimal;

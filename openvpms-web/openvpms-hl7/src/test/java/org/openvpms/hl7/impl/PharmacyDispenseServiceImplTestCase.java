@@ -34,8 +34,8 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.hl7.Connector;
-import org.openvpms.hl7.HL7Archetypes;
 import org.openvpms.hl7.pharmacy.Pharmacies;
+import org.openvpms.hl7.util.HL7Archetypes;
 
 import java.util.ArrayList;
 import java.util.Arrays;

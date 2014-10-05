@@ -39,8 +39,8 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
-import org.openvpms.hl7.PatientContext;
-import org.openvpms.hl7.PatientContextFactory;
+import org.openvpms.hl7.patient.PatientContext;
+import org.openvpms.hl7.patient.PatientContextFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;

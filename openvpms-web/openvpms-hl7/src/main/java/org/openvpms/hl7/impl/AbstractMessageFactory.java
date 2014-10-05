@@ -29,7 +29,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.hl7.PatientContext;
+import org.openvpms.hl7.patient.PatientContext;
 
 import java.io.IOException;
 import java.util.List;

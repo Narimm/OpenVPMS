@@ -20,7 +20,7 @@ import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.hl7.PatientContextFactory;
+import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.pharmacy.Pharmacies;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;

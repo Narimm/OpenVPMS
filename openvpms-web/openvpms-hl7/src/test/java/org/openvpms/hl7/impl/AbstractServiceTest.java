@@ -23,7 +23,8 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.hl7.Connector;
-import org.openvpms.hl7.HL7Archetypes;
+import org.openvpms.hl7.patient.PatientEventServices;
+import org.openvpms.hl7.util.HL7Archetypes;
 
 import java.util.List;
 

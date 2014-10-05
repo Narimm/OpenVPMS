@@ -18,7 +18,7 @@ package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.v25.segment.PV1;
-import org.openvpms.hl7.PatientContext;
+import org.openvpms.hl7.patient.PatientContext;
 
 import java.util.Date;
 
