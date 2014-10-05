@@ -24,6 +24,6 @@
         <node name="description" type="java.lang.String" path="/description"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="pharmacies" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
-              minCardinality="0" maxCardinality="*" filter="entityLink.pharmacyGroupPharmacy"/>
+              minCardinality="0" maxCardinality="*" filter="entityLink.HL7PharmacyGroupPharmacy"/>
     </archetype>
 </archetypes>
