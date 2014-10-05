@@ -29,8 +29,7 @@
               baseName="EntityLink" minCardinality="0" maxCardinality="1" filter="entityLink.HL7ServiceReceiver"/>
         <node name="location" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
               minCardinality="1" maxCardinality="1" filter="entityLink.HL7ServiceLocation"/>
-        <node name="user" path="/entityLinks"
-              type="java.util.HashSet" baseName="EntityLink" minCardinality="1" maxCardinality="1"
-              filter="entityLink.pharmacyUser"/>
+        <node name="user" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink" minCardinality="1"
+              maxCardinality="1" filter="entityLink.HL7ServiceUser"/>
     </archetype>
 </archetypes>
