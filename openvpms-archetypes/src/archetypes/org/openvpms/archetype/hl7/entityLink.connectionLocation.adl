@@ -15,34 +15,32 @@
   -->
 
 <archetypes>
-    <archetype name="entityLink.productPharmacy.1.0" latest="true"
+    <archetype name="entityLink.connectionLocation.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.common.EntityLink"
-               displayName="Product Pharmacy">
+               displayName="HL7 Connection Location">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
-              derivedValue="'Product Pharmacy'"/>
+              derivedValue="'HL7 Connection Location'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true"/>
-        <node name="source" displayName="Product" path="/source"
+        <node name="source" displayName="Connection" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName" value="product.*"/>
+                        <property name="shortName" value="entity.HL7Receiver*"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="entity.HL7Sender*"/>
                     </propertyMap>
                 </propertyList>
             </assertion>
         </node>
-        <node name="target" displayName="Pharmacy" path="/target"
+        <node name="target" displayName="Practice Location" path="/target"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName" value="party.organisationPharmacy"/>
-                    </propertyMap>
-                </propertyList>
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="party.organisationPharmacyGroup"/>
+                        <property name="shortName" value="party.organisationLocation"/>
                     </propertyMap>
                 </propertyList>
             </assertion>

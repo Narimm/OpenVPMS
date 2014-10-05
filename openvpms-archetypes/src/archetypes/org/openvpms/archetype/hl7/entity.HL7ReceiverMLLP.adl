@@ -15,14 +15,14 @@
   -->
 
 <archetypes>
-    <archetype name="entity.connectorReceiverHL7MLLPType.1.0" latest="true"
+    <archetype name="entity.HL7ReceiverMLLP.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.common.Entity" displayName="HL7 MLLP Receiver">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" minCardinality="1">
             <assertion name="propercase"/>
         </node>
         <node name="description" type="java.lang.String" path="/description" derived="true"
-              derivedValue="concat('Port: ', /details/port)"/>
+              derivedValue="concat('Port: ', /details/port)" hidden="true"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="port" type="java.lang.Integer" path="/details/port" minCardinality="1"/>
         <node name="sendingApplication" type="java.lang.String" path="/details/sendingApplication" minCardinality="1"/>
@@ -30,6 +30,8 @@
         <node name="receivingApplication" type="java.lang.String" path="/details/receivingApplication"
               minCardinality="1" defaultValue="'OpenVPMS'"/>
         <node name="receivingFacility" type="java.lang.String" path="/details/receivingFacility" minCardinality="1"/>
+        <node name="location" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="0" maxCardinality="1" filter="entityLink.connectionLocation"/>
         <node name="includeMillis" type="java.lang.Boolean" path="/details/includeMillis" minCardinality="0"
               defaultValue="false()"/>
         <node name="includeTimeZone" type="java.lang.Boolean" path="/details/includeTimeZone" minCardinality="0"
