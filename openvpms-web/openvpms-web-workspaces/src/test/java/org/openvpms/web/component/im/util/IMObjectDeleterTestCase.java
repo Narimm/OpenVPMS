@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
@@ -213,6 +213,14 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
 
         checkDeleter(deleter, true, false, false);
         checkListener(listener, true);
+    }
+
+    /**
+     * Verifies that attempting to delete an entity that is the target of an entity link deactivates it.
+     */
+    @Test
+    public void testDeleteWithEntityLinks() {
+
     }
 
     /**

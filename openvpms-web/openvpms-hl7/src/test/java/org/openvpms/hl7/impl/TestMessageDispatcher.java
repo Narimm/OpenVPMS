@@ -19,7 +19,7 @@ package org.openvpms.hl7.impl;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.llp.LLPException;
 import ca.uhn.hl7v2.model.Message;
-import org.openvpms.hl7.Connector;
+import org.openvpms.hl7.io.Connector;
 
 import java.io.IOException;
 import java.util.ArrayList;

@@ -20,7 +20,7 @@ import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.v25.segment.EVN;
 import ca.uhn.hl7v2.model.v25.segment.MSH;
-import org.openvpms.hl7.Connector;
+import org.openvpms.hl7.io.Connector;
 
 import java.util.Date;
 

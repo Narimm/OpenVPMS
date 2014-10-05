@@ -32,7 +32,7 @@ import ca.uhn.hl7v2.util.idgenerator.IDGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.hl7.Connector;
+import org.openvpms.hl7.io.Connector;
 import org.springframework.beans.factory.DisposableBean;
 
 import java.io.IOException;
