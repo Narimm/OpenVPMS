@@ -32,11 +32,12 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.hl7.HL7Archetypes;
 import org.openvpms.hl7.PatientContext;
 import org.openvpms.hl7.PatientContextFactory;
-import org.openvpms.hl7.PharmacyOrderService;
+import org.openvpms.hl7.pharmacy.Pharmacies;
+import org.openvpms.hl7.pharmacy.PharmacyOrderService;
 import org.openvpms.web.component.im.util.IMObjectCache;
-import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -80,6 +81,11 @@ public class PharmacyOrderPlacer {
     private final PharmacyOrderService service;
 
     /**
+     * The pharmacies.
+     */
+    private final Pharmacies pharmacies;
+
+    /**
      * The patient context factory.
      */
     private final PatientContextFactory factory;
@@ -93,17 +99,23 @@ public class PharmacyOrderPlacer {
     /**
      * Constructs an {@link PharmacyOrderPlacer}.
      *
-     * @param customer the customer
-     * @param location the location
-     * @param cache    the object cache
+     * @param customer   the customer
+     * @param location   the location
+     * @param cache      the object cache
+     * @param service    the pharmacy order service
+     * @param pharmacies the pharmacies
+     * @param factory    the patient context factory
+     * @param rules      the medical record rules
      */
-    public PharmacyOrderPlacer(Party customer, Party location, IMObjectCache cache, PharmacyOrderService service) {
+    public PharmacyOrderPlacer(Party customer, Party location, IMObjectCache cache, PharmacyOrderService service,
+                               Pharmacies pharmacies, PatientContextFactory factory, MedicalRecordRules rules) {
         this.customer = customer;
         this.location = location;
         this.cache = cache;
         this.service = service;
-        factory = ServiceHelper.getBean(PatientContextFactory.class);
-        rules = ServiceHelper.getBean(MedicalRecordRules.class);
+        this.pharmacies = pharmacies;
+        this.factory = factory;
+        this.rules = rules;
     }
 
     /**
@@ -297,7 +309,7 @@ public class PharmacyOrderPlacer {
     }
 
     /**
-     * Returns the pharmacy for a product.
+     * Returns the pharmacy for a product and location
      *
      * @param product the product
      * @return the pharmacy, or {@code null} if none is present
@@ -305,7 +317,11 @@ public class PharmacyOrderPlacer {
     private Entity getPharmacy(Product product) {
         EntityBean bean = new EntityBean(product);
         IMObjectReference ref = bean.getNodeTargetObjectRef("pharmacy");
-        return (Entity) getObject(ref);
+        Entity pharmacy = (Entity) getObject(ref);
+        if (pharmacy != null && TypeHelper.isA(pharmacy, HL7Archetypes.PHARMACY_GROUP)) {
+            pharmacy = pharmacies.getPharmacy(pharmacy, location.getObjectReference());
+        }
+        return pharmacy;
     }
 
     /**

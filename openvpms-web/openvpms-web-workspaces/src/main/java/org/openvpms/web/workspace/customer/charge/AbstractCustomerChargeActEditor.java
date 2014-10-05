@@ -20,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -34,7 +35,9 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.hl7.PharmacyOrderService;
+import org.openvpms.hl7.PatientContextFactory;
+import org.openvpms.hl7.pharmacy.Pharmacies;
+import org.openvpms.hl7.pharmacy.PharmacyOrderService;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditorFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -445,7 +448,10 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
      */
     protected PharmacyOrderPlacer createPharmacyOrderPlacer(Party customer, Party location) {
         return new PharmacyOrderPlacer(customer, location, getLayoutContext().getCache(),
-                                       ServiceHelper.getBean(PharmacyOrderService.class));
+                                       ServiceHelper.getBean(PharmacyOrderService.class),
+                                       ServiceHelper.getBean(Pharmacies.class),
+                                       ServiceHelper.getBean(PatientContextFactory.class),
+                                       ServiceHelper.getBean(MedicalRecordRules.class));
     }
 
     /**

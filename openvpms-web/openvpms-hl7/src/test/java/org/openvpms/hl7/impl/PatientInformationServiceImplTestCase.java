@@ -20,22 +20,22 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
-import org.openvpms.hl7.AdmissionService;
 import org.openvpms.hl7.PatientContext;
+import org.openvpms.hl7.PatientInformationService;
 
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests the {@link AdmissionServiceImpl}.
+ * Tests the {@link PatientInformationServiceImpl}.
  *
  * @author Tim Anderson
  */
-public class AdmissionServiceImplTestCase extends AbstractServiceTest {
+public class PatientInformationServiceImplTestCase extends AbstractServiceTest {
 
     /**
      * The admission service.
      */
-    private AdmissionService admissionService;
+    private PatientInformationService service;
 
     /**
      * Sets up the test case.
@@ -44,7 +44,8 @@ public class AdmissionServiceImplTestCase extends AbstractServiceTest {
     public void setUp() {
         super.setUp();
         ILookupService lookups = LookupServiceHelper.getLookupService();
-        admissionService = new AdmissionServiceImpl(getArchetypeService(), lookups, getConnectors(), getDispatcher());
+        service = new PatientInformationServiceImpl(getArchetypeService(), lookups, getEventServices(),
+                                                    getDispatcher());
 
         PatientContext context = getContext();
         Mockito.when(context.getPatientId()).thenReturn(1001L);
@@ -52,7 +53,7 @@ public class AdmissionServiceImplTestCase extends AbstractServiceTest {
     }
 
     /**
-     * Tests the {@link AdmissionServiceImpl#admitted(PatientContext)} method.
+     * Tests the {@link PatientInformationServiceImpl#admitted(PatientContext)} method.
      *
      * @throws Exception
      */
@@ -66,13 +67,13 @@ public class AdmissionServiceImplTestCase extends AbstractServiceTest {
                           "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
                           "AL1|2|MA|^Pollen|U|Produces hives\r";
 
-        admissionService.admitted(getContext());
+        service.admitted(getContext());
         assertTrue(getDispatcher().waitForMessages(30));
         checkMessage(expected);
     }
 
     /**
-     * Tests the {@link AdmissionServiceImpl#admissionCancelled(PatientContext)} method.
+     * Tests the {@link PatientInformationServiceImpl#admissionCancelled(PatientContext)} method.
      *
      * @throws Exception
      */
@@ -84,13 +85,13 @@ public class AdmissionServiceImplTestCase extends AbstractServiceTest {
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r";
 
-        admissionService.admissionCancelled(getContext());
+        service.admissionCancelled(getContext());
         assertTrue(getDispatcher().waitForMessages(30));
         checkMessage(expected);
     }
 
     /**
-     * Tests the {@link AdmissionServiceImpl#discharged(PatientContext)} method.
+     * Tests the {@link PatientInformationServiceImpl#discharged(PatientContext)} method.
      *
      * @throws Exception
      */
@@ -104,13 +105,13 @@ public class AdmissionServiceImplTestCase extends AbstractServiceTest {
                           "AL1|2|MA|^Pollen|U|Produces hives\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r";
 
-        admissionService.discharged(getContext());
+        service.discharged(getContext());
         assertTrue(getDispatcher().waitForMessages(30));
         checkMessage(expected);
     }
 
     /**
-     * Tests the {@link AdmissionServiceImpl#updated(PatientContext)} method.
+     * Tests the {@link PatientInformationServiceImpl#updated(PatientContext)} method.
      *
      * @throws Exception
      */
@@ -124,7 +125,7 @@ public class AdmissionServiceImplTestCase extends AbstractServiceTest {
                           "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
                           "AL1|2|MA|^Pollen|U|Produces hives\r";
 
-        admissionService.updated(getContext());
+        service.updated(getContext());
         assertTrue(getDispatcher().waitForMessages(30));
         checkMessage(expected);
     }

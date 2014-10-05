@@ -318,6 +318,11 @@
         <constructor-arg ref="archetypeService"/>
     </bean>
 
+    <bean id="hl7Parmacies" class="org.openvpms.hl7.impl.PharmaciesImpl">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="hl7Connectors"/>
+    </bean>
+
     <bean name="hl7messageDispatcher" class="org.openvpms.hl7.impl.MessageDispatcherImpl"/>
 
     <bean class="org.openvpms.hl7.PatientContextFactory">
@@ -327,7 +332,7 @@
         <constructor-arg ref="lookupService"/>
     </bean>
 
-    <bean class="org.openvpms.hl7.impl.AdmissionServiceImpl">
+    <bean class="org.openvpms.hl7.impl.PatientInformationServiceImpl">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
         <constructor-arg ref="hl7Connectors"/>

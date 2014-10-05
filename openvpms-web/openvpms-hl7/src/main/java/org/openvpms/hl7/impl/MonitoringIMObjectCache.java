@@ -80,7 +80,7 @@ class MonitoringIMObjectCache<T extends IMObject> extends AbstractMonitoringIMOb
      * @param object the object to add
      */
     @Override
-    protected void add(T object) {
+    protected void addObject(T object) {
         cache(object);
     }
 
@@ -94,7 +94,7 @@ class MonitoringIMObjectCache<T extends IMObject> extends AbstractMonitoringIMOb
     protected T cache(T object) {
         T result;
         if (!object.isActive()) {
-            remove(object);
+            removeObject(object);
             result = null;
         } else {
             synchronized (objects) {
@@ -117,7 +117,7 @@ class MonitoringIMObjectCache<T extends IMObject> extends AbstractMonitoringIMOb
      * @param object the object to remove
      */
     @Override
-    protected void remove(T object) {
+    protected void removeObject(T object) {
         synchronized (objects) {
             objects.remove(object.getObjectReference());
         }

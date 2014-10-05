@@ -18,8 +18,10 @@ package org.openvpms.web.workspace.customer.charge;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.test.TestHelper;
@@ -33,7 +35,12 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.hl7.PatientContextFactory;
+import org.openvpms.hl7.impl.Connectors;
+import org.openvpms.hl7.impl.PharmaciesImpl;
+import org.openvpms.hl7.pharmacy.Pharmacies;
 import org.openvpms.web.component.im.util.DefaultIMObjectCache;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
@@ -98,7 +105,11 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
         clinician = TestHelper.createClinician();
         pharmacy = CustomerChargeTestHelper.createPharmacy();
         service = new TestPharmacyOrderService();
-        placer = new PharmacyOrderPlacer(customer, location, new DefaultIMObjectCache(), service);
+        Pharmacies pharmacies = new PharmaciesImpl(getArchetypeService(), Mockito.mock(Connectors.class));
+        PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
+        MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
+        placer = new PharmacyOrderPlacer(customer, location, new DefaultIMObjectCache(), service, pharmacies, factory,
+                                         rules);
     }
 
     /**

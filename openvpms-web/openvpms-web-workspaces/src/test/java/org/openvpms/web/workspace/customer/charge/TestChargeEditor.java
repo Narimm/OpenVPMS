@@ -16,12 +16,16 @@
 
 package org.openvpms.web.workspace.customer.charge;
 
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.hl7.PatientContextFactory;
+import org.openvpms.hl7.pharmacy.Pharmacies;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.system.ServiceHelper;
 
 /**
  * A test {@link CustomerChargeActEditor}.
@@ -127,6 +131,9 @@ public class TestChargeEditor extends CustomerChargeActEditor {
     @Override
     protected PharmacyOrderPlacer createPharmacyOrderPlacer(Party customer, Party location) {
         service = new TestPharmacyOrderService();
-        return new PharmacyOrderPlacer(customer, location, getLayoutContext().getCache(), service);
+        return new PharmacyOrderPlacer(customer, location, getLayoutContext().getCache(), service,
+                                       ServiceHelper.getBean(Pharmacies.class),
+                                       ServiceHelper.getBean(PatientContextFactory.class),
+                                       ServiceHelper.getBean(MedicalRecordRules.class));
     }
 }

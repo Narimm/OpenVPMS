@@ -14,24 +14,27 @@
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.hl7.impl;
+package org.openvpms.web.workspace.admin.hl7;
 
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.hl7.Connector;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.hl7.HL7Archetypes;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.workspace.ResultSetCRUDWorkspace;
+
 
 /**
- * Manages {@link Connectors}.
+ * HL7 workspace.
  *
  * @author Tim Anderson
  */
-public interface Connectors {
+public class HL7Workspace extends ResultSetCRUDWorkspace<Entity> {
 
     /**
-     * Returns a connector given its reference.
-     *
-     * @param reference the connector reference
-     * @return the connector, or {@code null} if none is found
+     * Constructs an {@code UserWorkspace}.
      */
-    Connector getConnector(IMObjectReference reference);
+    public HL7Workspace(Context context) {
+        super("admin", "hl7", context);
+        setArchetypes(Entity.class, HL7Archetypes.SENDERS, HL7Archetypes.RECEIVERS, HL7Archetypes.SERVICES);
+    }
 
 }

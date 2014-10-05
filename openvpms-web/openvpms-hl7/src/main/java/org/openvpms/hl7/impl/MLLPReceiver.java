@@ -14,13 +14,14 @@
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.hl7;
+package org.openvpms.hl7.impl;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.hl7.Connector;
 
 /**
  * HL7 MLLP Receiver.
@@ -42,6 +43,7 @@ public class MLLPReceiver extends Connector {
      * @param sendingFacility      the sending facility
      * @param receivingApplication the receiving application
      * @param receivingFacility    the receiving facility
+     * @param reference            the connector reference
      */
     public MLLPReceiver(int port, String sendingApplication, String sendingFacility,
                         String receivingApplication, String receivingFacility, IMObjectReference reference) {
@@ -69,7 +71,7 @@ public class MLLPReceiver extends Connector {
     }
 
     /**
-     * Creates an {@link MLLPReceiver} from an <em>entity.connectorReceiverHL7MLLPType</em>.
+     * Creates an {@link MLLPReceiver} from an <em>entity.HL7ReceiverMLLP</em>.
      *
      * @param object  the configuration
      * @param service the archetype service

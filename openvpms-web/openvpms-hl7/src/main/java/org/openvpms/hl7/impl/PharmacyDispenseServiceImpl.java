@@ -35,6 +35,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.hl7.Connector;
+import org.openvpms.hl7.pharmacy.Pharmacies;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
@@ -312,7 +313,7 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
      */
     private Connector getConnector(Entity pharmacy) {
         EntityBean bean = new EntityBean(pharmacy, service);
-        IMObjectReference ref = bean.getNodeTargetObjectRef("dispenseConnection");
+        IMObjectReference ref = bean.getNodeTargetObjectRef("receiver");
         return (ref != null) ? connectors.getConnector(ref) : null;
     }
 

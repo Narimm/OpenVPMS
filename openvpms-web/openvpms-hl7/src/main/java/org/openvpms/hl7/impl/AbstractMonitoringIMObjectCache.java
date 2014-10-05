@@ -43,9 +43,9 @@ abstract class AbstractMonitoringIMObjectCache<T extends IMObject> implements Di
     private final IArchetypeServiceListener listener;
 
     /**
-     * The short name of objects to cache.
+     * The short names of the objects to cache.
      */
-    private final String shortName;
+    private final String[] shortNames;
 
     /**
      * The type of objects to cache.
@@ -54,22 +54,28 @@ abstract class AbstractMonitoringIMObjectCache<T extends IMObject> implements Di
 
 
     public AbstractMonitoringIMObjectCache(IArchetypeService service, String shortName, final Class<T> type) {
+        this(service, new String[]{shortName}, type);
+    }
+
+    public AbstractMonitoringIMObjectCache(IArchetypeService service, String[] shortNames, final Class<T> type) {
         this.service = service;
-        this.shortName = shortName;
+        this.shortNames = shortNames;
         this.type = type;
 
         listener = new AbstractArchetypeServiceListener() {
             @Override
             public void saved(IMObject object) {
-                AbstractMonitoringIMObjectCache.this.add(type.cast(object));
+                AbstractMonitoringIMObjectCache.this.addObject(type.cast(object));
             }
 
             @Override
             public void removed(IMObject object) {
-                AbstractMonitoringIMObjectCache.this.remove(type.cast(object));
+                AbstractMonitoringIMObjectCache.this.removeObject(type.cast(object));
             }
         };
-        service.addListener(shortName, listener);
+        for (String shortName : shortNames) {
+            service.addListener(shortName, listener);
+        }
     }
 
     /**
@@ -77,17 +83,19 @@ abstract class AbstractMonitoringIMObjectCache<T extends IMObject> implements Di
      */
     @Override
     public void destroy() {
-        service.removeListener(shortName, listener);
+        for (String shortName : shortNames) {
+            service.removeListener(shortName, listener);
+        }
     }
 
     /**
      * Loads objects from the archetype service.
      */
     protected void load() {
-        ArchetypeQuery query = new ArchetypeQuery(shortName, true);
+        ArchetypeQuery query = new ArchetypeQuery(shortNames, true, true);
         IMObjectQueryIterator<T> iter = new IMObjectQueryIterator<T>(service, query);
         while (iter.hasNext()) {
-            add(iter.next());
+            addObject(iter.next());
         }
     }
 
@@ -98,14 +106,14 @@ abstract class AbstractMonitoringIMObjectCache<T extends IMObject> implements Di
      *
      * @param object the object to add
      */
-    protected abstract void add(T object);
+    protected abstract void addObject(T object);
 
     /**
      * Removes an object.
      *
      * @param object the object to remove
      */
-    protected abstract void remove(T object);
+    protected abstract void removeObject(T object);
 
     /**
      * Returns the archetype service.
