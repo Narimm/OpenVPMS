@@ -22,14 +22,17 @@ import ca.uhn.hl7v2.model.v25.message.ACK;
 import ca.uhn.hl7v2.model.v25.message.RDS_O13;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
@@ -66,6 +69,8 @@ public class PharmacyDispenseServiceImplTestCase extends AbstractRDSTest {
         final Entity pharmacy = (Entity) create(HL7Archetypes.PHARMACY);
         EntityBean bean = new EntityBean(pharmacy);
         bean.addNodeTarget("user", user);
+        Party location = getContext().getLocation();
+        bean.addNodeTarget("location", location);
 
         Pharmacies pharmacies = new Pharmacies() {
             public List<Entity> getPharmacies() {
@@ -106,8 +111,8 @@ public class PharmacyDispenseServiceImplTestCase extends AbstractRDSTest {
                                                                               getArchetypeService(), rules, userRules) {
 
             @Override
-            protected List<Act> process(RDS_O13 message) throws HL7Exception {
-                List<Act> acts = super.process(message);
+            protected List<Act> process(RDS_O13 message, IMObjectReference location) throws HL7Exception {
+                List<Act> acts = super.process(message, location);
                 order.addAll(acts);
                 return acts;
             }
@@ -124,8 +129,10 @@ public class PharmacyDispenseServiceImplTestCase extends AbstractRDSTest {
         ACK ack = (ACK) response;
         assertEquals("AA", ack.getMSA().getAcknowledgmentCode().getValue());
         assertEquals(2, order.size());
-        assertTrue(TypeHelper.isA(order.get(0), "act.customerOrderPharmacy"));
-        assertTrue(TypeHelper.isA(order.get(1), "act.customerOrderItemPharmacy"));
+        assertTrue(TypeHelper.isA(order.get(0), OrderArchetypes.PHARMACY_ORDER));
+        assertTrue(TypeHelper.isA(order.get(1), OrderArchetypes.PHARMACY_ORDER_ITEM));
+        ActBean orderBean = new ActBean(order.get(0));
+        assertEquals(location.getObjectReference(), orderBean.getNodeParticipantRef("location"));
     }
 
     /**

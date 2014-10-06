@@ -29,6 +29,7 @@ import ca.uhn.hl7v2.model.v25.segment.PID;
 import ca.uhn.hl7v2.model.v25.segment.RXD;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.user.UserArchetypes;
@@ -87,16 +88,17 @@ public class RDSProcessor {
     /**
      * Processes a dispense message.
      *
-     * @param message the message
+     * @param message  the message
+     * @param location the practice location reference
      * @return the customer order and/or return
      * @throws HL7Exception for any HL7 error
      */
-    public List<Act> process(RDS_O13 message) throws HL7Exception {
+    public List<Act> process(RDS_O13 message, IMObjectReference location) throws HL7Exception {
         if (message.getORDERReps() < 1) {
             throw new HL7Exception("RDS O13 message contains no order group");
         }
         PID pid = message.getPATIENT().getPID();
-        State state = getState(pid);
+        State state = getState(pid, location);
         boolean match = true;
         for (int i = 0; i < message.getORDERReps(); ++i) {
             RDS_O13_ORDER group = message.getORDER(i);
@@ -266,11 +268,12 @@ public class RDSProcessor {
     /**
      * Creates a new {@link State} using the PID segment.
      *
-     * @param pid the pid
+     * @param pid      the pid
+     * @param location the practice location reference
      * @return a new state
      * @throws HL7Exception if the patient does not exist
      */
-    private State getState(PID pid) throws HL7Exception {
+    private State getState(PID pid, IMObjectReference location) throws HL7Exception {
         Party patient = null;
         Party customer = null;
         long id = getId(pid.getPatientID());
@@ -295,7 +298,7 @@ public class RDSProcessor {
         } else {
             customer = rules.getOwner(patient);
         }
-        return new State(patient, customer, note);
+        return new State(patient, customer, note, location);
     }
 
     /**
@@ -384,34 +387,37 @@ public class RDSProcessor {
 
         private final String note;
 
+        private final IMObjectReference location;
+
         private final List<Act> acts = new ArrayList<Act>();
 
-        public State(Party patient, Party customer, String note) {
+        public State(Party patient, Party customer, String note, IMObjectReference location) {
             this.patient = patient;
             this.customer = customer;
             this.note = note;
+            this.location = location;
         }
 
         public ActBean getOrder() {
             if (orderBean == null) {
-                orderBean = createParent("act.customerOrderPharmacy");
+                orderBean = createParent(OrderArchetypes.PHARMACY_ORDER);
             }
             return orderBean;
         }
 
         public ActBean getReturn() {
             if (returnBean == null) {
-                returnBean = createParent("act.customerReturnPharmacy");
+                returnBean = createParent(OrderArchetypes.PHARMACY_RETURN);
             }
             return returnBean;
         }
 
         public ActBean createOrderItem() {
-            return createItem("act.customerOrderItemPharmacy", getOrder());
+            return createItem(OrderArchetypes.PHARMACY_ORDER_ITEM, getOrder());
         }
 
         public ActBean createReturnItem() {
-            return createItem("act.customerReturnItemPharmacy", getReturn());
+            return createItem(OrderArchetypes.PHARMACY_RETURN_ITEM, getReturn());
         }
 
         public List<Act> getActs() {
@@ -423,6 +429,9 @@ public class RDSProcessor {
             ActBean bean = new ActBean(act, service);
             if (customer != null) {
                 bean.addNodeParticipation("customer", customer);
+            }
+            if (location != null) {
+                bean.addNodeParticipation("location", location);
             }
             if (note != null) {
                 addNote(bean, note);
