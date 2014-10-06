@@ -168,7 +168,7 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         VisitChargeLayoutStrategy strategy = new VisitChargeLayoutStrategy();
-        iniLayoutStrategy(strategy);
+        initLayoutStrategy(strategy);
         return strategy;
     }
 

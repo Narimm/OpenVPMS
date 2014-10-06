@@ -45,7 +45,7 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.message.InformationMessage;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.customer.order.PharmacyOrderInvoicer;
+import org.openvpms.web.workspace.customer.order.PharmacyOrderCharger;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -297,13 +297,15 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
                 } else {
                     int incomplete = 0;
                     for (Act order : orders) {
-                        if (TypeHelper.isA(order, OrderArchetypes.PHARMACY_ORDER) && !invoicedOrders.contains(order)) {
-                            PharmacyOrderInvoicer invoicer = new PharmacyOrderInvoicer(order);
-                            if (invoicer.canInvoice(patient)) {
-                                invoicer.invoice(editor);
-                                invoicedOrders.add(order);
-                            } else {
-                                ++incomplete;
+                        if (TypeHelper.isA(order, OrderArchetypes.PHARMACY_ORDER)) {
+                            if (!invoicedOrders.contains(order)) {
+                                PharmacyOrderCharger charger = new PharmacyOrderCharger(order);
+                                if (charger.canCharge(patient)) {
+                                    charger.invoice(editor);
+                                    invoicedOrders.add(order);
+                                } else {
+                                    ++incomplete;
+                                }
                             }
                         }
                     }

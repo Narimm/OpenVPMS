@@ -18,11 +18,14 @@ package org.openvpms.web.workspace.customer.order;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -37,94 +40,112 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Invoices <em>act.customerOrderPharmacy</em> orders.
+ * This class is responsible for creating charges from <em>act.customerOrderPharmacy</em> and
+ * <em>act.customerReturnPharmacy</em> acts.
  *
  * @author Tim Anderson
  */
-public class PharmacyOrderInvoicer extends AbstractInvoicer {
+public class PharmacyOrderCharger extends AbstractInvoicer {
 
-    private final Act order;
+    /**
+     * The order/return.
+     */
+    private final Act act;
+
+    /**
+     * The customer.
+     */
     private final IMObjectReference customer;
-    private final List<OrderItem> items;
 
-    public PharmacyOrderInvoicer(Act order) {
-        this.order = order;
-        ActBean bean = new ActBean(order);
+    /**
+     * The order/return items.
+     */
+    private final List<Item> items;
+
+    /**
+     * Constructs a {@link PharmacyOrderCharger}.
+     *
+     * @param act the order/return act
+     */
+    public PharmacyOrderCharger(Act act) {
+        this.act = act;
+        ActBean bean = new ActBean(act);
         customer = bean.getNodeParticipantRef("customer");
-        items = new ArrayList<OrderItem>();
-        for (Act act : bean.getNodeActs("items")) {
-            OrderItem item = new OrderItem(act);
-            items.add(item);
+        items = new ArrayList<Item>();
+        for (Act item : bean.getNodeActs("items")) {
+            items.add(new Item(item));
         }
     }
 
     /**
-     * Determines if the order can be invoiced.
+     * Determines if the order can be charged.
      *
-     * @return {@code true} if the order can be invoiced
+     * @return {@code true} if the order can be charged
      */
-    public boolean canInvoice() {
-        boolean invoice = !items.isEmpty() && customer != null;
-        if (invoice) {
-            for (OrderItem item : items) {
-                invoice = item.isValid();
-                if (!invoice) {
+    public boolean isValid() {
+        boolean result = !items.isEmpty() && customer != null;
+        if (result) {
+            for (Item item : items) {
+                result = item.isValid();
+                if (!result) {
                     break;
                 }
             }
         }
-        return invoice;
+        return result;
     }
 
     /**
-     * Determines if ther order can be invoiced to a single patient.
+     * Determines if the order or return can be charged to a single patient.
      *
      * @param patient the patient
-     * @return {@code true} if the order can be invoiced to the patient
+     * @return {@code true} if the act can be charged to the patient
      */
-    public boolean canInvoice(Party patient) {
-        boolean invoice = canInvoice();
-        if (invoice) {
+    public boolean canCharge(Party patient) {
+        boolean result = isValid();
+        if (result) {
             IMObjectReference ref = patient.getObjectReference();
-            for (OrderItem item : items) {
-                invoice = item.hasPatient(ref);
-                if (!invoice) {
+            for (Item item : items) {
+                result = item.hasPatient(ref);
+                if (!result) {
                     break;
                 }
             }
         }
-        return invoice;
+        return result;
     }
 
     /**
-     * Creates an invoice for the pharmacy order.
+     * Creates charge for the pharmacy order.
      * <p/>
      * The editor is displayed in a visible dialog, in order for medication and reminder popups to be displayed
      * correctly.
      *
-     * @param invoice the invoice to add to, or {@code null} to create a new invoice
+     * @param charge  the charge to add to, or {@code null} to create a new charge
      * @param context the layout context
-     * @return an editor for the invoice, or {@code null} if the editor cannot be created
+     * @return an editor for the charge, or {@code null} if the editor cannot be created
      * @throws IllegalStateException if the order cannot be invoiced
      * @throws OpenVPMSException     for any error
      */
-    public CustomerChargeActEditDialog invoice(FinancialAct invoice, LayoutContext context) {
-        if (!canInvoice()) {
+    public CustomerChargeActEditDialog charge(FinancialAct charge, LayoutContext context) {
+        if (!isValid()) {
             throw new IllegalStateException("The order is incomplete and cannot be invoiced");
         }
-        ActBean orderBean = new ActBean(order);
-
-        if (invoice == null) {
-            invoice = createInvoice(orderBean.getNodeParticipantRef("customer"));
+        if (charge == null) {
+            if (TypeHelper.isA(act, OrderArchetypes.PHARMACY_ORDER)) {
+                charge = createInvoice(customer);
+            } else {
+                charge = createCharge(CustomerAccountArchetypes.CREDIT, customer);
+            }
         }
 
-        CustomerChargeActEditor editor = createChargeEditor(invoice, context);
+        CustomerChargeActEditor editor = createChargeEditor(charge, context);
 
         // NOTE: need to display the dialog as the process of populating medications and reminders can display
         // popups which would parent themselves on the wrong window otherwise.
-        InvoicerDialog dialog = new InvoicerDialog(editor, order, context.getContext());
+        ChargeDialog dialog = new ChargeDialog(editor, act, context.getContext());
         dialog.show();
-        doInvoice(editor);
+        doCharge(editor);
         return dialog;
     }
 
@@ -136,49 +157,49 @@ public class PharmacyOrderInvoicer extends AbstractInvoicer {
      * @param editor the editor to add invoice items to
      */
     public void invoice(AbstractCustomerChargeActEditor editor) {
-        if (!canInvoice()) {
+        if (!isValid()) {
             throw new IllegalStateException("The order is incomplete and cannot be invoiced");
         }
-        doInvoice(editor);
+        doCharge(editor);
     }
 
     /**
-     * Invoices an order.
+     * Charges an order/return.
      * <p/>
-     * Note that the caller is responsible for saving the order.
+     * Note that the caller is responsible for saving the act.
      *
      * @param editor the editor to add invoice items to
      */
-    private void doInvoice(AbstractCustomerChargeActEditor editor) {
+    private void doCharge(AbstractCustomerChargeActEditor editor) {
         ActRelationshipCollectionEditor charges = editor.getItems();
 
-        for (OrderItem item : items) {
+        for (Item item : items) {
             CustomerChargeActItemEditor itemEditor = getItemEditor(editor);
             item.invoice(editor, itemEditor);
         }
-        order.setStatus(ActStatus.POSTED);
+        act.setStatus(ActStatus.POSTED);
         charges.refresh();
     }
 
     /**
      * Creates a new {@link CustomerChargeActEditor}.
      *
-     * @param invoice the invoice
+     * @param charge  the charge
      * @param context the layout context
      * @return a new charge editor
      */
-    protected CustomerChargeActEditor createChargeEditor(FinancialAct invoice, LayoutContext context) {
-        return new CustomerChargeActEditor(invoice, null, context, false);
+    protected CustomerChargeActEditor createChargeEditor(FinancialAct charge, LayoutContext context) {
+        return new CustomerChargeActEditor(charge, null, context, false);
     }
 
-    private class OrderItem {
+    private class Item {
 
         final IMObjectReference patient;
         final BigDecimal quantity;
         final IMObjectReference product;
         final IMObjectReference clinician;
 
-        public OrderItem(Act item) {
+        public Item(Act item) {
             ActBean bean = new ActBean(item);
             this.patient = bean.getNodeParticipantRef("patient");
             this.quantity = bean.getBigDecimal("quantity");
