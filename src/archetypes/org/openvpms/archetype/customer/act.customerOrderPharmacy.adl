@@ -18,7 +18,8 @@
     <archetype name="act.customerOrderPharmacy.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.act.Act" displayName="Customer Pharmacy Order">
         <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
-        <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" defaultValue="'Customer Pharmacy Order'"/>
+        <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1"
+              defaultValue="'Customer Pharmacy Order'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true" minCardinality="0"/>
         <node displayName="Date" name="startTime" path="/activityStartTime"
               type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" readOnly="true"/>
@@ -39,6 +40,8 @@
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
+        <node name="location" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+              filter="participation.location" readOnly="true"/>
         <node name="notes" displayName="Notes" path="/details/notes" type="java.lang.String" minCardinality="0"
               maxLength="5000"/>
         <node name="items" path="/sourceActRelationships"
