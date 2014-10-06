@@ -19,8 +19,10 @@ package org.openvpms.web.workspace.patient.visit;
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.finance.order.OrderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
@@ -37,6 +39,8 @@ import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.message.InformationMessage;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
 
@@ -69,6 +73,11 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
     private VisitChargeEditor editor;
 
     /**
+     * Customer order rules.
+     */
+    private final OrderRules rules;
+
+    /**
      * Determines if the charge is posted.
      */
     private boolean posted;
@@ -83,6 +92,11 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
      */
     private int id;
 
+    /**
+     * The current order message.
+     */
+    private Component message;
+
 
     /**
      * Constructs a {@link VisitChargeCRUDWindow}.
@@ -95,6 +109,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
         super(Archetypes.create(CustomerAccountArchetypes.INVOICE, FinancialAct.class),
               DefaultActActions.<FinancialAct>getInstance(), context, help);
         this.event = event;
+        rules = ServiceHelper.getBean(OrderRules.class);
     }
 
     /**
@@ -169,6 +184,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
      */
     @Override
     public void show() {
+        checkOrders();
         if (editor != null) {
             editor.getFocusGroup().setFocus();
         }
@@ -281,6 +297,24 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
             }
             buttons.setEnabled(IN_PROGRESS_ID, enable);
             buttons.setEnabled(COMPLETED_ID, enable);
+        }
+    }
+
+    /**
+     * Determines if there are any pending orders, displaying a message if there are.
+     */
+    private void checkOrders() {
+        if (message != null) {
+            container.remove(message);
+            message = null;
+        }
+        Party customer = getContext().getCustomer();
+        Party patient = getContext().getPatient();
+        if (customer != null && patient != null) {
+            if (rules.hasOrders(customer, patient)) {
+                message = new InformationMessage(Messages.format("customer.charge.pendingorders", customer.getName()));
+                container.add(message, 0);
+            }
         }
     }
 

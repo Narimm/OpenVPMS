@@ -39,9 +39,9 @@ public class PatientInformationServiceImpl implements PatientInformationService 
     private final PatientEventServices services;
 
     /**
-     * The connector manager.
+     * The message dispatcher.
      */
-    private final MessageDispatcher manager;
+    private final MessageDispatcher dispatcher;
 
     /**
      * The message factory.
@@ -52,16 +52,16 @@ public class PatientInformationServiceImpl implements PatientInformationService 
     /**
      * Constructs an {@link PatientInformationServiceImpl}.
      *
-     * @param service  the archetype service
-     * @param lookups  the lookup service
-     * @param services the patient event listeners
-     * @param manager  the connector manager
+     * @param service    the archetype service
+     * @param lookups    the lookup service
+     * @param services   the patient event listeners
+     * @param dispatcher the connector manager
      */
     public PatientInformationServiceImpl(IArchetypeService service, ILookupService lookups,
-                                         PatientEventServices services, MessageDispatcherImpl manager) {
-        this.factory = new ADTMessageFactory(manager.getMessageContext(), service, lookups);
+                                         PatientEventServices services, MessageDispatcherImpl dispatcher) {
+        this.factory = new ADTMessageFactory(dispatcher.getMessageContext(), service, lookups);
         this.services = services;
-        this.manager = manager;
+        this.dispatcher = dispatcher;
     }
 
     /**
@@ -133,7 +133,7 @@ public class PatientInformationServiceImpl implements PatientInformationService 
      * @param config    the message config
      */
     protected void queue(Message message, Connector connector, MessageConfig config) {
-        manager.queue(message, connector, config);
+        dispatcher.queue(message, connector, config);
     }
 
 }

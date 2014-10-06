@@ -150,6 +150,10 @@
         <constructor-arg ref="documentHandlers"/>
     </bean>
 
+    <bean class="org.openvpms.archetype.rules.finance.order.OrderRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
     <bean id="prescriptionRules" class="org.openvpms.archetype.rules.patient.prescription.PrescriptionRules">
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
