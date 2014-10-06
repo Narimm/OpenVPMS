@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.workflow.order;
 
+import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
@@ -32,6 +33,11 @@ import org.openvpms.web.component.workspace.ResultSetCRUDWorkspace;
 public class OrderWorkspace extends ResultSetCRUDWorkspace<Act> {
 
     /**
+     * The archetypes that this workspace operates on.
+     */
+    private static final String[] SHORT_NAMES = {OrderArchetypes.ORDERS, OrderArchetypes.RETURNS};
+
+    /**
      * Constructs a {@link OrderWorkspace}.
      * <p/>
      * The {@link #setArchetypes} method must be invoked to set archetypes that the workspace supports, before
@@ -42,7 +48,7 @@ public class OrderWorkspace extends ResultSetCRUDWorkspace<Act> {
      */
     public OrderWorkspace(Context context, MailContext mailContext) {
         super("workflow", "order", context);
-        setArchetypes(Archetypes.create("act.customerOrder*", Act.class));
+        setArchetypes(Archetypes.create(SHORT_NAMES, Act.class));
         setMailContext(mailContext);
     }
 

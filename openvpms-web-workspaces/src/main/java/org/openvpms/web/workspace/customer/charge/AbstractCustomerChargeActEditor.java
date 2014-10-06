@@ -175,21 +175,13 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
         }
         for (Act item : items.getActs()) {
             ActBean bean = new ActBean(item);
-            for (ActRelationship rel : bean.getValues("documents", ActRelationship.class)) {
-                IMObjectReference target = rel.getTarget();
-                if (target != null && !excludeRefs.contains(target)) {
-                    Act document = (Act) getObject(target);
-                    if (document != null) {
-                        ActBean documentBean = new ActBean(document);
-                        if (!documentBean.getBoolean("printed") && documentBean.hasNode("documentTemplate")) {
-                            Entity entity = (Entity) getObject(documentBean.getNodeParticipantRef("documentTemplate"));
-                            if (entity != null) {
-                                DocumentTemplate template = new DocumentTemplate(entity,
-                                                                                 ServiceHelper.getArchetypeService());
-                                if (template.getPrintMode() == DocumentTemplate.PrintMode.IMMEDIATE) {
-                                    result.add(document);
-                                }
-                            }
+            if (bean.hasNode("documents")) {
+                for (ActRelationship rel : bean.getValues("documents", ActRelationship.class)) {
+                    IMObjectReference target = rel.getTarget();
+                    if (target != null && !excludeRefs.contains(target)) {
+                        Act document = (Act) getObject(target);
+                        if (document != null && isPrintImmediate(document)) {
+                            result.add(document);
                         }
                     }
                 }
@@ -293,7 +285,9 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
      * @param item the invoice item
      */
     public void setOrdered(Act item) {
-        orderPlacer.initialise(item);
+        if (orderPlacer != null) {
+            orderPlacer.initialise(item);
+        }
     }
 
     /**
@@ -387,7 +381,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         IMObjectLayoutStrategy strategy = super.createLayoutStrategy();
-        iniLayoutStrategy(strategy);
+        initLayoutStrategy(strategy);
         return strategy;
     }
 
@@ -396,7 +390,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
      *
      * @param strategy the layout strategy to initialise
      */
-    protected void iniLayoutStrategy(IMObjectLayoutStrategy strategy) {
+    protected void initLayoutStrategy(IMObjectLayoutStrategy strategy) {
         ActRelationshipCollectionEditor notes = getCustomerNotes();
         ActRelationshipCollectionEditor documents = getDocuments();
         if (notes != null) {
@@ -555,6 +549,25 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                 property.setValue(value);
             }
         }
+    }
+
+    /**
+     * Determines if a document should be printed immediately.
+     *
+     * @param document the document
+     * @return {@code true} if the document should be printed immediately
+     */
+    private boolean isPrintImmediate(Act document) {
+        ActBean documentBean = new ActBean(document);
+        if (!documentBean.getBoolean("printed") && documentBean.hasNode("documentTemplate")) {
+            Entity entity = (Entity) getObject(documentBean.getNodeParticipantRef("documentTemplate"));
+            if (entity != null) {
+                DocumentTemplate template = new DocumentTemplate(entity,
+                                                                 ServiceHelper.getArchetypeService());
+                return (template.getPrintMode() == DocumentTemplate.PrintMode.IMMEDIATE);
+            }
+        }
+        return false;
     }
 
 }

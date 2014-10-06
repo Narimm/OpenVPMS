@@ -68,7 +68,7 @@ public class EstimateInvoicer extends AbstractInvoicer {
 
         // NOTE: need to display the dialog as the process of populating medications and reminders can display
         // popups which would parent themselves on the wrong window otherwise.
-        InvoicerDialog dialog = new InvoicerDialog(editor, estimate, context.getContext());
+        ChargeDialog dialog = new ChargeDialog(editor, estimate, context.getContext());
         dialog.show();
         invoice(estimate, editor);
         return dialog;

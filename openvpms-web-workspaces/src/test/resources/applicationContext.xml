@@ -234,6 +234,10 @@
         <constructor-arg ref="archetypeService"/>
     </bean>
 
+    <bean class="org.openvpms.archetype.rules.finance.order.OrderRules">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
     <bean id="productPriceRules" class="org.openvpms.archetype.rules.product.ProductPriceRules">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>

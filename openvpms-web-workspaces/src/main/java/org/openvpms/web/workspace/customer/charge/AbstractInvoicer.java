@@ -55,9 +55,20 @@ public class AbstractInvoicer {
      * @return a new invoice
      */
     protected FinancialAct createInvoice(IMObjectReference customer) {
-        FinancialAct result = (FinancialAct) IMObjectCreator.create(CustomerAccountArchetypes.INVOICE);
+        return createCharge(CustomerAccountArchetypes.INVOICE, customer);
+    }
+
+    /**
+     * Creates a new charge for a customer.
+     *
+     * @param shortName the charge archetype short name
+     * @param customer  the customer. May be {@code null}
+     * @return a new charge
+     */
+    protected FinancialAct createCharge(String shortName, IMObjectReference customer) {
+        FinancialAct result = (FinancialAct) IMObjectCreator.create(shortName);
         if (result == null) {
-            throw new IllegalStateException("Failed to create invoice");
+            throw new IllegalStateException("Failed to create " + shortName);
         }
         ActBean invoiceBean = new ActBean(result);
         if (customer != null) {
@@ -96,12 +107,12 @@ public class AbstractInvoicer {
 
 
     /**
-     * Dialog that ensures the invoiced act is saved when the invoice is saved.
+     * Dialog that ensures the act is saved when the charge is saved.
      */
-    protected static class InvoicerDialog extends CustomerChargeActEditDialog {
+    protected static class ChargeDialog extends CustomerChargeActEditDialog {
 
         /**
-         * The act being invoiced.
+         * The act being charged.
          */
         private final Act act;
 
@@ -111,13 +122,13 @@ public class AbstractInvoicer {
         private boolean saved = false;
 
         /**
-         * Constructs an {@link InvoicerDialog}.
+         * Constructs an {@link ChargeDialog}.
          *
-         * @param editor  the invoice editor
-         * @param act     the estimate
+         * @param editor  the charge editor
+         * @param act     the order/return
          * @param context the context
          */
-        public InvoicerDialog(CustomerChargeActEditor editor, Act act, Context context) {
+        public ChargeDialog(CustomerChargeActEditor editor, Act act, Context context) {
             super(editor, context);
             this.act = act;
         }
