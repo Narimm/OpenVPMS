@@ -16,10 +16,11 @@
 
 package org.openvpms.component.business.dao.hibernate.im.query;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.AssemblerImpl;
@@ -51,7 +52,10 @@ import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
+import java.util.Map;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.exists;
 import static org.openvpms.component.system.common.query.Constraints.idEq;
@@ -617,7 +621,7 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
         query.add(constraint2);
         try {
             builder.build(query).getQueryString();
-            Assert.fail("Expected query build to fail");
+            fail("Expected query build to fail");
         } catch (QueryBuilderException exception) {
             assertEquals(QueryBuilderException.ErrorCode.DuplicateAlias, exception.getErrorCode());
         }
@@ -634,10 +638,36 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
         query.add(Constraints.join("patient", "participation"));
         try {
             builder.build(query).getQueryString();
-            Assert.fail("Expected query build to fail");
+            fail("Expected query build to fail");
         } catch (QueryBuilderException exception) {
             assertEquals(QueryBuilderException.ErrorCode.CannotJoinDuplicateAlias, exception.getErrorCode());
         }
+    }
+
+    /**
+     * Verifies that joins on a collection node is supported for multiple archetypes.
+     */
+    @Test
+    public void testJoinOnCollectionWithDifferentArchetypes() {
+        String expected = "select lookup0 from "
+                          + LookupDO.class.getName() + " as lookup0 "
+                          + "inner join lookup0.sourceLookupRelationships as source "
+                          + "where ((lookup0.archetypeId.shortName = :shortName0 or "
+                          + "lookup0.archetypeId.shortName = :shortName1) and lookup0.active = :active0 and "
+                          + "(source.archetypeId.shortName = :shortName2 or "
+                          + "source.archetypeId.shortName = :shortName3))";
+        ArchetypeQuery query = new ArchetypeQuery(new String[]{"lookup.country", "lookup.state"}, true, true);
+        query.add(Constraints.join("source"));
+
+        QueryContext context = builder.build(query);
+        assertEquals(expected, context.getQueryString());
+        checkParameter(context, "lookup.country", "shortName0", "shortName1");
+        checkParameter(context, "lookup.state", "shortName0", "shortName1");
+        checkParameter(context, true, "active0");
+        checkParameter(context, "lookupRelationship.countryState", "shortName2", "shortName3");
+        checkParameter(context, "lookupRelationship.stateSuburb", "shortName2", "shortName3");
+
+        checkQuery(query, expected);
     }
 
     /**
@@ -666,6 +696,24 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
         Session session = factory.openSession();
         session.createQuery(hql);
         session.close();
+    }
+
+    /**
+     * Verifies there is parameter with the expected value.
+     *
+     * @param context  the query context
+     * @param expected the expected value
+     * @param names    the possible parameter names
+     */
+    private void checkParameter(QueryContext context, Object expected, String... names) {
+        Map<String, Object> parameters = context.getParameters();
+        for (String name : names) {
+            Object value = parameters.get(name);
+            if (value != null && ObjectUtils.equals(expected, value)) {
+                return;
+            }
+        }
+        fail("No parameter named " + ArrayUtils.toString(names) + " with value " + expected);
     }
 
 }

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.component.business.dao.hibernate.im.query;
@@ -21,7 +19,6 @@ package org.openvpms.component.business.dao.hibernate.im.query;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
-import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.*;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -32,13 +29,22 @@ import org.openvpms.component.system.common.query.ArchetypeIdConstraint;
 import org.openvpms.component.system.common.query.LongNameConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.CannotQueryAcrossTypes;
+import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.NoArchetypeRangeAssertion;
+import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.NoArchetypesForId;
+import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.NoMatchingArchetypesForLongName;
+import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.NoMatchingArchetypesForShortName;
+
 
 /**
  * Type set.
+ *
+ * @author Tim Anderson
  */
 class TypeSet {
 
@@ -48,7 +54,7 @@ class TypeSet {
     private final Set<ArchetypeDescriptor> descriptors;
 
     /**
-     * The type that matches all the specfied descriptors.
+     * The type that matches all the specified descriptors.
      */
     private final String className;
 
@@ -59,9 +65,9 @@ class TypeSet {
 
 
     /**
-     * Constructs a <tt>TypeSet</tt>.
+     * Constructs a {@link TypeSet}.
      *
-     * @param alias       the type alias. May be <tt>null</tt>.
+     * @param alias       the type alias. May be {@code null}.
      * @param descriptors the archetype descriptors in the set
      * @param assembler   the assembler
      * @throws QueryBuilderException if the descriptors refer to more than one
@@ -78,7 +84,7 @@ class TypeSet {
     /**
      * Returns the type alias.
      *
-     * @return the type alias. May be <tt>null</tt>
+     * @return the type alias. May be {@code null}
      */
     public String getAlias() {
         return alias;
@@ -87,7 +93,7 @@ class TypeSet {
     /**
      * Sets the type alias
      *
-     * @param alias the type alias. May be <tt>null</tt>
+     * @param alias the type alias. May be {@code null}
      */
     public void setAlias(String alias) {
         this.alias = alias;
@@ -115,7 +121,7 @@ class TypeSet {
      * Determines if this type set contains another.
      *
      * @param other the type set to compare
-     * @return <tt>true</tt> if the type sets have the same alias, and all of <tt>other</tt>'s short names are present
+     * @return {@code true} if the type sets have the same alias, and all of {@code other}'s short names are present
      *         in this
      */
     public boolean contains(TypeSet other) {
@@ -160,40 +166,28 @@ class TypeSet {
     }
 
     /**
-     * Craetes a new type set from an {@link ArchetypeConstraint} and
-     * node descriptor.
+     * Creates a new type set from an {@link ArchetypeConstraint} and node descriptors.
      *
      * @param constraint the constraint
-     * @param descriptor the node descriptor
+     * @param nodes      the node descriptors
      * @param cache      the archetype descriptor cache
      * @param assembler  the assembler
      * @return a new type set
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws QueryBuilderException     if there are no matching archetypes for
-     *                                   the constraint
+     * @throws QueryBuilderException     if there are no matching archetypes for the constraint
      */
-    public static TypeSet create(ArchetypeConstraint constraint,
-                                 NodeDescriptor descriptor,
-                                 IArchetypeDescriptorCache cache,
-                                 CompoundAssembler assembler) {
-        String[] shortNames = descriptor.getArchetypeRange();
-        if (shortNames == null || shortNames.length == 0) {
-            if (descriptor.getFilter() == null) {
-                throw new QueryBuilderException(NoArchetypeRangeAssertion,
-                                                descriptor.getName());
-            }
-            shortNames = new String[]{descriptor.getFilter()};
+    public static TypeSet create(ArchetypeConstraint constraint, List<NodeDescriptor> nodes,
+                                 IArchetypeDescriptorCache cache, CompoundAssembler assembler) {
+        Set<String> matches = new HashSet<String>();
+        for (NodeDescriptor descriptor : nodes) {
+            mergeArchetypeRange(matches, descriptor);
         }
-        Set<ArchetypeDescriptor> descriptors
-                = getDescriptors(shortNames, constraint.isPrimaryOnly(),
-                                 cache);
+        String[] shortNames = matches.toArray(new String[matches.size()]);
+        Set<ArchetypeDescriptor> descriptors = getDescriptors(shortNames, constraint.isPrimaryOnly(), cache);
         if (descriptors.isEmpty()) {
-            throw new QueryBuilderException(
-                    NoMatchingArchetypesForShortName,
-                    ArrayUtils.toString(shortNames));
+            throw new QueryBuilderException(NoMatchingArchetypesForShortName, ArrayUtils.toString(shortNames));
         }
-        return new TypeSet(constraint.getAlias(), descriptors,
-                           assembler);
+        return new TypeSet(constraint.getAlias(), descriptors, assembler);
     }
 
     /**
@@ -210,14 +204,12 @@ class TypeSet {
     public static TypeSet create(ShortNameConstraint constraint,
                                  IArchetypeDescriptorCache cache,
                                  CompoundAssembler assembler) {
-        Set<ArchetypeDescriptor> descriptors
-                = getDescriptors(constraint.getShortNames(),
-                                 constraint.isPrimaryOnly(), cache);
+        Set<ArchetypeDescriptor> descriptors = getDescriptors(constraint.getShortNames(), constraint.isPrimaryOnly(),
+                                                              cache);
         // check that we have at least one match
         if (descriptors.isEmpty()) {
-            throw new QueryBuilderException(
-                    NoMatchingArchetypesForShortName,
-                    ArrayUtils.toString(constraint.getShortNames()));
+            throw new QueryBuilderException(NoMatchingArchetypesForShortName,
+                                            ArrayUtils.toString(constraint.getShortNames()));
         }
         return new TypeSet(constraint.getAlias(), descriptors, assembler);
     }
@@ -256,9 +248,9 @@ class TypeSet {
     /**
      * Returns all archetype descriptors matching the criteria.
      *
-     * @param entityName  the archetype entity name. May be <tt>null</tt>
-     * @param conceptName the archetype concept name. May be <tt>null</tt>
-     * @param primaryOnly if <tt>true</tt> only return primary descriptors
+     * @param entityName  the archetype entity name. May be {@code null}
+     * @param conceptName the archetype concept name. May be {@code null}
+     * @param primaryOnly if {@code true} only return primary descriptors
      * @param cache       the archetype descriptor cache
      * @return the descriptors matching the criteria
      * @throws ArchetypeServiceException for any archetype service error
@@ -297,7 +289,7 @@ class TypeSet {
      *
      * @param shortNames the short names. Must be expanded.
      * @param cache      the archetype descriptor cache
-     * @return a new <tt>TypeSet</tt>
+     * @return a new {@code TypeSet}
      * @throws ArchetypeServiceException for any archetype service error
      */
     private static Set<ArchetypeDescriptor> getDescriptors(
@@ -312,6 +304,27 @@ class TypeSet {
     }
 
     /**
+     * Merges the archetype range from a node descriptor with the supplied matches.
+     *
+     * @param matches    the matches
+     * @param descriptor the descriptor
+     * @throws QueryBuilderException if there is no archetype range assertion or filter for the descriptor
+     */
+    private static void mergeArchetypeRange(Set<String> matches, NodeDescriptor descriptor) {
+        String[] shortNames = descriptor.getArchetypeRange();
+        if (shortNames == null || shortNames.length == 0) {
+            if (descriptor.getFilter() == null) {
+                ArchetypeDescriptor archetype = descriptor.getArchetypeDescriptor();
+                String name = (archetype != null) ? archetype.getShortName() : "unknown";
+                throw new QueryBuilderException(NoArchetypeRangeAssertion, name, descriptor.getName());
+            }
+            matches.add(descriptor.getFilter());
+        } else {
+            matches.addAll(Arrays.asList(shortNames));
+        }
+    }
+
+    /**
      * Returns the common base class for a set of archetype descriptors.
      *
      * @param descriptors the archetype descirptors
@@ -320,9 +333,9 @@ class TypeSet {
      *                               class
      */
     private Class getClass(Set<ArchetypeDescriptor> descriptors) {
-        Class superType = null;
+        Class<?> superType = null;
         for (ArchetypeDescriptor descriptor : descriptors) {
-            Class type = descriptor.getClazz();
+            Class<?> type = descriptor.getClazz();
             if (superType == null) {
                 superType = type;
             } else if (type.isAssignableFrom(superType)) {
