@@ -40,6 +40,8 @@
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
+        <node name="location" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+              filter="participation.location" readOnly="true"/>
         <node name="notes" displayName="Notes" path="/details/notes" type="java.lang.String" minCardinality="0"
               maxLength="5000"/>
         <node name="items" path="/sourceActRelationships"
