@@ -192,14 +192,16 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
         if (pharmacy == null) {
             throw new HL7Exception("Pharmacy not found");
         }
-        User user = getUser(pharmacy);
+        EntityBean bean = new EntityBean(pharmacy, service);
+        User user = getUser(bean);
         if (user == null) {
             throw new HL7Exception("User not found");
         }
+        IMObjectReference location = getLocation(bean);
 
         try {
             initSecurityContext(user);
-            process((RDS_O13) message);
+            process((RDS_O13) message, location);
             return message.generateACK();
         } catch (IOException exception) {
             throw new HL7Exception(exception);
@@ -274,12 +276,13 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
      * Processes an RDS message, returning the corresponding <em>act.customerOrderPharmacy</em> and child item
      * acts.
      *
-     * @param message the message
+     * @param message  the message
+     * @param location the practice location reference
      * @return the pharmacy order acts
      * @throws HL7Exception any HL7 error
      */
-    protected List<Act> process(RDS_O13 message) throws HL7Exception {
-        List<Act> order = processor.process(message);
+    protected List<Act> process(RDS_O13 message, IMObjectReference location) throws HL7Exception {
+        List<Act> order = processor.process(message, location);
         service.save(order);
         return order;
     }
@@ -320,11 +323,22 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
 
     /**
      * Returns the user for a pharmacy.
+     *
+     * @param pharmacy the pharmacy
+     * @return the user. May be {@code null}
      */
-    private User getUser(Entity pharmacy) {
-        EntityBean bean = new EntityBean(pharmacy, service);
-        return (User) bean.getNodeTargetEntity("user");
+    private User getUser(EntityBean pharmacy) {
+        return (User) pharmacy.getNodeTargetEntity("user");
+    }
 
+    /**
+     * Returns the practice location of a pharmacy.
+     *
+     * @param pharmacy the pharmacy
+     * @return the location. May be {@code null}
+     */
+    private IMObjectReference getLocation(EntityBean pharmacy) {
+        return pharmacy.getNodeTargetObjectRef("location");
     }
 
     /**

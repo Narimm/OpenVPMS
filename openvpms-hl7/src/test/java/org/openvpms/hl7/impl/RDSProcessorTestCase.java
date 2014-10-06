@@ -87,15 +87,17 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
     @Test
     public void testCreateOrder() throws HL7Exception, IOException {
         RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules, userRules);
-        List<Act> acts = processor.process(rds);
+        List<Act> acts = processor.process(rds, getContext().getLocation().getObjectReference());
         assertEquals(2, acts.size());
         ActBean order = new ActBean(acts.get(0));
         ActBean item = new ActBean(acts.get(1));
         Party customer = getContext().getCustomer();
-        Party patient = getContext().getPatient();
+        Party location = getContext().getLocation();
         User clinician = getContext().getClinician();
+        Party patient = getContext().getPatient();
         assertEquals(customer.getObjectReference(), order.getNodeParticipantRef("customer"));
         assertEquals(clinician.getObjectReference(), order.getNodeParticipantRef("clinician"));
+        assertEquals(location.getObjectReference(), order.getNodeParticipantRef("location"));
         assertEquals(patient.getObjectReference(), item.getNodeParticipantRef("patient"));
         assertEquals(product.getObjectReference(), item.getNodeParticipantRef("product"));
         assertEquals(clinician.getObjectReference(), item.getNodeParticipantRef("clinician"));
@@ -113,7 +115,7 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
         RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules, userRules);
         rds.getPATIENT().getPID().getPatientID().getIDNumber().setValue("UNKNOWN");
         log("RDS: ", rds);
-        List<Act> acts = processor.process(rds);
+        List<Act> acts = processor.process(rds, getContext().getLocation().getObjectReference());
         assertEquals(2, acts.size());
         ActBean order = new ActBean(acts.get(0));
         ActBean item = new ActBean(acts.get(1));
@@ -134,7 +136,7 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
         RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules, userRules);
         rds.getORDER().getRXD().getDispenseGiveCode().getIdentifier().setValue("UNKNOWN");
         log("RDS: ", rds);
-        List<Act> acts = processor.process(rds);
+        List<Act> acts = processor.process(rds, getContext().getLocation().getObjectReference());
         assertEquals(2, acts.size());
         ActBean order = new ActBean(acts.get(0));
         ActBean item = new ActBean(acts.get(1));
