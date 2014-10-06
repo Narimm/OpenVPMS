@@ -19,11 +19,13 @@ package org.openvpms.web.workspace.patient.visit;
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.DefaultActActions;
@@ -37,12 +39,19 @@ import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.workspace.AbstractCRUDWindow;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
+import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.message.InformationMessage;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.customer.order.PharmacyOrderInvoicer;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -63,6 +72,11 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
     public static final String IN_PROGRESS_ID = "button.inprogress";
 
     /**
+     * Invoice orders button identifier.
+     */
+    public static final String INVOICE_ORDERS_ID = "button.invoiceOrders";
+
+    /**
      * The event.
      */
     private final Act event;
@@ -81,6 +95,11 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
      * Determines if the charge is posted.
      */
     private boolean posted;
+
+    /**
+     * Orders that have been invoiced, but not saved.
+     */
+    private List<Act> invoicedOrders = new ArrayList<Act>();
 
     /**
      * The container.
@@ -200,7 +219,19 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
         if (editor != null && !posted) {
             Validator validator = new DefaultValidator();
             if (editor.validate(validator)) {
-                result = SaveHelper.save(editor);
+                if (invoicedOrders.isEmpty()) {
+                    result = SaveHelper.save(editor);
+                } else {
+                    TransactionCallback<Boolean> callback = new TransactionCallback<Boolean>() {
+                        public Boolean doInTransaction(TransactionStatus status) {
+                            return SaveHelper.save(invoicedOrders) && SaveHelper.save(editor);
+                        }
+                    };
+                    result = SaveHelper.save(editor.getDisplayName(), callback);
+                    if (result) {
+                        invoicedOrders.clear();
+                    }
+                }
                 posted = ActStatus.POSTED.equals(getObject().getStatus());
             } else {
                 result = false;
@@ -209,6 +240,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
         } else {
             result = true;
         }
+        checkOrders();
         return result;
     }
 
@@ -248,6 +280,41 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
             result = save();
         }
         return result;
+    }
+
+    /**
+     * Invoices orders.
+     */
+    public void invoiceOrders() {
+        if (editor != null && !posted) {
+            Context context = getContext();
+            Party customer = context.getCustomer();
+            Party patient = context.getPatient();
+            if (customer != null && patient != null) {
+                List<Act> orders = rules.getOrders(customer, patient);
+                if (orders.isEmpty()) {
+                    InformationDialog.show(Messages.format("customer.order.none", customer.getName()));
+                } else {
+                    int incomplete = 0;
+                    for (Act order : orders) {
+                        if (TypeHelper.isA(order, OrderArchetypes.PHARMACY_ORDER) && !invoicedOrders.contains(order)) {
+                            PharmacyOrderInvoicer invoicer = new PharmacyOrderInvoicer(order);
+                            if (invoicer.canInvoice(patient)) {
+                                invoicer.invoice(editor);
+                                invoicedOrders.add(order);
+                            } else {
+                                ++incomplete;
+                            }
+                        }
+                    }
+                    if (incomplete != 0) {
+                        //  orders could also be for multiple patients
+                        InformationDialog.show(Messages.format("customer.order.incomplete",
+                                                               customer.getName(), incomplete));
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -297,6 +364,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
             }
             buttons.setEnabled(IN_PROGRESS_ID, enable);
             buttons.setEnabled(COMPLETED_ID, enable);
+            buttons.setEnabled(INVOICE_ORDERS_ID, enable);
         }
     }
 
@@ -312,7 +380,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
         Party patient = getContext().getPatient();
         if (customer != null && patient != null) {
             if (rules.hasOrders(customer, patient)) {
-                message = new InformationMessage(Messages.format("customer.charge.pendingorders", customer.getName()));
+                message = new InformationMessage(Messages.format("customer.order.pending", customer.getName()));
                 container.add(message, 0);
             }
         }

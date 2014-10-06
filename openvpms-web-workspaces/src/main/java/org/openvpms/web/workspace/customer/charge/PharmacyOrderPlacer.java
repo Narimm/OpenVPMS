@@ -71,9 +71,9 @@ public class PharmacyOrderPlacer {
     private final IMObjectCache cache;
 
     /**
-     * The orders, keyed on invoice item id.
+     * The orders, keyed on invoice item reference.
      */
-    private Map<Long, Order> orders = new HashMap<Long, Order>();
+    private Map<IMObjectReference, Order> orders = new HashMap<IMObjectReference, Order>();
 
     /**
      * The pharmacy order service.
@@ -124,11 +124,20 @@ public class PharmacyOrderPlacer {
      * @param items the charge items
      */
     public void initialise(List<Act> items) {
-        for (Act act : items) {
-            Order order = getOrder(act);
-            if (order != null) {
-                orders.put(act.getId(), order);
-            }
+        for (Act item : items) {
+            initialise(item);
+        }
+    }
+
+    /**
+     * Initialises the order placer with an existing order.
+     *
+     * @param item the charge items
+     */
+    public void initialise(Act item) {
+        Order order = getOrder(item);
+        if (order != null) {
+            orders.put(item.getObjectReference(), order);
         }
     }
 
@@ -141,9 +150,9 @@ public class PharmacyOrderPlacer {
      * @param changes patient history changes, used to obtain patient events
      */
     public void order(List<Act> items, PatientHistoryChanges changes) {
-        List<Long> ids = new ArrayList<Long>(orders.keySet());
+        List<IMObjectReference> ids = new ArrayList<IMObjectReference>(orders.keySet());
         for (Act act : items) {
-            long id = act.getId();
+            IMObjectReference id = act.getObjectReference();
             ids.remove(id);
             Order order = getOrder(act);
             Order existing = orders.get(id);
@@ -164,7 +173,7 @@ public class PharmacyOrderPlacer {
                 cancelOrder(existing, changes);
             }
         }
-        for (long id : ids) {
+        for (IMObjectReference id : ids) {
             Order existing = orders.remove(id);
             cancelOrder(existing, changes);
         }

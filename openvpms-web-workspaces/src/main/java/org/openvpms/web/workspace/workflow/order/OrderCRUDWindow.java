@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
@@ -33,7 +32,6 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.ResultSetCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
@@ -181,24 +179,19 @@ public class OrderCRUDWindow extends ResultSetCRUDWindow<Act> {
     /**
      * Invoices an order.
      *
-     * @param estimate the estimate
-     * @param invoice  the invoice to add items to. If {@code null}, one will be created
+     * @param order   the order
+     * @param invoice the invoice to add items to. If {@code null}, one will be created
      */
-    private void invoice(final Act estimate, FinancialAct invoice) {
-        try {
-            PharmacyOrderInvoicer invoicer = new PharmacyOrderInvoicer();
-            HelpContext edit = getHelpContext().topic(CustomerAccountArchetypes.INVOICE + "/edit");
-            CustomerChargeActEditDialog editor = invoicer.invoice(estimate, invoice,
-                                                                  new DefaultLayoutContext(true, getContext(), edit));
-            editor.addWindowPaneListener(new WindowPaneListener() {
-                public void onClose(WindowPaneEvent event) {
-                    onRefresh(estimate);
-                }
-            });
-        } catch (OpenVPMSException exception) {
-            String title = Messages.get("customer.estimate.invoice.failed");
-            ErrorHelper.show(title, exception);
-        }
+    private void invoice(final Act order, FinancialAct invoice) {
+        PharmacyOrderInvoicer invoicer = new PharmacyOrderInvoicer(order);
+        HelpContext edit = getHelpContext().topic(CustomerAccountArchetypes.INVOICE + "/edit");
+        CustomerChargeActEditDialog editor = invoicer.invoice(invoice,
+                                                              new DefaultLayoutContext(true, getContext(), edit));
+        editor.addWindowPaneListener(new WindowPaneListener() {
+            public void onClose(WindowPaneEvent event) {
+                onRefresh(order);
+            }
+        });
     }
 
     /**
