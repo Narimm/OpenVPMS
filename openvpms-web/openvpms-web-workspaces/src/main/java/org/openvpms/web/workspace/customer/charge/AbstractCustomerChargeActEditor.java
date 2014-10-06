@@ -286,6 +286,17 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
+     * Flags an invoice item as being ordered via a pharmacy.
+     * <p/>
+     * This suppresses it from being ordered again when the invoice is saved.
+     *
+     * @param item the invoice item
+     */
+    public void setOrdered(Act item) {
+        orderPlacer.initialise(item);
+    }
+
+    /**
      * Save any edits.
      * <p/>
      * For invoices, this links items to their corresponding clinical events, creating events as required, and marks

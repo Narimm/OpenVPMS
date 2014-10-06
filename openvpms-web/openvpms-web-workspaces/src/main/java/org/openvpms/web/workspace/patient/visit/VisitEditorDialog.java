@@ -249,6 +249,12 @@ public class VisitEditorDialog extends PopupDialog {
                 onInProgress();
             }
         });
+        buttons.add(VisitChargeCRUDWindow.INVOICE_ORDERS_ID, new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                invoiceOrders();
+            }
+        });
         editor.setButtons(buttons);
     }
 
@@ -280,6 +286,13 @@ public class VisitEditorDialog extends PopupDialog {
         if (editor.saveAsInProgress()) {
             printNew(docs, existing);
         }
+    }
+
+    /**
+     * Invoices pending orders.
+     */
+    private void invoiceOrders() {
+        editor.getCharge().invoiceOrders();
     }
 
     /**
