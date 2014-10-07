@@ -292,7 +292,7 @@ public class VisitEditorDialog extends PopupDialog {
      * Invoices pending orders.
      */
     private void invoiceOrders() {
-        editor.getCharge().invoiceOrders();
+        editor.getCharge().chargeOrders();
     }
 
     /**

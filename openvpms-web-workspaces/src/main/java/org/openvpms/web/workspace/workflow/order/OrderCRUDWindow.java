@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
+import org.openvpms.archetype.rules.finance.order.OrderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -57,11 +58,6 @@ import org.openvpms.web.workspace.customer.order.PharmacyOrderCharger;
 public class OrderCRUDWindow extends ResultSetCRUDWindow<Act> {
 
     /**
-     * Post button identifier.
-     */
-    private static final String POST_ID = "button.post";
-
-    /**
      * Invoice button identifier.
      */
     private static final String INVOICE_ID = "button.invoice";
@@ -88,11 +84,6 @@ public class OrderCRUDWindow extends ResultSetCRUDWindow<Act> {
     @Override
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
-        buttons.add(POST_ID, new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onPost();
-            }
-        });
         buttons.add(INVOICE_ID, new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
@@ -114,23 +105,7 @@ public class OrderCRUDWindow extends ResultSetCRUDWindow<Act> {
         buttons.setEnabled(VIEW_ID, enable);
         buttons.setEnabled(EDIT_ID, enable && actions.canEdit(order));
         buttons.setEnabled(DELETE_ID, enable && actions.canDelete(order));
-        buttons.setEnabled(POST_ID, enable && actions.canPost(order));
         buttons.setEnabled(INVOICE_ID, enable && actions.canInvoice(order));
-    }
-
-    /**
-     * Invoked when the 'post' button is pressed.
-     */
-    protected void onPost() {
-        final Act act = IMObjectHelper.reload(getObject()); // make sure we have the latest version
-        if (act != null) {
-            OrderActions actions = getActions();
-            if (actions.canPost(act)) {
-                actions.post(act);
-            }
-        } else {
-            ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
-        }
     }
 
     /**
@@ -189,7 +164,7 @@ public class OrderCRUDWindow extends ResultSetCRUDWindow<Act> {
      * @param charge the charge to add items to. If {@code null}, one will be created
      */
     private void charge(final Act act, FinancialAct charge) {
-        PharmacyOrderCharger charger = new PharmacyOrderCharger(act);
+        PharmacyOrderCharger charger = new PharmacyOrderCharger(act, ServiceHelper.getBean(OrderRules.class));
         if (charger.isValid()) {
             String topic = TypeHelper.isA(act, OrderArchetypes.ORDERS) ?
                            CustomerAccountArchetypes.INVOICE : CustomerAccountArchetypes.CREDIT;

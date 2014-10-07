@@ -27,8 +27,6 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
 
 /**
  * Base class for classes invoicing an act.
@@ -134,27 +132,30 @@ public class AbstractInvoicer {
         }
 
         /**
-         * Saves the editor in a transaction.
+         * Saves the current object.
+         *
+         * @return {@code true} if the object was saved
+         */
+        @Override
+        protected boolean doSave() {
+            boolean result = super.doSave();
+            if (result && !saved) {
+                saved = true;
+            }
+            return result;
+        }
+
+        /**
+         * Invoked when the editor is saved, to allow subclasses to participate in the save transaction.
+         * <p/>
+         * This implementation always returns {@code true}.
          *
          * @param editor the editor
          * @return {@code true} if the save was successful
          */
         @Override
-        protected boolean save(final IMObjectEditor editor) {
-            boolean result;
-
-            if (!saved) {
-                TransactionCallback<Boolean> callback = new TransactionCallback<Boolean>() {
-                    public Boolean doInTransaction(TransactionStatus status) {
-                        return SaveHelper.save(act) && SaveHelper.save(editor);
-                    }
-                };
-                result = SaveHelper.save(editor.getDisplayName(), callback);
-                saved = result;
-            } else {
-                result = super.save(editor);
-            }
-            return result;
+        protected boolean saved(final IMObjectEditor editor) {
+            return saved || SaveHelper.save(act);
         }
     }
 
