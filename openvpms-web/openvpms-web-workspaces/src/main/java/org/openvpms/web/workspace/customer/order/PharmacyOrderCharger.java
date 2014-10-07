@@ -20,6 +20,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
+import org.openvpms.archetype.rules.finance.order.OrderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -62,18 +63,20 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
      */
     private final List<Item> items;
 
+
     /**
      * Constructs a {@link PharmacyOrderCharger}.
      *
-     * @param act the order/return act
+     * @param act   the order/return act
+     * @param rules the order rules
      */
-    public PharmacyOrderCharger(Act act) {
+    public PharmacyOrderCharger(Act act, OrderRules rules) {
         this.act = act;
         ActBean bean = new ActBean(act);
         customer = bean.getNodeParticipantRef("customer");
         items = new ArrayList<Item>();
         for (Act item : bean.getNodeActs("items")) {
-            items.add(new Item(item));
+            items.add(new Item(item, rules.getInvoicedQuantity(item)));
         }
     }
 
@@ -156,7 +159,7 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
      *
      * @param editor the editor to add invoice items to
      */
-    public void invoice(AbstractCustomerChargeActEditor editor) {
+    public void charge(AbstractCustomerChargeActEditor editor) {
         if (!isValid()) {
             throw new IllegalStateException("The order is incomplete and cannot be invoiced");
         }
@@ -174,8 +177,10 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
         ActRelationshipCollectionEditor charges = editor.getItems();
 
         for (Item item : items) {
-            CustomerChargeActItemEditor itemEditor = getItemEditor(editor);
-            item.invoice(editor, itemEditor);
+            if (item.needsCharge()) {
+                CustomerChargeActItemEditor itemEditor = getItemEditor(editor);
+                item.invoice(editor, itemEditor);
+            }
         }
         act.setStatus(ActStatus.POSTED);
         charges.refresh();
@@ -199,16 +204,21 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
         final IMObjectReference product;
         final IMObjectReference clinician;
 
-        public Item(Act item) {
+        public Item(Act item, BigDecimal invoicedQuantity) {
             ActBean bean = new ActBean(item);
             this.patient = bean.getNodeParticipantRef("patient");
-            this.quantity = bean.getBigDecimal("quantity");
+            BigDecimal quantity = bean.getBigDecimal("quantity");
             this.product = bean.getNodeParticipantRef("product");
             this.clinician = bean.getNodeParticipantRef("clinician");
+            this.quantity = invoicedQuantity.subtract(quantity).abs();
         }
 
         public boolean isValid() {
             return patient != null && quantity != null && product != null;
+        }
+
+        public boolean needsCharge() {
+            return quantity.compareTo(BigDecimal.ZERO) != 0;
         }
 
         public void invoice(AbstractCustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor) {

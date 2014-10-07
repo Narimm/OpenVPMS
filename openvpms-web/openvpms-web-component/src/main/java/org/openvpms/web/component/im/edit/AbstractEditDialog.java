@@ -33,6 +33,8 @@ import org.openvpms.web.echo.event.VetoListener;
 import org.openvpms.web.echo.event.Vetoable;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -294,21 +296,35 @@ public abstract class AbstractEditDialog extends PopupDialog {
 
     /**
      * Saves the current object.
+     * <p/>
+     * This saves the editor and invokes {@link #saved(IMObjectEditor)} in a single transaction, to allow subclasses
+     * to participate in the save transaction.
      *
      * @return {@code true} if the object was saved
      */
     protected boolean doSave() {
-        return (editor != null && save(editor));
+        boolean result = (editor != null);
+        if (result) {
+            result = SaveHelper.save(editor, new TransactionCallback<Boolean>() {
+                @Override
+                public Boolean doInTransaction(TransactionStatus transactionStatus) {
+                    return saved(editor);
+                }
+            });
+        }
+        return result;
     }
 
     /**
-     * Saves the editor in a transaction.
+     * Invoked when the editor is saved, to allow subclasses to participate in the save transaction.
+     * <p/>
+     * This implementation always returns {@code true}.
      *
      * @param editor the editor
      * @return {@code true} if the save was successful
      */
-    protected boolean save(IMObjectEditor editor) {
-        return SaveHelper.save(editor);
+    protected boolean saved(IMObjectEditor editor) {
+        return true;
     }
 
     /**

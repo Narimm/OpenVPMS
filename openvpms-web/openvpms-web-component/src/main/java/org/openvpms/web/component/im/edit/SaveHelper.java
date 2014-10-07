@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -68,12 +68,34 @@ public class SaveHelper {
                 }
             });
         } catch (Throwable exception) {
-            IMObject object = editor.getObject();
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String user = (authentication != null) ? authentication.getName() : null;
-            String context = Messages.format("logging.error.editcontext", object.getObjectReference(),
-                                             editor.getClass().getName(), user);
-            error(editor.getDisplayName(), context, exception);
+            error(editor, exception);
+        }
+        return (result != null) && result;
+    }
+
+    /**
+     * Saves an editor and invokes a callback within a single transaction.
+     *
+     * @param editor   the editor
+     * @param callback the callback
+     * @return {@code true} if the object was saved and the callback returned {@code true}
+     */
+    public static boolean save(final IMObjectEditor editor, final TransactionCallback<Boolean> callback) {
+        Boolean result = null;
+        try {
+            TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
+            result = template.execute(new TransactionCallback<Boolean>() {
+                public Boolean doInTransaction(TransactionStatus status) {
+                    boolean result = false;
+                    if (editor.save()) {
+                        Boolean success = callback.doInTransaction(status);
+                        result = success != null && success;
+                    }
+                    return result;
+                }
+            });
+        } catch (Throwable exception) {
+            error(editor, exception);
         }
         return (result != null) && result;
     }
@@ -246,6 +268,21 @@ public class SaveHelper {
             ErrorHelper.show(title, exception);
         }
         return (result != null) && result;
+    }
+
+    /**
+     * Displays an editor save error.
+     *
+     * @param editor    the editor
+     * @param exception the cause
+     */
+    private static void error(IMObjectEditor editor, Throwable exception) {
+        IMObject object = editor.getObject();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String user = (authentication != null) ? authentication.getName() : null;
+        String context = Messages.format("logging.error.editcontext", object.getObjectReference(),
+                                         editor.getClass().getName(), user);
+        error(editor.getDisplayName(), context, exception);
     }
 
     /**
