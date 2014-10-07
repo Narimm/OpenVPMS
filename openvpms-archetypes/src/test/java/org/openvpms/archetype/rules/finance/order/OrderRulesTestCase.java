@@ -39,10 +39,39 @@ import static org.junit.Assert.assertTrue;
 public class OrderRulesTestCase extends ArchetypeServiceTest {
 
     /**
+     * Tests the {@link OrderRules#hasOrders(Party)} method.
+     */
+    @Test
+    public void testHasOrdersForCustomer() {
+        OrderRules rules = new OrderRules(getArchetypeService());
+        Party customer1 = TestHelper.createCustomer();
+        Party customer2 = TestHelper.createCustomer();
+        Party patient1 = TestHelper.createPatient();
+        Party patient2 = TestHelper.createPatient();
+
+        assertFalse(rules.hasOrders(customer1));
+        Act act1 = createOrder(customer1, patient1);
+
+        assertTrue(rules.hasOrders(customer1));
+        assertFalse(rules.hasOrders(customer2));
+
+        act1.setStatus(ActStatus.POSTED);
+        save(act1);
+        assertFalse(rules.hasOrders(customer1));
+
+        // test for returns
+        Act act2 = createReturn(customer2, patient2);
+        assertTrue(rules.hasOrders(customer2));
+        act2.setStatus(ActStatus.POSTED);
+        save(act2);
+        assertFalse(rules.hasOrders(customer2));
+    }
+
+    /**
      * Tests the {@link OrderRules#hasOrders(Party, Party)} method.
      */
     @Test
-    public void testHasOrders() {
+    public void testHasOrdersForCustomerAndPatient() {
         OrderRules rules = new OrderRules(getArchetypeService());
         Party customer1 = TestHelper.createCustomer();
         Party customer2 = TestHelper.createCustomer();
@@ -70,10 +99,42 @@ public class OrderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link OrderRules#getOrders(Party)} method.
+     */
+    @Test
+    public void testGetOrdersForCustomer() {
+        Party customer1 = TestHelper.createCustomer();
+        Party customer2 = TestHelper.createCustomer();
+        Party patient1 = TestHelper.createPatient();
+        Party patient2 = TestHelper.createPatient();
+
+        checkGetOrders(customer1);
+
+        Act act1 = createOrder(customer1, patient1);
+        Act act2 = createReturn(customer1, patient1);
+
+        checkGetOrders(customer1, act1, act2);
+        checkGetOrders(customer2);
+
+        act1.setStatus(ActStatus.POSTED);
+        save(act1);
+
+        checkGetOrders(customer1, act2);
+
+        // add another item to the return. Should still retrieve the one instance
+        addItem(act2, patient1);
+        checkGetOrders(customer1, act2);
+
+        // add another item for a different patient
+        addItem(act2, patient2);
+        checkGetOrders(customer1, act2);
+    }
+
+    /**
      * Tests the {@link OrderRules#getOrders(Party, Party)} method.
      */
     @Test
-    public void testGetOrders() {
+    public void testGetOrdersForCustomerAndPatient() {
         Party customer1 = TestHelper.createCustomer();
         Party customer2 = TestHelper.createCustomer();
         Party patient1 = TestHelper.createPatient();
@@ -105,7 +166,19 @@ public class OrderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Verifies the  acts returned by {@link OrderRules#getOrders(Party, Party)} match that expected.
+     * Verifies the acts returned by {@link OrderRules#getOrders(Party, Party)} match that expected.
+     *
+     * @param customer the customer
+     * @param expected the expected orders. Empty if no orders are expected
+     */
+    private void checkGetOrders(Party customer, Act... expected) {
+        OrderRules rules = new OrderRules(getArchetypeService());
+        List<Act> orders = rules.getOrders(customer);
+        checkOrders(orders, expected);
+    }
+
+    /**
+     * Verifies the acts returned by {@link OrderRules#getOrders(Party, Party)} match that expected.
      *
      * @param customer the customer
      * @param patient  the patient
@@ -114,6 +187,16 @@ public class OrderRulesTestCase extends ArchetypeServiceTest {
     private void checkGetOrders(Party customer, Party patient, Act... expected) {
         OrderRules rules = new OrderRules(getArchetypeService());
         List<Act> orders = rules.getOrders(customer, patient);
+        checkOrders(orders, expected);
+    }
+
+    /**
+     * Verifies a list of orders match that expected.
+     *
+     * @param orders   the orders
+     * @param expected the expected orders
+     */
+    private void checkOrders(List<Act> orders, Act[] expected) {
         assertEquals(expected.length, orders.size());
         for (int i = 0; i < expected.length; ++i) {
             assertEquals(expected[i], orders.get(i));
