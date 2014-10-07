@@ -19,14 +19,18 @@ package org.openvpms.archetype.rules.finance.order;
 import org.apache.commons.collections4.CollectionUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,6 +57,16 @@ public class OrderRules {
         this.service = service;
     }
 
+    /**
+     * Determines if a customer has orders or returns that have not been finalised.
+     *
+     * @param customer the customer
+     * @return {@code true} if there are orders for the customer
+     */
+    public boolean hasOrders(Party customer) {
+        ArchetypeQuery query = createQuery(customer);
+        return hasOrders(query);
+    }
 
     /**
      * Determines if a customer has orders or returns for a particular patient that have not been finalised.
@@ -63,6 +77,84 @@ public class OrderRules {
      */
     public boolean hasOrders(Party customer, Party patient) {
         ArchetypeQuery query = createQuery(customer, patient);
+        return hasOrders(query);
+    }
+
+    /**
+     * Returns all IN_PROGRESS orders or returns for a customer.
+     *
+     * @param customer the customer
+     * @return the orders and returns
+     */
+    public List<Act> getOrders(Party customer) {
+        ArchetypeQuery query = createQuery(customer);
+        return collect(query);
+    }
+
+    /**
+     * Returns all IN_PROGRESS orders or returns for a customer and patient.
+     *
+     * @param customer the customer
+     * @param patient  the patient. May be {@code null}
+     * @return the orders and returns
+     */
+    public List<Act> getOrders(Party customer, Party patient) {
+        ArchetypeQuery query = createQuery(customer, patient);
+        if (patient != null) {
+            query.setDistinct(true);
+        }
+        return collect(query);
+    }
+
+    /**
+     * Returns the invoice item associated with an order item.
+     *
+     * @param orderItem the order item
+     * @return the invoice item or {@code null} if none is found
+     */
+    public FinancialAct getInvoiceItem(Act orderItem) {
+        FinancialAct result = null;
+        ActBean bean = new ActBean(orderItem, service);
+        if (bean.hasNode("sourceInvoiceItem")) {
+            IMObjectReference ref = bean.getReference("sourceInvoiceItem");
+            if (ref != null) {
+                result = (FinancialAct) service.get(ref);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the invoiced quantity corresponding to an order item.
+     *
+     * @param orderItem the order item
+     * @return the invoiced quantity
+     */
+    public BigDecimal getInvoicedQuantity(Act orderItem) {
+        BigDecimal result = BigDecimal.ZERO;
+        ActBean bean = new ActBean(orderItem, service);
+        if (bean.hasNode("sourceInvoiceItem")) {
+            IMObjectReference ref = bean.getReference("sourceInvoiceItem");
+            if (ref != null) {
+                ArchetypeQuery query = new ArchetypeQuery(ref);
+                query.getArchetypeConstraint().setAlias("a");
+                query.add(new NodeSelectConstraint("quantity"));
+                ObjectSetQueryIterator iterator = new ObjectSetQueryIterator(service, query);
+                if (iterator.hasNext()) {
+                    result = iterator.next().getBigDecimal("a.quantity");
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Determines if there are orders matching a query.
+     *
+     * @param query the query
+     * @return {@code true} if there are orders, otherwise {@code false}
+     */
+    private boolean hasOrders(ArchetypeQuery query) {
         query.add(new NodeSelectConstraint("id"));
         query.setMaxResults(1);
         ObjectSetQueryIterator iterator = new ObjectSetQueryIterator(service, query);
@@ -70,15 +162,12 @@ public class OrderRules {
     }
 
     /**
-     * Returns all IN_PROGRESS orders or returns for a customer and patient.
+     * Collects orders and returns from a query, ordered on start time and id.
      *
-     * @param customer the customer
-     * @param patient  the patient
-     * @return the orders and returns
+     * @param query the query
+     * @return the matching orders and returns
      */
-    public List<Act> getOrders(Party customer, Party patient) {
-        ArchetypeQuery query = createQuery(customer, patient);
-        query.setDistinct(true);
+    private List<Act> collect(ArchetypeQuery query) {
         query.add(Constraints.sort("startTime"));
         query.add(Constraints.sort("id"));
         IMObjectQueryIterator<Act> iterator = new IMObjectQueryIterator<Act>(service, query);
@@ -91,14 +180,27 @@ public class OrderRules {
      * Creates an order and returns query for a customer and patient.
      *
      * @param customer the customer
-     * @param patient  the patient
+     * @param patient  the patient. May be {@code null}
      * @return the query
      */
     private ArchetypeQuery createQuery(Party customer, Party patient) {
+        ArchetypeQuery query = createQuery(customer);
+        if (patient != null) {
+            query.add(join("items").add(join("target").add(join("patient").add(Constraints.eq("entity", patient)))));
+        }
+        return query;
+    }
+
+    /**
+     * Creates an order and returns query for a customer.
+     *
+     * @param customer the customer
+     * @return the query
+     */
+    private ArchetypeQuery createQuery(Party customer) {
         String[] shortNames = {OrderArchetypes.ORDERS, OrderArchetypes.RETURNS};
         ArchetypeQuery query = new ArchetypeQuery(shortNames, true, true);
         query.add(join("customer").add(Constraints.eq("entity", customer)));
-        query.add(join("items").add(join("target").add(join("patient").add(Constraints.eq("entity", patient)))));
         query.add(Constraints.eq("status", ActStatus.IN_PROGRESS));
         return query;
     }

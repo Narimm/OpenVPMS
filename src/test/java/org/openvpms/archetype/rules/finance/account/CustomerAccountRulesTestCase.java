@@ -927,6 +927,32 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     }
 
     /**
+     * Tests the {@link CustomerAccountRules#getCredit(Party)} method.
+     */
+    @Test
+    public void testGetCredit() {
+        CustomerAccountRules rules = getRules();
+
+        Party customer = getCustomer();
+        assertNull(rules.getCredit(customer));
+
+        // verify posted credits not returned
+        createCredit(getDate("2013-05-02"), FinancialActStatus.POSTED);
+        assertNull(rules.getInvoice(customer));
+
+        FinancialAct credit2 = createCredit(getDate("2013-05-02"), FinancialActStatus.COMPLETED);
+        assertEquals(credit2, rules.getCredit(customer));
+
+        // verify back-dated IN_PROGRESS invoice returned in preference to COMPLETED credit
+        FinancialAct credit3 = createCredit(getDate("2013-05-01"), FinancialActStatus.IN_PROGRESS);
+        assertEquals(credit3, rules.getCredit(customer));
+
+        // verify more recent IN_PROGRESS returned
+        FinancialAct credit4 = createCredit(getDate("2013-05-05"), FinancialActStatus.IN_PROGRESS);
+        assertEquals(credit4, rules.getCredit(customer));
+    }
+
+    /**
      * Verifies that when an invoice is reversed, any invoice items and medication acts are unlinked from the patient
      * history.
      * <p/>
@@ -1293,6 +1319,22 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         invoice.setActivityStartTime(startTime);
         invoice.setStatus(status);
         save(invoices);
+        return invoice;
+    }
+
+    /**
+     * Helper to create an invoice with the specified start time and status.
+     *
+     * @param startTime the start time
+     * @param status    the status
+     * @return the invoice
+     */
+    private FinancialAct createCredit(Date startTime, String status) {
+        List<FinancialAct> acts = createChargesCredit(Money.ZERO);
+        FinancialAct invoice = acts.get(0);
+        invoice.setActivityStartTime(startTime);
+        invoice.setStatus(status);
+        save(acts);
         return invoice;
     }
 
