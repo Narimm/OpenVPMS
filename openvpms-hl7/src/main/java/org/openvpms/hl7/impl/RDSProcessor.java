@@ -28,6 +28,7 @@ import ca.uhn.hl7v2.model.v25.segment.ORC;
 import ca.uhn.hl7v2.model.v25.segment.PID;
 import ca.uhn.hl7v2.model.v25.segment.RXD;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
@@ -104,10 +105,9 @@ public class RDSProcessor {
             RDS_O13_ORDER group = message.getORDER(i);
             match &= addItem(group, state);
         }
-//        if (match) {
-// TODO
-//            order.setStatus("INVOICED");
-//        }
+        if (match) {
+            state.getActs().get(0).setStatus(ActStatus.POSTED);
+        }
         return state.getActs();
     }
 

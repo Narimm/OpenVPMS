@@ -16,7 +16,6 @@
 
 package org.openvpms.hl7.impl;
 
-import ca.uhn.hl7v2.DefaultHapiContext;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.v25.message.RDS_O13;
@@ -70,8 +69,7 @@ public abstract class AbstractRDSTest extends AbstractMessageTest {
      */
     protected RDS_O13 createRDS(Product product) throws IOException, HL7Exception {
         ILookupService lookups = LookupServiceHelper.getLookupService();
-        HapiContext hapiContext = new DefaultHapiContext();
-        hapiContext.getParserConfiguration().setIdGenerator(new IDGenerator() {
+        HapiContext hapiContext = HapiContextFactory.create(new IDGenerator() {
             @Override
             public String getID() throws IOException {
                 return "1200022";
@@ -81,6 +79,7 @@ public abstract class AbstractRDSTest extends AbstractMessageTest {
         MessageConfig config = new MessageConfig();
         String fillerOrderNumber = "90032145";
         RDS_O13 message = new RDS_O13(hapiContext.getModelClassFactory());
+        message.setParser(hapiContext.getGenericParser());
         message.initQuickstart("RDS", "O13", "P");
         HeaderPopulator header = new HeaderPopulator();
         PIDPopulator pid = new PIDPopulator(getArchetypeService(), LookupServiceHelper.getLookupService());

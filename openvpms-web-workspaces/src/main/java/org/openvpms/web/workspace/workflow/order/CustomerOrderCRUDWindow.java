@@ -17,45 +17,33 @@
 package org.openvpms.web.workspace.workflow.order;
 
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
-import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.workspace.ResultSetCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
-import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.ErrorDialog;
-import org.openvpms.web.echo.dialog.InformationDialog;
-import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
-import org.openvpms.web.workspace.customer.order.PharmacyOrderCharger;
+import org.openvpms.web.workspace.customer.order.OrderCharger;
 
 /**
  * CRUD window for customer orders.
  *
  * @author Tim Anderson
  */
-public class OrderCRUDWindow extends ResultSetCRUDWindow<Act> {
+public class CustomerOrderCRUDWindow extends ResultSetCRUDWindow<FinancialAct> {
 
     /**
      * Invoice button identifier.
@@ -63,7 +51,7 @@ public class OrderCRUDWindow extends ResultSetCRUDWindow<Act> {
     private static final String INVOICE_ID = "button.invoice";
 
     /**
-     * Constructs a {@link ResultSetCRUDWindow}.
+     * Constructs a {@link CustomerOrderCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create instances of
      * @param query      the query. May be {@code null}
@@ -71,8 +59,8 @@ public class OrderCRUDWindow extends ResultSetCRUDWindow<Act> {
      * @param context    the context
      * @param help       the help context
      */
-    public OrderCRUDWindow(Archetypes<Act> archetypes, Query<Act> query, ResultSet<Act> set, Context context,
-                           HelpContext help) {
+    public CustomerOrderCRUDWindow(Archetypes<FinancialAct> archetypes, Query<FinancialAct> query,
+                                   ResultSet<FinancialAct> set, Context context, HelpContext help) {
         super(archetypes, OrderActions.INSTANCE, query, set, context, help);
     }
 
@@ -101,7 +89,7 @@ public class OrderCRUDWindow extends ResultSetCRUDWindow<Act> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         OrderActions actions = getActions();
-        Act order = getObject();
+        FinancialAct order = getObject();
         buttons.setEnabled(VIEW_ID, enable);
         buttons.setEnabled(EDIT_ID, enable && actions.canEdit(order));
         buttons.setEnabled(DELETE_ID, enable && actions.canDelete(order));
@@ -112,7 +100,7 @@ public class OrderCRUDWindow extends ResultSetCRUDWindow<Act> {
      * Invoked when the 'invoice' button is pressed.
      */
     protected void onInvoice() {
-        final Act act = IMObjectHelper.reload(getObject()); // make sure we have the latest version
+        final FinancialAct act = IMObjectHelper.reload(getObject()); // make sure we have the latest version
         if (act != null) {
             if (getActions().canInvoice(act)) {
                 charge(act);
@@ -137,72 +125,22 @@ public class OrderCRUDWindow extends ResultSetCRUDWindow<Act> {
      *
      * @param act the order/return
      */
-    protected void charge(final Act act) {
-        final FinancialAct charge = getCharge(act);
-        if (charge != null) {
-            String displayName = DescriptorHelper.getDisplayName(charge);
-            String title = Messages.format("customer.order.existingcharge.title", displayName);
-            String message = Messages.format("customer.order.existingcharge.message", displayName,
-                                             DescriptorHelper.getDisplayName(act));
-            ConfirmationDialog dialog = new ConfirmationDialog(title, message);
-            dialog.addWindowPaneListener(new PopupDialogListener() {
-                @Override
-                public void onOK() {
-                    charge(act, charge);
-                }
-            });
-            dialog.show();
-        } else {
-            charge(act, charge);
-        }
-    }
-
-    /**
-     * Charges an order or return.
-     *
-     * @param act    the order/return
-     * @param charge the charge to add items to. If {@code null}, one will be created
-     */
-    private void charge(final Act act, FinancialAct charge) {
-        PharmacyOrderCharger charger = new PharmacyOrderCharger(act, ServiceHelper.getBean(OrderRules.class));
-        if (charger.isValid()) {
-            String topic = TypeHelper.isA(act, OrderArchetypes.ORDERS) ?
-                           CustomerAccountArchetypes.INVOICE : CustomerAccountArchetypes.CREDIT;
-            HelpContext edit = getHelpContext().topic(topic + "/edit");
-            CustomerChargeActEditDialog editor = charger.charge(charge,
-                                                                new DefaultLayoutContext(true, getContext(), edit));
-            editor.addWindowPaneListener(new WindowPaneListener() {
-                public void onClose(WindowPaneEvent event) {
-                    onRefresh(act);
-                }
-            });
-        } else {
-            InformationDialog.show(Messages.format("customer.order.invalid", DescriptorHelper.getDisplayName(act)));
-        }
-    }
-
-    /**
-     * Returns the most recent IN_PROGRESS or COMPLETED invoice to add order items to.
-     *
-     * @param act the order
-     * @return the charge, or {@code null} if none exists
-     */
-    private FinancialAct getCharge(Act act) {
-        FinancialAct result = null;
+    protected void charge(final FinancialAct act) {
         ActBean bean = new ActBean(act);
         Party customer = (Party) bean.getNodeParticipant("customer");
         if (customer != null) {
-            CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
-            if (TypeHelper.isA(act, OrderArchetypes.ORDERS)) {
-                result = rules.getInvoice(customer);
-            } else {
-                result = rules.getCredit(customer);
-            }
+            OrderCharger charger = new OrderCharger(customer, ServiceHelper.getBean(OrderRules.class),
+                                                    getContext(), getHelpContext());
+            charger.charge(act, new OrderCharger.CompletionListener() {
+                @Override
+                public void completed() {
+                    onRefresh(act);
+                }
+            });
         }
-        return result;
     }
 
-    private static class OrderActions extends ActActions<Act> {
+    private static class OrderActions extends ActActions<FinancialAct> {
 
         public static final OrderActions INSTANCE = new OrderActions();
 
@@ -210,4 +148,5 @@ public class OrderCRUDWindow extends ResultSetCRUDWindow<Act> {
             return ActStatus.IN_PROGRESS.equals(order.getStatus());
         }
     }
+
 }

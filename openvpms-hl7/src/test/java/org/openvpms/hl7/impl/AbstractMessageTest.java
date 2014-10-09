@@ -16,11 +16,8 @@
 
 package org.openvpms.hl7.impl;
 
-import ca.uhn.hl7v2.DefaultHapiContext;
 import ca.uhn.hl7v2.HL7Exception;
-import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.util.idgenerator.IDGenerator;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.openvpms.archetype.rules.math.WeightUnits;
@@ -42,7 +39,6 @@ import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -119,13 +115,6 @@ public abstract class AbstractMessageTest extends ArchetypeServiceTest {
         context = factory.createContext(patient, owner, visit, location, clinician);
         context = Mockito.spy(context);
         Mockito.when(context.getVisitId()).thenReturn(3001L);
-        HapiContext hapiContext = new DefaultHapiContext();
-        hapiContext.getParserConfiguration().setIdGenerator(new IDGenerator() {
-            @Override
-            public String getID() throws IOException {
-                return "1200022";
-            }
-        });
     }
 
     /**

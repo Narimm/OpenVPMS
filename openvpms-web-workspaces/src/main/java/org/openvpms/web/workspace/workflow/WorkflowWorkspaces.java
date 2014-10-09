@@ -22,7 +22,7 @@ import org.openvpms.web.component.workspace.AbstractWorkspaces;
 import org.openvpms.web.workspace.workflow.appointment.AppointmentWorkspace;
 import org.openvpms.web.workspace.workflow.investigation.InvestigationsWorkspace;
 import org.openvpms.web.workspace.workflow.messaging.MessagingWorkspace;
-import org.openvpms.web.workspace.workflow.order.OrderWorkspace;
+import org.openvpms.web.workspace.workflow.order.CustomerOrderWorkspace;
 import org.openvpms.web.workspace.workflow.worklist.TaskWorkspace;
 
 
@@ -45,6 +45,6 @@ public class WorkflowWorkspaces extends AbstractWorkspaces {
         addWorkspace(new MessagingWorkspace(context));
         PracticeMailContext mailContext = new PracticeMailContext(context);
         addWorkspace(new InvestigationsWorkspace(context, mailContext));
-        addWorkspace(new OrderWorkspace(context, mailContext));
+        addWorkspace(new CustomerOrderWorkspace(context, mailContext));
     }
 }

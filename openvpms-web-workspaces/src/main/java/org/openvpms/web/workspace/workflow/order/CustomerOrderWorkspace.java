@@ -17,20 +17,22 @@
 package org.openvpms.web.workspace.workflow.order;
 
 import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
+import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.component.workspace.ResultSetCRUDWorkspace;
+import org.openvpms.web.resource.i18n.Messages;
 
 /**
  * Customer order workspace.
  *
  * @author Tim Anderson
  */
-public class OrderWorkspace extends ResultSetCRUDWorkspace<Act> {
+public class CustomerOrderWorkspace extends ResultSetCRUDWorkspace<FinancialAct> {
 
     /**
      * The archetypes that this workspace operates on.
@@ -38,7 +40,7 @@ public class OrderWorkspace extends ResultSetCRUDWorkspace<Act> {
     private static final String[] SHORT_NAMES = {OrderArchetypes.ORDERS, OrderArchetypes.RETURNS};
 
     /**
-     * Constructs a {@link OrderWorkspace}.
+     * Constructs a {@link CustomerOrderWorkspace}.
      * <p/>
      * The {@link #setArchetypes} method must be invoked to set archetypes that the workspace supports, before
      * performing any operations.
@@ -46,10 +48,20 @@ public class OrderWorkspace extends ResultSetCRUDWorkspace<Act> {
      * @param context     the context
      * @param mailContext the mail context
      */
-    public OrderWorkspace(Context context, MailContext mailContext) {
+    public CustomerOrderWorkspace(Context context, MailContext mailContext) {
         super("workflow", "order", context);
-        setArchetypes(Archetypes.create(SHORT_NAMES, Act.class));
+        setArchetypes(Archetypes.create(SHORT_NAMES, FinancialAct.class, Messages.get("workflow.order.type")));
         setMailContext(mailContext);
+    }
+
+    /**
+     * Creates a new query to populate the browser.
+     *
+     * @return a new query
+     */
+    @Override
+    protected Query<FinancialAct> createQuery() {
+        return new CustomerOrderQuery(SHORT_NAMES);
     }
 
     /**
@@ -58,9 +70,9 @@ public class OrderWorkspace extends ResultSetCRUDWorkspace<Act> {
      * @return a new CRUD window
      */
     @Override
-    protected CRUDWindow<Act> createCRUDWindow() {
-        QueryBrowser<Act> browser = getBrowser();
-        return new OrderCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet(), getContext(),
-                                   getHelpContext());
+    protected CRUDWindow<FinancialAct> createCRUDWindow() {
+        QueryBrowser<FinancialAct> browser = getBrowser();
+        return new CustomerOrderCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet(), getContext(),
+                                           getHelpContext());
     }
 }
