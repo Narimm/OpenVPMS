@@ -16,7 +16,6 @@
 
 package org.openvpms.hl7.impl;
 
-import ca.uhn.hl7v2.DefaultHapiContext;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.app.Connection;
@@ -28,7 +27,6 @@ import ca.uhn.hl7v2.model.v25.segment.MSH;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import ca.uhn.hl7v2.protocol.ReceivingApplicationException;
 import ca.uhn.hl7v2.protocol.Transportable;
-import ca.uhn.hl7v2.util.idgenerator.IDGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -93,15 +91,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
      */
     public MessageDispatcherImpl() {
         populator = new HeaderPopulator();
-        messageContext = new DefaultHapiContext();
-
-        // override the default sequence handling
-        messageContext.getParserConfiguration().setIdGenerator(new IDGenerator() {
-            @Override
-            public String getID() {
-                return "";
-            }
-        });
+        messageContext = HapiContextFactory.create();
         executor = Executors.newSingleThreadExecutor();
     }
 

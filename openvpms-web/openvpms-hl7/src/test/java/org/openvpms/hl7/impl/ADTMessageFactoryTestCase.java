@@ -16,7 +16,6 @@
 
 package org.openvpms.hl7.impl;
 
-import ca.uhn.hl7v2.DefaultHapiContext;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.Message;
@@ -53,14 +52,12 @@ public class ADTMessageFactoryTestCase extends AbstractMessageTest {
     public void setUp() {
         super.setUp();
 
-        HapiContext hapiContext = new DefaultHapiContext();
-        hapiContext.getParserConfiguration().setIdGenerator(new IDGenerator() {
+        HapiContext hapiContext = HapiContextFactory.create(new IDGenerator() {
             @Override
             public String getID() throws IOException {
                 return "1200022";
             }
         });
-
         messageFactory = new ADTMessageFactory(hapiContext, getArchetypeService(),
                                                LookupServiceHelper.getLookupService());
 

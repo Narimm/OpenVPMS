@@ -16,7 +16,6 @@
 
 package org.openvpms.hl7.impl;
 
-import ca.uhn.hl7v2.DefaultHapiContext;
 import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.v25.segment.MSH;
@@ -61,8 +60,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
     public void setUp() {
         super.setUp();
 
-        HapiContext hapiContext = new DefaultHapiContext();
-        hapiContext.getParserConfiguration().setIdGenerator(new IDGenerator() {
+        HapiContext hapiContext = HapiContextFactory.create(new IDGenerator() {
             @Override
             public String getID() throws IOException {
                 return "1200022";

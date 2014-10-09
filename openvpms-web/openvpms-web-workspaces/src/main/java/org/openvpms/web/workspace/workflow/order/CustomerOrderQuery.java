@@ -16,7 +16,9 @@
 
 package org.openvpms.web.workspace.workflow.order;
 
+import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
 
@@ -25,12 +27,12 @@ import org.openvpms.web.component.im.query.DateRangeActQuery;
  *
  * @author Tim Anderson
  */
-public class CustomerOrderQuery extends DateRangeActQuery<Act> {
+public class CustomerOrderQuery extends DateRangeActQuery<FinancialAct> {
 
     /**
      * The statuses to query.
      */
-    private static final ActStatuses statuses = new ActStatuses("act.customerOrderPharmacy");
+    private static final ActStatuses statuses = new ActStatuses(OrderArchetypes.PHARMACY_ORDER);
 
     /**
      * Constructs a {@link CustomerOrderQuery}.

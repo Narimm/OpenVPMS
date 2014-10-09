@@ -13,6 +13,7 @@
  *
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.customer.charge;
 
 import nextapp.echo2.app.Column;
@@ -83,13 +84,28 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      * @param context the context
      */
     public CustomerChargeActEditDialog(CustomerChargeActEditor editor, Context context) {
+        this(editor, null, context);
+    }
+
+    /**
+     * Constructs a {@link CustomerChargeActEditDialog}.
+     *
+     * @param editor  the editor
+     * @param charger the order charger. May be {@code null}
+     * @param context the context
+     */
+    public CustomerChargeActEditDialog(CustomerChargeActEditor editor, OrderCharger charger, Context context) {
         super(editor, context);
         addButton(COMPLETED_ID);
         addButton(IN_PROGRESS_ID);
         addButton(INVOICE_ORDERS_ID);
         setDefaultCloseAction(CANCEL_ID);
         OrderRules rules = ServiceHelper.getBean(OrderRules.class);
-        orderCharger = new OrderCharger(getContext().getCustomer(), rules, context, editor.getHelpContext());
+        if (charger == null) {
+            orderCharger = new OrderCharger(getContext().getCustomer(), rules, context, editor.getHelpContext());
+        } else {
+            orderCharger = charger;
+        }
         checkOrders();
     }
 
