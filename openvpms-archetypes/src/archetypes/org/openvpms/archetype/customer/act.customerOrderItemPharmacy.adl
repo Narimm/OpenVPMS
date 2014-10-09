@@ -46,8 +46,8 @@
               filter="participation.patient"/>
         <node name="product" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1" filter="participation.product"/>
-        <node name="batch" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
-              filter="participation.productBatch"/>
+        <!--node name="batch" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+              filter="participation.productBatch"/-->
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
@@ -65,6 +65,7 @@
                 <property name="source" value="lookup.uom"/>
             </assertion>
         </node>
-        <node name="credit" path="/credit" type="java.lang.Boolean" defaultValue="false()" readOnly="true"/>
+        <node name="credit" path="/credit" type="java.lang.Boolean" defaultValue="false()" readOnly="true"
+              hidden="true"/>
     </archetype>
 </archetypes>

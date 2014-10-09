@@ -28,12 +28,12 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -369,8 +369,8 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     @Test
     public void testLinkMedicalRecordsWithInvoiceItem() {
         Act event = createEvent();
-        Act invoiceItem = FinancialTestHelper.createItem(CustomerAccountArchetypes.INVOICE_ITEM,
-                                                         Money.ONE, patient, TestHelper.createProduct());
+        Act invoiceItem = FinancialTestHelper.createChargeItem(CustomerAccountArchetypes.INVOICE_ITEM,
+                                                               patient, TestHelper.createProduct(), BigDecimal.ONE);
         save(invoiceItem);
         rules.linkMedicalRecords(event, invoiceItem);
 
