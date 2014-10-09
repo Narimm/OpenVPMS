@@ -235,11 +235,14 @@ public class OrderCharger {
      * @param editor the editor to add charges to
      */
     private void charge(List<Act> orders, AbstractCustomerChargeActEditor editor) {
+        int unsupported = 0;
         int invalid = 0;
         int multiplePatient = 0;
         int differentInvoice = 0;
         for (Act order : orders) {
-            if (TypeHelper.isA(order, OrderArchetypes.PHARMACY_ORDER)) {
+            if (!TypeHelper.isA(order, OrderArchetypes.PHARMACY_ORDER)) {
+                ++unsupported;
+            } else {
                 PharmacyOrderCharger charger = new PharmacyOrderCharger((FinancialAct) order, rules);
                 if (!charger.isValid()) {
                     ++invalid;
@@ -253,8 +256,11 @@ public class OrderCharger {
                 }
             }
         }
-        if (invalid != 0 || multiplePatient != 0 || differentInvoice != 0) {
+        if (unsupported != 0 || invalid != 0 || multiplePatient != 0 || differentInvoice != 0) {
             StringBuilder message = new StringBuilder();
+            if (unsupported != 0) {
+                message.append(Messages.format("customer.order.unsupported", unsupported));
+            }
             if (invalid != 0) {
                 message.append(Messages.format("customer.order.incomplete", invalid));
             }
