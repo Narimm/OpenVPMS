@@ -364,8 +364,8 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
         Party supplier1 = TestHelper.createSupplier();
         Product product1 = TestHelper.createProduct();
 
-        addProductSupplierRelationship(product1, supplier1, true, new BigDecimal("2.0"), 1);
         addProductSupplierRelationship(product1, supplier1, false, new BigDecimal("3.0"), 1);
+        addProductSupplierRelationship(product1, supplier1, true, new BigDecimal("2.0"), 1);
         addProductStockLocationRelationship(product1, stockLocation, null, 1, 10, 5);
 
         List<FinancialAct> order = generator.createOrder(supplier1, stockLocation, false);
@@ -391,6 +391,58 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
         addProductSupplierRelationship(product1, supplier1, true, new BigDecimal("2.0"), 1);
         addProductSupplierRelationship(product1, supplier1, true, new BigDecimal("3.0"), 1);
         addProductStockLocationRelationship(product1, stockLocation, null, 1, 10, 5);
+
+        List<FinancialAct> order = generator.createOrder(supplier1, stockLocation, false);
+        assertEquals(2, order.size());
+        save(order);
+        BigDecimal total = new BigDecimal("19.80");
+        BigDecimal tax = new BigDecimal("1.80");
+        checkOrder(order.get(0), supplier1, stockLocation, total, tax);
+        checkOrderItem(order.get(1), product1, BigDecimal.valueOf(9), total, tax);
+    }
+
+    /**
+     * Verifies that if a product has multiple product-supplier relationships, and a stock location has a preferred
+     * supplier, the product-supplier relationships the relationship with the lowest id is selected.
+     */
+    @Test
+    public void testMultipleSupplierRelationshipsWithPreferredStockLocationSelectsLowestId() {
+        OrderGenerator generator = new OrderGenerator(taxRules, getArchetypeService());
+        Party stockLocation = SupplierTestHelper.createStockLocation();
+        Party supplier1 = TestHelper.createSupplier();
+        Party supplier2 = TestHelper.createSupplier();
+        Product product1 = TestHelper.createProduct();
+
+        addProductSupplierRelationship(product1, supplier1, false, new BigDecimal("2.0"), 1);
+        addProductSupplierRelationship(product1, supplier1, false, new BigDecimal("3.0"), 1);
+        addProductSupplierRelationship(product1, supplier2, true, new BigDecimal("4.0"), 1);
+        addProductStockLocationRelationship(product1, stockLocation, supplier1, 1, 10, 5);
+
+        List<FinancialAct> order = generator.createOrder(supplier1, stockLocation, false);
+        assertEquals(2, order.size());
+        save(order);
+        BigDecimal total = new BigDecimal("19.80");
+        BigDecimal tax = new BigDecimal("1.80");
+        checkOrder(order.get(0), supplier1, stockLocation, total, tax);
+        checkOrderItem(order.get(1), product1, BigDecimal.valueOf(9), total, tax);
+    }
+
+    /**
+     * Verifies that if a product has multiple preferred product-supplier relationships, and a stock location has a
+     * preferred supplier, the product-supplier relationships the relationship with the lowest id is selected.
+     */
+    @Test
+    public void testMultiplePreferredSupplierRelationshipsWithPreferredStockLocationSelectsLowestId() {
+        OrderGenerator generator = new OrderGenerator(taxRules, getArchetypeService());
+        Party stockLocation = SupplierTestHelper.createStockLocation();
+        Party supplier1 = TestHelper.createSupplier();
+        Party supplier2 = TestHelper.createSupplier();
+        Product product1 = TestHelper.createProduct();
+
+        addProductSupplierRelationship(product1, supplier1, true, new BigDecimal("2.0"), 1);
+        addProductSupplierRelationship(product1, supplier1, true, new BigDecimal("3.0"), 1);
+        addProductSupplierRelationship(product1, supplier2, true, new BigDecimal("4.0"), 1);
+        addProductStockLocationRelationship(product1, stockLocation, supplier1, 1, 10, 5);
 
         List<FinancialAct> order = generator.createOrder(supplier1, stockLocation, false);
         assertEquals(2, order.size());
