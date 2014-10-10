@@ -39,7 +39,6 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -98,7 +97,7 @@ class OrderGenerator {
      * @return the orderable stock
      */
     public List<Stock> getOrderableStock(Party supplier, Party stockLocation, boolean belowIdealQuantity) {
-        HashMap<Long, Stock> result = new LinkedHashMap<Long, Stock>();
+        List<Stock> result = new ArrayList<Stock>();
         Map<String, Object> parameters = new HashMap<String, Object>();
         parameters.put("stockLocationId", stockLocation.getId());
         parameters.put("supplierId", supplier.getId());
@@ -111,22 +110,11 @@ class OrderGenerator {
             if (product != null) {
                 Stock stock = getStock(set, product, supplier, stockLocation, belowIdealQuantity);
                 if (stock != null) {
-                    Stock existing = result.get(product.getId());
-                    if (existing != null) {
-                        log.warn("Multiple preferred product-supplier relationships for the same product and supplier. "
-                                 + "Relationship with lowest productSupplierId is used.\n"
-                                 + "Stock 1=" + existing + "\n"
-                                 + "Stock 2=" + stock);
-                        if (existing.getProductSupplierId() > stock.getProductSupplierId()) {
-                            result.put(product.getId(), stock);
-                        }
-                    } else {
-                        result.put(product.getId(), stock);
-                    }
+                    result.add(stock);
                 }
             }
         }
-        return new ArrayList<Stock>(result.values());
+        return result;
     }
 
     /**

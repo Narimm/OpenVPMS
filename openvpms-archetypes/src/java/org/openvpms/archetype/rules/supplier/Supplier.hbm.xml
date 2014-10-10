@@ -63,42 +63,60 @@
                     and productStock.target_id = :stockLocationId
                     and (productStock.active_start_time is null or productStock.active_start_time <= now())
                     and (productStock.active_end_time is null or productStock.active_end_time > now())
-        join    entity_relationships productSupplier on product.entity_id = productSupplier.source_id
-                    and productSupplier.arch_short_name = "entityRelationship.productSupplier"
-                    and productSupplier.target_id = :supplierId
-                    and (productSupplier.active_start_time is null or productSupplier.active_start_time <= now())
-                    and (productSupplier.active_end_time is null or productSupplier.active_end_time > now())
-        left outer join entity_relationship_details supplier
+        join (
+            select r.source_id, r.entity_relationship_id, preferred.value as preferred
+            from entity_relationships r 
+            join entity_relationship_details preferred 
+                    on preferred.entity_relationship_id = r.entity_relationship_id and preferred.name = "preferred"
+            where  r.arch_short_name = "entityRelationship.productSupplier"
+                    and r.target_id = :supplierId
+                    and (r.active_start_time is null or r.active_start_time <= now())
+                    and (r.active_end_time is null or r.active_end_time > now())
+            ) as productSupplier on productSupplier.source_id = product.entity_id
+        left join (
+            select r.source_id, r.entity_relationship_id, preferred.value as preferred
+            from entity_relationships r 
+            join entity_relationship_details preferred 
+                    on preferred.entity_relationship_id = r.entity_relationship_id and preferred.name = "preferred"
+            where  r.arch_short_name = "entityRelationship.productSupplier"
+                    and r.target_id = :supplierId
+                    and (r.active_start_time is null or r.active_start_time <= now())
+                    and (r.active_end_time is null or r.active_end_time > now())
+            ) as productSupplier2 on productSupplier2.source_id = product.entity_id 
+                and (productSupplier.preferred < productSupplier2.preferred 
+                    or (productSupplier.preferred = productSupplier2.preferred 
+                        and productSupplier.entity_relationship_id > productSupplier2.entity_relationship_id))
+        left join entity_relationship_details supplier
                     on supplier.entity_relationship_id = productStock.entity_relationship_id
                     and supplier.name = "supplier"
-        left outer join entity_relationship_details preferred
+        left join entity_relationship_details preferred
                     on preferred.entity_relationship_id = productSupplier.entity_relationship_id
                     and preferred.name = "preferred"
-        left outer join entity_relationship_details quantity
+        left join entity_relationship_details quantity
                     on quantity.entity_relationship_id = productStock.entity_relationship_id
                     and quantity.name = "quantity"
-        left outer join entity_relationship_details idealQty
+        left join entity_relationship_details idealQty
                     on idealQty.entity_relationship_id = productStock.entity_relationship_id
                     and idealQty.name = "idealQty"
-        left outer join entity_relationship_details criticalQty
+        left join entity_relationship_details criticalQty
                     on criticalQty.entity_relationship_id = productStock.entity_relationship_id
                     and criticalQty.name = "criticalQty"
-        left outer join entity_relationship_details packageSize
+        left join entity_relationship_details packageSize
                     on packageSize.entity_relationship_id = productSupplier.entity_relationship_id
                     and packageSize.name = "packageSize"
-        left outer join entity_relationship_details packageUnits
+        left join entity_relationship_details packageUnits
                     on packageUnits.entity_relationship_id = productSupplier.entity_relationship_id
                     and packageUnits.name = "packageUnits"
-        left outer join entity_relationship_details reorderCode
+        left join entity_relationship_details reorderCode
                     on reorderCode.entity_relationship_id = productSupplier.entity_relationship_id
                     and reorderCode.name = "reorderCode"
-        left outer join entity_relationship_details reorderDesc
+        left join entity_relationship_details reorderDesc
                     on reorderDesc.entity_relationship_id = productSupplier.entity_relationship_id
                     and reorderDesc.name = "reorderDescription"
-        left outer join entity_relationship_details nettPrice
+        left join entity_relationship_details nettPrice
                     on nettPrice.entity_relationship_id = productSupplier.entity_relationship_id
                     and nettPrice.name = "nettPrice"
-        left outer join entity_relationship_details listPrice
+        left join entity_relationship_details listPrice
                     on listPrice.entity_relationship_id = productSupplier.entity_relationship_id
                     and listPrice.name = "listPrice"
         left join (
@@ -145,6 +163,7 @@ where   product.active = 1
                 and convert(idealQty.value, decimal) <> 0.0
                 and (convert(quantity.value, decimal) < convert(idealQty.value, decimal))
                 and (supplier.value = :supplier or (supplier.value is null and preferred.value = "true"))
+                and productSupplier2.source_id is null
         ]]>
     </sql-query>
 
