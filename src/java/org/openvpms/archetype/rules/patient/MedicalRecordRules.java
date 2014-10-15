@@ -78,6 +78,11 @@ public class MedicalRecordRules {
      */
     private static final String END_TIME = "endTime";
 
+    /**
+     * Allergy alert type code.
+     */
+    private static final String ALLERGY = "ALLERGY";
+
 
     /**
      * Creates a {@link MedicalRecordRules}.
@@ -399,6 +404,17 @@ public class MedicalRecordRules {
             }
         }
         return result;
+    }
+
+    /**
+     * Determines if an alert is for an allergy.
+     *
+     * @param alert the alert
+     * @return {@code true} if the alert is for an allergy
+     */
+    public boolean isAllergy(Act alert) {
+        ActBean bean = new ActBean(alert, service);
+        return ALLERGY.equals(bean.getString("alertType"));
     }
 
     /**
