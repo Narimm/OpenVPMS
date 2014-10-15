@@ -22,7 +22,6 @@ import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -246,11 +245,7 @@ class InvestigationsTableModel extends DescriptorTableModel<Act> {
         String result;
         Date startTime = act.getActivityStartTime();
         if (startTime != null) {
-            if (DateRules.compareDateToToday(startTime) == 0) {
-                result = DateFormatter.formatTime(startTime, false);
-            } else {
-                result = DateFormatter.formatDateTime(startTime, false);
-            }
+            result = DateFormatter.formatDateTimeAbbrev(startTime);
         } else {
             result = null;
         }

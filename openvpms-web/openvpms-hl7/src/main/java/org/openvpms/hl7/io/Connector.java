@@ -18,6 +18,8 @@ package org.openvpms.hl7.io;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 /**
@@ -58,7 +60,7 @@ public abstract class Connector {
     private final boolean includeTimeZone;
 
     /**
-     * The connection reference.
+     * The connector reference.
      */
     private final IMObjectReference reference;
 
@@ -194,6 +196,18 @@ public abstract class Connector {
     }
 
     /**
+     * Returns a string representation of the object.
+     *
+     * @return a string representation of the object.
+     */
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("reference", reference)
+                .toString();
+    }
+
+    /**
      * Builds the hash code.
      *
      * @param builder the hash code builder
@@ -203,4 +217,5 @@ public abstract class Connector {
         return builder.append(sendingApplication).append(sendingFacility)
                 .append(receivingApplication).append(receivingFacility);
     }
+
 }

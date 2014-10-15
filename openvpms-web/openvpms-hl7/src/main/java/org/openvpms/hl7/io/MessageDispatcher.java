@@ -14,32 +14,19 @@
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.hl7.impl;
+package org.openvpms.hl7.io;
 
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
-import org.openvpms.hl7.io.Connector;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.hl7.impl.MessageConfig;
 
 /**
- * Manages sending HL7 messages.
+ * Manages sending and receiving HL7 messages.
  *
  * @author Tim Anderson
  */
 public interface MessageDispatcher {
-
-    /**
-     * Adds a listener to be notified when a message is sent.
-     *
-     * @param listener the listener
-     */
-    void addListener(ConnectorManagerListener listener);
-
-    /**
-     * Removes a listener.
-     *
-     * @param listener the listener to remove
-     */
-    void removeListener(ConnectorManagerListener listener);
 
     /**
      * Queues a message to a connector.
@@ -66,5 +53,13 @@ public interface MessageDispatcher {
      * @param connector the connector
      */
     void stop(Connector connector);
+
+    /**
+     * Returns the statistics for a connector.
+     *
+     * @param connector the connector reference
+     * @return the statistics, or {@code null} if the connector doesn't exist or is inactive
+     */
+    Statistics getStatistics(IMObjectReference connector);
 
 }

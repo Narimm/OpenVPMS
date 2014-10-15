@@ -38,6 +38,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.Connectors;
+import org.openvpms.hl7.io.MessageDispatcher;
 import org.openvpms.hl7.pharmacy.Pharmacies;
 import org.openvpms.hl7.util.HL7Archetypes;
 

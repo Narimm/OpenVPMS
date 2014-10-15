@@ -26,18 +26,20 @@ import ca.uhn.hl7v2.model.v25.datatype.DTM;
 import ca.uhn.hl7v2.model.v25.segment.MSH;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import ca.uhn.hl7v2.protocol.ReceivingApplicationException;
+import ca.uhn.hl7v2.protocol.ReceivingApplicationExceptionHandler;
 import ca.uhn.hl7v2.protocol.Transportable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.hl7.io.Connector;
+import org.openvpms.hl7.io.MessageDispatcher;
+import org.openvpms.hl7.io.Statistics;
 import org.springframework.beans.factory.DisposableBean;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Deque;
 import java.util.HashMap;
@@ -56,6 +58,11 @@ import java.util.concurrent.atomic.AtomicLong;
 public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean {
 
     /**
+     * The connectors.
+     */
+    private final ConnectorsImpl connectors;
+
+    /**
      * The message header populator.
      */
     private final HeaderPopulator populator;
@@ -70,16 +77,21 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
      */
     private AtomicLong seed = new AtomicLong(0);
 
-    private List<ConnectorManagerListener> listeners
-            = Collections.synchronizedList(new ArrayList<ConnectorManagerListener>());
-
     private final Map<IMObjectReference, Queue> queueMap = new HashMap<IMObjectReference, Queue>();
+
+    private final Map<IMObjectReference, Receiver> receiverMap = new HashMap<IMObjectReference, Receiver>();
 
     private final Map<Integer, HL7Service> services = new HashMap<Integer, HL7Service>();
 
     private final ExecutorService executor;
 
+    /**
+     * Listener for connector updates.
+     */
+    private final ConnectorsImpl.Listener listener;
+
     private volatile boolean shutdown = false;
+
 
     /**
      * The logger.
@@ -88,31 +100,26 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
 
     /**
      * Constructs a {@link MessageDispatcherImpl}.
+     *
+     * @param connectors the connectors
      */
-    public MessageDispatcherImpl() {
+    public MessageDispatcherImpl(ConnectorsImpl connectors) {
+        this.connectors = connectors;
         populator = new HeaderPopulator();
         messageContext = HapiContextFactory.create();
         executor = Executors.newSingleThreadExecutor();
-    }
+        listener = new ConnectorsImpl.Listener() {
+            @Override
+            public void added(Connector connector) {
+                update(connector);
+            }
 
-    /**
-     * Adds a listener to be notified when a message is sent.
-     *
-     * @param listener the listener
-     */
-    @Override
-    public void addListener(ConnectorManagerListener listener) {
-        listeners.add(listener);
-    }
-
-    /**
-     * Removes a listener.
-     *
-     * @param listener the listener to remove
-     */
-    @Override
-    public void removeListener(ConnectorManagerListener listener) {
-        listeners.remove(listener);
+            @Override
+            public void removed(Connector connector) {
+                remove(connector);
+            }
+        };
+        connectors.addListener(listener);
     }
 
     /**
@@ -148,12 +155,12 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
      * <p/>
      * Only one application can be registered to handle messages.
      *
-     * @param connector the connector
-     * @param receiver  the receiver
+     * @param connector   the connector
+     * @param application the receiving application
      * @throws IllegalStateException if the connector is registered
      */
     @Override
-    public void listen(Connector connector, ReceivingApplication receiver) throws InterruptedException {
+    public void listen(Connector connector, ReceivingApplication application) throws InterruptedException {
         if (connector instanceof MLLPReceiver) {
             int port = ((MLLPReceiver) connector).getPort();
             HL7Service service;
@@ -165,11 +172,20 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
                     throw new IllegalStateException("Already receiving requests on port " + port);
                 }
             }
-            service.registerApplication(new Receiver(receiver, connector));
+            Receiver receiver = new Receiver(application, connector);
+            service.registerApplication(receiver);
+            service.setExceptionHandler(receiver);
             service.startAndWait();
+            boolean added = false;
             synchronized (services) {
                 if (service.isRunning()) {
                     services.put(port, service);
+                    added = true;
+                }
+            }
+            if (added) {
+                synchronized (receiverMap) {
+                    receiverMap.put(connector.getReference(), receiver);
                 }
             }
         }
@@ -183,15 +199,39 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
     @Override
     public void stop(Connector connector) {
         if (connector instanceof MLLPReceiver) {
+            log.info("Stopping listening to connections for " + connector);
             int port = ((MLLPReceiver) connector).getPort();
+            HL7Service service;
             synchronized (services) {
-                HL7Service service = services.get(port);
-                if (service != null) {
-                    service.stopAndWait();
-                }
-                services.remove(port);
+                service = services.remove(port);
+            }
+            synchronized (receiverMap) {
+                receiverMap.remove(connector.getReference());
+            }
+            if (service != null) {
+                service.stopAndWait();
             }
         }
+    }
+
+    /**
+     * Returns the statistics for a connector.
+     *
+     * @param connector the connector reference
+     * @return the statistics, or {@code null} if the connector doesn't exist or is inactive
+     */
+    @Override
+    public Statistics getStatistics(IMObjectReference connector) {
+        Statistics statistics;
+        synchronized (queueMap) {
+            statistics = queueMap.get(connector);
+        }
+        if (statistics == null) {
+            synchronized (receiverMap) {
+                statistics = receiverMap.get(connector);
+            }
+        }
+        return statistics;
     }
 
     /**
@@ -211,7 +251,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
                 executor.shutdownNow(); // Cancel currently executing tasks
                 // Wait a while for tasks to respond to being cancelled
                 if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
-                    System.err.println("Pool did not terminate");
+                    log.error("Pool did not terminate");
                 }
             }
         } catch (InterruptedException ie) {
@@ -225,6 +265,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
                 service.stop();
             }
         }
+        connectors.removeListener(listener);
     }
 
     protected Date getTimestamp() {
@@ -255,8 +296,6 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
             if (queue == null) {
                 queue = new Queue(sender);
                 queueMap.put(sender.getReference(), queue);
-            } else {
-                queue.setConnector(sender);
             }
         }
 
@@ -315,40 +354,6 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
     }
 
     /**
-     * Sends the first message in a queue, if any are present.
-     *
-     * @param queue the queue
-     * @return {@code true} if there was a message
-     */
-    private boolean sendFirst(Queue queue) {
-        boolean processed = false;
-        String queued = queue.peekFirst();
-        if (queued != null) {
-            processed = true;
-            Message message = null;
-            try {
-                message = messageContext.getPipeParser().parse(queued);
-            } catch (HL7Exception exception) {
-                // TODO - need to queue these to an error queue
-                exception.printStackTrace();
-                queue.processed();
-            }
-            if (message != null) {
-                try {
-                    Message response = send(message, queue.getConnector());
-                    queue.processed();
-                    notifyAll(message, response);
-                } catch (Throwable exception) {
-                    // failed to send the message, so don't queue for another 30 seconds
-                    queue.setWaitUntil(System.currentTimeMillis() + 30 * 1000);
-                    exception.printStackTrace();
-                }
-            }
-        }
-        return processed;
-    }
-
-    /**
      * Sends a message, and returns the response.
      *
      * @param message the message to send
@@ -389,11 +394,91 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
         log.debug(prefix + ": " + formatted);
     }
 
-    private void notifyAll(Message message, Message response) {
-        for (ConnectorManagerListener listener : listeners.toArray(new ConnectorManagerListener[listeners.size()])) {
-            listener.sent(message, response);
+    /**
+     * Sends the first message in a queue, if any are present.
+     *
+     * @param queue the queue
+     * @return {@code true} if there was a message
+     */
+    private boolean sendFirst(Queue queue) {
+        boolean processed = false;
+        String queued = queue.peekFirst();
+        MLLPSender connector = queue.getConnector();
+        if (queued != null && connector != null) {
+            processed = true;
+            Message message = null;
+            try {
+                message = messageContext.getPipeParser().parse(queued);
+            } catch (HL7Exception exception) {
+                // TODO - need to queue these to an error queue
+                log.error("Failed to parse queued message", exception);
+                queue.processed();
+            }
+            if (message != null) {
+                try {
+                    send(message, connector);
+                    queue.processed();
+                } catch (Throwable exception) {
+                    // failed to send the message, so don't queue for another 30 seconds
+                    queue.setWaitUntil(System.currentTimeMillis() + 30 * 1000);
+                    queue.error(exception);
+                }
+            }
+        }
+        return processed;
+    }
+
+    private void update(Connector connector) {
+        if (connector instanceof MLLPSender) {
+            restartSender(connector);
+        } else if (connector instanceof MLLPReceiver) {
+            restartReceiver(connector);
         }
     }
+
+    private void restartReceiver(Connector connector) {
+        Receiver receiver;
+        synchronized (receiverMap) {
+            receiver = receiverMap.get(connector.getReference());
+        }
+        if (receiver != null) {
+            ReceivingApplication app = receiver.receiver;
+            stop(connector);
+            try {
+                listen(connector, app);
+            } catch (InterruptedException exception) {
+                log.error("Failed to update " + connector, exception);
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    private void restartSender(Connector connector) {
+        synchronized (queueMap) {
+            Queue queue = queueMap.get(connector.getReference());
+            if (queue != null) {
+                log.info("Updating " + connector);
+                queue.setConnector((MLLPSender) connector);
+                queue.setWaitUntil(-1);
+                schedule();
+            }
+        }
+    }
+
+    private void remove(Connector connector) {
+        if (connector instanceof MLLPSender) {
+            synchronized (queueMap) {
+                Queue queue = queueMap.get(connector.getReference());
+                if (queue != null) {
+                    log.info("Suspending sending messages to " + connector);
+                    queue.setConnector(null);
+                }
+            }
+        } else if (connector instanceof MLLPReceiver) {
+            stop(connector);
+        }
+    }
+
 
     /**
      * Workaround to ensure that the message header has the correct format for the message date/time.
@@ -401,13 +486,19 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
      * NOTE: this doesn't yet work if the receiver throws an exception and the nak is generated by
      * ApplicationRouterImpl.
      */
-    private static class Receiver implements ReceivingApplication {
+    private static class Receiver implements ReceivingApplication, ReceivingApplicationExceptionHandler, Statistics {
 
         private final Connector connector;
 
         private final ReceivingApplication receiver;
 
         private final MessageConfig config;
+
+        private Date lastReceived;
+
+        private Date lastError;
+
+        private String lastErrorMessage;
 
         public Receiver(ReceivingApplication receiver, Connector connector) {
             this.connector = connector;
@@ -446,6 +537,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
                     // do nothing
                 }
             }
+            processed();
             return message;
         }
 
@@ -459,15 +551,101 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
         public boolean canProcess(Message theMessage) {
             return receiver.canProcess(theMessage);
         }
+
+        /**
+         * Process an exception.
+         *
+         * @param incomingMessage  the incoming message. This is the raw message which was received from the external
+         *                         system
+         * @param incomingMetadata Any metadata that accompanies the incoming message.
+         * @param outgoingMessage  the outgoing message. The response NAK message generated by HAPI.
+         * @param e                the exception which was received
+         * @return The new outgoing message. This can be set to the value provided by HAPI in {@code outgoingMessage},
+         *         or may be replaced with another message. <b>This method may not return {@code null}</b>.
+         */
+        @Override
+        public String processException(String incomingMessage, Map<String, Object> incomingMetadata,
+                                       String outgoingMessage, Exception e) throws HL7Exception {
+            error(e.getMessage());
+            return outgoingMessage;
+        }
+
+        /**
+         * Returns the number of messages in the queue.
+         *
+         * @return {@code 0} - the receiver doesn't support queuing
+         */
+        @Override
+        public int getQueued() {
+            return 0;
+        }
+
+        /**
+         * Returns the time when a message was last successfully received or sent.
+         *
+         * @return the time when a message was last successfully sent, or {@code null} if none have been sent
+         */
+        @Override
+        public synchronized Date getProcessedTimestamp() {
+            return lastReceived;
+        }
+
+        /**
+         * Returns the time of the last failure to send a message.
+         *
+         * @return the time of the last failure, or {@code null} if the last send was successful
+         */
+        @Override
+        public synchronized Date getErrorTimestamp() {
+            return lastError;
+        }
+
+        /**
+         * Returns the last error message, if the last send was unsuccessful.
+         *
+         * @return the last error message. MAy be {@code null}
+         */
+        @Override
+        public synchronized String getErrorMessage() {
+            return lastErrorMessage;
+        }
+
+        /**
+         * Returns the connector used to send messages via this queue.
+         *
+         * @return the connector
+         */
+        @Override
+        public Connector getConnector() {
+            return connector;
+        }
+
+        private synchronized void processed() {
+            lastReceived = new Date();
+            lastError = null;
+            lastErrorMessage = null;
+        }
+
+        private synchronized void error(String message) {
+            lastError = new Date();
+            lastErrorMessage = message;
+        }
+
     }
 
-    private static class Queue {
+    private static class Queue implements Statistics {
 
         private Deque<String> queue = new ArrayDeque<String>();
+
         private MLLPSender connector;
 
-        private long waitUntil = -1;
+        private Date lastSent;
 
+        private Date lastError;
+
+        private String lastErrorMessage;
+
+        private long waitUntil = -1;
 
         public Queue(MLLPSender connector) {
             this.connector = connector;
@@ -482,7 +660,11 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
         }
 
         public synchronized void processed() {
-            queue.pollFirst();
+            if (queue.pollFirst() != null) {
+                lastSent = new Date();
+                lastError = null;
+                lastErrorMessage = null;
+            }
             waitUntil = -1;
         }
 
@@ -494,12 +676,64 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
             return connector;
         }
 
+        public synchronized boolean isActive() {
+            return connector != null;
+        }
+
         public synchronized void setWaitUntil(long millis) {
             this.waitUntil = millis;
         }
 
         public synchronized long getWaitUntil() {
             return waitUntil;
+        }
+
+        public synchronized void error(Throwable exception) {
+            lastError = new Date();
+            lastErrorMessage = exception.getMessage();
+        }
+
+        /**
+         * Returns the number of messages in the queue.
+         *
+         * @return the number of messages
+         */
+        public synchronized int getQueued() {
+            return queue.size();
+        }
+
+        /**
+         * Returns the time of the last processed message.
+         * <p/>
+         * For senders, this indicates the time when a message was last sent, and an acknowledgment received.
+         * <p/>
+         * For receivers, this indicates the time when a message was last received and processed.
+         *
+         * @return the time when a message was last processed, or {@code null} if none have been processed
+         */
+        @Override
+        public synchronized Date getProcessedTimestamp() {
+            return lastSent;
+        }
+
+        /**
+         * Returns the time of the last error.
+         *
+         * @return the time of the last error, or {@code null} if the last message was not successfully processed
+         */
+        @Override
+        public synchronized Date getErrorTimestamp() {
+            return lastError;
+        }
+
+        /**
+         * Returns the error message of the last error.
+         *
+         * @return the last error message. May be {@code null}
+         */
+        @Override
+        public synchronized String getErrorMessage() {
+            return lastErrorMessage;
         }
 
     }
