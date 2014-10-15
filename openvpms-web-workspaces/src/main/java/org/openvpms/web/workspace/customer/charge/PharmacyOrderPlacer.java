@@ -34,6 +34,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
+import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.hl7.pharmacy.Pharmacies;
 import org.openvpms.hl7.pharmacy.PharmacyOrderService;
 import org.openvpms.hl7.util.HL7Archetypes;
@@ -45,8 +46,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Places orders with the {@link PharmacyOrderService}, if a product is dispensed via a pharmacy.
@@ -91,6 +94,11 @@ public class PharmacyOrderPlacer {
     private final PatientContextFactory factory;
 
     /**
+     * The patient information service, used to send updates when ordering when a patient isn't checked in.
+     */
+    private final PatientInformationService informationService;
+
+    /**
      * Medical record rules, used to retrieve events.
      */
     private final MedicalRecordRules rules;
@@ -99,22 +107,25 @@ public class PharmacyOrderPlacer {
     /**
      * Constructs an {@link PharmacyOrderPlacer}.
      *
-     * @param customer   the customer
-     * @param location   the location
-     * @param cache      the object cache
-     * @param service    the pharmacy order service
-     * @param pharmacies the pharmacies
-     * @param factory    the patient context factory
-     * @param rules      the medical record rules
+     * @param customer           the customer
+     * @param location           the location
+     * @param cache              the object cache
+     * @param service            the pharmacy order service
+     * @param pharmacies         the pharmacies
+     * @param factory            the patient context factory
+     * @param informationService the patient information service
+     * @param rules              the medical record rules
      */
     public PharmacyOrderPlacer(Party customer, Party location, IMObjectCache cache, PharmacyOrderService service,
-                               Pharmacies pharmacies, PatientContextFactory factory, MedicalRecordRules rules) {
+                               Pharmacies pharmacies, PatientContextFactory factory,
+                               PatientInformationService informationService, MedicalRecordRules rules) {
         this.customer = customer;
         this.location = location;
         this.cache = cache;
         this.service = service;
         this.pharmacies = pharmacies;
         this.factory = factory;
+        this.informationService = informationService;
         this.rules = rules;
     }
 
@@ -151,6 +162,7 @@ public class PharmacyOrderPlacer {
      */
     public void order(List<Act> items, PatientHistoryChanges changes) {
         List<IMObjectReference> ids = new ArrayList<IMObjectReference>(orders.keySet());
+        Set<Party> patients = new HashSet<Party>();
         for (Act act : items) {
             IMObjectReference id = act.getObjectReference();
             ids.remove(id);
@@ -159,23 +171,23 @@ public class PharmacyOrderPlacer {
             if (order != null) {
                 if (existing != null) {
                     if (needsCancel(existing, order)) {
-                        cancelOrder(existing, changes);
-                        createOrder(order, changes);
+                        cancelOrder(existing, changes, patients);
+                        createOrder(order, changes, patients);
                     } else if (needsUpdate(existing, order)) {
-                        updateOrder(changes, order);
+                        updateOrder(changes, order, patients);
                     }
                 } else {
-                    createOrder(order, changes);
+                    createOrder(order, changes, patients);
                 }
                 orders.put(id, order);
             } else if (existing != null) {
                 // new product is not dispensed via a pharmacy
-                cancelOrder(existing, changes);
+                cancelOrder(existing, changes, patients);
             }
         }
         for (IMObjectReference id : ids) {
             Order existing = orders.remove(id);
-            cancelOrder(existing, changes);
+            cancelOrder(existing, changes, patients);
         }
     }
 
@@ -257,13 +269,15 @@ public class PharmacyOrderPlacer {
     /**
      * Creates an order.
      *
-     * @param order   the order
-     * @param changes the changes
+     * @param order    the order
+     * @param changes  the changes
+     * @param patients tracks patients that have had notifications sent
      */
-    private void createOrder(Order order, PatientHistoryChanges changes) {
-        PatientContext patientContext = getPatientContext(order, changes);
-        if (patientContext != null) {
-            service.createOrder(patientContext, order.getProduct(), order.getQuantity(), order.getId(),
+    private void createOrder(Order order, PatientHistoryChanges changes, Set<Party> patients) {
+        PatientContext context = getPatientContext(order, changes);
+        if (context != null) {
+            notifyPatientInformation(context, changes, patients);
+            service.createOrder(context, order.getProduct(), order.getQuantity(), order.getId(),
                                 order.getStartTime(), order.getPharmacy());
         }
     }
@@ -271,25 +285,58 @@ public class PharmacyOrderPlacer {
     /**
      * Updates an order.
      *
-     * @param order   the order
-     * @param changes the changes
+     * @param order    the order
+     * @param changes  the changes
+     * @param patients tracks patients that have had notifications sent
      */
-    private void updateOrder(PatientHistoryChanges changes, Order order) {
+    private void updateOrder(PatientHistoryChanges changes, Order order, Set<Party> patients) {
         PatientContext context = getPatientContext(order, changes);
-        service.updateOrder(context, order.getProduct(), order.getQuantity(), order.getId(), order.getStartTime(),
-                            order.getPharmacy());
+        if (context != null) {
+            notifyPatientInformation(context, changes, patients);
+            service.updateOrder(context, order.getProduct(), order.getQuantity(), order.getId(), order.getStartTime(),
+                                order.getPharmacy());
+        }
     }
 
     /**
      * Cancel an order.
      *
-     * @param order   the order
-     * @param changes the changes
+     * @param order    the order
+     * @param changes  the changes
+     * @param patients the patients, used to prevent duplicate patient update notifications being sent
      */
-    private void cancelOrder(Order order, PatientHistoryChanges changes) {
+    private void cancelOrder(Order order, PatientHistoryChanges changes, Set<Party> patients) {
         PatientContext context = getPatientContext(order, changes);
-        service.cancelOrder(context, order.getProduct(), order.getQuantity(), order.getId(), order.getStartTime(),
-                            order.getPharmacy());
+        if (context != null) {
+            notifyPatientInformation(context, changes, patients);
+            service.cancelOrder(context, order.getProduct(), order.getQuantity(), order.getId(), order.getStartTime(),
+                                order.getPharmacy());
+        }
+    }
+
+    /**
+     * Notifies registered listeners of patient visit information, when placing orders outside of a current visit.
+     * <p/>
+     * This is required for listeners that remove patient information when a patient is discharged.
+     * <p/>
+     * The {@code patients} variable is used to track if patient information has already been sent for a given patient,
+     * to avoid multiple notifications being sent. This isn't kept across calls to {@link #order}, so
+     * redundant notifications may be sent.
+     *
+     * @param context  the context
+     * @param changes  the patient history changes
+     * @param patients tracks patients that have had notifications sent
+     */
+    private void notifyPatientInformation(PatientContext context, PatientHistoryChanges changes, Set<Party> patients) {
+        Act visit = context.getVisit();
+        if (!patients.contains(context.getPatient())) {
+            if (changes.isNew(visit)
+                || (visit.getActivityEndTime() != null
+                    && DateRules.compareTo(visit.getActivityEndTime(), new Date()) < 0)) {
+                informationService.updated(context);
+                patients.add(context.getPatient());
+            }
+        }
     }
 
     /**

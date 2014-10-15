@@ -36,6 +36,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.hl7.patient.PatientContextFactory;
+import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.hl7.pharmacy.Pharmacies;
 import org.openvpms.hl7.pharmacy.PharmacyOrderService;
 import org.openvpms.web.component.im.act.ActHelper;
@@ -73,11 +74,6 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
      * Determines if a default item should added if no items are present.
      */
     private boolean addDefaultItem;
-
-    /**
-     * Tracks patient history changes.
-     */
-    private PatientHistoryChanges changes;
 
     /**
      * The customer notes editor.
@@ -304,6 +300,8 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
         ChargeContext chargeContext = null;
         boolean saved;
         try {
+            PatientHistoryChanges changes = null;
+
             if (getItems() instanceof ChargeItemRelationshipCollectionEditor) {
                 changes = new PatientHistoryChanges(getLayoutContext().getContext().getUser(),
                                                     getLayoutContext().getContext().getLocation(),
@@ -456,6 +454,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                                        ServiceHelper.getBean(PharmacyOrderService.class),
                                        ServiceHelper.getBean(Pharmacies.class),
                                        ServiceHelper.getBean(PatientContextFactory.class),
+                                       ServiceHelper.getBean(PatientInformationService.class),
                                        ServiceHelper.getBean(MedicalRecordRules.class));
     }
 

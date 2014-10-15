@@ -63,7 +63,7 @@ public class ReminderBrowserCRUDWindow extends VisitBrowserCRUDWindow<Act> {
         Browser<Act> browser = BrowserFactory.create(query, new DefaultLayoutContext(context, help));
         setBrowser(browser);
 
-        VisitReminderCRUDWindow window = new VisitReminderCRUDWindow(patient, context, help);
+        VisitReminderCRUDWindow window = new VisitReminderCRUDWindow(context, help);
         setWindow(window);
     }
 
