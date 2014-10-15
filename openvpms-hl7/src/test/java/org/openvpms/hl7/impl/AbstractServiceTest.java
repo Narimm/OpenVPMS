@@ -32,7 +32,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Enter description.
+ * Base class for HL7 service tests.
  *
  * @author Tim Anderson
  */
@@ -86,13 +86,6 @@ public abstract class AbstractServiceTest extends AbstractMessageTest {
         dispatcher = new TestMessageDispatcher();
         dispatcher.setTimestamp(TestHelper.getDatetime("2014-08-25 08:59:00"));
         dispatcher.setSequence(1200022);
-        dispatcher.addListener(new ConnectorManagerListener() {
-            @Override
-            public void sent(Message message, Message response) {
-                log("sent: ", message);
-                log("received: ", response);
-            }
-        });
     }
 
     /**

@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.factory;
@@ -161,8 +159,33 @@ public final class LabelFactory extends ComponentFactory {
     public static Label create(BigDecimal value, CellLayoutData layout) {
         Label label = create();
         label.setText(NumberFormatter.format(value));
+        return rightAlign(label, layout);
+    }
+
+    /**
+     * Creates a new label for a numeric value, to be right aligned in a cell.
+     *
+     * @param value  the value
+     * @param layout the layout to assign the label
+     * @return a new label
+     */
+    public static Label create(long value, CellLayoutData layout) {
+        Label label = create();
+        label.setText(NumberFormatter.format(value));
+        return rightAlign(label, layout);
+    }
+
+    /**
+     * Helper to right-align a label.
+     *
+     * @param label  the label to align
+     * @param layout the layout to assign the label
+     * @return the label
+     */
+    private static Label rightAlign(Label label, CellLayoutData layout) {
         layout.setAlignment(new Alignment(Alignment.RIGHT, Alignment.DEFAULT));
         label.setLayoutData(layout);
         return label;
     }
+
 }

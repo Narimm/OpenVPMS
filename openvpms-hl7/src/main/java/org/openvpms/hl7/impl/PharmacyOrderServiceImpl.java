@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.hl7.io.Connector;
+import org.openvpms.hl7.io.MessageDispatcher;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.pharmacy.Pharmacies;
 import org.openvpms.hl7.pharmacy.PharmacyOrderService;

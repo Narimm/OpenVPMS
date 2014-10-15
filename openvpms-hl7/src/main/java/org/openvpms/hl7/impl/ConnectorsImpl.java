@@ -24,7 +24,9 @@ import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.util.HL7Archetypes;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,10 +37,34 @@ import java.util.Map;
 public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> implements Connectors {
 
     /**
+     * Listener for connector events.
+     */
+    public interface Listener {
+
+        /**
+         * Invoked when a connector is added or updated.
+         *
+         * @param connector the connector
+         */
+        void added(Connector connector);
+
+        /**
+         * Invoked when a connector is removed or de-activated.
+         *
+         * @param connector the connector
+         */
+        void removed(Connector connector);
+    }
+
+    /**
      * The connectors, keyed on id.
      */
     private final Map<Long, State> connectors = new HashMap<Long, State>();
 
+    /**
+     * Listeners to notify when a connector changes.
+     */
+    private final List<Listener> listeners = new ArrayList<Listener>();
 
     /**
      * Constructs a {@link ConnectorsImpl}.
@@ -67,10 +93,32 @@ public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> impl
         } else {
             Entity object = get(reference);
             if (object != null) {
-                connector = addConnector(object);
+                connector = update(object);
             }
         }
         return connector;
+    }
+
+    /**
+     * Adds a listener to be notified of connector updates.
+     *
+     * @param listener the listener to add
+     */
+    public void addListener(Listener listener) {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    public void removeListener(Listener listener) {
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
     }
 
     /**
@@ -82,7 +130,12 @@ public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> impl
      */
     @Override
     protected void addObject(Entity object) {
-        addConnector(object);
+        Connector connector = update(object);
+        if (connector != null) {
+            for (Listener listener : getListeners()) {
+                listener.added(connector);
+            }
+        }
     }
 
     /**
@@ -92,12 +145,37 @@ public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> impl
      */
     @Override
     protected void removeObject(Entity object) {
+        State state;
         synchronized (connectors) {
-            connectors.remove(object.getId());
+            state = connectors.remove(object.getId());
+        }
+        if (state != null) {
+            for (Listener listener : getListeners()) {
+                listener.removed(state.connector);
+            }
         }
     }
 
-    private Connector addConnector(Entity object) {
+    /**
+     * Returns the listeners.
+     *
+     * @return the listeners
+     */
+    protected Listener[] getListeners() {
+        Listener[] result;
+        synchronized (listeners) {
+            result = listeners.toArray(new Listener[listeners.size()]);
+        }
+        return result;
+    }
+
+    /**
+     * Updates a connector.
+     *
+     * @param object the connector configuration
+     * @return the updated connector, or {@code null} if the connector is inactive
+     */
+    private Connector update(Entity object) {
         Connector result = null;
         if (!object.isActive()) {
             removeObject(object);

@@ -21,6 +21,7 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ChangeEvent;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.hl7.util.HL7Archetypes;
 import org.openvpms.web.component.app.Context;
@@ -31,10 +32,10 @@ import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.workspace.AbstractWorkspace;
-import org.openvpms.web.component.workspace.BrowserCRUDWindow;
 import org.openvpms.web.component.workspace.DefaultCRUDWindow;
 import org.openvpms.web.echo.event.ChangeListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.factory.TabbedPaneFactory;
 import org.openvpms.web.echo.help.HelpContext;
@@ -54,6 +55,11 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
      * Manages services and connections tabs.
      */
     private TabbedPane pane;
+
+    /**
+     * The tab pane model.
+     */
+    private ObjectTabPaneModel<TabComponent> model;
 
     /**
      * The container for the tabbed pane and the buttons.
@@ -94,6 +100,17 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
     }
 
     /**
+     * Invoked when the workspace is displayed.
+     */
+    @Override
+    public void show() {
+        TabComponent tab = model.getObject(pane.getSelectedIndex());
+        if (tab != null) {
+            tab.show();
+        }
+    }
+
+    /**
      * Lays out the component.
      * <p/>
      * This renders a heading using {@link #createHeading}.
@@ -106,8 +123,7 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
         container = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP, STYLE);
         Component heading = super.doLayout();
         Column container = ColumnFactory.create(Styles.INSET_Y);
-        final ObjectTabPaneModel<BrowserCRUDWindow<IMObject>> model
-                = new ObjectTabPaneModel<BrowserCRUDWindow<IMObject>>(container);
+        model = new ObjectTabPaneModel<TabComponent>(container);
         addTabs(model);
         pane = TabbedPaneFactory.create(model);
         pane.getSelectionModel().addChangeListener(new ChangeListener() {
@@ -128,20 +144,27 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
      *
      * @param tab the tab
      */
-    private void onTabSelected(BrowserCRUDWindow<IMObject> tab) {
+    private void onTabSelected(TabComponent tab) {
         if (tab != null) {
             container.removeAll();
-            container.add(tab.getWindow().getComponent());
+            Component buttons = tab.getButtons();
+            if (buttons != null) {
+                container.add(buttons);
+            } else {
+                container.add(LabelFactory.create());
+            }
             container.add(pane);
+            tab.show();
         }
     }
 
-    private void addTabs(ObjectTabPaneModel<BrowserCRUDWindow<IMObject>> model) {
+    private void addTabs(ObjectTabPaneModel<TabComponent> model) {
         addServiceBrowser(model);
         addConnectionBrowser(model);
+        addStatusBrowser(model);
     }
 
-    private void addServiceBrowser(ObjectTabPaneModel<BrowserCRUDWindow<IMObject>> model) {
+    private void addServiceBrowser(ObjectTabPaneModel<TabComponent> model) {
         Context context = getContext();
         HelpContext help = getHelpContext();
         Query<IMObject> query = QueryFactory.create(HL7Archetypes.SERVICES, context);
@@ -149,11 +172,10 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
         Archetypes<IMObject> archetypes = Archetypes.create(HL7Archetypes.SERVICES, IMObject.class,
                                                             Messages.get("admin.hl7.service.type"));
         DefaultCRUDWindow<IMObject> window = new DefaultCRUDWindow<IMObject>(archetypes, context, help);
-        BrowserCRUDWindow<IMObject> tab = new BrowserCRUDWindow<IMObject>(browser, window);
-        addTab("admin.hl7.services", model, tab);
+        addTab("admin.hl7.services", model, new HL7BrowserCRUDWindow<IMObject>(browser, window));
     }
 
-    private void addConnectionBrowser(ObjectTabPaneModel<BrowserCRUDWindow<IMObject>> model) {
+    private void addConnectionBrowser(ObjectTabPaneModel<TabComponent> model) {
         Context context = getContext();
         HelpContext help = getHelpContext();
         Query<IMObject> query = QueryFactory.create(HL7Archetypes.CONNECTIONS, context);
@@ -161,7 +183,15 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
         Archetypes<IMObject> archetypes = Archetypes.create(HL7Archetypes.CONNECTIONS, IMObject.class,
                                                             Messages.get("admin.hl7.connection.type"));
         DefaultCRUDWindow<IMObject> window = new DefaultCRUDWindow<IMObject>(archetypes, context, help);
-        addTab("admin.hl7.connections", model, new BrowserCRUDWindow<IMObject>(browser, window));
+        addTab("admin.hl7.connections", model, new HL7BrowserCRUDWindow<IMObject>(browser, window));
+    }
+
+    private void addStatusBrowser(ObjectTabPaneModel<TabComponent> model) {
+        Context context = getContext();
+        HelpContext help = getHelpContext();
+        Query<Entity> query = QueryFactory.create(HL7Archetypes.CONNECTIONS, context);
+        Browser<Entity> browser = new HL7StatusBrowser(query, new DefaultLayoutContext(context, help));
+        addTab("admin.hl7.status", model, new TabBrowserComponent<Entity>(browser));
     }
 
     /**
@@ -171,11 +201,10 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
      * @param model the tab model
      * @param tab   the component
      */
-    protected void addTab(String name, ObjectTabPaneModel<BrowserCRUDWindow<IMObject>> model,
-                          BrowserCRUDWindow<IMObject> tab) {
+    protected void addTab(String name, ObjectTabPaneModel<TabComponent> model, TabComponent tab) {
         int index = model.size();
         int shortcut = index + 1;
         String text = "&" + shortcut + " " + Messages.get(name);
-        model.addTab(tab, text, tab.getBrowser().getComponent());
+        model.addTab(tab, text, tab.getComponent());
     }
 }
