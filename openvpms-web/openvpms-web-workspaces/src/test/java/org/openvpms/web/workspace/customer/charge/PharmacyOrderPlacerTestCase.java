@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
+import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
@@ -36,8 +37,10 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.hl7.impl.PharmaciesImpl;
 import org.openvpms.hl7.io.Connectors;
+import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientEventServices;
+import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.hl7.pharmacy.Pharmacies;
 import org.openvpms.web.component.im.util.DefaultIMObjectCache;
 import org.openvpms.web.system.ServiceHelper;
@@ -45,11 +48,14 @@ import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelper.checkOrder;
 import static org.openvpms.web.workspace.customer.charge.TestPharmacyOrderService.Order.Type.CANCEL;
 import static org.openvpms.web.workspace.customer.charge.TestPharmacyOrderService.Order.Type.CREATE;
@@ -93,6 +99,11 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
     private PharmacyOrderPlacer placer;
 
     /**
+     * The patient information service.
+     */
+    private PatientInformationService informationService;
+
+    /**
      * Sets up the test case.
      */
     @Override
@@ -109,8 +120,9 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
                                                    Mockito.mock(PatientEventServices.class));
         PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
         MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
+        informationService = Mockito.mock(PatientInformationService.class);
         placer = new PharmacyOrderPlacer(customer, location, new DefaultIMObjectCache(), service, pharmacies, factory,
-                                         rules);
+                                         informationService, rules);
     }
 
     /**
@@ -136,6 +148,9 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
                    clinician, pharmacy);
         checkOrder(orders.get(1), CREATE, patient, product2, TEN, item2.getId(), item2.getActivityStartTime(),
                    clinician, pharmacy);
+
+        // patient information updates should not be sent
+        verify(informationService, times(0)).updated(Mockito.<PatientContext>any());
     }
 
     /**
@@ -159,6 +174,9 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
         assertEquals(1, orders.size());
         checkOrder(orders.get(0), UPDATE, patient, product, TEN, item.getId(),
                    item.getActivityStartTime(), clinician, pharmacy);
+
+        // patient information updates should not be sent
+        verify(informationService, times(0)).updated(Mockito.<PatientContext>any());
     }
 
     /**
@@ -190,6 +208,9 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
                    item.getActivityStartTime(), clinician, pharmacy);
         checkOrder(orders.get(1), CREATE, patient2, product, ONE, item.getId(),
                    item.getActivityStartTime(), clinician, pharmacy);
+
+        // patient information updates should not be sent
+        verify(informationService, times(0)).updated(Mockito.<PatientContext>any());
     }
 
     /**
@@ -217,6 +238,9 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
                    item.getActivityStartTime(), clinician, pharmacy);
         checkOrder(orders.get(1), CREATE, patient, product2, ONE, item.getId(),
                    item.getActivityStartTime(), clinician, pharmacy);
+
+        // patient information updates should not be sent
+        verify(informationService, times(0)).updated(Mockito.<PatientContext>any());
     }
 
     /**
@@ -242,6 +266,9 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
         assertEquals(1, orders.size());
         checkOrder(orders.get(0), CANCEL, patient, product1, ONE, item.getId(),
                    item.getActivityStartTime(), clinician, pharmacy);
+
+        // patient information updates should not be sent
+        verify(informationService, times(0)).updated(Mockito.<PatientContext>any());
     }
 
     /**
@@ -272,6 +299,9 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
                    item.getActivityStartTime(), clinician, pharmacy);
         checkOrder(orders.get(1), CREATE, patient, product2, ONE, item.getId(),
                    item.getActivityStartTime(), clinician, pharmacy2);
+
+        // patient information updates should not be sent
+        verify(informationService, times(0)).updated(Mockito.<PatientContext>any());
     }
 
     /**
@@ -298,6 +328,9 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
         assertEquals(1, orders.size());
         checkOrder(orders.get(0), UPDATE, patient, product, ONE, item.getId(),
                    item.getActivityStartTime(), clinician2, pharmacy);
+
+        // patient information updates should not be sent
+        verify(informationService, times(0)).updated(Mockito.<PatientContext>any());
     }
 
     /**
@@ -322,6 +355,9 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
                    item2.getActivityStartTime(), clinician, pharmacy);
         checkOrder(orders.get(1), CANCEL, patient, product1, ONE, item1.getId(),
                    item1.getActivityStartTime(), clinician, pharmacy);
+
+        // patient information updates should not be sent
+        verify(informationService, times(0)).updated(Mockito.<PatientContext>any());
     }
 
     /**
@@ -347,6 +383,59 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
                    clinician, pharmacy);
         checkOrder(orders.get(1), CANCEL, patient, product2, TEN, item2.getId(), item2.getActivityStartTime(),
                    clinician, pharmacy);
+
+        // patient information updates should not be sent
+        verify(informationService, times(0)).updated(Mockito.<PatientContext>any());
+    }
+
+    /**
+     * Verifies that {@link PatientInformationService#updated(PatientContext)} is invoked if a visit is created
+     * during charging.
+     */
+    @Test
+    public void testPatientInformationNotificationForNewEvent() {
+        Product product = createProduct(pharmacy);
+        FinancialAct item = createItem(product, ONE);
+        PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
+        ChargeItemEventLinker linker = new ChargeItemEventLinker(getArchetypeService());
+        linker.prepare(Arrays.asList(item), changes);
+        changes.save();
+        placer.order(Arrays.asList((Act) item), changes);
+
+        List<TestPharmacyOrderService.Order> orders = service.getOrders();
+        assertEquals(1, orders.size());
+        checkOrder(orders.get(0), CREATE, patient, product, ONE, item.getId(), item.getActivityStartTime(),
+                   clinician, pharmacy);
+
+        // patient information updates should not be sent
+        verify(informationService, times(1)).updated(Mockito.<PatientContext>any());
+    }
+
+    /**
+     * Verifies that {@link PatientInformationService#updated(PatientContext)} is invoked if a completed visit is linked
+     * to during charging.
+     */
+    @Test
+    public void testPatientInformationNotificationForCompletedEvent() {
+        Product product = createProduct(pharmacy);
+        Act event = PatientTestHelper.createEvent(patient, clinician);
+        event.setActivityEndTime(new Date());
+        save(event);
+
+        FinancialAct item = createItem(product, ONE);
+        PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
+        ChargeItemEventLinker linker = new ChargeItemEventLinker(getArchetypeService());
+        linker.prepare(Arrays.asList(item), changes);
+        changes.save();
+        placer.order(Arrays.asList((Act) item), changes);
+
+        List<TestPharmacyOrderService.Order> orders = service.getOrders();
+        assertEquals(1, orders.size());
+        checkOrder(orders.get(0), CREATE, patient, product, ONE, item.getId(), item.getActivityStartTime(),
+                   clinician, pharmacy);
+
+        // patient information updates should not be sent
+        verify(informationService, times(1)).updated(Mockito.<PatientContext>any());
     }
 
     /**

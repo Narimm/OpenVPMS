@@ -36,12 +36,14 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.EntityQuery;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
+import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.LocalTask;
 import org.openvpms.web.component.workflow.ReloadTask;
 import org.openvpms.web.component.workflow.SelectIMObjectTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.TaskContext;
+import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.TaskProperties;
 import org.openvpms.web.component.workflow.UpdateIMObjectTask;
 import org.openvpms.web.component.workflow.WorkflowImpl;
@@ -211,8 +213,22 @@ public class CheckInWorkflow extends WorkflowImpl {
         addTask(new GetInvoiceTask());
         addTask(new ConditionalCreateTask(CustomerAccountArchetypes.INVOICE));
 
+        // need to generate any admission messages prior to invoice editing
+        addTask(new AdmissionTask());
+
         // edit the act.patientClinicalEvent in a local context, propagating the patient and customer on completion
-        addTask(new LocalTask(createEditVisitTask(), Context.PATIENT_SHORTNAME, Context.CUSTOMER_SHORTNAME));
+        // If the task is cancelled, generate HL7 cancel admission messages
+        EditVisitTask editVisitTask = createEditVisitTask();
+        editVisitTask.addTaskListener(new DefaultTaskListener() {
+            @Override
+            public void taskEvent(TaskEvent event) {
+                if (event.getType() == TaskEvent.Type.CANCELLED) {
+                    CancelAdmissionTask task = new CancelAdmissionTask();
+                    task.execute(getContext());
+                }
+            }
+        });
+        addTask(new LocalTask(editVisitTask, Context.PATIENT_SHORTNAME, Context.CUSTOMER_SHORTNAME));
 
         // Reload the task to refresh the context with any edits made
         addTask(new ReloadTask(PatientArchetypes.CLINICAL_EVENT));
@@ -224,7 +240,6 @@ public class CheckInWorkflow extends WorkflowImpl {
             addTask(new UpdateAppointmentTask(appointment, arrivalTime, appProps));
         }
 
-        addTask(new AdmissionTask());
         // add a task to update the global context at the end of the workflow
         addTask(new SynchronousTask() {
             public void execute(TaskContext context) {
@@ -399,6 +414,24 @@ public class CheckInWorkflow extends WorkflowImpl {
                                                       context.getLocation(), context.getClinician());
             PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
             service.admitted(pc);
+        }
+    }
+
+    private class CancelAdmissionTask extends SynchronousTask {
+
+        /**
+         * Executes the task.
+         *
+         * @throws OpenVPMSException for any error
+         */
+        @Override
+        public void execute(TaskContext context) {
+            PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
+            Act visit = (Act) context.getObject(PatientArchetypes.CLINICAL_EVENT);
+            PatientContext pc = factory.createContext(context.getPatient(), context.getCustomer(), visit,
+                                                      context.getLocation(), context.getClinician());
+            PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
+            service.admissionCancelled(pc);
         }
     }
 }
