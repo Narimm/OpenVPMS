@@ -384,7 +384,8 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
          * @throws HL7Exception                  if there is a problem with the message
          */
         @Override
-        public Message processMessage(Message theMessage, Map<String, Object> theMetadata) throws ReceivingApplicationException, HL7Exception {
+        public Message processMessage(Message theMessage, Map<String, Object> theMetadata)
+                throws ReceivingApplicationException, HL7Exception {
             Map<String, Object> copy = new HashMap<String, Object>(theMetadata);
             copy.put("pharmacy", reference);
             return receiver.processMessage(theMessage, copy);

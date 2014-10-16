@@ -199,7 +199,6 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
     @Override
     public void stop(Connector connector) {
         if (connector instanceof MLLPReceiver) {
-            log.info("Stopping listening to connections for " + connector);
             int port = ((MLLPReceiver) connector).getPort();
             HL7Service service;
             synchronized (services) {
@@ -209,6 +208,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean 
                 receiverMap.remove(connector.getReference());
             }
             if (service != null) {
+                log.info("Stopping listener for " + connector);
                 service.stopAndWait();
             }
         }
