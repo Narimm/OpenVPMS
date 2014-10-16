@@ -333,7 +333,9 @@
         <constructor-arg ref="hl7PatientEventServices"/>
     </bean>
 
-    <bean name="hl7messageDispatcher" class="org.openvpms.hl7.impl.MessageDispatcherImpl"/>
+    <bean id="hl7messageDispatcher" class="org.openvpms.hl7.impl.MessageDispatcherImpl">
+        <constructor-arg ref="hl7Connectors"/>
+    </bean>
 
     <bean class="org.openvpms.hl7.patient.PatientContextFactory">
         <constructor-arg ref="patientRules"/>
