@@ -18,25 +18,33 @@ package org.openvpms.report.jasper;
 
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRExporter;
-import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JRExpression;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.ReportContext;
 import net.sf.jasperreports.engine.export.JRCsvExporter;
-import net.sf.jasperreports.engine.export.JRCsvExporterParameter;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
-import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
 import net.sf.jasperreports.engine.export.JRRtfExporter;
 import net.sf.jasperreports.engine.export.JRTextExporter;
 import net.sf.jasperreports.engine.export.JRXlsExporter;
-import net.sf.jasperreports.engine.export.JRXlsExporterParameter;
 import net.sf.jasperreports.engine.export.JRXmlExporter;
 import net.sf.jasperreports.engine.fill.JREvaluator;
+import net.sf.jasperreports.export.Exporter;
+import net.sf.jasperreports.export.ExporterConfiguration;
+import net.sf.jasperreports.export.ExporterInput;
+import net.sf.jasperreports.export.OutputStreamExporterOutput;
+import net.sf.jasperreports.export.ReportExportConfiguration;
+import net.sf.jasperreports.export.SimpleCsvExporterConfiguration;
+import net.sf.jasperreports.export.SimpleExporterInput;
+import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
+import net.sf.jasperreports.export.SimplePrintServiceExporterConfiguration;
+import net.sf.jasperreports.export.SimpleWriterExporterOutput;
+import net.sf.jasperreports.export.SimpleXlsReportConfiguration;
+import net.sf.jasperreports.export.WriterExporterOutput;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
@@ -132,6 +140,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @return the parameter types
      * @throws ReportException if a parameter expression can't be evaluated
      */
+    @Override
     public Set<ParameterType> getParameterTypes() {
         Set<ParameterType> types = new LinkedHashSet<ParameterType>();
         JasperReport report = getReport();
@@ -160,6 +169,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @param name the parameter name
      * @return {@code true} if the report accepts the parameter, otherwise {@code false}
      */
+    @Override
     public boolean hasParameter(String name) {
         for (JRParameter p : getReport().getParameters()) {
             if (ObjectUtils.equals(p.getName(), name)) {
@@ -176,6 +186,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @Override
     public String getDefaultMimeType() {
         return DocFormats.PDF_TYPE;
     }
@@ -187,6 +198,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @Override
     public String[] getMimeTypes() {
         return MIME_TYPES;
     }
@@ -201,6 +213,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @Override
     public Document generate(Map<String, Object> parameters) {
         return generate(parameters, getDefaultMimeType());
     }
@@ -214,6 +227,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @Override
     public Document generate(Map<String, Object> parameters, String mimeType) {
         Document document;
         Map<String, Object> properties = getDefaultParameters();
@@ -242,6 +256,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @Override
     public Document generate(Iterator<T> objects) {
         return generate(objects, getDefaultMimeType());
     }
@@ -255,6 +270,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @Override
     public Document generate(Iterator<T> objects, String mimeType) {
         Map<String, Object> empty = Collections.emptyMap();
         return generate(objects, empty, mimeType);
@@ -271,6 +287,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @Override
     public Document generate(Iterator<T> objects, Map<String, Object> parameters) {
         return generate(objects, parameters, getDefaultMimeType());
     }
@@ -285,6 +302,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @Override
     public Document generate(Iterator<T> objects, Map<String, Object> parameters, String mimeType) {
         Document document;
         try {
@@ -309,6 +327,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @Override
     public void generate(Iterator<T> objects, Map<String, Object> parameters, String mimeType, OutputStream stream) {
         try {
             if (mimeType.equals(DocFormats.CSV_TYPE) || mimeType.equals(DocFormats.XLS_TYPE)) {
@@ -330,6 +349,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @Override
     public void print(Map<String, Object> parameters, PrintProperties properties) {
         Map<String, Object> params = getDefaultParameters();
         if (parameters != null) {
@@ -351,6 +371,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @Override
     public void print(Iterator<T> objects, PrintProperties properties) {
         Map<String, Object> empty = Collections.emptyMap();
         print(objects, empty, properties);
@@ -381,6 +402,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @return the report the report
      * @throws JRException for any error
      */
+    @Override
     public JasperPrint report(Iterator<T> objects) throws JRException {
         return report(objects, null);
     }
@@ -515,7 +537,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws JRException if the export fails
      */
     private void exportToPDF(JasperPrint report, OutputStream stream) throws JRException {
-        export(new JRPdfExporter(), report, stream);
+        exportStream(report, stream, new JRPdfExporter());
     }
 
     /**
@@ -526,7 +548,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws JRException if the export fails
      */
     private void exportToRTF(JasperPrint report, OutputStream stream) throws JRException {
-        export(new JRRtfExporter(), report, stream);
+        exportWriter(report, stream, new JRRtfExporter());
     }
 
     /**
@@ -537,14 +559,16 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws JRException if the export fails
      */
     private void exportToXLS(JasperPrint report, OutputStream stream) throws JRException {
-        JRExporter exporter = new JRXlsExporter();
-        exporter.setParameter(JRXlsExporterParameter.IS_DETECT_CELL_TYPE, Boolean.TRUE);
-        exporter.setParameter(JRXlsExporterParameter.IS_WHITE_PAGE_BACKGROUND, Boolean.FALSE);
-        exporter.setParameter(JRXlsExporterParameter.IGNORE_PAGE_MARGINS, Boolean.TRUE);
-        exporter.setParameter(JRXlsExporterParameter.IS_COLLAPSE_ROW_SPAN, Boolean.TRUE);
-        exporter.setParameter(JRXlsExporterParameter.IS_REMOVE_EMPTY_SPACE_BETWEEN_ROWS, Boolean.TRUE);
-        exporter.setParameter(JRXlsExporterParameter.IS_REMOVE_EMPTY_SPACE_BETWEEN_COLUMNS, Boolean.TRUE);
-        export(exporter, report, stream);
+        JRXlsExporter exporter = new JRXlsExporter();
+        SimpleXlsReportConfiguration configuration = new SimpleXlsReportConfiguration();
+        configuration.setDetectCellType(true);
+        configuration.setWhitePageBackground(false);
+        configuration.setIgnorePageMargins(true);
+        configuration.setCollapseRowSpan(true);
+        configuration.setRemoveEmptySpaceBetweenRows(true);
+        configuration.setRemoveEmptySpaceBetweenColumns(true);
+        exporter.setConfiguration(configuration);
+        exportStream(report, stream, exporter);
     }
 
     /**
@@ -555,11 +579,12 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws JRException if the export fails
      */
     private void exportToCSV(JasperPrint report, OutputStream stream) throws JRException {
-        JRExporter exporter = new JRCsvExporter();
-        exporter.setParameter(JRCsvExporterParameter.FIELD_DELIMITER, ",");
-        exporter.setParameter(JRCsvExporterParameter.RECORD_DELIMITER, "\n");
-        exporter.setParameter(JRCsvExporterParameter.IGNORE_PAGE_MARGINS, Boolean.TRUE);
-        export(exporter, report, stream);
+        JRCsvExporter exporter = new JRCsvExporter();
+        SimpleCsvExporterConfiguration configuration = new SimpleCsvExporterConfiguration();
+        configuration.setFieldDelimiter(",");
+        configuration.setRecordDelimiter("\n");
+        exporter.setConfiguration(configuration);
+        exportWriter(report, stream, exporter);
     }
 
     /**
@@ -570,7 +595,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws JRException if the export fails
      */
     private void exportToXML(JasperPrint report, OutputStream stream) throws JRException {
-        export(new JRXmlExporter(), report, stream);
+        exportWriter(report, stream, new JRXmlExporter());
     }
 
     /**
@@ -580,27 +605,45 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @param stream the stream to write to
      * @throws JRException if the export fails
      */
-    @SuppressWarnings("unchecked")
     private void exportToText(JasperPrint report, OutputStream stream, Map<String, Object> parameters)
             throws JRException {
         JRTextExporter exporter = new JRTextExporter();
-        exporter.getParameters().putAll(parameters);
-        exporter.setParameter(JRExporterParameter.CHARACTER_ENCODING, "UTF-8");
-        exporter.setParameter(JRExporterParameter.JASPER_PRINT, report);
-        export(exporter, report, stream);
+        ReportContext context = JasperReportHelper.createReportContext(parameters);
+        exporter.setReportContext(context);
+        exportWriter(report, stream, exporter);
     }
 
     /**
-     * Exports a report to a stream.
+     * Exports a report using a stream.
      *
-     * @param exporter the exporter
      * @param report   the report to export
      * @param stream   the stream to export to
+     * @param exporter the exporter
      * @throws JRException if the export fails
      */
-    private void export(JRExporter exporter, JasperPrint report, OutputStream stream) throws JRException {
-        exporter.setParameter(JRExporterParameter.JASPER_PRINT, report);
-        exporter.setParameter(JRExporterParameter.OUTPUT_STREAM, stream);
+    private void exportStream(JasperPrint report, OutputStream stream,
+                              Exporter<ExporterInput, ? extends ReportExportConfiguration,
+                                      ? extends ExporterConfiguration, OutputStreamExporterOutput> exporter)
+            throws JRException {
+        exporter.setExporterInput(new SimpleExporterInput(report));
+        exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(stream));
+        exporter.exportReport();
+    }
+
+    /**
+     * Exports a report using a writer.
+     *
+     * @param report   the report to export
+     * @param stream   the underlying stream to export to
+     * @param exporter the exporter
+     * @throws JRException if the export fails
+     */
+    private void exportWriter(JasperPrint report, OutputStream stream,
+                              Exporter<ExporterInput, ? extends ReportExportConfiguration,
+                                      ? extends ExporterConfiguration, WriterExporterOutput> exporter)
+            throws JRException {
+        exporter.setExporterInput(new SimpleExporterInput(report));
+        exporter.setExporterOutput(new SimpleWriterExporterOutput(stream));
         exporter.exportReport();
     }
 
@@ -621,8 +664,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         }
 
         JRPrintServiceExporter exporter = new JRPrintServiceExporter();
-        exporter.setParameter(JRPrintServiceExporterParameter.JASPER_PRINT, print);
-
+        exporter.setExporterInput(new SimpleExporterInput(print));
         PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
         aset.add(new Copies(properties.getCopies()));
         MediaSizeName mediaSize = properties.getMediaSize();
@@ -653,13 +695,13 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             }
             aset.add(sides);
         }
-        exporter.setParameter(JRPrintServiceExporterParameter.PRINT_REQUEST_ATTRIBUTE_SET, aset);
-
+        SimplePrintServiceExporterConfiguration printConfiguration = new SimplePrintServiceExporterConfiguration();
+        printConfiguration.setPrintRequestAttributeSet(aset);
         // set the printer name
         PrintServiceAttributeSet serviceAttributeSet = new HashPrintServiceAttributeSet();
         serviceAttributeSet.add(new PrinterName(properties.getPrinterName(), null));
-        exporter.setParameter(JRPrintServiceExporterParameter.PRINT_SERVICE_ATTRIBUTE_SET, serviceAttributeSet);
-
+        printConfiguration.setPrintServiceAttributeSet(serviceAttributeSet);
+        exporter.setConfiguration(printConfiguration);
         // print it
         exporter.exportReport();
     }
