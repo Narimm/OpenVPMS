@@ -19,7 +19,7 @@
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
               name="Debit Adjustment A5" pageWidth="421" pageHeight="595" columnWidth="361" leftMargin="30"
-              rightMargin="30" topMargin="14" bottomMargin="28">
+              rightMargin="30" topMargin="14" bottomMargin="28" uuid="4b338ba8-3212-4790-8402-a3442d123e40">
     <property name="ireport.zoom" value="1.0"/>
     <property name="ireport.x" value="0"/>
     <property name="ireport.y" value="0"/>
@@ -64,46 +64,55 @@
     <title>
         <band height="99" splitType="Stretch">
             <staticText>
-                <reportElement x="6" y="14" width="348" height="24">
+                <reportElement uuid="42f21c6e-432f-4fa9-afb6-7544b8826608" x="6" y="14" width="348" height="24">
                     <printWhenExpression><![CDATA[$P{IsEmail}.equals(Boolean.TRUE)]]></printWhenExpression>
                 </reportElement>
-                <textElement lineSpacing="Single"/>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
                 <text><![CDATA[Email Letterhead. Replace this label with the practice logo and details.]]></text>
             </staticText>
             <staticText>
-                <reportElement x="6" y="38" width="348" height="49">
+                <reportElement uuid="3587e73a-8c4c-4da4-9f8d-cd15d1346b66" x="6" y="38" width="348" height="49">
                     <printWhenExpression><![CDATA[$P{IsEmail}.equals(Boolean.TRUE)]]></printWhenExpression>
                 </reportElement>
-                <textElement lineSpacing="Single"/>
-                <text>
-                    <![CDATA[This is automatically hidden when printing. See the "Print When Expression" property for more details.]]></text>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[
+                    This is automatically hidden when printing. See the "Print When Expression" property for more details.]]></text>
             </staticText>
         </band>
     </title>
     <pageHeader>
         <band height="124" splitType="Stretch">
             <staticText>
-                <reportElement key="staticText-1" x="96" y="0" width="169" height="29"/>
+                <reportElement uuid="240f832d-0a9b-4ad6-a24f-6b351debb185" key="staticText-1" x="96" y="0" width="169"
+                               height="29"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Center" lineSpacing="Single">
+                <textElement textAlignment="Center">
                     <font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[Debit Adjustment]]></text>
             </staticText>
             <staticText>
-                <reportElement key="staticText-12" x="278" y="9" width="83" height="15"/>
-                <textElement lineSpacing="Single">
+                <reportElement uuid="5d2787fb-988e-4a30-8242-bae515974c61" key="staticText-12" x="278" y="9" width="83"
+                               height="15"/>
+                <textElement>
                     <font size="8"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[ABN: 00 000 000 000]]></text>
             </staticText>
             <staticText>
-                <reportElement key="staticText-2" x="225" y="66" width="59" height="16"/>
+                <reportElement uuid="36d1a64b-e433-40de-b62d-7ef981071ae3" key="staticText-2" x="225" y="66" width="59"
+                               height="16"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -116,7 +125,8 @@
                 <text><![CDATA[Transaction No]]></text>
             </staticText>
             <textField isBlankWhenNull="false">
-                <reportElement key="textField-1" x="51" y="50" width="167" height="18"/>
+                <reportElement uuid="cbf49ccf-e959-4381-8282-f09272b0d912" key="textField-1" x="51" y="50" width="167"
+                               height="18"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -126,10 +136,11 @@
                 <textElement verticalAlignment="Middle">
                     <font size="10"/>
                 </textElement>
-                <textFieldExpression class="java.lang.String"><![CDATA[$V{customerFullName}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$V{customerFullName}]]></textFieldExpression>
             </textField>
             <textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
-                <reportElement key="textField-2" x="51" y="66" width="167" height="45"/>
+                <reportElement uuid="bddf700c-919d-43af-9b79-95fb06d20605" key="textField-2" x="51" y="66" width="167"
+                               height="45"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -139,17 +150,17 @@
                 <textElement>
                     <font size="10"/>
                 </textElement>
-                <textFieldExpression class="java.lang.String">
-                    <![CDATA[$F{[party:getBillingAddress(.)]}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$F{[party:getBillingAddress(.)]}]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
-                <reportElement key="textField-9" x="51" y="36" width="167" height="13"/>
+                <reportElement uuid="8bfaf5e8-c76b-46bd-99d0-e5bc5aec55f3" key="textField-9" x="51" y="36" width="167"
+                               height="13"/>
                 <textElement verticalAlignment="Bottom"/>
-                <textFieldExpression class="java.lang.String">
-                    <![CDATA[$F{customer.entity.companyName}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$F{customer.entity.companyName}]]></textFieldExpression>
             </textField>
             <textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
-                <reportElement key="textField-3" x="285" y="51" width="73" height="16"/>
+                <reportElement uuid="8c7de877-a169-4a6e-98e6-3d048ba8cb16" key="textField-3" x="285" y="51" width="73"
+                               height="16"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -159,10 +170,11 @@
                 <textElement verticalAlignment="Bottom">
                     <font size="10"/>
                 </textElement>
-                <textFieldExpression class="java.util.Date"><![CDATA[$F{startTime}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$F{startTime}]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="false">
-                <reportElement key="textField" x="285" y="98" width="27" height="14"/>
+                <reportElement uuid="7d9dfe9f-26e9-4833-b4a5-8171a5035b9d" key="textField" x="285" y="98" width="27"
+                               height="14"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -172,10 +184,11 @@
                 <textElement textAlignment="Left">
                     <font size="10"/>
                 </textElement>
-                <textFieldExpression class="java.lang.String"><![CDATA[$V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$V{PAGE_NUMBER} + " of "]]></textFieldExpression>
             </textField>
             <staticText>
-                <reportElement key="staticText-5" x="225" y="98" width="59" height="14"/>
+                <reportElement uuid="02cf4080-0e0b-4d01-ad80-dc739e9186b1" key="staticText-5" x="225" y="98" width="59"
+                               height="14"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -188,7 +201,8 @@
                 <text><![CDATA[Page]]></text>
             </staticText>
             <textField isBlankWhenNull="false">
-                <reportElement key="textField-4" x="285" y="66" width="73" height="16"/>
+                <reportElement uuid="0182ddae-3886-44f2-b1d9-bd04a5a83561" key="textField-4" x="285" y="66" width="73"
+                               height="16"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -198,10 +212,11 @@
                 <textElement verticalAlignment="Middle">
                     <font size="10"/>
                 </textElement>
-                <textFieldExpression class="java.lang.Long"><![CDATA[$F{id}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$F{id}]]></textFieldExpression>
             </textField>
             <textField evaluationTime="Report" isBlankWhenNull="false">
-                <reportElement key="textField" x="312" y="98" width="44" height="14"/>
+                <reportElement uuid="a8634b50-dd91-4152-99d4-33b1115143fa" key="textField" x="312" y="98" width="44"
+                               height="14"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -211,11 +226,11 @@
                 <textElement textAlignment="Left">
                     <font size="10"/>
                 </textElement>
-                <textFieldExpression class="java.lang.String">
-                    <![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+                <textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
             </textField>
             <staticText>
-                <reportElement key="staticText-3" x="225" y="51" width="59" height="15"/>
+                <reportElement uuid="999fbb2e-7e8a-44f5-af09-4aa5db5e7207" key="staticText-3" x="225" y="51" width="59"
+                               height="15"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -228,7 +243,8 @@
                 <text><![CDATA[Date]]></text>
             </staticText>
             <staticText>
-                <reportElement key="staticText-2" x="225" y="82" width="59" height="16"/>
+                <reportElement uuid="a5f768ad-bb7f-4bc3-8fa7-4c83a067ffc0" key="staticText-2" x="225" y="82" width="59"
+                               height="16"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -241,9 +257,9 @@
                 <text><![CDATA[Reference]]></text>
             </staticText>
             <textField isBlankWhenNull="true">
-                <reportElement x="285" y="82" width="73" height="16"/>
+                <reportElement uuid="be6279ef-ac14-4e9d-bf7c-bb3b12bf5a98" x="285" y="82" width="73" height="16"/>
                 <textElement/>
-                <textFieldExpression class="java.lang.String"><![CDATA[$F{reference}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$F{reference}]]></textFieldExpression>
             </textField>
         </band>
     </pageHeader>
@@ -262,85 +278,100 @@
     <summary>
         <band height="203" splitType="Stretch">
             <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-                <reportElement key="textField-5" x="36" y="61" width="298" height="36" isRemoveLineWhenBlank="true"/>
+                <reportElement uuid="119df685-2c57-4275-b099-18ff51d2c57c" key="textField-5" x="36" y="61" width="298"
+                               height="36" isRemoveLineWhenBlank="true"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement lineSpacing="Single">
+                <textElement>
                     <font size="12"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
-                <textFieldExpression class="java.lang.String"><![CDATA[$F{notes}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$F{notes}]]></textFieldExpression>
             </textField>
             <staticText>
-                <reportElement key="staticText-6" x="169" y="35" width="0" height="0"/>
+                <reportElement uuid="ce3e947a-562e-4527-b661-34fdd0c4b246" key="staticText-6" x="169" y="35" width="0"
+                               height="0"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement lineSpacing="Single"/>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
                 <text><![CDATA[Static text]]></text>
             </staticText>
             <staticText>
-                <reportElement key="staticText-8" x="191" y="0" width="101" height="22"/>
+                <reportElement uuid="897a8fc9-e084-4e23-9e68-b0e820470467" key="staticText-8" x="191" y="0" width="101"
+                               height="22"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement lineSpacing="Single">
+                <textElement>
                     <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[ADJUSTMENT]]></text>
             </staticText>
             <textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-                <reportElement key="textField-7" x="292" y="0" width="59" height="22"/>
+                <reportElement uuid="59d4c849-5db6-4fdf-8de6-75dd1a222369" key="textField-7" x="292" y="0" width="59"
+                               height="22"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right" lineSpacing="Single">
+                <textElement textAlignment="Right">
                     <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
-                <textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{amount}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$F{amount}]]></textFieldExpression>
             </textField>
             <staticText>
-                <reportElement key="staticText-9" x="191" y="22" width="101" height="20"/>
+                <reportElement uuid="a593f5fb-5517-4457-9bd3-afb5df9d1dba" key="staticText-9" x="191" y="22" width="101"
+                               height="20"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement lineSpacing="Single">
+                <textElement>
                     <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[CURRENT BALANCE]]></text>
             </staticText>
             <textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-                <reportElement key="textField-8" x="292" y="22" width="59" height="20"/>
+                <reportElement uuid="d083bb8c-bcd3-4b63-adf1-5f1bf935d9ac" key="textField-8" x="292" y="22" width="59"
+                               height="20"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right" lineSpacing="Single">
+                <textElement textAlignment="Right">
                     <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
-                <textFieldExpression class="java.math.BigDecimal">
-                    <![CDATA[$F{[party:getAccountBalance(.)]}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$F{[party:getAccountBalance(.)]}]]></textFieldExpression>
             </textField>
             <staticText>
-                <reportElement key="staticText-10" x="36" y="61" width="0" height="5"/>
-                <textElement lineSpacing="Single"/>
+                <reportElement uuid="aeb04215-dd39-4d75-86e3-98325795b8c7" key="staticText-10" x="36" y="61" width="0"
+                               height="5"/>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
                 <text><![CDATA[Static Text]]></text>
             </staticText>
         </band>
