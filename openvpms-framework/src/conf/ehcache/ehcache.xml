@@ -107,7 +107,4 @@
     <cache name="org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
-    <cache name="org.openvpms.component.business.dao.hibernate.im.document.DocumentDOImpl"
-           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
-
 </ehcache>
