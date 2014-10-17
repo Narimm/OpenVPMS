@@ -38,7 +38,6 @@
         <return-scalar column="orderedQty" type="big_decimal"/>
         <return-scalar column="receivedQty" type="big_decimal"/>
         <return-scalar column="cancelledQty" type="big_decimal"/>
-        <return-scalar column="orderPackageSize" type="int"/>
         <![CDATA[
         select  product.entity_id as productId,
                 product.arch_short_name as productShortName,
@@ -55,8 +54,7 @@
                 listPrice.value as listPrice,
                 o.orderedQty as orderedQty,
                 o.receivedQty as receivedQty,
-                o.cancelledQty as cancelledQty,
-                o.orderPackageSize as orderPackageSize
+                o.cancelledQty as cancelledQty
         from    entities product
         join    entity_relationships productStock on product.entity_id = productStock.source_id
                     and productStock.arch_short_name = "entityRelationship.productStockLocation"
@@ -122,10 +120,9 @@
         left join (
             select  productParticipation.entity_id as product_id,
                     stockParticipation.entity_id as stock_id,
-                    sum(forderItem.quantity) as orderedQty,
-                    sum(receivedQty.value) as receivedQty,
-                    sum(cancelledQty.value) as cancelledQty,
-                    orderPackageSize.value as orderPackageSize
+		            sum(forderItem.quantity*convert(orderPackageSize.value, decimal)) as orderedQty,
+        		    sum(convert(receivedQty.value,decimal)*convert(orderPackageSize.value, decimal)) as receivedQty,
+            		sum(convert(cancelledQty.value,decimal)*convert(orderPackageSize.value, decimal)) as cancelledQty
             from    participations productParticipation
             join    acts orderItem
                         on orderItem.act_id = productParticipation.act_id

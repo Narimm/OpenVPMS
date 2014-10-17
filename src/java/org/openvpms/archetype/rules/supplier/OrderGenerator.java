@@ -69,7 +69,7 @@ class OrderGenerator {
                                                             "criticalQty", "packageSize", "packageUnits",
                                                             "reorderCode", "reorderDesc",
                                                             "nettPrice", "listPrice", "orderedQty", "receivedQty",
-                                                            "cancelledQty", "orderPackageSize");
+                                                            "cancelledQty");
 
     /**
      * The logger.
@@ -77,7 +77,7 @@ class OrderGenerator {
     private static final Log log = LogFactory.getLog(OrderGenerator.class);
 
     /**
-     * Constructs a {@code OrderGenerator}.
+     * Constructs an {@link OrderGenerator}.
      *
      * @param taxRules the tax rules
      * @param service  the service
@@ -196,12 +196,14 @@ class OrderGenerator {
         BigDecimal orderedQty = getDecimal("orderedQty", set);
         BigDecimal receivedQty = getDecimal("receivedQty", set);
         BigDecimal cancelledQty = getDecimal("cancelledQty", set);
-        int orderPackageSize = set.getInt("orderPackageSize");
-        int size = (packageSize != 0) ? packageSize : orderPackageSize;
-        if (size != 0) {
-            BigDecimal decSize = BigDecimal.valueOf(size);
-            BigDecimal onOrder = orderedQty.subtract(receivedQty).subtract(cancelledQty).multiply(decSize);
-
+        if (packageSize != 0) {
+            BigDecimal decSize = BigDecimal.valueOf(packageSize);
+            BigDecimal onOrder;
+            if (receivedQty.compareTo(orderedQty) > 0) {
+                onOrder = receivedQty;
+            } else {
+                onOrder = orderedQty.subtract(receivedQty).subtract(cancelledQty);
+            }
             BigDecimal current = quantity.add(onOrder); // the on-hand and on-order stock
             BigDecimal toOrder = ZERO;
             BigDecimal units = idealQty.subtract(current); // no. of units required to get to idealQty
@@ -220,7 +222,8 @@ class OrderGenerator {
             if (!MathRules.equals(ZERO, toOrder) && (belowIdealQuantity && current.compareTo(idealQty) <= 0
                                                      || (current.compareTo(criticalQty) <= 0))) {
                 stock = new Stock(product, stockLocation, supplier, productSupplierId, quantity, idealQty,
-                                  onOrder, toOrder, reorderCode, reorderDesc, size, packageUnits, nettPrice, listPrice);
+                                  onOrder, toOrder, reorderCode, reorderDesc, packageSize, packageUnits, nettPrice,
+                                  listPrice);
             }
         } else {
             if (log.isDebugEnabled()) {

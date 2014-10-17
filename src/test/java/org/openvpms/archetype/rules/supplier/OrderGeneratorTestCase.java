@@ -33,6 +33,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -194,6 +195,60 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
         save(er);
         stock = generator.getOrderableStock(supplier1, stockLocation, false);
         assertEquals(0, stock.size());
+    }
+
+    /**
+     * Verifies that the stock to order is calculated correctly if there is a part delivery where the received
+     * quantity is greater than that ordered.
+     */
+    @Test
+    public void testGetOrderableStockWhereReceivedQtyGreaterThanOrdered() {
+        OrderGenerator generator = new OrderGenerator(taxRules, getArchetypeService());
+        Party stockLocation = SupplierTestHelper.createStockLocation();
+        Party supplier1 = TestHelper.createSupplier();
+        Product product1 = TestHelper.createProduct();
+
+        addRelationships(product1, stockLocation, supplier1, true, 0, 200, 10);
+
+        // create a part delivered order
+        List<FinancialAct> acts = createOrder(product1, supplier1, stockLocation, 100, OrderStatus.ACCEPTED, 20, 0,
+                                              DeliveryStatus.PART);
+
+        List<Stock> stock = generator.getOrderableStock(supplier1, stockLocation, true);
+        assertEquals(1, stock.size());
+        checkStock(stock, product1, supplier1, stockLocation, 0, 80, 120);
+
+        // update received quantity to greater than ordered
+        ActBean itemBean = new ActBean(acts.get(1));
+        itemBean.setValue("receivedQuantity", 150);
+        itemBean.save();
+
+        stock = generator.getOrderableStock(supplier1, stockLocation, true);
+        assertEquals(1, stock.size());
+        checkStock(stock, product1, supplier1, stockLocation, 0, 150, 50);
+    }
+
+    /**
+     * Verifies that the package size of existing orders is taken into account when calculating stock to order.
+     */
+    @Test
+    public void testGetOrderableStockForPackageSizeChange() {
+        OrderGenerator generator = new OrderGenerator(taxRules, getArchetypeService());
+        Party stockLocation = SupplierTestHelper.createStockLocation();
+        Party supplier1 = TestHelper.createSupplier();
+        Product product1 = TestHelper.createProduct();
+
+        // create an order for 10 boxes, with a package size of 2
+        FinancialAct orderItem = createOrderItem(product1, BigDecimal.valueOf(10), 2, BigDecimal.ONE);
+        createOrder(orderItem, supplier1, stockLocation, OrderStatus.ACCEPTED, 0, 0, DeliveryStatus.PENDING);
+
+        // set the new package size to 5
+        addRelationships(product1, stockLocation, supplier1, true, 0, 200, 10, BigDecimal.valueOf(4), 5);
+
+        List<Stock> stock = generator.getOrderableStock(supplier1, stockLocation, true);
+        assertEquals(1, stock.size());
+
+        checkStock(stock, product1, supplier1, stockLocation, 0, 20, 36);
     }
 
     /**
@@ -581,23 +636,48 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
      */
     private FinancialAct createOrder(Product product, Party supplier, Party stockLocation, int quantity,
                                      String status) {
-        return createOrder(product, supplier, stockLocation, quantity, status, 0, 0, DeliveryStatus.PENDING);
+        List<FinancialAct> order = createOrder(product, supplier, stockLocation, quantity, status, 0, 0,
+                                               DeliveryStatus.PENDING);
+        return order.get(0);
     }
 
     /**
      * Creates an order.
      *
-     * @param product       the product to order
-     * @param supplier      the supplier to order from
-     * @param stockLocation the stock location for delivery to
-     * @param quantity      the order quantity
-     * @param status        the order status
+     * @param product           the product to order
+     * @param supplier          the supplier to order from
+     * @param stockLocation     the stock location for delivery to
+     * @param quantity          the order quantity
+     * @param status            the order status
+     * @param receivedQuantity  the received quantity
+     * @param cancelledQuantity the cancelled quantity
+     * @param deliveryStatus    the delivery status
      * @return a new order
      */
-    private FinancialAct createOrder(Product product, Party supplier, Party stockLocation, int quantity,
+    private List<FinancialAct> createOrder(Product product, Party supplier, Party stockLocation, int quantity,
+                                           String status, int receivedQuantity, int cancelledQuantity,
+                                           DeliveryStatus deliveryStatus) {
+        FinancialAct orderItem = createOrderItem(product, BigDecimal.valueOf(quantity), 1, BigDecimal.ONE);
+        FinancialAct order = createOrder(orderItem, supplier, stockLocation, status, receivedQuantity,
+                                         cancelledQuantity, deliveryStatus);
+        return Arrays.asList(order, orderItem);
+    }
+
+    /**
+     * Creates an order.
+     *
+     * @param orderItem         the order item
+     * @param supplier          the supplier to order from
+     * @param stockLocation     the stock location for delivery to
+     * @param status            the order status
+     * @param receivedQuantity  the received quantity
+     * @param cancelledQuantity the cancelled quantity
+     * @param deliveryStatus    the delivery status
+     * @return a new order
+     */
+    private FinancialAct createOrder(FinancialAct orderItem, Party supplier, Party stockLocation,
                                      String status, int receivedQuantity, int cancelledQuantity,
                                      DeliveryStatus deliveryStatus) {
-        FinancialAct orderItem = createOrderItem(product, BigDecimal.valueOf(quantity), 1, BigDecimal.ONE);
         ActBean itemBean = new ActBean(orderItem);
         itemBean.setValue("receivedQuantity", BigDecimal.valueOf(receivedQuantity));
         itemBean.setValue("cancelledQuantity", BigDecimal.valueOf(cancelledQuantity));
@@ -605,7 +685,6 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
         ActBean orderBean = new ActBean(order);
         order.setStatus(status);
         orderBean.setValue("deliveryStatus", deliveryStatus.toString());
-
         save(order, orderItem);
         return order;
     }
