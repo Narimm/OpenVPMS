@@ -25,8 +25,11 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
 import java.util.Iterator;
 import java.util.List;
@@ -69,6 +72,27 @@ public class UserRules {
             return iterator.next();
         }
         return null;
+    }
+
+    /**
+     * Determines if a user exists with the specified user name.
+     *
+     * @param username the user name
+     * @return {@code true} if a user exists, otherwise {@code false}
+     */
+    public boolean exists(String username) {
+        return checkExists(username, null);
+    }
+
+    /**
+     * Determines if another user exists with the specified user name.
+     *
+     * @param username the user name
+     * @param user     the user to exclude
+     * @return {@code true} if another user exists, otherwise {@code false}
+     */
+    public boolean exists(String username, User user) {
+        return checkExists(username, user);
     }
 
     /**
@@ -138,4 +162,24 @@ public class UserRules {
     public Party getDefaultLocation(User user) {
         return (Party) EntityRelationshipHelper.getDefaultTarget(user, "locations", service);
     }
+
+    /**
+     * Determines if a user exists with the specified user name.
+     *
+     * @param username the user name
+     * @param user     the user to exclude. May be {@code null}
+     * @return {@code true} if a user exists, otherwise {@code false}
+     */
+    private boolean checkExists(String username, User user) {
+        ArchetypeQuery query = new ArchetypeQuery(UserArchetypes.USER_ARCHETYPES, true, false);
+        query.add(new NodeSelectConstraint("id"));
+        query.add(new NodeConstraint("username", username));
+        if (user != null && !user.isNew()) {
+            query.add(Constraints.ne("id", user.getId()));
+        }
+        query.setMaxResults(1);
+        ObjectSetQueryIterator iterator = new ObjectSetQueryIterator(service, query);
+        return iterator.hasNext();
+    }
+
 }
