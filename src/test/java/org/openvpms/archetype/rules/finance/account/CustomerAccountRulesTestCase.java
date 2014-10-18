@@ -219,7 +219,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     public void testGetBalanceForRefundAndPayment() {
         Money amount = new Money(100);
         List<FinancialAct> refund = Arrays.asList(createRefund(amount));
-        List<FinancialAct> payment = Arrays.asList(createCreditAdjust(amount));
+        List<FinancialAct> payment = Arrays.asList(createPayment(amount));
         checkCalculateBalanceForSameAmount(refund, payment);
     }
 

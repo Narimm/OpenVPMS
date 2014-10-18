@@ -62,8 +62,7 @@ public class SupplierArchetypes {
     /**
      * Supplier order item relationship short name.
      */
-    public static final String ORDER_ITEM_RELATIONSHIP
-            = "actRelationship.supplierOrderItem";
+    public static final String ORDER_ITEM_RELATIONSHIP = "actRelationship.supplierOrderItem";
 
     /**
      * Supplier delivery act short name.
@@ -78,8 +77,7 @@ public class SupplierArchetypes {
     /**
      * Supplier delivery item relationship short name.
      */
-    public static final String DELIVERY_ITEM_RELATIONSHIP
-            = "actRelationship.supplierDeliveryItem";
+    public static final String DELIVERY_ITEM_RELATIONSHIP = "actRelationship.supplierDeliveryItem";
 
     /**
      * Supplier delivery-order relationship short name.
@@ -89,8 +87,7 @@ public class SupplierArchetypes {
     /**
      * Supplier delivery-order item relationship short name.
      */
-    public static final String DELIVERY_ORDER_ITEM_RELATIONSHIP
-            = "actRelationship.supplierDeliveryOrderItem";
+    public static final String DELIVERY_ORDER_ITEM_RELATIONSHIP = "actRelationship.supplierDeliveryOrderItem";
 
     /**
      * Supplier invoice act short name.
@@ -105,8 +102,7 @@ public class SupplierArchetypes {
     /**
      * Supplier invoice item relationship short name.
      */
-    public static final String INVOICE_ITEM_RELATIONSHIP
-            = "actRelationship.supplierAccountInvoiceItem";
+    public static final String INVOICE_ITEM_RELATIONSHIP = "actRelationship.supplierAccountInvoiceItem";
 
     /**
      * Supplier return act short name.
@@ -121,14 +117,12 @@ public class SupplierArchetypes {
     /**
      * Supplier return item relationship short name.
      */
-    public static final String RETURN_ITEM_RELATIONSHIP
-            = "actRelationship.supplierReturnItem";
+    public static final String RETURN_ITEM_RELATIONSHIP = "actRelationship.supplierReturnItem";
 
     /**
      * Supplier return order item relationship short name.
      */
-    public static final String RETURN_ORDER_ITEM_RELATIONSHIP
-            = "actRelationship.supplierReturnOrderItem";
+    public static final String RETURN_ORDER_ITEM_RELATIONSHIP = "actRelationship.supplierReturnOrderItem";
 
     /**
      * Supplier credit act short name.
@@ -143,8 +137,7 @@ public class SupplierArchetypes {
     /**
      * Supplier credit item relationship short name.
      */
-    public static final String CREDIT_ITEM_RELATIONSHIP
-            = "actRelationship.supplierAccountCreditItem";
+    public static final String CREDIT_ITEM_RELATIONSHIP = "actRelationship.supplierAccountCreditItem";
 
     /**
      * Supplier payment act short name.
@@ -157,20 +150,59 @@ public class SupplierArchetypes {
     public static final String PAYMENT_CASH = "act.supplierAccountPaymentCash";
 
     /**
+     * Supplier cheque payment item act short name.
+     */
+    public static final String PAYMENT_CHEQUE = "act.supplierAccountPaymentCheque";
+
+    /**
+     * Supplier credit payment item act short name.
+     */
+    public static final String PAYMENT_CREDIT = "act.supplierAccountPaymentCredit";
+
+    /**
+     * Supplier EFT payment item act short name.
+     */
+    public static final String PAYMENT_EFT = "act.supplierAccountPaymentEFT";
+
+    /**
+     * Supplier payment item act relationship short name.
+     */
+    public static final String PAYMENT_ITEM_RELATIONSHIP = "actRelationship.supplierAccountPaymentItem";
+
+    /**
      * Supplier refund act short name.
      */
     public static final String REFUND = "act.supplierAccountRefund";
 
     /**
-     * Supplier cash refund act short name.
+     * Supplier cash refund item act short name.
      */
     public static final String REFUND_CASH = "act.supplierAccountRefundCash";
 
     /**
+     * Supplier cheque refund item act short name.
+     */
+    public static final String REFUND_CHEQUE = "act.supplierAccountRefundCheque";
+
+    /**
+     * Supplier credit refund item act short name.
+     */
+    public static final String REFUND_CREDIT = "act.supplierAccountRefundCredit";
+
+    /**
+     * Supplier EFT refund item act short name.
+     */
+    public static final String REFUND_EFT = "act.supplierAccountRefundEFT";
+
+    /**
+     * Supplier refund item act relationship short name.
+     */
+    public static final String REFUND_ITEM_RELATIONSHIP = "actRelationship.supplierAccountRefundItem";
+
+    /**
      * Supplier participation short name.
      */
-    public static final String SUPPLIER_PARTICIPATION
-            = "participation.supplier";
+    public static final String SUPPLIER_PARTICIPATION = "participation.supplier";
 
     /**
      * Supplier document attachment act short name.
