@@ -11,21 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.supplier;
+package org.openvpms.web.workspace.supplier.account;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.supplier.account.SupplierAccountRules;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.DefaultActActions;
-import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
@@ -34,11 +33,11 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.supplier.SupplierActCRUDWindow;
 
 import java.util.Date;
-import java.util.List;
 
-import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 
 
@@ -98,9 +97,8 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      * Invoked when the 'reverse' button is pressed.
      */
     protected void onReverse() {
-        final FinancialAct act = getObject();
-        String status = act.getStatus();
-        if (POSTED.equals(status)) {
+        final FinancialAct act = IMObjectHelper.reload(getObject());
+        if (act != null && POSTED.equals(act.getStatus())) {
             String name = getArchetypeDescriptor().getDisplayName();
             String title = Messages.format("supplier.account.reverse.title", name);
             String message = Messages.format("supplier.account.reverse.message", name);
@@ -125,13 +123,9 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      */
     private void reverse(FinancialAct act) {
         try {
-            IMObjectCopier copier = new IMObjectCopier(new SupplierActReversalHandler(act));
-            List<IMObject> objects = copier.apply(act);
-            FinancialAct reversal = (FinancialAct) objects.get(0);
-            reversal.setStatus(IN_PROGRESS);
-            reversal.setActivityStartTime(new Date());
-            getActions().setPrinted(reversal, false);
-            SaveHelper.save(objects);
+            SupplierAccountRules rules = ServiceHelper.getBean(SupplierAccountRules.class);
+            rules.reverse(act, new Date());
+            onRefresh(act);
         } catch (OpenVPMSException exception) {
             String title = Messages.get("supplier.account.reverse.failed");
             ErrorHelper.show(title, exception);
