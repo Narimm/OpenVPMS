@@ -21,6 +21,20 @@
         'http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd'>
 <hibernate-mapping>
 
+    <sql-query name="getSupplierAccountBalance" cache-mode="ignore">
+        <![CDATA[
+        select sum(if(f.credit,-f.total,f.total))
+        from financial_acts f
+        join acts a on a.act_id = f.financial_act_id and a.status = 'POSTED'
+        join participations p on a.act_id = p.act_id and p.arch_short_name = 'participation.supplier'
+             and p.entity_id = :supplierId
+        where a.arch_short_name in ('act.supplierAccountChargesInvoice',
+                                    'act.supplierAccountChargesCredit',
+                                    'act.supplierAccountPayment',
+                                    'act.supplierAccountRefund')
+               ]]>
+    </sql-query>
+
     <sql-query name="getStockToOrderByStockLocationAndSupplier" cache-mode="ignore">
         <return-scalar column="productId" type="long"/>
         <return-scalar column="productShortName" type="string"/>
