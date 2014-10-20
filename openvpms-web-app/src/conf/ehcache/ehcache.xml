@@ -107,7 +107,9 @@
     <cache name="org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
-    <cache name="org.openvpms.component.business.dao.hibernate.im.document.DocumentDOImpl"
-           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+    <!-- Document caching is disabled, as individual documents can consume large amounts of memory.    -->
+    <!-- To enable, DocumentDOImpl.hbm.xml must first be changed to add a cache element                -->
+    <!--cache name="org.openvpms.component.business.dao.hibernate.im.document.DocumentDOImpl"
+           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/-->
 
 </ehcache>

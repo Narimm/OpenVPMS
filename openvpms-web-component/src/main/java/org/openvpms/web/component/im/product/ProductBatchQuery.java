@@ -177,6 +177,20 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
     }
 
     /**
+     * Adds the search field to a container.
+     *
+     * @param container the container
+     */
+    @Override
+    protected void addSearchField(Component container) {
+        Label label = LabelFactory.create("product.batch");
+        container.add(label);
+        TextField field = getSearchField();
+        container.add(field);
+        getFocusGroup().add(field);
+    }
+
+    /**
      * Returns the product field.
      *
      * @return the product field

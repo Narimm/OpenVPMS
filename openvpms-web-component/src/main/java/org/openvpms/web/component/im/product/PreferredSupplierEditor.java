@@ -146,6 +146,7 @@ class PreferredSupplierEditor extends AbstractIMObjectReferenceEditor<Party> {
                 }
             };
             result = new EntityQuery<Party>(set, getContext());
+            result.setValue(name);
             result.setAuto(true);
         } else if (allowAll) {
             result = super.createQuery(name);
