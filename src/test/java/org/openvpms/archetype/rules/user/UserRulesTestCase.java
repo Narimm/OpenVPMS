@@ -16,6 +16,7 @@
 
 package org.openvpms.archetype.rules.user;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -38,17 +39,28 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the {@link UserRules} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class UserRulesTestCase extends ArchetypeServiceTest {
+
+    /**
+     * The rules.
+     */
+    private UserRules rules;
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        rules = new UserRules(getArchetypeService());
+    }
 
     /**
      * Tests the {@link UserRules#getUser(String)} method.
      */
     @Test
     public void testGetUser() {
-        UserRules rules = new UserRules(getArchetypeService());
         String username = "zuser" + System.currentTimeMillis();
         assertNull(rules.getUser(username));
         User user = TestHelper.createUser(username, true);
@@ -56,11 +68,48 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the  {@link UserRules#exists(String)} method.
+     */
+    @Test
+    public void testExists() {
+        String username = "zuser" + System.currentTimeMillis();
+        assertFalse(rules.exists(username));
+        User user = TestHelper.createUser(username, true);
+        assertTrue(rules.exists(username));
+        user.setActive(false);
+        save(user);
+        assertTrue(rules.exists(username));
+        remove(user);
+        assertFalse(rules.exists(username));
+    }
+
+    /**
+     * Tests the {@link UserRules#exists(String, User)} method.
+     */
+    @Test
+    public void testExistsExcludingUser() {
+        String username = "zuser" + System.currentTimeMillis();
+
+        User user1 = TestHelper.createUser(username, true);
+        assertFalse(rules.exists(username, user1));
+
+        User user2 = TestHelper.createUser(username, false);
+        assertTrue(rules.exists(username, user2));
+
+        user1.setActive(false);
+        save(user1);
+        assertTrue(rules.exists(username, user2));
+
+        remove(user1);
+        assertFalse(rules.exists(username, user2));
+    }
+
+
+    /**
      * Tests the {@link UserRules#isClinician(User)} method.
      */
     @Test
     public void testIsClinician() {
-        UserRules rules = new UserRules(getArchetypeService());
         User user = TestHelper.createUser();
         assertFalse(rules.isClinician(user));
         Lookup clinicianClassification
@@ -81,7 +130,6 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
 
         bean.addRelationship("entityRelationship.userLocation", location1);
         bean.addRelationship("entityRelationship.userLocation", location2);
-        UserRules rules = new UserRules(getArchetypeService());
         List<Party> locations = rules.getLocations(user);
         assertEquals(2, locations.size());
         assertTrue(locations.contains(location1));
@@ -95,7 +143,6 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
     public void testGetDefaultLocation() {
         User user = TestHelper.createUser();
 
-        UserRules rules = new UserRules(getArchetypeService());
         assertNull(rules.getDefaultLocation(user));
 
         Party location1 = TestHelper.createLocation();
@@ -127,7 +174,6 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
     @Test
     public void testIsAdministrator() {
         User user = TestHelper.createUser();
-        UserRules rules = new UserRules(getArchetypeService());
         assertFalse(rules.isAdministrator(user));
 
         Lookup adminClassification = TestHelper.getLookup("lookup.userType", "ADMINISTRATOR");

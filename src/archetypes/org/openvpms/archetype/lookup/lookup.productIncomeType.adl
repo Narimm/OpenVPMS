@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="lookup.productIncomeType.1.0"
                latest="true"
@@ -22,7 +23,6 @@
               minCardinality="1">
             <assertion name="regularExpression">
                 <property name="expression" value="[A-Z0-9_]*"/>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="name" path="/name" type="java.lang.String"
@@ -30,6 +30,8 @@
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" minCardinality="1" derived="true"
               derivedValue="concat(/name, ' Product Income Type')"/>
+        <node displayName="Default" name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup"
+              defaultValue="false()"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
     </archetype>
 </archetypes>
