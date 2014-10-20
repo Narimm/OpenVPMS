@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
@@ -97,8 +98,29 @@ public class FinancialTestHelper extends TestHelper {
                                                           Party patient, Product product, BigDecimal quantity,
                                                           BigDecimal fixedPrice, BigDecimal unitPrice, BigDecimal tax,
                                                           String status) {
-        return createCharges(INVOICE, INVOICE_ITEM, customer, patient, product, quantity, fixedPrice, unitPrice,
-                             tax, status);
+        return createChargesInvoice(customer, patient, null, product, quantity, fixedPrice, unitPrice, tax, status);
+    }
+
+    /**
+     * Helper to create a new <em>act.customerAccountChargesInvoice</em>
+     * and corresponding <em>act.customerAccountInvoiceItem</em>.
+     *
+     * @param customer   the customer
+     * @param patient    the patient
+     * @param clinician  the clinician. May be {@code null}
+     * @param product    the product
+     * @param quantity   the quantity
+     * @param fixedPrice the fixed price
+     * @param unitPrice  the unit price
+     * @param tax        the tax
+     * @param status     the act status
+     * @return a list containing the invoice act and its item
+     */
+    public static List<FinancialAct> createChargesInvoice(Party customer, Party patient, User clinician,
+                                                          Product product, BigDecimal quantity, BigDecimal fixedPrice,
+                                                          BigDecimal unitPrice, BigDecimal tax, String status) {
+        return createCharges(INVOICE, INVOICE_ITEM, customer, patient, clinician, product, quantity, fixedPrice,
+                             unitPrice, tax, status);
     }
 
 
@@ -381,7 +403,7 @@ public class FinancialTestHelper extends TestHelper {
      */
     public static FinancialAct createChargeItem(String itemShortName, Party patient, Product product,
                                                 BigDecimal unitPrice) {
-        return createChargeItem(itemShortName, patient, product, ONE, unitPrice, ZERO, ZERO);
+        return createChargeItem(itemShortName, patient, null, product, ONE, unitPrice, ZERO, ZERO);
     }
 
     /**
@@ -389,6 +411,7 @@ public class FinancialTestHelper extends TestHelper {
      *
      * @param itemShortName the charge item short name
      * @param patient       the patient. May be {@code null}
+     * @param clinician     the clinician. May be {@code null}
      * @param product       the product. May be {@code null}
      * @param quantity      the quantity
      * @param fixedPrice    the fixed price
@@ -396,13 +419,16 @@ public class FinancialTestHelper extends TestHelper {
      * @param tax           the tax
      * @return a new charge item
      */
-    public static FinancialAct createChargeItem(String itemShortName, Party patient, Product product,
+    public static FinancialAct createChargeItem(String itemShortName, Party patient, User clinician, Product product,
                                                 BigDecimal quantity, BigDecimal fixedPrice, BigDecimal unitPrice,
                                                 BigDecimal tax) {
         FinancialAct item = (FinancialAct) create(itemShortName);
         ActBean itemBean = new ActBean(item);
         if (patient != null) {
             itemBean.addNodeParticipation("patient", patient);
+        }
+        if (clinician != null) {
+            itemBean.addNodeParticipation("clinician", clinician);
         }
         if (product != null) {
             itemBean.addNodeParticipation("product", product);
@@ -497,7 +523,7 @@ public class FinancialTestHelper extends TestHelper {
      */
     private static List<FinancialAct> createCharges(String shortName, String itemShortName, BigDecimal amount,
                                                     Party customer, Party patient, Product product, String status) {
-        return createCharges(shortName, itemShortName, customer, patient, product, ONE, ZERO, amount, ZERO, status);
+        return createCharges(shortName, itemShortName, customer, patient, null, product, ONE, ZERO, amount, ZERO, status);
     }
 
     /**
@@ -507,22 +533,23 @@ public class FinancialTestHelper extends TestHelper {
      * @param itemShortName the act item short name
      * @param customer      the customer
      * @param patient       the patient. May be {@code null}
+     * @param clinician     the clinician. May be {@code null}
      * @param product       the product. May be {@code null}
      * @param quantity      the quantity
      * @param fixedPrice    the fixed price
      * @param unitPrice     the unit price
      * @param tax           the tax
-     * @param status        the act status
-     * @return a list containing the charges act and its item
+     * @param status        the act status       @return a list containing the charges act and its item
      */
     private static List<FinancialAct> createCharges(String shortName, String itemShortName, Party customer,
-                                                    Party patient, Product product, BigDecimal quantity,
+                                                    Party patient, User clinician, Product product, BigDecimal quantity,
                                                     BigDecimal fixedPrice, BigDecimal unitPrice, BigDecimal tax,
                                                     String status) {
         BigDecimal amount = fixedPrice.add(unitPrice.multiply(quantity));
-        FinancialAct act = createAct(shortName, amount, customer, status);
+        FinancialAct act = createAct(shortName, amount, customer, clinician, status);
         ActBean bean = new ActBean(act);
-        FinancialAct item = createChargeItem(itemShortName, patient, product, quantity, fixedPrice, unitPrice, tax);
+        FinancialAct item = createChargeItem(itemShortName, patient, clinician, product, quantity, fixedPrice,
+                                             unitPrice, tax);
         bean.addNodeRelationship("items", item);
         return Arrays.asList(act, item);
     }
@@ -539,7 +566,7 @@ public class FinancialTestHelper extends TestHelper {
      */
     private static FinancialAct createPaymentRefund(String shortName, String itemShortName, Money amount,
                                                     Party customer, Party till) {
-        FinancialAct act = createAct(shortName, amount, customer, FinancialActStatus.POSTED);
+        FinancialAct act = createAct(shortName, amount, customer, null, FinancialActStatus.POSTED);
         ActBean bean = new ActBean(act);
         FinancialAct item = (FinancialAct) create(itemShortName);
         item.setTotal(amount);
@@ -569,7 +596,7 @@ public class FinancialTestHelper extends TestHelper {
      */
     private static List<FinancialAct> createPaymentRefund(String shortName, String itemShortName,
                                                           Money amount, Party customer, Party till, String status) {
-        FinancialAct act = createAct(shortName, amount, customer, status);
+        FinancialAct act = createAct(shortName, amount, customer, null, status);
         ActBean bean = new ActBean(act);
         FinancialAct item = (FinancialAct) create(itemShortName);
         item.setTotal(amount);
@@ -586,20 +613,26 @@ public class FinancialTestHelper extends TestHelper {
     }
 
     /**
-     * Helper to create a new act, setting the total, adding a customer participation and setting the status.
+     * Helper to create a new act, setting the total, adding a customer and clinician participation and setting the
+     * status.
      *
      * @param shortName the act short name
      * @param amount    the act total
      * @param customer  the customer
+     * @param clinician the clinician. May be {@code null}
      * @param status    the status
      * @return a new act
      */
-    private static FinancialAct createAct(String shortName, BigDecimal amount, Party customer, String status) {
+    private static FinancialAct createAct(String shortName, BigDecimal amount, Party customer, User clinician,
+                                          String status) {
         FinancialAct act = (FinancialAct) create(shortName);
         act.setStatus(status);
         ActBean bean = new ActBean(act);
         bean.setValue("amount", amount);
         bean.addNodeParticipation("customer", customer);
+        if (clinician != null) {
+            bean.addNodeParticipation("clinician", clinician);
+        }
         return act;
     }
 

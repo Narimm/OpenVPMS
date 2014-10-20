@@ -97,6 +97,12 @@
         </node>
         <node name="credit" path="/credit" type="java.lang.Boolean"
               defaultValue="false()" readOnly="true" hidden="true"/>
+        <node name="ordered" path="/details/ordered" type="java.lang.Boolean" hidden="true" readOnly="true"
+              minCardinality="0"/>
+        <node name="receivedQuantity" path="/details/receivedQuantity" type="java.math.BigDecimal" hidden="true"
+              readOnly="true" minCardinality="0"/>
+        <node name="returnedQuantity" path="/details/returnedQuantity" type="java.math.BigDecimal" hidden="true"
+              readOnly="true" minCardinality="0"/>
         <node name="dispensing" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="1"
               filter="actRelationship.invoiceItemDispensing">
