@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="act.customerEstimationItem.1.0" latest="true" primary="false"
                type="org.openvpms.component.business.domain.im.act.Act" displayName="Estimate Item">
@@ -52,12 +53,12 @@
         <node name="lowTotal" path="/details/lowTotal"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
               derived="true"
-              derivedValue="math:roundAmount(/details/fixedPrice - /details/discount + /details/lowQty * /details/lowUnitPrice)"
+              derivedValue="math:roundAmount(number(//details/lowQty > 0) * /details/fixedPrice - /details/discount + /details/lowQty * /details/lowUnitPrice)"
               minCardinality="1"/>
         <node name="highTotal" path="/details/highTotal"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
               derived="true"
-              derivedValue="math:roundAmount(/details/fixedPrice - /details/discount + /details/highQty * /details/highUnitPrice)"
+              derivedValue="math:roundAmount(number(//details/highQty > 0) * /details/fixedPrice - /details/discount + /details/highQty * /details/highUnitPrice)"
               minCardinality="1"/>
     </archetype>
 </archetypes>
