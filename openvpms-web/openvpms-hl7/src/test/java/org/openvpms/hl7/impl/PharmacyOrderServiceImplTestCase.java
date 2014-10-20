@@ -109,7 +109,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
-        orderService.createOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, pharmacy);
+        assertTrue(orderService.createOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, pharmacy));
         assertTrue(getDispatcher().waitForMessages(30));
         checkMessage(expected);
     }

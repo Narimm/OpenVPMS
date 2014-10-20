@@ -39,9 +39,10 @@ public interface PharmacyOrderService {
      * @param placerOrderNumber the placer order number, to uniquely identify the order
      * @param date              the order date
      * @param pharmacy          the pharmacy. An <em>entity.HL7ServicePharmacy</em>
+     * @return {@code true} if the order was placed
      */
-    void createOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                     Date date, Entity pharmacy);
+    boolean createOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
+                        Date date, Entity pharmacy);
 
     /**
      * Updates an order.

@@ -120,10 +120,11 @@ class TestPharmacyOrderService implements PharmacyOrderService {
      * @param pharmacy          the pharmacy. An <em>entity.HL7ServicePharmacy</em>
      */
     @Override
-    public void createOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                            Date date, Entity pharmacy) {
+    public boolean createOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
+                               Date date, Entity pharmacy) {
         orders.add(new Order(Order.Type.CREATE, context.getPatient(), product, quantity, placerOrderNumber, date,
                              context.getClinician(), pharmacy));
+        return true;
     }
 
     /**

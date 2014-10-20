@@ -28,7 +28,6 @@ import ca.uhn.hl7v2.model.v25.segment.ORC;
 import ca.uhn.hl7v2.model.v25.segment.PID;
 import ca.uhn.hl7v2.model.v25.segment.RXD;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
@@ -54,6 +53,12 @@ import java.util.List;
 
 /**
  * Processes RDS messages.
+ * <p/>
+ * This generates <em>act.customerPharmacyOrder</em> messages for each RDS message received.
+ * <p/>
+ * Note that an RDS message may relate to a specific <em>act.customerAccountInvoiceItem</em>, and could be
+ * be used to update its receivedQuantity and cancelledQuantity nodes. This is not done as it would lead to
+ * version conflicts if users are editing invoices when the message is received.
  *
  * @author Tim Anderson
  */
@@ -100,13 +105,9 @@ public class RDSProcessor {
         }
         PID pid = message.getPATIENT().getPID();
         State state = getState(pid, location);
-        boolean match = true;
         for (int i = 0; i < message.getORDERReps(); ++i) {
             RDS_O13_ORDER group = message.getORDER(i);
-            match &= addItem(group, state);
-        }
-        if (match) {
-            state.getActs().get(0).setStatus(ActStatus.POSTED);
+            addItem(group, state);
         }
         return state.getActs();
     }
@@ -116,10 +117,8 @@ public class RDSProcessor {
      *
      * @param group the order group
      * @param state the state
-     * @return {@code true} if the item was invoiced
      */
-    private boolean addItem(RDS_O13_ORDER group, State state) {
-        boolean match = false;
+    private void addItem(RDS_O13_ORDER group, State state) {
         BigDecimal quantity = getQuantity(group);
         ActBean bean;
         ActBean itemBean;
@@ -137,30 +136,9 @@ public class RDSProcessor {
             itemBean.setValue("reference", fillerOrderNumber);
         }
         FinancialAct invoiceItem = addInvoiceItem(group.getORC(), bean, itemBean);
-        IMObjectReference invoicedProduct = (invoiceItem != null) ? getInvoicedProduct(invoiceItem) : null;
         addClinician(group, bean, itemBean, invoiceItem);
-        IMObjectReference dispensedProduct = addProduct(group, bean, itemBean);
+        addProduct(group, bean, itemBean);
         itemBean.setValue("quantity", quantity);
-
-        if (invoiceItem != null && dispensedProduct != null && invoicedProduct != null) {
-            BigDecimal invoicedQty = invoiceItem.getQuantity();
-            if (invoicedQty != null && invoicedQty.compareTo(quantity) == 0
-                && dispensedProduct.equals(invoicedProduct)) {
-                match = true;
-            }
-        }
-        return match;
-    }
-
-    /**
-     * Returns the reference to the product that was invoiced.
-     *
-     * @param invoiceItem the invoice item
-     * @return the corresponding product. May be {@code null}
-     */
-    private IMObjectReference getInvoicedProduct(FinancialAct invoiceItem) {
-        ActBean bean = new ActBean(invoiceItem, service);
-        return bean.getNodeParticipantRef("product");
     }
 
     /**

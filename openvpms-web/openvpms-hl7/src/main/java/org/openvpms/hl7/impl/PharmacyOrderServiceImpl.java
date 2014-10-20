@@ -76,16 +76,20 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
      * @param placerOrderNumber the placer order number, to uniquely identify the order
      * @param date              the order date
      * @param pharmacy          the pharmacy. An <em>entity.HL7ServicePharmacy</em>
+     * @return {@code true} if the order was placed
      */
     @Override
-    public void createOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                            Date date, Entity pharmacy) {
+    public boolean createOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
+                               Date date, Entity pharmacy) {
+        boolean result = false;
         Connector connector = getConnector(pharmacy);
         if (connector != null) {
             MessageConfig config = MessageConfigFactory.create(connector);
             Message message = factory.createOrder(context, product, quantity, placerOrderNumber, date, config);
             dispatcher.queue(message, connector, config);
+            result = true;
         }
+        return result;
     }
 
     /**
