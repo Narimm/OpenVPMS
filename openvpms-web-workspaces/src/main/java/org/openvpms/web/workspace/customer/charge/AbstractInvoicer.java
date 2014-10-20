@@ -96,10 +96,24 @@ public class AbstractInvoicer {
             if (act == null) {
                 throw new IllegalStateException("Failed to create charge item");
             }
-            result = (CustomerChargeActItemEditor) items.getEditor(act);
-            result.getComponent();
-            items.addEdited(result);
+            result = getItemEditor(act, editor);
         }
+        return result;
+    }
+
+    /**
+     * Returns a charge item editor for a charge item.
+     *
+     * @param act    the charge item act
+     * @param editor the parent charge editor
+     * @return an editor for the charge item
+     */
+    protected CustomerChargeActItemEditor getItemEditor(Act act, AbstractCustomerChargeActEditor editor) {
+        ActRelationshipCollectionEditor items = editor.getItems();
+        CustomerChargeActItemEditor result;
+        result = (CustomerChargeActItemEditor) items.getEditor(act);
+        result.getComponent();
+        items.addEdited(result);
         return result;
     }
 

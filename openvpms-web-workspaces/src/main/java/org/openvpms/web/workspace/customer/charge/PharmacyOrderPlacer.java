@@ -159,9 +159,11 @@ public class PharmacyOrderPlacer {
      *
      * @param items   the charge items
      * @param changes patient history changes, used to obtain patient events
+     * @return the list of updated charge items
      */
-    public void order(List<Act> items, PatientHistoryChanges changes) {
+    public List<Act> order(List<Act> items, PatientHistoryChanges changes) {
         List<IMObjectReference> ids = new ArrayList<IMObjectReference>(orders.keySet());
+        List<Act> updated = new ArrayList<Act>();
         Set<Party> patients = new HashSet<Party>();
         for (Act act : items) {
             IMObjectReference id = act.getObjectReference();
@@ -171,17 +173,22 @@ public class PharmacyOrderPlacer {
             if (order != null) {
                 if (existing != null) {
                     if (needsCancel(existing, order)) {
+                        // TODO - need to prevent this, as PlacerOrderNumbers should not be reused.
                         cancelOrder(existing, changes, patients);
-                        createOrder(order, changes, patients);
+                        if (createOrder(act, order, changes, patients)) {
+                            updated.add(act);
+                        }
                     } else if (needsUpdate(existing, order)) {
                         updateOrder(changes, order, patients);
                     }
                 } else {
-                    createOrder(order, changes, patients);
+                    if (createOrder(act, order, changes, patients)) {
+                        updated.add(act);
+                    }
                 }
                 orders.put(id, order);
             } else if (existing != null) {
-                // new product is not dispensed via a pharmacy
+                // new product is not dispensed via a pharmacy.
                 cancelOrder(existing, changes, patients);
             }
         }
@@ -189,6 +196,7 @@ public class PharmacyOrderPlacer {
             Order existing = orders.remove(id);
             cancelOrder(existing, changes, patients);
         }
+        return updated;
     }
 
     /**
@@ -269,17 +277,25 @@ public class PharmacyOrderPlacer {
     /**
      * Creates an order.
      *
+     * @param act      the invoice item
      * @param order    the order
      * @param changes  the changes
      * @param patients tracks patients that have had notifications sent
+     * @return {@code true} if an order was created (and invoice updated)
      */
-    private void createOrder(Order order, PatientHistoryChanges changes, Set<Party> patients) {
+    private boolean createOrder(Act act, Order order, PatientHistoryChanges changes, Set<Party> patients) {
+        boolean result = false;
         PatientContext context = getPatientContext(order, changes);
         if (context != null) {
             notifyPatientInformation(context, changes, patients);
-            service.createOrder(context, order.getProduct(), order.getQuantity(), order.getId(),
-                                order.getStartTime(), order.getPharmacy());
+            if (service.createOrder(context, order.getProduct(), order.getQuantity(), order.getId(),
+                                    order.getStartTime(), order.getPharmacy())) {
+                ActBean bean = new ActBean(act);
+                bean.setValue("ordered", true);
+                result = true;
+            }
         }
+        return result;
     }
 
     /**

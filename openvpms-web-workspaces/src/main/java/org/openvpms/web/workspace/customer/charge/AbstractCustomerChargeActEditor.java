@@ -328,7 +328,11 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                 }
 
                 if (TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE)) {
-                    orderPlacer.order(getItems().getActs(), changes);
+                    List<Act> updated = orderPlacer.order(getItems().getActs(), changes);
+                    if (!updated.isEmpty()) {
+                        // need to save the items again. This time do it skipping rules
+                        ServiceHelper.getArchetypeService(false).save(updated);
+                    }
                 }
             }
         } finally {

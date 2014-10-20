@@ -210,6 +210,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private static final String REMINDERS = "reminders";
 
     /**
+     * Pharmacy order nodes.
+     */
+    private static final String[] ORDER_NODES = {"receivedQuantity", "returnedQuantity"};
+
+    /**
      * Investigations node name.
      */
     private static final String INVESTIGATIONS = "investigations";
@@ -306,6 +311,60 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 updateMedicationBatch(getStockLocationRef());
             }
         };
+    }
+
+    /**
+     * Determines if an order has been placed for the item.
+     *
+     * @return {@code true} if an order has been placed
+     */
+    public boolean isOrdered() {
+        Property ordered = getProperty("ordered");
+        return ordered != null && ordered.getBoolean();
+    }
+
+    /**
+     * Returns the received quantity.
+     *
+     * @return the received quantity
+     */
+    public BigDecimal getReceivedQuantity() {
+        Property property = getProperty("receivedQuantity");
+        return property != null ? property.getBigDecimal(BigDecimal.ZERO) : BigDecimal.ZERO;
+    }
+
+    /**
+     * Sets the received quantity.
+     *
+     * @param quantity the received quantity
+     */
+    public void setReceivedQuantity(BigDecimal quantity) {
+        Property property = getProperty("receivedQuantity");
+        if (property != null) {
+            property.setValue(quantity);
+        }
+    }
+
+    /**
+     * Returns the returned quantity.
+     *
+     * @return the returned quantity
+     */
+    public BigDecimal getReturnedQuantity() {
+        Property property = getProperty("returnedQuantity");
+        return property != null ? property.getBigDecimal(BigDecimal.ZERO) : BigDecimal.ZERO;
+    }
+
+    /**
+     * Sets the returned quantity.
+     *
+     * @param quantity the returned quantity
+     */
+    public void setReturnedQuantity(BigDecimal quantity) {
+        Property property = getProperty("returnedQuantity");
+        if (property != null) {
+            property.setValue(quantity);
+        }
     }
 
     /**
@@ -1312,6 +1371,12 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             }
             if (!filter.isEmpty()) {
                 result = new ArchetypeNodes().exclude(filter);
+            }
+            if (isOrdered()) {
+                if (result == null) {
+                    result = new ArchetypeNodes();
+                }
+                result.simple(ORDER_NODES);
             }
         }
         return result;
