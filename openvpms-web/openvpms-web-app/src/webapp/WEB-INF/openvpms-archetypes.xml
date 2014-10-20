@@ -116,6 +116,10 @@
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
+    <bean id="supplierAccountRules" class="org.openvpms.archetype.rules.supplier.account.SupplierAccountRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
     <bean id="userRules" class="org.openvpms.archetype.rules.user.UserRules">
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
