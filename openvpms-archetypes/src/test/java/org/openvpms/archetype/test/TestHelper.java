@@ -316,8 +316,7 @@ public class TestHelper extends Assert {
      * @return a new user
      */
     public static User createUser() {
-        // use an int to avoid exceeding the length of the db field
-        return createUser("zuser" + Math.abs((int) System.nanoTime()), true);
+        return createUser("zuser" + nextId(), true);
     }
 
     /**
