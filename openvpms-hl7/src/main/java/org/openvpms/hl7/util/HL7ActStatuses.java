@@ -14,32 +14,18 @@
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.hl7.io;
-
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-
-import java.util.List;
+package org.openvpms.hl7.util;
 
 /**
- * Manages {@link Connectors}.
+ * HL7 message act statuses.
  *
  * @author Tim Anderson
  */
-public interface Connectors {
+public class HL7ActStatuses {
 
-    /**
-     * Returns the active connectors.
-     *
-     * @return the active connectors
-     */
-    List<Connector> getConnectors();
+    public static final String PENDING = "PENDING";
 
-    /**
-     * Returns a connector given its reference.
-     *
-     * @param reference the connector reference
-     * @return the connector, or {@code null} if none is found
-     */
-    Connector getConnector(IMObjectReference reference);
+    public static final String ACCEPTED = "ACCEPTED";
 
+    public static final String ERROR = "ERROR";
 }

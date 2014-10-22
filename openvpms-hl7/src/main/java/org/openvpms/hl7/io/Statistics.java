@@ -32,7 +32,7 @@ public interface Statistics {
      *
      * @return the number of messages
      */
-    int getQueued();
+    int size();
 
     /**
      * Returns the time of the last processed message.

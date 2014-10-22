@@ -76,6 +76,22 @@ public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> impl
     }
 
     /**
+     * Returns the active connectors.
+     *
+     * @return the active connectors
+     */
+    @Override
+    public List<Connector> getConnectors() {
+        List<Connector> result = new ArrayList<Connector>();
+        synchronized (connectors) {
+            for (State state : connectors.values()) {
+                result.add(state.connector);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Returns a connector given its reference.
      *
      * @param reference the connector reference

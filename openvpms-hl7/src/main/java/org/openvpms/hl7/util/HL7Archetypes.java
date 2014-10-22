@@ -68,4 +68,8 @@ public class HL7Archetypes {
      */
     public static final String[] CONNECTIONS = {SENDERS, RECEIVERS};
 
+    /**
+     * HL7 message archetype short name.
+     */
+    public static final String MESSAGE = "act.HL7Message";
 }
