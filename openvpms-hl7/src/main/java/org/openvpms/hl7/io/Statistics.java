@@ -48,7 +48,7 @@ public interface Statistics {
     /**
      * Returns the time of the last error.
      *
-     * @return the time of the last error, or {@code null} if the last message was not successfully processed
+     * @return the time of the last error, or {@code null} if the last message was successfully processed
      */
     Date getErrorTimestamp();
 

@@ -22,12 +22,8 @@ import ca.uhn.hl7v2.app.Connection;
 import ca.uhn.hl7v2.app.HL7Service;
 import ca.uhn.hl7v2.llp.LLPException;
 import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.model.v25.datatype.DTM;
-import ca.uhn.hl7v2.model.v25.segment.MSH;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
-import ca.uhn.hl7v2.protocol.ReceivingApplicationException;
-import ca.uhn.hl7v2.protocol.ReceivingApplicationExceptionHandler;
-import ca.uhn.hl7v2.protocol.Transportable;
+import ca.uhn.hl7v2.util.idgenerator.IDGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -41,15 +37,14 @@ import org.springframework.beans.factory.InitializingBean;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Default implementation of the {@link MessageDispatcher} interface.
@@ -79,9 +74,9 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
     private final HapiContext messageContext;
 
     /**
-     * Used to assign the message control id.
+     * The message control ID generator.
      */
-    private AtomicLong seed = new AtomicLong(0);
+    private final IDGenerator generator;
 
     /**
      * The queues, keyed on connector reference.
@@ -91,15 +86,21 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
     /**
      * The receivers, keyed on connector reference.
      */
-    private final Map<IMObjectReference, Receiver> receiverMap = new HashMap<IMObjectReference, Receiver>();
+    private final Map<IMObjectReference, MessageReceiver> receiverMap = new HashMap<IMObjectReference, MessageReceiver>();
 
     /**
      * The listeners, keyed on port.
      */
     private final Map<Integer, HL7Service> services = new HashMap<Integer, HL7Service>();
 
+    /**
+     * The service to schedule dispatching.
+     */
     private final ExecutorService executor;
 
+    /**
+     * The handler for <em>document.hl7</em> acts.
+     */
     private final HL7DocumentHandler handler;
 
     /**
@@ -107,6 +108,15 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      */
     private final ConnectorsImpl.Listener listener;
 
+
+    /**
+     * Used to restricted the number of tasks that can be scheduled via the executor.
+     */
+    private Semaphore scheduled = new Semaphore(1);
+
+    /**
+     * Used to indicate that the dispatcher has been shut down.
+     */
     private volatile boolean shutdown = false;
 
 
@@ -126,6 +136,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
         this.service = service;
         populator = new HeaderPopulator();
         messageContext = HapiContextFactory.create();
+        generator = messageContext.getParserConfiguration().getIdGenerator();
         executor = Executors.newSingleThreadExecutor();
         handler = new HL7DocumentHandler(service);
 
@@ -194,7 +205,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
                     throw new IllegalStateException("Already receiving requests on port " + port);
                 }
             }
-            Receiver receiver = new Receiver(application, connector);
+            MessageReceiver receiver = new MessageReceiver(application, connector);
             service.registerApplication(receiver);
             service.setExceptionHandler(receiver);
             service.startAndWait();
@@ -302,12 +313,23 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
         }
     }
 
-    protected Date getTimestamp() {
+    /**
+     * Creates a new timestamp for MSH-7.
+     *
+     * @return a new timestamp
+     */
+    protected Date createMessageTimestamp() {
         return new Date();
     }
 
-    protected long getSequence(Connector connector) {
-        return seed.incrementAndGet();
+    /**
+     * Creates a new message control ID, for MSH-10.
+     *
+     * @return a new ID
+     * @throws IOException if the ID cannot be generated
+     */
+    protected String createMessageControlID() throws IOException {
+        return generator.getID();
     }
 
     /**
@@ -397,11 +419,18 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      * @param sender  the sender
      * @param config  the message population configuration
      * @throws HL7Exception for any error
+     * @throws IOException  if a message control ID cannot be generated
      */
-    private void populate(Message message, MLLPSender sender, MessageConfig config) throws HL7Exception {
-        populator.populate(message, sender, getTimestamp(), getSequence(sender), config);
+    private void populate(Message message, MLLPSender sender, MessageConfig config) throws HL7Exception, IOException {
+        populator.populate(message, sender, createMessageTimestamp(), createMessageControlID(), config);
     }
 
+    /**
+     * Returns a queue for a sender, creating one if none exists.
+     *
+     * @param sender the sender
+     * @return the queue
+     */
     private MessageQueue getMessageQueue(MLLPSender sender) {
         MessageQueue queue;
         queue = queueMap.get(sender.getReference());
@@ -412,19 +441,29 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
         return queue;
     }
 
+    /**
+     * Schedules {@link #dispatch()} to be run, unless it is already running.
+     */
     private void schedule() {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                sendAll();
-            }
-        });
+        if (!shutdown && scheduled.tryAcquire()) {
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    scheduled.release(); // need to release here to enable dispatch() to reschedule
+                    try {
+                        dispatch();
+                    } catch (Throwable exception) {
+                        log.error(exception.getMessage(), exception);
+                    }
+                }
+            });
+        }
     }
 
     /**
      * Sends all queued messages.
      */
-    private void sendAll() {
+    private void dispatch() {
         boolean processed;
         int waiting;
         long minWait;
@@ -488,6 +527,11 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
         return processed;
     }
 
+    /**
+     * Invoked when a connector is updated.
+     *
+     * @param connector the connector
+     */
     private void update(Connector connector) {
         if (connector instanceof MLLPSender) {
             restartSender(connector);
@@ -496,13 +540,18 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
         }
     }
 
+    /**
+     * Invoked to restart a receiver.
+     *
+     * @param connector the connector to use
+     */
     private void restartReceiver(Connector connector) {
-        Receiver receiver;
+        MessageReceiver receiver;
         synchronized (receiverMap) {
             receiver = receiverMap.get(connector.getReference());
         }
         if (receiver != null) {
-            ReceivingApplication app = receiver.receiver;
+            ReceivingApplication app = receiver.getReceivingApplication();
             stop(connector);
             try {
                 listen(connector, app);
@@ -513,6 +562,11 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
         }
     }
 
+    /**
+     * Invoked to restart a sender.
+     *
+     * @param connector the connector
+     */
     private void restartSender(Connector connector) {
         synchronized (queueMap) {
             MessageQueue queue = queueMap.get(connector.getReference());
@@ -525,6 +579,11 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
         }
     }
 
+    /**
+     * Invoked when a connector is removed or de-activated.
+     *
+     * @param connector the connector
+     */
     private void remove(Connector connector) {
         if (connector instanceof MLLPSender) {
             synchronized (queueMap) {
@@ -538,160 +597,6 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
         } else if (connector instanceof MLLPReceiver) {
             stop(connector);
         }
-    }
-
-
-    /**
-     * Workaround to ensure that the message header has the correct format for the message date/time.
-     * <p/>
-     * NOTE: this doesn't yet work if the receiver throws an exception and the nak is generated by
-     * ApplicationRouterImpl.
-     */
-    private static class Receiver implements ReceivingApplication, ReceivingApplicationExceptionHandler, Statistics {
-
-        private final Connector connector;
-
-        private final ReceivingApplication receiver;
-
-        private final MessageConfig config;
-
-        private Date lastReceived;
-
-        private Date lastError;
-
-        private String lastErrorMessage;
-
-        public Receiver(ReceivingApplication receiver, Connector connector) {
-            this.connector = connector;
-            config = new MessageConfig();
-            config.setIncludeMillis(connector.isIncludeMillis());
-            config.setIncludeTimeZone(connector.isIncludeTimeZone());
-            this.receiver = receiver;
-
-        }
-
-        /**
-         * Uses the contents of the message for whatever purpose the application
-         * has for this message, and returns an appropriate response message.
-         *
-         * @param theMessage  an inbound HL7 message
-         * @param theMetadata message metadata (which may include information about where the message comes
-         *                    from, etc).  This is the same metadata as in {@link Transportable#getMetadata()}.
-         * @return an appropriate application response (for example an application ACK or query response).
-         *         Appropriate responses to different types of incoming messages are defined by HL7.
-         * @throws ReceivingApplicationException if there is a problem internal to the application (for example
-         *                                       a database problem)
-         * @throws HL7Exception                  if there is a problem with the message
-         */
-        @Override
-        public Message processMessage(Message theMessage, Map<String, Object> theMetadata)
-                throws ReceivingApplicationException, HL7Exception {
-            Message message = receiver.processMessage(theMessage, theMetadata);
-            if (!connector.isIncludeMillis() || !connector.isIncludeTimeZone()) {
-                // correct the date/time format
-                try {
-                    MSH msh = (MSH) message.get("MSH");
-                    DTM time = msh.getDateTimeOfMessage().getTime();
-                    Calendar calendar = time.getValueAsCalendar();
-                    PopulateHelper.populateDTM(time, calendar, config);
-                } catch (HL7Exception ignore) {
-                    // do nothing
-                }
-            }
-            processed();
-            return message;
-        }
-
-        /**
-         * @param theMessage an inbound HL7 message
-         * @return true if this ReceivingApplication wishes to accept the message.  By returning
-         *         true, this Application declares itself the recipient of the message, accepts
-         *         responsibility for it, and must be able to respond appropriately to the sending system.
-         */
-        @Override
-        public boolean canProcess(Message theMessage) {
-            return receiver.canProcess(theMessage);
-        }
-
-        /**
-         * Process an exception.
-         *
-         * @param incomingMessage  the incoming message. This is the raw message which was received from the external
-         *                         system
-         * @param incomingMetadata Any metadata that accompanies the incoming message.
-         * @param outgoingMessage  the outgoing message. The response NAK message generated by HAPI.
-         * @param e                the exception which was received
-         * @return The new outgoing message. This can be set to the value provided by HAPI in {@code outgoingMessage},
-         *         or may be replaced with another message. <b>This method may not return {@code null}</b>.
-         */
-        @Override
-        public String processException(String incomingMessage, Map<String, Object> incomingMetadata,
-                                       String outgoingMessage, Exception e) throws HL7Exception {
-            error(e.getMessage());
-            return outgoingMessage;
-        }
-
-        /**
-         * Returns the number of messages in the queue.
-         *
-         * @return {@code 0} - the receiver doesn't support queuing
-         */
-        @Override
-        public int size() {
-            return 0;
-        }
-
-        /**
-         * Returns the time when a message was last successfully received or sent.
-         *
-         * @return the time when a message was last successfully sent, or {@code null} if none have been sent
-         */
-        @Override
-        public synchronized Date getProcessedTimestamp() {
-            return lastReceived;
-        }
-
-        /**
-         * Returns the time of the last failure to send a message.
-         *
-         * @return the time of the last failure, or {@code null} if the last send was successful
-         */
-        @Override
-        public synchronized Date getErrorTimestamp() {
-            return lastError;
-        }
-
-        /**
-         * Returns the last error message, if the last send was unsuccessful.
-         *
-         * @return the last error message. MAy be {@code null}
-         */
-        @Override
-        public synchronized String getErrorMessage() {
-            return lastErrorMessage;
-        }
-
-        /**
-         * Returns the connector used to send messages via this queue.
-         *
-         * @return the connector
-         */
-        @Override
-        public Connector getConnector() {
-            return connector;
-        }
-
-        private synchronized void processed() {
-            lastReceived = new Date();
-            lastError = null;
-            lastErrorMessage = null;
-        }
-
-        private synchronized void error(String message) {
-            lastError = new Date();
-            lastErrorMessage = message;
-        }
-
     }
 
 }

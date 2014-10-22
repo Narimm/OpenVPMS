@@ -49,6 +49,8 @@ import java.util.List;
 
 /**
  * A queue of messages for a {@link MLLPSender}.
+ * <p/>
+ * TODO - cache counts, and pre-fetch messages to reduce database access.
  *
  * @author Tim Anderson
  */
@@ -153,11 +155,11 @@ class MessageQueue implements Statistics {
         ActBean bean = new ActBean(act, service);
         bean.addNodeParticipation("connector", connector.getReference());
         MSH header = (MSH) message.get("MSH");
-        header.getMessageType().getTriggerEvent();
-        MSG type = header.getMessageType();
+        String type = getMessageType(header);
+        act.setDescription(type);
         TS dateTimeOfMessage = header.getDateTimeOfMessage();
         act.setActivityStartTime(dateTimeOfMessage.getTime().getValueAsDate());
-        String name = dateTimeOfMessage.getTime().getValue() + "-" + type.getMessageCode() + "-" + type.getTriggerEvent() + ".hl7";
+        String name = type + "_" + header.getMessageControlID().getValue() + ".hl7";
         String encoded = message.encode();
         Document document = handler.create(name, encoded, MIME_TYPE);
         act.setDocument(document.getObjectReference());
@@ -300,7 +302,7 @@ class MessageQueue implements Statistics {
     /**
      * Returns the time of the last error.
      *
-     * @return the time of the last error, or {@code null} if the last message was not successfully processed
+     * @return the time of the last error, or {@code null} if the last message was successfully processed
      */
     @Override
     public synchronized Date getErrorTimestamp() {
@@ -356,11 +358,7 @@ class MessageQueue implements Statistics {
         error.append("Unsupported response: ");
         try {
             MSH header = (MSH) response.get("MSH");
-            header.getMessageType().getTriggerEvent();
-            MSG type = header.getMessageType();
-            error.append(type.getMessageCode());
-            error.append('_');
-            error.append(type.getTriggerEvent());
+            error.append(getMessageType(header));
         } catch (HL7Exception exception) {
             log.error("Failed to determine message type", exception);
             error.append("unknown");
@@ -406,6 +404,17 @@ class MessageQueue implements Statistics {
                 break;
             }
         }
+    }
+
+    /**
+     * Returns the message type of a message.
+     *
+     * @param header the message header
+     * @return the formatted type
+     */
+    private String getMessageType(MSH header) {
+        MSG type = header.getMessageType();
+        return type.getMessageCode() + "_" + type.getTriggerEvent();
     }
 
     /**
