@@ -18,6 +18,7 @@ package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Message;
+import org.junit.After;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -27,6 +28,7 @@ import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.patient.PatientEventServices;
 import org.openvpms.hl7.util.HL7Archetypes;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -67,8 +69,7 @@ public abstract class AbstractServiceTest extends AbstractMessageTest {
         super.setUp();
 
         IMObjectReference senderRef = new IMObjectReference(HL7Archetypes.MLLP_SENDER, -1);
-        sender = new MLLPSender("dummy", 2026, "VPMS", "Main Clinic", "Cubex", "Cubex", true, true,
-                                senderRef);
+        sender = HL7TestHelper.createSender();
         Entity service = (Entity) create(HL7Archetypes.PATIENT_EVENT_SERVICE);
         EntityBean bean = new EntityBean(service);
         bean.addNodeTarget("sender", senderRef);
@@ -77,15 +78,25 @@ public abstract class AbstractServiceTest extends AbstractMessageTest {
         connectors = new Connectors() {
 
             @Override
+            public List<Connector> getConnectors() {
+                return Arrays.<Connector>asList(sender);
+            }
+
+            @Override
             public Connector getConnector(IMObjectReference reference) {
                 return sender;
             }
         };
         eventServices = new PatientEventServicesImpl(getArchetypeService(), connectors);
         eventServices.add(service);
-        dispatcher = new TestMessageDispatcher();
+        dispatcher = new TestMessageDispatcher(getArchetypeService());
         dispatcher.setTimestamp(TestHelper.getDatetime("2014-08-25 08:59:00"));
         dispatcher.setSequence(1200022);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        dispatcher.destroy();
     }
 
     /**

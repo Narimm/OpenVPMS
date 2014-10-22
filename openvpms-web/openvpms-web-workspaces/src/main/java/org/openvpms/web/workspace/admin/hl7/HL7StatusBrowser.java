@@ -124,7 +124,7 @@ public class HL7StatusBrowser extends IMObjectTableBrowser<Entity> {
             Component result = null;
             Statistics stats = getStats(object, row);
             if (stats != null) {
-                result = LabelFactory.create(stats.getQueued(), new TableLayoutData());
+                result = LabelFactory.create(stats.size(), new TableLayoutData());
             }
             return result;
         }

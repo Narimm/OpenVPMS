@@ -20,7 +20,10 @@ import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.llp.LLPException;
 import ca.uhn.hl7v2.model.Message;
 import org.mockito.Mockito;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.hl7.io.Connector;
+import org.openvpms.hl7.io.Connectors;
+import org.openvpms.hl7.io.MessageDispatcher;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,7 +33,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Enter description.
+ * Test implementation of the {@link MessageDispatcher}.
  *
  * @author Tim Anderson
  */
@@ -49,9 +52,11 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
 
     /**
      * Constructs an {@link TestMessageDispatcher}.
+     *
+     * @param service the archetype service
      */
-    public TestMessageDispatcher() {
-        super(Mockito.mock(ConnectorsImpl.class));
+    public TestMessageDispatcher(IArchetypeService service) {
+        super(Mockito.mock(ConnectorsImpl.class), service);
     }
 
     /**
@@ -88,6 +93,16 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
 
     public void setSequence(long sequence) {
         this.sequence = sequence;
+    }
+
+    /**
+     * Initialise the connector queues.
+     *
+     * @param connectors the connectors
+     */
+    @Override
+    protected void initialise(Connectors connectors) {
+        // No-op. Don't want to trigger sends for existing connectors
     }
 
     @Override

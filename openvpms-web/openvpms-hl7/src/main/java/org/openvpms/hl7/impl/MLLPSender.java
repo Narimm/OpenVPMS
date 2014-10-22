@@ -43,6 +43,11 @@ class MLLPSender extends Connector {
      */
     private final int port;
 
+    /**
+     * If {@code true}, indicates that messages should be queued but not sent.
+     */
+    private final boolean suspended;
+
 
     /**
      * Constructs an {@link MLLPSender}.
@@ -58,7 +63,7 @@ class MLLPSender extends Connector {
     public MLLPSender(String host, int port, String sendingApplication, String sendingFacility,
                       String receivingApplication, String receivingFacility, IMObjectReference reference) {
         this(host, port, sendingApplication, sendingFacility, receivingApplication, receivingFacility, true,
-             true, reference);
+             true, false, reference);
     }
 
     /**
@@ -72,15 +77,17 @@ class MLLPSender extends Connector {
      * @param receivingFacility    the receiving facility
      * @param includeMillis        if {@code true} include milliseconds in time fields
      * @param includeTimeZone      if {@code true} include the timezone in date/time fields
+     * @param suspended            if {@code true} indicates that messages should be queued but not sent
      * @param reference            the connection reference
      */
     public MLLPSender(String host, int port, String sendingApplication, String sendingFacility,
                       String receivingApplication, String receivingFacility, boolean includeMillis,
-                      boolean includeTimeZone, IMObjectReference reference) {
+                      boolean includeTimeZone, boolean suspended, IMObjectReference reference) {
         super(sendingApplication, sendingFacility, receivingApplication, receivingFacility, includeMillis,
               includeTimeZone, reference);
         this.host = host;
         this.port = port;
+        this.suspended = suspended;
     }
 
     /**
@@ -95,7 +102,7 @@ class MLLPSender extends Connector {
         return new MLLPSender(bean.getString("host"), bean.getInt("port"), bean.getString("sendingApplication"),
                               bean.getString("sendingFacility"), bean.getString("receivingApplication"),
                               bean.getString("receivingFacility"), bean.getBoolean("includeMillis"),
-                              bean.getBoolean("includeTimeZone"), object.getObjectReference());
+                              bean.getBoolean("includeTimeZone"), false, object.getObjectReference());
     }
 
     /**
@@ -114,6 +121,17 @@ class MLLPSender extends Connector {
      */
     public int getPort() {
         return port;
+    }
+
+    /**
+     * Determines if messaging should be suspended.
+     * <p/>
+     * When suspended, messages are queued but not sent.
+     *
+     * @return {@code true} if messaging should be suspended
+     */
+    public boolean isSuspended() {
+        return suspended;
     }
 
     /**
