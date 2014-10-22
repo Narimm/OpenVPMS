@@ -86,7 +86,7 @@ public abstract class AbstractRDSTest extends AbstractMessageTest {
         PV1Populator pv1 = new PV1Populator();
         header.populate(message, new MLLPSender("107.23.104.102", 2026, "Cubex", "Cubex", "VPMS", "VPMS",
                                                 new IMObjectReference(HL7Archetypes.MLLP_SENDER, -1)),
-                        getDatetime("2014-08-27 09:10:00").getTime(), 7000023, config);
+                        getDatetime("2014-08-27 09:10:00").getTime(), "7000023", config);
         pid.populate(message.getPATIENT().getPID(), getContext(), config);
         pv1.populate(message.getPATIENT().getPATIENT_VISIT().getPV1(), getContext(), config);
         RXD rxd = message.getORDER().getRXD();

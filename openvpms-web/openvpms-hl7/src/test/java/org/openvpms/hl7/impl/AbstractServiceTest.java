@@ -91,7 +91,7 @@ public abstract class AbstractServiceTest extends AbstractMessageTest {
         eventServices.add(service);
         dispatcher = new TestMessageDispatcher(getArchetypeService());
         dispatcher.setTimestamp(TestHelper.getDatetime("2014-08-25 08:59:00"));
-        dispatcher.setSequence(1200022);
+        dispatcher.setMessageControlID(1200022);
     }
 
     @After

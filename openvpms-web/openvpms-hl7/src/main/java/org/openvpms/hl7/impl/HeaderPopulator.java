@@ -43,7 +43,7 @@ class HeaderPopulator {
      * @param config           the message population configuration
      * @throws HL7Exception for any error
      */
-    public void populate(Message message, Connector connector, Date timestamp, long messageControlId,
+    public void populate(Message message, Connector connector, Date timestamp, String messageControlId,
                          MessageConfig config)
             throws HL7Exception {
         MSH msh = (MSH) message.get("MSH");
@@ -52,7 +52,7 @@ class HeaderPopulator {
         msh.getReceivingApplication().getNamespaceID().setValue(connector.getReceivingApplication());
         msh.getReceivingFacility().getNamespaceID().setValue(connector.getReceivingFacility());
         populateDTM(msh.getDateTimeOfMessage().getTime(), timestamp, config);
-        msh.getMessageControlID().setValue(Long.toString(messageControlId));
+        msh.getMessageControlID().setValue(messageControlId);
         msh.getCharacterSet(0).setValue("UTF-8");
 
         // populate the EVN segment, if the message has one

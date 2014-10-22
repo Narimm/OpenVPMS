@@ -21,7 +21,6 @@ import ca.uhn.hl7v2.llp.LLPException;
 import ca.uhn.hl7v2.model.Message;
 import org.mockito.Mockito;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.io.MessageDispatcher;
 
@@ -46,7 +45,7 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
 
     private Date timestamp;
 
-    private long sequence = -1;
+    private long messageControlID = -1;
 
     private Semaphore semaphore = new Semaphore(0);
 
@@ -91,8 +90,8 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
         this.timestamp = timestamp;
     }
 
-    public void setSequence(long sequence) {
-        this.sequence = sequence;
+    public void setMessageControlID(long id) {
+        this.messageControlID = id;
     }
 
     /**
@@ -114,13 +113,13 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
 
 
     @Override
-    protected Date getTimestamp() {
-        return timestamp != null ? timestamp : super.getTimestamp();
+    protected Date createMessageTimestamp() {
+        return timestamp != null ? timestamp : super.createMessageTimestamp();
     }
 
     @Override
-    protected long getSequence(Connector connector) {
-        return sequence != -1 ? sequence : super.getSequence(connector);
+    protected String createMessageControlID() throws IOException {
+        return messageControlID != -1 ? Long.toString(messageControlID) : super.createMessageControlID();
     }
 
 }
