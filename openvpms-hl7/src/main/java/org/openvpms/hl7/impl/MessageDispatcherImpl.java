@@ -26,6 +26,7 @@ import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import ca.uhn.hl7v2.util.idgenerator.IDGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.hl7.io.Connector;
@@ -120,6 +121,8 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
     private volatile boolean shutdown = false;
 
 
+    private final Semaphore waiter = new Semaphore(0);
+
     /**
      * The logger.
      */
@@ -151,8 +154,6 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
                 remove(connector);
             }
         };
-
-        initialise(connectors);
     }
 
     /**
@@ -170,17 +171,21 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      * @param message   the message to queue
      * @param connector the connector
      * @param config    the message population configuration
+     * @return the queued message
      */
     @Override
-    public void queue(Message message, Connector connector, MessageConfig config) {
+    public DocumentAct queue(Message message, Connector connector, MessageConfig config) {
+        DocumentAct result;
+        if (!(connector instanceof MLLPSender)) {
+            throw new IllegalArgumentException("Unsupported connector: " + connector);
+        }
         try {
-            if (connector instanceof MLLPSender) {
-                populate(message, (MLLPSender) connector, config);
-                queue(message, (MLLPSender) connector);
-            }
+            populate(message, (MLLPSender) connector, config);
+            result = queue(message, (MLLPSender) connector);
         } catch (Throwable exception) {
             throw new IllegalStateException(exception);
         }
+        return result;
     }
 
     /**
@@ -205,6 +210,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
                     throw new IllegalStateException("Already receiving requests on port " + port);
                 }
             }
+            log.info("Starting listener for " + connector);
             MessageReceiver receiver = new MessageReceiver(application, connector);
             service.registerApplication(receiver);
             service.setExceptionHandler(receiver);
@@ -214,6 +220,8 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
                 if (service.isRunning()) {
                     services.put(port, service);
                     added = true;
+                } else {
+                    log.error("Failed to start listener for " + connector);
                 }
             }
             if (added) {
@@ -271,11 +279,21 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      * Invoked by a BeanFactory after it has set all bean properties supplied
      * (and satisfied BeanFactoryAware and ApplicationContextAware).
      * <p/>
-     * This schedules message dispatching
+     * This delegates to {@link #initialise}
      */
     @Override
     public void afterPropertiesSet() {
+        initialise();
+    }
+
+    /**
+     * Initialises the dispatcher.
+     */
+    public void initialise() {
+        initialise(connectors);
         connectors.addListener(listener);
+
+        log.info("HL7 message dispatcher initialised");
         schedule();
     }
 
@@ -290,7 +308,8 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
     public void destroy() throws Exception {
         shutdown = true;
         connectors.removeListener(listener);
-        executor.shutdown(); // Disable new tasks from being submitted
+        executor.shutdown();  // Disable new tasks from being submitted
+        waiter.release();     // wake from sleep
         try {
             // Wait a while for existing tasks to terminate
             if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
@@ -351,16 +370,19 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      *
      * @param message the message
      * @param sender  the sender
+     * @return the queued message
      * @throws HL7Exception if the message cannot be encoded
      */
-    protected void queue(Message message, final MLLPSender sender) throws HL7Exception {
+    protected DocumentAct queue(Message message, final MLLPSender sender) throws HL7Exception {
+        DocumentAct result;
         MessageQueue queue;
         synchronized (queueMap) {
             queue = getMessageQueue(sender);
         }
 
-        queue.add(message);
+        result = queue.add(message);
         schedule();
+        return result;
     }
 
     /**
@@ -396,23 +418,6 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
     }
 
     /**
-     * Logs a message.
-     *
-     * @param prefix  the logging prefix
-     * @param message the message
-     */
-    protected void log(String prefix, Message message) {
-        String formatted;
-        try {
-            formatted = message.encode();
-            formatted = formatted.replaceAll("\\r", "\n");
-        } catch (HL7Exception exception) {
-            formatted = exception.getMessage();
-        }
-        log.debug(prefix + ": " + formatted);
-    }
-
-    /**
      * Populates the header of a message.
      *
      * @param message the message
@@ -445,6 +450,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      * Schedules {@link #dispatch()} to be run, unless it is already running.
      */
     private void schedule() {
+        waiter.release(); // wakes up dispatch() if it is waiting
         if (!shutdown && scheduled.tryAcquire()) {
             executor.execute(new Runnable() {
                 @Override
@@ -493,8 +499,10 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
         if (waiting != 0 && !shutdown) {
             long wait = minWait - System.currentTimeMillis();
             if (wait > 0) {
+                // wait until the minimum wait time has expired, or a message is queued
                 try {
-                    Thread.sleep(wait);
+                    waiter.drainPermits();
+                    waiter.tryAcquire(wait, TimeUnit.MILLISECONDS);
                 } catch (InterruptedException ignore) {
                     // do nothing
                 }
@@ -509,7 +517,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      * @param queue the queue
      * @return {@code true} if there was a message
      */
-    private boolean sendFirst(MessageQueue queue) {
+    protected boolean sendFirst(MessageQueue queue) {
         boolean processed = false;
         Message message = queue.peekFirst();
         MLLPSender connector = queue.getConnector();
@@ -597,6 +605,23 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
         } else if (connector instanceof MLLPReceiver) {
             stop(connector);
         }
+    }
+
+    /**
+     * Logs a message.
+     *
+     * @param prefix  the logging prefix
+     * @param message the message
+     */
+    private void log(String prefix, Message message) {
+        String formatted;
+        try {
+            formatted = message.encode();
+            formatted = formatted.replaceAll("\r", "\n");
+        } catch (HL7Exception exception) {
+            formatted = exception.getMessage();
+        }
+        log.debug(prefix + ": " + formatted);
     }
 
 }

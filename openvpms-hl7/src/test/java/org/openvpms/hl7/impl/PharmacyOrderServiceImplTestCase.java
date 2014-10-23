@@ -110,7 +110,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
         assertTrue(orderService.createOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, pharmacy));
-        assertTrue(getDispatcher().waitForMessages(30));
+        assertTrue(getDispatcher().waitForMessage());
         checkMessage(expected);
     }
 
@@ -133,7 +133,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
         orderService.updateOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, pharmacy);
-        assertTrue(getDispatcher().waitForMessages(30));
+        assertTrue(getDispatcher().waitForMessage());
         checkMessage(expected);
     }
 
@@ -155,7 +155,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
         orderService.cancelOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, pharmacy);
-        assertTrue(getDispatcher().waitForMessages(30));
+        assertTrue(getDispatcher().waitForMessage());
         checkMessage(expected);
     }
 }

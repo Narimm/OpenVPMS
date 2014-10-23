@@ -74,7 +74,9 @@ public class HL7StatusBrowser extends IMObjectTableBrowser<Entity> {
 
         private static final int QUEUED = NEXT_INDEX;
 
-        private static final int LAST_PROCESSED = QUEUED + 1;
+        private static final int ERRORS = QUEUED + 1;
+
+        private static final int LAST_PROCESSED = ERRORS + 1;
 
         private static final int LAST_ERROR = LAST_PROCESSED + 1;
 
@@ -91,6 +93,7 @@ public class HL7StatusBrowser extends IMObjectTableBrowser<Entity> {
                     = (DefaultTableColumnModel) createTableColumnModel(true, showArchetype, showActive);
             model.addColumn(createTableColumn(QUEUED, "admin.hl7.queued"));
             model.addColumn(createTableColumn(LAST_PROCESSED, "admin.hl7.lastprocessed"));
+            model.addColumn(createTableColumn(ERRORS, "admin.hl7.errors"));
             model.addColumn(createTableColumn(LAST_ERROR, "admin.hl7.lasterror"));
             model.addColumn(createTableColumn(LAST_ERROR_MSG, "admin.hl7.lasterrormessage"));
             setTableColumnModel(model);
@@ -110,6 +113,8 @@ public class HL7StatusBrowser extends IMObjectTableBrowser<Entity> {
             switch (column.getModelIndex()) {
                 case QUEUED:
                     return getQueued(object, row);
+                case ERRORS:
+                    return getErrors(object, row);
                 case LAST_PROCESSED:
                     return getLastProcessed(object, row);
                 case LAST_ERROR:
@@ -124,7 +129,16 @@ public class HL7StatusBrowser extends IMObjectTableBrowser<Entity> {
             Component result = null;
             Statistics stats = getStats(object, row);
             if (stats != null) {
-                result = LabelFactory.create(stats.size(), new TableLayoutData());
+                result = LabelFactory.create(stats.getQueued(), new TableLayoutData());
+            }
+            return result;
+        }
+
+        private Component getErrors(Entity object, int row) {
+            Component result = null;
+            Statistics stats = getStats(object, row);
+            if (stats != null) {
+                result = LabelFactory.create(stats.getErrors(), new TableLayoutData());
             }
             return result;
         }

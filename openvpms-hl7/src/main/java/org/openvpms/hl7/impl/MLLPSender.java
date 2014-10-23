@@ -102,7 +102,8 @@ class MLLPSender extends Connector {
         return new MLLPSender(bean.getString("host"), bean.getInt("port"), bean.getString("sendingApplication"),
                               bean.getString("sendingFacility"), bean.getString("receivingApplication"),
                               bean.getString("receivingFacility"), bean.getBoolean("includeMillis"),
-                              bean.getBoolean("includeTimeZone"), false, object.getObjectReference());
+                              bean.getBoolean("includeTimeZone"), bean.getBoolean("suspended"),
+                              object.getObjectReference());
     }
 
     /**

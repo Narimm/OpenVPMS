@@ -73,6 +73,7 @@ public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> impl
      */
     public ConnectorsImpl(IArchetypeService service) {
         super(service, HL7Archetypes.CONNECTIONS, Entity.class);
+        load();
     }
 
     /**

@@ -18,6 +18,7 @@ package org.openvpms.hl7.io;
 
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.hl7.impl.MessageConfig;
 
@@ -34,8 +35,9 @@ public interface MessageDispatcher {
      * @param message   the message to queue
      * @param connector the connector
      * @param config    the message population configuration
+     * @return the queued message
      */
-    void queue(Message message, Connector connector, MessageConfig config);
+    DocumentAct queue(Message message, Connector connector, MessageConfig config);
 
     /**
      * Registers an application to handle messages from the specified connector.

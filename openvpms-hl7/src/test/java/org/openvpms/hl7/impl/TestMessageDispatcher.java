@@ -16,12 +16,13 @@
 
 package org.openvpms.hl7.impl;
 
+import ca.uhn.hl7v2.AcknowledgmentCode;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.llp.LLPException;
 import ca.uhn.hl7v2.model.Message;
 import org.mockito.Mockito;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.io.MessageDispatcher;
 
 import java.io.IOException;
@@ -43,38 +44,91 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
      */
     private List<Message> messages = new ArrayList<Message>();
 
-    private Date timestamp;
-
-    private long messageControlID = -1;
-
-    private Semaphore semaphore = new Semaphore(0);
+    /**
+     * The processed messages.
+     */
+    private List<DocumentAct> acts = new ArrayList<DocumentAct>();
 
     /**
-     * Constructs an {@link TestMessageDispatcher}.
+     * Optional timestamp to assign to messages.
+     */
+    private Date timestamp;
+
+    /**
+     * Optional message control ID to assign to messages.
+     */
+    private long messageControlID = -1;
+
+    /**
+     * Used to wait for message send attempts.
+     */
+    private Semaphore dispatchSemaphore = new Semaphore(0);
+
+    /**
+     * Used to wait for messages to be sent.
+     */
+    private Semaphore sentSemaphore = new Semaphore(0);
+
+    /**
+     * If {@code true}, generate an exception on send.
+     */
+    private boolean exceptionOnSend;
+
+    /**
+     * The acknowledgment code to return in ACK messages.
+     */
+    private AcknowledgmentCode acknowledgmentCode;
+
+    /**
+     * The exception to populate ACK messages with.
+     */
+    private HL7Exception acknowledgmentException;
+
+    /**
+     * Constructs an {@link TestMessageDispatcher} using mock connectors.
      *
      * @param service the archetype service
      */
     public TestMessageDispatcher(IArchetypeService service) {
-        super(Mockito.mock(ConnectorsImpl.class), service);
+        this(Mockito.mock(ConnectorsImpl.class), service);
     }
 
     /**
-     * Waits at most {@code time} seconds for a message to be sent.
+     * Constructs a  {@link TestMessageDispatcher}.
      *
-     * @param time the no. of seconds to wait
+     * @param connectors the connectors
+     * @param service    the service
+     */
+    public TestMessageDispatcher(ConnectorsImpl connectors, IArchetypeService service) {
+        super(connectors, service);
+    }
+
+    /**
+     * Waits at most 30 seconds for a send attempt.
+     *
+     * @return {@code true} if an attempt was made to send a message
+     */
+    public boolean waitForDispatch() {
+        return tryAcquire(1, dispatchSemaphore);
+    }
+
+    /**
+     * Waits at most 30 seconds for a message to be sent.
+     *
      * @return {@code true} if a message was sent
      */
-    public boolean waitForMessages(int time) {
-        boolean result = false;
-        try {
-            if (semaphore.tryAcquire(time, TimeUnit.SECONDS)) {
-                result = true;
-                semaphore.release();
-            }
-        } catch (InterruptedException ignore) {
-            // do nothing
-        }
-        return result;
+    public boolean waitForMessage() {
+        return waitForMessages(1);
+    }
+
+    /**
+     * Waits at most 30 seconds for message to be sent.
+     *
+     * @param count the no. of messages to wait for
+     * @return {@code true} if a message was sent
+     */
+    public boolean waitForMessages(int count) {
+        return tryAcquire(count, sentSemaphore);
     }
 
     /**
@@ -86,40 +140,143 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
         return messages;
     }
 
+    /**
+     * Returns the processed acts.
+     *
+     * @return the acts
+     */
+    public List<DocumentAct> getProcessed() {
+        return acts;
+    }
+
+    /**
+     * Overrides the default message timestamp.
+     *
+     * @param timestamp the timestamp, or {@code null} to use the default
+     */
     public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
     }
 
+    /**
+     * Overrides the message control ID.
+     *
+     * @param id the message control ID, or {@code -1} to use the default
+     */
     public void setMessageControlID(long id) {
         this.messageControlID = id;
     }
 
     /**
-     * Initialise the connector queues.
+     * Determines if an exception should be simulated on send.
      *
-     * @param connectors the connectors
+     * @param exception if {@code true}, throw an exception on send
+     */
+    public void setExceptionOnSend(boolean exception) {
+        exceptionOnSend = exception;
+    }
+
+    /**
+     * Sets the acknowledgment code to return in ACK messages.
+     *
+     * @param code the code. May be {@code null} to indicate the default
+     */
+    public void setAcknowledgmentCode(AcknowledgmentCode code) {
+        acknowledgmentCode = code;
+    }
+
+    /**
+     * Sets the exception to return in negative-ACK messages.
+     *
+     * @param exception the exception. May be {@code null}
+     */
+    public void setAcknowledgmentException(HL7Exception exception) {
+        acknowledgmentException = exception;
+    }
+
+    /**
+     * Determines if an application error (AE) ack should be generated.
+     */
+
+    /**
+     * Sends the first message in a queue, if any are present.
+     *
+     * @param queue the queue
+     * @return {@code true} if there was a message
      */
     @Override
-    protected void initialise(Connectors connectors) {
-        // No-op. Don't want to trigger sends for existing connectors
+    protected boolean sendFirst(MessageQueue queue) {
+        DocumentAct act = queue.peekFirstAct();
+        Message message = queue.peekFirst();
+        boolean result = super.sendFirst(queue);
+        if (act != null) {
+            dispatchSemaphore.release();
+            acts.add(act);
+            messages.add(message);
+
+            if (queue.getErrorTimestamp() == null) {
+                sentSemaphore.release();
+            }
+        }
+        return result;
     }
 
+    /**
+     * Sends a message, and returns the response.
+     *
+     * @param message the message to send
+     * @param sender  the sender configuration
+     * @return the response
+     * @throws HL7Exception if the connection can not be initialised for any reason
+     * @throws LLPException for any LLP error
+     * @throws IOException  for any I/O error
+     */
     @Override
     protected Message send(Message message, MLLPSender sender) throws HL7Exception, LLPException, IOException {
-        messages.add(message);
-        semaphore.release();
-        return message.generateACK();
+        if (exceptionOnSend) {
+            throw new IOException("simulated send exception");
+        }
+        return (acknowledgmentCode == null) ? message.generateACK()
+                                            : message.generateACK(acknowledgmentCode, acknowledgmentException);
     }
 
-
+    /**
+     * Creates a new timestamp for MSH-7.
+     *
+     * @return a new timestamp
+     */
     @Override
     protected Date createMessageTimestamp() {
         return timestamp != null ? timestamp : super.createMessageTimestamp();
     }
 
+    /**
+     * Creates a new message control ID, for MSH-10.
+     *
+     * @return a new ID
+     * @throws IOException if the ID cannot be generated
+     */
     @Override
     protected String createMessageControlID() throws IOException {
         return messageControlID != -1 ? Long.toString(messageControlID) : super.createMessageControlID();
+    }
+
+    /**
+     * Waits at most 30 seconds for a semaphore to be released.
+     *
+     * @param count     the no. of permits to acquire
+     * @param semaphore the semaphore
+     * @return if the permits were acquired
+     */
+    private boolean tryAcquire(int count, Semaphore semaphore) {
+        boolean result = false;
+        try {
+            result = semaphore.tryAcquire(count, 30, TimeUnit.SECONDS);
+        } catch (InterruptedException ignore) {
+            // do nothing
+        }
+        return result;
+
     }
 
 }

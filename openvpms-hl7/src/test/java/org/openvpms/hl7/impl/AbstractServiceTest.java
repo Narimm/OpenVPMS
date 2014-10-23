@@ -69,7 +69,7 @@ public abstract class AbstractServiceTest extends AbstractMessageTest {
         super.setUp();
 
         IMObjectReference senderRef = new IMObjectReference(HL7Archetypes.MLLP_SENDER, -1);
-        sender = HL7TestHelper.createSender();
+        sender = HL7TestHelper.createSender(-1);    // use an invalid port
         Entity service = (Entity) create(HL7Archetypes.PATIENT_EVENT_SERVICE);
         EntityBean bean = new EntityBean(service);
         bean.addNodeTarget("sender", senderRef);
@@ -97,6 +97,7 @@ public abstract class AbstractServiceTest extends AbstractMessageTest {
     @After
     public void tearDown() throws Exception {
         dispatcher.destroy();
+        HL7TestHelper.disable(sender);
     }
 
     /**
