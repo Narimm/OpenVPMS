@@ -68,7 +68,7 @@ public class PatientInformationServiceImplTestCase extends AbstractServiceTest {
                           "AL1|2|MA|^Pollen|U|Produces hives\r";
 
         service.admitted(getContext());
-        assertTrue(getDispatcher().waitForMessages(30));
+        assertTrue(getDispatcher().waitForMessage());
         checkMessage(expected);
     }
 
@@ -86,7 +86,7 @@ public class PatientInformationServiceImplTestCase extends AbstractServiceTest {
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r";
 
         service.admissionCancelled(getContext());
-        assertTrue(getDispatcher().waitForMessages(30));
+        assertTrue(getDispatcher().waitForMessage());
         checkMessage(expected);
     }
 
@@ -106,7 +106,7 @@ public class PatientInformationServiceImplTestCase extends AbstractServiceTest {
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r";
 
         service.discharged(getContext());
-        assertTrue(getDispatcher().waitForMessages(30));
+        assertTrue(getDispatcher().waitForMessage());
         checkMessage(expected);
     }
 
@@ -126,7 +126,7 @@ public class PatientInformationServiceImplTestCase extends AbstractServiceTest {
                           "AL1|2|MA|^Pollen|U|Produces hives\r";
 
         service.updated(getContext());
-        assertTrue(getDispatcher().waitForMessages(30));
+        assertTrue(getDispatcher().waitForMessage());
         checkMessage(expected);
     }
 

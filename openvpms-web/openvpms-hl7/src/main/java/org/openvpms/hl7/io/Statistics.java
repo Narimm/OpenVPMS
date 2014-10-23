@@ -32,7 +32,16 @@ public interface Statistics {
      *
      * @return the number of messages
      */
-    int size();
+    int getQueued();
+
+    /**
+     * Returns the number of messages in the error queue.
+     * <p/>
+     * Only applies to sending connectors.
+     *
+     * @return the number of messages
+     */
+    int getErrors();
 
     /**
      * Returns the time of the last processed message.

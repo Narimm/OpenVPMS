@@ -317,9 +317,8 @@
         <constructor-arg ref="archetypeService"/>
     </bean>
 
-
-    <bean name="hl7Connectors" class="org.openvpms.hl7.impl.ConnectorsImpl">
-        <constructor-arg ref="archetypeService"/>
+    <bean id="hl7Connectors" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.openvpms.hl7.io.Connectors"/>
     </bean>
 
     <bean id="hl7PatientEventServices" class="org.openvpms.hl7.impl.PatientEventServicesImpl">
@@ -333,8 +332,8 @@
         <constructor-arg ref="hl7PatientEventServices"/>
     </bean>
 
-    <bean id="hl7messageDispatcher" class="org.openvpms.hl7.impl.MessageDispatcherImpl">
-        <constructor-arg ref="hl7Connectors"/>
+    <bean id="hl7messageDispatcher" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.openvpms.hl7.io.MessageDispatcher"/>
     </bean>
 
     <bean class="org.openvpms.hl7.patient.PatientContextFactory">
@@ -344,18 +343,12 @@
         <constructor-arg ref="lookupService"/>
     </bean>
 
-    <bean class="org.openvpms.hl7.impl.PatientInformationServiceImpl">
-        <constructor-arg ref="archetypeService"/>
-        <constructor-arg ref="lookupService"/>
-        <constructor-arg ref="hl7PatientEventServices"/>
-        <constructor-arg ref="hl7messageDispatcher"/>
+    <bean id="hl7PatientInformationService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.openvpms.hl7.patient.PatientInformationService"/>
     </bean>
 
-    <bean class="org.openvpms.hl7.impl.PharmacyOrderServiceImpl">
-        <constructor-arg ref="archetypeService"/>
-        <constructor-arg ref="lookupService"/>
-        <constructor-arg ref="hl7Parmacies"/>
-        <constructor-arg ref="hl7messageDispatcher"/>
+    <bean id="hl7PharmacyOrderService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.openvpms.hl7.pharmacy.PharmacyOrderService"/>
     </bean>
 
     <!-- ================================================================== -->

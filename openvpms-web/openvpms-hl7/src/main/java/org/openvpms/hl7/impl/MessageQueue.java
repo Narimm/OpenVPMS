@@ -20,6 +20,7 @@ import ca.uhn.hl7v2.AcknowledgmentCode;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.Message;
+import ca.uhn.hl7v2.model.v25.datatype.CWE;
 import ca.uhn.hl7v2.model.v25.datatype.MSG;
 import ca.uhn.hl7v2.model.v25.datatype.TS;
 import ca.uhn.hl7v2.model.v25.message.ACK;
@@ -181,6 +182,16 @@ class MessageQueue implements Statistics {
     }
 
     /**
+     * Retrieves, but does not remove, the first act in the queue.
+     *
+     * @return the head of this queue, or {@code null} if the queue is empty
+     */
+    public synchronized DocumentAct peekFirstAct() {
+        peekFirst();
+        return currentAct;
+    }
+
+    /**
      * Invoked when a message is sent.
      *
      * @param response the response
@@ -190,6 +201,7 @@ class MessageQueue implements Statistics {
         if (currentAct == null) {
             throw new IllegalStateException("No current message");
         }
+        long waitUntil = -1;
         DocumentAct result = currentAct;
         if (response instanceof ACK) {
             ACK ack = (ACK) response;
@@ -199,13 +211,14 @@ class MessageQueue implements Statistics {
                 processed();
             } else if (AcknowledgmentCode.AE.toString().equals(ackCode)) {
                 handleError(ack, HL7ActStatuses.PENDING);
-                setWaitUntil(System.currentTimeMillis() + 30 * 1000);
+                waitUntil = System.currentTimeMillis() + 30 * 1000;
             } else {
                 handleError(ack, HL7ActStatuses.ERROR);
             }
         } else {
             unsupportedResponse(response);
         }
+        setWaitUntil(waitUntil);
         return result;
     }
 
@@ -278,11 +291,20 @@ class MessageQueue implements Statistics {
      *
      * @return the number of messages
      */
-    public int size() {
-        ArchetypeQuery query = createQuery();
-        query.setCountResults(true);
-        IPage<IMObject> page = service.get(query);
-        return page.getTotalResults();
+    public int getQueued() {
+        return countMessages(HL7ActStatuses.PENDING);
+    }
+
+    /**
+     * Returns the number of messages in the error queue.
+     * <p/>
+     * Only applies to sending connectors.
+     *
+     * @return the number of messages
+     */
+    @Override
+    public int getErrors() {
+        return countMessages(HL7ActStatuses.ERROR);
     }
 
     /**
@@ -384,14 +406,13 @@ class MessageQueue implements Statistics {
         currentAct = null;
         lastError = errorDate;
         lastErrorMessage = error;
-        waitUntil = -1;
     }
 
     /**
      * Retrieves the next message.
      */
     private void getNext() {
-        ArchetypeQuery query = createQuery();
+        ArchetypeQuery query = createQuery(HL7ActStatuses.PENDING);
         query.add(Constraints.sort("id"));
         query.setMaxResults(1);
         IMObjectQueryIterator<DocumentAct> iterator = new IMObjectQueryIterator<DocumentAct>(service, query);
@@ -431,11 +452,11 @@ class MessageQueue implements Statistics {
         }
         try {
             for (ERR err : ack.getERRAll()) {
-                String hl7Code = err.getHL7ErrorCode().getIdentifier().getValue();
-                if (!StringUtils.isEmpty(hl7Code)) {
-                    append(buffer, "HL7 Error Code: ", hl7Code);
+                String hl7ErrorCode = formatCWE(err.getHL7ErrorCode());
+                if (hl7ErrorCode != null) {
+                    append(buffer, "HL7 Error Code: ", hl7ErrorCode);
                 }
-                String errorCode = err.getApplicationErrorCode().getIdentifier().getValue();
+                String errorCode = formatCWE(err.getApplicationErrorCode());
                 if (!StringUtils.isEmpty(errorCode)) {
                     append(buffer, "Application Error Code: ", errorCode);
                 }
@@ -464,14 +485,43 @@ class MessageQueue implements Statistics {
     }
 
     /**
+     * Formats a Coded with Exceptions message field.
+     *
+     * @param field the field to format
+     * @return the formatted field, or {@code null} if there is nothing to format
+     */
+    private String formatCWE(CWE field) {
+        String result = null;
+        String id = field.getIdentifier().getValue();
+        String text = field.getText().getValue();
+        if (!StringUtils.isEmpty(id) || !StringUtils.isEmpty(text)) {
+            if (!StringUtils.isEmpty(id) && !StringUtils.isEmpty(text)) {
+                result = id + " - " + text;
+            } else if (!StringUtils.isEmpty(id)) {
+                result = id;
+            } else {
+                result = text;
+            }
+
+            String originalText = field.getOriginalText().getValue();
+            if (!StringUtils.isEmpty(originalText)) {
+                result += "\nOriginal Text: ";
+                result += originalText;
+            }
+        }
+        return result;
+    }
+
+    /**
      * Creates a query for PENDING messages.
      *
+     * @param status the message status
      * @return a new query
      */
-    private ArchetypeQuery createQuery() {
+    private ArchetypeQuery createQuery(String status) {
         ArchetypeQuery query = new ArchetypeQuery(HL7Archetypes.MESSAGE);
         query.add(Constraints.join("connector").add(Constraints.eq("entity", connector.getReference())));
-        query.add(Constraints.eq("status", HL7ActStatuses.PENDING));
+        query.add(Constraints.eq("status", status));
         return query;
     }
 
@@ -498,6 +548,19 @@ class MessageQueue implements Statistics {
             }
         }
         return result;
+    }
+
+    /**
+     * Count messages with the specified status.
+     *
+     * @param status the message status
+     * @return the no. of messages with th status
+     */
+    private int countMessages(String status) {
+        ArchetypeQuery query = createQuery(status);
+        query.setCountResults(true);
+        IPage<IMObject> page = service.get(query);
+        return page.getTotalResults();
     }
 
     /**
@@ -537,17 +600,17 @@ class MessageQueue implements Statistics {
     }
 
     /**
-     * Appends a key and value to a buffer, prepended by a new-line if the buffer is not empty.
+     * Appends values to a buffer, prepended by a new-line if the buffer is not empty.
      *
      * @param buffer the buffer
-     * @param key    the key
-     * @param value  the value
      */
-    private void append(StringBuilder buffer, String key, String value) {
+    private void append(StringBuilder buffer, String... values) {
         if (buffer.length() != 0) {
             buffer.append("\n");
         }
-        buffer.append(key).append(value);
+        for (String value : values) {
+            buffer.append(value);
+        }
     }
 
     /**

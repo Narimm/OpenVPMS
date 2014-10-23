@@ -165,7 +165,17 @@ class MessageReceiver implements ReceivingApplication, ReceivingApplicationExcep
      * @return {@code 0} - the receiver doesn't support queuing
      */
     @Override
-    public int size() {
+    public int getQueued() {
+        return 0;
+    }
+
+    /**
+     * Returns the number of messages in the error queue.
+     *
+     * @return {@code 0} - the receiver doesn't support queuing
+     */
+    @Override
+    public int getErrors() {
         return 0;
     }
 

@@ -22,6 +22,7 @@ import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.v25.message.ACK;
 import ca.uhn.hl7v2.model.v25.message.RDE_O11;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -62,8 +63,16 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        sender = HL7TestHelper.createSender();
+        sender = HL7TestHelper.createSender(-1);
         context = HapiContextFactory.create();
+    }
+
+    /**
+     * Tears down the test.
+     */
+    @After
+    public void tearDown() {
+        HL7TestHelper.disable(sender);
     }
 
     /**
@@ -77,7 +86,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
         HL7DocumentHandler handler = new HL7DocumentHandler(getArchetypeService());
         MessageQueue queue = new MessageQueue(sender, getArchetypeService(), handler, context);
         assertFalse(queue.isSuspended());
-        assertEquals(0, queue.size());
+        assertEquals(0, queue.getQueued());
 
         List<DocumentAct> acts = new ArrayList<DocumentAct>();
         for (int i = 0; i < count; ++i) {
@@ -87,7 +96,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
             acts.add(act);
             assertEquals(HL7ActStatuses.PENDING, act.getStatus());
             assertNotNull(act);
-            assertEquals(i + 1, queue.size());
+            assertEquals(i + 1, queue.getQueued());
         }
 
         for (int i = 0; i < count; ++i) {
@@ -96,7 +105,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
             RDE_O11 order = (RDE_O11) message;
             assertEquals(Integer.toString(i), order.getMSH().getMessageControlID().getValue());
             DocumentAct act = queue.sent(order.generateACK());
-            assertEquals(count - i - 1, queue.size());
+            assertEquals(count - i - 1, queue.getQueued());
             assertEquals(HL7ActStatuses.ACCEPTED, act.getStatus());
             assertNotNull(act);
             assertEquals(acts.get(i), act);
@@ -112,7 +121,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
     public void testApplicationReject() throws Exception {
         HL7DocumentHandler handler = new HL7DocumentHandler(getArchetypeService());
         MessageQueue queue = new MessageQueue(sender, getArchetypeService(), handler, context);
-        assertEquals(0, queue.size());
+        assertEquals(0, queue.getQueued());
 
         RDE_O11 message = createMessage();
         DocumentAct act1 = queue.add(message);
@@ -139,7 +148,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
     public void testApplicationError() throws Exception {
         HL7DocumentHandler handler = new HL7DocumentHandler(getArchetypeService());
         MessageQueue queue = new MessageQueue(sender, getArchetypeService(), handler, context);
-        assertEquals(0, queue.size());
+        assertEquals(0, queue.getQueued());
 
         RDE_O11 message = createMessage();
         DocumentAct act1 = queue.add(message);
@@ -173,7 +182,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
     public void testUnsupportedResponse() throws Exception {
         HL7DocumentHandler handler = new HL7DocumentHandler(getArchetypeService());
         MessageQueue queue = new MessageQueue(sender, getArchetypeService(), handler, context);
-        assertEquals(0, queue.size());
+        assertEquals(0, queue.getQueued());
 
         RDE_O11 message = createMessage();
         DocumentAct act1 = queue.add(message);
@@ -196,7 +205,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
     public void testError() throws Exception {
         HL7DocumentHandler handler = new HL7DocumentHandler(getArchetypeService());
         MessageQueue queue = new MessageQueue(sender, getArchetypeService(), handler, context);
-        assertEquals(0, queue.size());
+        assertEquals(0, queue.getQueued());
 
         RDE_O11 message = createMessage();
         DocumentAct act1 = queue.add(message);
