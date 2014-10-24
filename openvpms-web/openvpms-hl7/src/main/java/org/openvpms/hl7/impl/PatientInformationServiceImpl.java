@@ -17,6 +17,7 @@
 package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.model.Message;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.hl7.io.Connector;
@@ -69,14 +70,15 @@ public class PatientInformationServiceImpl implements PatientInformationService 
      * Notifies that a patient has been admitted.
      *
      * @param context the patient context
+     * @param user    the user that triggered the notification
      */
     @Override
-    public void admitted(PatientContext context) {
+    public void admitted(PatientContext context, User user) {
         Collection<Connector> senders = services.getConnections(context.getLocation());
         for (Connector connector : senders) {
             MessageConfig config = MessageConfigFactory.create(connector);
             Message message = factory.createAdmit(context, config);
-            queue(message, connector, config);
+            queue(message, connector, config, user);
         }
     }
 
@@ -85,14 +87,15 @@ public class PatientInformationServiceImpl implements PatientInformationService 
      * Notifies that an admission has been cancelled.
      *
      * @param context the patient context
+     * @param user    the user that triggered the notification
      */
     @Override
-    public void admissionCancelled(PatientContext context) {
+    public void admissionCancelled(PatientContext context, User user) {
         Collection<Connector> senders = services.getConnections(context.getLocation());
         for (Connector connector : senders) {
             MessageConfig config = MessageConfigFactory.create(connector);
             Message message = factory.createCancelAdmit(context, config);
-            queue(message, connector, config);
+            queue(message, connector, config, user);
         }
     }
 
@@ -100,14 +103,15 @@ public class PatientInformationServiceImpl implements PatientInformationService 
      * Notifies that a patient has been discharged.
      *
      * @param context the patient context
+     * @param user    the user that triggered the notification
      */
     @Override
-    public void discharged(PatientContext context) {
+    public void discharged(PatientContext context, User user) {
         Collection<Connector> senders = services.getConnections(context.getLocation());
         for (Connector connector : senders) {
             MessageConfig config = MessageConfigFactory.create(connector);
             Message message = factory.createDischarge(context, config);
-            queue(message, connector, config);
+            queue(message, connector, config, user);
         }
     }
 
@@ -115,14 +119,15 @@ public class PatientInformationServiceImpl implements PatientInformationService 
      * Notifies that a patient has been updated.
      *
      * @param context the patient context
+     * @param user    the user that triggered the notification
      */
     @Override
-    public void updated(PatientContext context) {
+    public void updated(PatientContext context, User user) {
         Collection<Connector> senders = services.getConnections(context.getLocation());
         for (Connector connector : senders) {
             MessageConfig config = MessageConfigFactory.create(connector);
             Message message = factory.createUpdate(context, config);
-            queue(message, connector, config);
+            queue(message, connector, config, user);
         }
     }
 
@@ -132,9 +137,10 @@ public class PatientInformationServiceImpl implements PatientInformationService 
      * @param message   the message to queue
      * @param connector the connector
      * @param config    the message config
+     * @param user      the user that triggered the notification
      */
-    protected void queue(Message message, Connector connector, MessageConfig config) {
-        dispatcher.queue(message, connector, config);
+    protected void queue(Message message, Connector connector, MessageConfig config, User user) {
+        dispatcher.queue(message, connector, config, user);
     }
 
 }

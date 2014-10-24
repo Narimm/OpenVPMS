@@ -124,7 +124,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                 }
             });
 
-            orderPlacer = createPharmacyOrderPlacer(customer, location);
+            orderPlacer = createPharmacyOrderPlacer(customer, location, context.getContext().getUser());
             orderPlacer.initialise(getItems().getActs());
         }
     }
@@ -451,10 +451,11 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
      *
      * @param customer the customer
      * @param location the practice location
+     * @param user     the user responsible for the orders
      * @return a new pharmacy order placer
      */
-    protected PharmacyOrderPlacer createPharmacyOrderPlacer(Party customer, Party location) {
-        return new PharmacyOrderPlacer(customer, location, getLayoutContext().getCache(),
+    protected PharmacyOrderPlacer createPharmacyOrderPlacer(Party customer, Party location, User user) {
+        return new PharmacyOrderPlacer(customer, location, user, getLayoutContext().getCache(),
                                        ServiceHelper.getBean(PharmacyOrderService.class),
                                        ServiceHelper.getBean(Pharmacies.class),
                                        ServiceHelper.getBean(PatientContextFactory.class),

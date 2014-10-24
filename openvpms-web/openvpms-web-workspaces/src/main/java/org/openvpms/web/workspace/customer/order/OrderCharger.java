@@ -235,48 +235,34 @@ public class OrderCharger {
      * @param editor the editor to add charges to
      */
     private void charge(List<Act> orders, AbstractCustomerChargeActEditor editor) {
-        int unsupported = 0;
-        int invalid = 0;
-        int multiplePatient = 0;
-        int differentInvoice = 0;
+        StringBuilder messages = new StringBuilder();
         for (Act order : orders) {
-            if (!TypeHelper.isA(order, OrderArchetypes.PHARMACY_ORDER)) {
-                ++unsupported;
-            } else {
+            if (TypeHelper.isA(order, OrderArchetypes.PHARMACY_ORDER, OrderArchetypes.PHARMACY_RETURN)) {
                 PharmacyOrderCharger charger = new PharmacyOrderCharger((FinancialAct) order, rules);
                 if (!charger.isValid()) {
-                    ++invalid;
+                    messages.append(Messages.format("customer.order.incomplete", order.getId(),
+                                                    DescriptorHelper.getDisplayName(order)));
                 } else if (patient != null && !charger.canCharge(patient)) {
-                    ++multiplePatient;
+                    messages.append(Messages.format("customer.order.multiplePatient", order.getId(),
+                                                    DescriptorHelper.getDisplayName(order)));
                 } else if (!charger.canCharge(editor)) {
-                    ++differentInvoice;
+                    FinancialAct invoice = charger.getInvoice();
+                    if (invoice != null && invoice.getId() != editor.getObject().getId()) {
+                        messages.append(Messages.format("customer.order.differentInvoice", order.getId(),
+                                                        DescriptorHelper.getDisplayName(order), invoice.getId()));
+                    } else {
+                        messages.append(Messages.format("customer.order.cannotcharge", order.getId(),
+                                                        DescriptorHelper.getDisplayName(order),
+                                                        editor.getDisplayName()));
+                    }
                 } else {
                     charger.charge(editor);
                     charged.add(order);
                 }
             }
         }
-        if (unsupported != 0 || invalid != 0 || multiplePatient != 0 || differentInvoice != 0) {
-            StringBuilder message = new StringBuilder();
-            if (unsupported != 0) {
-                message.append(Messages.format("customer.order.unsupported", unsupported));
-            }
-            if (invalid != 0) {
-                message.append(Messages.format("customer.order.incomplete", invalid));
-            }
-            if (multiplePatient != 0) {
-                if (message.length() != 0) {
-                    message.append("\n\n");
-                }
-                message.append(Messages.format("customer.order.multiplePatient", multiplePatient));
-            }
-            if (differentInvoice != 0) {
-                if (message.length() != 0) {
-                    message.append("\n\n");
-                }
-                message.append(Messages.format("customer.order.differentInvoice", differentInvoice));
-            }
-            InformationDialog.show(message.toString());
+        if (messages.length() != 0) {
+            InformationDialog.show(messages.toString());
         }
     }
 

@@ -69,6 +69,11 @@ public class PharmacyOrderPlacer {
     private final Party location;
 
     /**
+     * The user responsible for the orders.
+     */
+    private final User user;
+
+    /**
      * The cache.
      */
     private final IMObjectCache cache;
@@ -109,6 +114,7 @@ public class PharmacyOrderPlacer {
      *
      * @param customer           the customer
      * @param location           the location
+     * @param user               the user responsible for the orders
      * @param cache              the object cache
      * @param service            the pharmacy order service
      * @param pharmacies         the pharmacies
@@ -116,11 +122,12 @@ public class PharmacyOrderPlacer {
      * @param informationService the patient information service
      * @param rules              the medical record rules
      */
-    public PharmacyOrderPlacer(Party customer, Party location, IMObjectCache cache, PharmacyOrderService service,
-                               Pharmacies pharmacies, PatientContextFactory factory,
+    public PharmacyOrderPlacer(Party customer, Party location, User user, IMObjectCache cache,
+                               PharmacyOrderService service, Pharmacies pharmacies, PatientContextFactory factory,
                                PatientInformationService informationService, MedicalRecordRules rules) {
         this.customer = customer;
         this.location = location;
+        this.user = user;
         this.cache = cache;
         this.service = service;
         this.pharmacies = pharmacies;
@@ -208,7 +215,7 @@ public class PharmacyOrderPlacer {
             PatientContext context = getPatientContext(order, events);
             if (context != null) {
                 service.cancelOrder(context, order.getProduct(), order.getQuantity(),
-                                    order.getId(), order.getStartTime(), order.getPharmacy());
+                                    order.getId(), order.getStartTime(), order.getPharmacy(), user);
             }
         }
     }
@@ -289,7 +296,7 @@ public class PharmacyOrderPlacer {
         if (context != null) {
             notifyPatientInformation(context, changes, patients);
             if (service.createOrder(context, order.getProduct(), order.getQuantity(), order.getId(),
-                                    order.getStartTime(), order.getPharmacy())) {
+                                    order.getStartTime(), order.getPharmacy(), user)) {
                 ActBean bean = new ActBean(act);
                 bean.setValue("ordered", true);
                 result = true;
@@ -310,7 +317,7 @@ public class PharmacyOrderPlacer {
         if (context != null) {
             notifyPatientInformation(context, changes, patients);
             service.updateOrder(context, order.getProduct(), order.getQuantity(), order.getId(), order.getStartTime(),
-                                order.getPharmacy());
+                                order.getPharmacy(), user);
         }
     }
 
@@ -326,7 +333,7 @@ public class PharmacyOrderPlacer {
         if (context != null) {
             notifyPatientInformation(context, changes, patients);
             service.cancelOrder(context, order.getProduct(), order.getQuantity(), order.getId(), order.getStartTime(),
-                                order.getPharmacy());
+                                order.getPharmacy(), user);
         }
     }
 
@@ -349,7 +356,7 @@ public class PharmacyOrderPlacer {
             if (changes.isNew(visit)
                 || (visit.getActivityEndTime() != null
                     && DateRules.compareTo(visit.getActivityEndTime(), new Date()) < 0)) {
-                informationService.updated(context);
+                informationService.updated(context, user);
                 patients.add(context.getPatient());
             }
         }

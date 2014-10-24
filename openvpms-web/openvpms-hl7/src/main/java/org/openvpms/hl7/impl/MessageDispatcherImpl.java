@@ -26,9 +26,13 @@ import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import ca.uhn.hl7v2.util.idgenerator.IDGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.security.RunAs;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.io.MessageDispatcher;
@@ -63,6 +67,11 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      * The archetype service.
      */
     private final IArchetypeService service;
+
+    /**
+     * The practice rules.
+     */
+    private final PracticeRules rules;
 
     /**
      * The message header populator.
@@ -120,8 +129,20 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      */
     private volatile boolean shutdown = false;
 
-
+    /**
+     * Used to wait if errors have occurred sending messages. This waits until a time expires or a message is queued,
+     */
     private final Semaphore waiter = new Semaphore(0);
+
+    /**
+     * The user to initialise the security context in the dispatch thread.
+     */
+    private volatile User user;
+
+    /**
+     * Limits the no. of times an error is logged if the user isn't configured.
+     */
+    private boolean missingUser;
 
     /**
      * The logger.
@@ -133,15 +154,19 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      *
      * @param connectors the connectors
      * @param service    the archetype service
+     * @param rules      the practice rules
      */
-    public MessageDispatcherImpl(ConnectorsImpl connectors, IArchetypeService service) {
+    public MessageDispatcherImpl(ConnectorsImpl connectors, IArchetypeService service, PracticeRules rules) {
         this.connectors = connectors;
         this.service = service;
+        this.rules = rules;
         populator = new HeaderPopulator();
         messageContext = HapiContextFactory.create();
         generator = messageContext.getParserConfiguration().getIdGenerator();
         executor = Executors.newSingleThreadExecutor();
         handler = new HL7DocumentHandler(service);
+
+        user = getServiceUser();
 
         listener = new ConnectorsImpl.Listener() {
             @Override
@@ -171,17 +196,18 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      * @param message   the message to queue
      * @param connector the connector
      * @param config    the message population configuration
+     * @param user      the user responsible for the message
      * @return the queued message
      */
     @Override
-    public DocumentAct queue(Message message, Connector connector, MessageConfig config) {
+    public DocumentAct queue(Message message, Connector connector, MessageConfig config, User user) {
         DocumentAct result;
         if (!(connector instanceof MLLPSender)) {
             throw new IllegalArgumentException("Unsupported connector: " + connector);
         }
         try {
             populate(message, (MLLPSender) connector, config);
-            result = queue(message, (MLLPSender) connector);
+            result = queue(message, (MLLPSender) connector, user);
         } catch (Throwable exception) {
             throw new IllegalStateException(exception);
         }
@@ -370,17 +396,18 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      *
      * @param message the message
      * @param sender  the sender
+     * @param user    the user responsible for the message
      * @return the queued message
      * @throws HL7Exception if the message cannot be encoded
      */
-    protected DocumentAct queue(Message message, final MLLPSender sender) throws HL7Exception {
+    protected DocumentAct queue(Message message, final MLLPSender sender, User user) throws HL7Exception {
         DocumentAct result;
         MessageQueue queue;
         synchronized (queueMap) {
             queue = getMessageQueue(sender);
         }
 
-        result = queue.add(message);
+        result = queue.add(message, user);
         schedule();
         return result;
     }
@@ -451,13 +478,21 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      */
     private void schedule() {
         waiter.release(); // wakes up dispatch() if it is waiting
-        if (!shutdown && scheduled.tryAcquire()) {
+
+        final User user = getServiceUser();
+
+        if (!shutdown && user != null && scheduled.tryAcquire()) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
                     scheduled.release(); // need to release here to enable dispatch() to reschedule
                     try {
-                        dispatch();
+                        RunAs.run(user, new Runnable() {
+                            @Override
+                            public void run() {
+                                dispatch();
+                            }
+                        });
                     } catch (Throwable exception) {
                         log.error(exception.getMessage(), exception);
                     }
@@ -527,6 +562,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
                 Message response = send(message, connector);
                 queue.sent(response);
             } catch (Throwable exception) {
+                log.error("Failed to send message", exception);
                 // failed to send the message, so don't queue for another 30 seconds
                 queue.setWaitUntil(System.currentTimeMillis() + 30 * 1000);
                 queue.error(exception);
@@ -624,4 +660,27 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
         log.debug(prefix + ": " + formatted);
     }
 
+    /**
+     * Returns the user to set the security context in the dispatch thread.
+     *
+     * @return the user, or {@code null} if none has been configured
+     */
+    private User getServiceUser() {
+        if (user == null) {
+            synchronized (this) {
+                if (user == null) {
+                    Party practice = rules.getPractice();
+                    if (practice != null) {
+                        user = rules.getServiceUser(practice);
+                    }
+                    if (user == null && !missingUser) {
+                        log.error("Missing party.organisationPractice serviceUser. Messages cannot be sent until "
+                                  + "this is configured");
+                        missingUser = true;
+                    }
+                }
+            }
+        }
+        return user;
+    }
 }

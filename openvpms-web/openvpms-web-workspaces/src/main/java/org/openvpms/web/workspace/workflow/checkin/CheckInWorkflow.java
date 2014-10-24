@@ -413,7 +413,7 @@ public class CheckInWorkflow extends WorkflowImpl {
             PatientContext pc = factory.createContext(context.getPatient(), context.getCustomer(), visit,
                                                       context.getLocation(), context.getClinician());
             PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
-            service.admitted(pc);
+            service.admitted(pc, context.getUser());
         }
     }
 
@@ -431,7 +431,7 @@ public class CheckInWorkflow extends WorkflowImpl {
             PatientContext pc = factory.createContext(context.getPatient(), context.getCustomer(), visit,
                                                       context.getLocation(), context.getClinician());
             PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
-            service.admissionCancelled(pc);
+            service.admissionCancelled(pc, context.getUser());
         }
     }
 }

@@ -20,16 +20,19 @@ import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.v25.message.RDS_O13;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.user.UserRules;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
+import org.openvpms.hl7.patient.PatientContext;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -83,9 +86,11 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
 
     /**
      * Verifies that orders are created from dispense messages.
+     *
+     * @throws HL7Exception for any HL7 exception
      */
     @Test
-    public void testCreateOrder() throws HL7Exception, IOException {
+    public void testCreateOrder() throws HL7Exception {
         RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules, userRules);
         List<Act> acts = processor.process(rds, getContext().getLocation().getObjectReference());
         assertEquals(2, acts.size());
@@ -109,9 +114,11 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
 
     /**
      * Verifies that orders are created from dispense messages.
+     *
+     * @throws HL7Exception for any HL7 exception
      */
     @Test
-    public void testUnknownPatient() throws HL7Exception, IOException {
+    public void testUnknownPatient() throws HL7Exception {
         RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules, userRules);
         rds.getPATIENT().getPID().getPatientID().getIDNumber().setValue("UNKNOWN");
         log("RDS: ", rds);
@@ -130,9 +137,11 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
 
     /**
      * Verifies that orders are created from dispense messages.
+     *
+     * @throws HL7Exception for any HL7 exception
      */
     @Test
-    public void testUnknownProduct() throws HL7Exception, IOException {
+    public void testUnknownProduct() throws HL7Exception {
         RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules, userRules);
         rds.getORDER().getRXD().getDispenseGiveCode().getIdentifier().setValue("UNKNOWN");
         log("RDS: ", rds);
@@ -148,6 +157,32 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
         checkEquals(BigDecimal.valueOf(2), item.getBigDecimal("quantity"));
         assertEquals("90032145", item.getString("reference"));
         assertEquals("Unknown Dispense Give Code, id='UNKNOWN', name='Valium 2mg'", order.getString("notes"));
+        save(acts);
+    }
+
+    /**
+     * Verifies that a note is added if the patient changes.
+     *
+     * @throws HL7Exception for any HL7 exception
+     */
+    @Test
+    public void testDifferentPatient() throws HL7Exception {
+        RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules, userRules);
+        PatientContext context = getContext();
+        Party patient1 = context.getPatient();
+        Party patient2 = TestHelper.createPatient();
+        List<FinancialAct> invoice = FinancialTestHelper.createChargesInvoice(
+                BigDecimal.TEN, context.getCustomer(), patient2, product, ActStatus.IN_PROGRESS);
+        save(invoice);
+        FinancialAct invoiceItem = invoice.get(1);
+        String itemId = Long.toString(invoiceItem.getId());
+        rds.getORDER().getORC().getPlacerOrderNumber().getEntityIdentifier().setValue(itemId);
+        List<Act> acts = processor.process(rds, context.getLocation().getObjectReference());
+        assertEquals(2, acts.size());
+        ActBean order = new ActBean(acts.get(0));
+        assertEquals("Patient is different to that in the original invoice. Was '" + patient2.getName()
+                     + "' (" + patient2.getId() + "). Now '" + patient1.getName() + "' (" + patient1.getId() + ")",
+                     order.getString("notes"));
         save(acts);
     }
 }

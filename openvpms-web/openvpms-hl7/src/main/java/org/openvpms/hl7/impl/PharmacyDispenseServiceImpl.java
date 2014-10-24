@@ -34,14 +34,12 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.security.RunAs;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.io.MessageDispatcher;
 import org.openvpms.hl7.pharmacy.Pharmacies;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,6 +47,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 /**
  * Service to process pharmacy dispense events.
@@ -162,7 +161,7 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
      * @throws HL7Exception                  if there is a problem with the message
      */
     @Override
-    public Message processMessage(Message message, Map<String, Object> theMetadata)
+    public Message processMessage(final Message message, Map<String, Object> theMetadata)
             throws ReceivingApplicationException, HL7Exception {
         log(message);
         RDS_O13 dispense = (RDS_O13) message;
@@ -191,24 +190,31 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
         IMObjectReference reference = (IMObjectReference) theMetadata.get("pharmacy");
         Entity pharmacy = pharmacies.getPharmacy(reference);
         if (pharmacy == null) {
-            throw new HL7Exception("Pharmacy not found");
+            throw new ReceivingApplicationException("Pharmacy not found");
         }
         EntityBean bean = new EntityBean(pharmacy, service);
         User user = getUser(bean);
         if (user == null) {
-            throw new HL7Exception("User not found");
+            throw new ReceivingApplicationException("User not found");
         }
-        IMObjectReference location = getLocation(bean);
+        final IMObjectReference location = getLocation(bean);
+
+        Message response;
 
         try {
-            initSecurityContext(user);
-            process((RDS_O13) message, location);
-            return message.generateACK();
-        } catch (IOException exception) {
+            response = RunAs.run(user, new Callable<Message>() {
+                @Override
+                public Message call() throws Exception {
+                    process((RDS_O13) message, location);
+                    return message.generateACK();
+                }
+            });
+        } catch (HL7Exception exception) {
+            throw exception;
+        } catch (Exception exception) {
             throw new HL7Exception(exception);
-        } finally {
-            SecurityContextHolder.clearContext();
         }
+        return response;
     }
 
     /**
@@ -220,19 +226,6 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
     @Override
     public boolean canProcess(Message message) {
         return message instanceof RDS_O13;
-    }
-
-    /**
-     * Initialises the security context.
-     *
-     * @param user the user
-     */
-    private void initSecurityContext(User user) {
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        UsernamePasswordAuthenticationToken authentication
-                = new UsernamePasswordAuthenticationToken(user, user.getPassword(), user.getAuthorities());
-        context.setAuthentication(authentication);
-        SecurityContextHolder.setContext(context);
     }
 
     /**

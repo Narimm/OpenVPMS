@@ -21,7 +21,10 @@ import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.llp.LLPException;
 import ca.uhn.hl7v2.model.Message;
 import org.mockito.Mockito;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.hl7.io.MessageDispatcher;
 
@@ -88,19 +91,26 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
      * Constructs an {@link TestMessageDispatcher} using mock connectors.
      *
      * @param service the archetype service
+     * @param user    the user to initialise the security context in the dispatch thread
      */
-    public TestMessageDispatcher(IArchetypeService service) {
-        this(Mockito.mock(ConnectorsImpl.class), service);
+    public TestMessageDispatcher(IArchetypeService service, final User user) {
+        this(Mockito.mock(ConnectorsImpl.class), service, new PracticeRules(service) {
+            @Override
+            public User getServiceUser(Party practice) {
+                return user;
+            }
+        });
     }
 
     /**
-     * Constructs a  {@link TestMessageDispatcher}.
+     * Constructs a {@link TestMessageDispatcher}.
      *
      * @param connectors the connectors
      * @param service    the service
+     * @param rules      the practice rules
      */
-    public TestMessageDispatcher(ConnectorsImpl connectors, IArchetypeService service) {
-        super(connectors, service);
+    public TestMessageDispatcher(ConnectorsImpl connectors, IArchetypeService service, PracticeRules rules) {
+        super(connectors, service, rules);
     }
 
     /**

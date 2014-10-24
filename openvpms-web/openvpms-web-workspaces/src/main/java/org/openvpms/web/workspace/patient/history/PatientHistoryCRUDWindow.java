@@ -244,7 +244,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         PatientContext context = PatientContextHelper.getPatientContext(act, getContext());
         if (context != null && ObjectUtils.equals(event, context.getVisit())) {
             PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
-            service.updated(context);
+            service.updated(context, getContext().getUser());
         }
     }
 

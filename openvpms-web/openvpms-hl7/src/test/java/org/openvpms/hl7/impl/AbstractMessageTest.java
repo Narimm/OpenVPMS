@@ -95,6 +95,7 @@ public abstract class AbstractMessageTest extends ArchetypeServiceTest {
         bean.setValue("species", "CANINE");
         bean.setValue("breed", "KELPIE");
         bean.setValue("sex", "MALE");
+        bean.save();
 
         Act visit = PatientTestHelper.createEvent(patient, null);
         visit.setActivityStartTime(getDatetime("2014-08-25 08:55:00").getTime());

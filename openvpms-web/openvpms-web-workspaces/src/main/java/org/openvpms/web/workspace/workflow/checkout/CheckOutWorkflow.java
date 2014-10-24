@@ -324,7 +324,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
             PatientContext pc = factory.createContext(context.getPatient(), context.getCustomer(), visit,
                                                       context.getLocation(), context.getClinician());
             PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
-            service.discharged(pc);
+            service.discharged(pc, context.getUser());
         }
     }
 
