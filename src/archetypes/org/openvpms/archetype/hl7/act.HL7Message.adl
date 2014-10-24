@@ -26,7 +26,7 @@
         <node name="startTime" displayName="Created" path="/activityStartTime" type="java.util.Date"
               minCardinality="1" defaultValue="java.util.Date.new()"/>
         <node name="endTime" displayName="Sent" path="/activityEndTime" type="java.util.Date" minCardinality="0"/>
-        <node name="description" type="java.lang.String" path="/description" hidden="true"/>
+        <node name="description" type="java.lang.String" path="/description" hidden="true" minCardinality="0"/>
         <node name="status" path="/status" type="java.lang.String"
               minCardinality="1" defaultValue="'PENDING'">
             <assertion name="lookup.local">
@@ -51,7 +51,7 @@
         <node name="connector" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.HL7Connector" readOnly="true"/>
         <node name="author" path="/participations" type="java.util.HashSet"
-              minCardinality="0" maxCardinality="1"
+              minCardinality="1" maxCardinality="1"
               filter="participation.author" hidden="true"/>
         <node name="fileName" type="java.lang.String" path="/fileName" hidden="true"/>
         <node name="mimeType" type="java.lang.String" path="/mimeType" hidden="true"/>
