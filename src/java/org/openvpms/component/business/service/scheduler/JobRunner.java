@@ -20,6 +20,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.security.RunAs;
 import org.quartz.InterruptableJob;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -31,11 +32,9 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.quartz.DelegatingJob;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.Resource;
+import java.util.concurrent.Callable;
 
 /**
  * Runs a job configured using an <em>entity.job*</em> archetype.
@@ -107,7 +106,7 @@ public class JobRunner implements InterruptableJob {
      * @param context the execution context
      * @throws JobExecutionException if there is an exception while executing the job.
      */
-    public void execute(JobExecutionContext context) throws JobExecutionException {
+    public void execute(final JobExecutionContext context) throws JobExecutionException {
         if (configuration == null) {
             throw new JobExecutionException("Configuration has not been registered");
         }
@@ -115,14 +114,21 @@ public class JobRunner implements InterruptableJob {
             throw new JobExecutionException("ArchetypeService has not been registered");
         }
 
-        initSecurityContext();
+        User user = getUser();
+        Callable<Void> callable = new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                job = createJob();
+                job.execute(context);
+                return null;
+            }
+        };
         try {
-            job = createJob();
-            job.execute(context);
+            RunAs.run(user, callable);
+        } catch (JobExecutionException exception) {
+            throw exception;
         } catch (Throwable exception) {
             throw new JobExecutionException(exception);
-        } finally {
-            SecurityContextHolder.clearContext();
         }
     }
 
@@ -157,18 +163,17 @@ public class JobRunner implements InterruptableJob {
     }
 
     /**
-     * Initialises the security context.
+     * Returns the job user.
+     *
+     * @return the job user
+     * @throws JobExecutionException if the user isn't configured
      */
-    private void initSecurityContext() {
-        IMObjectBean bean = new IMObjectBean(configuration);
+    private User getUser() throws JobExecutionException {
+        IMObjectBean bean = new IMObjectBean(configuration, service);
         User user = (User) bean.getNodeTargetObject("runAs");
         if (user == null) {
-            throw new IllegalArgumentException("User not found");
+            throw new JobExecutionException("User not found");
         }
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        UsernamePasswordAuthenticationToken authentication
-                = new UsernamePasswordAuthenticationToken(user, user.getPassword(), user.getAuthorities());
-        context.setAuthentication(authentication);
-        SecurityContextHolder.setContext(context);
+        return user;
     }
 }
