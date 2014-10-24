@@ -341,12 +341,12 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testActGetPatientReferralVet() {
-        Act act = (Act) create("act.customerEstimationItem");
         Party patient = TestHelper.createPatient();
         Party vet = TestHelper.createSupplierVet();
         EntityBean bean = new EntityBean(patient);
         bean.addRelationship(PatientArchetypes.REFERRED_FROM, vet);
         save(patient, vet);
+        Act act = (Act) create("act.customerEstimationItem");
 
         JXPathContext ctx = JXPathHelper.newContext(act);
         assertNull(ctx.getValue("party:getPatientReferralVet()"));  // invokes getPatientReferralVet(ExpressionContext)
