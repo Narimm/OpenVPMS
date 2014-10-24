@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.hl7.patient.PatientContext;
@@ -175,23 +176,24 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     protected void onSaved(Act object, boolean isNew) {
         super.onSaved(object, isNew);
         String newStatus = object.getStatus();
+        User user = getContext().getUser();
         if (!AppointmentStatus.CANCELLED.equals(oldStatus) && AppointmentStatus.CANCELLED.equals(newStatus)) {
             PatientContext context = getPatientContext(object);
             if (context != null) {
                 PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
-                service.admissionCancelled(context);
+                service.admissionCancelled(context, user);
             }
         } else if (!isAdmitted(oldStatus) && isAdmitted(newStatus)) {
             PatientContext context = getPatientContext(object);
             if (context != null) {
                 PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
-                service.admitted(context);
+                service.admitted(context, user);
             }
         } else if (isAdmitted(oldStatus) && !isAdmitted(newStatus)) {
             PatientContext context = getPatientContext(object);
             if (context != null) {
                 PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
-                service.discharged(context);
+                service.discharged(context, user);
             }
         }
     }

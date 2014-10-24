@@ -18,6 +18,7 @@ package org.openvpms.hl7.pharmacy;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.hl7.patient.PatientContext;
 
 import java.math.BigDecimal;
@@ -39,10 +40,11 @@ public interface PharmacyOrderService {
      * @param placerOrderNumber the placer order number, to uniquely identify the order
      * @param date              the order date
      * @param pharmacy          the pharmacy. An <em>entity.HL7ServicePharmacy</em>
+     * @param user              the user that generated the order
      * @return {@code true} if the order was placed
      */
     boolean createOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                        Date date, Entity pharmacy);
+                        Date date, Entity pharmacy, User user);
 
     /**
      * Updates an order.
@@ -53,9 +55,10 @@ public interface PharmacyOrderService {
      * @param placerOrderNumber the placer order number, to uniquely identify the order
      * @param date              the order date
      * @param pharmacy          the pharmacy. An <em>entity.HL7ServicePharmacy</em>
+     * @param user              the user that generated the update
      */
     void updateOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                     Date date, Entity pharmacy);
+                     Date date, Entity pharmacy, User user);
 
     /**
      * Cancels an order.
@@ -66,8 +69,9 @@ public interface PharmacyOrderService {
      * @param placerOrderNumber the placer order number, to uniquely identify the order
      * @param date              the order date
      * @param pharmacy          the pharmacy. An <em>entity.HL7ServicePharmacy</em>
+     * @param user              the user that generated the cancellation
      */
     void cancelOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                     Date date, Entity pharmacy);
+                     Date date, Entity pharmacy, User user);
 
 }

@@ -171,7 +171,7 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
                 PatientContext context = PatientContextHelper.getPatientContext(object, getContext());
                 if (context != null) {
                     PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
-                    service.updated(context);
+                    service.updated(context, getContext().getUser());
                 }
             }
         }

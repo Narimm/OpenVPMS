@@ -34,6 +34,7 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -148,13 +149,15 @@ class MessageQueue implements Statistics {
      * Adds a message to the end of the queue.
      *
      * @param message the message to add
+     * @param user    the user responsible for the message
      * @return the added act
      * @throws HL7Exception if the message cannot be encoded
      */
-    public DocumentAct add(Message message) throws HL7Exception {
+    public DocumentAct add(Message message, User user) throws HL7Exception {
         DocumentAct act = (DocumentAct) service.create(HL7Archetypes.MESSAGE);
         ActBean bean = new ActBean(act, service);
         bean.addNodeParticipation("connector", connector.getReference());
+        bean.addNodeParticipation("author", user);
         MSH header = (MSH) message.get("MSH");
         String type = getMessageType(header);
         act.setDescription(type);

@@ -118,10 +118,11 @@ class TestPharmacyOrderService implements PharmacyOrderService {
      * @param placerOrderNumber the placer order number, to uniquely identify the order
      * @param date              the order date
      * @param pharmacy          the pharmacy. An <em>entity.HL7ServicePharmacy</em>
+     * @param user              the user that generated the order
      */
     @Override
     public boolean createOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                               Date date, Entity pharmacy) {
+                               Date date, Entity pharmacy, User user) {
         orders.add(new Order(Order.Type.CREATE, context.getPatient(), product, quantity, placerOrderNumber, date,
                              context.getClinician(), pharmacy));
         return true;
@@ -136,10 +137,11 @@ class TestPharmacyOrderService implements PharmacyOrderService {
      * @param placerOrderNumber the placer order number, to uniquely identify the order
      * @param date              the order date
      * @param pharmacy          the pharmacy. An <em>entity.HL7ServicePharmacy</em>
+     * @param user              the user that generated the update
      */
     @Override
     public void updateOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                            Date date, Entity pharmacy) {
+                            Date date, Entity pharmacy, User user) {
         orders.add(new Order(Order.Type.UPDATE, context.getPatient(), product, quantity, placerOrderNumber, date,
                              context.getClinician(), pharmacy));
     }
@@ -153,10 +155,11 @@ class TestPharmacyOrderService implements PharmacyOrderService {
      * @param placerOrderNumber the placer order number, to uniquely identify the order
      * @param date              the order date
      * @param pharmacy          the pharmacy. An <em>entity.HL7ServicePharmacy</em>
+     * @param user              the user that generated the cancellation
      */
     @Override
     public void cancelOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                            Date date, Entity pharmacy) {
+                            Date date, Entity pharmacy, User user) {
         orders.add(new Order(Order.Type.CANCEL, context.getPatient(), product, quantity, placerOrderNumber, date,
                              context.getClinician(), pharmacy));
     }

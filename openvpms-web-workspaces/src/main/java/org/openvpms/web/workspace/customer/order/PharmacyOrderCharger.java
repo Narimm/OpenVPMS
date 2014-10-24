@@ -52,7 +52,7 @@ import static java.math.BigDecimal.ZERO;
  * <p/>
  * NOTE that there is limited support to charge orders and returns when the existing invoice has been POSTED.
  * <p/>
- * In this case, the difference will be charged. This does not take into account multiple orders/returnes for the one
+ * In this case, the difference will be charged. This does not take into account multiple orders/returns for the one
  * POSTED invoice.
  *
  * @author Tim Anderson
@@ -62,7 +62,7 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
     /**
      * The order/return.
      */
-    private final Act act;
+    private final FinancialAct act;
 
     /**
      * The customer.
@@ -173,9 +173,13 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
      */
     public boolean canCharge(AbstractCustomerChargeActEditor editor) {
         boolean result = false;
-        IMObjectReference charge = editor.getObject().getObjectReference();
-        if (invoice != null && invoice.getId() == charge.getId() && !ActStatus.POSTED.equals(editor.getStatus())) {
-            result = true;
+        FinancialAct charge = (FinancialAct) editor.getObject();
+        if (!ActStatus.POSTED.equals(editor.getStatus())) {
+            if (invoice != null && invoice.getId() == charge.getId()) {
+                result = true;
+            } else if (invoice == null && charge.isCredit() == act.isCredit()) {
+                result = true;
+            }
         }
         return result;
     }

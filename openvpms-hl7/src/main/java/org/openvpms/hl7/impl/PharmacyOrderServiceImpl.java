@@ -19,6 +19,7 @@ package org.openvpms.hl7.impl;
 import ca.uhn.hl7v2.model.Message;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.hl7.io.Connector;
@@ -76,17 +77,18 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
      * @param placerOrderNumber the placer order number, to uniquely identify the order
      * @param date              the order date
      * @param pharmacy          the pharmacy. An <em>entity.HL7ServicePharmacy</em>
+     * @param user              the user that generated the order
      * @return {@code true} if the order was placed
      */
     @Override
     public boolean createOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                               Date date, Entity pharmacy) {
+                               Date date, Entity pharmacy, User user) {
         boolean result = false;
         Connector connector = getConnector(pharmacy);
         if (connector != null) {
             MessageConfig config = MessageConfigFactory.create(connector);
             Message message = factory.createOrder(context, product, quantity, placerOrderNumber, date, config);
-            dispatcher.queue(message, connector, config);
+            dispatcher.queue(message, connector, config, user);
             result = true;
         }
         return result;
@@ -101,15 +103,16 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
      * @param placerOrderNumber the placer order number, to uniquely identify the order
      * @param date              the order date
      * @param pharmacy          the pharmacy. An <em>entity.HL7ServicePharmacy</em>
+     * @param user              the user that generated the update
      */
     @Override
     public void updateOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                            Date date, Entity pharmacy) {
+                            Date date, Entity pharmacy, User user) {
         Connector connector = getConnector(pharmacy);
         if (connector != null) {
             MessageConfig config = MessageConfigFactory.create(connector);
             Message message = factory.updateOrder(context, product, quantity, placerOrderNumber, date, config);
-            dispatcher.queue(message, connector, config);
+            dispatcher.queue(message, connector, config, user);
         }
     }
 
@@ -122,15 +125,16 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
      * @param placerOrderNumber the placer order number, to uniquely identify the order
      * @param date              the order date
      * @param pharmacy          the pharmacy. An <em>entity.HL7ServicePharmacy</em>
+     * @param user              the user that generated the cancellation
      */
     @Override
     public void cancelOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                            Date date, Entity pharmacy) {
+                            Date date, Entity pharmacy, User user) {
         Connector connector = getConnector(pharmacy);
         if (connector != null) {
             MessageConfig config = MessageConfigFactory.create(connector);
             Message message = factory.cancelOrder(context, product, quantity, placerOrderNumber, config, date);
-            dispatcher.queue(message, connector, config);
+            dispatcher.queue(message, connector, config, user);
         }
     }
 

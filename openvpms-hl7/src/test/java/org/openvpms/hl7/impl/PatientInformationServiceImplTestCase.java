@@ -18,6 +18,8 @@ package org.openvpms.hl7.impl;
 
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.hl7.patient.PatientContext;
@@ -38,12 +40,18 @@ public class PatientInformationServiceImplTestCase extends AbstractServiceTest {
     private PatientInformationService service;
 
     /**
+     * The user.
+     */
+    private User user;
+
+    /**
      * Sets up the test case.
      */
     @Override
     public void setUp() {
         super.setUp();
         ILookupService lookups = LookupServiceHelper.getLookupService();
+        user = TestHelper.createUser();
         service = new PatientInformationServiceImpl(getArchetypeService(), lookups, getEventServices(),
                                                     getDispatcher());
 
@@ -53,7 +61,7 @@ public class PatientInformationServiceImplTestCase extends AbstractServiceTest {
     }
 
     /**
-     * Tests the {@link PatientInformationServiceImpl#admitted(PatientContext)} method.
+     * Tests the {@link PatientInformationService#admitted(PatientContext, org.openvpms.component.business.domain.im.security.User)} method.
      *
      * @throws Exception
      */
@@ -67,13 +75,13 @@ public class PatientInformationServiceImplTestCase extends AbstractServiceTest {
                           "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
                           "AL1|2|MA|^Pollen|U|Produces hives\r";
 
-        service.admitted(getContext());
+        service.admitted(getContext(), user);
         assertTrue(getDispatcher().waitForMessage());
         checkMessage(expected);
     }
 
     /**
-     * Tests the {@link PatientInformationServiceImpl#admissionCancelled(PatientContext)} method.
+     * Tests the {@link PatientInformationService#admissionCancelled(PatientContext, org.openvpms.component.business.domain.im.security.User)} method.
      *
      * @throws Exception
      */
@@ -85,13 +93,13 @@ public class PatientInformationServiceImplTestCase extends AbstractServiceTest {
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r";
 
-        service.admissionCancelled(getContext());
+        service.admissionCancelled(getContext(), user);
         assertTrue(getDispatcher().waitForMessage());
         checkMessage(expected);
     }
 
     /**
-     * Tests the {@link PatientInformationServiceImpl#discharged(PatientContext)} method.
+     * Tests the {@link PatientInformationService#discharged(PatientContext, org.openvpms.component.business.domain.im.security.User)} method.
      *
      * @throws Exception
      */
@@ -105,13 +113,13 @@ public class PatientInformationServiceImplTestCase extends AbstractServiceTest {
                           "AL1|2|MA|^Pollen|U|Produces hives\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r";
 
-        service.discharged(getContext());
+        service.discharged(getContext(), user);
         assertTrue(getDispatcher().waitForMessage());
         checkMessage(expected);
     }
 
     /**
-     * Tests the {@link PatientInformationServiceImpl#updated(PatientContext)} method.
+     * Tests the {@link PatientInformationService#updated(PatientContext, org.openvpms.component.business.domain.im.security.User)} method.
      *
      * @throws Exception
      */
@@ -125,7 +133,7 @@ public class PatientInformationServiceImplTestCase extends AbstractServiceTest {
                           "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
                           "AL1|2|MA|^Pollen|U|Produces hives\r";
 
-        service.updated(getContext());
+        service.updated(getContext(), user);
         assertTrue(getDispatcher().waitForMessage());
         checkMessage(expected);
     }

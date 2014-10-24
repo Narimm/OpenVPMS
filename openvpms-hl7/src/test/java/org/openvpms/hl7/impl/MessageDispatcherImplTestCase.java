@@ -23,9 +23,13 @@ import ca.uhn.hl7v2.HapiContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.Statistics;
 import org.openvpms.hl7.util.HL7ActStatuses;
@@ -62,6 +66,11 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
     private TestMessageDispatcher dispatcher;
 
     /**
+     * The user.
+     */
+    private User user;
+
+    /**
      * The message configuration.
      */
     private MessageConfig config = new MessageConfig();
@@ -73,7 +82,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
     public void setUp() {
         sender = HL7TestHelper.createSender(-1); // dummy port
         context = HapiContextFactory.create();
-
+        user = TestHelper.createUser();
         ConnectorsImpl connectors = new ConnectorsImpl(getArchetypeService()) {
 
             @Override
@@ -92,7 +101,14 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
             }
         };
 
-        dispatcher = new TestMessageDispatcher(connectors, getArchetypeService());
+        PracticeRules rules = new PracticeRules(getArchetypeService()) {
+            @Override
+            public User getServiceUser(Party practice) {
+                return user;
+            }
+        };
+
+        dispatcher = new TestMessageDispatcher(connectors, getArchetypeService(), rules);
         dispatcher.afterPropertiesSet();
     }
 
@@ -118,7 +134,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
         checkQueued(0, sender);
 
         for (int i = 0; i < count; i++) {
-            DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config);
+            DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config, user);
             assertEquals(HL7ActStatuses.PENDING, message.getStatus());
             queued.add(message);
         }
@@ -148,7 +164,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
         final int count = 10;
 
         List<DocumentAct> queued = new ArrayList<DocumentAct>();
-        DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config);
+        DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config, user);
         assertEquals(HL7ActStatuses.PENDING, message.getStatus());
         queued.add(message);
 
@@ -157,7 +173,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
         HL7TestHelper.suspend(sender, true); // now suspend sends for the sender
 
         for (int i = 0; i < count - 1; i++) {
-            message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config);
+            message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config, user);
             assertEquals(HL7ActStatuses.PENDING, message.getStatus());
             queued.add(message);
         }
@@ -197,7 +213,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
         dispatcher.setExceptionOnSend(true);
 
         for (int i = 0; i < count; i++) {
-            DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config);
+            DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config, user);
             assertEquals(HL7ActStatuses.PENDING, message.getStatus());
             queued.add(message);
         }
@@ -232,7 +248,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
         dispatcher.setAcknowledgmentCode(AcknowledgmentCode.AE);
         dispatcher.setAcknowledgmentException(new HL7Exception("simulated application exception"));
 
-        DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config);
+        DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config, user);
 
         // wait for a dispatch attempt
         assertTrue(dispatcher.waitForDispatch());
@@ -268,7 +284,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
         dispatcher.setAcknowledgmentException(new HL7Exception("simulated application reject",
                                                                ErrorCode.UNSUPPORTED_MESSAGE_TYPE));
 
-        DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config);
+        DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config, user);
 
         // wait for a dispatch attempt
         assertTrue(dispatcher.waitForDispatch());

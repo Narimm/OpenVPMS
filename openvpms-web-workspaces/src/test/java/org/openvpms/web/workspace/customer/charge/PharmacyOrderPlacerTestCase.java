@@ -54,6 +54,7 @@ import java.util.List;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelper.checkOrder;
@@ -104,6 +105,11 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
     private PatientInformationService informationService;
 
     /**
+     * The user.
+     */
+    private User user;
+
+    /**
      * Sets up the test case.
      */
     @Override
@@ -116,12 +122,13 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
         clinician = TestHelper.createClinician();
         pharmacy = CustomerChargeTestHelper.createPharmacy(location);
         service = new TestPharmacyOrderService();
+        user = TestHelper.createUser();
         Pharmacies pharmacies = new PharmaciesImpl(getArchetypeService(), Mockito.mock(Connectors.class),
                                                    Mockito.mock(PatientEventServices.class));
         PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
         MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
         informationService = Mockito.mock(PatientInformationService.class);
-        placer = new PharmacyOrderPlacer(customer, location, new DefaultIMObjectCache(), service, pharmacies, factory,
+        placer = new PharmacyOrderPlacer(customer, location, user, new DefaultIMObjectCache(), service, pharmacies, factory,
                                          informationService, rules);
     }
 
@@ -150,7 +157,7 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
                    clinician, pharmacy);
 
         // patient information updates should not be sent
-        verify(informationService, times(0)).updated(Mockito.<PatientContext>any());
+        verify(informationService, times(0)).updated(Mockito.<PatientContext>any(), eq(user));
     }
 
     /**
@@ -176,7 +183,7 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
                    item.getActivityStartTime(), clinician, pharmacy);
 
         // patient information updates should not be sent
-        verify(informationService, times(0)).updated(Mockito.<PatientContext>any());
+        verify(informationService, times(0)).updated(Mockito.<PatientContext>any(), eq(user));
     }
 
     /**
@@ -210,7 +217,7 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
                    item.getActivityStartTime(), clinician, pharmacy);
 
         // patient information updates should not be sent
-        verify(informationService, times(0)).updated(Mockito.<PatientContext>any());
+        verify(informationService, times(0)).updated(Mockito.<PatientContext>any(), eq(user));
     }
 
     /**
@@ -240,7 +247,7 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
                    item.getActivityStartTime(), clinician, pharmacy);
 
         // patient information updates should not be sent
-        verify(informationService, times(0)).updated(Mockito.<PatientContext>any());
+        verify(informationService, times(0)).updated(Mockito.<PatientContext>any(), eq(user));
     }
 
     /**
@@ -268,7 +275,7 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
                    item.getActivityStartTime(), clinician, pharmacy);
 
         // patient information updates should not be sent
-        verify(informationService, times(0)).updated(Mockito.<PatientContext>any());
+        verify(informationService, times(0)).updated(Mockito.<PatientContext>any(), eq(user));
     }
 
     /**
@@ -301,7 +308,7 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
                    item.getActivityStartTime(), clinician, pharmacy2);
 
         // patient information updates should not be sent
-        verify(informationService, times(0)).updated(Mockito.<PatientContext>any());
+        verify(informationService, times(0)).updated(Mockito.<PatientContext>any(), eq(user));
     }
 
     /**
@@ -330,7 +337,7 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
                    item.getActivityStartTime(), clinician2, pharmacy);
 
         // patient information updates should not be sent
-        verify(informationService, times(0)).updated(Mockito.<PatientContext>any());
+        verify(informationService, times(0)).updated(Mockito.<PatientContext>any(), eq(user));
     }
 
     /**
@@ -357,7 +364,7 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
                    item1.getActivityStartTime(), clinician, pharmacy);
 
         // patient information updates should not be sent
-        verify(informationService, times(0)).updated(Mockito.<PatientContext>any());
+        verify(informationService, times(0)).updated(Mockito.<PatientContext>any(), eq(user));
     }
 
     /**
@@ -385,11 +392,11 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
                    clinician, pharmacy);
 
         // patient information updates should not be sent
-        verify(informationService, times(0)).updated(Mockito.<PatientContext>any());
+        verify(informationService, times(0)).updated(Mockito.<PatientContext>any(), eq(user));
     }
 
     /**
-     * Verifies that {@link PatientInformationService#updated(PatientContext)} is invoked if a visit is created
+     * Verifies that {@link PatientInformationService#updated(PatientContext, User)} is invoked if a visit is created
      * during charging.
      */
     @Test
@@ -408,11 +415,11 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
                    clinician, pharmacy);
 
         // patient information updates should not be sent
-        verify(informationService, times(1)).updated(Mockito.<PatientContext>any());
+        verify(informationService, times(1)).updated(Mockito.<PatientContext>any(), eq(user));
     }
 
     /**
-     * Verifies that {@link PatientInformationService#updated(PatientContext)} is invoked if a completed visit is linked
+     * Verifies that {@link PatientInformationService#updated(PatientContext, User)} is invoked if a completed visit is linked
      * to during charging.
      */
     @Test
@@ -435,7 +442,7 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
                    clinician, pharmacy);
 
         // patient information updates should not be sent
-        verify(informationService, times(1)).updated(Mockito.<PatientContext>any());
+        verify(informationService, times(1)).updated(Mockito.<PatientContext>any(), eq(user));
     }
 
     /**

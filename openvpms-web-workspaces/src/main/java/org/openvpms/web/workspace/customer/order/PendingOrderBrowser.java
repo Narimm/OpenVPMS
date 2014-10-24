@@ -41,9 +41,9 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * Browser for orders requiring charging.
@@ -124,9 +124,9 @@ public class PendingOrderBrowser extends AbstractQueryBrowser<Act> {
         private int selectedIndex;
 
         /**
-         * The selected orders.
+         * Tracks selected orders.
          */
-        private Set<IMObjectReference> selected = new HashSet<IMObjectReference>();
+        private Map<IMObjectReference, Boolean> selected = new HashMap<IMObjectReference, Boolean>();
 
         /**
          * The order rules.
@@ -150,10 +150,12 @@ public class PendingOrderBrowser extends AbstractQueryBrowser<Act> {
          */
         public List<Act> getOrders() {
             List<Act> result = new ArrayList<Act>();
-            for (IMObjectReference reference : selected) {
-                IMObject object = IMObjectHelper.getObject(reference, null);
-                if (object != null) {
-                    result.add((Act) object);
+            for (Map.Entry<IMObjectReference, Boolean> entry : selected.entrySet()) {
+                if (entry.getValue() == null || entry.getValue()) { // default to selected
+                    IMObject object = IMObjectHelper.getObject(entry.getKey(), null);
+                    if (object != null) {
+                        result.add((Act) object);
+                    }
                 }
             }
             return result;
@@ -235,16 +237,17 @@ public class PendingOrderBrowser extends AbstractQueryBrowser<Act> {
          * @return a new check box
          */
         private CheckBox getCheckBox(final Act object) {
-            final CheckBox checkBox = CheckBoxFactory.create(selected.contains(object.getObjectReference()));
+            final IMObjectReference reference = object.getObjectReference();
+            Boolean value = selected.get(reference);
+            if (value == null) {
+                value = Boolean.TRUE;
+                selected.put(reference, value);
+            }
+            final CheckBox checkBox = CheckBoxFactory.create(value);
             checkBox.addActionListener(new ActionListener() {
                 @Override
                 public void onAction(ActionEvent event) {
-                    IMObjectReference reference = object.getObjectReference();
-                    if (checkBox.isSelected()) {
-                        selected.add(reference);
-                    } else {
-                        selected.remove(reference);
-                    }
+                    selected.put(reference, checkBox.isSelected());
                 }
             });
             return checkBox;

@@ -26,7 +26,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.hl7.util.HL7ActStatuses;
 
@@ -57,6 +59,11 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
      */
     private HapiContext context;
 
+    /**
+     * The user.
+     */
+    private User user;
+
 
     /**
      * Sets up the test case.
@@ -65,6 +72,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
     public void setUp() {
         sender = HL7TestHelper.createSender(-1);
         context = HapiContextFactory.create();
+        user = TestHelper.createUser();
     }
 
     /**
@@ -92,7 +100,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
         for (int i = 0; i < count; ++i) {
             RDE_O11 message = createMessage();
             message.getMSH().getMessageControlID().setValue(Integer.toString(i));
-            DocumentAct act = queue.add(message);
+            DocumentAct act = queue.add(message, user);
             acts.add(act);
             assertEquals(HL7ActStatuses.PENDING, act.getStatus());
             assertNotNull(act);
@@ -124,7 +132,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
         assertEquals(0, queue.getQueued());
 
         RDE_O11 message = createMessage();
-        DocumentAct act1 = queue.add(message);
+        DocumentAct act1 = queue.add(message, user);
 
         assertNotNull(queue.peekFirst());
         ACK response = (ACK) message.generateACK(AcknowledgmentCode.AR, null);
@@ -151,7 +159,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
         assertEquals(0, queue.getQueued());
 
         RDE_O11 message = createMessage();
-        DocumentAct act1 = queue.add(message);
+        DocumentAct act1 = queue.add(message, user);
 
         assertNotNull(queue.peekFirst());
         ACK response = (ACK) message.generateACK(AcknowledgmentCode.AE, null);
@@ -185,7 +193,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
         assertEquals(0, queue.getQueued());
 
         RDE_O11 message = createMessage();
-        DocumentAct act1 = queue.add(message);
+        DocumentAct act1 = queue.add(message, user);
 
         assertNotNull(queue.peekFirst());
         RDE_O11 response = createMessage();
@@ -208,7 +216,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
         assertEquals(0, queue.getQueued());
 
         RDE_O11 message = createMessage();
-        DocumentAct act1 = queue.add(message);
+        DocumentAct act1 = queue.add(message, user);
 
         assertNull(queue.getErrorMessage());
         assertNull(queue.getErrorTimestamp());

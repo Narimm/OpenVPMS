@@ -27,6 +27,7 @@ import ca.uhn.hl7v2.model.v25.message.RDS_O13;
 import ca.uhn.hl7v2.model.v25.segment.ORC;
 import ca.uhn.hl7v2.model.v25.segment.PID;
 import ca.uhn.hl7v2.model.v25.segment.RXD;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
@@ -41,6 +42,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.ObjectRefSelectConstraint;
@@ -135,7 +137,7 @@ public class RDSProcessor {
         if (fillerOrderNumber != null) {
             itemBean.setValue("reference", fillerOrderNumber);
         }
-        FinancialAct invoiceItem = addInvoiceItem(group.getORC(), bean, itemBean);
+        FinancialAct invoiceItem = addInvoiceItem(group.getORC(), bean, itemBean, state);
         addClinician(group, bean, itemBean, invoiceItem);
         addProduct(group, bean, itemBean);
         itemBean.setValue("quantity", quantity);
@@ -223,19 +225,29 @@ public class RDSProcessor {
     }
 
     /**
-     * Adds a reference to the original invoice item, if any and determine the status.
+     * Adds a reference to the original invoice item, if any.
      *
      * @param orc      the order segment
      * @param bean     the act
      * @param itemBean the item
+     * @param state    the state
      */
-    private FinancialAct addInvoiceItem(ORC orc, ActBean bean, ActBean itemBean) {
+    private FinancialAct addInvoiceItem(ORC orc, ActBean bean, ActBean itemBean, State state) {
         FinancialAct result = null;
         long id = getId(orc.getPlacerOrderNumber());
 
         if (id != -1) {
             IMObjectReference reference = new IMObjectReference(CustomerAccountArchetypes.INVOICE_ITEM, id);
             result = (FinancialAct) service.get(reference);
+            if (result != null && state.patient != null) {
+                ActBean invoiceItemBean = new ActBean(result, service);
+                IMObjectReference patient = invoiceItemBean.getNodeParticipantRef("patient");
+                if (patient != null && !ObjectUtils.equals(state.patient.getObjectReference(), patient)) {
+                    addNote(bean, "Patient is different to that in the original invoice. Was '"
+                                  + ArchetypeQueryHelper.getName(patient, service) + "' (" + patient.getId() + ")"
+                                  + ". Now '" + state.patient.getName() + "' (" + state.patient.getId() + ")");
+                }
+            }
             itemBean.setValue("sourceInvoiceItem", reference);
         } else {
             addNote(bean, "Unknown Placer Order Number: '" + orc.getPlacerOrderNumber().getEntityIdentifier() + "'");

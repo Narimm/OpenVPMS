@@ -23,6 +23,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
@@ -59,6 +60,11 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
     private Entity pharmacy;
 
     /**
+     * The user.
+     */
+    private User user;
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -79,6 +85,9 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
         };
         orderService = new PharmacyOrderServiceImpl(getArchetypeService(), LookupServiceHelper.getLookupService(),
                                                     pharmacies, getDispatcher());
+
+        user = TestHelper.createUser();
+
         product = TestHelper.createProduct();
         product.setName("Valium 2mg");
         IMObjectBean productBean = new IMObjectBean(product);
@@ -93,7 +102,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
     }
 
     /**
-     * Tests the {@link PharmacyOrderService#createOrder(PatientContext, Product, BigDecimal, long, Date, Entity)}
+     * Tests the {@link PharmacyOrderService#createOrder(PatientContext, Product, BigDecimal, long, Date, Entity, org.openvpms.component.business.domain.im.security.User)}
      * method.
      *
      * @throws Exception for any error
@@ -109,14 +118,14 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
-        assertTrue(orderService.createOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, pharmacy));
+        assertTrue(orderService.createOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, pharmacy, user));
         assertTrue(getDispatcher().waitForMessage());
         checkMessage(expected);
     }
 
 
     /**
-     * Tests the {@link PharmacyOrderService#updateOrder(PatientContext, Product, BigDecimal, long, Date, Entity)}
+     * Tests the {@link PharmacyOrderService#updateOrder(PatientContext, Product, BigDecimal, long, Date, Entity, org.openvpms.component.business.domain.im.security.User)}
      * method.
      *
      * @throws Exception for any error
@@ -132,13 +141,13 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
-        orderService.updateOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, pharmacy);
+        orderService.updateOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, pharmacy, user);
         assertTrue(getDispatcher().waitForMessage());
         checkMessage(expected);
     }
 
     /**
-     * Tests the {@link PharmacyOrderService#updateOrder(PatientContext, Product, BigDecimal, long, Date, Entity)}
+     * Tests the {@link PharmacyOrderService#updateOrder(PatientContext, Product, BigDecimal, long, Date, Entity, org.openvpms.component.business.domain.im.security.User)}
      * method.
      *
      * @throws Exception for any error
@@ -154,7 +163,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
-        orderService.cancelOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, pharmacy);
+        orderService.cancelOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, pharmacy, user);
         assertTrue(getDispatcher().waitForMessage());
         checkMessage(expected);
     }
