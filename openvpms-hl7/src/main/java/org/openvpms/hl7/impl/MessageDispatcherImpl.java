@@ -31,12 +31,13 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.security.RunAs;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.io.MessageDispatcher;
+import org.openvpms.hl7.io.MessageService;
 import org.openvpms.hl7.io.Statistics;
+import org.openvpms.hl7.util.HL7MessageStatuses;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -59,14 +60,14 @@ import java.util.concurrent.TimeUnit;
 public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean, InitializingBean {
 
     /**
+     * The message service.
+     */
+    private final MessageService messageService;
+
+    /**
      * The connectors.
      */
     private final ConnectorsImpl connectors;
-
-    /**
-     * The archetype service.
-     */
-    private final IArchetypeService service;
 
     /**
      * The practice rules.
@@ -109,11 +110,6 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
     private final ExecutorService executor;
 
     /**
-     * The handler for <em>document.hl7</em> acts.
-     */
-    private final HL7DocumentHandler handler;
-
-    /**
      * Listener for connector updates.
      */
     private final ConnectorsImpl.Listener listener;
@@ -152,19 +148,18 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
     /**
      * Constructs a {@link MessageDispatcherImpl}.
      *
-     * @param connectors the connectors
-     * @param service    the archetype service
-     * @param rules      the practice rules
+     * @param messageService the message service
+     * @param connectors     the connectors
+     * @param rules          the practice rules
      */
-    public MessageDispatcherImpl(ConnectorsImpl connectors, IArchetypeService service, PracticeRules rules) {
+    public MessageDispatcherImpl(MessageService messageService, ConnectorsImpl connectors, PracticeRules rules) {
+        this.messageService = messageService;
         this.connectors = connectors;
-        this.service = service;
         this.rules = rules;
         populator = new HeaderPopulator();
         messageContext = HapiContextFactory.create();
         generator = messageContext.getParserConfiguration().getIdGenerator();
         executor = Executors.newSingleThreadExecutor();
-        handler = new HL7DocumentHandler(service);
 
         user = getServiceUser();
 
@@ -212,6 +207,20 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
             throw new IllegalStateException(exception);
         }
         return result;
+    }
+
+    /**
+     * Resubmit a message.
+     * <p/>
+     * The associated connector must support message resubmission, and the message must have an
+     * {@link HL7MessageStatuses#ERROR} status.
+     *
+     * @param message the message to resubmit
+     */
+    @Override
+    public void resubmit(DocumentAct message) {
+        messageService.resubmit(message);
+        schedule();
     }
 
     /**
@@ -467,7 +476,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
         MessageQueue queue;
         queue = queueMap.get(sender.getReference());
         if (queue == null) {
-            queue = new MessageQueue(sender, service, handler, messageContext);
+            queue = new MessageQueue(sender, messageService, messageContext);
             queueMap.put(sender.getReference(), queue);
         }
         return queue;
@@ -555,20 +564,31 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
     protected boolean sendFirst(MessageQueue queue) {
         boolean processed = false;
         Message message = queue.peekFirst();
-        MLLPSender connector = queue.getConnector();
         if (message != null) {
+            send(queue, message, queue.peekFirstAct());
             processed = true;
-            try {
-                Message response = send(message, connector);
-                queue.sent(response);
-            } catch (Throwable exception) {
-                log.error("Failed to send message", exception);
-                // failed to send the message, so don't queue for another 30 seconds
-                queue.setWaitUntil(System.currentTimeMillis() + 30 * 1000);
-                queue.error(exception);
-            }
         }
         return processed;
+    }
+
+    /**
+     * Sends a message.
+     *
+     * @param queue   the message queue
+     * @param message the message
+     * @param act     the persistent act
+     */
+    protected void send(MessageQueue queue, Message message, DocumentAct act) {
+        MLLPSender connector = queue.getConnector();
+        try {
+            Message response = send(message, connector);
+            queue.sent(response);
+        } catch (Throwable exception) {
+            log.error("Failed to send message, act Id=" + act.getId(), exception);
+            // failed to send the message, so don't queue for another 30 seconds
+            queue.setWaitUntil(System.currentTimeMillis() + 30 * 1000);
+            queue.error(exception);
+        }
     }
 
     /**

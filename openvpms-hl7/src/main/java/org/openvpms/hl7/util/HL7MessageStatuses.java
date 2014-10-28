@@ -21,7 +21,7 @@ package org.openvpms.hl7.util;
  *
  * @author Tim Anderson
  */
-public class HL7ActStatuses {
+public class HL7MessageStatuses {
 
     public static final String PENDING = "PENDING";
 

@@ -2469,6 +2469,16 @@
         </properties>
     </style>
 
+    <style name="monospace" base-name="default" type="org.openvpms.web.echo.text.TextArea">
+        <properties>
+            <property name="font">
+                <font size="${font.size}">
+                    <typeface name="Lucida Console, monospace"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
     <!-- =================================================================== -->
     <!--  Dropdown component defaults                                        -->
     <!-- =================================================================== -->

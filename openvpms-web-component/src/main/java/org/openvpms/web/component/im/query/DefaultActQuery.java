@@ -50,7 +50,7 @@ public class DefaultActQuery<T extends Act> extends DateRangeActQuery<T> {
      * Constructs a {@link DefaultActQuery}.
      *
      * @param entity        the entity to search for
-     * @param participant   the partcipant node name
+     * @param participant   the participant node name
      * @param participation the entity participation short name
      * @param act           the act short name
      * @param statuses      the act status lookups

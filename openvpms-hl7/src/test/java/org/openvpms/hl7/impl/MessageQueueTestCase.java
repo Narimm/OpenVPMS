@@ -30,7 +30,8 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.hl7.util.HL7ActStatuses;
+import org.openvpms.hl7.io.MessageService;
+import org.openvpms.hl7.util.HL7MessageStatuses;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -64,6 +65,11 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
      */
     private User user;
 
+    /**
+     * The message service.
+     */
+    private MessageService service;
+
 
     /**
      * Sets up the test case.
@@ -73,6 +79,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
         sender = HL7TestHelper.createSender(-1);
         context = HapiContextFactory.create();
         user = TestHelper.createUser();
+        service = new MessageServiceImpl(getArchetypeService());
     }
 
     /**
@@ -91,8 +98,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
     @Test
     public void testQueue() throws Exception {
         final int count = 10;
-        HL7DocumentHandler handler = new HL7DocumentHandler(getArchetypeService());
-        MessageQueue queue = new MessageQueue(sender, getArchetypeService(), handler, context);
+        MessageQueue queue = new MessageQueue(sender, service, context);
         assertFalse(queue.isSuspended());
         assertEquals(0, queue.getQueued());
 
@@ -102,7 +108,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
             message.getMSH().getMessageControlID().setValue(Integer.toString(i));
             DocumentAct act = queue.add(message, user);
             acts.add(act);
-            assertEquals(HL7ActStatuses.PENDING, act.getStatus());
+            assertEquals(HL7MessageStatuses.PENDING, act.getStatus());
             assertNotNull(act);
             assertEquals(i + 1, queue.getQueued());
         }
@@ -114,7 +120,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
             assertEquals(Integer.toString(i), order.getMSH().getMessageControlID().getValue());
             DocumentAct act = queue.sent(order.generateACK());
             assertEquals(count - i - 1, queue.getQueued());
-            assertEquals(HL7ActStatuses.ACCEPTED, act.getStatus());
+            assertEquals(HL7MessageStatuses.ACCEPTED, act.getStatus());
             assertNotNull(act);
             assertEquals(acts.get(i), act);
         }
@@ -127,8 +133,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testApplicationReject() throws Exception {
-        HL7DocumentHandler handler = new HL7DocumentHandler(getArchetypeService());
-        MessageQueue queue = new MessageQueue(sender, getArchetypeService(), handler, context);
+        MessageQueue queue = new MessageQueue(sender, service, context);
         assertEquals(0, queue.getQueued());
 
         RDE_O11 message = createMessage();
@@ -141,7 +146,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
         DocumentAct act2 = queue.sent(response);
         assertNotNull(act2);
         assertEquals(act1.getId(), act2.getId());
-        assertEquals(HL7ActStatuses.ERROR, act2.getStatus());
+        assertEquals(HL7MessageStatuses.ERROR, act2.getStatus());
         ActBean bean = new ActBean(act2);
         assertEquals("User Message: Some error", bean.getString("error"));
     }
@@ -154,8 +159,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testApplicationError() throws Exception {
-        HL7DocumentHandler handler = new HL7DocumentHandler(getArchetypeService());
-        MessageQueue queue = new MessageQueue(sender, getArchetypeService(), handler, context);
+        MessageQueue queue = new MessageQueue(sender, service, context);
         assertEquals(0, queue.getQueued());
 
         RDE_O11 message = createMessage();
@@ -168,7 +172,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
         DocumentAct act2 = queue.sent(response);
         assertNotNull(act2);
         assertEquals(act1.getId(), act2.getId());
-        assertEquals(HL7ActStatuses.PENDING, act2.getStatus());
+        assertEquals(HL7MessageStatuses.PENDING, act2.getStatus());
         ActBean bean = new ActBean(act2);
         assertEquals("User Message: Some error", bean.getString("error"));
 
@@ -176,7 +180,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
         message = (RDE_O11) queue.peekFirst();
         DocumentAct act3 = queue.sent(message.generateACK());
         assertEquals(act1.getId(), act3.getId());
-        assertEquals(HL7ActStatuses.ACCEPTED, act3.getStatus());
+        assertEquals(HL7MessageStatuses.ACCEPTED, act3.getStatus());
         bean = new ActBean(act3);
         assertNull(bean.getString("error"));
     }
@@ -188,8 +192,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testUnsupportedResponse() throws Exception {
-        HL7DocumentHandler handler = new HL7DocumentHandler(getArchetypeService());
-        MessageQueue queue = new MessageQueue(sender, getArchetypeService(), handler, context);
+        MessageQueue queue = new MessageQueue(sender, service, context);
         assertEquals(0, queue.getQueued());
 
         RDE_O11 message = createMessage();
@@ -200,9 +203,9 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
         DocumentAct act2 = queue.sent(response);
 
         assertEquals(act1.getId(), act2.getId());
-        assertEquals(HL7ActStatuses.ERROR, act2.getStatus());
+        assertEquals(HL7MessageStatuses.ERROR, act2.getStatus());
         ActBean bean = new ActBean(act2);
-        assertEquals("Unsupported response: RDE_O11\nMessage: " + response.encode().replaceAll("\r", "\n"),
+        assertEquals("Unsupported response: RDE^O11^RDE_O11\nMessage: " + response.encode().replaceAll("\r", "\n"),
                      bean.getString("error"));
     }
 
@@ -211,8 +214,7 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testError() throws Exception {
-        HL7DocumentHandler handler = new HL7DocumentHandler(getArchetypeService());
-        MessageQueue queue = new MessageQueue(sender, getArchetypeService(), handler, context);
+        MessageQueue queue = new MessageQueue(sender, service, context);
         assertEquals(0, queue.getQueued());
 
         RDE_O11 message = createMessage();
@@ -227,13 +229,13 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
         // verify the act isn't changed by the error
         act1 = get(act1);
         ActBean bean = new ActBean(act1);
-        assertEquals(HL7ActStatuses.PENDING, act1.getStatus());
+        assertEquals(HL7MessageStatuses.PENDING, act1.getStatus());
         assertNull(bean.getString("error"));
 
         assertNotNull(queue.peekFirst());
         DocumentAct act2 = queue.sent(message.generateACK());
         assertEquals(act1.getId(), act2.getId());
-        assertEquals(HL7ActStatuses.ACCEPTED, act2.getStatus());
+        assertEquals(HL7MessageStatuses.ACCEPTED, act2.getStatus());
     }
 
     /**

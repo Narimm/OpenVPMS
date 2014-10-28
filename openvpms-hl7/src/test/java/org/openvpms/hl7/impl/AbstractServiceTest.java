@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.Connectors;
+import org.openvpms.hl7.io.MessageService;
 import org.openvpms.hl7.patient.PatientEventServices;
 import org.openvpms.hl7.util.HL7Archetypes;
 
@@ -89,7 +90,8 @@ public abstract class AbstractServiceTest extends AbstractMessageTest {
         };
         eventServices = new PatientEventServicesImpl(getArchetypeService(), connectors);
         eventServices.add(service);
-        dispatcher = new TestMessageDispatcher(getArchetypeService(), TestHelper.createUser());
+        MessageService messageService = new MessageServiceImpl(getArchetypeService());
+        dispatcher = new TestMessageDispatcher(messageService, getArchetypeService(), TestHelper.createUser());
         dispatcher.setTimestamp(TestHelper.getDatetime("2014-08-25 08:59:00"));
         dispatcher.setMessageControlID(1200022);
     }

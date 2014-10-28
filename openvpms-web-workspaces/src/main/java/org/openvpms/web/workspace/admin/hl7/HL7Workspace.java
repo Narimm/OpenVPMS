@@ -122,8 +122,8 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
         SplitPane root = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, STYLE);
         container = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP, STYLE);
         Component heading = super.doLayout();
-        Column container = ColumnFactory.create(Styles.INSET_Y);
-        model = new ObjectTabPaneModel<TabComponent>(container);
+        Column wrapper = ColumnFactory.create(Styles.INSET_Y);
+        model = new ObjectTabPaneModel<TabComponent>(wrapper);
         addTabs(model);
         pane = TabbedPaneFactory.create(model);
         pane.getSelectionModel().addChangeListener(new ChangeListener() {
@@ -160,8 +160,7 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
 
     private void addTabs(ObjectTabPaneModel<TabComponent> model) {
         addServiceBrowser(model);
-        addConnectionBrowser(model);
-        addStatusBrowser(model);
+        addConnectorBrowser(model);
     }
 
     private void addServiceBrowser(ObjectTabPaneModel<TabComponent> model) {
@@ -175,23 +174,15 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
         addTab("admin.hl7.services", model, new HL7BrowserCRUDWindow<IMObject>(browser, window));
     }
 
-    private void addConnectionBrowser(ObjectTabPaneModel<TabComponent> model) {
+    private void addConnectorBrowser(ObjectTabPaneModel<TabComponent> model) {
         Context context = getContext();
         HelpContext help = getHelpContext();
-        Query<IMObject> query = QueryFactory.create(HL7Archetypes.CONNECTIONS, context);
-        Browser<IMObject> browser = BrowserFactory.create(query, new DefaultLayoutContext(context, help));
-        Archetypes<IMObject> archetypes = Archetypes.create(HL7Archetypes.CONNECTIONS, IMObject.class,
-                                                            Messages.get("admin.hl7.connection.type"));
-        DefaultCRUDWindow<IMObject> window = new DefaultCRUDWindow<IMObject>(archetypes, context, help);
-        addTab("admin.hl7.connections", model, new HL7BrowserCRUDWindow<IMObject>(browser, window));
-    }
-
-    private void addStatusBrowser(ObjectTabPaneModel<TabComponent> model) {
-        Context context = getContext();
-        HelpContext help = getHelpContext();
-        Query<Entity> query = QueryFactory.create(HL7Archetypes.CONNECTIONS, context);
-        Browser<Entity> browser = new HL7StatusBrowser(query, new DefaultLayoutContext(context, help));
-        addTab("admin.hl7.status", model, new TabBrowserComponent<Entity>(browser));
+        Query<Entity> query = QueryFactory.create(HL7Archetypes.CONNECTORS, context);
+        Browser<Entity> browser = new Hl7ConnectorBrowser(query, new DefaultLayoutContext(context, help));
+        Archetypes<Entity> archetypes = Archetypes.create(HL7Archetypes.CONNECTORS, Entity.class,
+                                                          Messages.get("admin.hl7.connector.type"));
+        HL7ConnectorCRUDWindow window = new HL7ConnectorCRUDWindow(archetypes, getContext(), getHelpContext());
+        addTab("admin.hl7.connectors", model, new HL7BrowserCRUDWindow<Entity>(browser, window));
     }
 
     /**
@@ -201,7 +192,7 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
      * @param model the tab model
      * @param tab   the component
      */
-    protected void addTab(String name, ObjectTabPaneModel<TabComponent> model, TabComponent tab) {
+    private void addTab(String name, ObjectTabPaneModel<TabComponent> model, TabComponent tab) {
         int index = model.size();
         int shortcut = index + 1;
         String text = "&" + shortcut + " " + Messages.get(name);

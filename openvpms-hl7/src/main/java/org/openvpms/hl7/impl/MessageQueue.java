@@ -21,8 +21,6 @@ import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.v25.datatype.CWE;
-import ca.uhn.hl7v2.model.v25.datatype.MSG;
-import ca.uhn.hl7v2.model.v25.datatype.TS;
 import ca.uhn.hl7v2.model.v25.message.ACK;
 import ca.uhn.hl7v2.model.v25.segment.ERR;
 import ca.uhn.hl7v2.model.v25.segment.MSA;
@@ -31,23 +29,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.Constraints;
-import org.openvpms.component.system.common.query.IMObjectQueryIterator;
-import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.hl7.io.MessageService;
 import org.openvpms.hl7.io.Statistics;
-import org.openvpms.hl7.util.HL7ActStatuses;
-import org.openvpms.hl7.util.HL7Archetypes;
+import org.openvpms.hl7.util.HL7MessageStatuses;
 
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 
 /**
  * A queue of messages for a {@link MLLPSender}.
@@ -59,14 +46,9 @@ import java.util.List;
 class MessageQueue implements Statistics {
 
     /**
-     * The archetype service.
+     * The message service.
      */
-    private final IArchetypeService service;
-
-    /**
-     * The handler used to manage <em>document.HL7</em> documents.
-     */
-    private final HL7DocumentHandler handler;
+    private final MessageService service;
 
     /**
      * The message context.
@@ -114,16 +96,6 @@ class MessageQueue implements Statistics {
     private boolean suspended;
 
     /**
-     * The hl7 mime type.
-     */
-    private static final String MIME_TYPE = "application/hl7-v2+er7"; // for now, will be using the PipeParser
-
-    /**
-     * Length restriction for error messages.
-     */
-    private static final int MAX_ERROR_LENGTH = 5000;
-
-    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(MessageQueue.class);
@@ -133,15 +105,12 @@ class MessageQueue implements Statistics {
      * Constructs an {@link MessageQueue}.
      *
      * @param connector the connector
-     * @param service   the archetype service
-     * @param handler   the handler used to manage <em>document.HL7</em> documents
+     * @param service   the message service
      * @param context   the message context
      */
-    public MessageQueue(MLLPSender connector, IArchetypeService service, HL7DocumentHandler handler,
-                        HapiContext context) {
+    public MessageQueue(MLLPSender connector, MessageService service, HapiContext context) {
         this.connector = connector;
         this.service = service;
-        this.handler = handler;
         this.context = context;
     }
 
@@ -154,22 +123,7 @@ class MessageQueue implements Statistics {
      * @throws HL7Exception if the message cannot be encoded
      */
     public DocumentAct add(Message message, User user) throws HL7Exception {
-        DocumentAct act = (DocumentAct) service.create(HL7Archetypes.MESSAGE);
-        ActBean bean = new ActBean(act, service);
-        bean.addNodeParticipation("connector", connector.getReference());
-        bean.addNodeParticipation("author", user);
-        MSH header = (MSH) message.get("MSH");
-        String type = getMessageType(header);
-        act.setDescription(type);
-        TS dateTimeOfMessage = header.getDateTimeOfMessage();
-        act.setActivityStartTime(dateTimeOfMessage.getTime().getValueAsDate());
-        String name = type + "_" + header.getMessageControlID().getValue() + ".hl7";
-        String encoded = message.encode();
-        Document document = handler.create(name, encoded, MIME_TYPE);
-        act.setDocument(document.getObjectReference());
-        List<IMObject> toSave = Arrays.asList(document, act);
-        service.save(toSave);
-        return act;
+        return service.save(message, connector, user);
     }
 
     /**
@@ -213,10 +167,10 @@ class MessageQueue implements Statistics {
             if (AcknowledgmentCode.AA.toString().equals(ackCode)) {
                 processed();
             } else if (AcknowledgmentCode.AE.toString().equals(ackCode)) {
-                handleError(ack, HL7ActStatuses.PENDING);
+                handleError(ack, HL7MessageStatuses.PENDING);
                 waitUntil = System.currentTimeMillis() + 30 * 1000;
             } else {
-                handleError(ack, HL7ActStatuses.ERROR);
+                handleError(ack, HL7MessageStatuses.ERROR);
             }
         } else {
             unsupportedResponse(response);
@@ -295,7 +249,7 @@ class MessageQueue implements Statistics {
      * @return the number of messages
      */
     public int getQueued() {
-        return countMessages(HL7ActStatuses.PENDING);
+        return countMessages(HL7MessageStatuses.PENDING);
     }
 
     /**
@@ -307,7 +261,7 @@ class MessageQueue implements Statistics {
      */
     @Override
     public int getErrors() {
-        return countMessages(HL7ActStatuses.ERROR);
+        return countMessages(HL7MessageStatuses.ERROR);
     }
 
     /**
@@ -346,17 +300,11 @@ class MessageQueue implements Statistics {
 
     /**
      * Invoked when a message is successfully processed.
-     *
-     * @throws IllegalStateException if there is no current message
      */
     private void processed() {
         lastSent = new Date();
         try {
-            currentAct.setActivityEndTime(lastSent);
-            currentAct.setStatus(HL7ActStatuses.ACCEPTED);
-            ActBean bean = new ActBean(currentAct, service);
-            bean.setValue("error", null);
-            bean.save();
+            service.sent(currentAct, lastSent);
         } finally {
             completed(null, null);
         }
@@ -383,7 +331,7 @@ class MessageQueue implements Statistics {
         error.append("Unsupported response: ");
         try {
             MSH header = (MSH) response.get("MSH");
-            error.append(getMessageType(header));
+            error.append(HL7MessageHelper.getMessageName(header));
         } catch (HL7Exception exception) {
             log.error("Failed to determine message type", exception);
             error.append("unknown");
@@ -395,7 +343,7 @@ class MessageQueue implements Statistics {
             log.error("Failed to format message", exception);
             error.append("unknown");
         }
-        error(HL7ActStatuses.ERROR, error.toString());
+        error(HL7MessageStatuses.ERROR, error.toString());
     }
 
     /**
@@ -415,12 +363,8 @@ class MessageQueue implements Statistics {
      * Retrieves the next message.
      */
     private void getNext() {
-        ArchetypeQuery query = createQuery(HL7ActStatuses.PENDING);
-        query.add(Constraints.sort("id"));
-        query.setMaxResults(1);
-        IMObjectQueryIterator<DocumentAct> iterator = new IMObjectQueryIterator<DocumentAct>(service, query);
-        while (iterator.hasNext()) {
-            DocumentAct act = iterator.next();
+        DocumentAct act;
+        while ((act = service.next(connector)) != null) {
             Message message = decode(act);
             if (message != null) {
                 currentAct = act;
@@ -428,17 +372,6 @@ class MessageQueue implements Statistics {
                 break;
             }
         }
-    }
-
-    /**
-     * Returns the message type of a message.
-     *
-     * @param header the message header
-     * @return the formatted type
-     */
-    private String getMessageType(MSH header) {
-        MSG type = header.getMessageType();
-        return type.getMessageCode() + "_" + type.getTriggerEvent();
     }
 
     /**
@@ -516,19 +449,6 @@ class MessageQueue implements Statistics {
     }
 
     /**
-     * Creates a query for PENDING messages.
-     *
-     * @param status the message status
-     * @return a new query
-     */
-    private ArchetypeQuery createQuery(String status) {
-        ArchetypeQuery query = new ArchetypeQuery(HL7Archetypes.MESSAGE);
-        query.add(Constraints.join("connector").add(Constraints.eq("entity", connector.getReference())));
-        query.add(Constraints.eq("status", status));
-        return query;
-    }
-
-    /**
      * Decodes an HL7 message from an act.
      * <p/>
      * If the message cannot be decoded, the act status will be set to ERROR.
@@ -538,17 +458,11 @@ class MessageQueue implements Statistics {
      */
     private Message decode(DocumentAct act) {
         Message result = null;
-        IMObjectReference ref = act.getDocument();
-        Document document = (ref != null) ? (Document) service.get(ref) : null;
-        if (document == null) {
-            error(act, "No message content");
-        } else {
-            String content = handler.getStringContent(document);
-            try {
-                result = context.getGenericParser().parse(content);
-            } catch (HL7Exception exception) {
-                error(act, exception.getMessage());
-            }
+        try {
+            result = service.get(act, context.getGenericParser());
+        } catch (HL7Exception exception) {
+            log.error(exception.getMessage(), exception);
+            service.error(act, HL7MessageStatuses.ERROR, new Date(), exception.getMessage());
         }
         return result;
     }
@@ -560,10 +474,7 @@ class MessageQueue implements Statistics {
      * @return the no. of messages with th status
      */
     private int countMessages(String status) {
-        ArchetypeQuery query = createQuery(status);
-        query.setCountResults(true);
-        IPage<IMObject> page = service.get(query);
-        return page.getTotalResults();
+        return service.getMessages(connector, status);
     }
 
     /**
@@ -573,33 +484,13 @@ class MessageQueue implements Statistics {
      * @param error  the error message
      */
     private void error(String status, String error) {
-        if (error != null && error.length() > MAX_ERROR_LENGTH) {
-            error = error.substring(0, MAX_ERROR_LENGTH);
-        }
         Date now = new Date();
         try {
-            currentAct.setActivityEndTime(now);
-            currentAct.setStatus(status);
-            ActBean bean = new ActBean(currentAct, service);
-            bean.setValue("error", error);
-            bean.save();
             log.error("Error received from " + connector + ":" + error);
+            service.error(currentAct, status, now, error);
         } finally {
             completed(now, error);
         }
-    }
-
-    /**
-     * Sets an act status to {@link HL7ActStatuses#ERROR} and sets the error node to that supplied.
-     *
-     * @param act     the act
-     * @param message the error message
-     */
-    private void error(DocumentAct act, String message) {
-        act.setStatus(HL7ActStatuses.ERROR);
-        ActBean bean = new ActBean(act);
-        bean.setValue("error", message);
-        bean.save();
     }
 
     /**

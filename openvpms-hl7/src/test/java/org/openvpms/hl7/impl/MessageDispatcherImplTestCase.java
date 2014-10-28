@@ -31,8 +31,9 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.hl7.io.Connector;
+import org.openvpms.hl7.io.MessageService;
 import org.openvpms.hl7.io.Statistics;
-import org.openvpms.hl7.util.HL7ActStatuses;
+import org.openvpms.hl7.util.HL7MessageStatuses;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +43,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests the {@link MessageDispatcherImpl}.
@@ -108,7 +110,8 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
             }
         };
 
-        dispatcher = new TestMessageDispatcher(connectors, getArchetypeService(), rules);
+        MessageService messageService = new MessageServiceImpl(getArchetypeService());
+        dispatcher = new TestMessageDispatcher(messageService, connectors, rules);
         dispatcher.afterPropertiesSet();
     }
 
@@ -135,12 +138,14 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
 
         for (int i = 0; i < count; i++) {
             DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config, user);
-            assertEquals(HL7ActStatuses.PENDING, message.getStatus());
+            assertEquals(HL7MessageStatuses.PENDING, message.getStatus());
             queued.add(message);
         }
 
         // wait for the messages to be sent
-        assertTrue(dispatcher.waitForMessages(count));
+        if (!dispatcher.waitForMessages(count)) {
+            fail("Failed to receive " + count + " messages");
+        }
 
         checkQueued(0, sender);
 
@@ -149,7 +154,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
         assertEquals(count, processed.size());
         for (int i = 0; i < queued.size(); ++i) {
             DocumentAct act = queued.get(i);
-            checkStatus(act, HL7ActStatuses.ACCEPTED);
+            checkStatus(act, HL7MessageStatuses.ACCEPTED);
             assertEquals(act, processed.get(i));
         }
     }
@@ -165,7 +170,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
 
         List<DocumentAct> queued = new ArrayList<DocumentAct>();
         DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config, user);
-        assertEquals(HL7ActStatuses.PENDING, message.getStatus());
+        assertEquals(HL7MessageStatuses.PENDING, message.getStatus());
         queued.add(message);
 
         assertTrue(dispatcher.waitForMessage());
@@ -174,7 +179,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
 
         for (int i = 0; i < count - 1; i++) {
             message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config, user);
-            assertEquals(HL7ActStatuses.PENDING, message.getStatus());
+            assertEquals(HL7MessageStatuses.PENDING, message.getStatus());
             queued.add(message);
         }
 
@@ -195,7 +200,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
         assertEquals(count, processed.size());
         for (int i = 0; i < queued.size(); ++i) {
             DocumentAct act = queued.get(i);
-            checkStatus(act, HL7ActStatuses.ACCEPTED);
+            checkStatus(act, HL7MessageStatuses.ACCEPTED);
             assertEquals(act, processed.get(i));
         }
     }
@@ -214,7 +219,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
 
         for (int i = 0; i < count; i++) {
             DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config, user);
-            assertEquals(HL7ActStatuses.PENDING, message.getStatus());
+            assertEquals(HL7MessageStatuses.PENDING, message.getStatus());
             queued.add(message);
         }
 
@@ -222,7 +227,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
         assertTrue(dispatcher.waitForDispatch());
 
         // make sure the first message is pending
-        checkStatus(queued.get(0), HL7ActStatuses.PENDING);
+        checkStatus(queued.get(0), HL7MessageStatuses.PENDING);
 
         assertEquals("simulated send exception", dispatcher.getStatistics(sender.getReference()).getErrorMessage());
         checkQueued(count, sender);
@@ -254,7 +259,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
         assertTrue(dispatcher.waitForDispatch());
 
         // make sure the message is still pending
-        checkStatus(message, HL7ActStatuses.PENDING);
+        checkStatus(message, HL7MessageStatuses.PENDING);
 
         assertEquals("HL7 Error Code: 207 - Application internal error\n" +
                      "Original Text: simulated application exception",
@@ -276,7 +281,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
 
     /**
      * Verifies that if a application sends back an application reject (AE) acknowledgment, the message status
-     * is set to {@link HL7ActStatuses#ERROR}.
+     * is set to {@link HL7MessageStatuses#ERROR}.
      */
     @Test
     public void testApplicationReject() throws Exception {
@@ -290,7 +295,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
         assertTrue(dispatcher.waitForDispatch());
 
         // make sure the message has been rejected
-        checkStatus(message, HL7ActStatuses.ERROR);
+        checkStatus(message, HL7MessageStatuses.ERROR);
 
         assertEquals("HL7 Error Code: 200 - Unsupported message type\n" +
                      "Original Text: simulated application reject",

@@ -25,7 +25,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.DefaultActActions;
+import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -113,8 +113,8 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
      * @param help    the help context
      */
     public VisitChargeCRUDWindow(Act event, Context context, HelpContext help) {
-        super(Archetypes.create(CustomerAccountArchetypes.INVOICE, FinancialAct.class),
-              DefaultActActions.<FinancialAct>getInstance(), context, help);
+        super(Archetypes.create(CustomerAccountArchetypes.INVOICE, FinancialAct.class), ActActions.<FinancialAct>edit(),
+              context, help);
         this.event = event;
         OrderRules rules = ServiceHelper.getBean(OrderRules.class);
         orderCharger = new OrderCharger(context.getCustomer(), context.getPatient(), rules, context, help);
