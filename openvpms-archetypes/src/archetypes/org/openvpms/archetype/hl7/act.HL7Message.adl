@@ -18,17 +18,16 @@
     <archetype name="act.HL7Message.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.act.DocumentAct"
                displayName="HL7 Message">
-        <node name="id" path="/id" type="java.lang.Long"
-              hidden="true" readOnly="true"/>
-        <node name="name" type="java.lang.String" path="/name" hidden="true"
-              minCardinality="1" derived="true"
-              derivedValue="'HL7 Message'"/>
+        <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
         <node name="startTime" displayName="Created" path="/activityStartTime" type="java.util.Date"
               minCardinality="1" defaultValue="java.util.Date.new()"/>
         <node name="endTime" displayName="Sent" path="/activityEndTime" type="java.util.Date" minCardinality="0"/>
+        <node name="name" type="java.lang.String" path="/name" minCardinality="1" readOnly="true"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true" minCardinality="0"/>
-        <node name="status" path="/status" type="java.lang.String"
-              minCardinality="1" defaultValue="'PENDING'">
+        <node name="hl7Version" displayName="HL7 Version" type="java.lang.String" path="/details/hl7Version"
+              readOnly="true" minCardinality="0"/>
+        <node name="status" path="/status" type="java.lang.String" minCardinality="1" readOnly="true"
+              defaultValue="'PENDING'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="PENDING" value="Pending"/>
@@ -37,8 +36,14 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="document" path="/document" minCardinality="0" maxCardinality="1"
-              type="org.openvpms.component.business.domain.im.common.IMObjectReference">
+        <node name="connector" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+              filter="participation.HL7Connector" readOnly="true"/>
+        <node name="author" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+              filter="participation.author" readOnly="true"/>
+        <node name="error" path="/details/error" type="java.lang.String" minCardinality="0" maxLength="5000"
+              readOnly="true"/>
+        <node name="document" displayName="Message" path="/document" minCardinality="0" maxCardinality="1"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference" readOnly="true">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
@@ -47,12 +52,6 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="error" path="/details/error" type="java.lang.String" minCardinality="0" maxLength="5000"/>
-        <node name="connector" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
-              filter="participation.HL7Connector" readOnly="true"/>
-        <node name="author" path="/participations" type="java.util.HashSet"
-              minCardinality="1" maxCardinality="1"
-              filter="participation.author" hidden="true"/>
         <node name="fileName" type="java.lang.String" path="/fileName" hidden="true"/>
         <node name="mimeType" type="java.lang.String" path="/mimeType" hidden="true"/>
     </archetype>
