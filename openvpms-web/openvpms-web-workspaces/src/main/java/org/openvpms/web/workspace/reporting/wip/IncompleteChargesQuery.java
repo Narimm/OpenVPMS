@@ -31,6 +31,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.location.LocationSelectField;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
+import org.openvpms.web.component.im.query.LocationActResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -100,9 +101,9 @@ public class IncompleteChargesQuery extends DateRangeActQuery<Act> {
     @Override
     protected ResultSet<Act> createResultSet(SortConstraint[] sort) {
         Party location = (Party) locationSelector.getSelectedItem();
-        return new IncompleteChargesResultSet(getArchetypeConstraint(), null, location, locationSelector.getLocations(),
-                                              getFrom(), getTo(), getStatuses(), excludeStatuses(), getMaxResults(),
-                                              sort);
+        return new LocationActResultSet<Act>(getArchetypeConstraint(), null, location, locationSelector.getLocations(),
+                                             getFrom(), getTo(), getStatuses(), excludeStatuses(), getMaxResults(),
+                                             sort);
     }
 
     /**

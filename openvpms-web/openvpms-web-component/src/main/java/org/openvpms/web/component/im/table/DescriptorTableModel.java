@@ -207,6 +207,9 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
 
         int idIndex = names.indexOf("id");
         if (idIndex != -1) {
+            if (!(names instanceof ArrayList)) {
+                names = new ArrayList<String>(names);  // Arrays.asList() doesn't support remove
+            }
             names.remove(idIndex);
             // use default formatting for ID columns.
             TableColumn column = createTableColumn(ID_INDEX, "table.imobject.id");

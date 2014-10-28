@@ -14,7 +14,7 @@
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.reporting.wip;
+package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -25,8 +25,6 @@ import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.query.ActResultSet;
-import org.openvpms.web.component.im.query.ParticipantConstraint;
 
 import java.util.Date;
 import java.util.List;
@@ -37,12 +35,12 @@ import static org.openvpms.component.system.common.query.Constraints.notExists;
 import static org.openvpms.component.system.common.query.Constraints.subQuery;
 
 /**
- * Result set for incomplete charges. i.e invoices, credit and counter acts that
- * are IN_PROGRESS, COMPLETE, or ON_HOLD.
+ * A result set the filters acts by practice location.
  *
  * @author Tim Anderson
  */
-class IncompleteChargesResultSet extends ActResultSet<Act> {
+public class LocationActResultSet<T extends Act> extends AbstractActResultSet<T> {
+
 
     /**
      * The selected location.
@@ -55,7 +53,7 @@ class IncompleteChargesResultSet extends ActResultSet<Act> {
     private final List<Party> locations;
 
     /**
-     * Constructs an {@link IncompleteChargesResultSet}.
+     * Constructs a {@link LocationActResultSet}.
      *
      * @param archetypes   the act archetype constraint
      * @param participants the participant constraints. May be {@code null}
@@ -66,11 +64,12 @@ class IncompleteChargesResultSet extends ActResultSet<Act> {
      * @param pageSize     the maximum no. of results per page
      * @param sort         the sort criteria. May be {@code null}
      */
-    public IncompleteChargesResultSet(ShortNameConstraint archetypes, ParticipantConstraint[] participants,
-                                      Party location, List<Party> locations,
-                                      Date from, Date to, String[] statuses, boolean exclude,
-                                      int pageSize, SortConstraint[] sort) {
-        super(archetypes, participants, from, to, statuses, exclude, null, pageSize, sort);
+    public LocationActResultSet(ShortNameConstraint archetypes, ParticipantConstraint[] participants,
+                                Party location, List<Party> locations,
+                                Date from, Date to, String[] statuses, boolean exclude,
+                                int pageSize, SortConstraint[] sort) {
+        super(archetypes, participants, from, to, statuses, exclude, null, pageSize, sort,
+              new DefaultQueryExecutor<T>());
         this.location = location;
         this.locations = locations;
         setDistinct(true);
@@ -112,4 +111,5 @@ class IncompleteChargesResultSet extends ActResultSet<Act> {
         }
         return result;
     }
+
 }
