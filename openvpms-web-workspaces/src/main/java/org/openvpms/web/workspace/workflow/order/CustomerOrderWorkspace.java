@@ -20,6 +20,7 @@ import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.component.mail.MailContext;
@@ -61,7 +62,7 @@ public class CustomerOrderWorkspace extends ResultSetCRUDWorkspace<FinancialAct>
      */
     @Override
     protected Query<FinancialAct> createQuery() {
-        return new CustomerOrderQuery(SHORT_NAMES);
+        return new CustomerOrderQuery(SHORT_NAMES, new DefaultLayoutContext(getContext(), getHelpContext()));
     }
 
     /**
