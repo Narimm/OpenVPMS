@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.hl7.impl.MessageConfig;
+import org.openvpms.hl7.util.HL7MessageStatuses;
 
 /**
  * Manages sending and receiving HL7 messages.
@@ -40,6 +41,16 @@ public interface MessageDispatcher {
      * @return the queued message
      */
     DocumentAct queue(Message message, Connector connector, MessageConfig config, User user);
+
+    /**
+     * Resubmit a message.
+     * <p/>
+     * The associated connector must support message resubmission, and the message must have an
+     * {@link HL7MessageStatuses#ERROR} status.
+     *
+     * @param message the message to resubmit
+     */
+    void resubmit(DocumentAct message);
 
     /**
      * Registers an application to handle messages from the specified connector.

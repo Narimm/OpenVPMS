@@ -23,9 +23,13 @@
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
+    <bean id="hl7messageService" class="org.openvpms.hl7.impl.MessageServiceImpl">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
     <bean id="hl7messageDispatcher" class="org.openvpms.hl7.impl.MessageDispatcherImpl">
         <constructor-arg ref="hl7Connectors"/>
-        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="hl7messageService"/>
         <constructor-arg ref="practiceRules"/>
     </bean>
 

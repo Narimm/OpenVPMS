@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.hl7.io.MessageDispatcher;
+import org.openvpms.hl7.io.MessageService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -93,8 +94,8 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
      * @param service the archetype service
      * @param user    the user to initialise the security context in the dispatch thread
      */
-    public TestMessageDispatcher(IArchetypeService service, final User user) {
-        this(Mockito.mock(ConnectorsImpl.class), service, new PracticeRules(service) {
+    public TestMessageDispatcher(MessageService messageService, IArchetypeService service, final User user) {
+        this(messageService, Mockito.mock(ConnectorsImpl.class), new PracticeRules(service) {
             @Override
             public User getServiceUser(Party practice) {
                 return user;
@@ -105,12 +106,12 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
     /**
      * Constructs a {@link TestMessageDispatcher}.
      *
+     * @param service    the message service
      * @param connectors the connectors
-     * @param service    the service
      * @param rules      the practice rules
      */
-    public TestMessageDispatcher(ConnectorsImpl connectors, IArchetypeService service, PracticeRules rules) {
-        super(connectors, service, rules);
+    public TestMessageDispatcher(MessageService service, ConnectorsImpl connectors, PracticeRules rules) {
+        super(service, connectors, rules);
     }
 
     /**
@@ -205,30 +206,22 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
     }
 
     /**
-     * Determines if an application error (AE) ack should be generated.
-     */
-
-    /**
-     * Sends the first message in a queue, if any are present.
+     * Sends a message.
      *
-     * @param queue the queue
-     * @return {@code true} if there was a message
+     * @param queue   the message queue
+     * @param message the message
+     * @param act     the persistent act
      */
     @Override
-    protected boolean sendFirst(MessageQueue queue) {
-        DocumentAct act = queue.peekFirstAct();
-        Message message = queue.peekFirst();
-        boolean result = super.sendFirst(queue);
-        if (act != null) {
-            dispatchSemaphore.release();
-            acts.add(act);
-            messages.add(message);
+    protected void send(MessageQueue queue, Message message, DocumentAct act) {
+        acts.add(act);
+        messages.add(message);
 
-            if (queue.getErrorTimestamp() == null) {
-                sentSemaphore.release();
-            }
+        super.send(queue, message, act);
+        dispatchSemaphore.release();
+        if (queue.getErrorTimestamp() == null) {
+            sentSemaphore.release();
         }
-        return result;
     }
 
     /**

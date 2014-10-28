@@ -94,7 +94,7 @@ public class HL7TestHelper {
      *
      * @param context the message context
      * @return a new order
-     * @throws HL7Exception for any HL7 erroor
+     * @throws HL7Exception for any HL7 error
      * @throws IOException  for any I/O error
      */
     public static RDE_O11 createOrder(HapiContext context) throws IOException, HL7Exception {

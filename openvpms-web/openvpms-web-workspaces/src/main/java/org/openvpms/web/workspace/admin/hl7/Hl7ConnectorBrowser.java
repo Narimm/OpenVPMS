@@ -37,19 +37,19 @@ import java.util.Date;
 
 
 /**
- * Enter description.
+ * Displays the HL7 connectors.
  *
  * @author Tim Anderson
  */
-public class HL7StatusBrowser extends IMObjectTableBrowser<Entity> {
+public class Hl7ConnectorBrowser extends IMObjectTableBrowser<Entity> {
 
     /**
-     * Constructs an {@code IMObjectTableBrowser} that queries IMObjects using the specified query.
+     * Constructs an {@link Hl7ConnectorBrowser} that queries IMObjects using the specified query.
      *
      * @param query   the query
      * @param context the layout context
      */
-    public HL7StatusBrowser(Query<Entity> query, LayoutContext context) {
+    public Hl7ConnectorBrowser(Query<Entity> query, LayoutContext context) {
         super(query, context);
     }
 
@@ -83,7 +83,7 @@ public class HL7StatusBrowser extends IMObjectTableBrowser<Entity> {
         private static final int LAST_ERROR_MSG = LAST_ERROR + 1;
 
         /**
-         * Construct a new {@link Model}.
+         * Constructs a {@link Model}.
          */
         public Model(Query<Entity> query) {
             super(null);
@@ -171,7 +171,6 @@ public class HL7StatusBrowser extends IMObjectTableBrowser<Entity> {
             Statistics stats = getStats(object, row);
             return (stats != null) ? stats.getErrorMessage() : null;
         }
-
 
         private Statistics getStats(Entity object, int row) {
             if (row == lastRow) {

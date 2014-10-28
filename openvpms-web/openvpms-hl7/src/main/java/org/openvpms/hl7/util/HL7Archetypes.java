@@ -64,9 +64,9 @@ public class HL7Archetypes {
     public static final String RECEIVERS = "entity.HL7Receiver*";
 
     /**
-     * The connection archetype short names.
+     * The connector archetype short names.
      */
-    public static final String[] CONNECTIONS = {SENDERS, RECEIVERS};
+    public static final String[] CONNECTORS = {SENDERS, RECEIVERS};
 
     /**
      * HL7 message archetype short name.
