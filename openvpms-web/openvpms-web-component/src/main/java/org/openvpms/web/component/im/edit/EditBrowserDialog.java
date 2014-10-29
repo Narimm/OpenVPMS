@@ -29,16 +29,27 @@ import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.focus.FocusCommand;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.util.DoubleClickMonitor;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 
 /**
- * An {@link BrowserDialog} which allows items in the browser to be edited.
+ * An {@link BrowserDialog} that allows items in the browser to be edited.
  *
  * @author Tim Anderson
  */
-public class EditListBrowserDialog<T extends IMObject> extends BrowserDialog<T> {
+public class EditBrowserDialog<T extends IMObject> extends BrowserDialog<T> {
+
+    /**
+     * The edit button id.
+     */
+    public static final String EDIT_ID = "button.edit";
+
+    /**
+     * Used to determine if an object may be edited.
+     */
+    private final IMObjectActions<T> actions;
 
     /**
      * The context.
@@ -46,32 +57,78 @@ public class EditListBrowserDialog<T extends IMObject> extends BrowserDialog<T> 
     private final Context context;
 
     /**
-     * The edit button id.
+     * Helper to monitor double clicks. When an object is double clicked, an edit dialog is displayed
      */
-    private static final String EDIT_ID = "edit";
+    private final DoubleClickMonitor click = new DoubleClickMonitor();
 
     /**
-     * The select button id.
-     */
-    private static final String SELECT_ID = "select";
-
-    /**
-     * The buttons to display.
-     */
-    private static final String[] BUTTONS = {EDIT_ID, SELECT_ID, CANCEL_ID};
-
-
-    /**
-     * Constructs an {@code EditListBrowserDialog}.
+     * Constructs an {@link EditBrowserDialog}.
      *
      * @param title   the dialog title
      * @param browser the browser
+     * @param buttons the buttons to display
+     * @param actions determines if an object may be edited
      * @param context the context
      * @param help    the help context
      */
-    public EditListBrowserDialog(String title, Browser<T> browser, Context context, HelpContext help) {
-        super(title, null, BUTTONS, browser, true, help);
+    public EditBrowserDialog(String title, String[] buttons, Browser<T> browser, IMObjectActions<T> actions,
+                             Context context, HelpContext help) {
+        this(title, buttons, browser, actions, false, context, help);
+    }
+
+    /**
+     * Constructs an {@link EditBrowserDialog}.
+     *
+     * @param title   the dialog title
+     * @param browser the browser
+     * @param buttons the buttons to display
+     * @param actions determines if an object may be edited
+     * @param addNew  if {@code true} add a 'new' button
+     * @param context the context
+     * @param help    the help context
+     */
+    public EditBrowserDialog(String title, String[] buttons, Browser<T> browser, IMObjectActions<T> actions,
+                             boolean addNew, Context context, HelpContext help) {
+        super(title, null, buttons, browser, addNew, help);
+        this.actions = actions;
         this.context = context;
+        setCloseOnSelection(false);
+    }
+
+    /**
+     * Invoked when the 'OK' button is pressed. This closes the dialog.
+     */
+    @Override
+    protected void onOK() {
+        close(OK_ID);
+    }
+
+    /**
+     * Sets the selected object.
+     *
+     * @param object the selected object. May be {@code null}
+     */
+    @Override
+    protected void setSelected(T object) {
+        super.setSelected(object);
+        if (object != null) {
+            boolean enabled = actions.canEdit(object);
+            getButtons().setEnabled(EDIT_ID, enabled);
+        }
+    }
+
+    /**
+     * Invoked when an object is selected. If it is double click, and the object is editable,
+     * invokes {@link #onEdit(IMObject)}.
+     *
+     * @param object the selected object
+     */
+    @Override
+    protected void onSelected(T object) {
+        super.onSelected(object);
+        if (actions.canEdit(object) && click.isDoubleClick(object.getId())) {
+            onEdit(object);
+        }
     }
 
     /**
@@ -88,11 +145,6 @@ public class EditListBrowserDialog<T extends IMObject> extends BrowserDialog<T> 
             if (selected != null) {
                 onEdit(selected);
             }
-        } else if (SELECT_ID.equals(button)) {
-            T selected = getSelected();
-            if (selected != null) {
-                onOK();
-            }
         } else {
             super.onButton(button);
         }
@@ -108,7 +160,7 @@ public class EditListBrowserDialog<T extends IMObject> extends BrowserDialog<T> 
         T current = IMObjectHelper.reload(object);
         if (current == null) {
             ErrorDialog.show(Messages.format("imobject.noexist", DescriptorHelper.getDisplayName(object)));
-        } else {
+        } else if (actions.canEdit(current)) {
             final FocusCommand focus = new FocusCommand();
             LayoutContext context = new DefaultLayoutContext(true, this.context, getHelpContext());
             IMObjectEditor editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(current, context);
@@ -116,6 +168,9 @@ public class EditListBrowserDialog<T extends IMObject> extends BrowserDialog<T> 
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 protected void onAction(PopupDialog dialog) {
+                    Browser<T> browser = getBrowser();
+                    browser.query();
+                    setSelected(browser.getSelected());
                     focus.restore();
                 }
             });

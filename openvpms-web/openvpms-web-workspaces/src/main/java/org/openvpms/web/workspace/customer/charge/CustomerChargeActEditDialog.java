@@ -264,7 +264,12 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      */
     private void chargeOrders() {
         if (!isPosted()) {
-            orderCharger.charge(getEditor());
+            orderCharger.charge(getEditor(), new OrderCharger.CompletionListener() {
+                @Override
+                public void completed() {
+                    checkOrders();
+                }
+            });
         }
     }
 
