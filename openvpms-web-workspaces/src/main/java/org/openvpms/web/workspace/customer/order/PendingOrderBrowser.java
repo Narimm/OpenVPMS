@@ -34,6 +34,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.AbstractQueryBrowser;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
+import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.CheckBoxFactory;
@@ -65,8 +66,7 @@ public class PendingOrderBrowser extends AbstractQueryBrowser<Act> {
      * @param context the layout context
      */
     public PendingOrderBrowser(PendingOrderQuery query, LayoutContext context) {
-        super(query, null, new PagedActHierarchyTableModel<Act>(new OrderTableModel(context), context.getContext(),
-                                                                ITEM_SHORT_NAMES), context);
+        super(query, null, null, context);
     }
 
     /**
@@ -90,6 +90,17 @@ public class PendingOrderBrowser extends AbstractQueryBrowser<Act> {
         return model.getOrders();
     }
 
+    /**
+     * Creates a table model.
+     *
+     * @param context the layout context
+     * @return a table model
+     */
+    @Override
+    protected IMTableModel<Act> createTableModel(LayoutContext context) {
+        return new PagedActHierarchyTableModel<Act>(new OrderTableModel(context), context.getContext(),
+                                                    ITEM_SHORT_NAMES);
+    }
 
     private static class OrderTableModel extends DescriptorTableModel<Act> {
 

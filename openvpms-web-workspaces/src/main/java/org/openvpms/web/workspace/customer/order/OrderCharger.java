@@ -32,6 +32,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -180,8 +181,8 @@ public class OrderCharger {
                 } else if (charger.canCredit()) {
                     credit(act, charger, listener);
                 } else {
-                    InformationDialog.show(Messages.format("customer.order.invoice.unsupported",
-                                                           DescriptorHelper.getDisplayName(act)));
+                    show(Messages.format("customer.order.invoice.unsupported", DescriptorHelper.getDisplayName(act)),
+                         listener);
                 }
             } else {
                 if (charger.canInvoice()) {
@@ -189,39 +190,40 @@ public class OrderCharger {
                 } else if (charger.canCredit()) {
                     credit(act, charger, listener);
                 } else {
-                    InformationDialog.show(Messages.format("customer.order.invoice.unsupported",
-                                                           DescriptorHelper.getDisplayName(act)));
+                    show(Messages.format("customer.order.invoice.unsupported", DescriptorHelper.getDisplayName(act)),
+                         listener);
                 }
             }
         } else {
-            InformationDialog.show(Messages.format("customer.order.invalid", DescriptorHelper.getDisplayName(act)));
+            show(Messages.format("customer.order.invalid", DescriptorHelper.getDisplayName(act)), listener);
         }
     }
 
     /**
      * Displays a prompt to charge pending orders, if any.
      *
-     * @param editor the editor to add charges to
+     * @param editor   the editor to add charges to
+     * @param listener the listener to notify when charging completes
      */
-    public void charge(final AbstractCustomerChargeActEditor editor) {
+    public void charge(final AbstractCustomerChargeActEditor editor, final CompletionListener listener) {
         PendingOrderQuery query = new PendingOrderQuery(customer, null, charged);
         ResultSet<Act> set = query.query();
         if (!set.hasNext()) {
             if (charged.isEmpty()) {
-                InformationDialog.show(Messages.format("customer.order.none", customer.getName()));
+                show(Messages.format("customer.order.none", customer.getName()), listener);
             } else {
-                InformationDialog.show(Messages.format("customer.order.unsaved", customer.getName()));
+                show(Messages.format("customer.order.unsaved", customer.getName()), listener);
             }
         } else {
             final PendingOrderBrowser browser = new PendingOrderBrowser(query, new DefaultLayoutContext(context, help));
             browser.query();
             PendingOrderDialog dialog = new PendingOrderDialog(Messages.get("customer.order.invoice.title"),
-                                                               browser, help);
+                                                               browser, new LocalContext(context), help);
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 public void onOK() {
                     List<Act> orders = browser.getOrders();
-                    charge(orders, editor);
+                    charge(orders, editor, listener);
                 }
             });
             dialog.show();
@@ -231,10 +233,11 @@ public class OrderCharger {
     /**
      * Charges orders.
      *
-     * @param orders the orders to charge
-     * @param editor the editor to add charges to
+     * @param orders   the orders to charge
+     * @param editor   the editor to add charges to
+     * @param listener the listener to notify when charging completes
      */
-    private void charge(List<Act> orders, AbstractCustomerChargeActEditor editor) {
+    private void charge(List<Act> orders, AbstractCustomerChargeActEditor editor, final CompletionListener listener) {
         StringBuilder messages = new StringBuilder();
         for (Act order : orders) {
             if (TypeHelper.isA(order, OrderArchetypes.PHARMACY_ORDER, OrderArchetypes.PHARMACY_RETURN)) {
@@ -262,10 +265,11 @@ public class OrderCharger {
             }
         }
         if (messages.length() != 0) {
-            InformationDialog.show(messages.toString());
+            show(messages.toString(), listener);
+        } else {
+            listener.completed();
         }
     }
-
 
     private void invoice(FinancialAct act, final PharmacyOrderCharger charger, CompletionListener listener) {
         CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
@@ -317,7 +321,17 @@ public class OrderCharger {
         if (ActStatus.POSTED.equals(act.getStatus())) {
             charged.add(act);
         }
+    }
 
+    private void show(String message, final CompletionListener listener) {
+        InformationDialog dialog = new InformationDialog(message);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            @Override
+            public void onClose(WindowPaneEvent event) {
+                listener.completed();
+            }
+        });
+        dialog.show();
     }
 
     private static class SelectChargeDialog extends ConfirmationDialog {

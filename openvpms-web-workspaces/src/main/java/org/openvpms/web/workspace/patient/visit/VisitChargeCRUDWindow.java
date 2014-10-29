@@ -272,7 +272,12 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
      */
     public void chargeOrders() {
         if (!posted) {
-            orderCharger.charge(editor);
+            orderCharger.charge(editor, new OrderCharger.CompletionListener() {
+                @Override
+                public void completed() {
+                    checkOrders();
+                }
+            });
         }
     }
 
