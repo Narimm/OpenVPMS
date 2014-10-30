@@ -130,7 +130,7 @@ public class CustomerOrderCRUDWindow extends ResultSetCRUDWindow<FinancialAct> {
         Party customer = (Party) bean.getNodeParticipant("customer");
         if (customer != null) {
             OrderCharger charger = new OrderCharger(customer, ServiceHelper.getBean(OrderRules.class),
-                                                    getContext(), getHelpContext());
+                                                    getContext(), getHelpContext().subtopic("order"));
             charger.charge(act, new OrderCharger.CompletionListener() {
                 @Override
                 public void completed() {

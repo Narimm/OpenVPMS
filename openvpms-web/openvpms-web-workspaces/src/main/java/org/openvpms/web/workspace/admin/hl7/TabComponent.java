@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.admin.hl7;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.web.echo.help.HelpContext;
 
 /**
  * Tab pane component.
@@ -43,5 +44,12 @@ public interface TabComponent {
      * @return the button component, or {@code null} if this tab doesn't provide any buttons
      */
     Component getButtons();
+
+    /**
+     * Returns the help context for the tab.
+     *
+     * @return the help context
+     */
+    HelpContext getHelpContext();
 
 }

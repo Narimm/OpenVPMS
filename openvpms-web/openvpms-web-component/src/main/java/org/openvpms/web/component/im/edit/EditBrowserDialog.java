@@ -162,7 +162,8 @@ public class EditBrowserDialog<T extends IMObject> extends BrowserDialog<T> {
             ErrorDialog.show(Messages.format("imobject.noexist", DescriptorHelper.getDisplayName(object)));
         } else if (actions.canEdit(current)) {
             final FocusCommand focus = new FocusCommand();
-            LayoutContext context = new DefaultLayoutContext(true, this.context, getHelpContext());
+            HelpContext help = getHelpContext().topic(object, "edit");
+            LayoutContext context = new DefaultLayoutContext(true, this.context, help);
             IMObjectEditor editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(current, context);
             EditDialog dialog = EditDialogFactory.create(editor, this.context);
             dialog.addWindowPaneListener(new PopupDialogListener() {
