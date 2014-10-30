@@ -22,6 +22,7 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.workspace.AbstractCRUDWindow;
 import org.openvpms.web.component.workspace.BrowserCRUDWindow;
 import org.openvpms.web.component.workspace.CRUDWindow;
+import org.openvpms.web.echo.help.HelpContext;
 
 /**
  * Tab component that links a {@link Browser} to a {@link CRUDWindow}.
@@ -72,5 +73,15 @@ public class HL7BrowserCRUDWindow<T extends IMObject> extends BrowserCRUDWindow<
     @Override
     public Component getButtons() {
         return getWindow().getComponent();
+    }
+
+    /**
+     * Returns the help context for the tab.
+     *
+     * @return the help context
+     */
+    @Override
+    public HelpContext getHelpContext() {
+        return getWindow().getHelpContext();
     }
 }

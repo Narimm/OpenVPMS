@@ -79,27 +79,6 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
     }
 
     /**
-     * Returns the class type that this operates on.
-     *
-     * @return the class type that this operates on
-     */
-    @Override
-    protected Class<IMObject> getType() {
-        return IMObject.class;
-    }
-
-    /**
-     * Determines if the workspace can be updated with instances of the specified archetype.
-     *
-     * @param shortName the archetype's short name
-     * @return {@code false}
-     */
-    @Override
-    public boolean canUpdate(String shortName) {
-        return super.canUpdate(shortName);
-    }
-
-    /**
      * Invoked when the workspace is displayed.
      */
     @Override
@@ -108,6 +87,33 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
         if (tab != null) {
             tab.show();
         }
+    }
+
+    /**
+     * Returns the help context.
+     *
+     * @return the help context
+     */
+    @Override
+    public HelpContext getHelpContext() {
+        HelpContext result = null;
+        if (model != null && pane != null) {
+            TabComponent tab = model.getObject(pane.getSelectedIndex());
+            if (tab != null) {
+                result = tab.getHelpContext();
+            }
+        }
+        return (result == null) ? super.getHelpContext() : result;
+    }
+
+    /**
+     * Returns the class type that this operates on.
+     *
+     * @return the class type that this operates on
+     */
+    @Override
+    protected Class<IMObject> getType() {
+        return IMObject.class;
     }
 
     /**
@@ -165,7 +171,7 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
 
     private void addServiceBrowser(ObjectTabPaneModel<TabComponent> model) {
         Context context = getContext();
-        HelpContext help = getHelpContext();
+        HelpContext help = subtopic("service");
         Query<IMObject> query = QueryFactory.create(HL7Archetypes.SERVICES, context);
         Browser<IMObject> browser = BrowserFactory.create(query, new DefaultLayoutContext(context, help));
         Archetypes<IMObject> archetypes = Archetypes.create(HL7Archetypes.SERVICES, IMObject.class,
@@ -176,13 +182,23 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
 
     private void addConnectorBrowser(ObjectTabPaneModel<TabComponent> model) {
         Context context = getContext();
-        HelpContext help = getHelpContext();
+        HelpContext help = subtopic("connector");
         Query<Entity> query = QueryFactory.create(HL7Archetypes.CONNECTORS, context);
         Browser<Entity> browser = new Hl7ConnectorBrowser(query, new DefaultLayoutContext(context, help));
         Archetypes<Entity> archetypes = Archetypes.create(HL7Archetypes.CONNECTORS, Entity.class,
                                                           Messages.get("admin.hl7.connector.type"));
-        HL7ConnectorCRUDWindow window = new HL7ConnectorCRUDWindow(archetypes, getContext(), getHelpContext());
+        HL7ConnectorCRUDWindow window = new HL7ConnectorCRUDWindow(archetypes, getContext(), help);
         addTab("admin.hl7.connectors", model, new HL7BrowserCRUDWindow<Entity>(browser, window));
+    }
+
+    /**
+     * Creates a help sub-topic.
+     *
+     * @param topic the sub-topic
+     * @return a new help context
+     */
+    private HelpContext subtopic(String topic) {
+        return super.getHelpContext().subtopic(topic);
     }
 
     /**

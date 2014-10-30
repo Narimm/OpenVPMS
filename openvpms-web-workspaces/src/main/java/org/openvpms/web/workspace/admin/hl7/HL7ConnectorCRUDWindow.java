@@ -127,7 +127,8 @@ public class HL7ConnectorCRUDWindow extends AbstractViewCRUDWindow<Entity> {
     private void onMessages() {
         Entity connector = getObject();
         if (connector != null) {
-            HL7MessageDialog dialog = new HL7MessageDialog(connector, getContext(), getHelpContext());
+            HelpContext help = getHelpContext().subtopic("message");
+            HL7MessageDialog dialog = new HL7MessageDialog(connector, getContext(), help);
             dialog.show();
         }
     }

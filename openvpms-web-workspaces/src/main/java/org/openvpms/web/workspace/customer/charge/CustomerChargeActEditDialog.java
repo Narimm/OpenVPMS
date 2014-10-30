@@ -102,7 +102,8 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
         setDefaultCloseAction(CANCEL_ID);
         OrderRules rules = ServiceHelper.getBean(OrderRules.class);
         if (charger == null) {
-            orderCharger = new OrderCharger(getContext().getCustomer(), rules, context, editor.getHelpContext());
+            HelpContext help = editor.getHelpContext().subtopic("order");
+            orderCharger = new OrderCharger(getContext().getCustomer(), rules, context, help);
         } else {
             orderCharger = charger;
         }

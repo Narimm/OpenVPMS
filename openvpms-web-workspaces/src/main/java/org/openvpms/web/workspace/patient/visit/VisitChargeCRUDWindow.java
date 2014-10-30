@@ -117,7 +117,8 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
               context, help);
         this.event = event;
         OrderRules rules = ServiceHelper.getBean(OrderRules.class);
-        orderCharger = new OrderCharger(context.getCustomer(), context.getPatient(), rules, context, help);
+        orderCharger = new OrderCharger(context.getCustomer(), context.getPatient(), rules, context,
+                                        help.subtopic("order"));
     }
 
     /**
