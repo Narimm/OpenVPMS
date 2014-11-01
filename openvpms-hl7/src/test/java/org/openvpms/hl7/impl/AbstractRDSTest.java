@@ -53,7 +53,7 @@ public abstract class AbstractRDSTest extends AbstractMessageTest {
 
         IMObjectBean productBean = new IMObjectBean(product);
         productBean.setValue("dispensingUnits", TestHelper.getLookup("lookup.uom", "TAB", "Tablets", true).getCode());
-        productBean.setValue("sellingUnits", TestHelper.getLookup("lookup.uom", "BOX", "Box", true).getCode());
+        productBean.setValue("sellingUnits", TestHelper.getLookup("lookup.uom", "TAB", "Tablets", true).getCode());
         productBean.setValue("dispInstructions", "Give 1 tablet once daily");
         productBean.save();
         return product;
