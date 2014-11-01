@@ -17,6 +17,7 @@
 package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.HL7Exception;
+import ca.uhn.hl7v2.model.v25.datatype.CE;
 import ca.uhn.hl7v2.model.v25.message.RDS_O13;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -182,6 +183,29 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
         ActBean order = new ActBean(acts.get(0));
         assertEquals("Patient is different to that in the original invoice. Was '" + patient2.getName()
                      + "' (" + patient2.getId() + "). Now '" + patient1.getName() + "' (" + patient1.getId() + ")",
+                     order.getString("notes"));
+        save(acts);
+    }
+
+    /**
+     * Verifies that a note is added if the selling units change.
+     *
+     * @throws HL7Exception for any HL7 exception
+     */
+    @Test
+    public void testDifferentSellingUnits() throws HL7Exception {
+        RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules, userRules);
+        PatientContext context = getContext();
+        List<FinancialAct> invoice = FinancialTestHelper.createChargesInvoice(
+                BigDecimal.TEN, context.getCustomer(), context.getPatient(), product, ActStatus.IN_PROGRESS);
+        save(invoice);
+        CE dispenseUnits = rds.getORDER().getRXD().getActualDispenseUnits();
+        dispenseUnits.getIdentifier().setValue("BOTTLE");
+        dispenseUnits.getText().setValue("Bottle");
+        List<Act> acts = processor.process(rds, context.getLocation().getObjectReference());
+        assertEquals(2, acts.size());
+        ActBean order = new ActBean(acts.get(0));
+        assertEquals("Dispense Units (id='BOTTLE', name='Bottle') do not match selling units (TAB)",
                      order.getString("notes"));
         save(acts);
     }

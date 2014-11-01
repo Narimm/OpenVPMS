@@ -39,15 +39,15 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
-import org.openvpms.component.system.common.query.ObjectRefSelectConstraint;
-import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -139,7 +139,10 @@ public class RDSProcessor {
         }
         FinancialAct invoiceItem = addInvoiceItem(group.getORC(), bean, itemBean, state);
         addClinician(group, bean, itemBean, invoiceItem);
-        addProduct(group, bean, itemBean);
+        Product product = addProduct(group, bean, itemBean);
+        if (product != null) {
+            checkSellingUnits(group, bean, product);
+        }
         itemBean.setValue("quantity", quantity);
     }
 
@@ -160,23 +163,19 @@ public class RDSProcessor {
      * @param group    the order group
      * @param bean     the order bean
      * @param itemBean the order item bean
-     * @return the product reference, or {@code null} if none is found
+     * @return the product or {@code null} if none is found
      */
-    private IMObjectReference addProduct(RDS_O13_ORDER group, ActBean bean, ActBean itemBean) {
+    private Product addProduct(RDS_O13_ORDER group, ActBean bean, ActBean itemBean) {
         RXD rxd = group.getRXD();
         CE code = rxd.getDispenseGiveCode();
         long id = getId(code);
-        IMObjectReference result = null;
+        Product result = null;
         if (id != -1) {
             ArchetypeQuery query = new ArchetypeQuery("product.*");
             query.getArchetypeConstraint().setAlias("p");
-            query.add(new ObjectRefSelectConstraint("p"));
             query.add(Constraints.eq("id", id));
-            ObjectSetQueryIterator iterator = new ObjectSetQueryIterator(service, query);
-            if (iterator.hasNext()) {
-                ObjectSet set = iterator.next();
-                result = set.getReference("p.reference");
-            }
+            IMObjectQueryIterator<Product> iterator = new IMObjectQueryIterator<Product>(service, query);
+            result = (iterator.hasNext()) ? iterator.next() : null;
         }
         if (result != null) {
             itemBean.addNodeParticipation("product", result);
@@ -253,6 +252,25 @@ public class RDSProcessor {
             addNote(bean, "Unknown Placer Order Number: '" + orc.getPlacerOrderNumber().getEntityIdentifier() + "'");
         }
         return result;
+    }
+
+    /**
+     * Adds a note if the dispense units are set, but don't match the product selling units.
+     *
+     * @param group   the order group
+     * @param bean    the order bean
+     * @param product the product
+     */
+    private void checkSellingUnits(RDS_O13_ORDER group, ActBean bean, Product product) {
+        RXD rxd = group.getRXD();
+        CE dispenseUnits = rxd.getActualDispenseUnits();
+        String units = dispenseUnits.getIdentifier().getValue();
+        IMObjectBean productBean = new IMObjectBean(product, service);
+        String sellingUnits = productBean.getString("sellingUnits");
+        if (!StringUtils.isEmpty(units) && !StringUtils.isEmpty(sellingUnits) && !units.equals(sellingUnits)) {
+            addNote(bean, "Dispense Units (id='" + units + "', name='" + dispenseUnits.getText().getValue() + "')"
+                          + " do not match selling units (" + sellingUnits + ")");
+        }
     }
 
     /**

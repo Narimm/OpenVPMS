@@ -126,7 +126,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
     private volatile boolean shutdown = false;
 
     /**
-     * Used to wait if errors have occurred sending messages. This waits until a time expires or a message is queued,
+     * Used to wait if errors have occurred sending messages. This waits until a time expires or a message is queued.
      */
     private final Semaphore waiter = new Semaphore(0);
 
@@ -434,8 +434,10 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
     protected Message send(Message message, MLLPSender sender) throws HL7Exception, LLPException, IOException {
         Message response;
         boolean debug = log.isDebugEnabled();
+        long start = -1;
         if (debug) {
             log("sending", message);
+            start = System.currentTimeMillis();
         }
         Connection connection = null;
         try {
@@ -443,7 +445,8 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
             connection.getInitiator().setTimeout(30, TimeUnit.SECONDS);
             response = connection.getInitiator().sendAndReceive(message);
             if (debug) {
-                log("response", response);
+                long end = System.currentTimeMillis();
+                log("response received in " + (end - start) + "ms", response);
             }
         } finally {
             if (connection != null) {
