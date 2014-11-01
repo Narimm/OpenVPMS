@@ -332,6 +332,14 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                     if (!updated.isEmpty()) {
                         // need to save the items again. This time do it skipping rules
                         ServiceHelper.getArchetypeService(false).save(updated);
+
+                        // notify the editors that orders have been placed
+                        for (Act item : updated) {
+                            IMObjectEditor editor = getItems().getEditor(item);
+                            if (editor instanceof CustomerChargeActItemEditor) {
+                                ((CustomerChargeActItemEditor) editor).ordered();
+                            }
+                        }
                     }
                 }
             }

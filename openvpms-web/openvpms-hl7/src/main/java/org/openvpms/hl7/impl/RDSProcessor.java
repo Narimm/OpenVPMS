@@ -268,7 +268,11 @@ public class RDSProcessor {
         IMObjectBean productBean = new IMObjectBean(product, service);
         String sellingUnits = productBean.getString("sellingUnits");
         if (!StringUtils.isEmpty(units) && !StringUtils.isEmpty(sellingUnits) && !units.equals(sellingUnits)) {
-            addNote(bean, "Dispense Units (id='" + units + "', name='" + dispenseUnits.getText().getValue() + "')"
+            String name = dispenseUnits.getText().getValue();
+            if (name == null) {
+                name = "";
+            }
+            addNote(bean, "Dispense Units (id='" + units + "', name='" + name + "')"
                           + " do not match selling units (" + sellingUnits + ")");
         }
     }

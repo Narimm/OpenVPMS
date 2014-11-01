@@ -496,6 +496,16 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Notifies the editor that the product has been ordered via a pharmacy.
+     * <p/>
+     * This refreshes the display to make the patient and product read-only, and display the received and returned
+     * nodes.
+     */
+    public void ordered() {
+        updateLayout(getProduct());
+    }
+
+    /**
      * Save any edits.
      * <p/>
      * This implementation saves the current object before children, to ensure deletion of child acts
@@ -1187,9 +1197,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         if (prescription != null) {
             if (promptForPrescription) {
                 Product product = getProduct();
-                ConfirmationDialog dialog = new ConfirmationDialog(Messages.get("customer.charge.prescription.title"),
-                                                                   Messages.format("customer.charge.prescription.message",
-                                                                                   product.getName()));
+                String title = Messages.get("customer.charge.prescription.title");
+                String message = Messages.format("customer.charge.prescription.message", product.getName());
+                ConfirmationDialog dialog = new ConfirmationDialog(title, message);
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
                     public void onOK() {
@@ -1456,10 +1466,17 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
         @Override
         protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
-            ComponentState state = super.createComponent(property, parent, context);
-            if ("quantity".equals(property.getName())) {
+            ComponentState state;
+            String name = property.getName();
+            if ("quantity".equals(name)) {
+                state = super.createComponent(property, parent, context);
                 Component component = RowFactory.create(Styles.CELL_SPACING, state.getComponent(), sellingUnits);
                 state = new ComponentState(component, property);
+            } else if (("patient".equals(name) || "product".equals(name)) && isOrdered()) {
+                // the item has been ordered via an HL7 pharmacy. The patient and product cannot be changed
+                state = super.createComponent(createReadOnly(property), parent, context);
+            } else {
+                state = super.createComponent(property, parent, context);
             }
             return state;
         }
