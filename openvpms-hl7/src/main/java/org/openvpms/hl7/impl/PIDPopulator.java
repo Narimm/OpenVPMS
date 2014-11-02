@@ -27,6 +27,8 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.hl7.patient.PatientContext;
 
+import java.util.Date;
+
 import static org.openvpms.hl7.impl.PopulateHelper.populateDTM;
 
 /**
@@ -74,7 +76,10 @@ class PIDPopulator {
         patientName.getFamilyName().getSurname().setValue(context.getPatientLastName());
         patientName.getGivenName().setValue(context.getPatientFirstName());
 
-        populateDTM(pid.getDateTimeOfBirth().getTime(), context.getDateOfBirth(), config);
+        Date dateOfBirth = context.getDateOfBirth();
+        if (dateOfBirth != null) {
+            populateDTM(pid.getDateTimeOfBirth().getTime(), dateOfBirth, config);
+        }
 
         pid.getAdministrativeSex().setValue(context.getPatientSex());
 
