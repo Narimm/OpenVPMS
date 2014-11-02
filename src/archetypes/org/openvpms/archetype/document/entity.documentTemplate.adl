@@ -39,6 +39,8 @@
                     <property name="act.customerAccountChargesCounter" value="Customer Counter Sale"/>
                     <property name="act.customerAccountDebitAdjust" value="Customer Debit Adjustment"/>
                     <property name="act.customerEstimation" value="Customer Estimate"/>
+                    <property name="act.customerOrderPharmacy" value="Customer Pharmacy Order"/>
+                    <property name="act.customerReturnPharmacy" value="Customer Pharmacy Return"/>
                     <property name="act.patientMedication" value="Patient Medication Label"/>
                     <property name="act.patientPrescription" value="Prescription"/>
                     <property name="act.patientReminder" value="Reminder Report"/>

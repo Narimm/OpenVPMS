@@ -24,6 +24,10 @@
         <node name="description" type="java.lang.String" path="/description"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="pharmacies" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
-              minCardinality="0" maxCardinality="*" filter="entityLink.HL7PharmacyGroupPharmacy"/>
+              minCardinality="0" maxCardinality="*" filter="entityLink.HL7PharmacyGroupPharmacy">
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate pharmacy</errorMessage>
+            </assertion>
+        </node>
     </archetype>
 </archetypes>

@@ -46,6 +46,7 @@
               maxLength="5000"/>
         <node name="credit" path="/credit" type="java.lang.Boolean" defaultValue="true()" readOnly="true"
               hidden="true"/>
+        <node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()"/>
         <node name="items" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
               filter="actRelationship.customerReturnItemPharmacy"/>
