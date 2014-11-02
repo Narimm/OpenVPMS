@@ -23,12 +23,16 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.print.BasicPrinterListener;
 import org.openvpms.web.component.workspace.ResultSetCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ErrorDialog;
@@ -78,6 +82,7 @@ public class CustomerOrderCRUDWindow extends ResultSetCRUDWindow<FinancialAct> {
                 onInvoice();
             }
         });
+        buttons.add(createPrintButton());
     }
 
     /**
@@ -94,6 +99,7 @@ public class CustomerOrderCRUDWindow extends ResultSetCRUDWindow<FinancialAct> {
         buttons.setEnabled(EDIT_ID, enable && actions.canEdit(order));
         buttons.setEnabled(DELETE_ID, enable && actions.canDelete(order));
         buttons.setEnabled(INVOICE_ID, enable && actions.canInvoice(order));
+        buttons.setEnabled(PRINT_ID, enable);
     }
 
     /**
@@ -139,6 +145,27 @@ public class CustomerOrderCRUDWindow extends ResultSetCRUDWindow<FinancialAct> {
             });
         }
     }
+
+    /**
+     * Creates a new printer.
+     *
+     * @param object the object to print
+     * @return an instance of {@link InteractiveIMPrinter}.
+     * @throws OpenVPMSException for any error
+     */
+    @Override
+    protected IMPrinter<FinancialAct> createPrinter(final FinancialAct object) {
+        InteractiveIMPrinter<FinancialAct> printer = (InteractiveIMPrinter<FinancialAct>) super.createPrinter(object);
+        printer.setListener(new BasicPrinterListener() {
+            public void printed(String printer) {
+                if (getActions().setPrinted(object)) {
+                    onSaved(object, false);
+                }
+            }
+        });
+        return printer;
+    }
+
 
     private static class OrderActions extends ActActions<FinancialAct> {
 
