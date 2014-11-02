@@ -27,6 +27,9 @@
                     <propertyMap name="archetype">
                         <property name="shortName" value="entity.HL7SenderMLLP"/>
                     </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="entity.HL7ReceiverMLLP"/>
+                    </propertyMap>
                 </propertyList>
             </assertion>
         </node>

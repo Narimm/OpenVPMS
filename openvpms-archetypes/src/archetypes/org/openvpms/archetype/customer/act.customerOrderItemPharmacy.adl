@@ -59,12 +59,6 @@
                 <errorMessage>Quantity must be >= 0</errorMessage>
             </assertion>
         </node>
-        <node name="units" path="/details/units" type="java.lang.String" minCardinality="0">
-            <assertion name="lookup">
-                <property name="type" value="lookup"/>
-                <property name="source" value="lookup.uom"/>
-            </assertion>
-        </node>
         <node name="credit" path="/credit" type="java.lang.Boolean" defaultValue="false()" readOnly="true"
               hidden="true"/>
     </archetype>
