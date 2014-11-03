@@ -237,7 +237,9 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
      */
     private void listen(Entity pharmacy) {
         Connector current = listening.get(pharmacy.getId());
-        Connector connector = getConnector(pharmacy);
+        EntityBean bean = new EntityBean(pharmacy, service);
+        Connector connector = getConnector(bean);
+        User user = getUser(bean);
         boolean listen = true;
         if (current != null && connector != null) {
             if (!current.equals(connector)) {
@@ -247,10 +249,10 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
                 listen = false;
             }
         }
-        if (connector != null) {
+        if (connector != null && user != null) {
             if (listen) {
                 try {
-                    dispatcher.listen(connector, new Receiver(this, pharmacy));
+                    dispatcher.listen(connector, new Receiver(this, pharmacy), user);
                     listening.put(pharmacy.getId(), connector);
                 } catch (Throwable exception) {
                     log.warn("Failed to start listening to connections from pharmacy, name="
@@ -262,7 +264,7 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
             stop(pharmacy);
         } else {
             log.info("Pharmacy (name=" + pharmacy.getName() + ", id=" + pharmacy.getId()
-                     + ") has no dispense connection defined, skipping");
+                     + ") has no dispense connection or user defined, skipping");
         }
     }
 
@@ -309,9 +311,8 @@ public class PharmacyDispenseServiceImpl implements ReceivingApplication, Dispos
      * @param pharmacy the pharmacy
      * @return the dispense connector, or {@code null} if none is defined
      */
-    private Connector getConnector(Entity pharmacy) {
-        EntityBean bean = new EntityBean(pharmacy, service);
-        IMObjectReference ref = bean.getNodeTargetObjectRef("receiver");
+    private Connector getConnector(EntityBean pharmacy) {
+        IMObjectReference ref = pharmacy.getNodeTargetObjectRef("receiver");
         return (ref != null) ? connectors.getConnector(ref) : null;
     }
 

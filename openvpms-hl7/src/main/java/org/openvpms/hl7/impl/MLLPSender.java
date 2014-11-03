@@ -34,6 +34,16 @@ import org.openvpms.hl7.io.Connector;
 class MLLPSender extends Connector {
 
     /**
+     * Default time to wait for responses, in seconds.
+     */
+    public static final int DEFAULT_RESPONSE_TIMEOUT = 30;
+
+    /**
+     * Default time to wait before resending a message, in seconds.
+     */
+    public static final int DEFAULT_RETRY_INTERVAL = 30;
+
+    /**
      * The host to connect to.
      */
     private final String host;
@@ -42,6 +52,16 @@ class MLLPSender extends Connector {
      * The port to connect to.
      */
     private final int port;
+
+    /**
+     * The response timeout, in seconds.
+     */
+    private final int responseTimeout;
+
+    /**
+     * The interval between retries, in seconds.
+     */
+    private final int retryInterval;
 
     /**
      * If {@code true}, indicates that messages should be queued but not sent.
@@ -62,8 +82,8 @@ class MLLPSender extends Connector {
      */
     public MLLPSender(String host, int port, String sendingApplication, String sendingFacility,
                       String receivingApplication, String receivingFacility, IMObjectReference reference) {
-        this(host, port, sendingApplication, sendingFacility, receivingApplication, receivingFacility, true,
-             true, false, reference);
+        this(host, port, sendingApplication, sendingFacility, receivingApplication, receivingFacility,
+             DEFAULT_RESPONSE_TIMEOUT, DEFAULT_RETRY_INTERVAL, true, true, false, reference);
     }
 
     /**
@@ -75,18 +95,22 @@ class MLLPSender extends Connector {
      * @param sendingFacility      the sending facility
      * @param receivingApplication the receiving application
      * @param receivingFacility    the receiving facility
+     * @param responseTimeout      the maximum time to wait for a response, in seconds
+     * @param retryInterval        the interval to wait before resending a message after failure, in seconds
      * @param includeMillis        if {@code true} include milliseconds in time fields
      * @param includeTimeZone      if {@code true} include the timezone in date/time fields
      * @param suspended            if {@code true} indicates that messages should be queued but not sent
      * @param reference            the connection reference
      */
     public MLLPSender(String host, int port, String sendingApplication, String sendingFacility,
-                      String receivingApplication, String receivingFacility, boolean includeMillis,
-                      boolean includeTimeZone, boolean suspended, IMObjectReference reference) {
+                      String receivingApplication, String receivingFacility, int responseTimeout, int retryInterval,
+                      boolean includeMillis, boolean includeTimeZone, boolean suspended, IMObjectReference reference) {
         super(sendingApplication, sendingFacility, receivingApplication, receivingFacility, includeMillis,
               includeTimeZone, reference);
         this.host = host;
         this.port = port;
+        this.responseTimeout = responseTimeout;
+        this.retryInterval = retryInterval;
         this.suspended = suspended;
     }
 
@@ -101,7 +125,10 @@ class MLLPSender extends Connector {
         EntityBean bean = new EntityBean(object, service);
         return new MLLPSender(bean.getString("host"), bean.getInt("port"), bean.getString("sendingApplication"),
                               bean.getString("sendingFacility"), bean.getString("receivingApplication"),
-                              bean.getString("receivingFacility"), bean.getBoolean("includeMillis"),
+                              bean.getString("receivingFacility"),
+                              bean.getInt("responseTimeout", DEFAULT_RESPONSE_TIMEOUT),
+                              bean.getInt("retryInterval", DEFAULT_RETRY_INTERVAL),
+                              bean.getBoolean("includeMillis"),
                               bean.getBoolean("includeTimeZone"), bean.getBoolean("suspended"),
                               object.getObjectReference());
     }
@@ -136,6 +163,24 @@ class MLLPSender extends Connector {
     }
 
     /**
+     * Returns the maximum time to wait for a response.
+     *
+     * @return the the maximum time to wait for a response, in seconds.
+     */
+    public int getResponseTimeout() {
+        return responseTimeout;
+    }
+
+    /**
+     * Returns the interval to wait before resending a message after failure.
+     *
+     * @return the interval to wait before resending a message after failure, in seconds
+     */
+    public int getRetryInterval() {
+        return retryInterval;
+    }
+
+    /**
      * Indicates whether some other object is "equal to" this one.
      *
      * @param obj the reference object with which to compare.
@@ -146,7 +191,8 @@ class MLLPSender extends Connector {
         boolean result = super.equals(obj) && obj instanceof MLLPSender;
         if (result) {
             MLLPSender other = (MLLPSender) obj;
-            result = port == other.port && ObjectUtils.equals(host, other.host);
+            result = port == other.port && ObjectUtils.equals(host, other.host)
+                     && responseTimeout == other.responseTimeout && retryInterval == other.retryInterval;
         }
         return result;
     }

@@ -40,6 +40,8 @@ import org.openvpms.hl7.io.Statistics;
 import org.openvpms.hl7.util.HL7MessageStatuses;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -230,10 +232,11 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      *
      * @param connector   the connector
      * @param application the receiving application
+     * @param user        the user responsible for messages received the connector
      * @throws IllegalStateException if the connector is registered
      */
     @Override
-    public void listen(Connector connector, ReceivingApplication application) throws InterruptedException {
+    public void listen(Connector connector, ReceivingApplication application, User user) throws InterruptedException {
         if (connector instanceof MLLPReceiver) {
             int port = ((MLLPReceiver) connector).getPort();
             HL7Service service;
@@ -246,7 +249,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
                 }
             }
             log.info("Starting listener for " + connector);
-            MessageReceiver receiver = new MessageReceiver(application, connector);
+            MessageReceiver receiver = new MessageReceiver(application, connector, messageService, user);
             service.registerApplication(receiver);
             service.setExceptionHandler(receiver);
             service.startAndWait();
@@ -416,8 +419,21 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
             queue = getMessageQueue(sender);
         }
 
+        if (log.isDebugEnabled()) {
+            log.debug("queue() - " + sender);
+        }
         result = queue.add(message, user);
-        schedule();
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            // a transaction is in progress, so only invoke schedule() once the transaction has committed
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    schedule();
+                }
+            });
+        } else {
+            schedule();
+        }
         return result;
     }
 
@@ -436,17 +452,23 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
         boolean debug = log.isDebugEnabled();
         long start = -1;
         if (debug) {
-            log("sending", message);
+            log.debug("sending message via " + sender);
+            log.debug(toString(message));
             start = System.currentTimeMillis();
         }
         Connection connection = null;
         try {
             connection = messageContext.newClient(sender.getHost(), sender.getPort(), false);
-            connection.getInitiator().setTimeout(30, TimeUnit.SECONDS);
+            int timeout = sender.getResponseTimeout();
+            if (timeout <= 0) {
+                timeout = MLLPSender.DEFAULT_RESPONSE_TIMEOUT;
+            }
+            connection.getInitiator().setTimeout(timeout, TimeUnit.SECONDS);
             response = connection.getInitiator().sendAndReceive(message);
             if (debug) {
                 long end = System.currentTimeMillis();
-                log("response received in " + (end - start) + "ms", response);
+                log.debug("response received in " + (end - start) + "ms");
+                log.debug(toString(message));
             }
         } finally {
             if (connection != null) {
@@ -492,8 +514,11 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
         waiter.release(); // wakes up dispatch() if it is waiting
 
         final User user = getServiceUser();
-
-        if (!shutdown && user != null && scheduled.tryAcquire()) {
+        if (shutdown) {
+            log.debug("MessageDispatcher shutting down. Schedule request ignored");
+        } else if (user == null) {
+            log.debug("No service user. Schedule request ignored");
+        } else if (scheduled.tryAcquire()) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -510,6 +535,8 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
                     }
                 }
             });
+        } else {
+            log.debug("MessageDispatcher already scheduled");
         }
     }
 
@@ -520,6 +547,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
         boolean processed;
         int waiting;
         long minWait;
+        log.debug("dispatch() - start");
         do {
             processed = false;
             waiting = 0;
@@ -530,7 +558,11 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
             }
             for (MessageQueue queue : queues) {
                 // process each queue in a round robin fashion
-                if (!queue.isSuspended()) {
+                if (queue.isSuspended()) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("dispatch() - skipping suspended queue " + queue);
+                    }
+                } else {
                     long wait = queue.getWaitUntil();
                     if (wait == -1 || wait <= System.currentTimeMillis()) {
                         processed |= sendFirst(queue);
@@ -546,6 +578,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
         if (waiting != 0 && !shutdown) {
             long wait = minWait - System.currentTimeMillis();
             if (wait > 0) {
+                log.debug("dispatch() waiting for " + wait + "ms");
                 // wait until the minimum wait time has expired, or a message is queued
                 try {
                     waiter.drainPermits();
@@ -556,6 +589,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
             }
             schedule();
         }
+        log.debug("dispatch() - end");
     }
 
     /**
@@ -565,11 +599,14 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      * @return {@code true} if there was a message
      */
     protected boolean sendFirst(MessageQueue queue) {
+        log.debug("sendFirst() - " + queue.getConnector());
         boolean processed = false;
         Message message = queue.peekFirst();
         if (message != null) {
             send(queue, message, queue.peekFirstAct());
             processed = true;
+        } else {
+            log.debug("sendFirst() - nothing to send");
         }
         return processed;
     }
@@ -588,8 +625,12 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
             queue.sent(response);
         } catch (Throwable exception) {
             log.error("Failed to send message, act Id=" + act.getId(), exception);
-            // failed to send the message, so don't queue for another 30 seconds
-            queue.setWaitUntil(System.currentTimeMillis() + 30 * 1000);
+            int retryInterval = connector.getRetryInterval();
+            if (retryInterval <= 0) {
+                retryInterval = MLLPSender.DEFAULT_RETRY_INTERVAL;
+            }
+            // failed to send the message, so don't queue for another retryInterval seconds
+            queue.setWaitUntil(System.currentTimeMillis() + retryInterval * 1000);
             queue.error(exception);
         }
     }
@@ -621,7 +662,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
             ReceivingApplication app = receiver.getReceivingApplication();
             stop(connector);
             try {
-                listen(connector, app);
+                listen(connector, app, receiver.getUser());
             } catch (InterruptedException exception) {
                 log.error("Failed to update " + connector, exception);
                 Thread.currentThread().interrupt();
@@ -667,23 +708,6 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
     }
 
     /**
-     * Logs a message.
-     *
-     * @param prefix  the logging prefix
-     * @param message the message
-     */
-    private void log(String prefix, Message message) {
-        String formatted;
-        try {
-            formatted = message.encode();
-            formatted = formatted.replaceAll("\r", "\n");
-        } catch (HL7Exception exception) {
-            formatted = exception.getMessage();
-        }
-        log.debug(prefix + ": " + formatted);
-    }
-
-    /**
      * Returns the user to set the security context in the dispatch thread.
      *
      * @return the user, or {@code null} if none has been configured
@@ -706,4 +730,20 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
         }
         return user;
     }
+
+    /**
+     * Formats a message for logging purposes.
+     *
+     * @param message the message
+     * @return the formatted message
+     */
+    private String toString(Message message) {
+        try {
+            return HL7MessageHelper.toString(message);
+        } catch (HL7Exception exception) {
+            log.error(exception.getMessage(), exception);
+            return "Failed to encode message";
+        }
+    }
+
 }

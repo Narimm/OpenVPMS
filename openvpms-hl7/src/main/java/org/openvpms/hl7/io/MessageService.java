@@ -46,13 +46,13 @@ public interface MessageService {
     DocumentAct save(Message message, Connector connector, User user) throws HL7Exception;
 
     /**
-     * Updates a persistent message to indicate it has been sent.
+     * Updates a persistent message to indicate it has been accepted.
      *
      * @param message   the message
-     * @param timestamp the sent timestamp
+     * @param timestamp the accepted timestamp
      * @throws ArchetypeServiceException for any archetype service error
      */
-    void sent(DocumentAct message, Date timestamp);
+    void accepted(DocumentAct message, Date timestamp);
 
     /**
      * Updates a persistent message to indicate it is in error.

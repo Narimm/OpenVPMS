@@ -32,6 +32,11 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.hl7.io.MessageService;
 import org.openvpms.hl7.util.HL7MessageStatuses;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,6 +47,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests the {@link MessageQueue}.
@@ -69,6 +75,12 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
      * The message service.
      */
     private MessageService service;
+
+    /**
+     * The transaction manager.
+     */
+    @Autowired
+    PlatformTransactionManager transactionManager;
 
 
     /**
@@ -236,6 +248,31 @@ public class MessageQueueTestCase extends ArchetypeServiceTest {
         DocumentAct act2 = queue.sent(message.generateACK());
         assertEquals(act1.getId(), act2.getId());
         assertEquals(HL7MessageStatuses.ACCEPTED, act2.getStatus());
+    }
+
+    /**
+     * Verifies that messages queued in a transaction are not sent if the transaction rolls back.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testRollback() throws Exception {
+        final MessageQueue queue = new MessageQueue(sender, service, context);
+        TransactionTemplate template = new TransactionTemplate(transactionManager);
+        template.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                try {
+                    RDE_O11 message = createMessage();
+                    queue.add(message, user);
+                } catch (Throwable exception) {
+                    fail("Failed to queue message");
+                }
+                status.setRollbackOnly();
+            }
+        });
+
+        assertNull(queue.peekFirst());
     }
 
     /**
