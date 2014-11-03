@@ -108,10 +108,12 @@
                         <property name="shortName"
                                   value="entityIdentity.petTag"/>
                     </propertyMap>
+                    <!-- For jurisdictions that use rabies tags, uncomment the following -->
+                    <!--
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityIdentity.rabiesTag"/>
+                        <property name="shortName" value="entityIdentity.rabiesTag"/>
                     </propertyMap>
+                    -->
                 </propertyList>
             </assertion>
         </node>
