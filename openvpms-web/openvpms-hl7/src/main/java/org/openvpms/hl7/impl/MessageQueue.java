@@ -20,12 +20,9 @@ import ca.uhn.hl7v2.AcknowledgmentCode;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.model.v25.datatype.CWE;
 import ca.uhn.hl7v2.model.v25.message.ACK;
-import ca.uhn.hl7v2.model.v25.segment.ERR;
 import ca.uhn.hl7v2.model.v25.segment.MSA;
 import ca.uhn.hl7v2.model.v25.segment.MSH;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
@@ -304,7 +301,7 @@ class MessageQueue implements Statistics {
     private void processed() {
         lastSent = new Date();
         try {
-            service.sent(currentAct, lastSent);
+            service.accepted(currentAct, lastSent);
         } finally {
             completed(null, null);
         }
@@ -317,7 +314,7 @@ class MessageQueue implements Statistics {
      * @param status the new act status
      */
     private void handleError(ACK ack, String status) {
-        String error = getErrorMessage(ack);
+        String error = HL7MessageHelper.getErrorMessage(ack);
         error(status, error);
     }
 
@@ -338,7 +335,7 @@ class MessageQueue implements Statistics {
         }
         error.append("\nMessage: ");
         try {
-            error.append(format(response));
+            error.append(HL7MessageHelper.toString(response));
         } catch (HL7Exception exception) {
             log.error("Failed to format message", exception);
             error.append("unknown");
@@ -372,80 +369,6 @@ class MessageQueue implements Statistics {
                 break;
             }
         }
-    }
-
-    /**
-     * Generates an error message from an acknowledgement.
-     *
-     * @param ack the acknowledgement
-     * @return the error message
-     */
-    private String getErrorMessage(ACK ack) {
-        StringBuilder buffer = new StringBuilder();
-        String text = ack.getMSA().getTextMessage().getValue(); // deprecated in HL7 2.4
-        if (!StringUtils.isEmpty(text)) {
-            buffer.append(text);
-        }
-        try {
-            for (ERR err : ack.getERRAll()) {
-                String hl7ErrorCode = formatCWE(err.getHL7ErrorCode());
-                if (hl7ErrorCode != null) {
-                    append(buffer, "HL7 Error Code: ", hl7ErrorCode);
-                }
-                String errorCode = formatCWE(err.getApplicationErrorCode());
-                if (!StringUtils.isEmpty(errorCode)) {
-                    append(buffer, "Application Error Code: ", errorCode);
-                }
-                String diagnostic = err.getDiagnosticInformation().getValue();
-                if (!StringUtils.isEmpty(diagnostic)) {
-                    append(buffer, "Diagnostic Information: ", diagnostic);
-                }
-                String userMessage = err.getUserMessage().getValue();
-                if (!StringUtils.isEmpty(userMessage)) {
-                    append(buffer, "User Message: ", userMessage);
-                }
-            }
-        } catch (HL7Exception exception) {
-            log.error("Failed to access ERR segments", exception);
-        }
-        if (buffer.length() == 0) {
-            buffer.append("Message body: ");
-            try {
-                buffer.append(format(ack));
-            } catch (HL7Exception exception) {
-                buffer.append("unknown");
-                log.error("Failed to encode message", exception);
-            }
-        }
-        return buffer.toString();
-    }
-
-    /**
-     * Formats a Coded with Exceptions message field.
-     *
-     * @param field the field to format
-     * @return the formatted field, or {@code null} if there is nothing to format
-     */
-    private String formatCWE(CWE field) {
-        String result = null;
-        String id = field.getIdentifier().getValue();
-        String text = field.getText().getValue();
-        if (!StringUtils.isEmpty(id) || !StringUtils.isEmpty(text)) {
-            if (!StringUtils.isEmpty(id) && !StringUtils.isEmpty(text)) {
-                result = id + " - " + text;
-            } else if (!StringUtils.isEmpty(id)) {
-                result = id;
-            } else {
-                result = text;
-            }
-
-            String originalText = field.getOriginalText().getValue();
-            if (!StringUtils.isEmpty(originalText)) {
-                result += "\nOriginal Text: ";
-                result += originalText;
-            }
-        }
-        return result;
     }
 
     /**
@@ -491,31 +414,6 @@ class MessageQueue implements Statistics {
         } finally {
             completed(now, error);
         }
-    }
-
-    /**
-     * Appends values to a buffer, prepended by a new-line if the buffer is not empty.
-     *
-     * @param buffer the buffer
-     */
-    private void append(StringBuilder buffer, String... values) {
-        if (buffer.length() != 0) {
-            buffer.append("\n");
-        }
-        for (String value : values) {
-            buffer.append(value);
-        }
-    }
-
-    /**
-     * Formats a message for logging.
-     *
-     * @param message the message
-     * @return the formatted message
-     * @throws HL7Exception if the message cannot be encoded
-     */
-    private String format(Message message) throws HL7Exception {
-        return message.encode().replaceAll("\r", "\n");
     }
 
 }

@@ -60,6 +60,27 @@ public class HL7TestHelper {
     }
 
     /**
+     * Creates a MLLP receiver.
+     *
+     * @param port the port
+     * @return a new receiver
+     */
+    public static MLLPReceiver createReceiver(int port) {
+        Entity receiver = (Entity) TestHelper.create(HL7Archetypes.MLLP_RECEIVER);
+        EntityBean bean = new EntityBean(receiver);
+        bean.setValue("name", "ZTest MLLP Receiver");
+        bean.setValue("port", port);
+        bean.setValue("sendingApplication", "Cubex");
+        bean.setValue("sendingFacility", "Cubex");
+        bean.setValue("receivingApplication", "OpenVPMS");
+        bean.setValue("receivingFacility", "Main Clinic");
+        bean.setValue("includeMillis", false);
+        bean.setValue("includeTimeZone", true);
+        bean.save();
+        return MLLPReceiver.create(receiver, ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    /**
      * Disables a connector in the database.
      *
      * @param connector the connector

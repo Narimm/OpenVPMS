@@ -59,8 +59,9 @@ public interface MessageDispatcher {
      *
      * @param connector the connector
      * @param receiver  the receiver
+     * @param user      the user responsible for messages received the connector
      */
-    void listen(Connector connector, ReceivingApplication receiver) throws InterruptedException;
+    void listen(Connector connector, ReceivingApplication receiver, User user) throws InterruptedException;
 
     /**
      * Stop receiving messages from a connector.

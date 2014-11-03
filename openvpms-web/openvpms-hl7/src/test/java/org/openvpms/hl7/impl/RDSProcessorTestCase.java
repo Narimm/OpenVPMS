@@ -157,7 +157,7 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
         assertNull(item.getNodeParticipantRef("product"));
         checkEquals(BigDecimal.valueOf(2), item.getBigDecimal("quantity"));
         assertEquals("90032145", item.getString("reference"));
-        assertEquals("Unknown Dispense Give Code, id='UNKNOWN', name='Valium 2mg'", order.getString("notes"));
+        assertEquals("Unknown Dispense Give Code, Id='UNKNOWN', name='Valium 2mg'", order.getString("notes"));
         save(acts);
     }
 
@@ -205,7 +205,7 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
         List<Act> acts = processor.process(rds, context.getLocation().getObjectReference());
         assertEquals(2, acts.size());
         ActBean order = new ActBean(acts.get(0));
-        assertEquals("Dispense Units (id='BOTTLE', name='Bottle') do not match selling units (TAB)",
+        assertEquals("Dispense Units (Id='BOTTLE', name='Bottle') do not match selling units (TAB)",
                      order.getString("notes"));
         save(acts);
     }

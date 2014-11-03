@@ -180,7 +180,7 @@ public class RDSProcessor {
         if (result != null) {
             itemBean.addNodeParticipation("product", result);
         } else {
-            addNote(bean, "Unknown Dispense Give Code, id='" + code.getIdentifier().getValue()
+            addNote(bean, "Unknown Dispense Give Code, Id='" + code.getIdentifier().getValue()
                           + "', name='" + code.getText().getValue() + "'");
         }
         return result;
@@ -272,7 +272,7 @@ public class RDSProcessor {
             if (name == null) {
                 name = "";
             }
-            addNote(bean, "Dispense Units (id='" + units + "', name='" + name + "')"
+            addNote(bean, "Dispense Units (Id='" + units + "', name='" + name + "')"
                           + " do not match selling units (" + sellingUnits + ")");
         }
     }

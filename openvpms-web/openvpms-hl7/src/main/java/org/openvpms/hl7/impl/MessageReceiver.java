@@ -16,20 +16,31 @@
 
 package org.openvpms.hl7.impl;
 
+import ca.uhn.hl7v2.AcknowledgmentCode;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.v25.datatype.DTM;
+import ca.uhn.hl7v2.model.v25.message.ACK;
+import ca.uhn.hl7v2.model.v25.segment.MSA;
 import ca.uhn.hl7v2.model.v25.segment.MSH;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import ca.uhn.hl7v2.protocol.ReceivingApplicationException;
 import ca.uhn.hl7v2.protocol.ReceivingApplicationExceptionHandler;
 import ca.uhn.hl7v2.protocol.Transportable;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.security.RunAs;
 import org.openvpms.hl7.io.Connector;
+import org.openvpms.hl7.io.MessageService;
 import org.openvpms.hl7.io.Statistics;
+import org.openvpms.hl7.util.HL7MessageStatuses;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 /**
  * Listener for HL7 messages.
@@ -52,6 +63,16 @@ class MessageReceiver implements ReceivingApplication, ReceivingApplicationExcep
     private final ReceivingApplication receiver;
 
     /**
+     * The message service, to log messages.
+     */
+    private final MessageService service;
+
+    /**
+     * The user responsible for messages received via the connector.
+     */
+    private final User user;
+
+    /**
      * Message configuration, used to format responses correctly.
      */
     private final MessageConfig config;
@@ -71,20 +92,33 @@ class MessageReceiver implements ReceivingApplication, ReceivingApplicationExcep
      */
     private String lastErrorMessage;
 
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(MessageReceiver.class);
+
+    /**
+     * Key used to store the message act in the meta-data.
+     */
+    private static String META_DATA_KEY = MessageReceiver.class.getName() + ".act";
+
 
     /**
      * Constructs an {@link MessageReceiver}.
      *
      * @param receiver  the receiver to delegate to
      * @param connector the connector
+     * @param service   the message service
+     * @param user      the user responsible for messages received the connector
      */
-    public MessageReceiver(ReceivingApplication receiver, Connector connector) {
+    public MessageReceiver(ReceivingApplication receiver, Connector connector, MessageService service, User user) {
         this.connector = connector;
         config = new MessageConfig();
         config.setIncludeMillis(connector.isIncludeMillis());
         config.setIncludeTimeZone(connector.isIncludeTimeZone());
         this.receiver = receiver;
-
+        this.service = service;
+        this.user = user;
     }
 
     /**
@@ -97,12 +131,21 @@ class MessageReceiver implements ReceivingApplication, ReceivingApplicationExcep
     }
 
     /**
+     * Returns the user responsible for messages received by the connector.
+     *
+     * @return the user
+     */
+    public User getUser() {
+        return user;
+    }
+
+    /**
      * Uses the contents of the message for whatever purpose the application
      * has for this message, and returns an appropriate response message.
      *
-     * @param theMessage  an inbound HL7 message
-     * @param theMetadata message metadata (which may include information about where the message comes
-     *                    from, etc).  This is the same metadata as in {@link Transportable#getMetadata()}.
+     * @param message  an inbound HL7 message
+     * @param metaData message metadata (which may include information about where the message comes
+     *                 from, etc).  This is the same metadata as in {@link Transportable#getMetadata()}.
      * @return an appropriate application response (for example an application ACK or query response).
      *         Appropriate responses to different types of incoming messages are defined by HL7.
      * @throws ReceivingApplicationException if there is a problem internal to the application (for example
@@ -110,22 +153,23 @@ class MessageReceiver implements ReceivingApplication, ReceivingApplicationExcep
      * @throws HL7Exception                  if there is a problem with the message
      */
     @Override
-    public Message processMessage(Message theMessage, Map<String, Object> theMetadata)
+    public Message processMessage(final Message message, final Map<String, Object> metaData)
             throws ReceivingApplicationException, HL7Exception {
-        Message message = receiver.processMessage(theMessage, theMetadata);
-        if (!config.isIncludeMillis() || !config.isIncludeTimeZone()) {
-            // correct the date/time format
-            try {
-                MSH msh = (MSH) message.get("MSH");
-                DTM time = msh.getDateTimeOfMessage().getTime();
-                Calendar calendar = time.getValueAsCalendar();
-                PopulateHelper.populateDTM(time, calendar, config);
-            } catch (HL7Exception ignore) {
-                // do nothing
+        Callable<Message> callable = new Callable<Message>() {
+            @Override
+            public Message call() throws Exception {
+                return process(message, metaData);
             }
+        };
+        try {
+            return RunAs.run(user, callable);
+        } catch (HL7Exception exception) {
+            throw exception;
+        } catch (ReceivingApplicationException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new HL7Exception(exception);
         }
-        processed();
-        return message;
     }
 
     /**
@@ -148,14 +192,21 @@ class MessageReceiver implements ReceivingApplication, ReceivingApplicationExcep
      *                         system
      * @param incomingMetadata Any metadata that accompanies the incoming message.
      * @param outgoingMessage  the outgoing message. The response NAK message generated by HAPI.
-     * @param e                the exception which was received
+     * @param exception        the exception which was received
      * @return The new outgoing message. This can be set to the value provided by HAPI in {@code outgoingMessage},
      *         or may be replaced with another message. <b>This method may not return {@code null}</b>.
      */
     @Override
     public String processException(String incomingMessage, Map<String, Object> incomingMetadata,
-                                   String outgoingMessage, Exception e) throws HL7Exception {
-        error(e.getMessage());
+                                   String outgoingMessage, Exception exception) throws HL7Exception {
+        DocumentAct act = (DocumentAct) incomingMetadata.get(META_DATA_KEY);
+        if (act != null) {
+            // the exception is for the message being processed by processMessage()
+            error(act, exception);
+        } else {
+            log.error(exception.getMessage(), exception);
+            error(exception.getMessage(), new Date());
+        }
         return outgoingMessage;
     }
 
@@ -220,6 +271,76 @@ class MessageReceiver implements ReceivingApplication, ReceivingApplicationExcep
     }
 
     /**
+     * Processes a message.
+     *
+     * @param message  an inbound HL7 message
+     * @param metaData message metadata
+     * @return an appropriate application response
+     * @throws ReceivingApplicationException if there is a problem internal to the application
+     * @throws HL7Exception                  if there is a problem with the message
+     */
+    private Message process(Message message, Map<String, Object> metaData)
+            throws HL7Exception, ReceivingApplicationException {
+        DocumentAct act = service.save(message, connector, user);
+        metaData.put(META_DATA_KEY, act);
+        Message response;
+        try {
+            response = receiver.processMessage(message, metaData);
+            if (!config.isIncludeMillis() || !config.isIncludeTimeZone()) {
+                // correct the date/time format
+                try {
+                    MSH msh = (MSH) response.get("MSH");
+                    DTM time = msh.getDateTimeOfMessage().getTime();
+                    Calendar calendar = time.getValueAsCalendar();
+                    PopulateHelper.populateDTM(time, calendar, config);
+                } catch (HL7Exception ignore) {
+                    // do nothing
+                }
+            }
+            if (isAccepted(response)) {
+                service.accepted(act, new Date());
+                processed();
+            } else {
+                error(act, getError(response));
+            }
+        } catch (ReceivingApplicationException exception) {
+            error(act, exception);
+            throw exception;
+        } catch (HL7Exception exception) {
+            error(act, exception);
+            throw exception;
+        } catch (Throwable exception) {
+            error(act, exception);
+            throw new ReceivingApplicationException(exception);
+        }
+        return response;
+    }
+
+    /**
+     * Invoked when a received message cannot be processed due to an exception.
+     *
+     * @param act       the persistent version of the message
+     * @param exception the exception
+     */
+    private void error(DocumentAct act, Throwable exception) {
+        String message = exception.getMessage();
+        log.error(message, exception);
+        error(act, message);
+    }
+
+    /**
+     * Invoked when a received message cannot be processed.
+     *
+     * @param act     the persistent version of the message
+     * @param message the error message
+     */
+    private void error(DocumentAct act, String message) {
+        Date timestamp = new Date();
+        service.error(act, HL7MessageStatuses.ERROR, timestamp, message);
+        error(message, timestamp);
+    }
+
+    /**
      * Invoked when a message is successfully processed.
      */
     private synchronized void processed() {
@@ -231,11 +352,44 @@ class MessageReceiver implements ReceivingApplication, ReceivingApplicationExcep
     /**
      * Invoked when a message cannot be processed,
      *
-     * @param message the error message
+     * @param message   the error message
+     * @param timestamp the time the error occurred
      */
-    private synchronized void error(String message) {
-        lastError = new Date();
+    private synchronized void error(String message, Date timestamp) {
         lastErrorMessage = message;
+        lastError = timestamp;
+    }
+
+    /**
+     * Determines if a message was accepted.
+     *
+     * @param response the response to check
+     * @return {@code true} if the message was accepted
+     */
+    private boolean isAccepted(Message response) {
+        boolean result = false;
+        if (response instanceof ACK) {
+            ACK ack = (ACK) response;
+            MSA msa = ack.getMSA();
+            String ackCode = msa.getAcknowledgmentCode().getValue();
+            if (AcknowledgmentCode.AA.toString().equals(ackCode)) {
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Helper to build an error message from a response message.
+     *
+     * @param response the response message
+     * @return the error message
+     */
+    private String getError(Message response) {
+        if (response instanceof ACK) {
+            return HL7MessageHelper.getErrorMessage((ACK) response);
+        }
+        return "Unknown error";
     }
 
 }

@@ -114,13 +114,14 @@ public class MessageServiceImpl implements MessageService {
     }
 
     /**
-     * Updates a persistent message to indicate it has been sent.
+     * Updates a persistent message to indicate it has been accepted.
      *
      * @param message   the message
-     * @param timestamp the sent timestamp
+     * @param timestamp the accepted timestamp
+     * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
-    public void sent(DocumentAct message, Date timestamp) {
+    public void accepted(DocumentAct message, Date timestamp) {
         message.setActivityEndTime(timestamp);
         message.setStatus(HL7MessageStatuses.ACCEPTED);
         ActBean bean = new ActBean(message, service);
