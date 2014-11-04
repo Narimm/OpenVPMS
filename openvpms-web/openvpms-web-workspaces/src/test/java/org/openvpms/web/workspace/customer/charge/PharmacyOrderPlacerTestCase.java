@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
+import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -137,8 +138,9 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
      */
     @Test
     public void testOrder() {
+        Entity productType = createProductType(pharmacy);
         Product product1 = createProduct(pharmacy);
-        Product product2 = createProduct(pharmacy);
+        Product product2 = ProductTestHelper.createProduct(productType);
         Product product3 = TestHelper.createProduct(); // not ordered via a pharmacy
         Act event = PatientTestHelper.createEvent(patient, clinician);
         Act item1 = createItem(product1, ONE, event);
@@ -252,6 +254,9 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
 
     /**
      * Verifies that when a product is changed to a non-pharmacy product, the order is cancelled.
+     * <p/>
+     * NOTE: this functionality is no longer supported when editing, as the patient and product are set read-only
+     * when an order is issued.
      */
     @Test
     public void testChangeProductToNonPharmacyProduct() {
@@ -281,6 +286,9 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
     /**
      * Verifies that when a product and pharmacy is changed, a cancellation is issued to the old pharmacy, and a new
      * order is created.
+     * <p/>
+     * NOTE: this functionality is no longer supported when editing, as the patient and product are set read-only
+     * when an order is issued.
      */
     @Test
     public void testChangeProductAndPharmacy() {
@@ -419,8 +427,8 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that {@link PatientInformationService#updated(PatientContext, User)} is invoked if a completed visit is linked
-     * to during charging.
+     * Verifies that {@link PatientInformationService#updated(PatientContext, User)} is invoked if a completed visit is
+     * linked to during charging.
      */
     @Test
     public void testPatientInformationNotificationForCompletedEvent() {
@@ -505,5 +513,14 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
         bean.save();
         return product;
     }
+
+    private Entity createProductType(Entity pharmacy) {
+        Entity productType = ProductTestHelper.createProductType("ZTestProductType");
+        EntityBean bean = new EntityBean(productType);
+        bean.addNodeTarget("pharmacy", pharmacy);
+        bean.save();
+        return productType;
+    }
+
 
 }

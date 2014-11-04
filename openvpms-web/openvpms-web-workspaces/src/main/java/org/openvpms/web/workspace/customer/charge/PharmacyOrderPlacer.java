@@ -30,7 +30,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
@@ -388,15 +388,22 @@ public class PharmacyOrderPlacer {
     }
 
     /**
-     * Returns the pharmacy for a product and location
+     * Returns the pharmacy for a product and location.
      *
      * @param product the product
      * @return the pharmacy, or {@code null} if none is present
      */
     private Entity getPharmacy(Product product) {
-        EntityBean bean = new EntityBean(product);
-        IMObjectReference ref = bean.getNodeTargetObjectRef("pharmacy");
-        Entity pharmacy = (Entity) getObject(ref);
+        IMObjectBean bean = new IMObjectBean(product);
+        Entity pharmacy = (Entity) getObject(bean.getNodeTargetObjectRef("pharmacy"));
+        if (pharmacy == null) {
+            // use the pharmacy linked to the product type, if present
+            Entity type = (Entity) getObject(bean.getNodeSourceObjectRef("type"));
+            if (type != null) {
+                IMObjectBean typeBean = new IMObjectBean(type);
+                pharmacy = (Entity) getObject(typeBean.getNodeTargetObjectRef("pharmacy"));
+            }
+        }
         if (pharmacy != null && TypeHelper.isA(pharmacy, HL7Archetypes.PHARMACY_GROUP)) {
             pharmacy = pharmacies.getPharmacy(pharmacy, location.getObjectReference());
         }
