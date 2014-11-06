@@ -12,14 +12,9 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.esci.adapter.dispatcher;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.openvpms.archetype.rules.workflow.SystemMessageReason;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -32,12 +27,15 @@ import org.openvpms.esci.adapter.map.invoice.AbstractInvoiceTest;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 
 /**
  * Tests the {@link InvoiceProcessor} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class InvoiceProcessorTestCase extends AbstractInvoiceTest {
 
@@ -82,6 +80,8 @@ public class InvoiceProcessorTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testFailedToProcessInvoice() {
+        getStockLocation().setName("Main Stock");
+        getSupplier().setName("Vetshare");
         InboxDocument invoice = createInvoiceDocument();
         InvoiceProcessor processor = new InvoiceProcessor() {
             @Override
@@ -92,7 +92,9 @@ public class InvoiceProcessorTestCase extends AbstractInvoiceTest {
         processor.setArchetypeService(getArchetypeService());
         processor.setInvoiceMapper(createMapper());
 
-        checkSubmitException(invoice, processor, "ESCIA-0700: Failed to process Invoice: Foo");
+        checkSubmitException(invoice, processor, "ESCIA-0700: Failed to process Invoice 12345 for supplier Vetshare ("
+                                                 + getSupplier().getId() + ") and stock location Main Stock ("
+                                                 + getStockLocation().getId() + "): Foo");
     }
 
     /**

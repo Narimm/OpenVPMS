@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.esci.adapter.dispatcher.order;
 
@@ -22,8 +20,8 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.esci.adapter.dispatcher.InboxDocument;
 import org.openvpms.esci.adapter.dispatcher.DocumentProcessor;
+import org.openvpms.esci.adapter.dispatcher.InboxDocument;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.adapter.map.order.OrderResponseMapper;
@@ -37,8 +35,7 @@ import javax.annotation.Resource;
  * Order response service implementation that adapts UBL OrderResponse documents to their corresponding OpenVPMS
  * <em>act.supplierOrder</em>s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class OrderResponseProcessor implements DocumentProcessor {
 
@@ -81,7 +78,7 @@ public class OrderResponseProcessor implements DocumentProcessor {
     /**
      * Registers a listener to be notified when an order response is received.
      *
-     * @param listener the listener to notify. May be <tt>null</tt>
+     * @param listener the listener to notify. May be {@code null}
      */
     @Resource
     public void setOrderResponseListener(OrderResponseListener listener) {
@@ -102,7 +99,7 @@ public class OrderResponseProcessor implements DocumentProcessor {
      * Determines if this processor can handle the supplied document.
      *
      * @param document the document
-     * @return <tt>true</tt> if the processor can handle the document, otherwise <tt>false</tt>
+     * @return {@code true} if the processor can handle the document, otherwise {@code false}
      */
     public boolean canHandle(InboxDocument document) {
         return document.getContent() instanceof OrderResponseSimpleType;
@@ -111,10 +108,11 @@ public class OrderResponseProcessor implements DocumentProcessor {
     /**
      * Process the supplied document.
      *
-     * @param document      the document to process  @throws ESCIAdapterException for any error
+     * @param document      the document to process
      * @param supplier      the supplier submitting the document
      * @param stockLocation the stock location
-     * @param accountId     the supplier account identifier  @throws ESCIAdapterException for any error
+     * @param accountId     the supplier account identifier
+     * @throws ESCIAdapterException for any error
      */
     public void process(InboxDocument document, Party supplier, Party stockLocation, String accountId) {
         OrderResponseSimpleType response = (OrderResponseSimpleType) document.getContent();
@@ -122,10 +120,10 @@ public class OrderResponseProcessor implements DocumentProcessor {
             FinancialAct order = mapper.map(response, supplier, stockLocation, accountId);
             service.save(order);
             notifyListener(order);
-        } catch (ESCIAdapterException exception) {
-            throw exception;
         } catch (Throwable exception) {
-            Message message = ESCIAdapterMessages.failedToProcessOrderResponse(exception.getMessage());
+            String responseId = (response.getID()) != null ? response.getID().getValue() : null;
+            Message message = ESCIAdapterMessages.failedToProcessOrderResponse(responseId, supplier, stockLocation,
+                                                                               exception.getMessage());
             throw new ESCIAdapterException(message, exception);
         }
     }

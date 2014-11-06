@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.esci.adapter.dispatcher;
 
@@ -85,6 +83,9 @@ public class OrderResponseProcessorTestCase extends AbstractOrderResponseTest {
      */
     @Test
     public void testFailedToProcess() {
+        getStockLocation().setName("Main Stock");
+        getSupplier().setName("Vetshare");
+
         // create an order and refer to it in the response
         FinancialAct order = createOrder();
         InboxDocument response = createOrderResponseDocument(order.getId(), true);
@@ -97,7 +98,9 @@ public class OrderResponseProcessorTestCase extends AbstractOrderResponseTest {
         processor.setArchetypeService(getArchetypeService());
         processor.setOrderResponseMapper(createOrderResponseMapper());
 
-        String expected = "ESCIA-0500: Failed to process OrderResponseSimple: Foo";
+        String expected = "ESCIA-0500: Failed to process OrderResponseSimple 12345 for supplier Vetshare ("
+                          + getSupplier().getId() + ") and stock location Main Stock ("
+                          + getStockLocation().getId() + "): Foo";
         try {
             processor.process(response, getSupplier(), getStockLocation(), null);
         } catch (ESCIAdapterException exception) {

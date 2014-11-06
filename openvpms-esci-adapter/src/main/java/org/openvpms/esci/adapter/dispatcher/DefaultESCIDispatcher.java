@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.esci.adapter.dispatcher;
@@ -27,6 +25,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.esci.adapter.client.SupplierServiceLocator;
+import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.esci.service.InboxService;
 
@@ -40,8 +39,7 @@ import java.util.List;
  * Connects to each configured InboxService, and dispatches documents to the registered
  * {@link DocumentProcessor}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class DefaultESCIDispatcher implements ESCIDispatcher {
 
@@ -126,8 +124,18 @@ public class DefaultESCIDispatcher implements ESCIDispatcher {
      * </ul>
      * If {@link #stop} is called, only the executing dispatch terminates.
      */
-    public synchronized void dispatch() {
-        dispatch(false);
+    public void dispatch() {
+        dispatch(new ErrorHandler() {
+            @Override
+            public boolean terminateOnError() {
+                return false;
+            }
+
+            @Override
+            public void error(Throwable exception) {
+                log.error(exception.getMessage(), exception);
+            }
+        });
     }
 
     /**
@@ -137,13 +145,13 @@ public class DefaultESCIDispatcher implements ESCIDispatcher {
      * <ul>
      * <li>no more documents available</li>
      * <li>the {@link #stop} method is invoked, from another thread</li>
-     * <li>an error occurs and <tt>terminateOnError</tt> is <tt>true</tt>
+     * <li>an error occurs, and the supplied handler's {@link ErrorHandler#terminateOnError} method returns
+     * {@code true}</li>
      * </ul>
      * If {@link #stop} is called, only the executing dispatch terminates.
-     *
-     * @param terminateOnError if <tt>true</tt> terminate on the first error
      */
-    public synchronized void dispatch(boolean terminateOnError) {
+    @Override
+    public synchronized void dispatch(ErrorHandler handler) {
         // NOTE: synchronized as individual inboxes need to be processed synchronously
         try {
             ESCISuppliers helper = new ESCISuppliers(service);
@@ -152,7 +160,7 @@ public class DefaultESCIDispatcher implements ESCIDispatcher {
             while (!stop && iter.hasNext()) {
                 Party supplier = iter.next();
                 Collection<EntityRelationship> relationships = helper.getESCIRelationships(supplier);
-                dispatch(supplier, relationships, terminateOnError);
+                dispatch(supplier, relationships, handler);
             }
         } finally {
             stop = false;
@@ -171,19 +179,19 @@ public class DefaultESCIDispatcher implements ESCIDispatcher {
     /**
      * Dispatch documents from the supplier.
      *
-     * @param supplier         the supplier
-     * @param relationships    the <em>entityRelationship.supplierStockLocationESCI</em> relationships
-     * @param terminateOnError if <tt>true</tt> terminate on the first error
+     * @param supplier      the supplier
+     * @param relationships the <em>entityRelationship.supplierStockLocationESCI</em> relationships
+     * @param handler       the error handler
      * @throws ESCIAdapterException      for any ESCI adapter error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected void dispatch(Party supplier, Collection<EntityRelationship> relationships, boolean terminateOnError) {
+    protected void dispatch(Party supplier, Collection<EntityRelationship> relationships, ErrorHandler handler) {
         Iterator<EntityRelationship> iter = relationships.iterator();
         while (!stop && iter.hasNext()) {
             EntityRelationship rel = iter.next();
-            Inbox inbox = getInbox(supplier, rel, terminateOnError);
+            Inbox inbox = getInbox(supplier, rel, handler);
             if (inbox != null) {
-                dispatch(inbox, terminateOnError);
+                dispatch(inbox, handler);
             }
         }
     }
@@ -191,39 +199,43 @@ public class DefaultESCIDispatcher implements ESCIDispatcher {
     /**
      * Dispatch documents from the supplied inbox.
      *
-     * @param inbox            the inbox to read
-     * @param terminateOnError if <tt>true</tt> terminate on the first error
+     * @param inbox   the inbox to read
+     * @param handler the error handler
      * @throws ESCIAdapterException      for any ESCI adapter error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected void dispatch(Inbox inbox, boolean terminateOnError) {
+    protected void dispatch(Inbox inbox, ErrorHandler handler) {
         try {
             InboxDispatcher dispatcher = new InboxDispatcher(inbox, processors);
             while (!stop && dispatcher.hasNext()) {
                 dispatcher.dispatch();
             }
-        } catch (RuntimeException exception) {
-            if (terminateOnError) {
+        } catch (ESCIAdapterException exception) {
+            handler.error(exception);
+            if (handler.terminateOnError()) {
                 throw exception;
             }
-            Party supplier = inbox.getSupplier();
-            log.error("Failed to process inbox for supplier: " + supplier.getName()
-                      + " (" + supplier.getId() + "): " + exception.getMessage(), exception);
+        } catch (Throwable cause) {
+            ESCIAdapterException exception = new ESCIAdapterException(ESCIAdapterMessages.failedToProcessInbox(
+                    inbox.getSupplier(), inbox.getStockLocation(), cause.getMessage()), cause);
+            handler.error(exception);
+            if (handler.terminateOnError()) {
+                throw exception;
+            }
         }
     }
 
     /**
      * Returns the inbox for the given supplier and ESCI configuration.
      *
-     * @param supplier         the supplier
-     * @param configuration    the ESCI configuration
-     * @param terminateOnError if <tt>true</tt>, rethrow any exception instead of returning null if an inbox cannot be
-     *                         obtained
-     * @return the inbox, or <tt>null</tt> if no inbox can be obtained
+     * @param supplier      the supplier
+     * @param configuration the ESCI configuration
+     * @param handler       the error handler
+     * @return the inbox, or {@code null} if no inbox can be obtained
      * @throws ESCIAdapterException      for any ESCI adapter error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private Inbox getInbox(Party supplier, EntityRelationship configuration, boolean terminateOnError) {
+    private Inbox getInbox(Party supplier, EntityRelationship configuration, ErrorHandler handler) {
         Inbox result = null;
         if (configuration.getTarget() != null) {
             IMObjectBean bean = factory.createBean(configuration);
@@ -233,12 +245,18 @@ public class DefaultESCIDispatcher implements ESCIDispatcher {
                 try {
                     InboxService service = locator.getInboxService(supplier, stockLocation);
                     result = new Inbox(supplier, stockLocation, accountId, service);
-                } catch (RuntimeException exception) {
-                    if (terminateOnError) {
+                } catch (ESCIAdapterException exception) {
+                    handler.error(exception);
+                    if (handler.terminateOnError()) {
                         throw exception;
                     }
-                    log.error("Failed to process inbox for supplier: " + supplier.getName()
-                              + " (" + supplier.getId() + "): " + exception.getMessage(), exception);
+                } catch (Throwable cause) {
+                    ESCIAdapterException exception = new ESCIAdapterException(ESCIAdapterMessages.failedToProcessInbox(
+                            supplier, stockLocation, cause.getMessage()), cause);
+                    handler.error(exception);
+                    if (handler.terminateOnError()) {
+                        throw exception;
+                    }
                 }
             }
         }

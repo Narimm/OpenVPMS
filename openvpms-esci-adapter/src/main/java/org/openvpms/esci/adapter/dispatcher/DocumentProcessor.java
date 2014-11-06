@@ -12,20 +12,18 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.esci.adapter.dispatcher;
 
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
 
 
 /**
  * Processes document.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public interface DocumentProcessor {
 
@@ -33,7 +31,7 @@ public interface DocumentProcessor {
      * Determines if this processor can handle the supplied document.
      *
      * @param document the document
-     * @return <tt>true</tt> if the processor can handle the document, otherwise <tt>false</tt>
+     * @return {@code true} if the processor can handle the document, otherwise {@code false}
      */
     boolean canHandle(InboxDocument document);
 
@@ -43,7 +41,8 @@ public interface DocumentProcessor {
      * @param document      the document to process
      * @param supplier      the supplier submitting the document
      * @param stockLocation the stock location
-     * @param accountId     the supplier account identifier  @throws ESCIAdapterException for any error
+     * @param accountId     the supplier account identifier
+     * @throws ESCIAdapterException for any error
      */
     void process(InboxDocument document, Party supplier, Party stockLocation, String accountId);
 }
