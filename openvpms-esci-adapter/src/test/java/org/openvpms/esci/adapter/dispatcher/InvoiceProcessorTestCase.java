@@ -1,25 +1,20 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.dispatcher;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.openvpms.archetype.rules.workflow.SystemMessageReason;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -32,12 +27,15 @@ import org.openvpms.esci.adapter.map.invoice.AbstractInvoiceTest;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 
 /**
  * Tests the {@link InvoiceProcessor} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class InvoiceProcessorTestCase extends AbstractInvoiceTest {
 
@@ -82,6 +80,8 @@ public class InvoiceProcessorTestCase extends AbstractInvoiceTest {
      */
     @Test
     public void testFailedToProcessInvoice() {
+        getStockLocation().setName("Main Stock");
+        getSupplier().setName("Vetshare");
         InboxDocument invoice = createInvoiceDocument();
         InvoiceProcessor processor = new InvoiceProcessor() {
             @Override
@@ -92,7 +92,9 @@ public class InvoiceProcessorTestCase extends AbstractInvoiceTest {
         processor.setArchetypeService(getArchetypeService());
         processor.setInvoiceMapper(createMapper());
 
-        checkSubmitException(invoice, processor, "ESCIA-0700: Failed to process Invoice: Foo");
+        checkSubmitException(invoice, processor, "ESCIA-0700: Failed to process Invoice 12345 for supplier Vetshare ("
+                                                 + getSupplier().getId() + ") and stock location Main Stock ("
+                                                 + getStockLocation().getId() + "): Foo");
     }
 
     /**

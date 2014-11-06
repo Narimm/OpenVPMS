@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.dispatcher;
 
@@ -85,6 +83,9 @@ public class OrderResponseProcessorTestCase extends AbstractOrderResponseTest {
      */
     @Test
     public void testFailedToProcess() {
+        getStockLocation().setName("Main Stock");
+        getSupplier().setName("Vetshare");
+
         // create an order and refer to it in the response
         FinancialAct order = createOrder();
         InboxDocument response = createOrderResponseDocument(order.getId(), true);
@@ -97,7 +98,9 @@ public class OrderResponseProcessorTestCase extends AbstractOrderResponseTest {
         processor.setArchetypeService(getArchetypeService());
         processor.setOrderResponseMapper(createOrderResponseMapper());
 
-        String expected = "ESCIA-0500: Failed to process OrderResponseSimple: Foo";
+        String expected = "ESCIA-0500: Failed to process OrderResponseSimple 12345 for supplier Vetshare ("
+                          + getSupplier().getId() + ") and stock location Main Stock ("
+                          + getStockLocation().getId() + "): Foo";
         try {
             processor.process(response, getSupplier(), getStockLocation(), null);
         } catch (ESCIAdapterException exception) {

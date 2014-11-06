@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.i18n;
 
@@ -392,11 +392,16 @@ public class ESCIAdapterMessages {
     /**
      * Creates a new message for when an order response cannot be processed.
      *
-     * @param reason the reason
+     * @param responseId    the response identifier
+     * @param supplier      the supplier
+     * @param stockLocation the stock location
+     * @param reason        the reason
      * @return a new message
      */
-    public static Message failedToProcessOrderResponse(String reason) {
-        return messages.getMessage(500, reason);
+    public static Message failedToProcessOrderResponse(String responseId, Party supplier, Party stockLocation,
+                                                       String reason) {
+        return messages.getMessage(500, responseId, supplier.getId(), supplier.getName(), stockLocation.getId(),
+                                   stockLocation.getName(), reason);
     }
 
     /**
@@ -532,11 +537,15 @@ public class ESCIAdapterMessages {
     /**
      * Creates a new message for when an invoice cannot be processed.
      *
-     * @param reason the reason
+     * @param invoiceId     the invoice identifier
+     * @param supplier      the supplier
+     * @param stockLocation the stock location
+     * @param reason        the reason
      * @return a new message
      */
-    public static Message failedToProcessInvoice(String reason) {
-        return messages.getMessage(700, reason);
+    public static Message failedToProcessInvoice(String invoiceId, Party supplier, Party stockLocation, String reason) {
+        return messages.getMessage(700, invoiceId, supplier.getId(), supplier.getName(), stockLocation.getId(),
+                                   stockLocation.getName(), reason);
     }
 
     /**
@@ -590,4 +599,16 @@ public class ESCIAdapterMessages {
         return messages.getMessage(900);
     }
 
+    /**
+     * Invoked when an inbox cannot be processed for a supplier and stock location.
+     *
+     * @param supplier      the supplier
+     * @param stockLocation the stock location
+     * @param reason        the reason
+     * @return a new message
+     */
+    public static Message failedToProcessInbox(Party supplier, Party stockLocation, String reason) {
+        return messages.getMessage(1000, supplier.getId(), supplier.getName(), stockLocation.getId(),
+                                   stockLocation.getName(), reason);
+    }
 }

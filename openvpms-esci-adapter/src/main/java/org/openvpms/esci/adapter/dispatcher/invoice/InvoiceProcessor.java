@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.dispatcher.invoice;
 
@@ -22,8 +20,8 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.esci.adapter.dispatcher.InboxDocument;
 import org.openvpms.esci.adapter.dispatcher.DocumentProcessor;
+import org.openvpms.esci.adapter.dispatcher.InboxDocument;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.adapter.map.invoice.Delivery;
@@ -38,10 +36,9 @@ import javax.annotation.Resource;
  * Maps invoices to <em>act.supplierDelivery</em> acts using {@link InvoiceMapper}.
  * <p/>
  * UBL invoices are mapped to deliveries rather than <em>act.supplierAccountChargesInvoice</em> to reflect the fact
- * that practices may not use suplier invoices. An invoice can be created from the delivery if required.
+ * that practices may not use supplier invoices. An invoice can be created from the delivery if required.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class InvoiceProcessor implements DocumentProcessor {
 
@@ -56,7 +53,7 @@ public class InvoiceProcessor implements DocumentProcessor {
     private InvoiceMapper mapper;
 
     /**
-     * The listener to notify when an invoice is received. May be <tt>null</tt>
+     * The listener to notify when an invoice is received. May be {@code null}
      */
     private InvoiceListener listener;
 
@@ -89,7 +86,7 @@ public class InvoiceProcessor implements DocumentProcessor {
     /**
      * Registers a listener to be notified when an invoice is received.
      *
-     * @param listener the listener to notify. May be <tt>null</tt>
+     * @param listener the listener to notify. May be {@code null}
      */
     @Resource
     public void setInvoiceListener(InvoiceListener listener) {
@@ -100,7 +97,7 @@ public class InvoiceProcessor implements DocumentProcessor {
      * Determines if this processor can handle the supplied document.
      *
      * @param document the document
-     * @return <tt>true</tt> if the processor can handle the document, otherwise <tt>false</tt>
+     * @return {@code true} if the processor can handle the document, otherwise {@code false}
      */
     public boolean canHandle(InboxDocument document) {
         return document.getContent() instanceof InvoiceType;
@@ -120,10 +117,10 @@ public class InvoiceProcessor implements DocumentProcessor {
             Delivery delivery = mapper.map(invoice, supplier, stockLocation, accountId);
             service.save(delivery.getActs());
             notifyListener(delivery.getDelivery());
-        } catch (ESCIAdapterException exception) {
-            throw exception;
         } catch (Throwable exception) {
-            Message message = ESCIAdapterMessages.failedToProcessInvoice(exception.getMessage());
+            String invoiceId = (invoice.getID() != null) ? invoice.getID().getValue() : null;
+            Message message = ESCIAdapterMessages.failedToProcessInvoice(
+                    invoiceId, supplier, stockLocation, exception.getMessage());
             throw new ESCIAdapterException(message, exception);
         }
     }
