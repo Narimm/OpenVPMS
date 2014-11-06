@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.esci.adapter.dispatcher;
@@ -24,8 +22,7 @@ import java.util.List;
 /**
  * Dispatches documents to registered {@link DocumentProcessor}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public interface ESCIDispatcher {
 
@@ -44,9 +41,23 @@ public interface ESCIDispatcher {
      * <li>no more documents available</li>
      * <li>the {@link #stop} method is invoked, from another thread</li>
      * </ul>
-     * If {@link #stop} is called, only the executing dispatch terminates. 
+     * If {@link #stop} is called, only the executing dispatch terminates.
      */
     void dispatch();
+
+    /**
+     * Dispatch documents.
+     * <p/>
+     * This will dispatch documents until there is either:
+     * <ul>
+     * <li>no more documents available</li>
+     * <li>the {@link #stop} method is invoked, from another thread</li>
+     * <li>an error occurs, and the supplied handler's {@link ErrorHandler#terminateOnError} method returns
+     * {@code true}</li>
+     * </ul>
+     * If {@link #stop} is called, only the executing dispatch terminates.
+     */
+    void dispatch(ErrorHandler handler);
 
     /**
      * Flags the current dispatch to stop.
