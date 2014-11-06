@@ -163,10 +163,10 @@ public class StockLocationSupplierSelector {
      * @return the objects matching the query
      */
     private List<IMObject> query(String shortName) {
-        ArchetypeQuery query = new ArchetypeQuery(shortName)
-            .add(Constraints.sort("name"))
-            .add(Constraints.sort("id"))
-            .setMaxResults(AbstractArchetypeQuery.ALL_RESULTS);
+        ArchetypeQuery query = new ArchetypeQuery(shortName, true)
+                .add(Constraints.sort("name"))
+                .add(Constraints.sort("id"))
+                .setMaxResults(AbstractArchetypeQuery.ALL_RESULTS);
         return QueryHelper.query(query);
     }
 
