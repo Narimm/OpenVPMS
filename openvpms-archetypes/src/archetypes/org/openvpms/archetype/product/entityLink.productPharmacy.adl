@@ -29,6 +29,9 @@
                     <propertyMap name="archetype">
                         <property name="shortName" value="product.*"/>
                     </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="entity.productType"/>
+                    </propertyMap>
                 </propertyList>
             </assertion>
         </node>

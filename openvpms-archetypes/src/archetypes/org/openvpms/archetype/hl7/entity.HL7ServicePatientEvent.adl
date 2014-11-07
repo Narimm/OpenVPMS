@@ -23,7 +23,7 @@
         </node>
         <node name="description" type="java.lang.String" path="/description"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
-        <node name="sender" displayName="Connection" path="/entityLinks" type="java.util.HashSet"
+        <node name="sender" displayName="Connector" path="/entityLinks" type="java.util.HashSet"
               baseName="EntityLink" minCardinality="0" maxCardinality="1" filter="entityLink.HL7ServiceSender"/>
         <node name="location" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
               minCardinality="1" maxCardinality="1" filter="entityLink.HL7ServiceLocation"/>

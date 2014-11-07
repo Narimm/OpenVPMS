@@ -23,9 +23,9 @@
         </node>
         <node name="description" type="java.lang.String" path="/description"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
-        <node name="sender" displayName="Order Connection" path="/entityLinks" type="java.util.HashSet"
+        <node name="sender" displayName="Order Connector" path="/entityLinks" type="java.util.HashSet"
               baseName="EntityLink" minCardinality="0" maxCardinality="1" filter="entityLink.HL7ServiceSender"/>
-        <node name="receiver" displayName="Dispense Connection" path="/entityLinks" type="java.util.HashSet"
+        <node name="receiver" displayName="Dispense Connector" path="/entityLinks" type="java.util.HashSet"
               baseName="EntityLink" minCardinality="0" maxCardinality="1" filter="entityLink.HL7ServiceReceiver"/>
         <node name="location" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
               minCardinality="1" maxCardinality="1" filter="entityLink.HL7ServiceLocation"/>
