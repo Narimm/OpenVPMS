@@ -20,9 +20,9 @@
                displayName="Pharmacy">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
-              derivedValue="'Pharmacy Dispense Connection'"/>
+              derivedValue="'Pharmacy Group Pharmacy'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true"/>
-        <node name="source" displayName="Pharmacy" path="/source"
+        <node name="source" displayName="Pharmacy Group" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
@@ -32,7 +32,7 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="target" displayName="Connection" path="/target"
+        <node name="target" displayName="Pharmacy" path="/target"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference"
               minCardinality="1">
             <assertion name="archetypeRange">
