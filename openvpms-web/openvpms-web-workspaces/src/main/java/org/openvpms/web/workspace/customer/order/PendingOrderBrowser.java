@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.customer.order;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
@@ -201,6 +202,9 @@ public class PendingOrderBrowser extends AbstractQueryBrowser<Act> {
                     result = super.getValue(object, column, row);
                 } else if (index == invoicedIndex) {
                     result = rules.getInvoicedQuantity(object);
+                    if (result != null) {
+                        result = LabelFactory.create((Number) result, new TableLayoutData());
+                    }
                 } else {
                     result = null;
                 }

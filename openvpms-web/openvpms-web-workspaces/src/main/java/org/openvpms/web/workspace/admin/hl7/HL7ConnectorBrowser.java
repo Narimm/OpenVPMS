@@ -41,15 +41,15 @@ import java.util.Date;
  *
  * @author Tim Anderson
  */
-public class Hl7ConnectorBrowser extends IMObjectTableBrowser<Entity> {
+public class HL7ConnectorBrowser extends IMObjectTableBrowser<Entity> {
 
     /**
-     * Constructs an {@link Hl7ConnectorBrowser} that queries IMObjects using the specified query.
+     * Constructs an {@link HL7ConnectorBrowser} that queries IMObjects using the specified query.
      *
      * @param query   the query
      * @param context the layout context
      */
-    public Hl7ConnectorBrowser(Query<Entity> query, LayoutContext context) {
+    public HL7ConnectorBrowser(Query<Entity> query, LayoutContext context) {
         super(query, context);
     }
 
@@ -126,21 +126,15 @@ public class Hl7ConnectorBrowser extends IMObjectTableBrowser<Entity> {
         }
 
         private Component getQueued(Entity object, int row) {
-            Component result = null;
             Statistics stats = getStats(object, row);
-            if (stats != null) {
-                result = LabelFactory.create(stats.getQueued(), new TableLayoutData());
-            }
-            return result;
+            int queued = (stats != null) ? stats.getQueued() : 0;
+            return LabelFactory.create(queued, new TableLayoutData());
         }
 
         private Component getErrors(Entity object, int row) {
-            Component result = null;
             Statistics stats = getStats(object, row);
-            if (stats != null) {
-                result = LabelFactory.create(stats.getErrors(), new TableLayoutData());
-            }
-            return result;
+            int errors = (stats != null) ? stats.getErrors() : 0;
+            return LabelFactory.create(errors, new TableLayoutData());
         }
 
         private String getLastProcessed(Entity object, int row) {

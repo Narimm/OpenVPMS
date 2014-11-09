@@ -24,8 +24,6 @@ import nextapp.echo2.app.layout.CellLayoutData;
 import org.openvpms.web.echo.text.TextHelper;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
 
-import java.math.BigDecimal;
-
 
 /**
  * Factory for {@link Label}s. Labels returned by this factory filter
@@ -156,7 +154,7 @@ public final class LabelFactory extends ComponentFactory {
      * @param layout the layout to assign the label
      * @return a new label
      */
-    public static Label create(BigDecimal value, CellLayoutData layout) {
+    public static Label create(Number value, CellLayoutData layout) {
         Label label = create();
         label.setText(NumberFormatter.format(value));
         return rightAlign(label, layout);
