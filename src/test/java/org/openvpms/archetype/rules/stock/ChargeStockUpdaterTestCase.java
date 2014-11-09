@@ -193,8 +193,8 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
     public void testMultipleStockUpdatesInTxn() {
         final List<FinancialAct> acts = new ArrayList<FinancialAct>(createInvoice());
         final FinancialAct item1 = acts.get(1);
-        final FinancialAct item2 = FinancialTestHelper.createItem(CustomerAccountArchetypes.INVOICE_ITEM, Money.ONE,
-                                                                  patient, product);
+        final FinancialAct item2 = FinancialTestHelper.createChargeItem(CustomerAccountArchetypes.INVOICE_ITEM, patient,
+                                                                        product, BigDecimal.ONE);
         addStockLocation(item2);
         acts.add(item2);
 

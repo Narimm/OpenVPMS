@@ -80,6 +80,11 @@ public class PatientHistoryChanges {
     private Map<IMObjectReference, Act> toSave = new HashMap<IMObjectReference, Act>();
 
     /**
+     * Used to determine if an event was new, prior to {@link #save()} being invoked.
+     */
+    private Set<IMObjectReference> newEvents = new HashSet<IMObjectReference>();
+
+    /**
      * The objects to remove.
      */
     private Set<IMObject> toRemove = new HashSet<IMObject>();
@@ -159,6 +164,9 @@ public class PatientHistoryChanges {
         IMObjectReference ref = event.getObjectReference();
         if (!events.containsKey(ref)) {
             events.put(ref, event);
+            if (event.isNew()) {
+                newEvents.add(ref);
+            }
             ActBean bean = new ActBean(event, service);
             if (event.isNew()) {
                 // add author and location to new events
@@ -312,6 +320,16 @@ public class PatientHistoryChanges {
      */
     public boolean hasRelationship(Act act) {
         return getLinkedEventRef(act) != null;
+    }
+
+    /**
+     * Determines if an event added via {@link #addEvent(Act)} was new prior to {@link #save()}  being invoked.
+     *
+     * @param event the event
+     * @return {@code true} if the event was new prior to save
+     */
+    public boolean isNew(Act event) {
+        return newEvents.contains(event.getObjectReference());
     }
 
     /**

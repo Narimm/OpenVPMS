@@ -97,53 +97,35 @@
         </node>
         <node name="credit" path="/credit" type="java.lang.Boolean"
               defaultValue="false()" readOnly="true" hidden="true"/>
+        <node name="ordered" path="/details/ordered" type="java.lang.Boolean" hidden="true" readOnly="true"
+              minCardinality="0"/>
+        <node name="receivedQuantity" path="/details/receivedQuantity" type="java.math.BigDecimal" hidden="true"
+              readOnly="true" minCardinality="0"/>
+        <node name="returnedQuantity" path="/details/returnedQuantity" type="java.math.BigDecimal" hidden="true"
+              readOnly="true" minCardinality="0"/>
         <node name="dispensing" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="1"
               filter="actRelationship.invoiceItemDispensing">
             <assertion name="archetypeRange">
+                <!-- NOTE - this assertion is only required to force the UI to display the node on a tab -->
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
                         <property name="shortName" value="actRelationship.invoiceItemDispensing"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="investigations" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
-              filter="actRelationship.invoiceItemInvestigation">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="actRelationship.invoiceItemInvestigation"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
+              filter="actRelationship.invoiceItemInvestigation"/>
         <node name="documents" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
-              filter="actRelationship.invoiceItemDocument" hidden="true">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="actRelationship.invoiceItemDocument"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
+              filter="actRelationship.invoiceItemDocument" hidden="true"/>
         <node name="reminders" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
-              filter="actRelationship.invoiceItemReminder">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="actRelationship.invoiceItemReminder"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
+              filter="actRelationship.invoiceItemReminder"/>
+        <node name="event" path="/targetActRelationships"
+              type="java.util.HashSet" baseName="TargetActRelationship" minCardinality="0" maxCardinality="1"
+              filter="actRelationship.patientClinicalEventChargeItem" hidden="true"/>
     </archetype>
 </archetypes>

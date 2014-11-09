@@ -35,7 +35,6 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
@@ -47,6 +46,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -249,8 +249,8 @@ public class ChargeItemDocumentLinkerTestCase extends ArchetypeServiceTest {
      * @return a new invoice item
      */
     private FinancialAct createItem(Party patient, Product product, User author, User clinician) {
-        FinancialAct item = FinancialTestHelper.createItem(CustomerAccountArchetypes.INVOICE_ITEM, Money.ONE, patient,
-                                                           product);
+        FinancialAct item = FinancialTestHelper.createChargeItem(CustomerAccountArchetypes.INVOICE_ITEM, patient,
+                                                                 product, BigDecimal.ONE);
         ActBean bean = new ActBean(item);
         bean.addNodeParticipation("author", author);
         bean.addNodeParticipation("clinician", clinician);
