@@ -231,5 +231,21 @@
               path="Workflow/Message/A4/Message.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Task" archetype="act.customerTask" reportType="WORKFLOW" description="Task (A5)"
               path="Workflow/Task/A5/Task.jrxml" mimeType="text/xml" docType="document.other"/>
+    <template name="Pharmacy Order" archetype="act.customerOrderPharmacy" reportType="WORKFLOW"
+              description="Pharmacy Order (A4)"
+              path="Workflow/Customer Order/Pharmacy Order/A4/Pharmacy Order.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Pharmacy Order Items" archetype="SUBREPORT" reportType="WORKFLOW"
+              description="Pharmacy Order Items (A4)"
+              path="Workflow/Customer Order/Pharmacy Order/A4/Pharmacy Order Items.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Pharmacy Return" archetype="act.customerReturnPharmacy" reportType="WORKFLOW"
+              description="Pharmacy Return (A4)"
+              path="Workflow/Customer Order/Pharmacy Return/A4/Pharmacy Return.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Pharmacy Return Items" archetype="SUBREPORT" reportType="WORKFLOW"
+              description="Pharmacy Return Items (A4)"
+              path="Workflow/Customer Order/Pharmacy Return/A4/Pharmacy Return Items.jrxml" mimeType="text/xml"
+              docType="document.other"/>
 
 </templates>
