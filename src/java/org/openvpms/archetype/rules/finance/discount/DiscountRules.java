@@ -16,7 +16,7 @@
 
 package org.openvpms.archetype.rules.finance.discount;
 
-import org.openvpms.archetype.rules.finance.tax.TaxRules;
+import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -147,8 +147,8 @@ public class DiscountRules {
         BigDecimal discount;
         BigDecimal taxRate = BigDecimal.ZERO;
         if (practice != null) {
-            TaxRules taxRules = new TaxRules(practice, service, lookups);
-            taxRate = taxRules.getTaxRate(product);
+            CustomerTaxRules taxRules = new CustomerTaxRules(practice, service, lookups);
+            taxRate = taxRules.getTaxRate(product, customer);
         }
 
         if (fixedPrice.compareTo(BigDecimal.ZERO) == 0
@@ -220,6 +220,7 @@ public class DiscountRules {
      * @param fixedCost  the fixed cost price
      * @param unitCost   the unit cost price
      * @param quantity   the quantity
+     * @param taxRate    the taxRate expressed as a percentage. Only applicable to COST_RATE discounts
      * @param discounts  a set of <em>entity.discountType</em>s. This list is modified if there are multiple
      *                   COST_RATE discounts
      * @return the discount amount for the act
