@@ -25,6 +25,7 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -84,6 +85,11 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
     private Party practice;
 
     /**
+     * The practice tax type.
+     */
+    private Lookup taxType;
+
+    /**
      * The rules.
      */
     private DiscountRules rules;
@@ -110,7 +116,8 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
 
         // set up practice with 10% tax rate
         practice = (Party) TestHelper.create(PracticeArchetypes.PRACTICE);
-        practice.addClassification(TestHelper.createTaxType(BigDecimal.TEN));
+        taxType = TestHelper.createTaxType(BigDecimal.TEN);
+        practice.addClassification(taxType);
     }
 
     /**
@@ -227,8 +234,15 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         checkCalculateDiscountForDummyProduct(ProductArchetypes.TEMPLATE);
     }
 
+    /**
+     * Verifies that when two at-cost discounts are present with the same rate but different discountFixed flags:
+     * <ul>
+     * <li>only one rate is used; and</li>
+     * <li>it is the rate with {@code discountFixed=false}</li>
+     * </ul>
+     */
     @Test
-    public void testMultipleCostDiscountsWithSameRate() {
+    public void testMultipleCostDiscountsWithSameRateSelectsNoDiscountFixed() {
         Entity discount1 = createDiscount(BigDecimal.ZERO, true, DiscountRules.COST_RATE);
         Entity discount2 = createDiscount(BigDecimal.ZERO, false, DiscountRules.COST_RATE);
 
@@ -238,6 +252,43 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
 
         Date now = new Date();
         checkCalculateCostDiscount(now, customer, patient, product, new BigDecimal("1.20"));
+    }
+
+    /**
+     * Verifies that when a customer has a percentage discount, the discount is not affected by any tax exclusions.
+     */
+    @Test
+    public void testCalculatePercentageDiscountForCustomerWithTaxExclusions() {
+        // set up two customers with the same percentage discount, but give the first a tax exclusion.
+        Party customer1 = createCustomerWithDiscount(discount10);
+        Party customer2 = createCustomerWithDiscount(discount10);
+        customer1.addClassification(taxType);
+
+        Product product = createProductWithDiscounts(ProductArchetypes.MEDICATION, discount10);
+        Party patient = createPatient();
+
+        Date now = new Date();
+        checkCalculatePercentageDiscount(now, customer1, patient, product, new BigDecimal("0.10"));
+        checkCalculatePercentageDiscount(now, customer2, patient, product, new BigDecimal("0.10"));
+    }
+
+    /**
+     * Verifies that at-cost discounts are calculated correctly for a customer that has a tax exclusion.
+     */
+    @Test
+    public void testAtCostDiscountForCustomerWithTaxExclusions() {
+        // set up two customers with the same at-cost discount, but give the first a tax exclusion.
+        Party customer1 = createCustomerWithDiscount(costDiscount10);
+        Party customer2 = createCustomerWithDiscount(costDiscount10);
+        customer1.addClassification(taxType);
+
+        Product product = createProductWithDiscounts(ProductArchetypes.MEDICATION, costDiscount10);
+        Party patient = createPatient();
+
+        Date now = new Date();
+        // customer1 should get a bigger discount as they have a tax exclusion
+        checkCalculateCostDiscount(now, customer1, patient, product, new BigDecimal("4.60"));
+        checkCalculateCostDiscount(now, customer2, patient, product, new BigDecimal("3.06"));
     }
 
     /**
