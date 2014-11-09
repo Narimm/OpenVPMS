@@ -472,11 +472,43 @@ public class CustomerAccountRules {
      * @return the customer invoice, or {@code null} if none is found
      */
     public FinancialAct getInvoice(Party customer) {
-        FinancialAct result = getInvoice(customer, ActStatus.IN_PROGRESS);
-        if (result == null) {
-            result = getInvoice(customer, ActStatus.COMPLETED);
-        }
-        return result;
+        return getInvoice(customer.getObjectReference());
+    }
+
+    /**
+     * Returns the latest {@code IN_PROGRESS} or {@code COMPLETED} invoice for a customer.
+     * <p/>
+     * Invoices with {@code IN_PROGRESS} will be returned in preference to {@code COMPLETED} ones.
+     *
+     * @param customer the customer
+     * @return the customer invoice, or {@code null} if none is found
+     */
+    public FinancialAct getInvoice(IMObjectReference customer) {
+        return getCharge(CustomerAccountArchetypes.INVOICE, customer);
+    }
+
+    /**
+     * Returns the latest {@code IN_PROGRESS} or {@code COMPLETED} credit for a customer.
+     * <p/>
+     * Credits with {@code IN_PROGRESS} will be returned in preference to {@code COMPLETED} ones.
+     *
+     * @param customer the customer
+     * @return the customer credit, or {@code null} if none is found
+     */
+    public FinancialAct getCredit(Party customer) {
+        return getCredit(customer.getObjectReference());
+    }
+
+    /**
+     * Returns the latest {@code IN_PROGRESS} or {@code COMPLETED} credit for a customer.
+     * <p/>
+     * Credits with {@code IN_PROGRESS} will be returned in preference to {@code COMPLETED} ones.
+     *
+     * @param customer the customer
+     * @return the customer credit, or {@code null} if none is found
+     */
+    public FinancialAct getCredit(IMObjectReference customer) {
+        return getCharge(CustomerAccountArchetypes.CREDIT, customer);
     }
 
     /**
@@ -542,14 +574,30 @@ public class CustomerAccountRules {
     }
 
     /**
-     * Return the latest invoice for a customer with the given status.
+     * Return the latest charge for a customer.
      *
-     * @param customer the customer
-     * @param status   the act status
+     * @param shortName the charge archetype short name
+     * @param customer  the customer
      * @return the invoice, or {@code null} if none can be found
      */
-    private FinancialAct getInvoice(Party customer, String status) {
-        ArchetypeQuery query = new ArchetypeQuery(CustomerAccountArchetypes.INVOICE, false, true);
+    private FinancialAct getCharge(String shortName, IMObjectReference customer) {
+        FinancialAct result = getCharge(shortName, customer, ActStatus.IN_PROGRESS);
+        if (result == null) {
+            result = getCharge(shortName, customer, ActStatus.COMPLETED);
+        }
+        return result;
+    }
+
+    /**
+     * Return the latest charge for a customer with the given status.
+     *
+     * @param shortName the charge archetype short name
+     * @param customer  the customer
+     * @param status    the act status
+     * @return the invoice, or {@code null} if none can be found
+     */
+    private FinancialAct getCharge(String shortName, IMObjectReference customer, String status) {
+        ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
         query.setMaxResults(1);
 
         query.add(Constraints.join("customer").add(Constraints.eq("entity", customer)));

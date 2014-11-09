@@ -46,6 +46,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -426,8 +427,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         assertNull(rules.getDocumentFormReminder(form));
 
         // create an invoice item and associate the form with it
-        Act item = FinancialTestHelper.createItem(CustomerAccountArchetypes.INVOICE_ITEM, Money.ONE,
-                                                  patient, TestHelper.createProduct());
+        Act item = FinancialTestHelper.createChargeItem(CustomerAccountArchetypes.INVOICE_ITEM, patient,
+                                                        TestHelper.createProduct(), BigDecimal.ONE);
         ActBean itemBean = new ActBean(item);
         itemBean.addNodeRelationship("documents", form);
         save(item, form);
@@ -528,8 +529,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         checkReminder(reminder1, reminderType1, patient, product, form, dueDate1);
 
         // create an invoice item and associate the form with it
-        Act item = FinancialTestHelper.createItem(CustomerAccountArchetypes.INVOICE_ITEM, Money.ONE,
-                                                  patient, product);
+        Act item = FinancialTestHelper.createChargeItem(CustomerAccountArchetypes.INVOICE_ITEM, patient, product, Money.ONE
+        );
         ActBean itemBean = new ActBean(item);
         itemBean.addNodeRelationship("documents", form);
         save(item, form);

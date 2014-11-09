@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -101,6 +102,17 @@ public class PracticeRules {
         EntityBean bean = new EntityBean(practice, service);
         List locations = bean.getNodeTargetEntities("locations");
         return (List<Party>) locations;
+    }
+
+    /**
+     * Returns the default user to be used by background services.
+     *
+     * @param practice the practice
+     * @return the service user
+     */
+    public User getServiceUser(Party practice) {
+        EntityBean bean = new EntityBean(practice, service);
+        return (User) bean.getNodeTargetEntity("serviceUser");
     }
 
     /**
