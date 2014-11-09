@@ -321,14 +321,38 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         }
 
         getProperty("total").removeModifiableListener(totalListener);
-
-        // add a listener to update the discount amount when the quantity,
-        // fixed or unit price changes.
         getProperty("fixedPrice").removeModifiableListener(discountListener);
         getProperty("quantity").removeModifiableListener(discountListener);
         getProperty("unitPrice").removeModifiableListener(discountListener);
         getProperty("quantity").removeModifiableListener(quantityListener);
         getProperty("startTime").removeModifiableListener(startTimeListener);
+    }
+
+    /**
+     * Updates the discount and checks that it isn't less than the total cost.
+     * <p/>
+     * If so, gives the user the opportunity to remove the discount.
+     */
+    @Override
+    protected void updateDiscount() {
+        super.updateDiscount();
+        BigDecimal discount = getProperty("discount").getBigDecimal();
+        BigDecimal quantity = getQuantity();
+        BigDecimal fixedCost = getProperty("fixedCost").getBigDecimal();
+        BigDecimal unitCost = getProperty("unitCost").getBigDecimal();
+        if (fixedCost.add(unitCost.multiply(quantity)).compareTo(discount) < 0) {
+            ConfirmationDialog dialog = new ConfirmationDialog(Messages.get("customer.charge.discount.title"),
+                                                               Messages.get("customer.charge.discount.message"),
+                                                               ConfirmationDialog.YES_NO);
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onYes() {
+                    getProperty("discount").setValue(BigDecimal.ZERO);
+                    super.onYes();
+                }
+            });
+            editorQueue.queue(dialog);
+        }
     }
 
     /**
@@ -548,6 +572,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     @Override
     protected void productModified(Product product) {
+        getProperty("fixedPrice").removeModifiableListener(discountListener);
+        getProperty("quantity").removeModifiableListener(discountListener);
+        getProperty("unitPrice").removeModifiableListener(discountListener);
         super.productModified(product);
 
         updatePatientMedication(product);
@@ -603,6 +630,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             updateDiscount();
         }
         notifyProductListener(product);
+        getProperty("fixedPrice").addModifiableListener(discountListener);
+        getProperty("quantity").addModifiableListener(discountListener);
+        getProperty("unitPrice").addModifiableListener(discountListener);
     }
 
     /**
