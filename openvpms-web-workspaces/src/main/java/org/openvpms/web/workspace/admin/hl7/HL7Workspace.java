@@ -184,7 +184,7 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
         Context context = getContext();
         HelpContext help = subtopic("connector");
         Query<Entity> query = QueryFactory.create(HL7Archetypes.CONNECTORS, context);
-        Browser<Entity> browser = new Hl7ConnectorBrowser(query, new DefaultLayoutContext(context, help));
+        Browser<Entity> browser = new HL7ConnectorBrowser(query, new DefaultLayoutContext(context, help));
         Archetypes<Entity> archetypes = Archetypes.create(HL7Archetypes.CONNECTORS, Entity.class,
                                                           Messages.get("admin.hl7.connector.type"));
         HL7ConnectorCRUDWindow window = new HL7ConnectorCRUDWindow(archetypes, getContext(), help);
