@@ -42,6 +42,7 @@ import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
+import org.openvpms.web.workspace.admin.hl7.PharmacyGroupEditor;
 import org.openvpms.web.workspace.admin.lookup.AlertTypeEditor;
 import org.openvpms.web.workspace.admin.lookup.LookupEditor;
 import org.openvpms.web.workspace.admin.lookup.MacroEditor;
@@ -535,6 +536,14 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     @Test
     public void testTillBalanceAdjustmentEditor() {
         checkCreate("act.tillBalanceAdjustment", TillBalanceAdjustmentEditor.class);
+    }
+
+    /**
+     * Verifies that a {@link PharmacyGroupEditor} is created for <em>entity.HL7ServicePharmacyGroup</em>.
+     */
+    @Test
+    public void testPharmacyGroupEditor() {
+        checkCreate("entity.HL7ServicePharmacyGroup", PharmacyGroupEditor.class);
     }
 
     /**

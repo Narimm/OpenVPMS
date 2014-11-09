@@ -24,8 +24,11 @@ import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.util.PropertySet;
+import org.openvpms.hl7.patient.PatientContext;
+import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.EditDialog;
@@ -45,6 +48,7 @@ import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.patient.info.PatientContextHelper;
 import org.openvpms.web.workspace.workflow.LocalClinicianContext;
 import org.openvpms.web.workspace.workflow.WorkflowFactory;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleCRUDWindow;
@@ -69,6 +73,11 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * The rules.
      */
     private final AppointmentRules rules;
+
+    /**
+     * The original status of the appointment being edited.
+     */
+    private String oldStatus;
 
     /**
      * Check-in button identifier.
@@ -131,6 +140,18 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     /**
      * Edits an object.
      *
+     * @param object the object to edit
+     * @param path   the selection path. May be {@code null}
+     */
+    @Override
+    protected void edit(Act object, List<Selection> path) {
+        oldStatus = object.getStatus();
+        super.edit(object, path);
+    }
+
+    /**
+     * Edits an object.
+     *
      * @param editor the object editor
      * @param path   the selection path. May be {@code null}
      * @return the edit dialog
@@ -142,6 +163,39 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
             ((AppointmentActEditor) editor).setStartTime(startTime);
         }
         return super.edit(editor, path);
+    }
+
+
+    /**
+     * Invoked when the object has been saved.
+     *
+     * @param object the object
+     * @param isNew  determines if the object is a new instance
+     */
+    @Override
+    protected void onSaved(Act object, boolean isNew) {
+        super.onSaved(object, isNew);
+        String newStatus = object.getStatus();
+        User user = getContext().getUser();
+        if (!AppointmentStatus.CANCELLED.equals(oldStatus) && AppointmentStatus.CANCELLED.equals(newStatus)) {
+            PatientContext context = getPatientContext(object);
+            if (context != null) {
+                PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
+                service.admissionCancelled(context, user);
+            }
+        } else if (!isAdmitted(oldStatus) && isAdmitted(newStatus)) {
+            PatientContext context = getPatientContext(object);
+            if (context != null) {
+                PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
+                service.admitted(context, user);
+            }
+        } else if (isAdmitted(oldStatus) && !isAdmitted(newStatus)) {
+            PatientContext context = getPatientContext(object);
+            if (context != null) {
+                PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
+                service.discharged(context, user);
+            }
+        }
     }
 
     /**
@@ -386,6 +440,27 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         editor.setStartTime(startTime); // will recalc end time
         dialog.save(true);              // checks for overlapping appointments
         browser.setSelected(browser.getEvent(appointment));
+    }
+
+    /**
+     * Returns the patient context for an appointment.
+     *
+     * @param appointment the appointment
+     * @return the patient context, or {@code null} if the patient can't be found, or has no current visit
+     */
+    private PatientContext getPatientContext(Act appointment) {
+        return PatientContextHelper.getAppointmentContext(appointment, getContext());
+    }
+
+    /**
+     * Determines if an appointment status indicates the patient has been admitted.
+     *
+     * @param status the appointment status
+     * @return {@code true} if the patient has been admitted
+     */
+    private boolean isAdmitted(String status) {
+        return AppointmentStatus.CHECKED_IN.equals(status) || AppointmentStatus.ADMITTED.equals(status)
+               || AppointmentStatus.IN_PROGRESS.equals(status) || AppointmentStatus.BILLED.equals(status);
     }
 
     protected static class AppointmentActions extends ScheduleActions {

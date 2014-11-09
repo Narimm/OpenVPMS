@@ -18,6 +18,7 @@ package org.openvpms.web.resource.i18n.format;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.text.DateFormat;
@@ -225,6 +226,22 @@ public class DateFormatter {
      */
     public static String formatDateTime(Date dateTime, boolean edit) {
         return getDateTimeFormat(edit).format(dateTime);
+    }
+
+    /**
+     * Formats a date-time, abbreviating it to just the time if the date is today.
+     *
+     * @param dateTime the date-time to format
+     * @return the formatted date-time
+     */
+    public static String formatDateTimeAbbrev(Date dateTime) {
+        String result;
+        if (DateRules.compareDateToToday(dateTime) == 0) {
+            result = DateFormatter.formatTime(dateTime, false);
+        } else {
+            result = DateFormatter.formatDateTime(dateTime, false);
+        }
+        return result;
     }
 
     /**

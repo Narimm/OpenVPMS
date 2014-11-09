@@ -89,7 +89,7 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     }
 
     /**
-     * Constructs a {@code VistitChargeEditor}.
+     * Constructs a {@link VisitChargeEditor}.
      *
      * @param act            the act to edit
      * @param event          the event to link charge items to
@@ -168,7 +168,7 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         VisitChargeLayoutStrategy strategy = new VisitChargeLayoutStrategy();
-        iniLayoutStrategy(strategy);
+        initLayoutStrategy(strategy);
         return strategy;
     }
 

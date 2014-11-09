@@ -16,11 +16,18 @@
 
 package org.openvpms.web.workspace.customer.charge;
 
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.hl7.patient.PatientContextFactory;
+import org.openvpms.hl7.patient.PatientInformationService;
+import org.openvpms.hl7.pharmacy.Pharmacies;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.system.ServiceHelper;
 
 /**
  * A test {@link CustomerChargeActEditor}.
@@ -33,6 +40,11 @@ public class TestChargeEditor extends CustomerChargeActEditor {
      * The editor queue.
      */
     private ChargeEditorQueue queue;
+
+    /**
+     * The pharmacy order service.
+     */
+    private TestPharmacyOrderService service;
 
     /**
      * Constructs a {@link TestChargeEditor}.
@@ -86,6 +98,15 @@ public class TestChargeEditor extends CustomerChargeActEditor {
     }
 
     /**
+     * Returns the test pharmacy order service.
+     *
+     * @return the test pharmacy order service
+     */
+    public TestPharmacyOrderService getPharmacyOrderService() {
+        return service;
+    }
+
+    /**
      * Creates a collection editor for the items collection.
      *
      * @param act   the act
@@ -100,5 +121,23 @@ public class TestChargeEditor extends CustomerChargeActEditor {
             ((ChargeItemRelationshipCollectionEditor) editor).setEditorQueue(getQueue());
         }
         return editor;
+    }
+
+    /**
+     * Creates a new {@link PharmacyOrderPlacer}.
+     *
+     * @param customer the customer
+     * @param location the practice location
+     * @param user     the user responsible for the orders
+     * @return a new pharmacy order placer
+     */
+    @Override
+    protected PharmacyOrderPlacer createPharmacyOrderPlacer(Party customer, Party location, User user) {
+        service = new TestPharmacyOrderService();
+        return new PharmacyOrderPlacer(customer, location, user, getLayoutContext().getCache(), service,
+                                       ServiceHelper.getBean(Pharmacies.class),
+                                       ServiceHelper.getBean(PatientContextFactory.class),
+                                       ServiceHelper.getBean(PatientInformationService.class),
+                                       ServiceHelper.getBean(MedicalRecordRules.class));
     }
 }

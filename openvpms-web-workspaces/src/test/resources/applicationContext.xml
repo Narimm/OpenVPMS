@@ -234,6 +234,10 @@
         <constructor-arg ref="archetypeService"/>
     </bean>
 
+    <bean class="org.openvpms.archetype.rules.finance.order.OrderRules">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
     <bean id="productPriceRules" class="org.openvpms.archetype.rules.product.ProductPriceRules">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
@@ -311,6 +315,40 @@
 
     <bean id="userRules" class="org.openvpms.archetype.rules.user.UserRules">
         <constructor-arg ref="archetypeService"/>
+    </bean>
+
+    <bean id="hl7Connectors" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.openvpms.hl7.io.Connectors"/>
+    </bean>
+
+    <bean id="hl7PatientEventServices" class="org.openvpms.hl7.impl.PatientEventServicesImpl">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="hl7Connectors"/>
+    </bean>
+
+    <bean id="hl7Parmacies" class="org.openvpms.hl7.impl.PharmaciesImpl">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="hl7Connectors"/>
+        <constructor-arg ref="hl7PatientEventServices"/>
+    </bean>
+
+    <bean id="hl7messageDispatcher" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.openvpms.hl7.io.MessageDispatcher"/>
+    </bean>
+
+    <bean class="org.openvpms.hl7.patient.PatientContextFactory">
+        <constructor-arg ref="patientRules"/>
+        <constructor-arg ref="customerRules"/>
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+    </bean>
+
+    <bean id="hl7PatientInformationService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.openvpms.hl7.patient.PatientInformationService"/>
+    </bean>
+
+    <bean id="hl7PharmacyOrderService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.openvpms.hl7.pharmacy.PharmacyOrderService"/>
     </bean>
 
     <!-- ================================================================== -->

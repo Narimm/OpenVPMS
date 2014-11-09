@@ -17,23 +17,18 @@
 package org.openvpms.web.workspace.customer.estimate;
 
 import org.openvpms.archetype.rules.act.EstimateActStatus;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditor;
+import org.openvpms.web.workspace.customer.charge.AbstractInvoicer;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
 
 
 /**
@@ -47,7 +42,7 @@ import org.springframework.transaction.support.TransactionCallback;
  *
  * @author Tim Anderson
  */
-public class EstimateInvoicer {
+public class EstimateInvoicer extends AbstractInvoicer {
 
     /**
      * Creates an invoice for an estimate.
@@ -66,19 +61,14 @@ public class EstimateInvoicer {
         ActBean estimateBean = new ActBean(estimate);
 
         if (invoice == null) {
-            invoice = (FinancialAct) IMObjectCreator.create(CustomerAccountArchetypes.INVOICE);
-            if (invoice == null) {
-                throw new IllegalStateException("Failed to create invoice");
-            }
-            ActBean invoiceBean = new ActBean(invoice);
-            invoiceBean.addNodeParticipation("customer", estimateBean.getNodeParticipantRef("customer"));
+            invoice = createInvoice(estimateBean.getNodeParticipantRef("customer"));
         }
 
         CustomerChargeActEditor editor = createChargeEditor(invoice, context);
 
         // NOTE: need to display the dialog as the process of populating medications and reminders can display
         // popups which would parent themselves on the wrong window otherwise.
-        EditDialog dialog = new EditDialog(editor, estimate, context.getContext());
+        ChargeDialog dialog = new ChargeDialog(editor, estimate, context.getContext());
         dialog.show();
         invoice(estimate, editor);
         return dialog;
@@ -94,28 +84,9 @@ public class EstimateInvoicer {
         ActBean bean = new ActBean(estimate);
         ActRelationshipCollectionEditor items = editor.getItems();
 
-        // if there is an existing empty editor, populate it first
-        IMObjectEditor currentEditor = editor.getItems().getCurrentEditor();
-        CustomerChargeActItemEditor useFirst = null;
-        if (currentEditor instanceof CustomerChargeActItemEditor &&
-            ((CustomerChargeActItemEditor) currentEditor).getProductRef() == null) {
-            useFirst = (CustomerChargeActItemEditor) currentEditor;
-        }
         for (Act estimationItem : bean.getNodeActs("items")) {
             ActBean itemBean = new ActBean(estimationItem);
-            CustomerChargeActItemEditor itemEditor;
-            if (useFirst != null) {
-                itemEditor = useFirst;
-                useFirst = null;
-            } else {
-                Act act = (Act) items.create();
-                if (act == null) {
-                    throw new IllegalStateException("Failed to create charge item");
-                }
-                itemEditor = (CustomerChargeActItemEditor) items.getEditor(act);
-                itemEditor.getComponent();
-                items.addEdited(itemEditor);
-            }
+            CustomerChargeActItemEditor itemEditor = getItemEditor(editor);
             itemEditor.setPatientRef(itemBean.getNodeParticipantRef("patient"));
             itemEditor.setQuantity(itemBean.getBigDecimal("highQty"));
 
@@ -143,67 +114,6 @@ public class EstimateInvoicer {
                 documentsEditor.getComponent();
                 documents.addEdited(documentsEditor);
             }
-        }
-
-    }
-
-    /**
-     * Creates a new {@code ChargeEditor}.
-     *
-     * @param invoice the invoice
-     * @param context the layout context
-     * @return a new charge editor
-     */
-    protected CustomerChargeActEditor createChargeEditor(FinancialAct invoice, LayoutContext context) {
-        return new CustomerChargeActEditor(invoice, null, context, false);
-    }
-
-    private static class EditDialog extends CustomerChargeActEditDialog {
-
-        /**
-         * The estimate.
-         */
-        private final Act estimate;
-
-        /**
-         * Determines if the estimation has been saved.
-         */
-        private boolean estimateSaved = false;
-
-        /**
-         * Constructs an {@code EditDialog}.
-         *
-         * @param editor   the invoice editor
-         * @param estimate the estimate
-         * @param context  the context
-         */
-        public EditDialog(CustomerChargeActEditor editor, Act estimate, Context context) {
-            super(editor, context);
-            this.estimate = estimate;
-        }
-
-        /**
-         * Saves the editor in a transaction.
-         *
-         * @param editor the editor
-         * @return {@code true} if the save was successful
-         */
-        @Override
-        protected boolean save(final IMObjectEditor editor) {
-            boolean result;
-
-            if (!estimateSaved) {
-                TransactionCallback<Boolean> callback = new TransactionCallback<Boolean>() {
-                    public Boolean doInTransaction(TransactionStatus status) {
-                        return SaveHelper.save(estimate) && SaveHelper.save(editor);
-                    }
-                };
-                result = SaveHelper.save(editor.getDisplayName(), callback);
-                estimateSaved = result;
-            } else {
-                result = super.save(editor);
-            }
-            return result;
         }
     }
 

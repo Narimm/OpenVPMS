@@ -13,6 +13,7 @@
  *
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.im.edit;
 
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -34,6 +35,68 @@ import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
  * @author Tim Anderson
  */
 public abstract class ActActions<T extends Act> extends AbstractIMObjectActions<T> {
+
+    /**
+     * View actions.
+     */
+    private static ActActions VIEW = new ActActions() {
+        @Override
+        public boolean canCreate() {
+            return false;
+        }
+
+        @Override
+        public boolean canDelete(Act act) {
+            return false;
+        }
+
+        @Override
+        public boolean canEdit(Act act) {
+            return false;
+        }
+
+        @Override
+        public boolean canPost(Act act) {
+            return false;
+        }
+
+        @Override
+        public boolean post(Act act) {
+            return false;
+        }
+
+        @Override
+        public boolean setPrinted(Act act, boolean printed) {
+            return false;
+        }
+    };
+
+    /**
+     * Edit actions.
+     */
+    private static final ActActions EDIT = new ActActions() {
+    };
+
+
+    /**
+     * Returns actions that only support viewing acts.
+     *
+     * @return the actions
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends Act> ActActions<T> view() {
+        return VIEW;
+    }
+
+    /**
+     * Returns actions that support editing acts.
+     *
+     * @return the actions
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends Act> ActActions<T> edit() {
+        return EDIT;
+    }
 
     /**
      * Determines if an act can be edited.

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -47,7 +47,7 @@ public abstract class ParticipationEditor<T extends Entity> extends AbstractIMOb
      *
      * @param participation the object to edit
      * @param parent        the parent object
-     * @param context       the layout context. May be {@code null}
+     * @param context       the layout context
      */
     public ParticipationEditor(Participation participation, Act parent, LayoutContext context) {
         super(participation, parent, context);

@@ -18,10 +18,13 @@ package org.openvpms.web.workspace.patient.history;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.hl7.patient.PatientContext;
+import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.archetype.Archetypes;
@@ -36,7 +39,9 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.PatientMedicalRecordLinker;
+import org.openvpms.web.workspace.patient.info.PatientContextHelper;
 
 
 /**
@@ -165,6 +170,9 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
             // use a Retryer to retry if the linking fails initially
             PatientMedicalRecordLinker linker = createMedicalRecordLinker(getEvent(), act);
             Retryer.run(linker);
+            if (TypeHelper.isA(act, PatientArchetypes.PATIENT_WEIGHT)) {
+                onWeightChanged(act);
+            }
         } else {
             setEvent(act);
         }
@@ -182,6 +190,9 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
             setEvent(null);
         }
         super.onDeleted(object);
+        if (TypeHelper.isA(object, PatientArchetypes.PATIENT_WEIGHT)) {
+            onWeightChanged(object);
+        }
     }
 
     /**
@@ -218,6 +229,23 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         setEvent(null);     // event will be created in onSaved()
         Archetypes<Act> archetypes = new Archetypes<Act>(PatientArchetypes.CLINICAL_NOTE, Act.class);
         onCreate(archetypes);
+    }
+
+    /**
+     * Invoked when the patient weight changes or a weight record is deleted.
+     * <p/>
+     * If the act is for the current visit, registered listeners will be notified via
+     * the {@link PatientInformationService}.
+     *
+     * @param act the weight act
+     */
+    protected void onWeightChanged(Act act) {
+        Act event = getEvent();
+        PatientContext context = PatientContextHelper.getPatientContext(act, getContext());
+        if (context != null && ObjectUtils.equals(event, context.getVisit())) {
+            PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
+            service.updated(context, getContext().getUser());
+        }
     }
 
     /**

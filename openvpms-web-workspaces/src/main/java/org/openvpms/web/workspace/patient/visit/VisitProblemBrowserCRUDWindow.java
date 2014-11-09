@@ -25,7 +25,7 @@ import org.openvpms.web.workspace.patient.problem.ProblemRecordCRUDWindow;
  *
  * @author Tim Anderson
  */
-public class VisitProblemBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
+public class VisitProblemBrowserCRUDWindow extends VisitBrowserCRUDWindow<Act> {
 
     /**
      * Constructs a {@link VisitProblemBrowserCRUDWindow}.

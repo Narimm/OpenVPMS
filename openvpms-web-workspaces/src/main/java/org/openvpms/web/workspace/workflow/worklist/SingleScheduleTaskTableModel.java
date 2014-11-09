@@ -19,7 +19,6 @@ package org.openvpms.web.workspace.workflow.worklist;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
-import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -148,13 +147,7 @@ public class SingleScheduleTaskTableModel extends TaskTableModel {
             case START_TIME_INDEX:
                 Date startTime = set.getDate(ScheduleEvent.ACT_START_TIME);
                 Label label = LabelFactory.create();
-                if (startTime != null) {
-                    if (DateRules.compareDateToToday(startTime) == 0) {
-                        label.setText(DateFormatter.formatTime(startTime, false));
-                    } else {
-                        label.setText(DateFormatter.formatDateTime(startTime, false));
-                    }
-                }
+                label.setText(DateFormatter.formatDateTimeAbbrev(startTime));
                 result = label;
                 break;
             case STATUS_INDEX:

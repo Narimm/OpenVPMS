@@ -33,7 +33,6 @@ import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.doc.DocumentUploadListener;
 import org.openvpms.web.component.im.doc.UploadDialog;
 import org.openvpms.web.component.im.edit.ActActions;
-import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
@@ -71,14 +70,14 @@ public class StockCRUDWindow extends ActCRUDWindow<Act> {
     private static final String IMPORT_ID = "button.import";
 
     /**
-     * Constructs a {@code StockCRUDWindow}.
+     * Constructs a {@link StockCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
      * @param context    the context
      * @param help       the help context
      */
     public StockCRUDWindow(Archetypes<Act> archetypes, Context context, HelpContext help) {
-        super(archetypes, DefaultActActions.getInstance(), context, help);
+        super(archetypes, ActActions.edit(), context, help);
     }
 
     /**

@@ -19,12 +19,13 @@ package org.openvpms.web.workspace.patient.visit;
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.finance.order.OrderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.DefaultActActions;
+import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -37,8 +38,13 @@ import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.message.InformationMessage;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.customer.order.OrderCharger;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 
 
 /**
@@ -59,6 +65,11 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
     public static final String IN_PROGRESS_ID = "button.inprogress";
 
     /**
+     * Invoice orders button identifier.
+     */
+    public static final String INVOICE_ORDERS_ID = "button.invoiceOrders";
+
+    /**
      * The event.
      */
     private final Act event;
@@ -67,6 +78,11 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
      * The charge editor.
      */
     private VisitChargeEditor editor;
+
+    /**
+     * Customer order charger.
+     */
+    private final OrderCharger orderCharger;
 
     /**
      * Determines if the charge is posted.
@@ -83,6 +99,11 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
      */
     private int id;
 
+    /**
+     * The current order message.
+     */
+    private Component message;
+
 
     /**
      * Constructs a {@link VisitChargeCRUDWindow}.
@@ -92,9 +113,12 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
      * @param help    the help context
      */
     public VisitChargeCRUDWindow(Act event, Context context, HelpContext help) {
-        super(Archetypes.create(CustomerAccountArchetypes.INVOICE, FinancialAct.class),
-              DefaultActActions.<FinancialAct>getInstance(), context, help);
+        super(Archetypes.create(CustomerAccountArchetypes.INVOICE, FinancialAct.class), ActActions.<FinancialAct>edit(),
+              context, help);
         this.event = event;
+        OrderRules rules = ServiceHelper.getBean(OrderRules.class);
+        orderCharger = new OrderCharger(context.getCustomer(), context.getPatient(), rules, context,
+                                        help.subtopic("order"));
     }
 
     /**
@@ -169,6 +193,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
      */
     @Override
     public void show() {
+        checkOrders();
         if (editor != null) {
             editor.getFocusGroup().setFocus();
         }
@@ -184,7 +209,15 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
         if (editor != null && !posted) {
             Validator validator = new DefaultValidator();
             if (editor.validate(validator)) {
-                result = SaveHelper.save(editor);
+                result = SaveHelper.save(editor, new TransactionCallback<Boolean>() {
+                    @Override
+                    public Boolean doInTransaction(TransactionStatus status) {
+                        return orderCharger.save();
+                    }
+                });
+                if (result) {
+                    orderCharger.clear();
+                }
                 posted = ActStatus.POSTED.equals(getObject().getStatus());
             } else {
                 result = false;
@@ -193,6 +226,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
         } else {
             result = true;
         }
+        checkOrders();
         return result;
     }
 
@@ -232,6 +266,20 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
             result = save();
         }
         return result;
+    }
+
+    /**
+     * Charges orders.
+     */
+    public void chargeOrders() {
+        if (!posted) {
+            orderCharger.charge(editor, new OrderCharger.CompletionListener() {
+                @Override
+                public void completed() {
+                    checkOrders();
+                }
+            });
+        }
     }
 
     /**
@@ -281,6 +329,22 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
             }
             buttons.setEnabled(IN_PROGRESS_ID, enable);
             buttons.setEnabled(COMPLETED_ID, enable);
+            buttons.setEnabled(INVOICE_ORDERS_ID, enable);
+        }
+    }
+
+    /**
+     * Determines if there are any pending orders, displaying a message if there are.
+     */
+    private void checkOrders() {
+        if (message != null) {
+            container.remove(message);
+            message = null;
+        }
+        if (orderCharger.hasOrders()) {
+            message = new InformationMessage(Messages.format("customer.order.pending",
+                                                             orderCharger.getCustomer().getName()));
+            container.add(message, 0);
         }
     }
 

@@ -33,7 +33,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class VisitHistoryBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
+public class VisitHistoryBrowserCRUDWindow extends VisitBrowserCRUDWindow<Act> {
 
     /**
      * The help context.

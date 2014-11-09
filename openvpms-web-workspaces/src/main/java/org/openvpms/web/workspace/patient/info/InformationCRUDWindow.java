@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.info;
@@ -20,6 +20,8 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.hl7.patient.PatientContext;
+import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
@@ -58,7 +60,7 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
 
 
     /**
-     * Constructs an {@code InformationCRUDWindow}.
+     * Constructs an {@link InformationCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
      * @param context    the context
@@ -107,6 +109,18 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
     }
 
     /**
+     * Invoked when the object has been saved.
+     *
+     * @param object the object
+     * @param isNew  determines if the object is a new instance
+     */
+    @Override
+    protected void onSaved(Party object, boolean isNew) {
+        super.onSaved(object, isNew);
+        notifyUpdated(object);
+    }
+
+    /**
      * Checks in the current patient.
      */
     private void onCheckIn() {
@@ -141,11 +155,29 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
             public void taskEvent(TaskEvent event) {
                 if (event.getType() == TaskEvent.Type.COMPLETED) {
                     onRefresh(getObject());
+                    // parent should have updated it
+                    Party object = getObject();
+                    if (object != null) {
+                        notifyUpdated(object);
+                    }
+
                 }
             }
         });
         workflow.start();
     }
 
+    /**
+     * Notify registered listeners that a patient has updated.
+     *
+     * @param object the patient
+     */
+    private void notifyUpdated(Party object) {
+        PatientContext context = PatientContextHelper.getPatientContext(object, getContext());
+        if (context != null) {
+            PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
+            service.updated(context, getContext().getUser());
+        }
+    }
 
 }

@@ -525,6 +525,36 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * Helper to create a product.
      *
      * @param shortName  the product archetype short name
+     * @param fixedPrice the fixed price
+     * @param pharmacy   the pharmacy
+     * @return a new product
+     */
+    protected Product createProduct(String shortName, BigDecimal fixedPrice, Entity pharmacy) {
+        Product product = CustomerChargeTestHelper.createProduct(shortName, fixedPrice, practice);
+        EntityBean bean = new EntityBean(product);
+        bean.addNodeTarget("pharmacy", pharmacy);
+        bean.save();
+
+        return product;
+    }
+
+    /**
+     * Helper to create a product.
+     *
+     * @param shortName  the product archetype short name
+     * @param fixedPrice the fixed price
+     * @param unitPrice  the unit price
+     * @return a new product
+     */
+    protected Product createProduct(String shortName, BigDecimal fixedPrice, BigDecimal unitPrice) {
+        return CustomerChargeTestHelper.createProduct(shortName, BigDecimal.ZERO, fixedPrice, BigDecimal.ZERO,
+                                                      unitPrice, practice);
+    }
+
+    /**
+     * Helper to create a product.
+     *
+     * @param shortName  the product archetype short name
      * @param fixedCost  the fixed cost
      * @param fixedPrice the fixed price
      * @param unitCost   the unit cost

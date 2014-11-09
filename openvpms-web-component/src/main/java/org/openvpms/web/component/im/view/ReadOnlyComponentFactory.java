@@ -83,6 +83,7 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
 
         result = TextComponentFactory.create(value, length, MAX_DISPLAY_LENGTH);
         ComponentFactory.setStyle(result, getStyle());
+        result.setEnabled(false);
         return result;
     }
 
