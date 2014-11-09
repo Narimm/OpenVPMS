@@ -2293,6 +2293,35 @@
     </style>
 
     <!-- =================================================================== -->
+    <!-- Inline messages                                                     -->
+    <!-- =================================================================== -->
+    <style name="InformationMessage" base-name="bold" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/info.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="InformationMessage.row" type="nextapp.echo2.app.Row">
+        <properties>
+            <property name="border">
+                <border size="1px" style="solid" color="#ffff99"/>
+            </property>
+            <property name="insets" value="${padding.medium}"/>
+        </properties>
+    </style>
+
+    <style name="Message.close" type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/${dialog.closeicon}"/>
+            </property>
+            <property name="insets" value="0px"/>
+        </properties>
+    </style>
+
+    <!-- =================================================================== -->
     <!--  Button defaults                                                    -->
     <!-- =================================================================== -->
 
@@ -2437,6 +2466,16 @@
     <style name="edit" base-name="default" type="nextapp.echo2.app.text.TextComponent">
         <properties>
             <property name="disabledBackground" value="#e1e1e1"/>
+        </properties>
+    </style>
+
+    <style name="monospace" base-name="default" type="org.openvpms.web.echo.text.TextArea">
+        <properties>
+            <property name="font">
+                <font size="${font.size}">
+                    <typeface name="Lucida Console, monospace"/>
+                </font>
+            </property>
         </properties>
     </style>
 

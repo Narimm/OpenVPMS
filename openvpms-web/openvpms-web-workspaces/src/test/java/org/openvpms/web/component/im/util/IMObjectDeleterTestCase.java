@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
@@ -188,6 +188,9 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
         checkListener(listener, false);
     }
 
+    /**
+     * Verifies that entities can be deleted if relationships are excluded.
+     */
     @Test
     public void testDeleteWithRelationshipsExcluded() {
         TestDeleter deleter = new TestDeleter();
@@ -213,6 +216,29 @@ public class IMObjectDeleterTestCase extends AbstractAppTest {
 
         checkDeleter(deleter, true, false, false);
         checkListener(listener, true);
+
+        assertNull(get(job));
+    }
+
+    /**
+     * Verifies that attempting to delete an entity that is the target of an entity link deactivates it.
+     */
+    @Test
+    public void testDeleteWithEntityLinks() {
+        Party location = TestHelper.createLocation();
+        TestHelper.createCustomer(location);
+
+        TestDeleter deleter = new TestDeleter();
+        TestListener listener = new TestListener();
+
+        deleter.delete(location, help, listener);
+
+        checkDeleter(deleter, false, true, false);
+        checkListener(listener, false);
+
+        location = get(location);
+        assertNotNull(location);
+        assertFalse(location.isActive());
     }
 
     /**

@@ -73,11 +73,6 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     private final Archetypes<Act> prescriptionArchetypes;
 
     /**
-     * The patient.
-     */
-    private Party patient;
-
-    /**
      * The history browser.
      */
     private final PatientHistoryBrowser history;
@@ -154,7 +149,6 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      * @param help    the help context
      */
     public RecordBrowser(Party patient, PatientHistoryQuery query, Context context, HelpContext help) {
-        this.patient = patient;
         docArchetypes = Archetypes.create(PatientDocumentQuery.DOCUMENT_SHORT_NAMES, DocumentAct.class,
                                           Messages.get("patient.document.createtype"));
         prescriptionArchetypes = Archetypes.create(PatientArchetypes.PRESCRIPTION, Act.class);
@@ -345,7 +339,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      * @return a new {@link CRUDWindow}
      */
     protected CRUDWindow<Act> createReminderAlertCRUDWindow(Context context, HelpContext help) {
-        return new ReminderCRUDWindow(patient, context, help);
+        return new ReminderCRUDWindow(context, help);
     }
 
     /**

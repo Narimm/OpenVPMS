@@ -14,35 +14,19 @@
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.patient.visit;
+package org.openvpms.web.component.workspace;
 
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.ContentPane;
-import nextapp.echo2.app.SplitPane;
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.query.AbstractBrowserListener;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.workspace.AbstractCRUDWindow;
-import org.openvpms.web.component.workspace.AbstractViewCRUDWindow;
-import org.openvpms.web.component.workspace.CRUDWindow;
-import org.openvpms.web.component.workspace.CRUDWindowListener;
-import org.openvpms.web.echo.button.ButtonSet;
-import org.openvpms.web.echo.factory.SplitPaneFactory;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.util.DoubleClickMonitor;
-
 
 /**
  * Links a {@link Browser} to a {@link CRUDWindow}.
  *
  * @author Tim Anderson
  */
-public class BrowserCRUDWindow<T extends Act> implements VisitEditorTab {
-
-    /**
-     * The tab identifier.
-     */
-    private int id;
+public class BrowserCRUDWindow<T extends IMObject> {
 
     /**
      * The browser.
@@ -68,7 +52,7 @@ public class BrowserCRUDWindow<T extends Act> implements VisitEditorTab {
     }
 
     /**
-     * Constructs a {@code BrowserCRUDWindow}.
+     * Constructs a {@link BrowserCRUDWindow}.
      *
      * @param browser the browser
      * @param window  the window
@@ -76,65 +60,6 @@ public class BrowserCRUDWindow<T extends Act> implements VisitEditorTab {
     public BrowserCRUDWindow(Browser<T> browser, AbstractCRUDWindow<T> window) {
         setBrowser(browser);
         setWindow(window);
-    }
-
-    /**
-     * Returns the identifier of this tab.
-     *
-     * @return the tab identifier
-     */
-    @Override
-    public int getId() {
-        return id;
-    }
-
-    /**
-     * Sets the identifier of this tab.
-     *
-     * @param id the tab identifier
-     */
-    @Override
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    /**
-     * Sets the buttons.
-     *
-     * @param buttons the buttons
-     */
-    public void setButtons(ButtonSet buttons) {
-        window.setButtons(buttons);
-    }
-
-    /**
-     * Returns the help context.
-     *
-     * @return the help context
-     */
-    public HelpContext getHelpContext() {
-        return window.getHelpContext();
-    }
-
-    /**
-     * Returns the component.
-     *
-     * @return the component
-     */
-    public Component getComponent() {
-        Component result;
-        if (window instanceof AbstractViewCRUDWindow) {
-            result = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
-                                             "PatientRecordWorkspace.Layout",
-                                             browser.getComponent(),
-                                             window.getComponent());
-        } else {
-            result = browser.getComponent();
-            ContentPane pane = new ContentPane(); // add the browser to a pane to get scroll bars
-            pane.add(result);
-            result = pane;
-        }
-        return result;
     }
 
     /**
@@ -165,31 +90,6 @@ public class BrowserCRUDWindow<T extends Act> implements VisitEditorTab {
         if (window != null) {
             select(browser.getSelected());
         }
-    }
-
-    /**
-     * Invoked when the tab is displayed.
-     */
-    @Override
-    public void show() {
-        T selected = browser.getSelected();
-        browser.query();
-        if (selected != null) {
-            browser.setSelected(selected);
-        }
-        browser.setFocusOnResults();
-    }
-
-    /**
-     * Invoked prior to switching to another tab, in order to save state.
-     * <p/>
-     * If the save fails, then switching is cancelled.
-     *
-     * @return {@code true} if the save was successful, otherwise {@code false}
-     */
-    @Override
-    public boolean save() {
-        return true;
     }
 
     /**

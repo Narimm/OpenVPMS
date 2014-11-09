@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="hl7Connectors" class="org.openvpms.hl7.impl.ConnectorsImpl">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="hl7messageService" class="org.openvpms.hl7.impl.MessageServiceImpl">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="hl7messageDispatcher" class="org.openvpms.hl7.impl.MessageDispatcherImpl">
+        <constructor-arg ref="hl7Connectors"/>
+        <constructor-arg ref="hl7messageService"/>
+        <constructor-arg ref="practiceRules"/>
+    </bean>
+
+    <bean id="hl7PatientEventServices" class="org.openvpms.hl7.impl.PatientEventServicesImpl">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="hl7Connectors"/>
+    </bean>
+
+    <bean class="org.openvpms.hl7.impl.PatientInformationServiceImpl">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="hl7PatientEventServices"/>
+        <constructor-arg ref="hl7messageDispatcher"/>
+    </bean>
+
+    <bean class="org.openvpms.hl7.impl.PharmacyOrderServiceImpl">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="hl7Parmacies"/>
+        <constructor-arg ref="hl7messageDispatcher"/>
+    </bean>
+
+    <bean id="hl7Parmacies" class="org.openvpms.hl7.impl.PharmaciesImpl">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="hl7Connectors"/>
+        <constructor-arg ref="hl7PatientEventServices"/>
+    </bean>
+
+    <bean class="org.openvpms.hl7.impl.PharmacyDispenseServiceImpl">
+        <constructor-arg ref="hl7Parmacies"/>
+        <constructor-arg ref="hl7Connectors"/>
+        <constructor-arg ref="hl7messageDispatcher"/>
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="patientRules"/>
+        <constructor-arg ref="userRules"/>
+    </bean>
+
+    <bean class="org.openvpms.hl7.patient.PatientContextFactory">
+        <constructor-arg ref="patientRules"/>
+        <constructor-arg ref="customerRules"/>
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="lookupService"/>
+    </bean>
+
+</beans>

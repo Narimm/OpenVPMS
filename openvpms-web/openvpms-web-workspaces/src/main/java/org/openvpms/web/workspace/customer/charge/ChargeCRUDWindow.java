@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -22,7 +22,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.DefaultActActions;
+import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.component.workflow.PrintActTask;
@@ -59,7 +59,7 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     public ChargeCRUDWindow(Archetypes<FinancialAct> archetypes, Context context, HelpContext help) {
         super(Archetypes.create(archetypes.getShortNames(), archetypes.getType(), INVOICE, archetypes.getDisplayName()),
-              DefaultActActions.<FinancialAct>getInstance(), context, help);
+              ActActions.<FinancialAct>edit(), context, help);
     }
 
     /**

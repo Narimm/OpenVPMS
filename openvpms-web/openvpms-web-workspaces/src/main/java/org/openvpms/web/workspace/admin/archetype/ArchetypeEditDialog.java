@@ -27,6 +27,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditResultSetDialog;
+import org.openvpms.web.component.im.edit.IMObjectActions;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.layout.AbstractLayoutContext;
@@ -62,12 +63,13 @@ public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor
      * @param title   the window title
      * @param first   the first object to edit
      * @param set     the set of results to edit
+     * @param actions determines if individual archetypes may be edited
      * @param context the context
      * @param help    the help context
      */
     public ArchetypeEditDialog(String title, ArchetypeDescriptor first, ResultSet<ArchetypeDescriptor> set,
-                               Context context, HelpContext help) {
-        super(title, first, set, context, help);
+                               IMObjectActions<ArchetypeDescriptor> actions, Context context, HelpContext help) {
+        super(title, first, set, actions, context, help);
         factory = new ObjectFactory();
         addButton("test", new ActionListener() {
             public void onAction(ActionEvent e) {

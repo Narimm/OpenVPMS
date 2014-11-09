@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 /**
@@ -51,7 +51,7 @@ public class ClinicianParticipationEditor extends ParticipationEditor<User> {
      *
      * @param participation the object to edit
      * @param parent        the parent object
-     * @param context       the layout context. May be {@code null}
+     * @param context       the layout context
      */
     public ClinicianParticipationEditor(Participation participation,
                                         Act parent,

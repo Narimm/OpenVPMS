@@ -77,7 +77,7 @@ class OTCChargeEditor extends CustomerChargeActEditor {
                 return NODES;
             }
         };
-        iniLayoutStrategy(strategy);
+        initLayoutStrategy(strategy);
         return strategy;
     }
 }

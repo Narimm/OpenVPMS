@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.query;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -271,6 +272,21 @@ public class QueryHelper {
         PageLocator locator = new PageLocator(object, query, pageSize);
         locator.addKey(node, ascending, comparator);
         return locator.getPage();
+    }
+
+    /**
+     * Helper to create and add a participant constraint to the supplied constraints, if {@code entity} is non-null.
+     *
+     * @param constraints the constraints to add to
+     * @param name        rhe participation node name
+     * @param shortName   the participation archetype short name
+     * @param object      the entity. May be {@code null}
+     */
+    public static void addParticipantConstraint(List<ParticipantConstraint> constraints, String name,
+                                                String shortName, Entity object) {
+        if (object != null) {
+            constraints.add(new ParticipantConstraint(name, shortName, object));
+        }
     }
 
     /**

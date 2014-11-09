@@ -11,12 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient.visit;
 
 import nextapp.echo2.app.Component;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
@@ -32,12 +32,11 @@ public class VisitReminderCRUDWindow extends ReminderCRUDWindow {
     /**
      * Constructs a {@code VisitReminderCRUDWindow}.
      *
-     * @param patient the patient
      * @param context the context
      * @param help    the help context
      */
-    public VisitReminderCRUDWindow(Party patient, Context context, HelpContext help) {
-        super(patient, context, help);
+    public VisitReminderCRUDWindow(Context context, HelpContext help) {
+        super(context, help);
     }
 
     /**

@@ -205,16 +205,35 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
         List<String> names = getNodeNames(archetypes, context);
         TableColumnModel columns = new DefaultTableColumnModel();
 
+        int idIndex = names.indexOf("id");
+        if (idIndex != -1) {
+            if (!(names instanceof ArrayList)) {
+                names = new ArrayList<String>(names);  // Arrays.asList() doesn't support remove
+            }
+            names.remove(idIndex);
+            // use default formatting for ID columns.
+            TableColumn column = createTableColumn(ID_INDEX, "table.imobject.id");
+            columns.addColumn(column);
+        }
+
         if (showArchetypeColumn(archetypes)) {
             addColumns(archetypes, names, columns);
-            int index = getArchetypeColumnIndex();
-            TableColumn column = createTableColumn(
-                    ARCHETYPE_INDEX, "table.imobject.archetype");
+            int index = getArchetypeColumnIndex(idIndex != -1);
+            TableColumn column = createTableColumn(ARCHETYPE_INDEX, "table.imobject.archetype");
             columns.addColumn(column);
             columns.moveColumn(columns.getColumnCount() - 1, index);
         } else {
             addColumns(archetypes, names, columns);
         }
+
+        // if an id column is present, and has not be explicitly placed, move it to the first column
+        if (names.contains("id") && getNodeNames() == null) {
+            int offset = getColumnOffset(columns, "id");
+            if (offset != -1) {
+                columns.moveColumn(offset, 0);
+            }
+        }
+
         return columns;
     }
 
@@ -416,10 +435,11 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
     /**
      * Returns the index to insert the archetype column.
      *
+     * @param showId determines if the Id column is being displayed
      * @return the index to insert the archetype column
      */
-    protected int getArchetypeColumnIndex() {
-        return 0;
+    protected int getArchetypeColumnIndex(boolean showId) {
+        return showId ? 1 : 0;
     }
 
     /**

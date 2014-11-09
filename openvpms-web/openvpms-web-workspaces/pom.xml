@@ -81,6 +81,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-hl7</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
             <artifactId>xstream</artifactId>
             <version>${xstream.version}</version>

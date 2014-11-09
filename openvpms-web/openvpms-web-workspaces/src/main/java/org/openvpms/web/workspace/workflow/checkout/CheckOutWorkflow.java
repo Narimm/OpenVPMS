@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.workflow.checkout;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -26,6 +27,9 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.hl7.patient.PatientContext;
+import org.openvpms.hl7.patient.PatientContextFactory;
+import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
@@ -46,6 +50,7 @@ import org.openvpms.web.component.workflow.Variable;
 import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.GetClinicalEventTask;
 import org.openvpms.web.workspace.workflow.GetInvoiceTask;
 import org.openvpms.web.workspace.workflow.payment.PaymentWorkflow;
@@ -173,6 +178,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
         eventProperties.add("status", ActStatus.COMPLETED);
         addTask(new ConditionalUpdateTask(CLINICAL_EVENT,
                                           new RetryableUpdateIMObjectTask(CLINICAL_EVENT, eventProperties)));
+        addTask(new DischargeTask());
     }
 
     /**
@@ -301,6 +307,24 @@ public class CheckOutWorkflow extends WorkflowImpl {
                 min = date2;
             }
             return min;
+        }
+    }
+
+    private class DischargeTask extends SynchronousTask {
+
+        /**
+         * Executes the task.
+         *
+         * @throws OpenVPMSException for any error
+         */
+        @Override
+        public void execute(TaskContext context) {
+            PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
+            Act visit = (Act) context.getObject(PatientArchetypes.CLINICAL_EVENT);
+            PatientContext pc = factory.createContext(context.getPatient(), context.getCustomer(), visit,
+                                                      context.getLocation(), context.getClinician());
+            PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
+            service.discharged(pc, context.getUser());
         }
     }
 
