@@ -138,6 +138,7 @@ public class TaskWorkspace extends SchedulingWorkspace {
         // update the context work list
         updateContext();
         super.eventSelected(event);
+        getContext().setTask(getCRUDWindow().getObject());
     }
 
     /**

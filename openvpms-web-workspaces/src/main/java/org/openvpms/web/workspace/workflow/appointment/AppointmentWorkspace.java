@@ -173,6 +173,7 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
         // update the context schedule
         updateContext();
         super.eventSelected(event);
+        getContext().setAppointment(getCRUDWindow().getObject());
     }
 
     /**

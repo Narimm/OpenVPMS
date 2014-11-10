@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.app;
@@ -52,17 +52,17 @@ public class LocalContextTestCase extends ArchetypeServiceTest {
         checkContext("party.patientpet", "getPatient", context);
         checkContext("party.organisationPractice", "getPractice", context);
         checkContext("product.medication", "getProduct", context);
-        checkContext("entity.organisationScheduleView", "getScheduleView",
-                     context);
+        checkContext("entity.organisationScheduleView", "getScheduleView", context);
         checkContext("party.organisationSchedule", "getSchedule", context);
         checkContext(new Date(), new Date(), "getScheduleDate", context);
-        checkContext("party.organisationStockLocation", "getStockLocation",
-                     context);
+        checkContext("act.customerAppointment", "getAppointment", context);
+        checkContext("party.organisationStockLocation", "getStockLocation", context);
         checkContext("party.supplierperson", "getSupplier", context);
         checkContext("party.organisationTill", "getTill", context);
         checkContext("security.user", "getUser", context);
         checkContext("party.organisationWorkList", "getWorkList", context);
         checkContext(new Date(), new Date(), "getWorkListDate", context);
+        checkContext("act.customerTask", "getTask", context);
     }
 
     /**
@@ -161,7 +161,7 @@ public class LocalContextTestCase extends ArchetypeServiceTest {
      * @throws Exception for any error
      */
     private void set(Context context, String methodName, Object value)
-        throws Exception {
+            throws Exception {
         Method[] methods = context.getClass().getMethods();
         for (Method method : methods) {
             if (method.getName().equals(methodName)) {

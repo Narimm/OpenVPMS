@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.app;
 
 import org.apache.commons.beanutils.MethodUtils;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -32,7 +33,7 @@ import java.util.Set;
 /**
  * A {@link Context} implementation that delegates to another context.
  * <p/>
- * A context heirarchy can be established by specifying a fallback context. If a getter on the delegate returns null,
+ * A context hierarchy can be established by specifying a fallback context. If a getter on the delegate returns null,
  * the same method will be invoked on the fallback.
  * <p/>
  * Note that the delegate and fallback context may be one and the same. Subclasses can override individual methods
@@ -344,6 +345,26 @@ public abstract class DelegatingContext implements Context {
     }
 
     /**
+     * Sets the current appointment.
+     *
+     * @param appointment the current appointment
+     */
+    @Override
+    public void setAppointment(Act appointment) {
+        context.setAppointment(appointment);
+    }
+
+    /**
+     * Returns the current appointment.
+     *
+     * @return the current appointment
+     */
+    @Override
+    public Act getAppointment() {
+        return get("getAppointment");
+    }
+
+    /**
      * Sets the current work list view.
      *
      * @param view the current work list view. May be {@code null}
@@ -398,6 +419,26 @@ public abstract class DelegatingContext implements Context {
     }
 
     /**
+     * Sets the current task.
+     *
+     * @param task the current task
+     */
+    @Override
+    public void setTask(Act task) {
+        context.setTask(task);
+    }
+
+    /**
+     * Returns the current task.
+     *
+     * @return the current task
+     */
+    @Override
+    public Act getTask() {
+        return get("getTask");
+    }
+
+    /**
      * Adds an object to the context.
      *
      * @param object the object to add.
@@ -420,8 +461,7 @@ public abstract class DelegatingContext implements Context {
      * Returns a context object that matches the specified archetype range.
      *
      * @param range the archetype range
-     * @return a context object whose short name is in {@code range} or
-     *         {@code null} if none exists
+     * @return a context object whose short name is in {@code range} or {@code null} if none exists
      */
     public IMObject getObject(String[] range) {
         IMObject object = context.getObject(range);

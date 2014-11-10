@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.macro;
@@ -20,6 +20,7 @@ package org.openvpms.web.component.macro;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.AbstractPropertyResolver;
@@ -33,8 +34,7 @@ import org.openvpms.web.component.app.Context;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode
-    .InvalidObject;
+import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode.InvalidObject;
 
 /**
  * Returns macro variables from an {@link Context}.
@@ -109,6 +109,16 @@ public class MacroVariables extends IMObjectVariables {
     public static final String INVOICE = "invoice";
 
     /**
+     * The appointment variable name.
+     */
+    public static final String APPOINTMENT = "appointment";
+
+    /**
+     * The task variable name.
+     */
+    public static final String TASK = "task";
+
+    /**
      * The context.
      */
     private final Context context;
@@ -133,6 +143,8 @@ public class MacroVariables extends IMObjectVariables {
         MAPPINGS.put(USER, UserArchetypes.USER);
         MAPPINGS.put(VISIT, PatientArchetypes.CLINICAL_EVENT);
         MAPPINGS.put(INVOICE, CustomerAccountArchetypes.INVOICE);
+        MAPPINGS.put(APPOINTMENT, ScheduleArchetypes.APPOINTMENT);
+        MAPPINGS.put(TASK, ScheduleArchetypes.TASK);
     }
 
     /**
