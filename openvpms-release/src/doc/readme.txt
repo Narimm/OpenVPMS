@@ -1,5 +1,5 @@
-OpenVPMS ${pom.version} Release
-==========================
+OpenVPMS ${pom.version} (${buildNumber}) Release
+===============================================================================
 
 1. Installation Notes
 
@@ -44,7 +44,7 @@ change to:
   - OpenOffice 4.0.x
     See http://www.openoffice.org/download/
 
-  - iReport Designer 3.7.6 or higher
+  - iReport Designer 5.0.4 or higher
     Only required to customise document templates.
     See http://community.jaspersoft.com/project/ireport-designer
 
