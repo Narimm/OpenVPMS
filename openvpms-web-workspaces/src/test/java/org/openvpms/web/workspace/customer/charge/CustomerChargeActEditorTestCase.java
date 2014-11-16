@@ -1030,10 +1030,14 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
 
         if (invoice) {
             List<Order> orders = editor.getPharmacyOrderService().getOrders(true);
-            assertEquals(2, orders.size());
+            assertEquals(4, orders.size());
             checkOrder(orders.get(0), Order.Type.CREATE, patient, product1, quantity, item1.getId(),
                        item1.getActivityStartTime(), clinician, pharmacy);
-            checkOrder(orders.get(1), Order.Type.CREATE, patient, product2, quantity, item2.getId(),
+            checkOrder(orders.get(1), Order.Type.DISCONTINUE, patient, product1, quantity, item1.getId(),
+                       item1.getActivityStartTime(), clinician, pharmacy);
+            checkOrder(orders.get(2), Order.Type.CREATE, patient, product2, quantity, item2.getId(),
+                       item2.getActivityStartTime(), clinician, pharmacy);
+            checkOrder(orders.get(3), Order.Type.DISCONTINUE, patient, product2, quantity, item2.getId(),
                        item2.getActivityStartTime(), clinician, pharmacy);
             editor.getPharmacyOrderService().clear();
         } else {

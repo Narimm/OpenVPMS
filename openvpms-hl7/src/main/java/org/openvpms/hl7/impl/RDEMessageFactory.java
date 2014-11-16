@@ -94,7 +94,7 @@ public class RDEMessageFactory extends AbstractMessageFactory {
     }
 
     /**
-     * Creates an cancel order.
+     * Creates a cancel order.
      *
      * @param context           the patient context
      * @param product           the product to order
@@ -107,6 +107,22 @@ public class RDEMessageFactory extends AbstractMessageFactory {
     public Message cancelOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
                                MessageConfig config, Date date) {
         return createOrder(context, "CA", product, quantity, placerOrderNumber, date, config);
+    }
+
+    /**
+     * Creates a discontinue order.
+     *
+     * @param context           the patient context
+     * @param product           the product to order
+     * @param quantity          the quantity to order
+     * @param placerOrderNumber the order identifier
+     * @param config            the message population configuration
+     * @param date              the order date
+     * @return a new message
+     */
+    public Message discontinueOrder(PatientContext context, Product product, BigDecimal quantity,
+                                    long placerOrderNumber, MessageConfig config, Date date) {
+        return createOrder(context, "DC", product, quantity, placerOrderNumber, date, config);
     }
 
     /**

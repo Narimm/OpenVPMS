@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.customer.charge;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
@@ -340,6 +341,9 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                                 ((CustomerChargeActItemEditor) editor).ordered();
                             }
                         }
+                    }
+                    if (FinancialActStatus.POSTED.equals(getStatus())) {
+                        orderPlacer.discontinue();
                     }
                 }
             }

@@ -74,4 +74,17 @@ public interface PharmacyOrderService {
     void cancelOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
                      Date date, Entity pharmacy, User user);
 
+    /**
+     * Discontinues an order.
+     *
+     * @param context           the patient context
+     * @param product           the product to order
+     * @param quantity          the quantity to order
+     * @param placerOrderNumber the placer order number, to uniquely identify the order
+     * @param date              the order date
+     * @param pharmacy          the pharmacy. An <em>entity.HL7ServicePharmacy</em>
+     * @param user              the user that generated the discontinue request
+     */
+    void discontinueOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
+                          Date date, Entity pharmacy, User user);
 }

@@ -17,12 +17,15 @@
 package org.openvpms.web.workspace.customer.charge;
 
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.component.workflow.PrintActTask;
@@ -36,6 +39,7 @@ import org.openvpms.web.workspace.customer.CustomerActCRUDWindow;
 import org.openvpms.web.workspace.workflow.payment.PaymentWorkflow;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.COUNTER;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE;
@@ -98,6 +102,27 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         buttons.setEnabled(PREVIEW_ID, enable);
     }
 
+
+    /**
+     * Posts the act. This changes the act's status to POSTED, and saves it.
+     *
+     * @param act the act to post
+     * @return {@code true} if the act was saved
+     */
+    @Override
+    protected boolean post(FinancialAct act) {
+        boolean result = false;
+        if (getActions().canPost(act)) {
+            // This uses an editor to ensure that the any HL7 Pharmacy Orders associated with the invoice are
+            // discontinued.
+            ActEditor editor = (ActEditor) createEditor(act, createLayoutContext(getHelpContext()));
+            editor.setStatus(ActStatus.POSTED);
+            editor.setStartTime(new Date()); // for OVPMS-734 - TODO
+            result = SaveHelper.save(editor);
+        }
+        return result;
+    }
+
     /**
      * Invoked when posting of an act is complete.
      * <p/>
@@ -133,5 +158,6 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         tasks.addTask(print);
         tasks.start(context);
     }
+
 
 }

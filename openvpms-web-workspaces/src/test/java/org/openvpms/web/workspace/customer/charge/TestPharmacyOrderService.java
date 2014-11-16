@@ -42,7 +42,8 @@ class TestPharmacyOrderService implements PharmacyOrderService {
         enum Type {
             CREATE,
             UPDATE,
-            CANCEL
+            CANCEL,
+            DISCONTINUE
         }
 
         private final Type type;
@@ -165,6 +166,24 @@ class TestPharmacyOrderService implements PharmacyOrderService {
     }
 
     /**
+     * Discontinues an order.
+     *
+     * @param context           the patient context
+     * @param product           the product to order
+     * @param quantity          the quantity to order
+     * @param placerOrderNumber the placer order number, to uniquely identify the order
+     * @param date              the order date
+     * @param pharmacy          the pharmacy. An <em>entity.HL7ServicePharmacy</em>
+     * @param user              the user that generated the discontinue request
+     */
+    @Override
+    public void discontinueOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
+                                 Date date, Entity pharmacy, User user) {
+        orders.add(new Order(Order.Type.DISCONTINUE, context.getPatient(), product, quantity, placerOrderNumber, date,
+                             context.getClinician(), pharmacy));
+    }
+
+    /**
      * Returns the orders.
      *
      * @return the orders
@@ -176,7 +195,7 @@ class TestPharmacyOrderService implements PharmacyOrderService {
     /**
      * Returns orders.
      *
-     * @param sort if {@code true}, sort on increasing product id
+     * @param sort if {@code true}, sort on increasing product id and type
      * @return the orders
      */
     public List<Order> getOrders(boolean sort) {
@@ -187,7 +206,7 @@ class TestPharmacyOrderService implements PharmacyOrderService {
                 public int compare(Order o1, Order o2) {
                     long id1 = o1.getProduct().getId();
                     long id2 = o2.getProduct().getId();
-                    return id1 < id2 ? -1 : (id1 == id2) ? 0 : 1;
+                    return id1 < id2 ? -1 : (id1 == id2) ? o1.getType().compareTo(o2.getType()) : 1;
                 }
             });
         }
