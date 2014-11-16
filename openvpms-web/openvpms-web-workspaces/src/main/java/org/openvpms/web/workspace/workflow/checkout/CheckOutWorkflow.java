@@ -31,6 +31,8 @@ import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.ConditionalUpdateTask;
@@ -218,20 +220,44 @@ public class CheckOutWorkflow extends WorkflowImpl {
      */
     private Task getPostTask() {
         Tasks postTasks = new Tasks(getHelpContext().subtopic("post"));
-        TaskProperties invoiceProps = new TaskProperties();
-        invoiceProps.add("status", FinancialActStatus.POSTED);
-        invoiceProps.add(new Variable("startTime") {
-            public Object getValue(TaskContext context) {
-                return new Date(); // workaround for OVPMS-734. todo
-            }
-        });
-        postTasks.addTask(new UpdateIMObjectTask(CustomerAccountArchetypes.INVOICE, invoiceProps));
+        postTasks.addTask(new PostInvoiceTask());
         postTasks.setRequired(false);
 
         EvalTask<Boolean> condition = getPostCondition();
         ConditionalTask post = new ConditionalTask(condition, postTasks);
         post.setRequired(false);
         return post;
+    }
+
+    /**
+     * Task to post an invoice.
+     * <p/>
+     * This uses an editor to ensure that the any HL7 Pharmacy Orders associated with the invoice are discontinued.
+     * <p/>
+     * This is to work-around thefact that
+     */
+    private class PostInvoiceTask extends EditIMObjectTask {
+
+        /**
+         * Constructs a {@link PostInvoiceTask}.
+         */
+        public PostInvoiceTask() {
+            super(CustomerAccountArchetypes.INVOICE, false, false);
+            setShowEditorOnError(false);
+        }
+
+        /**
+         * Edits an object in the background.
+         *
+         * @param editor  the editor
+         * @param context the task context
+         */
+        @Override
+        protected void edit(IMObjectEditor editor, TaskContext context) {
+            ActEditor actEditor = (ActEditor) editor;
+            actEditor.setStatus(ActStatus.POSTED);
+            actEditor.setStartTime(new Date()); // for OVPMS-734 - TODO
+        }
     }
 
     /**

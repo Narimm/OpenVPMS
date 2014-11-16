@@ -139,6 +139,28 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
     }
 
     /**
+     * Discontinues an order.
+     *
+     * @param context           the patient context
+     * @param product           the product to order
+     * @param quantity          the quantity to order
+     * @param placerOrderNumber the placer order number, to uniquely identify the order
+     * @param date              the order date
+     * @param pharmacy          the pharmacy. An <em>entity.HL7ServicePharmacy</em>
+     * @param user              the user that generated the discontinue request
+     */
+    @Override
+    public void discontinueOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
+                                 Date date, Entity pharmacy, User user) {
+        Connector connector = getConnector(pharmacy);
+        if (connector != null) {
+            MessageConfig config = MessageConfigFactory.create(connector);
+            Message message = factory.discontinueOrder(context, product, quantity, placerOrderNumber, config, date);
+            dispatcher.queue(message, connector, config, user);
+        }
+    }
+
+    /**
      * Returns a connection for a pharmacy.
      *
      * @param pharmacy the pharmacy

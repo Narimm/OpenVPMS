@@ -220,6 +220,21 @@ public class PharmacyOrderPlacer {
         }
     }
 
+    /**
+     * Discontinue orders.
+     */
+    public void discontinue() {
+        Map<IMObjectReference, Act> events = new HashMap<IMObjectReference, Act>();
+        for (Order order : orders.values()) {
+            PatientContext context = getPatientContext(order, events);
+            if (context != null) {
+                service.discontinueOrder(context, order.getProduct(), order.getQuantity(),
+                                         order.getId(), order.getStartTime(), order.getPharmacy(), user);
+            }
+        }
+    }
+
+
     private Order getOrder(Act act) {
         Order result = null;
         if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)) {
