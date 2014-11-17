@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.openoffice;
@@ -28,7 +26,6 @@ import org.openvpms.report.DocFormats;
  * Converts a {@link Document} from one format to another.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class Converter {
 
@@ -48,6 +45,8 @@ public class Converter {
     private static final String[][] MIME_MAP = {{DocFormats.ODT_TYPE,
                                                  DocFormats.PDF_TYPE},
                                                 {DocFormats.DOC_TYPE,
+                                                 DocFormats.PDF_TYPE},
+                                                {DocFormats.DOCX_TYPE,
                                                  DocFormats.PDF_TYPE}};
 
     /**
@@ -56,6 +55,8 @@ public class Converter {
     private static final String[][] EXT_MAP = {{DocFormats.ODT_EXT,
                                                 DocFormats.PDF_TYPE},
                                                {DocFormats.DOC_EXT,
+                                                DocFormats.PDF_TYPE},
+                                               {DocFormats.DOCX_EXT,
                                                 DocFormats.PDF_TYPE}};
 
 
