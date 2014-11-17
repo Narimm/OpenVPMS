@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
@@ -26,19 +24,19 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ObjectSet;
-import static org.openvpms.report.ReportException.ErrorCode.NoTemplateForArchetype;
-import static org.openvpms.report.ReportException.ErrorCode.UnsupportedTemplate;
 import org.openvpms.report.jasper.TemplatedJasperIMObjectReport;
 import org.openvpms.report.jasper.TemplatedJasperObjectSetReport;
 import org.openvpms.report.msword.MsWordIMReport;
 import org.openvpms.report.openoffice.OpenOfficeIMReport;
+
+import static org.openvpms.report.ReportException.ErrorCode.NoTemplateForArchetype;
+import static org.openvpms.report.ReportException.ErrorCode.UnsupportedTemplate;
 
 
 /**
  * A factory for {@link Report} instances.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class ReportFactory {
 
@@ -82,6 +80,9 @@ public class ReportFactory {
             report = new OpenOfficeIMReport<IMObject>(template, handlers);
         } else if (name.endsWith(DocFormats.DOC_EXT)) {
             report = new MsWordIMReport<IMObject>(template, handlers);
+        } else if (name.endsWith(DocFormats.DOCX_EXT)) {
+            throw new ReportException(UnsupportedTemplate, name);
+            //todo work out Userfield retrieval to allow support for docx templates.
         } else {
             throw new ReportException(UnsupportedTemplate, name);
         }
