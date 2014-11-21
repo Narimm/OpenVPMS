@@ -120,7 +120,7 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
     /**
      * Sets the result set.
      *
-     * @param set the result set
+     * @param set the result set. May be {@code null}
      */
     public void setResultSet(ResultSet<T> set) {
         this.set = set;
@@ -142,7 +142,7 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
      */
     public void view() {
         final T object = getObject();
-        if (object != null) {
+        if (object != null && set != null) {
             final FocusCommand focus = new FocusCommand();
             String title = DescriptorHelper.getDisplayName(object);
             boolean edit = canEdit();
@@ -204,7 +204,7 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
     protected void edit(final T object, List<Selection> path) {
         if (object.isNew()) {
             super.edit(object, path);
-        } else {
+        } else if (set != null) {
             final FocusCommand focus = new FocusCommand();
             String title = Messages.format("editor.edit.title", getArchetypes().getDisplayName());
             EditResultSetDialog<T> dialog = createEditResultSetDialog(object, title);
