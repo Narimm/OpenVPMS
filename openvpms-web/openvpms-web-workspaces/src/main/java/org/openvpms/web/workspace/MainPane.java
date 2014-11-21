@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace;
@@ -46,6 +46,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.UserHelper;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.Refreshable;
 import org.openvpms.web.component.workspace.Workspace;
 import org.openvpms.web.component.workspace.Workspaces;
@@ -62,6 +63,7 @@ import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.ContentPaneFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.style.Style;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.style.UserStyleSheets;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -519,12 +521,15 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
      */
     private void refreshSummary() {
         leftMenu.remove(summary);
-        Component newSummary = (currentWorkspace != null) ? currentWorkspace.getSummary() : null;
-        if (newSummary != null) {
-            summary = ColumnFactory.create("Inset", newSummary);
-            leftMenu.add(summary);
-        } else {
-            summary = null;
+        summary = null;
+        try {
+            Component newSummary = (currentWorkspace != null) ? currentWorkspace.getSummary() : null;
+            if (newSummary != null) {
+                summary = ColumnFactory.create(Styles.INSET, newSummary);
+                leftMenu.add(summary);
+            }
+        } catch (Throwable exception) {
+            ErrorHelper.show(exception);
         }
     }
 
