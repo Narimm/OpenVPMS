@@ -197,6 +197,38 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
     }
 
     /**
+     * Verifies that stock on order at other stock locations for the same supplier doesn't impact stock for the current
+     * location.
+     */
+    @Test
+    public void testGetOrderForStockForStockOrderAtDifferentStockLocations() {
+        OrderGenerator generator = new OrderGenerator(taxRules, getArchetypeService());
+        Party stockLocation1 = SupplierTestHelper.createStockLocation();
+        Party stockLocation2 = SupplierTestHelper.createStockLocation();
+        Party supplier1 = TestHelper.createSupplier();
+        Product product1 = TestHelper.createProduct();
+        Product product2 = TestHelper.createProduct();
+
+        addRelationships(product1, stockLocation1, supplier1, true, 1, 10, 6);
+        addRelationships(product2, stockLocation1, supplier1, true, 2, 10, 5);
+
+        addRelationships(product1, stockLocation2, supplier1, true, 1, 10, 6);
+        addRelationships(product2, stockLocation2, supplier1, true, 2, 10, 5);
+
+        createOrder(product1, supplier1, stockLocation1, 5, OrderStatus.IN_PROGRESS);
+        createOrder(product2, supplier1, stockLocation1, 3, OrderStatus.ACCEPTED);
+
+        createOrder(product1, supplier1, stockLocation2, 5, OrderStatus.IN_PROGRESS);
+        createOrder(product2, supplier1, stockLocation2, 3, OrderStatus.ACCEPTED);
+
+        supplier1 = get(supplier1);
+        List<Stock> stock = generator.getOrderableStock(supplier1, stockLocation1, false);
+        assertEquals(2, stock.size());
+        checkStock(stock, product1, supplier1, stockLocation1, 1, 5, 4);
+        checkStock(stock, product2, supplier1, stockLocation1, 2, 3, 5);
+    }
+
+    /**
      * Tests creation of an order based on the amount of stock on hand.
      */
     @Test
