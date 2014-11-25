@@ -167,9 +167,9 @@
             where   productParticipation.arch_short_name = "participation.stock"
                         and productParticipation.act_arch_short_name = "act.supplierOrderItem"
                         and deliveryStatus.value <> "FULL"
+                        and stockParticipation.entity_id = :stockLocationId
             group by product_id) as o
                     on o.product_id = product.entity_id
-                    and o.stock_id = productStock.target_id
 where   product.active = 1
                 and convert(idealQty.value, decimal) <> 0.0
                 and (convert(quantity.value, decimal) < convert(idealQty.value, decimal))
