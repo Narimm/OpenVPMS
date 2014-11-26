@@ -71,6 +71,8 @@
                 </propertyList>
             </assertion>
         </node>
+        <node name="autoLockScreen" path="/details/autoLockScreen" type="java.lang.Integer" minCardinality="0"
+              defaultValue="5"/>
         <node name="autoLogout" path="/details/autoLogout" type="java.lang.Integer" minCardinality="0"
               defaultValue="30"/>
         <node name="showClinicianInHistoryItems" path="/details/showClinicianInHistoryItems" type="java.lang.Boolean"
