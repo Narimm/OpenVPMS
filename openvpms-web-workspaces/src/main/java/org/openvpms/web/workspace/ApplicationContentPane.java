@@ -16,7 +16,7 @@
 
 package org.openvpms.web.workspace;
 
-import nextapp.echo2.app.ContentPane;
+import echopointng.ContentPaneEx;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.user.UserRules;
@@ -32,7 +32,7 @@ import org.openvpms.web.workspace.workflow.messaging.MessageMonitor;
  *
  * @author Tim Anderson
  */
-public class ApplicationContentPane extends ContentPane {
+public class ApplicationContentPane extends ContentPaneEx {
 
     /**
      * The context.

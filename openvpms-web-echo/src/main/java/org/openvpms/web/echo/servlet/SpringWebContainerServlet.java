@@ -56,8 +56,7 @@ import java.util.Locale;
  * An alternative approach would be to use URL rewriting. This is not supported
  * by echo2, as it does not encode the JSESSIONID in URLs.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class SpringWebContainerServlet extends WebContainerServlet {
 
@@ -132,15 +131,16 @@ public class SpringWebContainerServlet extends WebContainerServlet {
      * @return a new {@code ApplicationInstance}
      */
     public ApplicationInstance newApplicationInstance() {
-        SpringApplicationInstance result;
         ApplicationContext context = getContext();
-        result = (SpringApplicationInstance) context.getBean(name);
-        result.setApplicationContext(context);
+        SpringApplicationInstance app = (SpringApplicationInstance) context.getBean(name);
+        app.setApplicationContext(context);
+        SessionMonitor monitor = getSessionMonitor();
+        monitor.newApplication(app, WebRenderServlet.getActiveConnection().getRequest().getSession());
         Locale current = locale.get();
         if (current != null) {
-            result.setLocale(current);
+            app.setLocale(current);
         }
-        return result;
+        return app;
     }
 
     /**

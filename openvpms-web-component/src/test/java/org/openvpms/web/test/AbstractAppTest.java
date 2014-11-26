@@ -67,6 +67,14 @@ public abstract class AbstractAppTest extends ArchetypeServiceTest {
             public Window init() {
                 return new Window();
             }
+
+            @Override
+            public void lock() {
+            }
+
+            @Override
+            public void unlock() {
+            }
         };
         app.setApplicationContext(applicationContext);
         ApplicationInstance.setActive(app);

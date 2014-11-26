@@ -54,6 +54,7 @@
         <constructor-arg ref="practiceRules"/>
         <constructor-arg ref="locationRules"/>
         <constructor-arg ref="userRules"/>
+        <constructor-arg ref="sessionMonitor"/>
         <property name="styleSheets" ref="userStyleSheets"/>
     </bean>
 
