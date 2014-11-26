@@ -121,7 +121,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
         this.monitor = monitor;
         location = getLocation(context.getLocation());
         customer = getCustomer(context.getCustomer());
-        if (monitor.getAutoLock() != 0) {
+        if (monitor.getAutoLock() > 0) {
             getLockTaskQueue(DEFAULT_LOCK_POLL_INTERVAL);  // configure a queue to trigger polls of the server
         }
     }
