@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.organisation;
@@ -92,6 +92,7 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         IMObjectComponentFactory factory = context.getComponentFactory();
         addPrescriptionExpiry(object, properties, factory);
+        addAutoLockScreen(object, properties, factory);
         addAutoLogout(object, properties, factory);
         if (subscription == null) {
             IArchetypeService service = ServiceHelper.getArchetypeService();
@@ -159,6 +160,17 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
     }
 
     /**
+     * Registers a component to render the session auto-lock screen and minutes.
+     *
+     * @param object     the practice object
+     * @param properties the properties
+     * @param factory    the component factory
+     */
+    private void addAutoLockScreen(IMObject object, PropertySet properties, IMObjectComponentFactory factory) {
+        addInterval("autoLockScreen", object, properties, factory);
+    }
+
+    /**
      * Registers a component to render the session auto-logout and minutes.
      *
      * @param object     the practice object
@@ -166,11 +178,23 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
      * @param factory    the component factory
      */
     private void addAutoLogout(IMObject object, PropertySet properties, IMObjectComponentFactory factory) {
-        Property autoLogout = properties.get("autoLogout");
-        ComponentState state = factory.create(autoLogout, object);
+        addInterval("autoLogout", object, properties, factory);
+    }
+
+    /**
+     * Add an interval property.
+     *
+     * @param name       the property name
+     * @param object     the practice object
+     * @param properties the properties
+     * @param factory    the component factory
+     */
+    private void addInterval(String name, IMObject object, PropertySet properties, IMObjectComponentFactory factory) {
+        Property property = properties.get(name);
+        ComponentState state = factory.create(property, object);
         Row row = RowFactory.create(Styles.CELL_SPACING, state.getComponent(),
                                     LabelFactory.create("admin.practice.minutes"));
-        addComponent(new ComponentState(row, autoLogout));
+        addComponent(new ComponentState(row, property));
     }
 
 }
