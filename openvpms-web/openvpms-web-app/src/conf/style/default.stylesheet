@@ -158,6 +158,14 @@
         </properties>
     </style>
 
+    <style name="login.error" type="nextapp.echo2.app.Label" base-name="default">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/error-red.gif"/>
+            </property>
+        </properties>
+    </style>
+
     <style name="CustomerSummary.AlertDialog" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
         <properties>

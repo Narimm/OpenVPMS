@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.servlet;
@@ -63,13 +63,13 @@ public class SessionMonitorConfigurer implements DisposableBean {
         this.service = service;
         Party practice = rules.getPractice();
         if (practice != null) {
-            setAutoLogout(practice);
+            configure(practice);
         }
         listener = new AbstractArchetypeServiceListener() {
 
             @Override
             public void saved(IMObject object) {
-                setAutoLogout(object);
+                configure(object);
             }
 
         };
@@ -79,8 +79,7 @@ public class SessionMonitorConfigurer implements DisposableBean {
     /**
      * Invoked by a BeanFactory on destruction of a singleton.
      *
-     * @throws Exception in case of shutdown errors.
-     *                   Exceptions will get logged but not rethrown to allow
+     * @throws Exception in case of shutdown errors. Exceptions will get logged but not rethrown to allow
      *                   other beans to release their resources too.
      */
     @Override
@@ -89,13 +88,15 @@ public class SessionMonitorConfigurer implements DisposableBean {
     }
 
     /**
-     * Sets the auto logout period.
+     * Sets the auto lock and logout intervals.
      *
      * @param practice the practice
      */
-    private void setAutoLogout(IMObject practice) {
+    private void configure(IMObject practice) {
         IMObjectBean bean = new IMObjectBean(practice, service);
+        int autoLock = bean.getInt("autoLockScreen", SessionMonitor.DEFAULT_AUTO_LOCK_INTERVAL);
         int autoLogout = bean.getInt("autoLogout", SessionMonitor.DEFAULT_AUTO_LOGOUT_INTERVAL);
+        monitor.setAutoLock(autoLock);
         monitor.setAutoLogout(autoLogout);
     }
 

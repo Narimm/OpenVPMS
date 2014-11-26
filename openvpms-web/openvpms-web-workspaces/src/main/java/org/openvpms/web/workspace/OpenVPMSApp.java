@@ -18,6 +18,7 @@ package org.openvpms.web.workspace;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Command;
+import nextapp.echo2.app.TaskQueueHandle;
 import nextapp.echo2.app.Window;
 import nextapp.echo2.webcontainer.ContainerContext;
 import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
@@ -34,7 +35,11 @@ import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.workspace.WorkspacesFactory;
+import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
+import org.openvpms.web.echo.lightbox.LightBox;
 import org.openvpms.web.echo.servlet.ServletHelper;
+import org.openvpms.web.echo.servlet.SessionMonitor;
 import org.openvpms.web.resource.i18n.Messages;
 
 import javax.servlet.http.HttpServletRequest;
@@ -72,6 +77,32 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      */
     private String customer;
 
+    /**
+     * Light box used to darken the screen when displaying the lock screen dialog.
+     */
+    private LightBox lightBox;
+
+    /**
+     * The session monitor.
+     */
+    private final SessionMonitor monitor;
+
+    /**
+     * The lock dialog.
+     */
+    private PopupDialog lockDialog;
+
+    /**
+     * The lock task queue handle.
+     */
+    private TaskQueueHandle lockHandle;
+
+    /**
+     * The default interval, in seconds that the client will poll the server to detect screen auto-lock updates.
+     * This should not be set too small as that increases server load.
+     */
+    private static final int DEFAULT_LOCK_POLL_INTERVAL = 30;
+
 
     /**
      * Constructs an {@link OpenVPMSApp}.
@@ -81,13 +112,18 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      * @param practiceRules the practice rules
      * @param locationRules the location rules
      * @param userRules     the user rules
+     * @param monitor       the session monitor
      */
     public OpenVPMSApp(GlobalContext context, WorkspacesFactory factory, PracticeRules practiceRules,
-                       LocationRules locationRules, UserRules userRules) {
+                       LocationRules locationRules, UserRules userRules, SessionMonitor monitor) {
         super(context, practiceRules, locationRules, userRules);
         this.factory = factory;
+        this.monitor = monitor;
         location = getLocation(context.getLocation());
         customer = getCustomer(context.getCustomer());
+        if (monitor.getAutoLock() != 0) {
+            getLockTaskQueue(DEFAULT_LOCK_POLL_INTERVAL);  // configure a queue to trigger polls of the server
+        }
     }
 
     /**
@@ -100,7 +136,10 @@ public class OpenVPMSApp extends ContextApplicationInstance {
         setStyleSheet();
         window = new Window();
         updateTitle();
-        window.setContent(new ApplicationContentPane(getContext(), factory));
+        ApplicationContentPane pane = new ApplicationContentPane(getContext(), factory);
+        lightBox = new LightBox();
+        window.setContent(pane);
+        pane.add(lightBox);
         getContext().addListener(new ContextListener() {
             public void changed(String key, IMObject value) {
                 if (Context.CUSTOMER_SHORTNAME.equals(key)) {
@@ -197,12 +236,172 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     }
 
     /**
+     * Locks the application, until the user re-enters their password.
+     * <p/>
+     * This method may be invoked outside a servlet request, so a task is queued to lock the screen.
+     * This task is invoked when the client synchronizes with the server, at most DEFAULT_LOCK_QUEUE seconds after
+     * lock() is invoked.
+     */
+    @Override
+    public synchronized void lock() {
+        if (lockDialog == null) {
+            setLockDialog(createLockDialog());
+            // enqueue the task, ideally within 1 second, although in practice this may be up to DEFAULT_LOCK_QUEUE
+            // seconds.
+            enqueueTask(getLockTaskQueue(1), new Runnable() {
+                @Override
+                public void run() {
+                    lockScreen();
+                }
+            });
+        }
+    }
+
+    /**
+     * Unlocks the application.
+     * <p/>
+     * <p/>
+     * This method may be invoked outside a servlet request, so a task is queued to unlock the screen.
+     */
+    @Override
+    public synchronized void unlock() {
+        if (lockDialog != null) {
+            enqueueTask(getLockTaskQueue(1), new Runnable() {
+                @Override
+                public void run() {
+                    unlockScreen();
+                }
+            });
+        }
+    }
+
+    /**
      * Sets the context change listener.
      *
      * @param listener the context change listener
      */
     protected void setContextChangeListener(ContextChangeListener listener) {
         this.listener = listener;
+    }
+
+    /**
+     * Creates a lock screen dialog.
+     *
+     * @return a new dialog
+     */
+    private PopupDialog createLockDialog() {
+        return new LockScreenDialog(this) {
+            @Override
+            public void show() {
+                super.show();
+                lightBox.setZIndex(getZIndex());
+                lightBox.show();
+            }
+
+            @Override
+            public void userClose() {
+                lightBox.hide();
+                super.userClose();
+                resetLockTaskQueue(); // ensure the queue is set back to the default poll interval, to reduce load
+            }
+        };
+    }
+
+    /**
+     * Locks the screen.
+     */
+    private void lockScreen() {
+        PopupDialog dialog = getLockDialog();
+        if (dialog != null) {
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onOK() {
+                    setLockDialog(null);
+                    monitor.unlock();
+                }
+            });
+            dialog.show();
+
+            // If there are no other active windows, set the poll interval back to the default.
+            // If there are multiple windows active, leave the task queue active so that if unlock happens in another
+            // window it is detected in a timely fashion
+            if (getActiveWindowCount() <= 1) {
+                resetLockTaskQueue();
+            }
+        } else {
+            resetLockTaskQueue();
+        }
+    }
+
+    /**
+     * Unlocks the screen.
+     */
+    private void unlockScreen() {
+        try {
+
+            PopupDialog dialog = getLockDialog();
+            if (dialog != null) {
+                setLockDialog(null);
+                dialog.close();
+            }
+        } finally {
+            resetLockTaskQueue();
+        }
+    }
+
+    /**
+     * Returns the lock dialog.
+     *
+     * @return the lock dialog, or {@code null} if it hasn't been created
+     */
+    private synchronized PopupDialog getLockDialog() {
+        return lockDialog;
+    }
+
+    /**
+     * Register the lock dialog.
+     *
+     * @param dialog the dialog
+     */
+    private synchronized void setLockDialog(PopupDialog dialog) {
+        this.lockDialog = dialog;
+    }
+
+    /**
+     * Returns the lock task queue.
+     *
+     * @param interval the client poll interval, in seconds
+     * @return the task queue
+     */
+    private synchronized TaskQueueHandle getLockTaskQueue(int interval) {
+        if (lockHandle == null) {
+            lockHandle = createTaskQueue();
+        }
+        setTaskQueueInterval(lockHandle, interval);
+        return lockHandle;
+    }
+
+    /**
+     * Helper to set the interval for a task queue.
+     *
+     * @param handle   the task queue handle
+     * @param interval the interval, in seconds
+     */
+    private void setTaskQueueInterval(TaskQueueHandle handle, int interval) {
+        ContainerContext context = (ContainerContext) getContextProperty(ContainerContext.CONTEXT_PROPERTY_NAME);
+        if (context != null) {
+            context.setTaskQueueCallbackInterval(handle, interval * 1000);
+        }
+    }
+
+    /**
+     * Sets the lock task queue poll interval back to the default.
+     * This reduces server load.
+     */
+    private synchronized void resetLockTaskQueue() {
+        if (lockHandle != null) {
+            setTaskQueueInterval(lockHandle, DEFAULT_LOCK_POLL_INTERVAL); //
+        }
     }
 
     /**

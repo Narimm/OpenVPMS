@@ -17,7 +17,7 @@
 package org.openvpms.web.echo.factory;
 
 import nextapp.echo2.app.Extent;
-import nextapp.echo2.app.PasswordField;
+import org.openvpms.web.echo.text.PasswordField;
 import org.openvpms.web.echo.text.TextArea;
 import org.openvpms.web.echo.text.TextComponent;
 import org.openvpms.web.echo.text.TextDocument;

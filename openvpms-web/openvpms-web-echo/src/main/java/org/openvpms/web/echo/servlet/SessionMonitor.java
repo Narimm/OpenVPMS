@@ -11,16 +11,18 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.servlet;
 
 import nextapp.echo2.webrender.Connection;
 import nextapp.echo2.webrender.WebRenderServlet;
+import org.apache.commons.collections4.map.ReferenceMap;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.web.echo.spring.SpringApplicationInstance;
 import org.springframework.beans.factory.DisposableBean;
 
 import javax.servlet.http.HttpSession;
@@ -33,6 +35,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.commons.collections4.map.AbstractReferenceMap.ReferenceStrength.WEAK;
+
 /**
  * Monitors HTTP sessions, forcing idle sessions to expire.
  * <p/>
@@ -44,9 +48,19 @@ import java.util.concurrent.TimeUnit;
 public class SessionMonitor implements DisposableBean {
 
     /**
+     * The default period before screen-lock, in minutes.
+     */
+    public static final int DEFAULT_AUTO_LOCK_INTERVAL = 5;
+
+    /**
      * The default session inactivity period before logout, in minutes.
      */
-    public static int DEFAULT_AUTO_LOGOUT_INTERVAL = 30;
+    public static final int DEFAULT_AUTO_LOGOUT_INTERVAL = 30;
+
+    /**
+     * The time in milliseconds before inactive sessions have their screens locked.
+     */
+    private volatile long autoLock = DEFAULT_AUTO_LOCK_INTERVAL * DateUtils.MILLIS_PER_MINUTE;
 
     /**
      * The time in milliseconds before inactive sessions are logged out.
@@ -121,6 +135,59 @@ public class SessionMonitor implements DisposableBean {
     }
 
     /**
+     * Registers a new application.
+     *
+     * @param application the new application
+     * @param session     the session that created the application
+     */
+    public void newApplication(SpringApplicationInstance application, HttpSession session) {
+        Monitor monitor = monitors.get(session);
+        if (monitor != null) {
+            monitor.newApplication(application);
+        }
+    }
+
+    /**
+     * Returns the time that sessions may remain idle before they are locked.
+     *
+     * @return the timeout, in minutes. A value of {@code 0} indicates that sessions don't lock
+     */
+    public int getAutoLock() {
+        return (int) (autoLock / DateUtils.MILLIS_PER_MINUTE);
+    }
+
+    /**
+     * Sets the time that sessions may remain idle before they are locked.
+     *
+     * @param time the timeout, in minutes. A value of {@code 0} indicates that sessions don't lock
+     */
+    public void setAutoLock(int time) {
+        long newTime = time * DateUtils.MILLIS_PER_MINUTE;
+        if (newTime != autoLock) {
+            autoLock = newTime;
+            if (newTime == 0) {
+                log.warn("Sessions configured to not auto-lock");
+            } else {
+                log.info("Using session auto-lock time=" + time + " minutes");
+            }
+            reschedule();
+        }
+    }
+
+    /**
+     * Unlocks the current session.
+     */
+    public void unlock() {
+        Connection connection = WebRenderServlet.getActiveConnection();
+        if (connection != null) {
+            Monitor monitor = monitors.get(connection.getRequest().getSession());
+            if (monitor != null) {
+                monitor.unlock();
+            }
+        }
+    }
+
+    /**
      * Sets the time that sessions may remain idle before they are logged out.
      *
      * @param time the timeout, in minutes. A value of {@code 0} indicates that sessions don't expire
@@ -135,10 +202,7 @@ public class SessionMonitor implements DisposableBean {
                 log.info("Using session auto-logout time=" + time + " minutes");
             }
 
-            // reschedule existing session states
-            for (Object state : monitors.values().toArray()) {
-                ((Monitor) state).reschedule();
-            }
+            reschedule();
         }
     }
 
@@ -152,6 +216,15 @@ public class SessionMonitor implements DisposableBean {
     }
 
     /**
+     * Reschedule existing sessions.
+     */
+    private void reschedule() {
+        for (Object state : monitors.values().toArray()) {
+            ((Monitor) state).reschedule();
+        }
+    }
+
+    /**
      * Monitors session activity.
      */
     private class Monitor implements Runnable {
@@ -160,6 +233,17 @@ public class SessionMonitor implements DisposableBean {
          * The session.
          */
         private WeakReference<HttpSession> session;
+
+        /**
+         * Determines if the applications are currently locked.
+         */
+        private volatile boolean locked;
+
+        /**
+         * The applications linked to the session.
+         */
+        private final ReferenceMap<SpringApplicationInstance, SpringApplicationInstance> apps
+                = new ReferenceMap<SpringApplicationInstance, SpringApplicationInstance>(WEAK, WEAK);
 
         /**
          * The time the session was last accessed, in milliseconds.
@@ -188,23 +272,45 @@ public class SessionMonitor implements DisposableBean {
             lastAccessedTime = System.currentTimeMillis();
         }
 
+        public synchronized void newApplication(SpringApplicationInstance application) {
+            apps.put(application, application);
+        }
+
         /**
-         * Invoked by the executor. This invalidates the session if it hasn't been accessed for {@link #autoLogout}
-         * seconds. If it has been accessed, then it reschedules itself for another {@code autoLogout - inactive}
-         * milliseconds.
+         * Invoked by the executor. This:
+         * <ul>
+         * <li>invalidates the session if {@link #autoLogout} is non-zero and it hasn't been accessed for
+         * {@link #autoLogout} milliseconds</li>
+         * <li>locks the session if {@link #autoLock} is non-zero, and the session hasn't been accessed for
+         * {@link #autoLock} milliseconds.</li>
+         * </ul>
+         * If it has been accessed, then it reschedules itself for another {@code autoLock} milliseconds.
          */
         @Override
-        public void run() {
+        public synchronized void run() {
             long inactive = System.currentTimeMillis() - lastAccessedTime;
-            if (inactive >= autoLogout) {
+            long logout = autoLogout;
+            long lock = autoLock;
+            if (logout != 0 && inactive > logout) {
                 // session is inactive, so kill it
                 HttpSession httpSession = session.get();
                 if (httpSession != null) {
                     httpSession.invalidate();
                 }
             } else {
-                // the session is still active, so reschedule
-                schedule(autoLogout - inactive);
+                long reschedule = (logout != 0) ? logout - inactive : 0;
+                if (lock != 0) {
+                    if (inactive > lock) {
+                        if (!locked) {
+                            lock();
+                        }
+                    } else {
+                        reschedule = lock - inactive;
+                    }
+                }
+                if (reschedule != 0) {
+                    schedule(reschedule);
+                }
             }
         }
 
@@ -212,7 +318,10 @@ public class SessionMonitor implements DisposableBean {
          * Schedules the monitor.
          */
         public void schedule() {
-            long time = autoLogout;
+            long time = autoLock;
+            if (time == 0) {
+                time = autoLogout;
+            }
             if (time != 0) {
                 schedule(time);
             }
@@ -226,11 +335,29 @@ public class SessionMonitor implements DisposableBean {
             if (current != null) {
                 current.cancel(false);
             }
-            long timeout = autoLogout;
+            long timeout = autoLock;
+            if (timeout == 0) {
+                timeout = autoLogout;
+            }
             if (timeout != 0) {
-                run();
-                // will either expire or schedule. Note that there is a possibility of a race condition where run() is
-                // already in progress.
+                run(); // will either expire or schedule
+            }
+        }
+
+        /**
+         * Unlocks applications linked to the session.
+         */
+        public synchronized void unlock() {
+            try {
+                SpringApplicationInstance[] list = apps.values().toArray(new SpringApplicationInstance[apps.size()]);
+                for (SpringApplicationInstance app : list) {
+                    if (app != null) {
+                        app.unlock();
+                    }
+                }
+            } finally {
+                locked = false;
+                reschedule();
             }
         }
 
@@ -248,6 +375,19 @@ public class SessionMonitor implements DisposableBean {
          */
         private void schedule(long delay) {
             future = executor.schedule(this, delay, TimeUnit.MILLISECONDS);
+        }
+
+        /**
+         * Locks applications linked to the session.
+         */
+        private synchronized void lock() {
+            locked = true;
+            SpringApplicationInstance[] list = apps.values().toArray(new SpringApplicationInstance[apps.size()]);
+            for (SpringApplicationInstance app : list) {
+                if (app != null) {
+                    app.lock();
+                }
+            }
         }
 
     }

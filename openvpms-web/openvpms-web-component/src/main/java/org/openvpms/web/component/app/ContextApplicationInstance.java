@@ -82,7 +82,6 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
      */
     private final UserRules userRules;
 
-
     /**
      * Constructs a {@link ContextApplicationInstance}.
      *
@@ -140,15 +139,6 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
      * @param shortName the archetype short name
      */
     public abstract void switchTo(String shortName);
-
-    /**
-     * Clears the current context.
-     */
-    protected void clearContext() {
-        for (IMObject object : context.getObjects()) {
-            context.removeObject(object);
-        }
-    }
 
     /**
      * Returns the client's screen resolution.
@@ -215,6 +205,15 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
             setResolution(style.getSize());
         } catch (Throwable exception) {
             ErrorHelper.show(exception, true);
+        }
+    }
+
+    /**
+     * Clears the current context.
+     */
+    protected void clearContext() {
+        for (IMObject object : context.getObjects()) {
+            context.removeObject(object);
         }
     }
 
