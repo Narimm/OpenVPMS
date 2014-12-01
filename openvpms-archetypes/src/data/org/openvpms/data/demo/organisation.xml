@@ -19,6 +19,7 @@
         <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97628777"/>
         <data collection="contacts" archetype="contact.location" address="123 Boronia Road" suburb="Boronia" state="VIC"
               postcode="3088"/>
+        <data collection="serviceUser" archetype="entityLink.practiceServiceUser" source="id:OP1" target="id:ADMIN"/>
     </data>
     <data id="OL1" archetype="party.organisationLocation" name="Main Clinic" stockControl="true"
           mailHost="mail.bigpond.com" mailUsername="opv.demo@bigpond.com" mailPassword="sample">
