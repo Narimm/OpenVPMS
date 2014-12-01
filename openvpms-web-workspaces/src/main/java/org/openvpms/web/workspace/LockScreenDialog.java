@@ -122,8 +122,9 @@ class LockScreenDialog extends PopupDialog {
             name.setText(user.getUsername());
         }
 
+        LabelEx space = new LabelEx(new XhtmlFragment(TableHelper.SPACER));
         container = ColumnFactory.create(Styles.WIDE_CELL_SPACING,
-                                         RowFactory.create(loggedIn, new LabelEx(new XhtmlFragment(TableHelper.SPACER)), name),
+                                         RowFactory.create(loggedIn, space, name),
                                          LabelFactory.create("lockscreen.message"), password);
         Row row = RowFactory.create(Styles.LARGE_INSET, container);
         getLayout().add(row);
