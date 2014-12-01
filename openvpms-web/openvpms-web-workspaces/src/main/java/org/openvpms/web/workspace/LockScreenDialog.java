@@ -16,19 +16,22 @@
 
 package org.openvpms.web.workspace;
 
+import echopointng.LabelEx;
+import echopointng.xhtml.XhtmlFragment;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.web.echo.dialog.MessageDialog;
+import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.TextComponentFactory;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.echo.text.PasswordField;
 import org.openvpms.web.resource.i18n.Messages;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,7 +41,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
  *
  * @author Tim Anderson
  */
-class LockScreenDialog extends MessageDialog {
+class LockScreenDialog extends PopupDialog {
 
     /**
      * The password.
@@ -57,7 +60,8 @@ class LockScreenDialog extends MessageDialog {
      * @param app the app
      */
     public LockScreenDialog(final OpenVPMSApp app) {
-        super(Messages.get("lockscreen.title"), Messages.get("lockscreen.message"), OK);
+        super(Messages.get("lockscreen.title"), "MessageDialog", OK);
+        setModal(true);
         setClosable(false);
         addButton("button.logout", new ActionListener() {
             @Override
@@ -89,19 +93,17 @@ class LockScreenDialog extends MessageDialog {
     }
 
     /**
-     * Invoked when the 'OK' button is pressed. This sets the action and closes
-     * the window.
+     * Invoked when the 'OK' button is pressed.
      */
     @Override
     protected void onOK() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof User) {
-            User user = (User) principal;
+        User user = getUser();
+        if (user != null) {
             if (StringUtils.equals(password.getText(), user.getPassword())) {
                 super.onOK();
             } else {
                 password.setText(null);
-                if (container.getComponentCount() == 2) {
+                if (container.getComponentCount() == 3) {
                     container.add(LabelFactory.create("lockscreen.error", "login.error"));
                 }
             }
@@ -113,10 +115,27 @@ class LockScreenDialog extends MessageDialog {
      */
     @Override
     protected void doLayout() {
-        Label message = LabelFactory.create();
-        message.setText(getMessage());
-        container = ColumnFactory.create(Styles.WIDE_CELL_SPACING, message, password);
+        Label loggedIn = LabelFactory.create("lockscreen.loggedin");
+        Label name = LabelFactory.create(null, Styles.BOLD);
+        User user = getUser();
+        if (user != null) {
+            name.setText(user.getUsername());
+        }
+
+        container = ColumnFactory.create(Styles.WIDE_CELL_SPACING,
+                                         RowFactory.create(loggedIn, new LabelEx(new XhtmlFragment(TableHelper.SPACER)), name),
+                                         LabelFactory.create("lockscreen.message"), password);
         Row row = RowFactory.create(Styles.LARGE_INSET, container);
         getLayout().add(row);
+    }
+
+    /**
+     * Returns the current user.
+     *
+     * @return the current user, or {@code null} if there is no user
+     */
+    private User getUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return (principal instanceof User) ? (User) principal : null;
     }
 }
