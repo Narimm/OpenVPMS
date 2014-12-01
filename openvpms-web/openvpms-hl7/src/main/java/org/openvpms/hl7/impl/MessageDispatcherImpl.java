@@ -45,6 +45,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -94,12 +95,14 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
     /**
      * The queues, keyed on connector reference.
      */
-    private final Map<IMObjectReference, MessageQueue> queueMap = new HashMap<IMObjectReference, MessageQueue>();
+    private final Map<IMObjectReference, MessageQueue> queueMap
+            = Collections.synchronizedMap(new HashMap<IMObjectReference, MessageQueue>());
 
     /**
      * The receivers, keyed on connector reference.
      */
-    private final Map<IMObjectReference, MessageReceiver> receiverMap = new HashMap<IMObjectReference, MessageReceiver>();
+    private final Map<IMObjectReference, MessageReceiver> receiverMap
+            = Collections.synchronizedMap(new HashMap<IMObjectReference, MessageReceiver>());
 
     /**
      * The listeners, keyed on port.
@@ -263,9 +266,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
                 }
             }
             if (added) {
-                synchronized (receiverMap) {
-                    receiverMap.put(connector.getReference(), receiver);
-                }
+                receiverMap.put(connector.getReference(), receiver);
             }
         }
     }
@@ -283,9 +284,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
             synchronized (services) {
                 service = services.remove(port);
             }
-            synchronized (receiverMap) {
-                receiverMap.remove(connector.getReference());
-            }
+            receiverMap.remove(connector.getReference());
             if (service != null) {
                 log.info("Stopping listener for " + connector);
                 service.stopAndWait();
@@ -301,14 +300,9 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      */
     @Override
     public Statistics getStatistics(IMObjectReference connector) {
-        Statistics statistics;
-        synchronized (queueMap) {
-            statistics = queueMap.get(connector);
-        }
+        Statistics statistics = queueMap.get(connector);
         if (statistics == null) {
-            synchronized (receiverMap) {
-                statistics = receiverMap.get(connector);
-            }
+            statistics = receiverMap.get(connector);
         }
         return statistics;
     }
@@ -414,11 +408,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      */
     protected DocumentAct queue(Message message, final MLLPSender sender, User user) throws HL7Exception {
         DocumentAct result;
-        MessageQueue queue;
-        synchronized (queueMap) {
-            queue = getMessageQueue(sender);
-        }
-
+        MessageQueue queue = getMessageQueue(sender);
         if (log.isDebugEnabled()) {
             log.debug("queue() - " + sender);
         }
@@ -499,10 +489,12 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      */
     private MessageQueue getMessageQueue(MLLPSender sender) {
         MessageQueue queue;
-        queue = queueMap.get(sender.getReference());
-        if (queue == null) {
-            queue = new MessageQueue(sender, messageService, messageContext);
-            queueMap.put(sender.getReference(), queue);
+        synchronized (queueMap) {
+            queue = queueMap.get(sender.getReference());
+            if (queue == null) {
+                queue = new MessageQueue(sender, messageService, messageContext);
+                queueMap.put(sender.getReference(), queue);
+            }
         }
         return queue;
     }
@@ -552,10 +544,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
             processed = false;
             waiting = 0;
             minWait = 0;
-            List<MessageQueue> queues;
-            synchronized (queueMap) {
-                queues = new ArrayList<MessageQueue>(queueMap.values());
-            }
+            List<MessageQueue> queues = new ArrayList<MessageQueue>(queueMap.values());
             for (MessageQueue queue : queues) {
                 // process each queue in a round robin fashion
                 if (queue.isSuspended()) {
@@ -654,10 +643,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      * @param connector the connector to use
      */
     private void restartReceiver(Connector connector) {
-        MessageReceiver receiver;
-        synchronized (receiverMap) {
-            receiver = receiverMap.get(connector.getReference());
-        }
+        MessageReceiver receiver = receiverMap.get(connector.getReference());
         if (receiver != null) {
             ReceivingApplication app = receiver.getReceivingApplication();
             stop(connector);
@@ -676,14 +662,12 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      * @param connector the connector
      */
     private void restartSender(Connector connector) {
-        synchronized (queueMap) {
-            MessageQueue queue = queueMap.get(connector.getReference());
-            if (queue != null) {
-                log.info("Updating " + connector);
-                queue.setConnector((MLLPSender) connector);
-                queue.setWaitUntil(-1);
-                schedule();
-            }
+        MessageQueue queue = queueMap.get(connector.getReference());
+        if (queue != null) {
+            log.info("Updating " + connector);
+            queue.setConnector((MLLPSender) connector);
+            queue.setWaitUntil(-1);
+            schedule();
         }
     }
 
@@ -694,13 +678,11 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      */
     private void remove(Connector connector) {
         if (connector instanceof MLLPSender) {
-            synchronized (queueMap) {
-                MessageQueue queue = queueMap.remove(connector.getReference());
-                if (queue != null) {
-                    // Note that a call to queue() could re-add the queue, even if it is inactive.
-                    log.info("Removed queue for " + connector);
-                    queue.setSuspended(true);
-                }
+            MessageQueue queue = queueMap.remove(connector.getReference());
+            if (queue != null) {
+                // Note that a call to queue() could re-add the queue, even if it is inactive.
+                log.info("Removed queue for " + connector);
+                queue.setSuspended(true);
             }
         } else if (connector instanceof MLLPReceiver) {
             stop(connector);
