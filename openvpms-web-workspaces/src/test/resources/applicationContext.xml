@@ -257,6 +257,7 @@
 
     <bean id="context" class="org.openvpms.web.component.app.GlobalContext" scope="prototype"/>
 
+
     <bean id="openVPMSApp" class="org.openvpms.web.workspace.OpenVPMSApp" scope="prototype">
         <constructor-arg ref="context"/>
         <constructor-arg>
@@ -265,7 +266,10 @@
         <constructor-arg ref="practiceRules"/>
         <constructor-arg ref="locationRules"/>
         <constructor-arg ref="userRules"/>
+        <constructor-arg ref="sessionMonitor"/>
     </bean>
+
+    <bean id="sessionMonitor" class="org.openvpms.web.echo.servlet.SessionMonitor"/>
 
     <bean id="styleSheetCache" class="org.openvpms.web.echo.style.StyleSheetCache">
         <constructor-arg index="0" value="style/default"/>
