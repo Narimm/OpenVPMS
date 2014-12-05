@@ -12,12 +12,9 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.component.business.dao.hibernate.im.security;
 
-import static junit.framework.Assert.assertEquals;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.junit.Before;
@@ -28,11 +25,12 @@ import org.openvpms.component.business.domain.im.security.User;
 
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * Tests the {@link UserDAOHibernate} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Jim Alateras
  */
 public class UserDAOHibernateTestCase extends HibernateInfoModelTestCase {
 

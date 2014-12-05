@@ -25,8 +25,8 @@ import org.springframework.test.context.ContextConfiguration;
 import java.util.Date;
 import java.util.Iterator;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 
 /**

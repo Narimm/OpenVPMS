@@ -35,6 +35,7 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.util.PropertySet;
+import org.openvpms.component.system.common.util.PropertyState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +46,8 @@ import java.util.List;
  * <p/>
  * These functions can then be used as JXPath extension functions.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 public class ArchetypeServiceFunctions {
 
@@ -191,8 +193,8 @@ public class ArchetypeServiceFunctions {
         if (object != null) {
             IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
             NodeResolver resolver = new NodeResolver(object, service);
-            NodeResolver.State state = resolver.resolve(node);
-            NodeDescriptor descriptor = state.getLeafNode();
+            PropertyState state = resolver.resolve(node);
+            NodeDescriptor descriptor = state.getNode();
             if (descriptor == null) {
                 throw new PropertyResolverException(PropertyResolverException.ErrorCode.InvalidProperty, node);
             }

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.component.system.common.query;
@@ -22,10 +20,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.util.AbstractPropertySet;
+import org.openvpms.component.system.common.util.MapPropertySet;
 import org.openvpms.component.system.common.util.PropertySet;
-import org.openvpms.component.system.common.util.PropertySetException;
-import static org.openvpms.component.system.common.util.PropertySetException.ErrorCode.PropertyNotFound;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -38,20 +34,14 @@ import java.util.Set;
 /**
  * Set of objects returned by an {@link ArchetypeQuery}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class ObjectSet extends AbstractPropertySet implements Serializable {
+public class ObjectSet extends MapPropertySet implements Serializable {
 
     /**
      * Serial version identifier.
      */
     private static final long serialVersionUID = 1L;
-
-    /**
-     * The objects.
-     */
-    private Map<String, Object> objects;
 
     /**
      * The type short names, keyed on type alias.
@@ -60,16 +50,15 @@ public class ObjectSet extends AbstractPropertySet implements Serializable {
 
 
     /**
-     * Creates an empty <tt>ObjectSet</tt>.
+     * Constructs an empty {@link ObjectSet}.
      */
     public ObjectSet() {
-        objects = new LinkedHashMap<String, Object>();
+        super(new LinkedHashMap<String, Object>(), false); // preserve order
         types = new HashMap<String, Set<String>>();
     }
 
     /**
-     * Creates a new <tt>ObjectSet</tt> from an existing set, by performing
-     * a shallow copy.
+     * Constructs an {@link ObjectSet} from an existing set, by performing a shallow copy.
      *
      * @param set the set to copy
      */
@@ -81,23 +70,13 @@ public class ObjectSet extends AbstractPropertySet implements Serializable {
     }
 
     /**
-     * Creates a new <tt>ObjectSet</tt> from an existing set, by performing
-     * a shallow copy.
+     * Constructs an {@link ObjectSet} from an existing set, by performing a shallow copy.
      *
      * @param set the set to copy
      */
     public ObjectSet(ObjectSet set) {
-        objects = new LinkedHashMap<String, Object>(set.objects);
+        super(new LinkedHashMap<String, Object>(set.getProperties()), false);
         types = new HashMap<String, Set<String>>(set.types);
-    }
-
-    /**
-     * Returns the object names, in the order they were queried.
-     *
-     * @return the object names
-     */
-    public Set<String> getNames() {
-        return objects.keySet();
     }
 
     /**
@@ -111,16 +90,6 @@ public class ObjectSet extends AbstractPropertySet implements Serializable {
     }
 
     /**
-     * Sets the value of a property.
-     *
-     * @param name  the propery name
-     * @param value the property value
-     */
-    public void set(String name, Object value) {
-        objects.put(name, value);
-    }
-
-    /**
      * Adds an object.
      *
      * @param name  the object name
@@ -129,21 +98,7 @@ public class ObjectSet extends AbstractPropertySet implements Serializable {
      */
     @Deprecated
     public void add(String name, Object value) {
-        objects.put(name, value);
-    }
-
-    /**
-     * Returns the value of a property.
-     *
-     * @param name the property name
-     * @return the value of the property
-     * @throws PropertySetException if the property doesn't exist
-     */
-    public Object get(String name) {
-        if (objects.containsKey(name)) {
-            return objects.get(name);
-        }
-        throw new PropertySetException(PropertyNotFound, name);
+        set(name, value);
     }
 
     /**
@@ -159,7 +114,7 @@ public class ObjectSet extends AbstractPropertySet implements Serializable {
     /**
      * Returns the matching short names for a name.
      *
-     * @return the matching short names, or <cpde>null</tt> if there
+     * @return the matching short names, or <cpde>null} if there
      *         is no type information available.
      */
     public Collection<String> getShortNames(String name) {
@@ -169,9 +124,9 @@ public class ObjectSet extends AbstractPropertySet implements Serializable {
     /**
      * Returns the node descriptor for a name.
      *
-     * @return the node descriptor for the name, or <tt>null</tt> if none
-     *         is found
+     * @return the node descriptor for the name, or {@code null} if none is found
      */
+    @Deprecated
     public NodeDescriptor getDescriptor(String name) {
         NodeDescriptor result = null;
         int index = name.indexOf(".");
