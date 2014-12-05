@@ -23,7 +23,8 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.ExpressionEvaluator;
@@ -64,6 +65,16 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
     private Map<String, ParameterType> parameters;
 
     /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
+
+    /**
      * The document handlers.
      */
     private final DocumentHandlers handlers;
@@ -82,13 +93,18 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
 
 
     /**
-     * Creates a new {@code OpenOfficeIMReport}.
+     * Constructs an {@link OpenOfficeIMReport}.
      *
      * @param template the document template
+     * @param service  the archetype service
+     * @param lookups  the lookup service
      * @param handlers the document handlers
      */
-    public OpenOfficeIMReport(Document template, DocumentHandlers handlers) {
+    public OpenOfficeIMReport(Document template, IArchetypeService service, ILookupService lookups,
+                              DocumentHandlers handlers) {
         this.template = template;
+        this.service = service;
+        this.lookups = lookups;
         this.handlers = handlers;
     }
 
@@ -143,7 +159,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      *
      * @throws UnsupportedOperationException if invoked
      */
-    public Document generate(Map<String, Object> parameters) {
+    public Document generate(Map<String, Object> parameters, Map<String, Object> fields) {
         throw new UnsupportedOperationException();
     }
 
@@ -152,7 +168,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      *
      * @throws UnsupportedOperationException if invoked
      */
-    public Document generate(Map<String, Object> parameters, String mimeType) {
+    public Document generate(Map<String, Object> parameters, Map<String, Object> fields, String mimeType) {
         throw new UnsupportedOperationException();
     }
 
@@ -182,7 +198,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      */
     public Document generate(Iterator<T> objects, String mimeType) {
         Map<String, Object> empty = Collections.emptyMap();
-        return generate(objects, empty, mimeType);
+        return generate(objects, empty, null, mimeType);
     }
 
     /**
@@ -191,37 +207,36 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * The default mime type will be used to select the output format.
      *
      * @param objects    the objects to report on
-     * @param parameters a map of parameter names and their values, to pass to
-     *                   the report. May be {@code null}
+     * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @return a document containing the report
      * @throws ReportException               for any report error
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    public Document generate(Iterator<T> objects,
-                             Map<String, Object> parameters) {
-        return generate(objects, parameters, getDefaultMimeType());
+    public Document generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields) {
+        return generate(objects, parameters, fields, getDefaultMimeType());
     }
 
     /**
      * Generates a report for a collection of objects.
      *
      * @param objects    the objects to report on
-     * @param parameters a map of parameter names and their values, to pass to
-     *                   the report. May be {@code null}
-     * @param mimeType   the output format of the report
-     * @return a document containing the report
+     * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
+     * @param mimeType   the output format of the report  @return a document containing the report
      * @throws ReportException               for any report error
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    public Document generate(Iterator<T> objects, Map<String, Object> parameters, String mimeType) {
+    public Document generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
+                             String mimeType) {
         OpenOfficeDocument doc = null;
         OOConnection connection = null;
         try {
             OOConnectionPool pool = OpenOfficeHelper.getConnectionPool();
             connection = pool.getConnection();
-            doc = create(objects, parameters, connection);
+            doc = create(objects, parameters, fields, connection);
             return export(doc, mimeType);
         } finally {
             close(doc, connection);
@@ -233,19 +248,21 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      *
      * @param objects    the objects to report on
      * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @param mimeType   the output format of the report
      * @param stream     the stream to write to
      * @throws ReportException               for any report error
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    public void generate(Iterator<T> objects, Map<String, Object> parameters, String mimeType, OutputStream stream) {
+    public void generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
+                         String mimeType, OutputStream stream) {
         OpenOfficeDocument doc = null;
         OOConnection connection = null;
         try {
             OOConnectionPool pool = OpenOfficeHelper.getConnectionPool();
             connection = pool.getConnection();
-            doc = create(objects, parameters, connection);
+            doc = create(objects, parameters, fields, connection);
             byte[] content = doc.export(mimeType);
             try {
                 stream.write(content);
@@ -262,7 +279,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      *
      * @throws UnsupportedOperationException if invoked
      */
-    public void print(Map<String, Object> parameters, PrintProperties properties) {
+    public void print(Map<String, Object> parameters, Map<String, Object> fields, PrintProperties properties) {
         throw new UnsupportedOperationException();
     }
 
@@ -275,27 +292,28 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void print(Iterator<T> objects, PrintProperties properties) {
-        print(objects, Collections.<String, Object>emptyMap(), properties);
+        print(objects, Collections.<String, Object>emptyMap(), null, properties);
     }
 
     /**
      * Prints a report directly to a printer.
      *
      * @param objects    the objects to report on
-     * @param parameters a map of parameter names and their values, to pass to
-     *                   the report. May be {@code null}
+     * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @param properties the print properties
      * @throws ReportException               for any report error
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    public void print(Iterator<T> objects, Map<String, Object> parameters, PrintProperties properties) {
+    public void print(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
+                      PrintProperties properties) {
         OpenOfficeDocument doc = null;
         OOConnection connection = null;
         try {
             PrintService service = OpenOfficeHelper.getPrintService();
             connection = OpenOfficeHelper.getConnectionPool().getConnection();
-            doc = create(objects, parameters, connection);
+            doc = create(objects, parameters, fields, connection);
             service.print(doc, properties.getPrinterName(), properties.getCopies(), true);
         } catch (OpenOfficeException exception) {
             throw new ReportException(exception, FailedToPrintReport, exception.getMessage());
@@ -309,13 +327,14 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * Note that the collection is limited to a single object.
      *
      * @param objects    the objects to generate the document from
-     * @param connection a connection to the OpenOffice service
      * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
-     * @return a new openoffice document
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
+     * @param connection a connection to the OpenOffice service  @return a new openoffice document
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected OpenOfficeDocument create(Iterator<T> objects, Map<String, Object> parameters, OOConnection connection) {
+    protected OpenOfficeDocument create(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
+                                        OOConnection connection) {
         OpenOfficeDocument doc = null;
         T object = null;
         if (objects.hasNext()) {
@@ -330,7 +349,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
             if (parameters != null) {
                 populateInputFields(doc, parameters);
             }
-            populateUserFields(doc, object, parameters);
+            populateUserFields(doc, object, parameters, fields);
 
             // refresh the text fields
             doc.refresh();
@@ -394,10 +413,11 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @param document   the document
      * @param object     the object to evaluate expressions with
      * @param parameters the parameters. May be {@code null}
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      */
-    protected void populateUserFields(OpenOfficeDocument document, T object, Map<String, Object> parameters) {
-        ExpressionEvaluator eval = ExpressionEvaluatorFactory.create(
-                object, ArchetypeServiceHelper.getArchetypeService());
+    protected void populateUserFields(OpenOfficeDocument document, T object, Map<String, Object> parameters,
+                                      Map<String, Object> fields) {
+        ExpressionEvaluator eval = ExpressionEvaluatorFactory.create(object, fields, service, lookups);
         List<String> userFields = document.getUserFieldNames();
         for (String name : userFields) {
             String value = getParameter(name, parameters);

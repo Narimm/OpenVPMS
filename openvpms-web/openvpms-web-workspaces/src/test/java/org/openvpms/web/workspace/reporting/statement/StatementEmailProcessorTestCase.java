@@ -38,6 +38,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.doc.DocumentTestHelper;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.OpenVPMSApp;
@@ -133,7 +134,7 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         processor.process(customer);
         assertEquals(1, statements.size());
         StatementEmailProcessor emailprocessor =
-                new StatementEmailProcessor(sender, "Foo", "foo@bar.com", getPractice());
+                new StatementEmailProcessor(sender, "Foo", "foo@bar.com", getPractice(), new LocalContext());
         emailprocessor.process(statements.get(0));
         Mockito.verify(sender, times(1)).send(mimeMessage);
     }

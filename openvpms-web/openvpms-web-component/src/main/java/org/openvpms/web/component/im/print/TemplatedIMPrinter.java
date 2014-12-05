@@ -24,6 +24,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.PrintProperties;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.im.report.TemplatedReporter;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 
@@ -49,9 +50,10 @@ public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
 
 
     /**
-     * Constructs a {@code TemplatedIMReportPrinter.
+     * Constructs a {@link TemplatedIMPrinter}.
      *
      * @param reporter the reporter
+     * @param context  the context
      * @throws ArchetypeServiceException for any archetype service error
      */
     public TemplatedIMPrinter(TemplatedReporter<T> reporter, Context context) {
@@ -62,6 +64,7 @@ public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
             setInteractive(getInteractive(template, getDefaultPrinter(), context));
             setCopies(template.getCopies());
         }
+        setFields(ReportContextFactory.create(context));
     }
 
     /**

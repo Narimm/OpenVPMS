@@ -21,7 +21,7 @@ import org.openvpms.component.system.common.util.PropertySet;
 
 
 /**
- * Resolves property values given a root {@code PropertySet} and a name of
+ * Resolves property values given a root {@link PropertySet} and a name of
  * the form <em>propertyName.node1.node2.nodeN</em>.
  * <p/>
  * The <em>propertyName</em> is used to resolve the object in set.
@@ -42,7 +42,7 @@ public class PropertySetResolver extends AbstractPropertyResolver {
 
 
     /**
-     * Constructs a {@code PropertySetResolver}.
+     * Constructs a {@link PropertySetResolver}.
      *
      * @param set     the property set
      * @param service the archetype service

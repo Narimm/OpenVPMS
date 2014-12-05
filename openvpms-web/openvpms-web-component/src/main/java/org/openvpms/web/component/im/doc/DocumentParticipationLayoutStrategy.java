@@ -40,7 +40,7 @@ import org.openvpms.web.echo.factory.RowFactory;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class DocumentParticipationLayoutStrategy
-    implements IMObjectLayoutStrategy {
+        implements IMObjectLayoutStrategy {
 
     /**
      * Pre-registers a component for inclusion in the layout.
@@ -72,7 +72,7 @@ public class DocumentParticipationLayoutStrategy
         final DocumentAct act = (DocumentAct) context.getCache().get(ref);
         Component component;
         if (act != null && act.getDocument() != null) {
-            DocumentActDownloader downloader = new DocumentActDownloader(act);
+            DocumentActDownloader downloader = new DocumentActDownloader(act, context.getContext());
 
             // wrap in a row to left justify
             component = RowFactory.create(downloader.getComponent());

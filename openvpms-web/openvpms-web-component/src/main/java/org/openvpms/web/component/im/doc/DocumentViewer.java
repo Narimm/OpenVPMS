@@ -209,7 +209,7 @@ public class DocumentViewer {
             if (hasDoc) {
                 if (link) {
                     if (parent instanceof DocumentAct) {
-                        downloader = new DocumentActDownloader((DocumentAct) parent, template);
+                        downloader = new DocumentActDownloader((DocumentAct) parent, template, context.getContext());
                     } else {
                         downloader = new DocumentRefDownloader(reference, name);
                     }

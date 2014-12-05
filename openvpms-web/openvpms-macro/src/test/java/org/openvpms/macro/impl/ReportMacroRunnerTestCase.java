@@ -179,7 +179,7 @@ public class ReportMacroRunnerTestCase extends ArchetypeServiceTest {
         // run the report macro against the customer
         ReportMacro macro = new ReportMacro(lookup, service);
         MacroContext context = new MacroContext(Collections.<String, Macro>emptyMap(), null, null, variables);
-        ReportMacroRunner runner = new ReportMacroRunner(context, service, handlers);
+        ReportMacroRunner runner = new ReportMacroRunner(context, service, lookups, handlers);
         return runner.run(macro, "");
     }
 

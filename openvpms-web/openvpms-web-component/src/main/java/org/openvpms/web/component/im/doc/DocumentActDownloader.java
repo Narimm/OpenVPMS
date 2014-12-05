@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.doc;
@@ -32,7 +30,9 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.openoffice.Converter;
 import org.openvpms.report.openoffice.OpenOfficeException;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.report.DocumentActReporter;
+import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.RowFactory;
@@ -43,8 +43,7 @@ import org.openvpms.web.system.ServiceHelper;
 /**
  * Downloads a document from a {@link DocumentAct}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentActDownloader extends Downloader {
 
@@ -59,6 +58,11 @@ public class DocumentActDownloader extends Downloader {
     private final boolean asTemplate;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The template, when there is no document present.
      */
     private DocumentTemplate template;
@@ -70,22 +74,25 @@ public class DocumentActDownloader extends Downloader {
 
 
     /**
-     * Constructs a <tt>DocumentActDownloader</tt>.
+     * Constructs a {@code DocumentActDownloader}.
      *
-     * @param act the act
+     * @param act     the act
+     * @param context the context
      */
-    public DocumentActDownloader(DocumentAct act) {
-        this(act, false);
+    public DocumentActDownloader(DocumentAct act, Context context) {
+        this(act, false, context);
     }
 
     /**
-     * Constructs a <tt>DocumentActDownloader</tt>.
+     * Constructs a {@code DocumentActDownloader}.
      *
      * @param act        the act
      * @param asTemplate determines if the document should be downloaded as a template
+     * @param context    the context
      */
-    public DocumentActDownloader(DocumentAct act, boolean asTemplate) {
+    public DocumentActDownloader(DocumentAct act, boolean asTemplate, Context context) {
         this.act = act;
+        this.context = context;
         this.asTemplate = asTemplate;
     }
 
@@ -147,7 +154,7 @@ public class DocumentActDownloader extends Downloader {
     /**
      * Returns the document for download.
      *
-     * @param mimeType the expected mime type. If <tt>null</tt>, then no conversion is required.
+     * @param mimeType the expected mime type. If {@code null}, then no conversion is required.
      * @return the document for download
      * @throws ArchetypeServiceException for any archetype service error
      * @throws DocumentException         if the document can't be found
@@ -163,6 +170,7 @@ public class DocumentActDownloader extends Downloader {
                 DocumentTemplate template = getTemplate();
                 if (template != null) {
                     DocumentActReporter reporter = new DocumentActReporter(act, template);
+                    reporter.setFields(ReportContextFactory.create(context));
                     if (mimeType == null) {
                         document = reporter.getDocument();
                     } else {
@@ -188,7 +196,7 @@ public class DocumentActDownloader extends Downloader {
     /**
      * Returns the document template.
      *
-     * @return the document template. May be <tt>null</tt>
+     * @return the document template. May be {@code null}
      */
     private DocumentTemplate getTemplate() {
         if (template == null) {

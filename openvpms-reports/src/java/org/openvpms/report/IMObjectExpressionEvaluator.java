@@ -12,16 +12,18 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.report;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
+import org.openvpms.component.business.service.archetype.helper.ResolvingPropertySet;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.system.common.util.PropertySet;
+
+import java.util.Map;
 
 
 /**
@@ -33,10 +35,9 @@ import org.openvpms.component.business.service.archetype.helper.NodeResolver;
  * <li>[expr]</li>
  * </ol>
  * Expressions of the first type are evaluated using {@link NodeResolver};
- * the second by <code>JXPath</code>.
+ * the second by {@code JXPath}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class IMObjectExpressionEvaluator extends AbstractExpressionEvaluator<IMObject> {
 
@@ -47,24 +48,30 @@ public class IMObjectExpressionEvaluator extends AbstractExpressionEvaluator<IMO
 
 
     /**
-     * Constructs a new <code>IMObjectExpressionEvaluator</code>.
+     * Constructs a {@link IMObjectExpressionEvaluator}.
      *
      * @param object  the object
+     * @param fields  additional report fields. These override any in the report. May be {@code null}
      * @param service the archetype service
+     * @param lookups the lookup service
      */
-    public IMObjectExpressionEvaluator(IMObject object,
-                                       IArchetypeService service) {
-        super(object, service);
+    public IMObjectExpressionEvaluator(IMObject object, Map<String, Object> fields, IArchetypeService service,
+                                       ILookupService lookups) {
+        super(object, fields != null ? new ResolvingPropertySet(fields, service) : null, service, lookups);
     }
 
     /**
-     * Constructs a new <code>IMObjectExpressionEvaluator</code>.
+     * Constructs a {@link IMObjectExpressionEvaluator}.
      *
      * @param object   the object
-     * @param resolver the NodeResolver
+     * @param resolver the node resolver. May be {@code null}
+     * @param fields   fields to pass to the report. May be {@code null}
+     * @param service  the archetype service
+     * @param lookups  the lookup service
      */
-    public IMObjectExpressionEvaluator(IMObject object, NodeResolver resolver) {
-        super(object, ArchetypeServiceHelper.getArchetypeService());
+    public IMObjectExpressionEvaluator(IMObject object, NodeResolver resolver, PropertySet fields,
+                                       IArchetypeService service, ILookupService lookups) {
+        super(object, fields, service, lookups);
         this.resolver = resolver;
     }
 
@@ -76,7 +83,7 @@ public class IMObjectExpressionEvaluator extends AbstractExpressionEvaluator<IMO
      */
     protected Object getNodeValue(String name) {
         if (resolver == null) {
-            resolver = new NodeResolver(object, service);
+            resolver = new NodeResolver(getObject(), getService());
         }
         return getValue(name, resolver);
     }

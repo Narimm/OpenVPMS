@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.component.system.common.util;
@@ -30,8 +28,7 @@ import java.util.Set;
 /**
  * A <em>PropertySet</em> is a set of name-value pairs.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public interface PropertySet {
 
@@ -46,7 +43,7 @@ public interface PropertySet {
      * Determines if a property exists.
      *
      * @param name the property name
-     * @return <tt>true</tt> if the property exists
+     * @return {@code true} if the property exists
      */
     boolean exists(String name);
 
@@ -54,10 +51,8 @@ public interface PropertySet {
      * Returns the boolean value of a property.
      *
      * @param name the property name
-     * @return the value of the property, or <tt>false</tt> if the property is
-     *         null
-     * @throws OpenVPMSException if the property doesn't exist or conversion
-     *                           fails
+     * @return the value of the property, or {@code false} if the property is {@code null}
+     * @throws OpenVPMSException if the property doesn't exist or conversion fails
      */
     boolean getBoolean(String name);
 
@@ -65,11 +60,9 @@ public interface PropertySet {
      * Returns the boolean value of a property.
      *
      * @param name         the property name
-     * @param defaultValue the value to return if the property value is null
-     * @return the value of the property, or <tt>defaultValue</tt> if it
-     *         is null
-     * @throws OpenVPMSException if the property doesn't exist or conversion
-     *                           fails
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if the property doesn't exist or conversion fails
      */
     boolean getBoolean(String name, boolean defaultValue);
 
@@ -77,9 +70,8 @@ public interface PropertySet {
      * Returns the integer value of a property.
      *
      * @param name the property name
-     * @return the value of the property, or <tt>0</tt> if the property is null
-     * @throws OpenVPMSException if the property doesn't exist or conversion
-     *                           fails
+     * @return the value of the property, or {@code 0} if the property is {@code null}
+     * @throws OpenVPMSException if the property doesn't exist or conversion fails
      */
     int getInt(String name);
 
@@ -87,11 +79,9 @@ public interface PropertySet {
      * Returns the integer value of a property.
      *
      * @param name         the property name
-     * @param defaultValue the value to return if the property value is null
-     * @return the value of the property, or <tt>defaultValue</tt> if it
-     *         is null
-     * @throws OpenVPMSException if the property doesn't exist or conversion
-     *                           fails
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if the property doesn't exist or conversion fails
      */
     int getInt(String name, int defaultValue);
 
@@ -99,9 +89,8 @@ public interface PropertySet {
      * Returns the long value of a property.
      *
      * @param name the property name
-     * @return the value of the property, or <tt>0</tt> if the property is null
-     * @throws OpenVPMSException if the property doesn't exist or conversion
-     *                           fails
+     * @return the value of the property, or {@code 0} if the property is {@code null}
+     * @throws OpenVPMSException if the property doesn't exist or conversion fails
      */
     long getLong(String name);
 
@@ -109,11 +98,9 @@ public interface PropertySet {
      * Returns the long value of a property.
      *
      * @param name         the property name
-     * @param defaultValue the value to return if the property value is null
-     * @return the value of the property, or <tt>defaultValue</tt> if it
-     *         is null
-     * @throws OpenVPMSException if the property doesn't exist or conversion
-     *                           fails
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if the property doesn't exist or conversion fails
      */
     long getLong(String name, long defaultValue);
 
@@ -122,8 +109,7 @@ public interface PropertySet {
      *
      * @param name the property name
      * @return the value of the property.
-     * @throws OpenVPMSException if the property doesn't exist or conversion
-     *                           fails
+     * @throws OpenVPMSException if the property doesn't exist or conversion fails
      */
     String getString(String name);
 
@@ -131,77 +117,66 @@ public interface PropertySet {
      * Returns the string value of a property.
      *
      * @param name         the property name
-     * @param defaultValue the value to return if the property value is null
-     * @return the value of the property, or <tt>defaultValue</tt> if it
-     *         is null
-     * @throws OpenVPMSException if the property doesn't exist or conversion
-     *                           fails
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if the property doesn't exist or conversion fails
      */
     String getString(String name, String defaultValue);
 
     /**
-     * Returns the <tt>BigDecimal</tt> value of a property.
+     * Returns the {@code BigDecimal} value of a property.
      *
      * @param name the property name
-     * @return the value of the property. May be <tt>null</tt>
-     * @throws OpenVPMSException if the property doesn't exist or conversion
-     *                           fails
+     * @return the value of the property. May be {@code null}
+     * @throws OpenVPMSException if the property doesn't exist or conversion fails
      */
     BigDecimal getBigDecimal(String name);
 
     /**
-     * Returns the <tt>BigDecimal</tt> value of a property.
+     * Returns the {@code BigDecimal} value of a property.
      *
      * @param name         the property name
-     * @param defaultValue the value to return if the property value is null
-     * @return the value of the property, or <tt>defaultValue</tt> if it
-     *         is null
-     * @throws OpenVPMSException if the property doesn't exist or conversion
-     *                           fails
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if the property doesn't exist or conversion fails
      */
     BigDecimal getBigDecimal(String name, BigDecimal defaultValue);
 
     /**
-     * Returns the <tt>Money</tt> value of a property.
+     * Returns the {@code Money} value of a property.
      *
      * @param name the property name
-     * @return the value of the property. May be <tt>null</tt>
-     * @throws OpenVPMSException if the property doesn't exist or conversion
-     *                           fails
+     * @return the value of the property. May be {@code null}
+     * @throws OpenVPMSException if the property doesn't exist or conversion fails
      */
     Money getMoney(String name);
 
     /**
-     * Returns the <tt>BigDecimal</tt> value of a property.
+     * Returns the {@code BigDecimal} value of a property.
      *
      * @param name         the property name
-     * @param defaultValue the value to return if the property value is null
-     * @return the value of the property, or <tt>defaultValue</tt> if it
-     *         is null
-     * @throws OpenVPMSException if the property doesn't exist or conversion
-     *                           fails
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if the property doesn't exist or conversion fails
      */
     Money getMoney(String name, Money defaultValue);
 
     /**
-     * Returns the <tt>Date</tt> value of a property.
+     * Returns the {@code Date} value of a property.
      *
      * @param name the property name
      * @return the value of the property
-     * @throws OpenVPMSException if the property doesn't exist or conversion
-     *                           fails
+     * @throws OpenVPMSException if the property doesn't exist or conversion fails
      */
     Date getDate(String name);
 
     /**
-     * Returns the <tt>Date</tt> value of a property.
+     * Returns the {@code Date} value of a property.
      *
      * @param name         the property name
-     * @param defaultValue the value to return if the property value is null
-     * @return the value of the property, or <tt>defaultValue</tt> if it
-     *         is null
-     * @throws OpenVPMSException if the property doesn't exist or conversion
-     *                           fails
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if the property doesn't exist or conversion fails
      */
     Date getDate(String name, Date defaultValue);
 
@@ -210,8 +185,7 @@ public interface PropertySet {
      *
      * @param name the property name
      * @return the property value
-     * @throws OpenVPMSException if the property doesn't exist or conversion
-     *                           fails
+     * @throws OpenVPMSException if the property doesn't exist or conversion fails
      */
     IMObjectReference getReference(String name);
 
@@ -227,10 +201,17 @@ public interface PropertySet {
     /**
      * Sets the value of a property.
      *
-     * @param name the propery name
+     * @param name  the property name
      * @param value the property value
      * @throws OpenVPMSException if the property cannot be set
      */
     void set(String name, Object value);
 
+    /**
+     * Resolves the named property.
+     *
+     * @param name the property name
+     * @return the property state
+     */
+    PropertyState resolve(String name);
 }

@@ -12,13 +12,10 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.component.business.service.archetype.helper;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -29,19 +26,29 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.business.service.lookup.LookupUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 
 /**
  * Tests the {@link LookupHelper} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 @ContextConfiguration("../archetype-service-appcontext.xml")
 public class LookupHelperTestCase extends AbstractArchetypeServiceTest {
+
+    /**
+     * The lookup service.
+     */
+    @Autowired
+    private ILookupService lookups;
 
     /**
      * Tests the {@link LookupHelper#getName} method.
@@ -56,7 +63,7 @@ public class LookupHelperTestCase extends AbstractArchetypeServiceTest {
 
         NodeDescriptor species = bean.getDescriptor("species");
         assertNotNull(species);
-        assertEquals(lookup.getName(), LookupHelper.getName(getArchetypeService(), species, pet));
+        assertEquals(lookup.getName(), LookupHelper.getName(getArchetypeService(), lookups, species, pet));
     }
 
     /**
@@ -80,12 +87,12 @@ public class LookupHelperTestCase extends AbstractArchetypeServiceTest {
     @Test
     public void testGetNames() {
         IArchetypeService service = getArchetypeService();
-        Map<String, String> current = LookupHelper.getNames(service, "party.animalpet", "species");
+        Map<String, String> current = LookupHelper.getNames(service, lookups, "party.animalpet", "species");
 
         Lookup canine = createLookup("lookup.species", "CANINE", "Canine");
         Lookup feline = createLookup("lookup.species", "FELINE", "Feline");
 
-        Map<String, String> names = LookupHelper.getNames(service, "party.animalpet", "species");
+        Map<String, String> names = LookupHelper.getNames(service, lookups, "party.animalpet", "species");
         assertEquals(current.size() + 2, names.size());
         assertEquals("Canine", names.get(canine.getCode()));
         assertEquals("Feline", names.get(feline.getCode()));
@@ -110,7 +117,7 @@ public class LookupHelperTestCase extends AbstractArchetypeServiceTest {
 
         // the breed won't be available until there is a relationship between
         // species and breed
-        assertNull(LookupHelper.getName(service, breed, pet));
+        assertNull(LookupHelper.getName(service, lookups, breed, pet));
 
         // now add the relationship
         LookupRelationship relationship = (LookupRelationship) create("lookupRelationship.speciesBreed");
@@ -118,7 +125,7 @@ public class LookupHelperTestCase extends AbstractArchetypeServiceTest {
         relationship.setTarget(breedLookup.getObjectReference());
         service.save(relationship);
 
-        assertEquals(breedLookup.getName(), LookupHelper.getName(service, breed, pet));
+        assertEquals(breedLookup.getName(), LookupHelper.getName(service, lookups, breed, pet));
     }
 
     /**
@@ -133,7 +140,7 @@ public class LookupHelperTestCase extends AbstractArchetypeServiceTest {
         bean.setValue("sex", "MALE");
         NodeDescriptor sex = bean.getDescriptor("sex");
         assertNotNull(sex);
-        assertEquals("male", LookupHelper.getName(service, sex, pet));
+        assertEquals("male", LookupHelper.getName(service, lookups, sex, pet));
     }
 
     /**

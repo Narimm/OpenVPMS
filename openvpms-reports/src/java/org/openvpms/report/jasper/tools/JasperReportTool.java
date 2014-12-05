@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.report.jasper.tools;
@@ -32,10 +30,10 @@ import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ReportException;
-import static org.openvpms.report.ReportException.ErrorCode.*;
 import org.openvpms.report.jasper.JasperIMReport;
 import org.openvpms.report.jasper.JasperReportHelper;
 import org.openvpms.report.jasper.TemplatedJasperIMObjectReport;
@@ -45,13 +43,16 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.openvpms.report.ReportException.ErrorCode.FailedToCreateReport;
+import static org.openvpms.report.ReportException.ErrorCode.NoTemplateForArchetype;
+import static org.openvpms.report.ReportException.ErrorCode.UnsupportedTemplate;
+
 
 /**
  * {@link ReportTool} extension for Jasper based reports, providing facilities
  * to view the generated report and XML.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class JasperReportTool extends ReportTool {
 
@@ -150,6 +151,7 @@ public class JasperReportTool extends ReportTool {
      */
     protected IMReport<IMObject> getReport(IMObject object) {
         IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         DocumentHandlers handlers = getDocumentHandlers();
         String shortName = object.getArchetypeId().getShortName();
         TemplateHelper helper = new TemplateHelper(service);
@@ -162,7 +164,7 @@ public class JasperReportTool extends ReportTool {
         try {
             if (doc.getName().endsWith(DocFormats.JRXML_EXT)) {
                 JasperDesign design = JasperReportHelper.getReport(doc, handlers);
-                report = new TemplatedJasperIMObjectReport(design, service, handlers);
+                report = new TemplatedJasperIMObjectReport(design, service, lookups, handlers);
             } else {
                 throw new ReportException(UnsupportedTemplate, doc.getName());
             }
@@ -205,8 +207,8 @@ public class JasperReportTool extends ReportTool {
         JSAP parser = ReportTool.createParser();
 
         parser.registerParameter(new Switch("xml").setShortFlag('x')
-                .setLongFlag("xml")
-                .setHelp("Display generated XML. Use with -r"));
+                                         .setLongFlag("xml")
+                                         .setHelp("Display generated XML. Use with -r"));
         return parser;
     }
 

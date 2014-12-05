@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.report.jasper;
@@ -21,14 +19,15 @@ package org.openvpms.report.jasper;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 
 
 /**
- * Abstract JRDataSource for <tt>IMObject</tt>s.
+ * Abstract JRDataSource for {@link IMObject}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractIMObjectDataSource implements JRDataSource {
 
@@ -38,20 +37,25 @@ public abstract class AbstractIMObjectDataSource implements JRDataSource {
     private final IArchetypeService service;
 
     /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
+
+    /**
      * The document handlers.
      */
     private final DocumentHandlers handlers;
 
 
     /**
-     * Construct a new <tt>AbstractIMObjectDataSource</tt>.
+     * Constructs an {@link AbstractIMObjectDataSource}.
      *
      * @param service  the archetype service
      * @param handlers the document handlers
      */
-    public AbstractIMObjectDataSource(IArchetypeService service,
-                                      DocumentHandlers handlers) {
+    public AbstractIMObjectDataSource(IArchetypeService service, ILookupService lookups, DocumentHandlers handlers) {
         this.service = service;
+        this.lookups = lookups;
         this.handlers = handlers;
     }
 
@@ -69,8 +73,7 @@ public abstract class AbstractIMObjectDataSource implements JRDataSource {
     /**
      * Returns a data source for the given jxpath expression.
      *
-     * @param expression the expression. Must return an <tt>Iterable<tt> or <tt>Iterator</tt> returning
-     *                   <tt>IMObjects</tt>
+     * @param expression the expression. Must return an {@code Iterable} or {@code Iterator} returning {@code IMObjects}
      * @return the data source
      * @throws JRException for any error
      */
@@ -94,6 +97,15 @@ public abstract class AbstractIMObjectDataSource implements JRDataSource {
      */
     protected IArchetypeService getArchetypeService() {
         return service;
+    }
+
+    /**
+     * Returns the lookup service.
+     *
+     * @return the lookup service
+     */
+    protected ILookupService getLookupService() {
+        return lookups;
     }
 
     /**

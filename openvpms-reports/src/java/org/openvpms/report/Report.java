@@ -44,7 +44,7 @@ public interface Report {
      * Determines if the report accepts the named parameter.
      *
      * @param name the parameter name
-     * @return <tt>true</tt> if the report accepts the parameter, otherwise <tt>false</tt>
+     * @return {@code true} if the report accepts the parameter, otherwise {@code false}
      */
     boolean hasParameter(String name);
 
@@ -73,37 +73,37 @@ public interface Report {
      * <p/>
      * The default mime type will be used to select the output format.
      *
-     * @param parameters a map of parameter names and their values, to pass to
-     *                   the report
+     * @param parameters a map of parameter names and their values, to pass to the report
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @return a document containing the report
      * @throws ReportException               for any report error
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    Document generate(Map<String, Object> parameters);
+    Document generate(Map<String, Object> parameters, Map<String, Object> fields);
 
     /**
      * Generates a report.
      *
-     * @param parameters a map of parameter names and their values, to pass to
-     *                   the report
+     * @param parameters a map of parameter names and their values, to pass to the report
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @param mimeType   the output format of the report
      * @return a document containing the report
      * @throws ReportException               for any report error
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    Document generate(Map<String, Object> parameters, String mimeType);
+    Document generate(Map<String, Object> parameters, Map<String, Object> fields, String mimeType);
 
     /**
      * Prints a report directly to a printer.
      *
-     * @param parameters a map of parameter names and their values, to pass to
-     *                   the report
+     * @param parameters a map of parameter names and their values, to pass to the report
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @param properties the print properties
      * @throws ReportException               for any report error
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    void print(Map<String, Object> parameters, PrintProperties properties);
+    void print(Map<String, Object> parameters, Map<String, Object> fields, PrintProperties properties);
 }

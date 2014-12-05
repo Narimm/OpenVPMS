@@ -12,23 +12,24 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.report;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ObjectSet;
+
+import java.util.Map;
+
 import static org.openvpms.report.ReportException.ErrorCode.NoExpressionEvaluatorForType;
 
 
 /**
  * Factory for {@link ExpressionEvaluator}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ExpressionEvaluatorFactory {
 
@@ -36,18 +37,18 @@ public class ExpressionEvaluatorFactory {
      * Creates a new evaluator for the supplied object.
      *
      * @param object  the object
+     * @param fields  a map of additional field names and their values, to pass to the report. May be {@code null}
      * @param service the archetype service
-     * @return a new evaluator for the object
+     * @param lookups the lookup service   @return a new evaluator for the object
      */
-    public static ExpressionEvaluator create(Object object,
-                                             IArchetypeService service) {
+    public static ExpressionEvaluator create(Object object, Map<String, Object> fields, IArchetypeService service,
+                                             ILookupService lookups) {
         if (object instanceof IMObject) {
-            return new IMObjectExpressionEvaluator((IMObject) object, service);
+            return new IMObjectExpressionEvaluator((IMObject) object, fields, service, lookups);
         } else if (object instanceof ObjectSet) {
-            return new ObjectSetExpressionEvaluator((ObjectSet) object,
-                                                    service);
+            return new ObjectSetExpressionEvaluator((ObjectSet) object, fields, service, lookups);
         }
-        throw new ReportException(NoExpressionEvaluatorForType,
-                                  object.getClass().getName());
+        throw new ReportException(NoExpressionEvaluatorForType, object.getClass().getName());
     }
+
 }

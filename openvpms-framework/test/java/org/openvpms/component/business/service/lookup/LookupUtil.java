@@ -12,13 +12,10 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.component.business.service.lookup;
 
-import junit.framework.Assert;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -30,14 +27,15 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.Assert.assertNotNull;
+
 
 /**
  * Lookup helper methods for test purposes.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Jim Alateras
  */
-public class LookupUtil extends Assert {
+public class LookupUtil {
 
     /**
      * Helper to create a new lookup, with a unique code.

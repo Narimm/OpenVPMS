@@ -12,41 +12,47 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.report.openoffice;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ParameterType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.Date;
+import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.text.DateFormat;
-import java.sql.Date;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 /**
  * {@link OpenOfficeIMReport} test case.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeDocumentTest {
+
+    /**
+     * The lookup service.
+     */
+    @Autowired
+    private ILookupService lookups;
 
     /**
      * Tests reporting.
@@ -57,7 +63,8 @@ public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeDocumentTest {
     public void testReport() throws IOException {
         Document doc = getDocument("src/test/reports/act.customerEstimation.odt", DocFormats.ODT_TYPE);
 
-        IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(doc, getHandlers());
+        IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(doc, getArchetypeService(), lookups,
+                                                                     getHandlers());
 
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
@@ -88,7 +95,8 @@ public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeDocumentTest {
     public void testParameters() {
         Document doc = getDocument("src/test/reports/act.customerEstimation.odt", DocFormats.ODT_TYPE);
 
-        IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(doc, getHandlers());
+        IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(doc, getArchetypeService(), lookups,
+                                                                     getHandlers());
 
         Set<ParameterType> parameterTypes = report.getParameterTypes();
         Map<String, ParameterType> types = new HashMap<String, ParameterType>();
@@ -109,7 +117,7 @@ public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeDocumentTest {
         act.setParticipant("participation.customer", party);
 
         List<IMObject> objects = Arrays.asList((IMObject) act.getAct());
-        Document result = report.generate(objects.iterator(), parameters, DocFormats.ODT_TYPE);
+        Document result = report.generate(objects.iterator(), parameters, null, DocFormats.ODT_TYPE);
 
         Map<String, String> inputFields = getInputFields(result);
         assertEquals("the input value", inputFields.get("inputField1"));
