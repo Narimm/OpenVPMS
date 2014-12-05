@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.macro.MacroException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
@@ -49,6 +50,11 @@ public class ReportMacroRunner extends AbstractExpressionMacroRunner {
     private final IArchetypeService service;
 
     /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
+
+    /**
      * The document handlers for deserialising documents.
      */
     private final DocumentHandlers handlers;
@@ -63,11 +69,14 @@ public class ReportMacroRunner extends AbstractExpressionMacroRunner {
      *
      * @param context  the macro context
      * @param service  the archetype service
+     * @param lookups  the lookup service
      * @param handlers the document handlers for deserialising documents
      */
-    public ReportMacroRunner(MacroContext context, IArchetypeService service, DocumentHandlers handlers) {
+    public ReportMacroRunner(MacroContext context, IArchetypeService service, ILookupService lookups,
+                             DocumentHandlers handlers) {
         super(context);
         this.service = service;
+        this.lookups = lookups;
         this.handlers = handlers;
     }
 
@@ -87,10 +96,10 @@ public class ReportMacroRunner extends AbstractExpressionMacroRunner {
         if (object instanceof IMObject) {
             Document document = getTemplate(reportMacro);
             Map<String, Object> parameters = new HashMap<String, Object>();
-            IMReport<IMObject> report = ReportFactory.createIMObjectReport(document, service, handlers);
+            IMReport<IMObject> report = ReportFactory.createIMObjectReport(document, service, lookups, handlers);
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             List<IMObject> objects = Arrays.asList((IMObject) object);
-            report.generate(objects.iterator(), parameters, DocFormats.TEXT_TYPE, output);
+            report.generate(objects.iterator(), parameters, null, DocFormats.TEXT_TYPE, output);
             try {
                 result = new String(output.toByteArray(), ENCODING);
             } catch (UnsupportedEncodingException exception) {

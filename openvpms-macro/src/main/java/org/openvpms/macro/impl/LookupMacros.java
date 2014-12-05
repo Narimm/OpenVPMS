@@ -83,7 +83,7 @@ public class LookupMacros implements Macros {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public LookupMacros(ILookupService service, IArchetypeService archetypeService, DocumentHandlers handlers) {
-        factory = new MacroFactory(archetypeService, handlers);
+        factory = new MacroFactory(archetypeService, service, handlers);
 
         for (String shortName : MacroArchetypes.LOOKUP_MACROS) {
             addMacros(shortName, service);

@@ -26,6 +26,7 @@ import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.report.DocumentActReporter;
+import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.im.util.AbstractIMObjectSaveListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.macro.MacroVariables;
@@ -195,6 +196,7 @@ public class DocumentGenerator {
     public void generate(boolean save, boolean version, boolean skip) {
         if (DocumentActReporter.hasTemplate(act)) {
             DocumentActReporter reporter = new DocumentActReporter(act);
+            reporter.setFields(ReportContextFactory.create(context));
             Set<ParameterType> parameters = reporter.getParameterTypes();
             boolean isLetter = TypeHelper.isA(act, "act.*Letter");
             if (parameters.isEmpty() || !isLetter) {
@@ -215,6 +217,16 @@ public class DocumentGenerator {
     }
 
     /**
+     * Generates a document.
+     *
+     * @param reporter the reporter
+     * @return the generated document
+     */
+    protected Document generate(DocumentActReporter reporter) {
+        return reporter.getDocument();
+    }
+
+    /**
      * Generates a document from a report.
      *
      * @param reporter the reporter
@@ -222,7 +234,7 @@ public class DocumentGenerator {
      * @param version  if {@code true}  and saving the document, version any old document if the act supports it
      */
     private void generate(DocumentActReporter reporter, boolean save, boolean version) {
-        document = reporter.getDocument();
+        document = generate(reporter);
 
         if (save) {
             DocumentRules rules = new DocumentRules();

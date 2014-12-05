@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.print;
@@ -29,11 +27,10 @@ import java.util.Map;
 /**
  * Abstract implementation of the {@link IMPrinter} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractIMPrinter<T>
-    extends AbstractPrinter implements IMPrinter<T> {
+        extends AbstractPrinter implements IMPrinter<T> {
 
     /**
      * The reporter.
@@ -42,7 +39,7 @@ public abstract class AbstractIMPrinter<T>
 
 
     /**
-     * Constructs a new <tt>AbstractIMPrinter</tt>.
+     * Constructs an {@link AbstractIMPrinter}.
      *
      * @param reporter the reporter
      */
@@ -62,10 +59,8 @@ public abstract class AbstractIMPrinter<T>
     /**
      * Prints the object.
      *
-     * @param printer the printer name. May be <tt>null</tt>
-     * @throws PrintException    if <tt>printer</tt> is null and
-     *                           {@link #getDefaultPrinter()} also returns
-     *                           <tt>null</tt>
+     * @param printer the printer name. May be {@code null}
+     * @throws PrintException    if {@code printer} is null and {@link #getDefaultPrinter()} also returns {@code null}
      * @throws OpenVPMSException for any error
      */
     public void print(String printer) {
@@ -81,8 +76,7 @@ public abstract class AbstractIMPrinter<T>
     /**
      * Sets parameters to pass to the report.
      *
-     * @param parameters a map of parameter names and their values, to pass to
-     *                   the report. May be <tt>null</tt>
+     * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
      */
     public void setParameters(Map<String, Object> parameters) {
         reporter.setParameters(parameters);
@@ -92,10 +86,19 @@ public abstract class AbstractIMPrinter<T>
      * Returns a map of parameters names and their values, to pass to the
      * report.
      *
-     * @return a map of parameter names and their values. May be <tt>null</tt>
+     * @return a map of parameter names and their values. May be {@code null}
      */
     public Map<String, Object> getParameters() {
         return reporter.getParameters();
+    }
+
+    /**
+     * Sets fields to pass to the report.
+     *
+     * @param fields a map of field names and their values, to pass to the report. May be {@code null}
+     */
+    public void setFields(Map<String, Object> fields) {
+        reporter.setFields(fields);
     }
 
     /**
@@ -111,8 +114,8 @@ public abstract class AbstractIMPrinter<T>
     /**
      * Returns a document corresponding to that which would be printed.
      *
-     * @param mimeType the mime type. If <tt>null</tt> the default mime type associated with the report will be used.
-     * @param email    if <tt>true</tt> indicates that the document will be emailed. Documents generated from templates
+     * @param mimeType the mime type. If {@code null} the default mime type associated with the report will be used.
+     * @param email    if {@code true} indicates that the document will be emailed. Documents generated from templates
      *                 can perform custom formatting
      * @return a document
      * @throws OpenVPMSException for any error
@@ -124,7 +127,7 @@ public abstract class AbstractIMPrinter<T>
     /**
      * Returns the object being printed.
      *
-     * @return the object being printed, or <tt>null</tt> if a collection
+     * @return the object being printed, or {@code null} if a collection
      *         is being printed
      */
     protected T getObject() {

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.report;
@@ -25,6 +23,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ReportException;
@@ -38,13 +37,12 @@ import static org.openvpms.report.ReportException.ErrorCode.NoTemplateForArchety
 /**
  * Generates {@link Document}s from one or more {@link ObjectSet}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ObjectSetReporter extends TemplatedReporter<ObjectSet> {
 
     /**
-     * Constructs an <tt>ObjectSetReporter</tt> for a collection of objects.
+     * Constructs an {@link ObjectSetReporter} for a collection of objects.
      *
      * @param objects  the objects to print
      * @param template the document template to use
@@ -54,7 +52,7 @@ public class ObjectSetReporter extends TemplatedReporter<ObjectSet> {
     }
 
     /**
-     * Constructs an <tt>ObjectSetReporter</tt> for a collection of objects.
+     * Constructs an {@link ObjectSetReporter} for a collection of objects.
      *
      * @param objects the objects to print
      * @param locator the document template locator
@@ -78,12 +76,13 @@ public class ObjectSetReporter extends TemplatedReporter<ObjectSet> {
             throw new ReportException(NoTemplateForArchetype, displayName);
         }
         IArchetypeService service = ServiceHelper.getArchetypeService();
+        ILookupService lookups = ServiceHelper.getLookupService();
         DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
         Document doc = getTemplateDocument();
         if (doc == null) {
             throw new DocumentException(NotFound);
         }
-        return ReportFactory.createObjectSetReport(doc, service, handlers);
+        return ReportFactory.createObjectSetReport(doc, service, lookups, handlers);
     }
 
 }

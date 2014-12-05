@@ -33,8 +33,7 @@ import org.openvpms.web.component.app.Context;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode
-    .InvalidObject;
+import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode.InvalidObject;
 
 /**
  * Returns macro variables from an {@link Context}.
@@ -199,8 +198,9 @@ public class MacroVariables extends IMObjectVariables {
                 return (mapping == null) ? variables.exists(name) : getContextObject(name, mapping) != null;
             }
 
-            protected Object resolve(IMObject object, String name) {
-                return MacroVariables.this.resolve(object, name);
+            @Override
+            public Object getObject(String name) {
+                return MacroVariables.this.getValue(resolve(name));
             }
         };
     }
