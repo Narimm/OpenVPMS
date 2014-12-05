@@ -31,6 +31,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -62,6 +63,11 @@ public class ReportTool {
     private final IArchetypeService service;
 
     /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
+
+    /**
      * The document handlers.
      */
     private final DocumentHandlers handlers;
@@ -80,7 +86,8 @@ public class ReportTool {
             context = new FileSystemXmlApplicationContext(contextPath);
         }
         service = (IArchetypeService) context.getBean("archetypeService");
-        handlers = (DocumentHandlers) context.getBean("documentHandlers");
+        lookups = context.getBean(ILookupService.class);
+        handlers = context.getBean(DocumentHandlers.class);
     }
 
     /**
@@ -95,7 +102,7 @@ public class ReportTool {
         IPage<IMObject> rows = service.get(query);
         for (IMObject object : rows.getResults()) {
             System.out.println(object.getArchetypeId().getShortName()
-                    + " " + object.getId() + " " + object.getName());
+                               + " " + object.getId() + " " + object.getName());
         }
     }
 
@@ -120,7 +127,7 @@ public class ReportTool {
      * Returns the first instance with the specified short name and uid
      *
      * @param shortName the archetype short name
-     * @param id       the instance identifier
+     * @param id        the instance identifier
      * @return the corresponding object, or <code>null</code> if none was found
      */
     public IMObject get(String shortName, long id) {
@@ -204,8 +211,7 @@ public class ReportTool {
      */
     protected IMReport<IMObject> getReport(IMObject object) {
         String shortName = object.getArchetypeId().getShortName();
-        return ReportFactory.createIMObjectReport(shortName, service,
-                                                  handlers);
+        return ReportFactory.createIMObjectReport(shortName, service, lookups, handlers);
     }
 
     /**
@@ -215,6 +221,15 @@ public class ReportTool {
      */
     protected IArchetypeService getArchetypeService() {
         return service;
+    }
+
+    /**
+     * Returns the lookup service.
+     *
+     * @return the lookup service
+     */
+    protected ILookupService getLookupService() {
+        return lookups;
     }
 
     /**
@@ -248,26 +263,26 @@ public class ReportTool {
         JSAP parser = new JSAP();
 
         parser.registerParameter(new FlaggedOption("context").setShortFlag('c')
-                .setLongFlag("context")
-                .setDefault("applicationContext.xml")
-                .setHelp("Application context path"));
+                                         .setLongFlag("context")
+                                         .setDefault("applicationContext.xml")
+                                         .setHelp("Application context path"));
         parser.registerParameter(new Switch("report").setShortFlag('r')
-                .setHelp("Generate a report for the specified archetype"));
+                                         .setHelp("Generate a report for the specified archetype"));
         parser.registerParameter(new Switch("list").setShortFlag('l')
-                .setHelp("List archetypes with the specified short name"));
+                                         .setHelp("List archetypes with the specified short name"));
         parser.registerParameter(new FlaggedOption("shortName")
-                .setShortFlag('s').setLongFlag("shortName")
-                .setHelp("The archetype short name"));
+                                         .setShortFlag('s').setLongFlag("shortName")
+                                         .setHelp("The archetype short name"));
         parser.registerParameter(new FlaggedOption("name")
-                .setShortFlag('n').setLongFlag("name")
-                .setHelp("The archetype name. Use with -r"));
+                                         .setShortFlag('n').setLongFlag("name")
+                                         .setHelp("The archetype name. Use with -r"));
         parser.registerParameter(new FlaggedOption("id")
-                .setShortFlag('i').setLongFlag("id")
-                .setStringParser(JSAP.LONG_PARSER)
-                .setHelp("The archetype id. Use with -r"));
+                                         .setShortFlag('i').setLongFlag("id")
+                                         .setStringParser(JSAP.LONG_PARSER)
+                                         .setHelp("The archetype id. Use with -r"));
         parser.registerParameter(new FlaggedOption("output").setShortFlag('o')
-                .setLongFlag("output")
-                .setHelp("Save report to file. Use with -r"));
+                                         .setLongFlag("output")
+                                         .setHelp("Save report to file. Use with -r"));
         return parser;
     }
 

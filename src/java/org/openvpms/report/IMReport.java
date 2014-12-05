@@ -63,38 +63,42 @@ public interface IMReport<T> extends Report {
      *
      * @param objects    the objects to report on
      * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @return a document containing the report
      * @throws ReportException               for any report error
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    Document generate(Iterator<T> objects, Map<String, Object> parameters);
+    Document generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields);
 
     /**
      * Generates a report for a collection of objects.
      *
      * @param objects    the objects to report on
      * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @param mimeType   the output format of the report
      * @return a document containing the report
      * @throws ReportException               for any report error
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    Document generate(Iterator<T> objects, Map<String, Object> parameters, String mimeType);
+    Document generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields, String mimeType);
 
     /**
      * Generates a report for a collection of objects to the specified stream.
      *
      * @param objects    the objects to report on
      * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @param mimeType   the output format of the report
      * @param stream     the stream to write to
      * @throws ReportException               for any report error
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    void generate(Iterator<T> objects, Map<String, Object> parameters, String mimeType, OutputStream stream);
+    void generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields, String mimeType,
+                  OutputStream stream);
 
     /**
      * Prints a report directly to a printer.
@@ -112,12 +116,13 @@ public interface IMReport<T> extends Report {
      *
      * @param objects    the objects to report on
      * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @param properties the print properties
      * @throws ReportException               for any report error
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    void print(Iterator<T> objects, Map<String, Object> parameters, PrintProperties properties);
-
+    void print(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
+               PrintProperties properties);
 
 }

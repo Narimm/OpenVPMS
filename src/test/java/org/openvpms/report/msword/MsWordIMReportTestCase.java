@@ -12,14 +12,10 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: OpenOfficeIMReportTestCase.java 1713 2007-01-11 06:21:23Z tanderson $
  */
 
 package org.openvpms.report.msword;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -40,12 +36,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * {@link MsWordIMReport} test case.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2007-01-11 17:21:23 +1100 (Thu, 11 Jan 2007) $
+ * @author Tim Anderson
  */
 public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
 
@@ -58,7 +56,7 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
     public void testReport() throws IOException {
         Document doc = getDocument("src/test/reports/act.customerEstimation.doc", DocFormats.DOC_TYPE);
 
-        IMReport<IMObject> report = new MsWordIMReport<IMObject>(doc, getHandlers());
+        IMReport<IMObject> report = new MsWordIMReport<IMObject>(doc, getArchetypeService(), getLookups(), getHandlers());
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
         act.setValue("startTime", java.sql.Date.valueOf("2006-08-04"));
@@ -75,14 +73,14 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
     }
 
     /**
-     * Verfies that input fields are returned as parameters, and that
+     * Verifies that input fields are returned as parameters, and that
      * by specifying it as a parameter updates the corresponding input field.
      */
     @Test
     public void testParameters() {
         Document doc = getDocument("src/test/reports/act.customerEstimation.doc", DocFormats.DOC_TYPE);
 
-        IMReport<IMObject> report = new MsWordIMReport<IMObject>(doc, getHandlers());
+        IMReport<IMObject> report = new MsWordIMReport<IMObject>(doc, getArchetypeService(), getLookups(), getHandlers());
 
         Set<ParameterType> parameterTypes = report.getParameterTypes();
         Map<String, ParameterType> types = new HashMap<String, ParameterType>();
@@ -99,9 +97,7 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
         act.setParticipant("participation.customer", party);
 
         List<IMObject> objects = Arrays.asList((IMObject) act.getAct());
-        Document result = report.generate(objects.iterator(),
-                                          parameters,
-                                          DocFormats.ODT_TYPE);
+        Document result = report.generate(objects.iterator(), parameters, null, DocFormats.ODT_TYPE);
 
         Map<String, String> inputFields = getInputFields(result);
         assertEquals("the input value", inputFields.get("Enter Field 1"));

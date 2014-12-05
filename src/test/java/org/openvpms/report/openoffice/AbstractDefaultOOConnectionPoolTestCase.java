@@ -12,21 +12,18 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.report.openoffice;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 
 /**
- * bstract test case for {@link DefaultOOConnectionPool}.
+ * Abstract test case for {@link DefaultOOConnectionPool}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractDefaultOOConnectionPoolTestCase
         extends AbstractOOConnectionPoolTestCase {

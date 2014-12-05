@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.report.jasper;
@@ -22,19 +20,30 @@ import org.junit.Test;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ResolvingPropertySet;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.system.common.util.PropertySet;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the {@link IMObjectCollectionDataSource} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class IMObjectCollectionDataSourceTestCase extends AbstractIMObjectDataSourceTestCase {
+
+    /**
+     * The lookup service.
+     */
+    @Autowired
+    private ILookupService lookups;
 
     /**
      * Tests the {@link IMObjectCollectionDataSource#getExpressionDataSource(String)} method.
@@ -45,10 +54,14 @@ public class IMObjectCollectionDataSourceTestCase extends AbstractIMObjectDataSo
     public void testExpressionDataSource() throws Exception {
         Party customer = TestHelper.createCustomer(false);
         List<IMObject> objects = Arrays.<IMObject>asList(customer);
-        IMObjectCollectionDataSource ds = new IMObjectCollectionDataSource(objects.iterator(), getArchetypeService(),
-                                                                           handlers);
+        Map<String, Object> fields = new HashMap<String, Object>();
+        fields.put("Globals.A", "A");
+        fields.put("Globals.1", 1);
+        PropertySet f = new ResolvingPropertySet(fields, getArchetypeService());
+        IMObjectCollectionDataSource ds = new IMObjectCollectionDataSource(objects.iterator(), f,
+                                                                           getArchetypeService(), lookups, handlers);
         assertTrue(ds.next());
-        checkExpressionDataSource(ds);
+        checkExpressionDataSource(ds, f);
     }
 
 }

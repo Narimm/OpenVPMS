@@ -12,39 +12,38 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.report;
 
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
 import java.math.BigDecimal;
-import java.util.Date;
 import java.text.DateFormat;
+import java.util.Date;
+
+import static org.junit.Assert.assertEquals;
 
 
 /**
  * Tests the {@link IMObjectExpressionEvaluator} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class IMObjectExpressionEvaluatorTestCase extends ArchetypeServiceTest {
+public class IMObjectExpressionEvaluatorTestCase extends AbstractReportTest {
 
     /**
      * Tests the {@link IMObjectExpressionEvaluator#getValue(String)} method.
      */
     @Test
     public void testGetValue() {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = LookupServiceHelper.getLookupService();
 
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
@@ -54,8 +53,7 @@ public class IMObjectExpressionEvaluatorTestCase extends ArchetypeServiceTest {
         act.setValue("lowTotal", lowTotal);
         act.setParticipant("participation.customer", party);
 
-        ExpressionEvaluator eval
-                = new IMObjectExpressionEvaluator(act.getAct(), service);
+        ExpressionEvaluator eval = new IMObjectExpressionEvaluator(act.getAct(), null, service, lookups);
         assertEquals(date, eval.getValue("startTime"));
         assertEquals(lowTotal, eval.getValue("lowTotal"));
         assertEquals("J", eval.getValue("customer.entity.firstName"));
@@ -64,14 +62,11 @@ public class IMObjectExpressionEvaluatorTestCase extends ArchetypeServiceTest {
         // test [] expressions
         assertEquals(new BigDecimal(2), eval.getValue("[1 + 1]"));
 
-        String expression = "[party:getBillingAddress("
-                            + "openvpms:get(., 'customer.entity'))]";
-        assertEquals("1234 Foo St\nMelbourne VIC 3001",
-                     eval.getValue(expression));
+        String expression = "[party:getBillingAddress(openvpms:get(., 'customer.entity'))]";
+        assertEquals("1234 Foo St\nMelbourne VIC 3001", eval.getValue(expression));
 
         // test invalid nodes
-        assertEquals("Invalid property name: act.customer.foo",
-                     eval.getValue("act.customer.foo"));
+        assertEquals("Invalid property name: act.customer.foo", eval.getValue("act.customer.foo"));
     }
 
     /**
@@ -80,8 +75,8 @@ public class IMObjectExpressionEvaluatorTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testGetFormattedValue() {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = LookupServiceHelper.getLookupService();
 
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
@@ -91,7 +86,7 @@ public class IMObjectExpressionEvaluatorTestCase extends ArchetypeServiceTest {
         act.setValue("lowTotal", lowTotal);
         act.setParticipant("participation.customer", party);
 
-        ExpressionEvaluator eval = new IMObjectExpressionEvaluator(act.getAct(), service);
+        ExpressionEvaluator eval = new IMObjectExpressionEvaluator(act.getAct(), null, service, lookups);
         String expectedDate = DateFormat.getDateInstance(DateFormat.MEDIUM).format(date);
         assertEquals(expectedDate, eval.getFormattedValue("startTime"));
         assertEquals("$100.00", eval.getFormattedValue("lowTotal"));
@@ -101,14 +96,11 @@ public class IMObjectExpressionEvaluatorTestCase extends ArchetypeServiceTest {
         // test [] expressions
         assertEquals("2.00", eval.getFormattedValue("[1 + 1]"));
 
-        String expression = "[party:getBillingAddress("
-                            + "openvpms:get(., 'customer.entity'))]";
-        assertEquals("1234 Foo St\nMelbourne VIC 3001",
-                     eval.getFormattedValue(expression));
+        String expression = "[party:getBillingAddress(openvpms:get(., 'customer.entity'))]";
+        assertEquals("1234 Foo St\nMelbourne VIC 3001", eval.getFormattedValue(expression));
 
         // test invalid nodes
-        assertEquals("Invalid property name: act.customer.foo",
-                     eval.getValue("act.customer.foo"));
+        assertEquals("Invalid property name: act.customer.foo", eval.getValue("act.customer.foo"));
     }
 
 }
