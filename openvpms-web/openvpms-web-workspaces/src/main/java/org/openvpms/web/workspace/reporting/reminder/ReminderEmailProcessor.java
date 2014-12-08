@@ -35,6 +35,8 @@ import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.report.IMObjectReporter;
 import org.openvpms.web.component.im.report.ObjectSetReporter;
+import org.openvpms.web.component.im.report.ReportContextFactory;
+import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.reporting.ReportingException;
 import org.openvpms.web.workspace.reporting.email.EmailAddress;
@@ -47,6 +49,7 @@ import javax.mail.internet.MimeMessage;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
 import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.ReminderMissingDocTemplate;
@@ -76,7 +79,13 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
     private final PracticeEmailAddresses addresses;
 
     /**
-     * Constructs a {@code ReminderEmailProcessor}.
+     * Fields to pass to the report.
+     */
+    private Map<String, Object> fields;
+
+
+    /**
+     * Constructs a {@link ReminderEmailProcessor}.
      *
      * @param sender        the mail sender
      * @param practice      the practice
@@ -90,6 +99,7 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
         handlers = ServiceHelper.getDocumentHandlers();
 
         addresses = new PracticeEmailAddresses(practice, "REMINDER");
+        fields = ReportContextFactory.create(getContext());
     }
 
     /**
@@ -162,18 +172,25 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
         Document result;
         if (events.size() > 1) {
             List<ObjectSet> sets = createObjectSets(events);
-            ObjectSetReporter reporter = new ObjectSetReporter(sets, documentTemplate);
-            result = reporter.getDocument(DocFormats.PDF_TYPE, true);
+            result = getDocument(new ObjectSetReporter(sets, documentTemplate));
         } else {
             List<Act> acts = new ArrayList<Act>();
             for (ReminderEvent event : events) {
                 acts.add(event.getReminder());
             }
-            IMObjectReporter<Act> reporter = new IMObjectReporter<Act>(acts, documentTemplate);
-            result = reporter.getDocument(DocFormats.PDF_TYPE, true);
+            result = getDocument(new IMObjectReporter<Act>(acts, documentTemplate));
         }
         return result;
     }
 
-
+    /**
+     * Generates the reminder document to email.
+     *
+     * @param reporter the document generator
+     * @return the generated document
+     */
+    private Document getDocument(Reporter<?> reporter) {
+        reporter.setFields(fields);
+        return reporter.getDocument(DocFormats.PDF_TYPE, true);
+    }
 }

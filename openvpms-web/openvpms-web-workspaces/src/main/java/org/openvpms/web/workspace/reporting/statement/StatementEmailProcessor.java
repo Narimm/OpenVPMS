@@ -34,6 +34,8 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.im.report.TemplatedReporter;
@@ -47,6 +49,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import javax.mail.internet.MimeMessage;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.FailedToProcessStatement;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.InvalidConfiguration;
@@ -91,16 +94,22 @@ public class StatementEmailProcessor
      */
     private DocumentTemplate template;
 
+    /**
+     * Fields to pass to the report.
+     */
+    private Map<String, Object> fields;
+
 
     /**
-     * Constructs a new <tt>StatementEmailProcessor</tt>.
+     * Constructs a {@link StatementEmailProcessor}.
      *
      * @param sender   the mail sender
      * @param practice the practice
+     * @param context  the context
      * @throws ArchetypeServiceException   for any archetype service error
      * @throws StatementProcessorException for any statement processor error
      */
-    public StatementEmailProcessor(JavaMailSender sender, Party practice) {
+    public StatementEmailProcessor(JavaMailSender sender, Party practice, Context context) {
         super(practice);
         this.sender = sender;
         addresses = new PracticeEmailAddresses(practice, "BILLING");
@@ -120,6 +129,7 @@ public class StatementEmailProcessor
         if (StringUtils.isEmpty(emailText)) {
             throw new StatementProcessorException(InvalidConfiguration, "Template has no email text");
         }
+        fields = ReportContextFactory.create(context);
     }
 
     /**
@@ -152,6 +162,7 @@ public class StatementEmailProcessor
             Iterable<IMObject> objects = getActs(statement);
             Reporter reporter = ReporterFactory.create(objects, template, TemplatedReporter.class);
             reporter.setParameters(getParameters(statement));
+            reporter.setFields(fields);
             final Document doc = reporter.getDocument(DocFormats.PDF_TYPE, true);
 
             final DocumentHandler handler = handlers.get(

@@ -39,6 +39,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.doc.DocumentTestHelper;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.OpenVPMSApp;
@@ -74,7 +75,10 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         ApplicationInstance.setActive(app);
         app.doInit();
 
-        TemplateHelper helper = new TemplateHelper(ServiceHelper.getArchetypeService());
+        Party practice = getPractice();
+        practice.addContact(TestHelper.createEmailContact("foo@bar.com"));
+
+        TemplateHelper helper = new TemplateHelper(getArchetypeService());
         Entity entity = helper.getTemplateForArchetype(CustomerAccountArchetypes.OPENING_BALANCE);
         if (entity == null) {
             entity = (Entity) create(DocumentArchetypes.DOCUMENT_TEMPLATE);
@@ -103,8 +107,6 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         Date statementDate = getDate("2007-01-01");
 
         Party practice = getPractice();
-        practice.addContact(TestHelper.createEmailContact("foo@vet.com"));
-
         Party customer = getCustomer();
         addCustomerEmail(customer);
         save(customer);
@@ -135,7 +137,7 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         });
         processor.process(customer);
         assertEquals(1, statements.size());
-        StatementEmailProcessor emailProcessor = new StatementEmailProcessor(sender, practice);
+        StatementEmailProcessor emailProcessor = new StatementEmailProcessor(sender, practice, new LocalContext());
         emailProcessor.process(statements.get(0));
         Mockito.verify(sender, times(1)).send(mimeMessage);
     }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -84,7 +84,6 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
      */
     private static final Log log = LogFactory.getLog(StatementPrintProcessor.class);
 
-
     /**
      * Constructs a {@code StatementPrintProcessor}.
      *
@@ -125,7 +124,6 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
                                                                              context);
         IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(statement.getActs(), locator, context);
         printer.setParameters(getParameters(statement));
-
         print(printer, statement);
     }
 

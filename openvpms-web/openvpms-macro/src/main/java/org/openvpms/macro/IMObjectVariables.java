@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro;
@@ -19,23 +19,15 @@ package org.openvpms.macro;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
-import org.openvpms.component.business.service.archetype.helper.NodeResolver;
 import org.openvpms.component.business.service.archetype.helper.PropertyResolver;
 import org.openvpms.component.business.service.archetype.helper.PropertyResolverException;
 import org.openvpms.component.business.service.archetype.helper.PropertySetResolver;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.system.common.util.AbstractPropertySet;
+import org.openvpms.component.system.common.util.MapPropertySet;
 import org.openvpms.component.system.common.util.PropertySet;
-import org.openvpms.component.system.common.util.PropertySetException;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import static org.openvpms.component.system.common.util.PropertySetException.ErrorCode.PropertyNotFound;
+import org.openvpms.component.system.common.util.PropertyState;
 
 /**
  * An implementation of {@link Variables} that supports simple variable names,
@@ -61,7 +53,7 @@ public class IMObjectVariables implements Variables {
     /**
      * The variables.
      */
-    private final Properties variables = new Properties();
+    private final PropertySet variables = new MapPropertySet();
 
     /**
      * The property resolver. This is lazily constructed.
@@ -75,7 +67,7 @@ public class IMObjectVariables implements Variables {
 
 
     /**
-     * Constructs an {@code IMObjectVariables}.
+     * Constructs an {@link IMObjectVariables}.
      *
      * @param service the archetype service
      * @param lookups the lookup service
@@ -138,27 +130,23 @@ public class IMObjectVariables implements Variables {
     protected PropertyResolver createResolver(PropertySet variables, IArchetypeService service) {
         resolver = new PropertySetResolver(variables, service) {
             @Override
-            protected Object resolve(IMObject object, String name) {
-                return IMObjectVariables.this.resolve(object, name);
+            public Object getObject(String name) {
+                return IMObjectVariables.this.getValue(resolve(name));
             }
         };
         return resolver;
     }
 
     /**
-     * Resolves the value corresponding to a composite node name.
+     * Returns the value of a property.
      * <p/>
      * This returns the name of a lookup, rather than its code.
      *
-     * @param object the root object
-     * @param name   the composite node name
-     * @return the resolved object
-     * @throws PropertyResolverException if the name is invalid
+     * @param state the property state
+     * @return the property value
      */
-    protected Object resolve(IMObject object, String name) {
-        NodeResolver resolver = new NodeResolver(object, service);
-        NodeResolver.State state = resolver.resolve(name);
-        NodeDescriptor descriptor = state.getLeafNode();
+    protected Object getValue(PropertyState state) {
+        NodeDescriptor descriptor = state.getNode();
         Object value;
         if (descriptor != null && descriptor.isLookup()) {
             value = LookupHelper.getName(service, lookupService, descriptor, state.getParent());
@@ -180,48 +168,4 @@ public class IMObjectVariables implements Variables {
         return resolver;
     }
 
-    /**
-     * An implementation of {@link PropertySet} using a map.
-     */
-    private static class Properties extends AbstractPropertySet {
-
-        /**
-         * The properties.
-         */
-        private Map<String, Object> properties = new HashMap<String, Object>();
-
-        /**
-         * Returns the property names.
-         *
-         * @return the property names
-         */
-        public Set<String> getNames() {
-            return properties.keySet();
-        }
-
-        /**
-         * Returns the value of a property.
-         *
-         * @param name the property name
-         * @return the value of the property
-         * @throws org.openvpms.component.system.common.exception.OpenVPMSException
-         *          if the property doesn't exist
-         */
-        public Object get(String name) {
-            if (properties.containsKey(name)) {
-                return properties.get(name);
-            }
-            throw new PropertySetException(PropertyNotFound, name);
-        }
-
-        /**
-         * Sets the value of a property.
-         *
-         * @param name  the property name
-         * @param value the property value
-         */
-        public void set(String name, Object value) {
-            properties.put(name, value);
-        }
-    }
 }

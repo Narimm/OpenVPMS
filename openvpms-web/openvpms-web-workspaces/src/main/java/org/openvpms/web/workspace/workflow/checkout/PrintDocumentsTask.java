@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkout;
@@ -35,6 +35,7 @@ import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.mail.MailContext;
@@ -247,6 +248,7 @@ class PrintDocumentsTask extends AbstractTask {
             for (IMObject object : list) {
                 ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
                 Reporter<IMObject> reporter = ReporterFactory.create(object, locator, Reporter.class);
+                reporter.setFields(ReportContextFactory.create(context));
                 Document document = reporter.getDocument(Reporter.DEFAULT_MIME_TYPE, true);
                 editor.addAttachment(document);
             }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -209,7 +209,7 @@ public class DocumentViewer {
             if (hasDoc) {
                 if (link) {
                     if (parent instanceof DocumentAct) {
-                        downloader = new DocumentActDownloader((DocumentAct) parent, template);
+                        downloader = new DocumentActDownloader((DocumentAct) parent, template, context.getContext());
                     } else {
                         downloader = new DocumentRefDownloader(reference, name);
                     }
