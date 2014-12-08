@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -30,19 +28,21 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
+import org.openvpms.component.business.service.archetype.helper.ResolvingPropertySet;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.report.ExpressionEvaluator;
 import org.openvpms.report.IMObjectExpressionEvaluator;
 
 import java.util.Iterator;
+import java.util.Map;
 
 
 /**
- * Implementation of the <tt>JRDataSource</tt> interface, for a single
- * <tt>IMObject</tt>.
+ * Implementation of the {@code JRDataSource} interface, for a single {@link IMObject}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class IMObjectDataSource extends AbstractIMObjectDataSource {
 
@@ -50,6 +50,11 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
      * The source object.
      */
     private final IMObject object;
+
+    /**
+     * Additional fields. May be {@code null}
+     */
+    private final PropertySet fields;
 
     /**
      * The node resolver.
@@ -71,20 +76,35 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
      */
     private boolean next = true;
 
-
     /**
-     * Construct a new <tt>IMObjectDataSource</tt>.
+     * Constructs an {@link IMObjectDataSource}.
      *
      * @param object   the source object
+     * @param fields   a map of additional field names and their values, to pass to the report. May be {@code null}
      * @param service  the archetype service
      * @param handlers the document handlers
      */
-    public IMObjectDataSource(IMObject object, IArchetypeService service,
-                              DocumentHandlers handlers) {
-        super(service, handlers);
+    public IMObjectDataSource(IMObject object, Map<String, Object> fields, IArchetypeService service,
+                              ILookupService lookups, DocumentHandlers handlers) {
+        this(object, fields != null ? new ResolvingPropertySet(fields, service) : null, service, lookups, handlers);
+    }
+
+
+    /**
+     * Constructs an {@link IMObjectDataSource}.
+     *
+     * @param object   the source object
+     * @param fields   fields to pass to the report. May be {@code null}
+     * @param service  the archetype service
+     * @param handlers the document handlers
+     */
+    public IMObjectDataSource(IMObject object, PropertySet fields, IArchetypeService service,
+                              ILookupService lookups, DocumentHandlers handlers) {
+        super(service, lookups, handlers);
         this.object = object;
+        this.fields = fields;
         resolver = new NodeResolver(object, service);
-        evaluator = new IMObjectExpressionEvaluator(object, resolver);
+        evaluator = new IMObjectExpressionEvaluator(object, resolver, fields, service, lookups);
         this.handlers = handlers;
     }
 
@@ -92,8 +112,7 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
      * Tries to position the cursor on the next element in the data source.
      *
      * @return true if there is a next record, false otherwise
-     * @throws JRException if any error occurs while trying to move to the next
-     *                     element
+     * @throws JRException if any error occurs while trying to move to the next element
      */
     public boolean next() throws JRException {
         boolean result = next;
@@ -108,23 +127,20 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
      * @param sortNodes the list of nodes to sort on
      * @throws JRException for any error
      */
-    public JRDataSource getDataSource(String name, String[] sortNodes)
-            throws JRException {
+    public JRDataSource getDataSource(String name, String[] sortNodes) throws JRException {
         ArchetypeDescriptor archetype = resolver.getArchetype();
         NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
         if (descriptor == null) {
             throw new JRException("No node found for field=" + name);
         }
-        return new IMObjectCollectionDataSource(
-                object, descriptor, getArchetypeService(),
-                getDocumentHandlers(), sortNodes);
+        return new IMObjectCollectionDataSource(object, fields, descriptor, getArchetypeService(), getLookupService(),
+                                                getDocumentHandlers(), sortNodes);
     }
 
     /**
      * Returns a data source for the given jxpath expression.
      *
-     * @param expression the expression. Must return an <tt>Iterable<tt> or <tt>Iterator</tt> returning
-     *                   <tt>IMObjects</tt>
+     * @param expression the expression. Must return an {@code Iterable} or {@code Iterator} returning {@code IMObjects}
      * @return the data source
      * @throws JRException for any error
      */
@@ -143,14 +159,14 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
             throw new JRException("Unsupported value type=" + ((value != null) ? value.getClass() : null)
                                   + " returned by expression=" + expression);
         }
-        return new IMObjectCollectionDataSource(iterator, getArchetypeService(), getDocumentHandlers());
+        return new IMObjectCollectionDataSource(iterator, fields, getArchetypeService(), getLookupService(),
+                                                getDocumentHandlers());
     }
 
     /**
      * Gets the field value for the current position.
      *
-     * @return an object containing the field value.
-     *         The object type must be the field object type.
+     * @return an object containing the field value. The object type must be the field object type.
      * @throws JRException for any error
      */
     public Object getFieldValue(JRField field) throws JRException {

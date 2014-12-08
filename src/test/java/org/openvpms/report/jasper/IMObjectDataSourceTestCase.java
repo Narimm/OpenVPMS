@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -25,10 +23,15 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.ResolvingPropertySet;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -38,10 +41,15 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the {@link IMObjectDataSource} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCase {
+
+    /**
+     * The lookup service.
+     */
+    @Autowired
+    private ILookupService lookups;
 
     /**
      * Tests basic data source functionality.
@@ -99,9 +107,47 @@ public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCa
     @Test
     public void testExpressionDataSource() throws Exception {
         IMObject object = TestHelper.createCustomer(false);
-        IMObjectDataSource ds = createDataSource(object);
 
-        checkExpressionDataSource(ds);
+        Map<String, Object> fields = new HashMap<String, Object>();
+        fields.put("Globals.A", "A");
+        fields.put("Globals.1", 1);
+        IMObjectDataSource ds = createDataSource(object, fields);
+        checkExpressionDataSource(ds, new ResolvingPropertySet(fields, getArchetypeService()));
+    }
+
+    /**
+     * Tests fields.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testFields() throws Exception {
+        IMObject object = createCustomer("Foo", "Bar");
+        Map<String, Object> fields = new HashMap<String, Object>();
+        fields.put("fieldA", "A");
+        fields.put("field.B", "B");
+        fields.put("field1", 1);
+        fields.put("customer", object);
+        fields.put("title", "OVERRIDE");
+
+        IMObjectDataSource ds = createDataSource(object, fields);
+        JRField firstName = createField("firstName", String.class);
+        JRField lastName = createField("lastName", String.class);
+        JRField fieldA = createField("fieldA", String.class);
+        JRField fieldB = createField("field.B", String.class);
+        JRField field1 = createField("field1", Integer.class);
+        JRField customerFirstName = createField("customer.firstName", String.class);
+        JRField title = createField("title", String.class); // overrides the default field
+
+        assertTrue(ds.next());
+        assertEquals("Foo", ds.getFieldValue(firstName));
+        assertEquals("Bar", ds.getFieldValue(lastName));
+        assertEquals("A", ds.getFieldValue(fieldA));
+        assertEquals("B", ds.getFieldValue(fieldB));
+        assertEquals(1, ds.getFieldValue(field1));
+        assertEquals("Foo", ds.getFieldValue(customerFirstName));
+        assertEquals("OVERRIDE", ds.getFieldValue(title));
+        assertFalse(ds.next());
     }
 
     /**
@@ -111,7 +157,18 @@ public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCa
      * @return a new data source
      */
     private IMObjectDataSource createDataSource(IMObject object) {
-        return new IMObjectDataSource(object, getArchetypeService(), handlers);
+        return createDataSource(object, null);
+    }
+
+    /**
+     * Helper to create a new data source.
+     *
+     * @param object the object
+     * @param fields a map of additional field names and their values, to pass to the report. May be {@code null}
+     * @return a new data source
+     */
+    private IMObjectDataSource createDataSource(IMObject object, Map<String, Object> fields) {
+        return new IMObjectDataSource(object, fields, getArchetypeService(), lookups, handlers);
     }
 
 }

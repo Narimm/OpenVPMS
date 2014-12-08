@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
@@ -27,12 +25,14 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
-import org.openvpms.component.business.service.archetype.helper.NodeResolver;
+import org.openvpms.component.business.service.archetype.helper.PropertyResolver;
 import org.openvpms.component.business.service.archetype.helper.PropertyResolverException;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
+import org.openvpms.component.system.common.util.PropertySet;
+import org.openvpms.component.system.common.util.PropertyState;
 
 import java.math.BigDecimal;
 import java.text.DateFormat;
@@ -45,21 +45,29 @@ import java.util.Date;
 /**
  * Abstract implementation of the {@link ExpressionEvaluator} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public abstract class AbstractExpressionEvaluator<T>
-        implements ExpressionEvaluator {
+public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvaluator {
 
     /**
      * The object.
      */
-    protected final T object;
+    private final T object;
+
+    /**
+     * Additional report fields. May be {@code null}.
+     */
+    private final PropertySet fields;
 
     /**
      * The archetype service.
      */
-    protected final IArchetypeService service;
+    private final IArchetypeService service;
+
+    /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
 
     /**
      * The JXPath context.
@@ -73,38 +81,48 @@ public abstract class AbstractExpressionEvaluator<T>
 
 
     /**
-     * Constructs an <tt>AbstractExpressionEvaluator</tt>.
+     * Constructs an {@link AbstractExpressionEvaluator}.
      *
      * @param object  the object
+     * @param fields  additional report fields. These override any in the report. May be {@code null}
      * @param service the archetype service
+     * @param lookups the lookup service
      */
-    public AbstractExpressionEvaluator(T object, IArchetypeService service) {
+    public AbstractExpressionEvaluator(T object, PropertySet fields, IArchetypeService service,
+                                       ILookupService lookups) {
         this.object = object;
+        this.fields = fields;
         this.service = service;
+        this.lookups = lookups;
     }
 
     /**
      * Returns the value of an expression.
-     * If the expression is of the form [expr] it will be evaluated
-     * using {@link #evaluate(String)} else it will be evaluated using
-     * {@link #getNodeValue(String)}.
+     * If the expression is of the form [expr] it will be evaluated using {@link #evaluate(String)} else it will be
+     * evaluated using {@link #getNodeValue(String)}.
      *
      * @param expression the expression
      * @return the result of the expression
      */
     public Object getValue(String expression) {
+        Object result;
         try {
             if (expression.startsWith("[") && expression.endsWith("]")) {
                 String eval = expression.substring(1, expression.length() - 1);
-                return evaluate(eval);
+                result = evaluate(eval);
             } else {
-                return getNodeValue(expression);
+                if (fields != null && fields.exists(expression)) {
+                    result = getFieldValue(expression);
+                } else {
+                    result = getNodeValue(expression);
+                }
             }
         } catch (Exception exception) {
             log.warn("Failed to evaluate: " + expression, exception);
             // TODO localise
-            return "Expression Error";
+            result = "Expression Error";
         }
+        return result;
     }
 
     /**
@@ -113,6 +131,7 @@ public abstract class AbstractExpressionEvaluator<T>
      * @param expression the expression
      * @return the result of the expression
      */
+    @Override
     public String getFormattedValue(String expression) {
         Object value = getValue(expression);
         if (value instanceof Date) {
@@ -155,6 +174,16 @@ public abstract class AbstractExpressionEvaluator<T>
     protected abstract Object getNodeValue(String name);
 
     /**
+     * Returns a field value.
+     *
+     * @param name the field name
+     * @return the field value
+     */
+    protected Object getFieldValue(String name) {
+        return getValue(fields.resolve(name));
+    }
+
+    /**
      * Returns the object.
      *
      * @return the object
@@ -184,7 +213,7 @@ public abstract class AbstractExpressionEvaluator<T>
      * is null</li>
      * <ul>
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be {@code null}
      * @return a value for the object
      */
     protected String getValue(IMObject object) {
@@ -208,14 +237,12 @@ public abstract class AbstractExpressionEvaluator<T>
     /**
      * Helper to return a value for an object, for display purposes.
      *
-     * @param ref the object reference. May be <code>null</code>
+     * @param ref the object reference. May be {@code null}
      * @return a value for the object
      */
     protected String getValue(IMObjectReference ref) {
         IMObject object = null;
         if (ref != null) {
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
             object = service.get(ref);
         }
         return getValue(object);
@@ -223,49 +250,59 @@ public abstract class AbstractExpressionEvaluator<T>
 
     /**
      * Helper to return a the value of a node, handling collection nodes.
-     * If the node doesn't exist, a localised message indicating this will
-     * be returned.
+     * If the node doesn't exist, a localised message indicating this will be returned.
      *
      * @param name     the node name
      * @param resolver the node resolver
      * @return the node value
      */
-    protected Object getValue(String name, NodeResolver resolver) {
-        Object result = null;
+    protected Object getValue(String name, PropertyResolver resolver) {
+        Object result;
         try {
-            NodeResolver.State state = resolver.resolve(name);
-            NodeDescriptor descriptor = state.getLeafNode();
-            Object value;
-            if (descriptor != null && descriptor.isLookup()) {
-                value = LookupHelper.getName(
-                        ArchetypeServiceHelper.getArchetypeService(),
-                        descriptor, state.getParent());
-            } else {
-                value = state.getValue();
-            }
-            if (value != null) {
-                if (state.getLeafNode() != null
-                    && state.getLeafNode().isCollection()) {
-                    if (value instanceof Collection) {
-                        Collection<IMObject> values
-                                = (Collection<IMObject>) value;
-                        StringBuffer descriptions = new StringBuffer();
-                        for (IMObject object : values) {
-                            descriptions.append(getValue(object));
-                            descriptions.append('\n');
-                        }
-                        result = descriptions.toString();
-                    } else {
-                        // single value collection.
-                        IMObject object = (IMObject) value;
-                        result = getValue(object);
+            PropertyState state = resolver.resolve(name);
+            result = getValue(state);
+        } catch (PropertyResolverException exception) {
+            return exception.getLocalizedMessage();
+        }
+        return result;
+    }
+
+    /**
+     * Returns the value of a {@link PropertyState}, handling collection nodes.
+     *
+     * @param state the state
+     * @return the value
+     */
+    @SuppressWarnings("unchecked")
+    private Object getValue(PropertyState state) {
+        Object result = null;
+        NodeDescriptor descriptor = state.getNode();
+        Object value;
+        if (descriptor != null && descriptor.isLookup()) {
+            value = LookupHelper.getName(service, lookups, descriptor, state.getParent());
+        } else {
+            value = state.getValue();
+        }
+        if (value != null) {
+            if (state.getNode() != null && state.getNode().isCollection()) {
+                if (value instanceof Collection) {
+                    Collection<IMObject> values = (Collection<IMObject>) value;
+                    StringBuilder descriptions = new StringBuilder();
+                    for (IMObject object : values) {
+                        descriptions.append(getValue(object));
+                        descriptions.append('\n');
                     }
+                    result = descriptions.toString();
+                } else if (value instanceof IMObject) {
+                    // single value collection.
+                    IMObject object = (IMObject) value;
+                    result = getValue(object);
                 } else {
                     result = value;
                 }
+            } else {
+                result = value;
             }
-        } catch (PropertyResolverException exception) {
-            return exception.getLocalizedMessage();
         }
         return result;
     }

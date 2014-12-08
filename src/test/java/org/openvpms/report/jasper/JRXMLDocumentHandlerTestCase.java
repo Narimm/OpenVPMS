@@ -19,7 +19,7 @@ package org.openvpms.report.jasper;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.report.ArchetypeServiceTest;
+import org.openvpms.report.AbstractReportTest;
 
 import java.io.InputStream;
 
@@ -34,7 +34,7 @@ import static org.junit.Assert.fail;
  *
  * @author Tim Anderson
  */
-public class JRXMLDocumentHandlerTestCase extends ArchetypeServiceTest {
+public class JRXMLDocumentHandlerTestCase extends AbstractReportTest {
 
     /**
      * The handler.
