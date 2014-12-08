@@ -1,26 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: OpenOfficeIMReportTestCase.java 1713 2007-01-11 06:21:23Z tanderson $
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.msword;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -40,12 +37,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * {@link MsWordIMReport} test case.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2007-01-11 17:21:23 +1100 (Thu, 11 Jan 2007) $
+ * @author Tim Anderson
  */
 public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
 
@@ -58,7 +57,13 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
     public void testReport() throws IOException {
         Document doc = getDocument("src/test/reports/act.customerEstimation.doc", DocFormats.DOC_TYPE);
 
-        IMReport<IMObject> report = new MsWordIMReport<IMObject>(doc, getHandlers());
+        IMReport<IMObject> report = new MsWordIMReport<IMObject>(doc, getArchetypeService(), getLookups(), getHandlers());
+
+        Map<String, Object> fields = new HashMap<String, Object>();
+        Party practice = (Party) create(PracticeArchetypes.PRACTICE);
+        practice.setName("Vets R Us");
+        fields.put("OpenVPMS.practice", practice);
+
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
         act.setValue("startTime", java.sql.Date.valueOf("2006-08-04"));
@@ -71,18 +76,18 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
         // result not used for merge testing until we can figure out how to
         // maintain fields in generated document.
 
-        report.generate(objects.iterator(), DocFormats.DOC_TYPE);
+        report.generate(objects.iterator(), null, fields, DocFormats.DOC_TYPE);
     }
 
     /**
-     * Verfies that input fields are returned as parameters, and that
+     * Verifies that input fields are returned as parameters, and that
      * by specifying it as a parameter updates the corresponding input field.
      */
     @Test
     public void testParameters() {
         Document doc = getDocument("src/test/reports/act.customerEstimation.doc", DocFormats.DOC_TYPE);
 
-        IMReport<IMObject> report = new MsWordIMReport<IMObject>(doc, getHandlers());
+        IMReport<IMObject> report = new MsWordIMReport<IMObject>(doc, getArchetypeService(), getLookups(), getHandlers());
 
         Set<ParameterType> parameterTypes = report.getParameterTypes();
         Map<String, ParameterType> types = new HashMap<String, ParameterType>();
@@ -99,9 +104,7 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
         act.setParticipant("participation.customer", party);
 
         List<IMObject> objects = Arrays.asList((IMObject) act.getAct());
-        Document result = report.generate(objects.iterator(),
-                                          parameters,
-                                          DocFormats.ODT_TYPE);
+        Document result = report.generate(objects.iterator(), parameters, null, DocFormats.ODT_TYPE);
 
         Map<String, String> inputFields = getInputFields(result);
         assertEquals("the input value", inputFields.get("Enter Field 1"));

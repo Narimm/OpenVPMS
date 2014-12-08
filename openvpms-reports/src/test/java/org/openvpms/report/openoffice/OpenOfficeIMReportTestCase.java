@@ -1,52 +1,59 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.openoffice;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ParameterType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.Date;
+import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.text.DateFormat;
-import java.sql.Date;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 /**
  * {@link OpenOfficeIMReport} test case.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeDocumentTest {
+
+    /**
+     * The lookup service.
+     */
+    @Autowired
+    private ILookupService lookups;
 
     /**
      * Tests reporting.
@@ -57,7 +64,12 @@ public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeDocumentTest {
     public void testReport() throws IOException {
         Document doc = getDocument("src/test/reports/act.customerEstimation.odt", DocFormats.ODT_TYPE);
 
-        IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(doc, getHandlers());
+        IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(doc, getArchetypeService(), lookups,
+                                                                     getHandlers());
+        Map<String, Object> fields = new HashMap<String, Object>();
+        Party practice = (Party) create(PracticeArchetypes.PRACTICE);
+        practice.setName("Vets R Us");
+        fields.put("OpenVPMS.practice", practice);
 
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
@@ -67,17 +79,18 @@ public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeDocumentTest {
         act.setParticipant("participation.customer", party);
 
         List<IMObject> objects = Arrays.asList((IMObject) act.getAct());
-        Document result = report.generate(objects.iterator(), DocFormats.ODT_TYPE);
-        Map<String, String> fields = getUserFields(result);
+        Document result = report.generate(objects.iterator(), null, fields, DocFormats.ODT_TYPE);
+        Map<String, String> userFields = getUserFields(result);
         String expectedStartTime = DateFormat.getDateInstance(DateFormat.MEDIUM).format(startTime);
-        assertEquals(expectedStartTime, fields.get("startTime"));
-        assertEquals("$100.00", fields.get("lowTotal"));
-        assertEquals("J", fields.get("firstName"));
-        assertEquals("Zoo", fields.get("lastName"));
-        assertEquals("2.00", fields.get("expression"));
+        assertEquals(expectedStartTime, userFields.get("startTime"));
+        assertEquals("$100.00", userFields.get("lowTotal"));
+        assertEquals("J", userFields.get("firstName"));
+        assertEquals("Zoo", userFields.get("lastName"));
+        assertEquals("2.00", userFields.get("expression"));
         assertEquals("1234 Foo St\nMelbourne VIC 3001",
-                     fields.get("address"));
-        assertEquals("Invalid property name: invalid", fields.get("invalid"));
+                     userFields.get("address"));
+        assertEquals("Vets R Us", userFields.get("practiceName"));
+        assertEquals("Invalid property name: invalid", userFields.get("invalid"));
     }
 
     /**
@@ -88,7 +101,8 @@ public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeDocumentTest {
     public void testParameters() {
         Document doc = getDocument("src/test/reports/act.customerEstimation.odt", DocFormats.ODT_TYPE);
 
-        IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(doc, getHandlers());
+        IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(doc, getArchetypeService(), lookups,
+                                                                     getHandlers());
 
         Set<ParameterType> parameterTypes = report.getParameterTypes();
         Map<String, ParameterType> types = new HashMap<String, ParameterType>();
@@ -109,7 +123,7 @@ public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeDocumentTest {
         act.setParticipant("participation.customer", party);
 
         List<IMObject> objects = Arrays.asList((IMObject) act.getAct());
-        Document result = report.generate(objects.iterator(), parameters, DocFormats.ODT_TYPE);
+        Document result = report.generate(objects.iterator(), parameters, null, DocFormats.ODT_TYPE);
 
         Map<String, String> inputFields = getInputFields(result);
         assertEquals("the input value", inputFields.get("inputField1"));

@@ -33,6 +33,7 @@ import net.sf.jasperreports.engine.export.JRTextExporter;
 import net.sf.jasperreports.engine.export.JRXlsExporter;
 import net.sf.jasperreports.engine.export.JRXmlExporter;
 import net.sf.jasperreports.engine.fill.JREvaluator;
+import net.sf.jasperreports.engine.query.JRQueryExecuter;
 import net.sf.jasperreports.export.Exporter;
 import net.sf.jasperreports.export.ExporterConfiguration;
 import net.sf.jasperreports.export.ExporterInput;
@@ -56,6 +57,7 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.ParameterType;
 import org.openvpms.report.PrintProperties;
@@ -73,6 +75,7 @@ import javax.print.attribute.standard.PrinterName;
 import javax.print.attribute.standard.Sides;
 import java.io.ByteArrayInputStream;
 import java.io.OutputStream;
+import java.sql.Connection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -99,6 +102,11 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
     private final IArchetypeService service;
 
     /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
+
+    /**
      * The document handlers.
      */
     private final DocumentHandlers handlers;
@@ -111,11 +119,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
     /**
      * The supported mime types.
      */
-    private static final String[] MIME_TYPES = {DocFormats.PDF_TYPE,
-                                                DocFormats.RTF_TYPE,
-                                                DocFormats.XLS_TYPE,
-                                                DocFormats.CSV_TYPE,
-                                                DocFormats.TEXT_TYPE};
+    private static final String[] MIME_TYPES = {DocFormats.PDF_TYPE, DocFormats.RTF_TYPE, DocFormats.XLS_TYPE,
+                                                DocFormats.CSV_TYPE, DocFormats.TEXT_TYPE};
 
     /**
      * The logger.
@@ -127,10 +132,12 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * Constructs an {@link AbstractJasperIMReport}.
      *
      * @param service  the archetype service
+     * @param lookups  the lookup service
      * @param handlers the document handlers
      */
-    public AbstractJasperIMReport(IArchetypeService service, DocumentHandlers handlers) {
+    public AbstractJasperIMReport(IArchetypeService service, ILookupService lookups, DocumentHandlers handlers) {
         this.service = service;
+        this.lookups = lookups;
         this.handlers = handlers;
     }
 
@@ -209,26 +216,28 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * The default mime type will be used to select the output format.
      *
      * @param parameters a map of parameter names and their values, to pass to the report
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @return a document containing the report
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
-    public Document generate(Map<String, Object> parameters) {
-        return generate(parameters, getDefaultMimeType());
+    public Document generate(Map<String, Object> parameters, Map<String, Object> fields) {
+        return generate(parameters, fields, getDefaultMimeType());
     }
 
     /**
      * Generates a report.
      *
      * @param parameters a map of parameter names and their values, to pass to the report
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @param mimeType   the output format of the report
      * @return a document containing the report
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
-    public Document generate(Map<String, Object> parameters, String mimeType) {
+    public Document generate(Map<String, Object> parameters, Map<String, Object> fields, String mimeType) {
         Document document;
         Map<String, Object> properties = getDefaultParameters();
         if (parameters != null) {
@@ -237,11 +246,18 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         if (mimeType.equals(DocFormats.CSV_TYPE) || mimeType.equals(DocFormats.XLS_TYPE)) {
             properties.put(JRParameter.IS_IGNORE_PAGINATION, true);
         }
+        JasperReport report = getReport();
+        JRQueryExecuter executer = null;
         try {
-            JasperPrint print = JasperFillManager.fillReport(getReport(), properties);
+            executer = initDataSource(properties, fields, report);
+            JasperPrint print = JasperFillManager.fillReport(report, properties);
             document = export(print, properties, mimeType);
         } catch (JRException exception) {
             throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
+        } finally {
+            if (executer != null) {
+                executer.close();
+            }
         }
         return document;
     }
@@ -273,7 +289,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
     @Override
     public Document generate(Iterator<T> objects, String mimeType) {
         Map<String, Object> empty = Collections.emptyMap();
-        return generate(objects, empty, mimeType);
+        return generate(objects, empty, null, mimeType);
     }
 
     /**
@@ -283,13 +299,13 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      *
      * @param objects    the objects to report on
      * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @return a document containing the report
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    @Override
-    public Document generate(Iterator<T> objects, Map<String, Object> parameters) {
-        return generate(objects, parameters, getDefaultMimeType());
+    public Document generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields) {
+        return generate(objects, parameters, fields, getDefaultMimeType());
     }
 
     /**
@@ -297,19 +313,21 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      *
      * @param objects    the objects to report on
      * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @param mimeType   the output format of the report
      * @return a document containing the report
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    @Override
-    public Document generate(Iterator<T> objects, Map<String, Object> parameters, String mimeType) {
+    public Document generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
+                             String mimeType) {
         Document document;
+        parameters = (parameters != null) ? new HashMap<String, Object>(parameters) : new HashMap<String, Object>();
         try {
             if (mimeType.equals(DocFormats.CSV_TYPE) || mimeType.equals(DocFormats.XLS_TYPE)) {
                 parameters.put(JRParameter.IS_IGNORE_PAGINATION, true);
             }
-            JasperPrint print = report(objects, parameters);
+            JasperPrint print = report(objects, parameters, fields);
             document = export(print, parameters, mimeType);
         } catch (JRException exception) {
             throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
@@ -322,18 +340,18 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      *
      * @param objects    the objects to report on
      * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @param mimeType   the output format of the report
-     * @param stream     the stream to write to
-     * @throws ReportException           for any report error
+     * @param stream     the stream to write to   @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    @Override
-    public void generate(Iterator<T> objects, Map<String, Object> parameters, String mimeType, OutputStream stream) {
+    public void generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
+                         String mimeType, OutputStream stream) {
         try {
             if (mimeType.equals(DocFormats.CSV_TYPE) || mimeType.equals(DocFormats.XLS_TYPE)) {
                 parameters.put(JRParameter.IS_IGNORE_PAGINATION, true);
             }
-            JasperPrint report = report(objects, parameters);
+            JasperPrint report = report(objects, parameters, fields);
             export(report, stream, parameters, mimeType);
         } catch (JRException exception) {
             throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
@@ -343,23 +361,29 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
     /**
      * Prints a report directly to a printer.
      *
-     * @param parameters a map of parameter names and their values, to pass to
-     *                   the report. May be {@code null}
+     * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @param properties the print properties
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    @Override
-    public void print(Map<String, Object> parameters, PrintProperties properties) {
+    public void print(Map<String, Object> parameters, Map<String, Object> fields, PrintProperties properties) {
         Map<String, Object> params = getDefaultParameters();
+        JasperReport report = getReport();
         if (parameters != null) {
             params.putAll(parameters);
         }
+        JRQueryExecuter executer = null;
         try {
+            executer = initDataSource(params, fields, report);
             JasperPrint print = JasperFillManager.fillReport(getReport(), params);
             print(print, properties);
         } catch (JRException exception) {
             throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
+        } finally {
+            if (executer != null) {
+                executer.close();
+            }
         }
     }
 
@@ -374,7 +398,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
     @Override
     public void print(Iterator<T> objects, PrintProperties properties) {
         Map<String, Object> empty = Collections.emptyMap();
-        print(objects, empty, properties);
+        print(objects, empty, null, properties);
     }
 
     /**
@@ -382,13 +406,15 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      *
      * @param objects    the objects to report on
      * @param parameters a map of parameter names and their values, to pass to the report
+     * @param fields     additional fields available to the report. May be {@code null}
      * @param properties the print properties
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public void print(Iterator<T> objects, Map<String, Object> parameters, PrintProperties properties) {
+    public void print(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
+                      PrintProperties properties) {
         try {
-            JasperPrint print = report(objects, parameters);
+            JasperPrint print = report(objects, parameters, fields);
             print(print, properties);
         } catch (JRException exception) {
             throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
@@ -404,25 +430,27 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      */
     @Override
     public JasperPrint report(Iterator<T> objects) throws JRException {
-        return report(objects, null);
+        return report(objects, null, null);
     }
 
     /**
      * Generates a report.
      *
      * @param objects    the objects to report on
-     * @param parameters a map of parameter names and their values, to pass to
-     *                   the report. May be {@code null}
+     * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @return the report
      * @throws JRException for any error
      */
-    public JasperPrint report(Iterator<T> objects, Map<String, Object> parameters) throws JRException {
-        JRDataSource source = createDataSource(objects);
+    public JasperPrint report(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields)
+            throws JRException {
+        JRDataSource source = createDataSource(objects, fields);
         HashMap<String, Object> properties = new HashMap<String, Object>(getDefaultParameters());
         if (parameters != null) {
             properties.putAll(parameters);
         }
-        properties.put("dataSource", source);
+        properties.put("dataSource", source);  // custom data source name, to avoid casting
+        properties.put(JRParameter.REPORT_DATA_SOURCE, source);
         return JasperFillManager.fillReport(getReport(), properties, source);
     }
 
@@ -430,9 +458,10 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * Creates a data source for a collection of objects.
      *
      * @param objects an iterator over the collection of objects
-     * @return a new datas ource
+     * @param fields  a map of additional field names and their values, to pass to the report. May be {@code null}
+     * @return a new data source
      */
-    protected abstract JRDataSource createDataSource(Iterator<T> objects);
+    protected abstract JRDataSource createDataSource(Iterator<T> objects, Map<String, Object> fields);
 
     /**
      * Returns the archetype service.
@@ -441,6 +470,15 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      */
     protected IArchetypeService getArchetypeService() {
         return service;
+    }
+
+    /**
+     * Returns the lookup service.
+     *
+     * @return the lookup service
+     */
+    protected ILookupService getLookupService() {
+        return lookups;
     }
 
     /**
@@ -718,4 +756,25 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         }
         return evaluator;
     }
+
+    /**
+     * Initialises a JDBC data source, if required.
+     *
+     * @param params the report parameters
+     * @param fields a map of additional field names and their values, to pass to the report. May be {@code null}
+     * @param report the report
+     * @throws JRException if the data source cannot be created
+     */
+    private JRQueryExecuter initDataSource(Map<String, Object> params, Map<String, Object> fields, JasperReport report)
+            throws JRException {
+        JRQueryExecuter executer = null;
+        Connection connection = (Connection) params.get(JRParameter.REPORT_CONNECTION);
+        if (connection != null) {
+            executer = new JDBCQueryExecuter(report.getMainDataset(), params, fields, service);
+            JRDataSource dataSource = executer.createDatasource();
+            params.put(JRParameter.REPORT_DATA_SOURCE, dataSource);
+        }
+        return executer;
+    }
+
 }

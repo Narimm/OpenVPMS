@@ -1,33 +1,31 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.openoffice;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.math.BigDecimal;
@@ -35,16 +33,24 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 
 /**
  * Load tests the OpenOffice interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 @ContextConfiguration(locations = "applicationContextNoOOPool.xml", inheritLocations = false)
 public abstract class AbstractOpenOfficeLoadTestCase
         extends AbstractOpenOfficeDocumentTest {
+
+    /**
+     * The lookups service.
+     */
+    @Autowired
+    private ILookupService lookups;
 
     /**
      * Load tests the OpenOffice interface.
@@ -126,8 +132,8 @@ public abstract class AbstractOpenOfficeLoadTestCase
                     "src/test/reports/act.customerEstimation.odt",
                     DocFormats.ODT_TYPE);
 
-            IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(
-                    doc, getHandlers());
+            IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(doc, getArchetypeService(), lookups,
+                                                                         getHandlers());
 
             Party party = createCustomer();
             ActBean act = createAct("act.customerEstimation");

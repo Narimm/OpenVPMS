@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -29,6 +27,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.report.ReportException;
 
 import java.util.Collections;
@@ -38,18 +38,21 @@ import java.util.List;
 
 
 /**
- * Implementation of the <tt>JRDataSource</tt> interface, for collections
- * of <tt>IMObject</tt>s.
+ * Implementation of the {@code JRDataSource} interface, for collections of {@link IMObject}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
 
     /**
      * The collection iterator.
      */
-    private Iterator<IMObject> iter;
+    private final Iterator<IMObject> iter;
+
+    /**
+     * Additional fields. May be {@code null}
+     */
+    private final PropertySet fields;
 
     /**
      * The current object.
@@ -57,48 +60,49 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
     private IMObjectDataSource current;
 
     /**
-     * Display name for this collection. May be <tt>null</tt>.
+     * Display name for this collection. May be {@code null}.
      */
     private String displayName;
 
 
     /**
-     * Construct a new <tt>IMObjectCollectionDataSource</tt> for a
-     * collection node.
+     * Constructs a {@link IMObjectCollectionDataSource} for a collection node.
      *
      * @param parent     the parent object
-     * @param descriptor the collection desccriptor
+     * @param fields     additional report fields. These override any in the report. May be {@code null}
+     * @param descriptor the collection descriptor
      * @param service    the archetype service
+     * @param lookups    the lookup service
      * @param handlers   the document handlers
      * @param sortNodes  the sort nodes
      */
-    public IMObjectCollectionDataSource(IMObject parent,
-                                        NodeDescriptor descriptor,
-                                        IArchetypeService service,
-                                        DocumentHandlers handlers,
+    public IMObjectCollectionDataSource(IMObject parent, PropertySet fields, NodeDescriptor descriptor,
+                                        IArchetypeService service, ILookupService lookups, DocumentHandlers handlers,
                                         String... sortNodes) {
-        super(service, handlers);
+        super(service, lookups, handlers);
         List<IMObject> values = descriptor.getChildren(parent);
         for (String sortNode : sortNodes) {
             sort(values, sortNode);
         }
         iter = values.iterator();
+        this.fields = fields;
         displayName = descriptor.getDisplayName();
     }
 
     /**
-     * Construct a new <tt>IMObjectCollectionDataSource</tt> for a
-     * collection of objects.
+     * Constructs a {@link IMObjectCollectionDataSource} for a collection of objects.
      *
      * @param objects  the objects
+     * @param fields   additional report fields. These override any in the report. May be {@code null}
      * @param service  the archetype service
+     * @param lookups  the lookup service
      * @param handlers the document handlers
      */
-    public IMObjectCollectionDataSource(Iterator<IMObject> objects,
-                                        IArchetypeService service,
-                                        DocumentHandlers handlers) {
-        super(service, handlers);
+    public IMObjectCollectionDataSource(Iterator<IMObject> objects, PropertySet fields, IArchetypeService service,
+                                        ILookupService lookups, DocumentHandlers handlers) {
+        super(service, lookups, handlers);
         iter = objects;
+        this.fields = fields;
     }
 
     /**
@@ -109,7 +113,7 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
     public boolean next() {
         boolean result = iter.hasNext();
         if (result) {
-            current = new IMObjectDataSource(iter.next(), getArchetypeService(),
+            current = new IMObjectDataSource(iter.next(), fields, getArchetypeService(), getLookupService(),
                                              getDocumentHandlers());
         }
         return result;
@@ -122,16 +126,14 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
      * @param sortNodes the list of nodes to sort on
      * @throws JRException for any error
      */
-    public JRDataSource getDataSource(String name, String[] sortNodes)
-            throws JRException {
+    public JRDataSource getDataSource(String name, String[] sortNodes) throws JRException {
         return current.getDataSource(name, sortNodes);
     }
 
     /**
      * Returns a data source for the given jxpath expression.
      *
-     * @param expression the expression. Must return an <tt>Iterable<tt> or <tt>Iterator</tt> returning
-     *                   <tt>IMObjects</tt>
+     * @param expression the expression. Must return an {@code Iterable} or {@code Iterator} returning {@code IMObjects}
      * @return the data source
      * @throws JRException for any error
      */
@@ -160,8 +162,7 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
     }
 
     /**
-     * Sorts a list of IMObjects on a node in the form specified by
-     * {@link NodeResolver}.
+     * Sorts a list of IMObjects on a node in the form specified by {@link NodeResolver}.
      *
      * @param objects  the objects to sort
      * @param sortNode the node to sort on
@@ -171,10 +172,8 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
         Comparator comparator = ComparatorUtils.naturalComparator();
         comparator = ComparatorUtils.nullLowComparator(comparator);
 
-        Transformer transformer
-                = new NodeTransformer(sortNode, getArchetypeService());
-        TransformingComparator transComparator
-                = new TransformingComparator(transformer, comparator);
+        Transformer transformer = new NodeTransformer(sortNode, getArchetypeService());
+        TransformingComparator transComparator = new TransformingComparator(transformer, comparator);
         Collections.sort(objects, transComparator);
     }
 
@@ -192,7 +191,7 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
 
 
         /**
-         * Construct a new <tt>NodeTransformer</tt>.
+         * Constructs a {@code NodeTransformer}.
          *
          * @param name    the field name
          * @param service the archetype service
