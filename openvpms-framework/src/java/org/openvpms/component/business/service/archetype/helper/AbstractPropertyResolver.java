@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -20,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.util.PropertyState;
 
 import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode.InvalidObject;
 
@@ -46,7 +47,7 @@ public abstract class AbstractPropertyResolver implements PropertyResolver {
     protected final IArchetypeService service;
 
     /**
-     * Constructs an {@code AbstractPropertyResolver}.
+     * Constructs an {@link AbstractPropertyResolver}.
      *
      * @param service the archetype service
      */
@@ -62,6 +63,19 @@ public abstract class AbstractPropertyResolver implements PropertyResolver {
      * @throws PropertyResolverException if the name is invalid
      */
     public Object getObject(String name) {
+        return resolve(name).getValue();
+    }
+
+    /**
+     * Resolves the state corresponding to a property.
+     *
+     * @param name the property name
+     * @return the resolved state
+     * @throws PropertyResolverException if the name is invalid
+     */
+    @Override
+    public PropertyState resolve(String name) {
+        PropertyState result = null;
         int index = 0;
         String objectName = name;
         String nodeName = "";
@@ -71,13 +85,13 @@ public abstract class AbstractPropertyResolver implements PropertyResolver {
                 object = get(objectName);
                 if (object instanceof IMObject) {
                     if (!StringUtils.isEmpty(nodeName)) {
-                        object = resolve((IMObject) object, nodeName);
+                        result = resolve((IMObject) object, nodeName);
                         break;
                     }
                 } else if (object instanceof IMObjectReference) {
                     object = service.get((IMObjectReference) object);
                     if (object != null && !StringUtils.isEmpty(nodeName)) {
-                        object = resolve((IMObject) object, nodeName);
+                        result = resolve((IMObject) object, nodeName);
                     }
                     break;
                 } else {
@@ -95,7 +109,10 @@ public abstract class AbstractPropertyResolver implements PropertyResolver {
         if (index == -1) {
             throw new PropertyResolverException(InvalidObject, name);
         }
-        return object;
+        if (result == null) {
+            result = new PropertyState(name, object);
+        }
+        return result;
     }
 
     /**
@@ -105,9 +122,9 @@ public abstract class AbstractPropertyResolver implements PropertyResolver {
      * @return the corresponding property
      * @throws PropertyResolverException if the name is invalid
      */
-    protected Object resolve(IMObject object, String name) {
+    protected PropertyState resolve(IMObject object, String name) {
         NodeResolver resolver = new NodeResolver(object, service);
-        return resolver.getObject(name);
+        return resolver.resolve(name);
     }
 
     /**

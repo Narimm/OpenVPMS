@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -35,6 +33,7 @@ import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
+import org.openvpms.component.system.common.util.PropertyState;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,10 +46,25 @@ import java.util.Map;
 /**
  * This is a helper class for retrieving lookups reference data.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 public class LookupHelper {
+
+    /**
+     * Return a list of lookups for the specified {@link NodeDescriptor}.
+     *
+     * @param service    the archetype service
+     * @param lookups    the lookup service
+     * @param descriptor the node descriptor
+     * @return a list of lookups
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws LookupHelperException     if the lookup is incorrectly specified
+     */
+    public static List<Lookup> get(IArchetypeService service, ILookupService lookups, NodeDescriptor descriptor) {
+        LookupAssertion assertion = LookupAssertionFactory.create(descriptor, service, lookups);
+        return assertion.getLookups();
+    }
 
     /**
      * Return a list of lookups for the specified {@link NodeDescriptor}.
@@ -61,11 +75,10 @@ public class LookupHelper {
      * @throws ArchetypeServiceException for any archetype service error
      * @throws LookupHelperException     if the lookup is incorrectly specified
      */
+    @Deprecated
     public static List<Lookup> get(IArchetypeService service,
                                    NodeDescriptor descriptor) {
-        LookupAssertion assertion = LookupAssertionFactory.create(
-                descriptor, service, LookupServiceHelper.getLookupService());
-        return assertion.getLookups();
+        return get(service, LookupServiceHelper.getLookupService(), descriptor);
     }
 
     /**
@@ -80,7 +93,7 @@ public class LookupHelper {
      * @return a list of lookups
      * @throws ArchetypeServiceException for any archetype service error
      * @throws LookupHelperException     if the lookup is incorrectly specified
-     * @deprecated use {@link LookupHelper#get(IArchetypeService, NodeDescriptor)}
+     * @deprecated use {@link LookupHelper#get(IArchetypeService, ILookupService, NodeDescriptor)}
      */
     @Deprecated
     public static List<Lookup> get(IArchetypeService service,
@@ -105,6 +118,7 @@ public class LookupHelper {
      * @throws ArchetypeServiceException for any archetype service error
      * @throws LookupHelperException     if the lookup is incorrectly specified
      */
+    @Deprecated
     public static Collection<Lookup> get(IArchetypeService service,
                                          NodeDescriptor descriptor,
                                          IMObject object) {
@@ -126,7 +140,26 @@ public class LookupHelper {
      * @return List<Lookup>
      * @throws ArchetypeServiceException for any archetype service error
      * @throws LookupHelperException     if the lookup is incorrectly specified
-     * @deprecated use {@link LookupHelper#get(IArchetypeService, NodeDescriptor, IMObject)}
+     */
+    public static Collection<Lookup> get(IArchetypeService service, ILookupService lookups, NodeDescriptor descriptor,
+                                         IMObject object) {
+        LookupAssertion assertion = LookupAssertionFactory.create(descriptor, service, lookups);
+        return assertion.getLookups(object);
+    }
+
+    /**
+     * Return a list of {@link Lookup} instances given the specified
+     * {@link NodeDescriptor} and {@link IMObject}.
+     * <p/>
+     * This method should be used if you want to constrain a lookup
+     * search based on a source or target relationship.
+     *
+     * @param service    a reference to the archetype service
+     * @param descriptor the node descriptor
+     * @param object     the object to use
+     * @return List<Lookup>
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws LookupHelperException     if the lookup is incorrectly specified
      */
     @Deprecated
     public static Collection<Lookup> get(IArchetypeService service,
@@ -144,10 +177,11 @@ public class LookupHelper {
      * @param service    the archetype service
      * @param descriptor the node descriptor
      * @param object     the object
-     * @return the lookup, or <code>null</code> if none is found
+     * @return the lookup, or {@code null} if none is found
      * @throws ArchetypeServiceException if the request cannot complete
      * @throws LookupHelperException     if the lookup is incorrectly specified
      */
+    @Deprecated
     public static Lookup getLookup(IArchetypeService service,
                                    NodeDescriptor descriptor, IMObject object) {
         Lookup result = null;
@@ -173,7 +207,7 @@ public class LookupHelper {
      * @param lookupService the lookup service
      * @param object        the object
      * @param node          the node
-     * @return the lookup name, or <code>null</code> if none is found
+     * @return the lookup name, or {@code null} if none is found
      * @throws PropertyResolverException if the node doesn't exist
      * @throws ArchetypeServiceException if the request cannot complete
      * @throws LookupHelperException     if the lookup is incorrectly specified
@@ -181,8 +215,8 @@ public class LookupHelper {
     public static String getName(IArchetypeService service, ILookupService lookupService, IMObject object,
                                  String node) {
         NodeResolver resolver = new NodeResolver(object, service);
-        NodeResolver.State state = resolver.resolve(node);
-        NodeDescriptor descriptor = state.getLeafNode();
+        PropertyState state = resolver.resolve(node);
+        NodeDescriptor descriptor = state.getNode();
         if (descriptor == null) {
             throw new PropertyResolverException(
                     PropertyResolverException.ErrorCode.InvalidProperty, node);
@@ -196,10 +230,11 @@ public class LookupHelper {
      * @param service    the archetype service
      * @param descriptor the node descriptor
      * @param object     the object
-     * @return the lookup name, or <code>null</code> if none is found
+     * @return the lookup name, or {@code null} if none is found
      * @throws ArchetypeServiceException if the request cannot complete
      * @throws LookupHelperException     if the lookup is incorrectly specified
      */
+    @Deprecated
     public static String getName(IArchetypeService service,
                                  NodeDescriptor descriptor, IMObject object) {
         return getName(service, LookupServiceHelper.getLookupService(), descriptor, object);
@@ -212,7 +247,7 @@ public class LookupHelper {
      * @param lookupService the lookup service
      * @param descriptor    the node descriptor
      * @param object        the object
-     * @return the lookup name, or <code>null</code> if none is found
+     * @return the lookup name, or {@code null} if none is found
      * @throws ArchetypeServiceException if the request cannot complete
      * @throws LookupHelperException     if the lookup is incorrectly specified
      */
@@ -243,6 +278,7 @@ public class LookupHelper {
      * @throws ArchetypeServiceException for any archetype service error
      * @throws LookupHelperException     if the lookup is incorrectly specified
      */
+    @Deprecated
     public static Map<String, String> getNames(IArchetypeService service,
                                                String shortName,
                                                String node) {
@@ -283,6 +319,7 @@ public class LookupHelper {
      * @throws ArchetypeServiceException for any archetype service error
      * @throws LookupHelperException     if the lookup is incorrectly specified
      */
+    @Deprecated
     public static Map<String, String> getNames(IArchetypeService service, NodeDescriptor descriptor) {
         return getNames(service, LookupServiceHelper.getLookupService(), descriptor);
     }
@@ -319,7 +356,7 @@ public class LookupHelper {
      * @param service   the archetype sevice
      * @param shortName the archetype short name
      * @param code      the lookup code
-     * @return the lookup, or <code>null</code> if none can be found
+     * @return the lookup, or {@code null} if none can be found
      * @throws ArchetypeServiceException if the request cannot complete
      */
     @Deprecated
@@ -337,7 +374,7 @@ public class LookupHelper {
      * @param service    the archetype sevice
      * @param shortNames the archetype short names to search on
      * @param code       the lookup code
-     * @return the lookup, or <code>null</code> if none can be found
+     * @return the lookup, or {@code null} if none can be found
      * @throws ArchetypeServiceException if the request cannot complete
      */
     @Deprecated

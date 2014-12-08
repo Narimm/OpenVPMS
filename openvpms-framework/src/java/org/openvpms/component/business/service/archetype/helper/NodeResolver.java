@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -25,19 +23,19 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode.InvalidObject;
-import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode.InvalidProperty;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.util.PropertyState;
 
 import java.util.List;
 
+import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode.InvalidObject;
+import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode.InvalidProperty;
+
 
 /**
- * A <tt>PropertyResolver</tt> that resolves node values given a root
- * <tt>IMObject</tt>
+ * A {@link PropertyResolver} that resolves node values given a root {@link IMObject}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class NodeResolver implements PropertyResolver {
 
@@ -59,11 +57,11 @@ public class NodeResolver implements PropertyResolver {
     /**
      * The logger.
      */
-    private static final Log _log = LogFactory.getLog(NodeResolver.class);
+    private static final Log log = LogFactory.getLog(NodeResolver.class);
 
 
     /**
-     * Construct a new <code>NodeResolver</code>.
+     * Constructs a {@link NodeResolver}.
      *
      * @param root    the root object
      * @param service the archetype service
@@ -72,7 +70,6 @@ public class NodeResolver implements PropertyResolver {
         this.root = root;
         archetype = service.getArchetypeDescriptor(root.getArchetypeId());
         this.service = service;
-
     }
 
     /**
@@ -96,15 +93,16 @@ public class NodeResolver implements PropertyResolver {
     }
 
     /**
-     * Resolves the node state corresponding to a field name.
+     * Resolves the state corresponding to a property.
      *
-     * @param name the field name
+     * @param name the property name
      * @return the resolved state
      * @throws PropertyResolverException if the name is invalid
      */
+    @Override
     @SuppressWarnings({"deprecation"})
-    public State resolve(String name) {
-        State state;
+    public PropertyState resolve(String name) {
+        PropertyState state;
         IMObject object = root;
         ArchetypeDescriptor archetype = this.archetype;
         int index;
@@ -142,10 +140,10 @@ public class NodeResolver implements PropertyResolver {
                 }
             } else {
                 value = getValue(object, leafNode);
-            } 
-            state = new State(object, archetype, name, leafNode, value);
+            }
+            state = new PropertyState(object, archetype, name, leafNode, value);
         } else {
-            state = new State();
+            state = new PropertyState();
         }
         return state;
     }
@@ -162,7 +160,7 @@ public class NodeResolver implements PropertyResolver {
         if (descriptor.isObjectReference()) {
             result = getObject(parent, descriptor);
         } else if (descriptor.isCollection() &&
-                descriptor.getMaxCardinality() == 1) {
+                   descriptor.getMaxCardinality() == 1) {
             List<IMObject> values = descriptor.getChildren(parent);
             result = (!values.isEmpty()) ? values.get(0) : null;
         } else {
@@ -183,99 +181,10 @@ public class NodeResolver implements PropertyResolver {
             try {
                 return service.get(ref);
             } catch (OpenVPMSException exception) {
-                _log.warn(exception, exception);
+                log.warn(exception, exception);
             }
         }
         return null;
-    }
-
-    public static class State {
-
-        /**
-         * The parent of the leaf node. Null if the parent can't be determined.
-         */
-        private final IMObject parent;
-
-        /**
-         * The archetype descriptor of <code>_parent</code>.
-         */
-        private final ArchetypeDescriptor archetype;
-
-        /**
-         * The leaf name corresponding to the last element in a composite name.
-         */
-        private final String leafName;
-
-        /**
-         * The node descriptor of the leaf name.
-         */
-        private final NodeDescriptor leafNode;
-
-        /**
-         * The value of the leaf node.
-         */
-        private final Object value;
-
-
-        public State() {
-            this(null, null, null, null, null);
-        }
-
-        public State(IMObject parent, ArchetypeDescriptor archetype,
-                     String leafName, NodeDescriptor leafNode, Object value) {
-            this.parent = parent;
-            this.archetype = archetype;
-            this.leafName = leafName;
-            this.leafNode = leafNode;
-            this.value = value;
-        }
-
-        /**
-         * Returns the parent of the leaf node.
-         *
-         * @return the parent of the leaf node, or <code>null</code> if it
-         *         couldn't be determined
-         */
-        public IMObject getParent() {
-            return parent;
-        }
-
-        /**
-         * Returns the archetype of the parent of the leaf node.
-         *
-         * @return the parent archetype
-         */
-        public ArchetypeDescriptor getParentArchetype() {
-            return archetype;
-        }
-
-        /**
-         * The leaf name corresponding to the last element in a composite name.
-         *
-         * @return the leaf name
-         */
-        public String getLeafName() {
-            return leafName;
-        }
-
-        /**
-         * The leaf node descriptor corresponding to the last element in the name.
-         *
-         * @return the node descriptor, or <code>null</code> if there is no match
-         */
-        public NodeDescriptor getLeafNode() {
-            return leafNode;
-        }
-
-        /**
-         * Returns the value of the leaf node.
-         *
-         * @return the value of the leaf node
-         */
-        public Object getValue() {
-            return value;
-        }
-
     }
 
 }
