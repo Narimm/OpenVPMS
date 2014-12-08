@@ -31,7 +31,9 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.openoffice.Converter;
 import org.openvpms.report.openoffice.OpenOfficeException;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.report.DocumentActReporter;
+import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.RowFactory;
@@ -57,6 +59,11 @@ public class DocumentActDownloader extends Downloader {
     private final boolean asTemplate;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The template, when there is no document present.
      */
     private DocumentTemplate template;
@@ -68,22 +75,25 @@ public class DocumentActDownloader extends Downloader {
 
 
     /**
-     * Constructs a {@code DocumentActDownloader}.
+     * Constructs a {@link DocumentActDownloader}.
      *
-     * @param act the act
+     * @param act     the act
+     * @param context the context
      */
-    public DocumentActDownloader(DocumentAct act) {
-        this(act, false);
+    public DocumentActDownloader(DocumentAct act, Context context) {
+        this(act, false, context);
     }
 
     /**
-     * Constructs a {@code DocumentActDownloader}.
+     * Constructs a {@link DocumentActDownloader}.
      *
      * @param act        the act
      * @param asTemplate determines if the document should be downloaded as a template
+     * @param context    the context
      */
-    public DocumentActDownloader(DocumentAct act, boolean asTemplate) {
+    public DocumentActDownloader(DocumentAct act, boolean asTemplate, Context context) {
         this.act = act;
+        this.context = context;
         this.asTemplate = asTemplate;
     }
 
@@ -169,6 +179,7 @@ public class DocumentActDownloader extends Downloader {
                 DocumentTemplate template = getTemplate();
                 if (template != null) {
                     DocumentActReporter reporter = new DocumentActReporter(act, template);
+                    reporter.setFields(ReportContextFactory.create(context));
                     if (mimeType == null) {
                         document = reporter.getDocument();
                     } else {

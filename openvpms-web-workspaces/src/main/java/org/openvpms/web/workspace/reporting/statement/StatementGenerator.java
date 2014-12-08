@@ -168,7 +168,8 @@ class StatementGenerator extends AbstractStatementGenerator {
             processor.addListener(printer);
             printer.setUpdatePrinted(false);
         } else {
-            StatementEmailProcessor mailer = new StatementEmailProcessor(ServiceHelper.getMailSender(), practice);
+            StatementEmailProcessor mailer = new StatementEmailProcessor(ServiceHelper.getMailSender(), practice,
+                                                                         context);
             processor.addListener(new StatementDelegator(printer, mailer));
         }
     }

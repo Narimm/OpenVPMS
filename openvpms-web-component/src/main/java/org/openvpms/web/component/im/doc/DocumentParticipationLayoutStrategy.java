@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -40,7 +38,7 @@ import org.openvpms.web.echo.factory.RowFactory;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class DocumentParticipationLayoutStrategy
-    implements IMObjectLayoutStrategy {
+        implements IMObjectLayoutStrategy {
 
     /**
      * Pre-registers a component for inclusion in the layout.
@@ -72,7 +70,7 @@ public class DocumentParticipationLayoutStrategy
         final DocumentAct act = (DocumentAct) context.getCache().get(ref);
         Component component;
         if (act != null && act.getDocument() != null) {
-            DocumentActDownloader downloader = new DocumentActDownloader(act);
+            DocumentActDownloader downloader = new DocumentActDownloader(act, context.getContext());
 
             // wrap in a row to left justify
             component = RowFactory.create(downloader.getComponent());

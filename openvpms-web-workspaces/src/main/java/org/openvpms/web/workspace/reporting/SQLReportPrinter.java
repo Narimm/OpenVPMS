@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting;
@@ -27,6 +27,7 @@ import org.openvpms.report.ParameterType;
 import org.openvpms.report.Report;
 import org.openvpms.report.ReportFactory;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.print.AbstractPrinter;
 import org.openvpms.web.system.ServiceHelper;
@@ -78,7 +79,7 @@ public class SQLReportPrinter extends AbstractPrinter {
 
 
     /**
-     * Constructs a {@code SQLReportPrinter} to print a report.
+     * Constructs an {@link SQLReportPrinter} to print a report.
      *
      * @param template the template
      * @param context  the context
@@ -87,11 +88,25 @@ public class SQLReportPrinter extends AbstractPrinter {
      * @throws DocumentException         if the document template can't be found
      */
     public SQLReportPrinter(DocumentTemplate template, Context context) {
-        Document document = template.getDocument();
+        this(template, template.getDocument(), context);
+    }
+
+    /**
+     * Constructs an {@link SQLReportPrinter}.
+     *
+     * @param template the teplate
+     * @param document the document
+     * @param context  the context
+     * @throws SQLReportException        for any report error
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws DocumentException         if the document template can't be found
+     */
+    protected SQLReportPrinter(DocumentTemplate template, Document document, Context context) {
         if (document == null) {
             throw new DocumentException(NotFound);
         }
         report = ReportFactory.createReport(document, ArchetypeServiceHelper.getArchetypeService(),
+                                            ServiceHelper.getLookupService(),
                                             ServiceHelper.getDocumentHandlers());
         this.template = template;
         this.context = context;
@@ -137,7 +152,7 @@ public class SQLReportPrinter extends AbstractPrinter {
         try {
             connection = getConnection();
             params.put(connectionName, connection);
-            report.print(params, getProperties(printer));
+            report.print(params, ReportContextFactory.create(context), getProperties(printer));
         } finally {
             closeConnection(connection);
         }
@@ -179,7 +194,7 @@ public class SQLReportPrinter extends AbstractPrinter {
         try {
             connection = getConnection();
             params.put(connectionName, connection);
-            return report.generate(params, mimeType);
+            return report.generate(params, ReportContextFactory.create(context), mimeType);
         } finally {
             closeConnection(connection);
         }

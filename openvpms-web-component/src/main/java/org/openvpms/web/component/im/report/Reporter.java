@@ -66,9 +66,13 @@ public abstract class Reporter<T> {
      */
     private Map<String, Object> parameters = new HashMap<String, Object>();
 
+    /**
+     * The fields to pass to the report.
+     */
+    private Map<String, Object> fields;
 
     /**
-     * Constructs a {@code Reporter} to generate documents from a single object.
+     * Constructs a {@link Reporter} to generate documents from a single object.
      *
      * @param object the object
      */
@@ -79,8 +83,7 @@ public abstract class Reporter<T> {
     }
 
     /**
-     * Constructs a new {@code Reporter} to generate documents from a
-     * collection of objects.
+     * Constructs a new {@link Reporter} to generate documents from a collection of objects.
      *
      * @param objects the objects
      */
@@ -92,8 +95,7 @@ public abstract class Reporter<T> {
     /**
      * Returns the object that the document is being generated from.
      *
-     * @return the object, or {@code null} if the document is being generated
-     *         from a collection
+     * @return the object, or {@code null} if the document is being generated from a collection
      */
     public T getObject() {
         return object;
@@ -136,8 +138,7 @@ public abstract class Reporter<T> {
             type = report.getDefaultMimeType();
         }
         Map<String, Object> map = new HashMap<String, Object>(getParameters(email));
-
-        Document document = report.generate(getObjects().iterator(), map, type);
+        Document document = report.generate(getObjects().iterator(), map, fields, type);
         setName(document);
         return document;
     }
@@ -149,7 +150,7 @@ public abstract class Reporter<T> {
      * @param properties the print properties
      */
     public void print(Iterator<T> objects, PrintProperties properties) {
-        getReport().print(objects, getParameters(false), properties);
+        getReport().print(objects, getParameters(false), fields, properties);
     }
 
     /**
@@ -187,6 +188,15 @@ public abstract class Reporter<T> {
             }
         }
         return result;
+    }
+
+    /**
+     * Sets the fields to pass the report.
+     *
+     * @param fields the fields. May be {@code null}
+     */
+    public void setFields(Map<String, Object> fields) {
+        this.fields = fields;
     }
 
     /**

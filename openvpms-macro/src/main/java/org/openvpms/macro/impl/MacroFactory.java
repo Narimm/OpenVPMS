@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro.impl;
@@ -20,6 +20,7 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.macro.MacroException;
 
 
@@ -36,6 +37,11 @@ class MacroFactory {
     private final IArchetypeService service;
 
     /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
+
+    /**
      * The document handlers.
      */
     private final DocumentHandlers handlers;
@@ -44,10 +50,12 @@ class MacroFactory {
      * Constructs a {@link MacroFactory}.
      *
      * @param service  the archetype service
+     * @param lookups  the lookup service
      * @param handlers the document handlers
      */
-    public MacroFactory(IArchetypeService service, DocumentHandlers handlers) {
+    public MacroFactory(IArchetypeService service, ILookupService lookups, DocumentHandlers handlers) {
         this.service = service;
+        this.lookups = lookups;
         this.handlers = handlers;
     }
 
@@ -80,7 +88,7 @@ class MacroFactory {
         if (macro instanceof ExpressionMacro) {
             return new ExpressionMacroRunner(context);
         } else if (macro instanceof ReportMacro) {
-            return new ReportMacroRunner(context, service, handlers);
+            return new ReportMacroRunner(context, service, lookups, handlers);
         }
         throw new IllegalArgumentException("Unsupported macro type: " + macro.getClass().getName());
     }

@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.report;
@@ -30,6 +28,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ReportException;
 import org.openvpms.report.ReportFactory;
@@ -41,8 +40,7 @@ import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFo
 /**
  * Generates {@link Document}s from a {@link DocumentAct}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentActReporter extends TemplatedReporter<IMObject> {
 
@@ -94,6 +92,7 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
      * @throws ArchetypeServiceException for any archetype service error
      * @throws DocumentException         if the template cannot be found
      */
+    @Override
     public IMReport<IMObject> getReport() {
         if (report == null) {
             Document doc = getTemplateDocument();
@@ -101,8 +100,9 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
                 throw new DocumentException(NotFound);
             }
             IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+            ILookupService lookups = ServiceHelper.getLookupService();
             DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
-            report = ReportFactory.createIMObjectReport(doc, service, handlers);
+            report = ReportFactory.createIMObjectReport(doc, service, lookups, handlers);
         }
         return report;
     }
