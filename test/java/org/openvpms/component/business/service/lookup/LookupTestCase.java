@@ -1,25 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.lookup;
 
 import org.apache.commons.lang.StringUtils;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
@@ -40,16 +37,34 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * Lookup test cases.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
  */
 @ContextConfiguration("lookup-service-appcontext.xml")
 public class LookupTestCase extends AbstractArchetypeServiceTest {
 
+    /**
+     * The lookup service.
+     */
+    private ILookupService lookups;
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        lookups = new LookupService(getArchetypeService(), (IMObjectDAO) applicationContext.getBean("imObjectDao"));
+        new LookupServiceHelper(lookups); // for LookupAssertions - TODO
+    }
 
     /**
      * Test that we can create an object through this service.
@@ -109,9 +124,8 @@ public class LookupTestCase extends AbstractArchetypeServiceTest {
         assertNotNull(adesc);
         NodeDescriptor ndesc = adesc.getNodeDescriptor("target");
         assertNotNull(ndesc);
-        Collection<Lookup> lookups
-                = LookupServiceHelper.getLookupService().getTargetLookups(cty);
-        assertEquals(3, lookups.size());
+        Collection<Lookup> targets = lookups.getTargetLookups(cty);
+        assertEquals(3, targets.size());
     }
 
     /**
@@ -122,8 +136,7 @@ public class LookupTestCase extends AbstractArchetypeServiceTest {
         ArchetypeDescriptor descriptor = getArchetypeDescriptor("party.person");
         assertNotNull(descriptor.getNodeDescriptor("title"));
         assertTrue(descriptor.getNodeDescriptor("title").isLookup());
-        assertEquals(7, LookupHelper.get(getArchetypeService(), descriptor.getNodeDescriptor(
-                "title")).size());
+        assertEquals(7, LookupHelper.get(getArchetypeService(), lookups, descriptor.getNodeDescriptor("title")).size());
     }
 
     /**
@@ -153,21 +166,21 @@ public class LookupTestCase extends AbstractArchetypeServiceTest {
         ArchetypeDescriptor descriptor = getArchetypeDescriptor("contact.location");
         assertNotNull(descriptor.getNodeDescriptor("country"));
         assertTrue(descriptor.getNodeDescriptor("country").isLookup());
-        assertTrue(LookupHelper.get(getArchetypeService(), descriptor.getNodeDescriptor(
+        assertTrue(LookupHelper.get(getArchetypeService(), lookups, descriptor.getNodeDescriptor(
                 "country")).size() > 0);
     }
 
     /**
-     * Test the lookup using the same a differentr call
+     * Test the lookup using the same a different call.
      */
     @Test
     public void testDatabaseLookupRetrievalFromNodeDescriptor2() {
         ArchetypeDescriptor descriptor = getArchetypeDescriptor("contact.location");
         assertNotNull(descriptor.getNodeDescriptor("country"));
         assertTrue(descriptor.getNodeDescriptor("country").isLookup());
-        assertTrue(LookupHelper.get(getArchetypeService(),
-                                    descriptor.getNodeDescriptor("country"),
-                                    (IMObject) null).size() > 0);
+        Collection<Lookup> values = LookupHelper.get(getArchetypeService(), lookups,
+                                                     descriptor.getNodeDescriptor("country"), null);
+        assertTrue(values.size() > 0);
     }
 
     /**
@@ -187,9 +200,9 @@ public class LookupTestCase extends AbstractArchetypeServiceTest {
         Contact contact = (Contact) create(descriptor.getType().getShortName());
         contact.getDetails().put("country", cty.getCode());
         IArchetypeService service = getArchetypeService();
-        assertTrue(LookupHelper.get(service, descriptor.getNodeDescriptor("state"), contact).size() > 0);
+        assertTrue(LookupHelper.get(service, lookups, descriptor.getNodeDescriptor("state"), contact).size() > 0);
         contact.getDetails().put("country", "TAS");
-        assertTrue(LookupHelper.get(service, descriptor.getNodeDescriptor("state"), contact).size() == 0);
+        assertTrue(LookupHelper.get(service, lookups, descriptor.getNodeDescriptor("state"), contact).size() == 0);
     }
 
     /**
@@ -224,7 +237,7 @@ public class LookupTestCase extends AbstractArchetypeServiceTest {
         assertNotNull(descriptor.getNodeDescriptor("breed"));
         assertTrue(descriptor.getNodeDescriptor("breed").isLookup());
 
-        assertTrue(LookupHelper.get(service, descriptor.getNodeDescriptor("breed"), animal).size() > 0);
+        assertTrue(LookupHelper.get(service, lookups, descriptor.getNodeDescriptor("breed"), animal).size() > 0);
     }
 
     /**
@@ -244,8 +257,8 @@ public class LookupTestCase extends AbstractArchetypeServiceTest {
     }
 
     /**
-     * Verifies that multiple lookups and their relationships can be saved via
-     * the {@link IArchetypeService#save(Collection<IMObject>)} method.
+     * Verifies that multiple lookups and their relationships can be saved via the
+     * {@link IArchetypeService#save(Collection)} method.
      */
     @Test
     public void testSaveCollection() {
@@ -274,16 +287,6 @@ public class LookupTestCase extends AbstractArchetypeServiceTest {
         for (IMObject object : objects) {
             assertFalse(object.getId() == -1);
         }
-    }
-
-    /**
-     * Sets up the test case.
-     */
-    @Before
-    public void setUp() {
-        LookupService lookups = new LookupService(getArchetypeService(),
-                                                  (IMObjectDAO) applicationContext.getBean("imObjectDao"));
-        new LookupServiceHelper(lookups);
     }
 
     /**

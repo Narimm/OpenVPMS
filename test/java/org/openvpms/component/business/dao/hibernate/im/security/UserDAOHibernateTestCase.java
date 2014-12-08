@@ -31,7 +31,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Tests the {@link UserDAOHibernate} class.
  *
- * @author Tim Anderson
+ * @author Jim Alateras
  */
 public class UserDAOHibernateTestCase extends HibernateInfoModelTestCase {
 
