@@ -64,6 +64,17 @@
                 </propertyList>
             </assertion>
         </node>
+        <node name="invoiceItem" path="/targetActRelationships" type="java.util.HashSet"
+              baseName="TargetActRelationship" minCardinality="0" maxCardinality="1" hidden="false" readOnly="true"
+              filter="actRelationship.invoiceItemDocument">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="actRelationship.invoiceItemDocument"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
         <node name="problem" path="/targetActRelationships" type="java.util.HashSet" baseName="TargetActRelationship"
               minCardinality="0" maxCardinality="1" hidden="true" filter="actRelationship.patientClinicalProblemItem"/>
     </archetype>
