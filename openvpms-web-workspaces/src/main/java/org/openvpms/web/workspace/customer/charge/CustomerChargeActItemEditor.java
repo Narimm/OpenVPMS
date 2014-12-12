@@ -395,11 +395,15 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     @Override
     protected void updateDiscount() {
         super.updateDiscount();
-        BigDecimal discount = getProperty("discount").getBigDecimal();
+        BigDecimal discount = getProperty("discount").getBigDecimal(BigDecimal.ZERO);
         BigDecimal quantity = getQuantity();
-        BigDecimal fixedCost = getProperty("fixedCost").getBigDecimal();
-        BigDecimal unitCost = getProperty("unitCost").getBigDecimal();
-        if (fixedCost.add(unitCost.multiply(quantity)).compareTo(discount) < 0) {
+        BigDecimal fixedCost = getFixedCost();
+        BigDecimal fixedPrice = getFixedPrice();
+        BigDecimal unitCost = getUnitCost();
+        BigDecimal unitPrice = getUnitPrice();
+        BigDecimal costPrice = fixedCost.add(unitCost.multiply(quantity));
+        BigDecimal salePrice = fixedPrice.add(unitPrice.multiply(quantity));
+        if (costPrice.compareTo(salePrice.subtract(discount)) > 0) {
             ConfirmationDialog dialog = new ConfirmationDialog(Messages.get("customer.charge.discount.title"),
                                                                Messages.get("customer.charge.discount.message"),
                                                                ConfirmationDialog.YES_NO);
