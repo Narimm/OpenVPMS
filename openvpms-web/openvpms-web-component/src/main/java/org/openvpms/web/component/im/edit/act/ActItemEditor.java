@@ -240,8 +240,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return the product quantity
      */
     public BigDecimal getQuantity() {
-        BigDecimal value = (BigDecimal) getProperty("quantity").getValue();
-        return (value != null) ? value : BigDecimal.ZERO;
+        return getProperty("quantity").getBigDecimal(BigDecimal.ZERO);
     }
 
     /**
