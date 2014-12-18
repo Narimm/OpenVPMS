@@ -487,8 +487,8 @@ public class PartyFunctions {
      * Returns a formatted fax number for a party.
      *
      * @param context the expression context. Expected to reference a party
-     * @return a formatted fax number. party. May be empty if
-     *         there is no corresponding <em>contact.faxNumber</em> contact
+     * @return a formatted fax number. party. May be empty if there is no corresponding <em>contact.phoneNumber</em>
+     *         contact with a FAX purpose
      */
     public String getFaxNumber(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
@@ -504,8 +504,8 @@ public class PartyFunctions {
     /**
      * Returns a formatted fax number for a party.
      *
-     * @return a formatted fax number for a party. May be empty if
-     *         there is no corresponding <em>contact.faxNumber</em> contact
+     * @return a formatted fax number. party. May be empty if there is no corresponding <em>contact.phoneNumber</em>
+     *         contact with a FAX purpose
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getFaxNumber(Party party) {
@@ -518,8 +518,8 @@ public class PartyFunctions {
     /**
      * Returns a formatted fax number for an act.
      *
-     * @return a formatted fax number for a party. May be empty if
-     *         there is no corresponding <em>contact.faxNumber</em> contact
+     * @return a formatted fax number. party. May be empty if there is no corresponding <em>contact.phoneNumber</em>
+     *         contact with a FAX purpose
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getFaxNumber(Act act) {

@@ -340,7 +340,7 @@ public class PartyRules {
      *         <em>contact.phoneNumber</em> contact
      */
     public String getTelephone(Party party, boolean withName) {
-        Contact contact = getContact(party, ContactArchetypes.PHONE, null, false);
+        Contact contact = getContact(party, ContactArchetypes.PHONE, false);
         return (contact != null) ? formatPhone(contact, withName) : "";
     }
 
@@ -370,8 +370,7 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getHomeTelephone(Party party) {
-        Contact contact = getContact(party, ContactArchetypes.PHONE, "HOME",
-                                     false);
+        Contact contact = getContact(party, ContactArchetypes.PHONE, false, "HOME");
         return (contact != null) ? formatPhone(contact, false) : "";
     }
 
@@ -402,8 +401,7 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getMobileTelephone(Party party) {
-        Contact contact = getContact(party, ContactArchetypes.PHONE, "MOBILE",
-                                     true);
+        Contact contact = getContact(party, ContactArchetypes.PHONE, true, "MOBILE");
         return (contact != null) ? formatPhone(contact, false) : "";
     }
 
@@ -434,8 +432,7 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getWorkTelephone(Party party) {
-        Contact contact = getContact(party, ContactArchetypes.PHONE, "WORK",
-                                     true);
+        Contact contact = getContact(party, ContactArchetypes.PHONE, true, "WORK");
         return (contact != null) ? formatPhone(contact, false) : "";
     }
 
@@ -475,22 +472,13 @@ public class PartyRules {
      *
      * @param party the party
      * @return a formatted fax number for a party. May be empty if
-     *         there is no corresponding <em>contact.faxNumber</em> contact
+     *         there is no corresponding <em>contact.phoneNumber</em> contact
+     *         with a purpose as FAX
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getFaxNumber(Party party) {
-        Contact contact = getContact(party, ContactArchetypes.FAX, null);
-        if (contact != null) {
-            IMObjectBean bean = new IMObjectBean(contact, service);
-            String areaCode = bean.getString("areaCode");
-            String faxNumber = bean.getString("faxNumber");
-            if (areaCode == null || areaCode.equals("")) {
-                return faxNumber;
-            } else {
-                return "(" + areaCode + ") " + faxNumber;
-            }
-        }
-        return "";
+        Contact contact = getContact(party, ContactArchetypes.PHONE, true, "FAX");
+        return (contact != null) ? formatPhone(contact, false) : "";
     }
 
     /**
@@ -573,7 +561,7 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Contact getContact(Party party, String type, String purpose) {
-        return getContact(party, type, purpose, false);
+        return (purpose != null) ? getContact(party, type, false, purpose) : getContact(party, type, false);
     }
 
     /**
@@ -725,14 +713,15 @@ public class PartyRules {
     /**
      * Looks for the contact that best matches the criteria.
      *
-     * @param party   the party. May be {@code null}
-     * @param type    the contact type
-     * @param purpose the contact purpose. May be {@code null}
-     * @param exact   if {@code true}, the contact must have the specified purpose
+     * @param party    the party. May be {@code null}
+     * @param type     the contact type
+     * @param purposes the contact purposes. May be empty
+     * @param exact    if {@code true}, the contact must have the specified purpose
      * @return the matching contact or {@code null}
      */
-    private Contact getContact(Party party, String type, String purpose, boolean exact) {
-        return (party != null) ? getContact(party, new PurposeMatcher(type, purpose, exact, service)) : null;
+    public Contact getContact(Party party, String type, boolean exact, String... purposes) {
+        PurposeMatcher matcher = new PurposeMatcher(type, exact, service, purposes);
+        return (party != null) ? getContact(party, matcher) : null;
     }
 
     /**
