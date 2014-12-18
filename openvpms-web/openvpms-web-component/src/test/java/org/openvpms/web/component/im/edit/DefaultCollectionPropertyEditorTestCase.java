@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 /**
@@ -47,7 +45,7 @@ import static org.junit.Assert.assertTrue;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class DefaultCollectionPropertyEditorTestCase
-    extends AbstractCollectionPropertyEditorTest {
+        extends AbstractCollectionPropertyEditorTest {
 
     /**
      * Tests {@link CollectionPropertyEditor#getArchetypeRange()}.
@@ -58,12 +56,11 @@ public class DefaultCollectionPropertyEditorTestCase
         CollectionProperty property = getCollectionProperty(parent);
         CollectionPropertyEditor editor = createEditor(property, parent);
         String[] range = editor.getArchetypeRange();
-        assertEquals(4, range.length);
+        assertEquals(3, range.length);
         Set<String> set = new HashSet<String>(Arrays.asList(range));
         assertTrue(set.contains(ContactArchetypes.LOCATION));
         assertTrue(set.contains(ContactArchetypes.PHONE));
         assertTrue(set.contains(ContactArchetypes.EMAIL));
-        assertTrue(set.contains(ContactArchetypes.FAX));
     }
 
     /**
@@ -100,7 +97,7 @@ public class DefaultCollectionPropertyEditorTestCase
      * @return a new editor for the property
      */
     protected CollectionPropertyEditor createEditor(
-        CollectionProperty property, IMObject parent) {
+            CollectionProperty property, IMObject parent) {
         return new DefaultCollectionPropertyEditor(property);
     }
 
