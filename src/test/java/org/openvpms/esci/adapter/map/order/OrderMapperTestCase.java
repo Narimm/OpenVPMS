@@ -29,6 +29,7 @@ import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -293,8 +294,8 @@ public class OrderMapperTestCase extends AbstractESCITest {
 
         phoneContact = createContact(ContactArchetypes.PHONE, "telephoneNumber", "59527054");
         practice.addContact(phoneContact);
-
-        faxContact = createContact(ContactArchetypes.FAX, "faxNumber", "59527053");
+        faxContact = createContact(ContactArchetypes.PHONE, "telephoneNumber", "59527053");
+        faxContact.addClassification(getContactPurpose("FAX"));
         practice.addContact(faxContact);
 
         emailContact = createContact(ContactArchetypes.EMAIL, "emailAddress", "foo@bar.com");
@@ -383,8 +384,19 @@ public class OrderMapperTestCase extends AbstractESCITest {
                               Contact emailContact) {
         assertEquals(name, contact.getName().getValue());
         assertEquals(phoneContact.getDetails().get("telephoneNumber"), contact.getTelephone().getValue());
-        assertEquals(faxContact.getDetails().get("faxNumber"), contact.getTelefax().getValue());
+        assertEquals(faxContact.getDetails().get("telephoneNumber"), contact.getTelefax().getValue());
         assertEquals(emailContact.getDetails().get("emailAddress"), contact.getElectronicMail().getValue());
+    }
+
+    /**
+     * Gets an <em>lookup.contactPurpose</em> lookup, creating it if it
+     * doesn't exist.
+     *
+     * @param purpose the purpose
+     * @return the lookup
+     */
+    private Lookup getContactPurpose(String purpose) {
+        return TestHelper.getLookup(ContactArchetypes.PURPOSE, purpose);
     }
 
     /**
