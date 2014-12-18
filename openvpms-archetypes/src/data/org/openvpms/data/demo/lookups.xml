@@ -97,6 +97,7 @@
     <data archetype="lookup.contactPurpose" code="CORRESPONDENCE"/>
     <data id="REMINDER" archetype="lookup.contactPurpose" code="REMINDER"/>
     <data id="BILLING" archetype="lookup.contactPurpose" code="BILLING"/>
+    <data id="FAX" archetype="lookup.contactPurpose" code="FAX"/>
     <data archetype="lookup.customerType" code="SMALL_ANIMAL"/>
     <data archetype="lookup.customerType" code="LARGE_ANIMAL"/>
     <data archetype="lookup.customerType" code="STUD"/>

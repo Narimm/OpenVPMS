@@ -30,22 +30,9 @@ public class ContactArchetypes {
     public static final String PHONE = "contact.phoneNumber";
 
     /**
-     * Mobile phone contact archetype short name.
-     *
-     * @deprecated use {@link #PHONE}.
-     */
-    @Deprecated
-    public static final String MOBILE = PHONE;
-
-    /**
      * Email contact archetype short name.
      */
     public static final String EMAIL = "contact.email";
-
-    /**
-     * Fax contact archetype short name.
-     */
-    public static final String FAX = "contact.faxNumber";
 
     /**
      * Location contact archetype short name.

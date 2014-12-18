@@ -385,12 +385,12 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
 
         assertEquals("", rules.getFaxNumber(party));
 
-        Contact fax1 = createFax("03", "12345");
+        Contact fax1 = createPhone("03", "12345", false, "FAX");
         party.addContact(fax1);
         assertEquals("(03) 12345", rules.getFaxNumber(party));
 
         party.removeContact(fax1);
-        Contact fax2 = createFax(null, "12345");
+        Contact fax2 = createPhone(null, "12345", false, "FAX");
         party.addContact(fax2);
         assertEquals("12345", rules.getFaxNumber(party));
     }
@@ -587,21 +587,6 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     private void enableSMS(Contact contact) {
         IMObjectBean bean = new IMObjectBean(contact);
         bean.setValue("sms", true);
-    }
-
-    /**
-     * Creates a new <em>contact.faxNumber</em>.
-     *
-     * @param areaCode the area code. May be {@code null}
-     * @param number   the fax number
-     * @return a new fax contact
-     */
-    private Contact createFax(String areaCode, String number) {
-        Contact contact = (Contact) create(ContactArchetypes.FAX);
-        IMObjectBean bean = new IMObjectBean(contact);
-        bean.setValue("areaCode", areaCode);
-        bean.setValue("faxNumber", number);
-        return contact;
     }
 
     /**

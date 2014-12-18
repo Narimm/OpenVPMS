@@ -39,9 +39,6 @@
                     <propertyMap name="archetype">
                         <property name="shortName" value="contact.email"/>
                     </propertyMap>
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="contact.faxNumber"/>
-                    </propertyMap>
                 </propertyList>
             </assertion>
         </node>
