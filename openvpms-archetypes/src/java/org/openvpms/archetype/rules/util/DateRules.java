@@ -135,6 +135,34 @@ public class DateRules {
     }
 
     /**
+     * Returns the first day of the month, for the given date.
+     *
+     * @param date the date
+     * @return the first day of the month
+     */
+    public static Date getMonthStart(Date date) {
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(date);
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        return calendar.getTime();
+    }
+
+    /**
+     * Returns the last day of the month, for the given date.
+     *
+     * @param date the date
+     * @return the last day of the month
+     */
+    public static Date getMonthEnd(Date date) {
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(date);
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        calendar.add(Calendar.MONTH, 1);
+        calendar.add(Calendar.DAY_OF_MONTH, -1);
+        return calendar.getTime();
+    }
+
+    /**
      * Helper to compare two dates.
      * <p/>
      * Null dates are treated as greater than non-null dates.

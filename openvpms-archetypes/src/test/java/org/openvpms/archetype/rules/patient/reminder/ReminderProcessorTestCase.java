@@ -84,7 +84,7 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
         customer.getContacts().clear();
         save(customer);
         patient = TestHelper.createPatient(customer);
-        reminderType = ReminderTestHelper.createReminderType();
+        reminderType = ReminderTestHelper.createReminderType(1, DateUnits.MONTHS, 1, DateUnits.DAYS);
     }
 
     /**

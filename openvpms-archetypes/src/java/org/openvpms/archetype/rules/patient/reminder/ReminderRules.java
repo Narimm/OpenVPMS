@@ -117,17 +117,17 @@ public class ReminderRules {
     }
 
     /**
-     * Sets any 'in progress' reminders that have the same patient and matching reminder group and/or type as that in
-     * the supplied reminders to 'completed'.
+     * Sets any IN_PROGRESS reminders that have the same patient and matching reminder group and/or type as that in
+     * the supplied reminders to COMPLETED.
      * <p/>
-     * This only has effect if the reminders have 'in progress' status.
+     * This only has effect if the reminders have IN_PROGRESS status.
      * <p/>
      * This method should be used in preference to {@link #markMatchingRemindersCompleted(Act)} if multiple reminders
      * are being saved which may contain duplicates. The former won't mark duplicates completed if they are all saved
      * within the same transaction.
      * <p/>
      * Reminders are processed in the order they appear in the list. If later reminders match earlier ones, the later
-     * ones will be marked 'completed'.
+     * ones will be marked COMPLETED.
      *
      * @param reminders the reminders
      * @throws ArchetypeServiceException for any archetype service exception
@@ -153,17 +153,17 @@ public class ReminderRules {
                         }
                     }
                     // now mark any persistent matching reminders completed
-                    doMarkMatchingRemindersCompleted(reminder);
+                    doMarkMatchingRemindersCompleted(reminder, type, patient);
                 }
             }
         }
     }
 
     /**
-     * Sets any 'in progress' reminders that have the same patient and matching reminder group and/or type as that in
-     * the supplied reminder to 'completed'.
+     * Sets any IN_PROGRESS reminders that have the same patient and matching reminder group and/or type as that in
+     * the supplied reminder to COMPLETED.
      * <p/>
-     * This only has effect if the reminder is new and has 'in progress' status.
+     * This only has effect if the reminder is new and has IN_PROGRESS status.
      * <p/>
      * This method is intended to be invoked just prior to a new reminder being saved.
      *
@@ -223,10 +223,10 @@ public class ReminderRules {
     }
 
     /**
-     * Returns a count of 'in progress' reminders for a patient.
+     * Returns a count of IN_PROGRESS reminders for a patient.
      *
      * @param patient the patient
-     * @return the no. of 'in progress' reminders for {@code patient}
+     * @return the no. of IN_PROGRESS reminders for {@code patient}
      * @throws ArchetypeServiceException for any error
      */
     public int countReminders(Party patient) {
@@ -237,12 +237,12 @@ public class ReminderRules {
     }
 
     /**
-     * Returns a count of 'in progress' alerts whose endTime is greater than
+     * Returns a count of IN_PROGRESS alerts whose endTime is greater than
      * the specified date/time.
      *
      * @param patient the patient
      * @param date    the date/time
-     * @return the no. of 'in progress' alerts for {@code patient}
+     * @return the no. of IN_PROGRESS alerts for {@code patient}
      * @throws ArchetypeServiceException for any error
      */
     public int countAlerts(Party patient, Date date) {
@@ -709,10 +709,12 @@ public class ReminderRules {
     }
 
     /**
-     * Sets any 'in progress' reminders that have the same patient and matching reminder group and/or type as that in
-     * the supplied reminder to 'completed'.
+     * Sets any IN_PROGRESS reminders that have the same patient and matching reminder group and/or type as that in
+     * the supplied reminder to COMPLETED.
      * <p/>
-     * This only has effect if the reminder has 'in progress' status.
+     * This only has effect if the reminder has IN_PROGRESS status.
+     * <p/>
+     * If the reminder is set to expire, it is also marked COMPLETED.
      *
      * @param reminder the reminder
      * @throws ArchetypeServiceException for any archetype service exception
@@ -723,21 +725,42 @@ public class ReminderRules {
             ReminderType reminderType = getReminderType(bean);
             IMObjectReference patient = bean.getNodeParticipantRef("patient");
             if (reminderType != null && patient != null) {
-                ArchetypeQuery query = new ArchetypeQuery(ReminderArchetypes.REMINDER, false, true);
-                query.add(Constraints.eq("status", ReminderStatus.IN_PROGRESS));
-                query.add(Constraints.join("patient").add(Constraints.eq("entity", patient)));
-                if (!reminder.isNew()) {
-                    query.add(Constraints.ne("id", reminder.getId()));
-                }
-                query.setMaxResults(ArchetypeQuery.ALL_RESULTS); // must query all, otherwise the iteration would change
-                IMObjectQueryIterator<Act> reminders = new IMObjectQueryIterator<Act>(service, query);
-                while (reminders.hasNext()) {
-                    Act act = reminders.next();
-                    if (hasMatchingTypeOrGroup(act, reminderType)) {
-                        markCompleted(act);
-                    }
-                }
+                doMarkMatchingRemindersCompleted(reminder, reminderType, patient);
             }
+        }
+    }
+
+    /**
+     * Sets any IN_PROGRESS reminders that have the same patient and matching reminder group and/or type as that in
+     * the supplied reminder to COMPLETED.
+     * <p/>
+     * This only has effect if the reminder has IN_PROGRESS status.
+     * <p/>
+     * If the reminder is set to expire, it is also marked COMPLETED.
+     *
+     * @param reminder     the reminder
+     * @param reminderType the reminder type
+     * @param patient      the patient reference
+     * @throws ArchetypeServiceException for any archetype service exception
+     */
+    private void doMarkMatchingRemindersCompleted(Act reminder, ReminderType reminderType, IMObjectReference patient) {
+        ArchetypeQuery query = new ArchetypeQuery(ReminderArchetypes.REMINDER, false, true);
+        query.add(Constraints.eq("status", ReminderStatus.IN_PROGRESS));
+        query.add(Constraints.join("patient").add(Constraints.eq("entity", patient)));
+        if (!reminder.isNew()) {
+            query.add(Constraints.ne("id", reminder.getId()));
+        }
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS); // must query all, otherwise the iteration would change
+        IMObjectQueryIterator<Act> reminders = new IMObjectQueryIterator<Act>(service, query);
+        while (reminders.hasNext()) {
+            Act act = reminders.next();
+            if (hasMatchingTypeOrGroup(act, reminderType)) {
+                markCompleted(act);
+            }
+        }
+        // if the reminder is set to expire immediately, mark it COMPLETED
+        if (reminderType.shouldCancel(reminder.getActivityEndTime(), new Date())) {
+            markCompleted(reminder);
         }
     }
 
