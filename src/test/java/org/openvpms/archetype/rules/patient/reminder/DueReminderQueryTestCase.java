@@ -13,12 +13,14 @@
  *
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.archetype.rules.patient.reminder;
 
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.practice.Location;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -36,13 +38,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.addTemplate;
-import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.assertEquals;
-import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.assertTrue;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createReminder;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createReminderType;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createReminders;
-import static org.openvpms.archetype.test.TestHelper.getDate;
 
 
 /**
@@ -80,8 +81,8 @@ public class DueReminderQueryTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testQueryByReminderTypeAndDate() {
-        // create a reminder type with 3 months interval
-        Entity reminderType = createReminderType(3, DateUnits.MONTHS);
+        // create a reminder type with 3 months interval, 1 day cancel interval
+        Entity reminderType = createReminderType(3, DateUnits.MONTHS, 1, DateUnits.DAYS);
 
         // create some patients
         Party customer = TestHelper.createCustomer();
@@ -90,17 +91,17 @@ public class DueReminderQueryTestCase extends ArchetypeServiceTest {
         Party patient3 = TestHelper.createPatient(customer);
 
         // create reminders with the specified start dates
-        Date startDate1 = getDate("2009-10-16");
-        Date startDate2 = getDate("2009-11-16");
-        Date startDate3 = getDate("2009-12-16");
+        Date startDate1 = DateRules.getToday();
+        Date startDate2 = DateRules.getDate(startDate1, 1, DateUnits.MONTHS);
+        Date startDate3 = DateRules.getDate(startDate2, 1, DateUnits.MONTHS);
         Act reminder1 = createReminder(patient1, reminderType, startDate1);
         Act reminder2 = createReminder(patient2, reminderType, startDate2);
         Act reminder3 = createReminder(patient3, reminderType, startDate3);
 
         // verify the due dates have been calculated correctly
-        Date dueDate1 = getDate("2010-01-16");
-        Date dueDate2 = getDate("2010-02-16");
-        Date dueDate3 = getDate("2010-03-16");
+        Date dueDate1 = DateRules.getDate(startDate1, 3, DateUnits.MONTHS);
+        Date dueDate2 = DateRules.getDate(startDate2, 3, DateUnits.MONTHS);
+        Date dueDate3 = DateRules.getDate(startDate3, 3, DateUnits.MONTHS);
         assertEquals(dueDate1.getTime(), reminder1.getActivityEndTime().getTime());
         assertEquals(dueDate2.getTime(), reminder2.getActivityEndTime().getTime());
         assertEquals(dueDate3.getTime(), reminder3.getActivityEndTime().getTime());
@@ -110,16 +111,16 @@ public class DueReminderQueryTestCase extends ArchetypeServiceTest {
         query.setReminderType(reminderType);
         checkReminders(query, reminder1, reminder2, reminder3);
 
-        // exclude reminders after 1/3/10
-        query.setTo(getDate("2010-03-01"));
+        // exclude reminders due 1 week before dueDate3
+        query.setTo(DateRules.getDate(dueDate3, -1, DateUnits.WEEKS));
         checkReminders(query, reminder1, reminder2);
 
-        // exclude reminders before 1/2/10
-        query.setFrom(getDate("2010-02-01"));
+        // exclude reminders 1 week before dueDate2
+        query.setFrom(DateRules.getDate(dueDate2, -1, DateUnits.WEEKS));
         checkReminders(query, reminder2);
 
-        // now set the cancel date. All reminders due prior to this will now be returned, so they can be cancelled
-        query.setCancelDate(getDate("2010-02-01"));
+        // now set the cancel date. All reminders set to cancel prior to this will now be returned
+        query.setCancelDate(DateRules.getDate(dueDate2, 1, DateUnits.DAYS));
         checkReminders(query, reminder1, reminder2);
     }
 
@@ -130,8 +131,8 @@ public class DueReminderQueryTestCase extends ArchetypeServiceTest {
     public void testQueryWithReminderCount() {
         ReminderRules rules = new ReminderRules(getArchetypeService(), patientRules);
 
-        Date startDate = getDate("2009-10-16");
-        Date expected1stDueDate = getDate("2010-01-16");  // 3 months after start
+        Date startDate = DateRules.getToday();
+        Date expected1stDueDate = DateRules.getDate(startDate, 3, DateUnits.MONTHS);  // 3 months after start
 
         // create a new reminder type with two templates:
         // . reminderCount=0, 0 week overdue interval
@@ -156,21 +157,21 @@ public class DueReminderQueryTestCase extends ArchetypeServiceTest {
         checkReminders(query, reminder);
 
         // now specify the date range, and verify it still picks up the reminder
-        query.setFrom(getDate("2010-01-01"));
-        query.setTo(getDate("2010-01-31"));
+        query.setFrom(DateRules.getMonthStart(expected1stDueDate));
+        query.setTo(DateRules.getMonthEnd(expected1stDueDate));
         checkReminders(query, reminder);
 
         rules.updateReminder(reminder, new Date()); // update the reminder, incrementing the reminderCount
-        Date expected2ndDueDate = getDate("2010-02-27");
+        Date expected2ndDueDate = DateRules.getDate(expected1stDueDate, 6, DateUnits.WEEKS);
         dueDate = rules.getNextDueDate(reminder);
         assertEquals(expected2ndDueDate.getTime(), dueDate.getTime());
 
-        // no reminder should be found, as it should now be due on 27/2/10
+        // no reminder should be found, as it should now be due outside the query date range
         checkReminders(query);
 
         // change the date range to include the expected 2nd due date
-        query.setFrom(getDate("2010-02-01"));
-        query.setTo(getDate("2010-03-01"));
+        query.setFrom(DateRules.getMonthStart(expected2ndDueDate));
+        query.setTo(DateRules.getMonthEnd(expected2ndDueDate));
         checkReminders(query, reminder); // verify the reminder is found
     }
 
@@ -179,7 +180,7 @@ public class DueReminderQueryTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testQueryByLocation() {
-        Date startDate = getDate("2009-10-16");
+        Date startDate = DateRules.getToday();
 
         // create a new reminder type with two templates:
         // . reminderCount=0, 0 week overdue interval
@@ -216,7 +217,7 @@ public class DueReminderQueryTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Helper to get all reminders from an <tt>Iterable</tt>.
+     * Helper to get all reminders from an {@code Iterable}.
      *
      * @param iterable the iterable
      * @return a set of reminders

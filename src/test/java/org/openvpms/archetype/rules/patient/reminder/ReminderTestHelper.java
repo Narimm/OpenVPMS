@@ -44,6 +44,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import static org.junit.Assert.assertNotNull;
+
 
 /**
  * Unit test helper for reminders.
@@ -64,6 +66,8 @@ public class ReminderTestHelper extends TestHelper {
 
     /**
      * Creates and saves a new <em>entity.reminderType</em>.
+     * <p/>
+     * The cancelInterval will be set to {@code 2 * defaultInterval}.
      *
      * @param defaultInterval the default reminder interval
      * @param defaultUnits    the default reminder interval units
@@ -71,7 +75,7 @@ public class ReminderTestHelper extends TestHelper {
      * @return a new reminder
      */
     public static Entity createReminderType(int defaultInterval, DateUnits defaultUnits, Lookup... groups) {
-        return createReminderType(defaultInterval, defaultUnits, -1, null, groups);
+        return createReminderType(defaultInterval, defaultUnits, 2 * defaultInterval, defaultUnits, groups);
     }
 
     /**

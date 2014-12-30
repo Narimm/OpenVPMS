@@ -17,7 +17,6 @@
 package org.openvpms.archetype.test;
 
 import org.apache.commons.lang.StringUtils;
-import org.junit.Assert;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.till.TillArchetypes;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
@@ -55,13 +54,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import static org.junit.Assert.assertNotNull;
+
 
 /**
  * Unit test helper.
  *
  * @author Tim Anderson
  */
-public class TestHelper extends Assert {
+public class TestHelper {
 
     /**
      * Random no. generator for creating unique names.

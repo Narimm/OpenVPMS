@@ -130,22 +130,22 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
     public void testQueryReminderTypeDateRange() {
         final int count = 10;
         Entity reminderType = ReminderTestHelper.createReminderType();
+        Date dueTo = null;
 
         Calendar calendar = new GregorianCalendar();
-        calendar.set(1980, Calendar.JANUARY, 1);
         Date dueFrom = calendar.getTime();
 
         for (int i = 0; i < count; ++i) {
-            calendar.set(Calendar.DAY_OF_MONTH, i + 1);
+            calendar.add(Calendar.DAY_OF_MONTH, i + 1);
             Date dueDate = calendar.getTime();
             Party customer = TestHelper.createCustomer();
             Party patient = TestHelper.createPatient(customer);
             ReminderTestHelper.createReminderWithDueDate(patient, reminderType, dueDate);
+            if (i == 4) {
+                dueTo = dueDate;
+            }
         }
         // query a subset of the dates just added
-        calendar.set(Calendar.DAY_OF_MONTH, 5);
-        Date dueTo = calendar.getTime();
-
         ReminderQuery query = new ReminderQuery(getArchetypeService());
         query.setReminderType(reminderType);
         query.setFrom(dueFrom);
@@ -153,7 +153,6 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         List<Act> reminders = getReminders(query);
         assertEquals(5, reminders.size());
     }
-
 
     /**
      * Verifies that IN_PROGRESS reminders can be queried for a customer.
