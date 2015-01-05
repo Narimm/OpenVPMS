@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -19,6 +19,7 @@ package org.openvpms.report.jasper;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
+import org.apache.commons.jxpath.Functions;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -60,21 +61,28 @@ public class ObjectSetDataSource implements JRDataSource {
      */
     private final ILookupService lookups;
 
+    /**
+     * The JXPath extension functions.
+     */
+    private final Functions functions;
+
 
     /**
      * Constructs a {@link ObjectSetDataSource}.
      *
-     * @param iterator the iterator
-     * @param fields   additional report fields. These override any in the report. May be {@code null}
-     * @param service  the archetype service
-     * @param lookups  the lookup service
+     * @param iterator  the iterator
+     * @param fields    additional report fields. These override any in the report. May be {@code null}
+     * @param service   the archetype service
+     * @param lookups   the lookup service
+     * @param functions the JXPath extension functions
      */
     public ObjectSetDataSource(Iterator<ObjectSet> iterator, PropertySet fields, IArchetypeService service,
-                               ILookupService lookups) {
+                               ILookupService lookups, Functions functions) {
         this.iterator = iterator;
         this.fields = fields;
         this.service = service;
         this.lookups = lookups;
+        this.functions = functions;
     }
 
     /**
@@ -86,7 +94,7 @@ public class ObjectSetDataSource implements JRDataSource {
     public boolean next() throws JRException {
         try {
             if (iterator.hasNext()) {
-                current = new ObjectSetExpressionEvaluator(iterator.next(), fields, service, lookups);
+                current = new ObjectSetExpressionEvaluator(iterator.next(), fields, service, lookups, functions);
                 return true;
             }
             return false;

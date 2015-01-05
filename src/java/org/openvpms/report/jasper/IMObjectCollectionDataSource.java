@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -22,6 +22,7 @@ import net.sf.jasperreports.engine.JRField;
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.collections.comparators.TransformingComparator;
+import org.apache.commons.jxpath.Functions;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -74,12 +75,13 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
      * @param service    the archetype service
      * @param lookups    the lookup service
      * @param handlers   the document handlers
+     * @param functions  the JXPath extension functions
      * @param sortNodes  the sort nodes
      */
     public IMObjectCollectionDataSource(IMObject parent, PropertySet fields, NodeDescriptor descriptor,
                                         IArchetypeService service, ILookupService lookups, DocumentHandlers handlers,
-                                        String... sortNodes) {
-        super(service, lookups, handlers);
+                                        Functions functions, String... sortNodes) {
+        super(service, lookups, handlers, functions);
         List<IMObject> values = descriptor.getChildren(parent);
         for (String sortNode : sortNodes) {
             sort(values, sortNode);
@@ -92,15 +94,16 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
     /**
      * Constructs a {@link IMObjectCollectionDataSource} for a collection of objects.
      *
-     * @param objects  the objects
-     * @param fields   additional report fields. These override any in the report. May be {@code null}
-     * @param service  the archetype service
-     * @param lookups  the lookup service
-     * @param handlers the document handlers
+     * @param objects   the objects
+     * @param fields    additional report fields. These override any in the report. May be {@code null}
+     * @param service   the archetype service
+     * @param lookups   the lookup service
+     * @param handlers  the document handlers
+     * @param functions the JXPath extension functions
      */
     public IMObjectCollectionDataSource(Iterator<IMObject> objects, PropertySet fields, IArchetypeService service,
-                                        ILookupService lookups, DocumentHandlers handlers) {
-        super(service, lookups, handlers);
+                                        ILookupService lookups, DocumentHandlers handlers, Functions functions) {
+        super(service, lookups, handlers, functions);
         iter = objects;
         this.fields = fields;
     }
@@ -114,7 +117,7 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
         boolean result = iter.hasNext();
         if (result) {
             current = new IMObjectDataSource(iter.next(), fields, getArchetypeService(), getLookupService(),
-                                             getDocumentHandlers());
+                                             getDocumentHandlers(), getFunctions());
         }
         return result;
     }

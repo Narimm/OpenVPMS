@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.tools;
@@ -22,6 +22,7 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
 import org.apache.commons.io.IOUtils;
+import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -50,8 +51,7 @@ import java.util.List;
 /**
  * Simple tool for listing and reporting on <code>IMObject</code> instances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ReportTool {
 
@@ -70,9 +70,19 @@ public class ReportTool {
      */
     private final DocumentHandlers handlers;
 
+    /**
+     * The report factory.
+     */
+    private final ReportFactory factory;
 
     /**
-     * Construct a new <code>ReportTool</code>.
+     * The archetype functions factory.
+     */
+    private final ArchetypeFunctionsFactory functions;
+
+
+    /**
+     * Constructs a {@link ReportTool}.
      *
      * @param contextPath the application context path
      */
@@ -86,6 +96,8 @@ public class ReportTool {
         service = (IArchetypeService) context.getBean("archetypeService");
         lookups = context.getBean(ILookupService.class);
         handlers = context.getBean(DocumentHandlers.class);
+        functions = context.getBean(ArchetypeFunctionsFactory.class);
+        this.factory = new ReportFactory(service, lookups, handlers, functions);
     }
 
     /**
@@ -209,7 +221,7 @@ public class ReportTool {
      */
     protected IMReport<IMObject> getReport(IMObject object) {
         String shortName = object.getArchetypeId().getShortName();
-        return ReportFactory.createIMObjectReport(shortName, service, lookups, handlers);
+        return factory.createIMObjectReport(shortName);
     }
 
     /**
@@ -238,6 +250,16 @@ public class ReportTool {
     protected DocumentHandlers getDocumentHandlers() {
         return handlers;
     }
+
+    /**
+     * Returns the JXPath extension functions factory.
+     *
+     * @return the JXPath extension functions factory
+     */
+    protected ArchetypeFunctionsFactory getFunctionsFactory() {
+        return functions;
+    }
+
 
     /**
      * Parses the command line.

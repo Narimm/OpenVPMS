@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper.tools;
@@ -25,6 +25,7 @@ import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import net.sf.jasperreports.view.JasperViewer;
+import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -156,6 +157,8 @@ public class JasperReportTool extends ReportTool {
         String shortName = object.getArchetypeId().getShortName();
         TemplateHelper helper = new TemplateHelper(service);
         Document doc = helper.getDocumentForArchetype(shortName);
+        ArchetypeFunctionsFactory factory = getFunctionsFactory();
+
         if (doc == null) {
             throw new ReportException(NoTemplateForArchetype, shortName);
         }
@@ -164,7 +167,7 @@ public class JasperReportTool extends ReportTool {
         try {
             if (doc.getName().endsWith(DocFormats.JRXML_EXT)) {
                 JasperDesign design = JasperReportHelper.getReport(doc, handlers);
-                report = new TemplatedJasperIMObjectReport(design, service, lookups, handlers);
+                report = new TemplatedJasperIMObjectReport(design, service, lookups, handlers, factory.create(service));
             } else {
                 throw new ReportException(UnsupportedTemplate, doc.getName());
             }
