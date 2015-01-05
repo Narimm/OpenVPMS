@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.test;
@@ -41,6 +41,7 @@ import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -125,7 +126,8 @@ public class TestHelper {
      */
     public static Party createCustomer(String firstName, String lastName, boolean save) {
         Party customer = (Party) create(CustomerArchetypes.PERSON);
-        PartyRules rules = new PartyRules(ArchetypeServiceHelper.getArchetypeService());
+        PartyRules rules = new PartyRules(ArchetypeServiceHelper.getArchetypeService(),
+                                          LookupServiceHelper.getLookupService());
         customer.setContacts(rules.getDefaultContacts());
         IMObjectBean bean = new IMObjectBean(customer);
         bean.setValue("firstName", firstName);
@@ -508,7 +510,8 @@ public class TestHelper {
             party.setName("XPractice");
         }
 
-        PartyRules rules = new PartyRules(ArchetypeServiceHelper.getArchetypeService());
+        PartyRules rules = new PartyRules(ArchetypeServiceHelper.getArchetypeService(),
+                                          LookupServiceHelper.getLookupService());
         party.setContacts(rules.getDefaultContacts());
 
         Lookup currency = getCurrency("AUD");
@@ -698,10 +701,8 @@ public class TestHelper {
      */
     public static String getLookupName(IMObject object, String node) {
         IMObjectBean bean = new IMObjectBean(object);
-        return LookupHelper.getName(
-                ArchetypeServiceHelper.getArchetypeService(),
-                bean.getDescriptor(node),
-                object);
+        return LookupHelper.getName(ArchetypeServiceHelper.getArchetypeService(),
+                                    LookupServiceHelper.getLookupService(), bean.getDescriptor(node), object);
     }
 
     /**

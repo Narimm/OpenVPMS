@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -83,6 +83,11 @@ public class PatientRules {
      */
     private IMObjectBeanFactory factory;
 
+    /**
+     * Helper functions.
+     */
+    private ArchetypeServiceFunctions functions;
+
 
     /**
      * Constructs a {@code PatientRules}.
@@ -106,6 +111,7 @@ public class PatientRules {
         this.lookups = lookups;
         this.formatter = formatter;
         factory = new IMObjectBeanFactory(service);
+        functions = new ArchetypeServiceFunctions(service, lookups);
     }
 
     /**
@@ -420,7 +426,7 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getPatientSpecies(Party patient) {
-        return ArchetypeServiceFunctions.lookup(patient, "species");
+        return functions.lookup(patient, "species");
     }
 
     /**
@@ -431,7 +437,7 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getPatientBreed(Party patient) {
-        return ArchetypeServiceFunctions.lookup(patient, "breed");
+        return functions.lookup(patient, "breed");
     }
 
     /**
@@ -442,7 +448,7 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getPatientSex(Party patient) {
-        return ArchetypeServiceFunctions.lookup(patient, "sex");
+        return functions.lookup(patient, "sex");
     }
 
     /**

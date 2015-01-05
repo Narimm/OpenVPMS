@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.reminder;
@@ -20,7 +20,10 @@ import org.apache.commons.jxpath.JXPathContext;
 import org.junit.Test;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
+import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -28,8 +31,11 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
+import org.openvpms.component.system.common.jxpath.ObjectFunctions;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
@@ -122,7 +128,7 @@ public class ReminderFunctionsTestCase extends ArchetypeServiceTest {
             ReminderTestHelper.createReminderWithDueDate(patient, reminderType, dueDate);
         }
 
-        JXPathContext ctx = JXPathHelper.newContext(context);
+        JXPathContext ctx = createContext(context);
 
         // get reminders excluding any reminders prior to the current date
         List<Act> reminders1 = (List<Act>) ctx.getValue("reminder:getReminders(., 1, 'YEARS')");
@@ -137,11 +143,27 @@ public class ReminderFunctionsTestCase extends ArchetypeServiceTest {
      * Invokes the reminder:getDocumentFormReminder() jxpath function with the supplied context.
      *
      * @param context the context object
-     * @return the resulting reminder act. May be <tt>null</tt>
+     * @return the resulting reminder act. May be {@code null}
      */
     private Act getDocumentFormReminder(Object context) {
-        JXPathContext ctx = JXPathHelper.newContext(context);
+        JXPathContext ctx = createContext(context);
         return (Act) ctx.getValue("reminder:getDocumentFormReminder(.)");
+    }
+
+    /**
+     * Creates a new JXPathContext with the reminder functions registered.
+     *
+     * @param context the context object
+     * @return a new JXPathContext
+     */
+    private JXPathContext createContext(Object context) {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
+        PatientRules patientRules = new PatientRules(service, lookups);
+        ReminderFunctions functions = new ReminderFunctions(service,
+                                                            new ReminderRules(service, patientRules),
+                                                            new CustomerRules(service, lookups));
+        return JXPathHelper.newContext(context, new ObjectFunctions(functions, "reminder"));
     }
 
 }

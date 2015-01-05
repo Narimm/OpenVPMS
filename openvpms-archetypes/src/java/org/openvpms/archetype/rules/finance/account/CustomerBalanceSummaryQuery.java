@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -27,7 +27,6 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
@@ -162,6 +161,11 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
     private final IArchetypeService service;
 
     /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
+
+    /**
      * The last retrieved set.
      */
     private ObjectSet last;
@@ -184,7 +188,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
     /**
      * Customer account type lookup cache.
      */
-    private Map<String, Lookup> lookups = new HashMap<String, Lookup>();
+    private Map<String, Lookup> lookupCache = new HashMap<String, Lookup>();
 
     /**
      * Balance calculator helper.
@@ -226,10 +230,12 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
      *
      * @param date    the date
      * @param service the archetype service
+     * @param lookups the lookup service
      * @param rules   the customer account rules
      */
-    public CustomerBalanceSummaryQuery(Date date, IArchetypeService service, CustomerAccountRules rules) {
-        this(date, 0, 0, null, null, null, service, rules);
+    public CustomerBalanceSummaryQuery(Date date, IArchetypeService service, ILookupService lookups,
+                                       CustomerAccountRules rules) {
+        this(date, 0, 0, null, null, null, service, lookups, rules);
     }
 
     /**
@@ -239,47 +245,51 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
      * @param date        the date
      * @param accountType the account type
      * @param service     the archetype service
+     * @param lookups     the lookup service
      * @param rules       the customer account rules
      */
     public CustomerBalanceSummaryQuery(Date date, Lookup accountType, IArchetypeService service,
+                                       ILookupService lookups, CustomerAccountRules rules) {
+        this(date, accountType, null, null, service, lookups, rules);
+    }
+
+    /**
+     * Constructs a {@link CustomerBalanceSummaryQuery} for all accounts
+     * with both current and overdue balances having a particular account type.
+     *
+     * @param date         the date
+     * @param accountType  the account type
+     * @param customerFrom the customer name to start from. May contain wildcards or be {@code null}
+     *                     If {@code null} indicates all customers
+     * @param customerTo   the customer name to end on. May contain wildcards. If {@code null} indicates all customers
+     *                     from {@code customerFrom}
+     * @param service      the archetype service
+     * @param lookups      the lookup service
+     * @param rules        the customer account rules
+     */
+    public CustomerBalanceSummaryQuery(Date date, Lookup accountType, String customerFrom, String customerTo,
+                                       IArchetypeService service, ILookupService lookups, CustomerAccountRules rules) {
+        this(date, accountType, customerFrom, customerTo, Location.ALL, service, lookups, rules);
+    }
+
+    /**
+     * Constructs a {@link CustomerBalanceSummaryQuery} for all accounts
+     * with both current and overdue balances having a particular account type.
+     *
+     * @param date         the date
+     * @param accountType  the account type
+     * @param customerFrom the customer name to start from. May contain wildcards or be {@code null}.
+     *                     If {@code null} indicates all customers
+     * @param customerTo   the customer name to end on. May contain wildcards. If {@code null} indicates all customers
+     *                     from {@code customerFrom}
+     * @param service      the archetype service
+     * @param lookups      the lookup service
+     * @param rules        the customer account rules
+     */
+    public CustomerBalanceSummaryQuery(Date date, Lookup accountType, String customerFrom, String customerTo,
+                                       Location location, IArchetypeService service, ILookupService lookups,
                                        CustomerAccountRules rules) {
-        this(date, accountType, null, null, service, rules);
-    }
-
-    /**
-     * Constructs a {@link CustomerBalanceSummaryQuery} for all accounts
-     * with both current and overdue balances having a particular account type.
-     *
-     * @param date         the date
-     * @param accountType  the account type
-     * @param customerFrom the customer name to start from. May contain wildcards or be {@code null}
-     *                     If {@code null} indicates all customers
-     * @param customerTo   the customer name to end on. May contain wildcards. If {@code null} indicates all customers
-     *                     from {@code customerFrom}
-     * @param service      the archetype service
-     * @param rules        the customer account rules
-     */
-    public CustomerBalanceSummaryQuery(Date date, Lookup accountType, String customerFrom, String customerTo,
-                                       IArchetypeService service, CustomerAccountRules rules) {
-        this(date, accountType, customerFrom, customerTo, Location.ALL, service, rules);
-    }
-
-    /**
-     * Constructs a {@link CustomerBalanceSummaryQuery} for all accounts
-     * with both current and overdue balances having a particular account type.
-     *
-     * @param date         the date
-     * @param accountType  the account type
-     * @param customerFrom the customer name to start from. May contain wildcards or be {@code null}
-     *                     If {@code null} indicates all customers
-     * @param customerTo   the customer name to end on. May contain wildcards. If {@code null} indicates all customers
-     *                     from {@code customerFrom}
-     * @param service      the archetype service
-     * @param rules        the customer account rules
-     */
-    public CustomerBalanceSummaryQuery(Date date, Lookup accountType, String customerFrom, String customerTo,
-                                       Location location, IArchetypeService service, CustomerAccountRules rules) {
-        this(date, true, 0, 0, false, accountType, customerFrom, customerTo, location, service, rules);
+        this(date, true, 0, 0, false, accountType, customerFrom, customerTo, location, service, lookups, rules);
     }
 
     /**
@@ -291,11 +301,12 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
      * @param overdueTo   the overdue-to date. Use {@code &lt;= 0} to indicate all dates
      * @param accountType the account type. May be {@code null} to indicate all account types
      * @param service     the archetype service
+     * @param lookups     the lookup service
      * @param rules       the customer account rules
      */
     public CustomerBalanceSummaryQuery(Date date, int overdueFrom, int overdueTo, Lookup accountType,
-                                       IArchetypeService service, CustomerAccountRules rules) {
-        this(date, overdueFrom, overdueTo, accountType, null, null, service, rules);
+                                       IArchetypeService service, ILookupService lookups, CustomerAccountRules rules) {
+        this(date, overdueFrom, overdueTo, accountType, null, null, service, lookups, rules);
     }
 
     /**
@@ -311,13 +322,14 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
      * @param customerTo   the customer name to end on. May contain wildcards. If {@code null} indicates all customers
      *                     from {@code customerFrom}
      * @param service      the archetype service
+     * @param lookups      the lookup service
      * @param rules        the customer account rules
      */
     public CustomerBalanceSummaryQuery(Date date, int overdueFrom, int overdueTo, Lookup accountType,
                                        String customerFrom, String customerTo, IArchetypeService service,
-                                       CustomerAccountRules rules) {
+                                       ILookupService lookups, CustomerAccountRules rules) {
         this(date, false, overdueFrom, overdueTo, false, accountType, customerFrom, customerTo,
-             Location.ALL, service, rules);
+             Location.ALL, service, lookups, rules);
     }
 
     /**
@@ -335,12 +347,13 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
      *                      from {@code customerFrom}
      * @param location      specifies the location to query
      * @param service       the archetype service
+     * @param lookups       the lookup service
      * @param rules         the customer account rules
      */
     public CustomerBalanceSummaryQuery(Date date, boolean nonOverdue, int overdueFrom, int overdueTo,
                                        boolean excludeCredit, Lookup accountType,
                                        String customerFrom, String customerTo, Location location,
-                                       IArchetypeService service, CustomerAccountRules rules) {
+                                       IArchetypeService service, ILookupService lookups, CustomerAccountRules rules) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         calendar.set(Calendar.HOUR_OF_DAY, 23);
@@ -351,6 +364,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         this.excludeCredit = excludeCredit;
         this.nonOverdue = nonOverdue;
         this.service = service;
+        this.lookups = lookups;
         this.overdue = overdueFrom >= 0 && overdueTo >= 0;
         this.from = overdueFrom;
         this.to = overdueTo;
@@ -583,12 +597,9 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
      */
     private Lookup getLookup(String code) {
         Lookup lookup;
-        if ((lookup = lookups.get(code)) == null) {
-            ILookupService lookupService
-                    = LookupServiceHelper.getLookupService();
-            lookup = lookupService.getLookup(
-                    "lookup.customerAccountType", code);
-            lookups.put(code, lookup);
+        if ((lookup = lookupCache.get(code)) == null) {
+            lookup = lookups.getLookup("lookup.customerAccountType", code);
+            lookupCache.put(code, lookup);
         }
         return lookup;
     }

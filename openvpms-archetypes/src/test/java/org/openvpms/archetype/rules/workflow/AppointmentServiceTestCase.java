@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -29,7 +29,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.Date;
@@ -243,7 +242,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         PropertySet set = results.get(0);
         checkAppointment(appointment, set);
 
-        Lookup reason = LookupServiceHelper.getLookupService().getLookup(appointment, "reason");
+        Lookup reason = getLookupService().getLookup(appointment, "reason");
         assertNotNull(reason);
         String name = "New reason: " + System.currentTimeMillis();
         reason.setName(name);

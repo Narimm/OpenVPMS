@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -24,9 +24,9 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -48,8 +48,7 @@ import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchet
 /**
  * Merges two <em>party.customerperson</em> instances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class CustomerMerger extends PartyMerger {
 
@@ -60,20 +59,14 @@ class CustomerMerger extends PartyMerger {
 
 
     /**
-     * Creates a new <tt>CustomerMerger</tt>.
-     */
-    public CustomerMerger() {
-        this(ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Creates a new <tt>CustomerMerger</tt>.
+     * Constructs a {@link CustomerMerger}.
      *
      * @param service the archetype service
+     * @param lookups the lookup service
      */
-    public CustomerMerger(IArchetypeService service) {
+    public CustomerMerger(IArchetypeService service, ILookupService lookups) {
         super("party.customerperson", service);
-        rules = new CustomerRules(service);
+        rules = new CustomerRules(service, lookups);
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -39,8 +39,6 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.lookup.ILookupService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -72,12 +70,6 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * The reminder rules.
      */
     private ReminderRules rules;
-
-    /**
-     * The lookup service.
-     */
-    @Autowired
-    private ILookupService lookups;
 
 
     /**
@@ -603,7 +595,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        rules = new ReminderRules(getArchetypeService(), new PatientRules(getArchetypeService(), lookups, null));
+        rules = new ReminderRules(getArchetypeService(), new PatientRules(getArchetypeService(), getLookupService(),
+                                                                          null));
     }
 
     /**

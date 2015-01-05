@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -79,7 +78,7 @@ public class AbstractProductIOTest extends ArchetypeServiceTest {
      */
     protected ProductData createProduct(Product product, BigDecimal taxRate, boolean copyPrices) {
         IArchetypeService service = getArchetypeService();
-        ProductPriceRules rules = new ProductPriceRules(service, LookupServiceHelper.getLookupService());
+        ProductPriceRules rules = new ProductPriceRules(service, getLookupService());
         IMObjectBean bean = new IMObjectBean(product);
         ProductData result = new ProductData(product.getId(), product.getName(), bean.getString("printedName"), taxRate,
                                              1);

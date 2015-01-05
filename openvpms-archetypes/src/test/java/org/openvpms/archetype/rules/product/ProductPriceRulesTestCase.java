@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -28,8 +28,6 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.lookup.ILookupService;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -61,12 +59,6 @@ import static org.openvpms.archetype.test.TestHelper.getDatetime;
  * @author Tim Anderson
  */
 public class ProductPriceRulesTestCase extends AbstractProductTest {
-
-    /**
-     * The lookup service.
-     */
-    @Autowired
-    ILookupService lookupService;
 
     /**
      * The <em>party.organisationPractice</em>, for taxes.
@@ -317,9 +309,9 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
     @Before
     public void setUp() {
         practice = createPractice();
-        rules = new ProductPriceRules(getArchetypeService(), lookupService);
+        rules = new ProductPriceRules(getArchetypeService(), getLookupService());
         IMObjectBean bean = new IMObjectBean(practice);
-        Currencies currencies = new Currencies();
+        Currencies currencies = new Currencies(getArchetypeService(), getLookupService());
         currency = currencies.getCurrency(bean.getString("currency"));
     }
 

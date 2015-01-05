@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -40,7 +40,6 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -967,7 +966,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     public void testReverseInvoiceRemovesEntriesFromHistory() {
         CustomerAccountRules rules = getRules();
 
-        PatientRules patientRules = new PatientRules(getArchetypeService(), LookupServiceHelper.getLookupService());
+        PatientRules patientRules = new PatientRules(getArchetypeService(), getLookupService());
         Party patient = getPatient();
         User author = TestHelper.createUser();
         Party location = TestHelper.createLocation();

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -35,7 +35,6 @@ import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.jxpath.DateFunctions;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -62,12 +61,6 @@ import static org.openvpms.archetype.test.TestHelper.createTaxType;
  * @author Tim Anderson
  */
 public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
-
-    /**
-     * The lookup service.
-     */
-    @Autowired
-    private ILookupService lookups;
 
     /**
      * The product price rules.
@@ -169,6 +162,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
      */
     @Before
     public void setUp() {
+        ILookupService lookups = getLookupService();
         rules = new ProductPriceRules(getArchetypeService(), lookups);
         Party practice = TestHelper.getPractice();
         taxRules = new TaxRules(practice, getArchetypeService(), lookups);
@@ -242,7 +236,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         Document document = writer.write(Arrays.asList(product).iterator(), true, true,
                                          new PricingGroup(groupA, false)); // exclude prices with no group
 
-        ProductCSVReader reader = new ProductCSVReader(handlers, lookups);
+        ProductCSVReader reader = new ProductCSVReader(handlers, getLookupService());
 
         List<SimpleDateFormat> dateFormats = reader.getDateFormats(document);
         assertEquals(1, dateFormats.size());
@@ -271,7 +265,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         Document document = writer.write(Arrays.asList(product).iterator(), false, true, new
                 PricingGroup(groupA, false));
 
-        ProductCSVReader reader = new ProductCSVReader(handlers, lookups);
+        ProductCSVReader reader = new ProductCSVReader(handlers, getLookupService());
         reader.setDateFormats(Arrays.asList(ProductCSVReader.YEAR_MONTH_DAY_FORMATS));
         ProductDataSet products = reader.read(document);
         assertEquals(1, products.getData().size());
@@ -296,7 +290,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers);
         Document document = writer.write(Arrays.asList(product).iterator(), false, true, PricingGroup.ALL);
 
-        ProductCSVReader reader = new ProductCSVReader(handlers, lookups);
+        ProductCSVReader reader = new ProductCSVReader(handlers, getLookupService());
         reader.setDateFormats(Arrays.asList(ProductCSVReader.YEAR_MONTH_DAY_FORMATS));
         ProductDataSet products = reader.read(document);
         assertEquals(1, products.getData().size());
@@ -319,7 +313,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         Document document = writer.write(Arrays.asList(product).iterator(), from, to, true,
                                          new PricingGroup(groupB, false));
 
-        ProductCSVReader reader = new ProductCSVReader(handlers, lookups);
+        ProductCSVReader reader = new ProductCSVReader(handlers, getLookupService());
         reader.setDateFormats(Arrays.asList(ProductCSVReader.YEAR_MONTH_DAY_FORMATS));
         ProductDataSet products = reader.read(document);
         assertEquals(1, products.getData().size());
@@ -350,7 +344,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         Document document = writer.write(Arrays.asList(product).iterator(), false, true,
                                          new PricingGroup(groupA, false));
 
-        ProductCSVReader reader = new ProductCSVReader(handlers, lookups);
+        ProductCSVReader reader = new ProductCSVReader(handlers, getLookupService());
         reader.setDateFormats(Arrays.asList(ProductCSVReader.YEAR_MONTH_DAY_FORMATS));
         ProductDataSet products = reader.read(document);
         assertEquals(1, products.getData().size());
@@ -380,7 +374,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         Document document = writer.write(Arrays.asList(product).iterator(), false, true,
                                          new PricingGroup(groupA, false));
 
-        ProductCSVReader reader = new ProductCSVReader(handlers, lookups);
+        ProductCSVReader reader = new ProductCSVReader(handlers, getLookupService());
         reader.setDateFormats(Arrays.asList(ProductCSVReader.YEAR_MONTH_DAY_FORMATS));
         ProductDataSet products = reader.read(document);
         assertEquals(1, products.getData().size());
@@ -414,7 +408,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
             }
         };
         Document document = writer.write(Arrays.asList(product).iterator(), false, true, PricingGroup.ALL);
-        ProductCSVReader reader = new ProductCSVReader(handlers, lookups);
+        ProductCSVReader reader = new ProductCSVReader(handlers, getLookupService());
         List<SimpleDateFormat> dateFormats = reader.getDateFormats(document);
         assertEquals(3, dateFormats.size());
         assertEquals(ProductCSVReader.DAY_MONTH_YEAR_FORMATS[0], dateFormats.get(0));
@@ -514,7 +508,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers);
         Document document = writer.write(Arrays.asList(product).iterator(), false, true, PricingGroup.ALL);
 
-        ProductCSVReader reader = new ProductCSVReader(handlers, lookups);
+        ProductCSVReader reader = new ProductCSVReader(handlers, getLookupService());
         reader.setDateFormats(Arrays.asList(ProductCSVReader.YEAR_MONTH_DAY_FORMATS));
         ProductDataSet products = reader.read(document);
         assertEquals(1, products.getData().size());
@@ -548,7 +542,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         DocumentHandler handler = handlers.get("Dummy.csv", ProductCSVReader.MIME_TYPE);
         Document document = handler.create("Dummy.csv", new ByteArrayInputStream(writer.toString().getBytes("UTF-8")),
                                            ProductCSVReader.MIME_TYPE, -1);
-        ProductCSVReader reader = new ProductCSVReader(handlers, lookups);
+        ProductCSVReader reader = new ProductCSVReader(handlers, getLookupService());
         return reader.read(document);
     }
 

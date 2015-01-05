@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.party;
 
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
+import org.openvpms.archetype.rules.finance.account.BalanceCalculator;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
@@ -30,6 +30,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -65,23 +66,16 @@ public class PartyFunctions {
     private final SupplierRules supplierRules;
 
     /**
-     * The customer account rules.
-     */
-    private final CustomerAccountRules customerAccountRules;
-
-
-    /**
      * Constructs a {@link PartyFunctions}.
      *
-     * @param service       the archetype service
-     * @param patientRules  the patient rules
-     * @param customerRules the customer account rules
+     * @param service      the archetype service
+     * @param lookups      the lookup service
+     * @param patientRules the patient rules
      */
-    public PartyFunctions(IArchetypeService service, PatientRules patientRules, CustomerAccountRules customerRules) {
+    public PartyFunctions(IArchetypeService service, ILookupService lookups, PatientRules patientRules) {
         this.service = service;
         this.patientRules = patientRules;
-        this.customerAccountRules = customerRules;
-        partyRules = new PartyRules(service);
+        partyRules = new PartyRules(service, lookups);
         supplierRules = new SupplierRules(service);
     }
 
@@ -657,7 +651,8 @@ public class PartyFunctions {
      */
     public BigDecimal getAccountBalance(Party party) {
         if (party != null) {
-            return customerAccountRules.getBalance(party);
+            BalanceCalculator calculator = new BalanceCalculator(service);
+            calculator.getBalance(party);
         }
         return BigDecimal.ZERO;
     }
