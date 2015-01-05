@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -64,21 +64,21 @@
         </constructor-arg>
     </bean>
 
+    <bean id="archetypeServiceFunctions"
+          class="org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+    </bean>
+
     <!--  The JXPathHelper class, which allows the user to register JXPath extension functions -->
     <bean id="jxpathHelper"
           class="org.openvpms.component.system.common.jxpath.JXPathHelper">
-        <constructor-arg index="0">
-            <props>
-                <prop key="tf">
-                    org.openvpms.component.system.service.jxpath.TestFunctions
-                </prop>
-                <prop key="openvpms">
-                    org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions
-                </prop>
-                <prop key="date">
-                    org.openvpms.component.system.common.jxpath.DateFunctions
-                </prop>
-            </props>
+        <constructor-arg>
+            <map>
+                <entry key="tf" value="org.openvpms.component.system.service.jxpath.TestFunctions"/>
+                <entry key="openvpms" value-ref="archetypeServiceFunctions"/>
+                <entry key="date" value="org.openvpms.component.system.common.jxpath.DateFunctions"/>
+            </map>
         </constructor-arg>
     </bean>
 
