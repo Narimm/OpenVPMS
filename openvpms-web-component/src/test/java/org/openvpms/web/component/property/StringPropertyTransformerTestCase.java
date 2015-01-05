@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -33,7 +34,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.macro.Macros;
 import org.openvpms.macro.impl.LookupMacros;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.openvpms.report.ReportFactory;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -46,12 +47,6 @@ import static org.junit.Assert.fail;
  * @author Tim Anderson
  */
 public class StringPropertyTransformerTestCase extends ArchetypeServiceTest {
-
-    /**
-     * The lookup service.
-     */
-    @Autowired
-    ILookupService lookups;
 
     /**
      * Tests {@link StringPropertyTransformer#apply}.
@@ -99,7 +94,10 @@ public class StringPropertyTransformerTestCase extends ArchetypeServiceTest {
         Party person = TestHelper.createCustomer();
         NodeDescriptor descriptor = PropertyTestHelper.getDescriptor(person, "lastName");
         Property property = new IMObjectProperty(person, descriptor);
-        Macros macros = new LookupMacros(lookups, getArchetypeService(), new DocumentHandlers());
+        ILookupService lookups = getLookupService();
+        ArchetypeFunctionsFactory functions = applicationContext.getBean(ArchetypeFunctionsFactory.class);
+        ReportFactory factory = new ReportFactory(getArchetypeService(), lookups, new DocumentHandlers(), functions);
+        Macros macros = new LookupMacros(lookups, getArchetypeService(), factory);
         StringPropertyTransformer handler = new StringPropertyTransformer(property, macros);
 
         Object text1 = handler.apply("macro1");

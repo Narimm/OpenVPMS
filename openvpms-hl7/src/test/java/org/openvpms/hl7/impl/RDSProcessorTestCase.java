@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -31,7 +31,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.hl7.patient.PatientContext;
 
 import java.math.BigDecimal;
@@ -74,7 +73,7 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
     @Override
     public void setUp() {
         super.setUp();
-        rules = new PatientRules(getArchetypeService(), LookupServiceHelper.getLookupService());
+        rules = new PatientRules(getArchetypeService(), getLookupService());
         userRules = new UserRules(getArchetypeService());
         product = createProduct();
         try {

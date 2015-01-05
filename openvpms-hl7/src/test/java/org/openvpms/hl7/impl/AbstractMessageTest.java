@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -35,7 +35,6 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
 
@@ -64,9 +63,9 @@ public abstract class AbstractMessageTest extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        ILookupService lookups = LookupServiceHelper.getLookupService();
+        ILookupService lookups = getLookupService();
         PatientRules rules = new PatientRules(getArchetypeService(), lookups);
-        CustomerRules customerRules = new CustomerRules(getArchetypeService());
+        CustomerRules customerRules = new CustomerRules(getArchetypeService(), lookups);
         Party owner = TestHelper.createCustomer("Foo", "Bar", true);
         Party patient = TestHelper.createPatient(owner);
         Lookup species = getLookup("lookup.species", "CANINE", "Canine", true);

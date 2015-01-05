@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.sms;
@@ -34,8 +34,7 @@ import org.openvpms.web.system.ServiceHelper;
 /**
  * Editor for <em>entity.SMSEmail*</em> provider configurations.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class EmailSMSProviderConfigurationEditor extends AbstractIMObjectEditor {
 
@@ -63,7 +62,8 @@ public class EmailSMSProviderConfigurationEditor extends AbstractIMObjectEditor 
             if (from != null && from.getValue() == null) {
                 Party practice = layoutContext.getContext().getPractice();
                 if (practice != null) {
-                    PartyRules rules = new PartyRules(ServiceHelper.getArchetypeService());
+                    PartyRules rules = new PartyRules(ServiceHelper.getArchetypeService(),
+                                                      ServiceHelper.getLookupService());
                     Contact email = rules.getContact(practice, ContactArchetypes.EMAIL, null);
                     if (email != null) {
                         IMObjectBean bean = new IMObjectBean(email);

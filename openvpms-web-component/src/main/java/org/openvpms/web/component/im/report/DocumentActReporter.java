@@ -11,24 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.report;
 
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentException;
-import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ReportException;
 import org.openvpms.report.ReportFactory;
@@ -99,10 +95,8 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
             if (doc == null) {
                 throw new DocumentException(NotFound);
             }
-            IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
-            ILookupService lookups = ServiceHelper.getLookupService();
-            DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
-            report = ReportFactory.createIMObjectReport(doc, service, lookups, handlers);
+            ReportFactory factory = ServiceHelper.getBean(ReportFactory.class);
+            report = factory.createIMObjectReport(doc);
         }
         return report;
     }

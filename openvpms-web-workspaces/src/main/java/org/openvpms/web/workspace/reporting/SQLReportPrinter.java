@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting;
@@ -20,7 +20,6 @@ import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.ParameterType;
@@ -105,9 +104,8 @@ public class SQLReportPrinter extends AbstractPrinter {
         if (document == null) {
             throw new DocumentException(NotFound);
         }
-        report = ReportFactory.createReport(document, ArchetypeServiceHelper.getArchetypeService(),
-                                            ServiceHelper.getLookupService(),
-                                            ServiceHelper.getDocumentHandlers());
+        ReportFactory factory = ServiceHelper.getBean(ReportFactory.class);
+        report = factory.createReport(document);
         this.template = template;
         this.context = context;
         ParameterType connectionParam = getConnectionParameter();

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -25,7 +25,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.hl7.patient.PatientContext;
 
 import java.io.IOException;
@@ -58,8 +57,7 @@ public class ADTMessageFactoryTestCase extends AbstractMessageTest {
                 return "1200022";
             }
         });
-        messageFactory = new ADTMessageFactory(hapiContext, getArchetypeService(),
-                                               LookupServiceHelper.getLookupService());
+        messageFactory = new ADTMessageFactory(hapiContext, getArchetypeService(), getLookupService());
 
         PatientContext context = getContext();
         Mockito.when(context.getPatientId()).thenReturn(1001L);

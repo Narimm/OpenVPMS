@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.layout;
@@ -20,6 +20,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.cache.IMObjectCache;
+import org.openvpms.component.system.common.cache.SoftRefIMObjectCache;
 import org.openvpms.macro.Variables;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
@@ -27,11 +29,8 @@ import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.filter.ValueNodeFilter;
-import org.openvpms.web.component.im.util.DefaultIMObjectCache;
 import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
-import org.openvpms.web.component.im.util.IMObjectCache;
 import org.openvpms.web.component.im.util.IMObjectDeletionListener;
-import org.openvpms.web.component.im.util.SoftRefIMObjectCache;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 import org.openvpms.web.component.macro.MacroVariables;
@@ -213,13 +212,13 @@ public abstract class AbstractLayoutContext implements LayoutContext {
     /**
      * Returns the object cache.
      * <p/>
-     * If no cache exists, a {@link DefaultIMObjectCache} will be created.
+     * If no cache exists, a {@link SoftRefIMObjectCache} will be created.
      *
      * @return the object cache
      */
     public IMObjectCache getCache() {
         if (cache == null) {
-            cache = new SoftRefIMObjectCache();
+            cache = new SoftRefIMObjectCache(ServiceHelper.getArchetypeService());
         }
         return cache;
     }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -32,13 +32,13 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.cache.IMObjectCache;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.hl7.pharmacy.Pharmacies;
 import org.openvpms.hl7.pharmacy.PharmacyOrderService;
 import org.openvpms.hl7.util.HL7Archetypes;
-import org.openvpms.web.component.im.util.IMObjectCache;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

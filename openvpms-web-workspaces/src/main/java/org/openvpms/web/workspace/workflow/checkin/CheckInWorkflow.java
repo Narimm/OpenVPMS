@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -136,7 +136,8 @@ public class CheckInWorkflow extends WorkflowImpl {
         Party patient = (Party) bean.getParticipant("participation.patient");
         User clinician = (User) bean.getParticipant("participation.clinician");
 
-        String reason = ArchetypeServiceFunctions.lookup(appointment, "reason", "Appointment");
+        ArchetypeServiceFunctions functions = ServiceHelper.getBean(ArchetypeServiceFunctions.class);
+        String reason = functions.lookup(appointment, "reason", "Appointment");
         String notes = bean.getString("description", "");
         String description = Messages.format("workflow.checkin.task.description", reason, notes);
 

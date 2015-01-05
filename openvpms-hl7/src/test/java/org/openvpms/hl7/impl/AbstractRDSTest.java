@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -30,7 +30,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.hl7.util.HL7Archetypes;
 
 import java.io.IOException;
@@ -68,7 +67,7 @@ public abstract class AbstractRDSTest extends AbstractMessageTest {
      * @throws HL7Exception for any HL7 error
      */
     protected RDS_O13 createRDS(Product product) throws IOException, HL7Exception {
-        ILookupService lookups = LookupServiceHelper.getLookupService();
+        ILookupService lookups = getLookupService();
         HapiContext hapiContext = HapiContextFactory.create(new IDGenerator() {
             @Override
             public String getID() throws IOException {
@@ -82,7 +81,7 @@ public abstract class AbstractRDSTest extends AbstractMessageTest {
         message.setParser(hapiContext.getGenericParser());
         message.initQuickstart("RDS", "O13", "P");
         HeaderPopulator header = new HeaderPopulator();
-        PIDPopulator pid = new PIDPopulator(getArchetypeService(), LookupServiceHelper.getLookupService());
+        PIDPopulator pid = new PIDPopulator(getArchetypeService(), getLookupService());
         PV1Populator pv1 = new PV1Populator();
         header.populate(message, new MLLPSender("107.23.104.102", 2026, "Cubex", "Cubex", "VPMS", "VPMS",
                                                 new IMObjectReference(HL7Archetypes.MLLP_SENDER, -1)),

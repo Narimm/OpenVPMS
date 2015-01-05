@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.macro;
@@ -33,10 +33,8 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -49,12 +47,6 @@ import static org.junit.Assert.assertNull;
  * @author Tim Anderson
  */
 public class MacroVariableTestCase extends ArchetypeServiceTest {
-
-    /**
-     * The lookup service.
-     */
-    @Autowired
-    private ILookupService lookupService;
 
     /**
      * The context.
@@ -152,7 +144,7 @@ public class MacroVariableTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testVariables() {
-        MacroVariables variables = new MacroVariables(context, getArchetypeService(), lookupService);
+        MacroVariables variables = new MacroVariables(context, getArchetypeService(), getLookupService());
         assertEquals(practice, variables.get(MacroVariables.PRACTICE));
         assertEquals(location, variables.get(MacroVariables.LOCATION));
         assertEquals(stockLocation, variables.get(MacroVariables.STOCK_LOCATION));
@@ -172,7 +164,7 @@ public class MacroVariableTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testNodeResolution() {
-        MacroVariables variables = new MacroVariables(context, getArchetypeService(), lookupService);
+        MacroVariables variables = new MacroVariables(context, getArchetypeService(), getLookupService());
         Lookup species = TestHelper.getLookup("lookup.species", "CANINE");
         species.setName("Canine");
         save(species);
@@ -190,7 +182,7 @@ public class MacroVariableTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testClinicianAndUserInstances() {
-        MacroVariables variables = new MacroVariables(context, getArchetypeService(), lookupService);
+        MacroVariables variables = new MacroVariables(context, getArchetypeService(), getLookupService());
         Object clinician = variables.get(MacroVariables.CLINICIAN);
         Object user = variables.get(MacroVariables.USER);
         assertNotNull(clinician);
@@ -203,7 +195,7 @@ public class MacroVariableTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testMissingVariable() {
-        MacroVariables variables = new MacroVariables(context, getArchetypeService(), lookupService);
+        MacroVariables variables = new MacroVariables(context, getArchetypeService(), getLookupService());
         assertNull(variables.get("nosuchvariable"));
     }
 

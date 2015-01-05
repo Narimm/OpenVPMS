@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -55,7 +55,8 @@ public class CustomerEditor extends AbstractIMObjectEditor {
         if (customer.isNew()) {
             // add default contacts for new customers that don't have any
             if (customer.getContacts().isEmpty()) {
-                PartyRules rules = new PartyRules(ServiceHelper.getArchetypeService());
+                PartyRules rules = new PartyRules(ServiceHelper.getArchetypeService(),
+                                                  ServiceHelper.getLookupService());
                 customer.setContacts(rules.getDefaultContacts());
             }
 

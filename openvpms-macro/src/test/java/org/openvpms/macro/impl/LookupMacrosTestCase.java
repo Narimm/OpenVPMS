@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro.impl;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -29,7 +30,7 @@ import org.openvpms.macro.MacroException;
 import org.openvpms.macro.Macros;
 import org.openvpms.macro.MapVariables;
 import org.openvpms.macro.Position;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.openvpms.report.ReportFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -64,12 +65,6 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
      * Customer to test against.
      */
     private Party customer;
-
-    /**
-     * The lookup service.
-     */
-    @Autowired
-    private ILookupService lookupService;
 
     /**
      * The macro1 macro text expansion.
@@ -398,7 +393,12 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
         MacroTestHelper.createMacro("variableTest", "$variable");
         MacroTestHelper.createMacro("recursivemacro1", "$recursivemacro2");
         MacroTestHelper.createMacro("recursivemacro2", "$recursivemacro1");
-        macros = new LookupMacros(lookupService, getArchetypeService(), new DocumentHandlers());
+
+        ArchetypeFunctionsFactory functions = applicationContext.getBean(ArchetypeFunctionsFactory.class);
+        ILookupService lookups = getLookupService();
+        ReportFactory factory = new ReportFactory(getArchetypeService(), lookups, new DocumentHandlers(),
+                                                  functions);
+        macros = new LookupMacros(lookups, getArchetypeService(), factory);
 
         // register the macro functions
         Map properties = new HashMap();
