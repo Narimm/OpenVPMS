@@ -11,18 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro.impl;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.macro.MacroException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
@@ -45,19 +42,9 @@ import java.util.Map;
 public class ReportMacroRunner extends AbstractExpressionMacroRunner {
 
     /**
-     * The archetype service.
+     * The report factory.
      */
-    private final IArchetypeService service;
-
-    /**
-     * The lookup service.
-     */
-    private final ILookupService lookups;
-
-    /**
-     * The document handlers for deserialising documents.
-     */
-    private final DocumentHandlers handlers;
+    private final ReportFactory factory;
 
     /**
      * The default character encoding.
@@ -67,17 +54,12 @@ public class ReportMacroRunner extends AbstractExpressionMacroRunner {
     /**
      * Constructs a {@link ReportMacroRunner}.
      *
-     * @param context  the macro context
-     * @param service  the archetype service
-     * @param lookups  the lookup service
-     * @param handlers the document handlers for deserialising documents
+     * @param context the macro context
+     * @param factory the report factory
      */
-    public ReportMacroRunner(MacroContext context, IArchetypeService service, ILookupService lookups,
-                             DocumentHandlers handlers) {
+    public ReportMacroRunner(MacroContext context, ReportFactory factory) {
         super(context);
-        this.service = service;
-        this.lookups = lookups;
-        this.handlers = handlers;
+        this.factory = factory;
     }
 
     /**
@@ -96,7 +78,7 @@ public class ReportMacroRunner extends AbstractExpressionMacroRunner {
         if (object instanceof IMObject) {
             Document document = getTemplate(reportMacro);
             Map<String, Object> parameters = new HashMap<String, Object>();
-            IMReport<IMObject> report = ReportFactory.createIMObjectReport(document, service, lookups, handlers);
+            IMReport<IMObject> report = factory.createIMObjectReport(document);
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             List<IMObject> objects = Arrays.asList((IMObject) object);
             report.generate(objects.iterator(), parameters, null, DocFormats.TEXT_TYPE, output);

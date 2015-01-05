@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -35,7 +35,6 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.io.MessageDispatcher;
@@ -103,7 +102,7 @@ public class PharmacyDispenseServiceImplTestCase extends AbstractRDSTest {
         };
         MessageDispatcher dispatcher = Mockito.mock(MessageDispatcher.class);
         Connectors connectors = Mockito.mock(Connectors.class);
-        PatientRules rules = new PatientRules(getArchetypeService(), LookupServiceHelper.getLookupService());
+        PatientRules rules = new PatientRules(getArchetypeService(), getLookupService());
         UserRules userRules = new UserRules(getArchetypeService());
         final Connector receiver = new MLLPReceiver(10001, "Cubex", "Cubex", "VPMS", "VPMS",
                                                     new IMObjectReference(HL7Archetypes.MLLP_RECEIVER, -1));
@@ -150,7 +149,7 @@ public class PharmacyDispenseServiceImplTestCase extends AbstractRDSTest {
         Pharmacies pharmacies = Mockito.mock(Pharmacies.class);
         MessageDispatcher dispatcher = Mockito.mock(MessageDispatcher.class);
         Connectors connectors = Mockito.mock(Connectors.class);
-        PatientRules rules = new PatientRules(getArchetypeService(), LookupServiceHelper.getLookupService());
+        PatientRules rules = new PatientRules(getArchetypeService(), getLookupService());
         UserRules userRules = new UserRules(getArchetypeService());
         PharmacyDispenseServiceImpl service = new PharmacyDispenseServiceImpl(pharmacies, dispatcher, connectors,
                                                                               getArchetypeService(), rules, userRules);

@@ -11,14 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
@@ -30,6 +29,8 @@ import org.openvpms.macro.MacroException;
 import org.openvpms.macro.Macros;
 import org.openvpms.macro.Position;
 import org.openvpms.macro.Variables;
+import org.openvpms.report.ReportFactory;
+import org.springframework.beans.factory.DisposableBean;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,7 +50,7 @@ import java.util.StringTokenizer;
  *
  * @author Tim Anderson
  */
-public class LookupMacros implements Macros {
+public class LookupMacros implements Macros, DisposableBean {
 
     /**
      * The macros, keyed on code
@@ -57,10 +58,19 @@ public class LookupMacros implements Macros {
     private final Map<String, Macro> macros = Collections.synchronizedMap(new HashMap<String, Macro>());
 
     /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
      * The macro factory.
      */
     private final MacroFactory factory;
 
+    /**
+     * The listener to monitor macro updates.
+     */
+    private final IArchetypeServiceListener listener;
 
     /**
      * The per-thread variables. These are required so that variables may be supplied to nested macros when they
@@ -73,22 +83,22 @@ public class LookupMacros implements Macros {
      */
     private static final Log log = LogFactory.getLog(LookupMacros.class);
 
-
     /**
-     * Constructs a {@code LookupMacros}.
+     * Constructs a {@link LookupMacros}.
      *
-     * @param service          the lookup service
-     * @param archetypeService the archetype service
-     * @param handlers         the document handlers
+     * @param lookups the lookup service
+     * @param service the archetype service
+     * @param factory the document handlers
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public LookupMacros(ILookupService service, IArchetypeService archetypeService, DocumentHandlers handlers) {
-        factory = new MacroFactory(archetypeService, service, handlers);
+    public LookupMacros(ILookupService lookups, IArchetypeService service, ReportFactory factory) {
+        this.service = service;
+        this.factory = new MacroFactory(service, factory);
 
         for (String shortName : MacroArchetypes.LOOKUP_MACROS) {
-            addMacros(shortName, service);
+            addMacros(shortName, lookups);
         }
-        IArchetypeServiceListener listener = new AbstractArchetypeServiceListener() {
+        listener = new AbstractArchetypeServiceListener() {
             public void saved(IMObject object) {
                 onSaved((Lookup) object);
             }
@@ -98,7 +108,7 @@ public class LookupMacros implements Macros {
             }
         };
         for (String shortName : MacroArchetypes.LOOKUP_MACROS) {
-            archetypeService.addListener(shortName, listener);
+            service.addListener(shortName, listener);
         }
     }
 
@@ -240,6 +250,16 @@ public class LookupMacros implements Macros {
             popVariables(variables, scoped);
         }
         return result.toString();
+    }
+
+    /**
+     * Invoked by a BeanFactory on destruction of a singleton.
+     */
+    @Override
+    public void destroy() {
+        for (String shortName : MacroArchetypes.LOOKUP_MACROS) {
+            service.removeListener(shortName, listener);
+        }
     }
 
     /**

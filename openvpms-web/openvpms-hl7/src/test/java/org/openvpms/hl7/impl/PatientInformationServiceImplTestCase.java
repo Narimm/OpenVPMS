@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -20,8 +20,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientInformationService;
 
@@ -50,9 +48,8 @@ public class PatientInformationServiceImplTestCase extends AbstractServiceTest {
     @Override
     public void setUp() {
         super.setUp();
-        ILookupService lookups = LookupServiceHelper.getLookupService();
         user = TestHelper.createUser();
-        service = new PatientInformationServiceImpl(getArchetypeService(), lookups, getEventServices(),
+        service = new PatientInformationServiceImpl(getArchetypeService(), getLookupService(), getEventServices(),
                                                     getDispatcher());
 
         PatientContext context = getContext();

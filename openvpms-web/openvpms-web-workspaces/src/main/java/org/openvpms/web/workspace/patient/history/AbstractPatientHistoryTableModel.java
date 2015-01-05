@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -143,6 +143,11 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     private int clinicianWidth = -1;
 
     /**
+     * Helper functions.
+     */
+    private final ArchetypeServiceFunctions functions;
+
+    /**
      * Default fixed column width, in pixels.
      */
     private static final int DEFAULT_WIDTH = 150;
@@ -187,6 +192,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
             IMObjectBean bean = new IMObjectBean(practice);
             showClinician = bean.getBoolean("showClinicianInHistoryItems");
         }
+        functions = ServiceHelper.getBean(ArchetypeServiceFunctions.class);
         initStyles();
     }
 
@@ -374,7 +380,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
         if (StringUtils.isEmpty(reason)) {
             reason = Messages.get("patient.record.summary.reason.none");
         }
-        String status = ArchetypeServiceFunctions.lookup(act, "status");
+        String status = functions.lookup(act, "status");
         clinician = getClinician(bean, row);
         String age = getAge(bean);
         return Messages.format("patient.record.summary.title", reason, clinician, status, age);

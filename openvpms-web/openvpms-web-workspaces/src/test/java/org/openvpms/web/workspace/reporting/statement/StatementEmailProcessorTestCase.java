@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -128,7 +128,7 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
 
         final List<Statement> statements = new ArrayList<Statement>();
         StatementProcessor processor = new StatementProcessor(statementDate, practice, getArchetypeService(),
-                                                              ServiceHelper.getLookupService(),
+                                                              getLookupService(),
                                                               ServiceHelper.getBean(CustomerAccountRules.class));
         processor.addListener(new ProcessorListener<Statement>() {
             public void process(Statement statement) {

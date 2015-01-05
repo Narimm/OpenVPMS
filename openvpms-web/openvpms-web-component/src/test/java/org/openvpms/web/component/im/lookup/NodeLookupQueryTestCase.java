@@ -11,21 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.lookup;
 
 import org.junit.Test;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
-import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
+import org.openvpms.web.test.AbstractAppTest;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,7 +39,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Tim Anderson
  */
-public class NodeLookupQueryTestCase extends ArchetypeServiceTest {
+public class NodeLookupQueryTestCase extends AbstractAppTest {
 
     /**
      * Tests the {@link NodeLookupQuery#getLookups()} method when constructed using the
@@ -72,7 +71,7 @@ public class NodeLookupQueryTestCase extends ArchetypeServiceTest {
      * @param query the query to check
      */
     private void checkLookups(NodeLookupQuery query) {
-        Collection<Lookup> titles = LookupServiceHelper.getLookupService().getLookups("lookup.personTitle");
+        Collection<Lookup> titles = getLookupService().getLookups("lookup.personTitle");
         List<Lookup> expected = new ArrayList<Lookup>();
         for (Lookup title : titles) {
             if (title.isActive()) {

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro.impl;
@@ -19,6 +19,7 @@ package org.openvpms.macro.impl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
@@ -33,13 +34,12 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.macro.IMObjectVariables;
+import org.openvpms.report.ReportFactory;
 import org.openvpms.report.jasper.JRXMLDocumentHandler;
 import org.openvpms.report.openoffice.OOBootstrapConnectionPool;
 import org.openvpms.report.openoffice.OOSocketBootstrapService;
 import org.openvpms.report.openoffice.OpenOfficeHelper;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
 
@@ -56,12 +56,6 @@ public class ReportMacroRunnerTestCase extends ArchetypeServiceTest {
      * The handlers for document serialisation.
      */
     private DocumentHandlers handlers;
-
-    /**
-     * The lookup service.
-     */
-    @Autowired
-    ILookupService lookups;
 
     /**
      * The OpenOffice service starter.
@@ -173,13 +167,15 @@ public class ReportMacroRunnerTestCase extends ArchetypeServiceTest {
         // create a customer
         IArchetypeService service = getArchetypeService();
         Party customer = TestHelper.createCustomer("Foo", "Bar", false);
-        IMObjectVariables variables = new IMObjectVariables(service, lookups);
+        IMObjectVariables variables = new IMObjectVariables(service, getLookupService());
         variables.add("customer", customer);
 
         // run the report macro against the customer
         ReportMacro macro = new ReportMacro(lookup, service);
         MacroContext context = new MacroContext(Collections.<String, Macro>emptyMap(), null, null, variables);
-        ReportMacroRunner runner = new ReportMacroRunner(context, service, lookups, handlers);
+        ArchetypeFunctionsFactory functions = applicationContext.getBean(ArchetypeFunctionsFactory.class);
+        ReportFactory factory = new ReportFactory(service, getLookupService(), handlers, functions);
+        ReportMacroRunner runner = new ReportMacroRunner(context, factory);
         return runner.run(macro, "");
     }
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -30,6 +30,7 @@ import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
 import org.openvpms.archetype.rules.practice.Location;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -326,9 +327,10 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
             Location location = locationSelector.getSelected();
             CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
             IArchetypeService service = ServiceHelper.getArchetypeService();
+            ILookupService lookups = ServiceHelper.getLookupService();
             query = new CustomerBalanceSummaryQuery(getDate(), nonOverdue, from, to, credit, getAccountType(),
                                                     getWildcardedText(customerFrom),
-                                                    getWildcardedText(customerTo), location, service, rules);
+                                                    getWildcardedText(customerTo), location, service, lookups, rules);
             while (query.hasNext()) {
                 sets.add(query.next());
             }

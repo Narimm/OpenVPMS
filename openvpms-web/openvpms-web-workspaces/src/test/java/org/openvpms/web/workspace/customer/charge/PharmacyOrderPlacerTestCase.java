@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -36,6 +36,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.system.common.cache.MapIMObjectCache;
 import org.openvpms.hl7.impl.PharmaciesImpl;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.patient.PatientContext;
@@ -43,7 +44,6 @@ import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientEventServices;
 import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.hl7.pharmacy.Pharmacies;
-import org.openvpms.web.component.im.util.DefaultIMObjectCache;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 
@@ -129,7 +129,8 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
         PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
         MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
         informationService = Mockito.mock(PatientInformationService.class);
-        placer = new PharmacyOrderPlacer(customer, location, user, new DefaultIMObjectCache(), service, pharmacies, factory,
+        MapIMObjectCache cache = new MapIMObjectCache(ServiceHelper.getArchetypeService());
+        placer = new PharmacyOrderPlacer(customer, location, user, cache, service, pharmacies, factory,
                                          informationService, rules);
     }
 
