@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.msword;
 
+import org.apache.commons.jxpath.Functions;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -36,14 +37,15 @@ public class MsWordIMReport<T> extends OpenOfficeIMReport<T> {
     /**
      * Constructs an {@link MsWordIMReport}.
      *
-     * @param template the document template
-     * @param service  the archetype service
-     * @param lookups  the lookup service
-     * @param handlers the document handlers
+     * @param template  the document template
+     * @param service   the archetype service
+     * @param lookups   the lookup service
+     * @param handlers  the document handlers
+     * @param functions the JXPath extension functions
      */
     public MsWordIMReport(Document template, IArchetypeService service, ILookupService lookups,
-                          DocumentHandlers handlers) {
-        super(template, service, lookups, handlers);
+                          DocumentHandlers handlers, Functions functions) {
+        super(template, service, lookups, handlers, functions);
     }
 
     /**

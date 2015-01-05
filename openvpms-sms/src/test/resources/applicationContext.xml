@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -119,6 +119,7 @@
 
     <bean id="customerRules" class="org.openvpms.archetype.rules.party.CustomerRules">
         <constructor-arg ref="defaultArchetypeService"/>
+        <constructor-arg ref="lookupService"/>
     </bean>
 
     <bean id="customerAccountRules" class="org.openvpms.archetype.rules.finance.account.CustomerAccountRules">
@@ -127,46 +128,20 @@
         <constructor-arg ref="txnManager"/>
     </bean>
 
-    <!-- The JXPathHelper class, used to register extension functions -->
-    <bean id="jxpathHelper"
-          class="org.openvpms.component.system.common.jxpath.JXPathHelper">
+    <bean id="functionsFactory" class="org.openvpms.archetype.function.factory.DefaultArchetypeFunctionsFactory">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
         <constructor-arg>
-            <map>
-                <entry key="openvpms"
-                       value="org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions"/>
-                <entry key="date"
-                       value="org.openvpms.component.system.common.jxpath.DateFunctions"/>
-                <entry key="lookup"
-                       value="org.openvpms.archetype.function.lookup.LookupFunctions"/>
-                <entry key="party">
-                    <bean class="org.openvpms.archetype.function.party.PartyFunctions">
-                        <constructor-arg index="0" ref="archetypeService"/>
-                        <constructor-arg index="1" ref="patientRules"/>
-                        <constructor-arg index="2" ref="customerAccountRules"/>
-                    </bean>
-                </entry>
-                <entry key="math">
-                    <bean class="org.openvpms.archetype.function.math.MathFunctions"/>
-                </entry>
-                <entry key="reminder">
-                    <bean class="org.openvpms.archetype.function.reminder.ReminderFunctions">
-                        <constructor-arg index="0" ref="archetypeService"/>
-                        <constructor-arg index="1" ref="reminderRules"/>
-                        <constructor-arg index="2" ref="customerRules"/>
-                    </bean>
-                </entry>
-                <entry key="expr">
-                    <bean class="org.openvpms.archetype.function.expression.ExpressionFunctions">
-                        <constructor-arg value="expr"/>
-                    </bean>
-                </entry>
-                <entry key="history">
-                    <bean class="org.openvpms.archetype.function.history.HistoryFunctions">
-                        <constructor-arg index="0" ref="archetypeService"/>
-                    </bean>
-                </entry>
-            </map>
+            <null/>
         </constructor-arg>
+    </bean>
+
+    <bean id="functions" class="org.apache.commons.jxpath.Functions" factory-bean="functionsFactory"
+          factory-method="create"/>
+
+    <!-- The JXPathHelper class, used to register extension functions -->
+    <bean id="jxpathHelper" class="org.openvpms.component.system.common.jxpath.JXPathHelper">
+        <constructor-arg ref="functions"/>
     </bean>
 
     <!-- ================================================================== -->

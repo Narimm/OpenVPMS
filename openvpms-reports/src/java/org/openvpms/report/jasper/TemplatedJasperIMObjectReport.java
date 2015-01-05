@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
 
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.design.JasperDesign;
+import org.apache.commons.jxpath.Functions;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -41,29 +42,31 @@ public class TemplatedJasperIMObjectReport extends AbstractTemplatedJasperIMRepo
     /**
      * Constructs a {@link TemplatedJasperIMObjectReport}.
      *
-     * @param template the document template
-     * @param service  the archetype service
-     * @param lookups  the lookup service
-     * @param handlers the document handlers
+     * @param template  the document template
+     * @param service   the archetype service
+     * @param lookups   the lookup service
+     * @param handlers  the document handlers
+     * @param functions the JXPath extension functions
      * @throws ReportException if the report cannot be created
      */
     public TemplatedJasperIMObjectReport(Document template, IArchetypeService service, ILookupService lookups,
-                                         DocumentHandlers handlers) {
-        super(template, service, lookups, handlers);
+                                         DocumentHandlers handlers, Functions functions) {
+        super(template, service, lookups, handlers, functions);
     }
 
     /**
      * Constructs a {@link TemplatedJasperIMObjectReport}.
      *
-     * @param design   the master report design
-     * @param service  the archetype service
-     * @param lookups  the lookup service
-     * @param handlers the document handlers
+     * @param design    the master report design
+     * @param service   the archetype service
+     * @param lookups   the lookup service
+     * @param handlers  the document handlers
+     * @param functions the JXPath extension functions
      * @throws ReportException if the report cannot be created
      */
     public TemplatedJasperIMObjectReport(JasperDesign design, IArchetypeService service, ILookupService lookups,
-                                         DocumentHandlers handlers) {
-        super(design, service, lookups, handlers);
+                                         DocumentHandlers handlers, Functions functions) {
+        super(design, service, lookups, handlers, functions);
     }
 
     /**
@@ -77,7 +80,7 @@ public class TemplatedJasperIMObjectReport extends AbstractTemplatedJasperIMRepo
     protected JRDataSource createDataSource(Iterator<IMObject> objects, Map<String, Object> fields) {
         PropertySet f = (fields != null) ? new ResolvingPropertySet(fields, getArchetypeService()) : null;
         return new IMObjectCollectionDataSource(objects, f, getArchetypeService(), getLookupService(),
-                                                getDocumentHandlers());
+                                                getDocumentHandlers(), getFunctions());
     }
 
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -47,6 +47,7 @@ import net.sf.jasperreports.export.SimpleWriterExporterOutput;
 import net.sf.jasperreports.export.SimpleXlsReportConfiguration;
 import net.sf.jasperreports.export.WriterExporterOutput;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.jxpath.Functions;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -117,6 +118,11 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
     private JREvaluator evaluator;
 
     /**
+     * The JXPath extension functions.
+     */
+    private final Functions functions;
+
+    /**
      * The supported mime types.
      */
     private static final String[] MIME_TYPES = {DocFormats.PDF_TYPE, DocFormats.RTF_TYPE, DocFormats.XLS_TYPE,
@@ -131,14 +137,17 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
     /**
      * Constructs an {@link AbstractJasperIMReport}.
      *
-     * @param service  the archetype service
-     * @param lookups  the lookup service
-     * @param handlers the document handlers
+     * @param service   the archetype service
+     * @param lookups   the lookup service
+     * @param handlers  the document handlers
+     * @param functions the JXPath extension functions
      */
-    public AbstractJasperIMReport(IArchetypeService service, ILookupService lookups, DocumentHandlers handlers) {
+    public AbstractJasperIMReport(IArchetypeService service, ILookupService lookups, DocumentHandlers handlers,
+                                  Functions functions) {
         this.service = service;
         this.lookups = lookups;
         this.handlers = handlers;
+        this.functions = functions;
     }
 
     /**
@@ -488,6 +497,15 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      */
     protected DocumentHandlers getDocumentHandlers() {
         return handlers;
+    }
+
+    /**
+     * Returns the JXPath extension functions.
+     *
+     * @return the JXPath extension functions
+     */
+    protected Functions getFunctions() {
+        return functions;
     }
 
     /**

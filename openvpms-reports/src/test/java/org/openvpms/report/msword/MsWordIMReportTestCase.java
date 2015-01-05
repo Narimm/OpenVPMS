@@ -11,17 +11,21 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.msword;
 
 import org.junit.Test;
+import org.openvpms.archetype.function.factory.DefaultArchetypeFunctionsFactory;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.system.common.jxpath.FunctionsFactory;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ParameterType;
@@ -57,7 +61,11 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
     public void testReport() throws IOException {
         Document doc = getDocument("src/test/reports/act.customerEstimation.doc", DocFormats.DOC_TYPE);
 
-        IMReport<IMObject> report = new MsWordIMReport<IMObject>(doc, getArchetypeService(), getLookups(), getHandlers());
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
+        FunctionsFactory factory = new DefaultArchetypeFunctionsFactory(service, lookups, null);
+        IMReport<IMObject> report = new MsWordIMReport<IMObject>(doc, service, lookups, getHandlers(),
+                                                                 factory.create());
 
         Map<String, Object> fields = new HashMap<String, Object>();
         Party practice = (Party) create(PracticeArchetypes.PRACTICE);
@@ -87,7 +95,11 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
     public void testParameters() {
         Document doc = getDocument("src/test/reports/act.customerEstimation.doc", DocFormats.DOC_TYPE);
 
-        IMReport<IMObject> report = new MsWordIMReport<IMObject>(doc, getArchetypeService(), getLookups(), getHandlers());
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
+        FunctionsFactory factory = new DefaultArchetypeFunctionsFactory(service, lookups, null);
+        IMReport<IMObject> report = new MsWordIMReport<IMObject>(doc, service, lookups, getHandlers(),
+                                                                 factory.create());
 
         Set<ParameterType> parameterTypes = report.getParameterTypes();
         Map<String, ParameterType> types = new HashMap<String, ParameterType>();

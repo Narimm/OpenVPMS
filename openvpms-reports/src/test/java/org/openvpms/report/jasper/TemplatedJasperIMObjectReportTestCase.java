@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
 
 import net.sf.jasperreports.engine.JRParameter;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.jxpath.Functions;
 import org.junit.Test;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -52,8 +53,10 @@ public class TemplatedJasperIMObjectReportTestCase extends AbstractReportTest {
         Party location = (Party) create(PracticeArchetypes.LOCATION);
         location.setName("Main Clinic");
         Document document = getDocument("src/test/reports/party.customerperson.jrxml", DocFormats.XML_TYPE);
+        Functions functions = applicationContext.getBean(Functions.class);
         TemplatedJasperIMObjectReport report = new TemplatedJasperIMObjectReport(document, getArchetypeService(),
-                                                                                 getLookups(), getHandlers());
+                                                                                 getLookupService(), getHandlers(),
+                                                                                 functions);
         Party customer = createCustomer("Foo", "Bar");
         Iterator<IMObject> iterator = Arrays.<IMObject>asList(customer).iterator();
 
@@ -75,8 +78,10 @@ public class TemplatedJasperIMObjectReportTestCase extends AbstractReportTest {
         Party location = (Party) create(PracticeArchetypes.LOCATION);
         location.setName("Branch Clinic");
         Document document = getDocument("src/test/reports/sqlreport.jrxml", DocFormats.XML_TYPE);
+        Functions functions = applicationContext.getBean(Functions.class);
         TemplatedJasperIMObjectReport report = new TemplatedJasperIMObjectReport(document, getArchetypeService(),
-                                                                                 getLookups(), getHandlers());
+                                                                                 getLookupService(), getHandlers(),
+                                                                                 functions);
         Party customer = createCustomer("Foo", "Bar");
 
         Map<String, Object> parameters = new HashMap<String, Object>();

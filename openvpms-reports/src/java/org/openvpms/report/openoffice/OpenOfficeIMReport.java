@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.openoffice;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.jxpath.Functions;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -80,6 +81,11 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
     private final DocumentHandlers handlers;
 
     /**
+     * The JXPath extension functions.
+     */
+    private final Functions functions;
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(OpenOfficeIMReport.class);
@@ -95,17 +101,19 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
     /**
      * Constructs an {@link OpenOfficeIMReport}.
      *
-     * @param template the document template
-     * @param service  the archetype service
-     * @param lookups  the lookup service
-     * @param handlers the document handlers
+     * @param template  the document template
+     * @param service   the archetype service
+     * @param lookups   the lookup service
+     * @param handlers  the document handlers
+     * @param functions the factory for JXPath extension functions
      */
     public OpenOfficeIMReport(Document template, IArchetypeService service, ILookupService lookups,
-                              DocumentHandlers handlers) {
+                              DocumentHandlers handlers, Functions functions) {
         this.template = template;
         this.service = service;
         this.lookups = lookups;
         this.handlers = handlers;
+        this.functions = functions;
     }
 
     /**
@@ -417,7 +425,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      */
     protected void populateUserFields(OpenOfficeDocument document, T object, Map<String, Object> parameters,
                                       Map<String, Object> fields) {
-        ExpressionEvaluator eval = ExpressionEvaluatorFactory.create(object, fields, service, lookups);
+        ExpressionEvaluator eval = ExpressionEvaluatorFactory.create(object, fields, service, lookups, functions);
         List<String> userFields = document.getUserFieldNames();
         for (String name : userFields) {
             String value = getParameter(name, parameters);

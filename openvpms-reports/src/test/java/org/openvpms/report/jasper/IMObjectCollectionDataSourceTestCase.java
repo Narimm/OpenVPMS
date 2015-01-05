@@ -11,19 +11,18 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
 
+import org.apache.commons.jxpath.Functions;
 import org.junit.Test;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ResolvingPropertySet;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.util.PropertySet;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,12 +39,6 @@ import static org.junit.Assert.assertTrue;
 public class IMObjectCollectionDataSourceTestCase extends AbstractIMObjectDataSourceTestCase {
 
     /**
-     * The lookup service.
-     */
-    @Autowired
-    private ILookupService lookups;
-
-    /**
      * Tests the {@link IMObjectCollectionDataSource#getExpressionDataSource(String)} method.
      *
      * @throws Exception for any error
@@ -58,8 +51,10 @@ public class IMObjectCollectionDataSourceTestCase extends AbstractIMObjectDataSo
         fields.put("Globals.A", "A");
         fields.put("Globals.1", 1);
         PropertySet f = new ResolvingPropertySet(fields, getArchetypeService());
+        Functions functions = applicationContext.getBean(Functions.class);
         IMObjectCollectionDataSource ds = new IMObjectCollectionDataSource(objects.iterator(), f,
-                                                                           getArchetypeService(), lookups, handlers);
+                                                                           getArchetypeService(), getLookupService(),
+                                                                           handlers, functions);
         assertTrue(ds.next());
         checkExpressionDataSource(ds, f);
     }
