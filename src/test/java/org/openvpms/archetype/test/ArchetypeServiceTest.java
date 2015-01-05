@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.test;
@@ -23,6 +23,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
@@ -40,8 +41,7 @@ import static org.junit.Assert.fail;
 /**
  * Abstract base class for tests using the archetype service.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-24 00:49:15Z $
+ * @author Tim Anderson
  */
 @ContextConfiguration("/applicationContext.xml")
 public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTests {
@@ -53,6 +53,12 @@ public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTe
     @Qualifier("archetypeService")
     private IArchetypeService service;
 
+    /**
+     * The lookup service.
+     */
+    @Autowired
+    private ILookupService lookups;
+
 
     /**
      * Returns the archetype service.
@@ -61,6 +67,15 @@ public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTe
      */
     protected IArchetypeService getArchetypeService() {
         return service;
+    }
+
+    /**
+     * Returns the lookup service.
+     *
+     * @return the lookup service
+     */
+    protected ILookupService getLookupService() {
+        return lookups;
     }
 
     /**

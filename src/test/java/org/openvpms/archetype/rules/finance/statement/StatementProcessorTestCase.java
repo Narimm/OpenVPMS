@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.statement;
@@ -27,6 +27,8 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -52,6 +54,8 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
      */
     @Test
     public void testStatementDate() {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         Date now = new Date();
         try {
             new StatementProcessor(now, getPractice(), service, lookups, accountRules);
@@ -141,6 +145,8 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
      */
     @Test
     public void testProcessEndOfPeriod() {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("25.00");
         customer.addClassification(createAccountType(30, DateUnits.DAYS,
@@ -212,6 +218,8 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
 
     @Test
     public void testBackDatedStatements() {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         Party customer = getCustomer();
 
         // create an invoice
@@ -349,6 +357,8 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
     private List<Act> processStatement(Date statementDate, Party customer,
                                        boolean reprint,
                                        boolean expectStatement) {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         List<Act> acts;
         StatementRules rules = new StatementRules(getPractice(), service, lookups, accountRules);
         StatementProcessor processor = new StatementProcessor(statementDate, getPractice(), service, lookups,

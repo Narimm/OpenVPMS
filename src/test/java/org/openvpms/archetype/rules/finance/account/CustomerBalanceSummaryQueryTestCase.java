@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.math.BigDecimal;
@@ -83,7 +84,8 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
         payment.setStatus(ActStatus.POSTED);
         save(payment);
 
-        CustomerBalanceSummaryQuery query = new CustomerBalanceSummaryQuery(now, getArchetypeService(), getRules());
+        CustomerBalanceSummaryQuery query = new CustomerBalanceSummaryQuery(now, getArchetypeService(),
+                                                                            getLookupService(), getRules());
         assertTrue(query.hasNext());
         ObjectSet set = null;
         while (query.hasNext()) {
@@ -119,6 +121,7 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
     @Test
     public void testQueryByAccountType() {
         IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         CustomerAccountRules rules = getRules();
 
         // add a 30 day payment term for accounts to the customer
@@ -136,11 +139,13 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
         save(invoice);
 
         // verify there is 1 act for accountType1
-        CustomerBalanceSummaryQuery query = new CustomerBalanceSummaryQuery(new Date(), accountType1, service, rules);
+        CustomerBalanceSummaryQuery query = new CustomerBalanceSummaryQuery(new Date(), accountType1, service, lookups,
+                                                                            rules);
         checkSummaries(1, query);
 
         // verify there is 0 acts for accountType2
-        CustomerBalanceSummaryQuery query2 = new CustomerBalanceSummaryQuery(new Date(), accountType2, service, rules);
+        CustomerBalanceSummaryQuery query2 = new CustomerBalanceSummaryQuery(new Date(), accountType2, service, lookups,
+                                                                             rules);
         checkSummaries(0, query2);
     }
 
@@ -265,6 +270,7 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
     @Test
     public void testQueryByCustomerRange() {
         IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         CustomerAccountRules rules = getRules();
 
         // create some customers with names starting with A, B and Z
@@ -296,17 +302,17 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
 
         // check queries
         CustomerBalanceSummaryQuery query1 = new CustomerBalanceSummaryQuery(
-                new Date(), null, customerA.getName(), null, service, rules);
+                new Date(), null, customerA.getName(), null, service, lookups, rules);
         CustomerBalanceSummaryQuery query2 = new CustomerBalanceSummaryQuery(
-                new Date(), null, customerA.getName(), customerZ.getName(), service, rules);
+                new Date(), null, customerA.getName(), customerZ.getName(), service, lookups, rules);
         CustomerBalanceSummaryQuery query3 = new CustomerBalanceSummaryQuery(
-                new Date(), null, customerB.getName(), customerZ.getName(), service, rules);
+                new Date(), null, customerB.getName(), customerZ.getName(), service, lookups, rules);
         CustomerBalanceSummaryQuery query4 = new CustomerBalanceSummaryQuery(
-                new Date(), accountType, customerA.getName(), null, service, rules);
+                new Date(), accountType, customerA.getName(), null, service, lookups, rules);
         CustomerBalanceSummaryQuery query5 = new CustomerBalanceSummaryQuery(
-                new Date(), accountType, customerA.getName(), customerZ.getName(), service, rules);
+                new Date(), accountType, customerA.getName(), customerZ.getName(), service, lookups, rules);
         CustomerBalanceSummaryQuery query6 = new CustomerBalanceSummaryQuery(
-                new Date(), accountType, customerB.getName(), customerZ.getName(), service, rules);
+                new Date(), accountType, customerB.getName(), customerZ.getName(), service, lookups, rules);
 
         checkCustomers(query1, customers, customerA, customerB, customerZ);
         checkCustomers(query2, customers, customerA, customerB, customerZ);
@@ -320,17 +326,17 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
         // values containing % appears to operate as a <. E.g, compare query2
         // with wildcard2.
         CustomerBalanceSummaryQuery wildcard1
-                = new CustomerBalanceSummaryQuery(new Date(), null, "A*", null, service, rules);
+                = new CustomerBalanceSummaryQuery(new Date(), null, "A*", null, service, lookups, rules);
         CustomerBalanceSummaryQuery wildcard2
-                = new CustomerBalanceSummaryQuery(new Date(), null, "A*", "Z*", service, rules);
+                = new CustomerBalanceSummaryQuery(new Date(), null, "A*", "Z*", service, lookups, rules);
         CustomerBalanceSummaryQuery wildcard3
-                = new CustomerBalanceSummaryQuery(new Date(), null, "B*", "Z*", service, rules);
+                = new CustomerBalanceSummaryQuery(new Date(), null, "B*", "Z*", service, lookups, rules);
         CustomerBalanceSummaryQuery wildcard4
-                = new CustomerBalanceSummaryQuery(new Date(), accountType, "A*", null, service, rules);
+                = new CustomerBalanceSummaryQuery(new Date(), accountType, "A*", null, service, lookups, rules);
         CustomerBalanceSummaryQuery wildcard5
-                = new CustomerBalanceSummaryQuery(new Date(), accountType, "A*", "Z*", service, rules);
+                = new CustomerBalanceSummaryQuery(new Date(), accountType, "A*", "Z*", service, lookups, rules);
         CustomerBalanceSummaryQuery wildcard6
-                = new CustomerBalanceSummaryQuery(new Date(), accountType, "B*", "Z*", service, rules);
+                = new CustomerBalanceSummaryQuery(new Date(), accountType, "B*", "Z*", service, lookups, rules);
 
         checkCustomers(wildcard1, customers, customerA, customerB, customerZ);
         checkCustomers(wildcard2, customers, customerA, customerB);
@@ -346,6 +352,7 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
     @Test
     public void testExcludeCreditBalance() {
         CustomerAccountRules rules = getRules();
+        ILookupService lookups = getLookupService();
         Party customer1 = getCustomer();
         Party customer2 = TestHelper.createCustomer();
 
@@ -369,7 +376,7 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
         IArchetypeService service = getArchetypeService();
         CustomerBalanceSummaryQuery includeBalanceQuery
                 = new CustomerBalanceSummaryQuery(now, true, 0, 0, false, null, null, null, Location.ALL,
-                                                  service, rules);
+                                                  service, lookups, rules);
         Map<IMObjectReference, ObjectSet> sets = getSets(includeBalanceQuery);
         Set<IMObjectReference> customers = sets.keySet();
         assertTrue(customers.contains(customer1.getObjectReference()));
@@ -378,7 +385,7 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
         // verify the credit balance is excluded
         CustomerBalanceSummaryQuery excludeBalanceQuery
                 = new CustomerBalanceSummaryQuery(now, true, 0, 0, true, null, null, null, Location.ALL,
-                                                  service, rules);
+                                                  service, lookups, rules);
 
         sets = getSets(excludeBalanceQuery);
         customers = sets.keySet();
@@ -393,6 +400,7 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
     @Test
     public void testForSameName() {
         IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         CustomerAccountRules rules = getRules();
         Party customer1 = getCustomer();
         long id = System.currentTimeMillis();
@@ -424,7 +432,8 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
         // verify the query returns two sets, one for each customer, with
         // the correct balance
         CustomerBalanceSummaryQuery query
-                = new CustomerBalanceSummaryQuery(now, null, customer1.getName(), customer1.getName(), service, rules);
+                = new CustomerBalanceSummaryQuery(now, null, customer1.getName(), customer1.getName(), service, lookups,
+                                                  rules);
         Map<IMObjectReference, ObjectSet> sets = getSets(query);
         assertEquals(2, sets.size());
         ObjectSet cust1Set = sets.get(customer1.getObjectReference());
@@ -463,7 +472,7 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
      */
     private void checkLocation(Date date, Location location, Set<Party> customers, Party... expected) {
         CustomerBalanceSummaryQuery query = new CustomerBalanceSummaryQuery(
-                date, null, null, null, location, getArchetypeService(), getRules());
+                date, null, null, null, location, getArchetypeService(), getLookupService(), getRules());
         checkCustomers(query, customers, expected);
     }
 
@@ -480,7 +489,7 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
         List<IMObjectReference> result = new ArrayList<IMObjectReference>();
         CustomerAccountRules rules = getRules();
         CustomerBalanceSummaryQuery query = new CustomerBalanceSummaryQuery(date, from, to, null, getArchetypeService(),
-                                                                            rules);
+                                                                            getLookupService(), rules);
         while (query.hasNext()) {
             ObjectSet set = query.next();
             IMObjectReference ref = set.getReference(CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);

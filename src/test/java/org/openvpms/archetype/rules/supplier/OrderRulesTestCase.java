@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -316,7 +316,7 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
     @Override
     public void setUp() {
         super.setUp();
-        TaxRules taxRules = new TaxRules(TestHelper.getPractice());
+        TaxRules taxRules = new TaxRules(TestHelper.getPractice(), getArchetypeService(), getLookupService());
         rules = new OrderRules(taxRules, getArchetypeService());
     }
 

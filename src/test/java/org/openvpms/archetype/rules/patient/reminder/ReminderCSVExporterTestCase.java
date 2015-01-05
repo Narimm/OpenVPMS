@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -36,7 +36,6 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -78,9 +77,9 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
     public void setUp() {
         IArchetypeService service = getArchetypeService();
         practiceRules = new PracticeRules(service);
-        PartyRules partyRules = new PartyRules(service);
+        ILookupService lookups = getLookupService();
+        PartyRules partyRules = new PartyRules(service, lookups);
         handlers = new DocumentHandlers();
-        ILookupService lookups = LookupServiceHelper.getLookupService();
         exporter = new ReminderCSVExporter(practiceRules, partyRules, service, lookups, handlers);
     }
 

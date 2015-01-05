@@ -11,12 +11,11 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.statement;
 
-import org.junit.Before;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.AbstractCustomerAccountTest;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
@@ -24,9 +23,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
@@ -52,29 +49,10 @@ public class AbstractStatementTest extends AbstractCustomerAccountTest {
     private Party practice;
 
     /**
-     * The lookup service.
-     */
-    @Autowired
-    protected ILookupService lookups;
-
-    /**
      * The account rules.
      */
     @Autowired
     protected CustomerAccountRules accountRules;
-
-    /**
-     * The archetype service.
-     */
-    protected IArchetypeService service;
-
-    /**
-     * Sets up the test case.
-     */
-    @Before
-    public void setUp() {
-        service = getArchetypeService();
-    }
 
     /**
      * Returns the practice.

@@ -11,19 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.math;
 
+import org.apache.commons.jxpath.Functions;
 import org.apache.commons.jxpath.JXPathContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
+import org.openvpms.component.system.common.jxpath.ObjectFunctions;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.Assert.assertTrue;
 
@@ -50,10 +50,8 @@ public class MathFunctionsTestCase {
     @Before
     public void setUp() {
         // register the functions with JXPath.
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("math", math);
-        new JXPathHelper(map);
-        ctx = JXPathHelper.newContext(new Object());
+        Functions functions = new ObjectFunctions(math, "math");
+        ctx = JXPathHelper.newContext(new Object(), functions);
     }
 
     /**

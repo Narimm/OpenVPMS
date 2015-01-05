@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -24,8 +24,6 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.component.business.service.lookup.ILookupService;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -45,12 +43,6 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
  * @author Tim Anderson
  */
 public class ProductImporterTestCase extends AbstractProductIOTest {
-
-    /**
-     * The lookup service.
-     */
-    @Autowired
-    private ILookupService lookups;
 
     /**
      * The first test product.
@@ -102,7 +94,7 @@ public class ProductImporterTestCase extends AbstractProductIOTest {
      */
     @Before
     public void setUp() {
-        rules = new ProductPriceRules(getArchetypeService(), lookups);
+        rules = new ProductPriceRules(getArchetypeService(), getLookupService());
         importer = new ProductImporter(rules, getArchetypeService());
         practice = (Party) create(PracticeArchetypes.PRACTICE);
         product1 = createProduct("Product 1", "P1");

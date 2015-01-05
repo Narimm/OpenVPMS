@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -33,6 +33,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.util.HashSet;
 import java.util.List;
@@ -52,14 +53,27 @@ public class PartyRules {
      */
     private final IArchetypeService service;
 
+    /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
+
+    /**
+     * Helper functions.
+     */
+    private final ArchetypeServiceFunctions functions;
+
 
     /**
      * Constructs a {@code PartyRules}.
      *
      * @param service the archetype service
+     * @param lookups the lookup service
      */
-    public PartyRules(IArchetypeService service) {
+    public PartyRules(IArchetypeService service, ILookupService lookups) {
         this.service = service;
+        this.lookups = lookups;
+        functions = new ArchetypeServiceFunctions(service, lookups);
     }
 
     /**
@@ -93,7 +107,7 @@ public class PartyRules {
             IMObjectBean bean = new IMObjectBean(party);
             NodeDescriptor descriptor = bean.getDescriptor(nodeName);
             if (descriptor != null && descriptor.isLookup()) {
-                return ArchetypeServiceFunctions.lookup(party, nodeName);
+                return functions.lookup(party, nodeName);
             } else {
                 return bean.getValue(nodeName);
             }
@@ -538,7 +552,7 @@ public class PartyRules {
         if (party != null) {
             IMObjectBean bean = new IMObjectBean(party, service);
             NodeDescriptor descriptor = bean.getDescriptor("title");
-            String title = LookupHelper.getName(service, descriptor, party);
+            String title = LookupHelper.getName(service, lookups, descriptor, party);
             String firstName = bean.getString("firstName", "");
             String lastName = bean.getString("lastName", "");
             if (title != null) {
@@ -673,8 +687,22 @@ public class PartyRules {
         return uid + String.valueOf(sum);
     }
 
+    /**
+     * Returns the archetype service.
+     *
+     * @return the archetype service
+     */
     protected IArchetypeService getArchetypeService() {
         return service;
+    }
+
+    /**
+     * Returns the lookup service.
+     *
+     * @return the lookup service
+     */
+    protected ILookupService getLookupService() {
+        return lookups;
     }
 
     /**
@@ -766,12 +794,12 @@ public class PartyRules {
             result.append(bean.getString("address", ""));
             result.append("\n");
         }
-        String suburb = ArchetypeServiceFunctions.lookup(contact, "suburb", "");
+        String suburb = functions.lookup(contact, "suburb", "");
         if (!StringUtils.isEmpty(suburb)) {
             result.append(suburb);
             result.append(" ");
         }
-        String state = ArchetypeServiceFunctions.lookup(contact, "state", "");
+        String state = functions.lookup(contact, "state", "");
         if (!StringUtils.isEmpty(state)) {
             result.append(state);
             result.append(" ");

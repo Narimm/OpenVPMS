@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -30,7 +30,6 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
-import org.openvpms.component.business.service.lookup.LookupService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
@@ -49,12 +48,6 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
  * @author Tim Anderson
  */
 public class PatientRulesTestCase extends ArchetypeServiceTest {
-
-    /**
-     * The lookup service.
-     */
-    @Autowired
-    private LookupService lookups;
 
     /**
      * The bean factory.
@@ -294,7 +287,8 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         Date birthDate = getDate("2010-01-01");
         bean.setValue("dateOfBirth", birthDate);
         String age = rules.getPatientAge(patient);
-        PatientAgeFormatter formatter = new PatientAgeFormatter(lookups, new PracticeRules(getArchetypeService()),
+        PatientAgeFormatter formatter = new PatientAgeFormatter(getLookupService(),
+                                                                new PracticeRules(getArchetypeService()),
                                                                 factory);
         String expected = formatter.format(birthDate);
         assertEquals(expected, age);
@@ -312,7 +306,8 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         bean.setValue("dateOfBirth", birth);
         bean.setValue("deceasedDate", deceased);
         String age = rules.getPatientAge(patient);
-        PatientAgeFormatter formatter = new PatientAgeFormatter(lookups, new PracticeRules(getArchetypeService()),
+        PatientAgeFormatter formatter = new PatientAgeFormatter(getLookupService(),
+                                                                new PracticeRules(getArchetypeService()),
                                                                 factory);
         String expected = formatter.format(birth, deceased);
         assertEquals(expected, age);
@@ -323,7 +318,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        rules = new PatientRules(getArchetypeService(), lookups);
+        rules = new PatientRules(getArchetypeService(), getLookupService());
     }
 
     /**

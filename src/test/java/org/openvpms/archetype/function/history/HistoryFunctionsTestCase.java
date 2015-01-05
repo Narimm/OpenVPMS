@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.history;
 
+import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.JXPathContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,9 +27,12 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
+import org.openvpms.component.system.common.jxpath.ObjectFunctions;
 
 import java.util.Date;
 import java.util.Iterator;
@@ -70,7 +74,7 @@ public class HistoryFunctionsTestCase extends ArchetypeServiceTest {
         medication2.setActivityStartTime(TestHelper.getDate("2013-09-20"));
         save(medication1, medication2);
 
-        JXPathContext ctx = JXPathHelper.newContext(patient);
+        JXPathContext ctx = createContext(patient);
         Iterable<Act> acts = (Iterable<Act>) ctx.getValue("history:medication(.)");
         checkActs(acts, medication2, medication1);
     }
@@ -87,7 +91,7 @@ public class HistoryFunctionsTestCase extends ArchetypeServiceTest {
         medication2.setActivityStartTime(TestHelper.getDate("2013-09-20"));
         save(medication1, medication2);
 
-        JXPathContext ctx = JXPathHelper.newContext(patient);
+        JXPathContext ctx = createContext(patient);
         Iterable<Act> acts1 = (Iterable<Act>) ctx.getValue("history:medication(., null, null)");
         checkActs(acts1, medication2, medication1);
 
@@ -126,7 +130,7 @@ public class HistoryFunctionsTestCase extends ArchetypeServiceTest {
         Act medication1 = PatientTestHelper.createMedication(patient, product1);
         Act medication2 = PatientTestHelper.createMedication(patient, product2);
 
-        JXPathContext ctx = JXPathHelper.newContext(patient);
+        JXPathContext ctx = createContext(patient);
         Iterable<Act> acts1 = (Iterable<Act>) ctx.getValue("history:medication(., 'Vaccination')");
         checkActs(acts1, medication1);
 
@@ -154,7 +158,7 @@ public class HistoryFunctionsTestCase extends ArchetypeServiceTest {
         medication2.setActivityStartTime(TestHelper.getDate("2013-09-20"));
         save(medication1, medication2);
 
-        JXPathContext ctx = JXPathHelper.newContext(patient);
+        JXPathContext ctx = createContext(patient);
         Iterable<Act> acts1 = (Iterable<Act>) ctx.getValue("history:medication(., 'Vaccination', null, null)");
         checkActs(acts1, medication1);
 
@@ -176,7 +180,7 @@ public class HistoryFunctionsTestCase extends ArchetypeServiceTest {
     @SuppressWarnings("unchecked")
     public void testMedicationWithNullPatient() {
         Act event = (Act) create(PatientArchetypes.CLINICAL_EVENT);
-        JXPathContext ctx = JXPathHelper.newContext(event);
+        JXPathContext ctx = createContext(event);
         Iterable<Act> acts1 = (Iterable<Act>) ctx.getValue("history:medication(openvpms:get(., 'patient.entity'))");
         checkActs(acts1);
 
@@ -227,6 +231,21 @@ public class HistoryFunctionsTestCase extends ArchetypeServiceTest {
      */
     private Entity createProductType(String name) {
         return ProductTestHelper.createProductType(name);
+    }
+
+    /**
+     * Creates a new {@code JXPathContext} with the history functions registered.
+     *
+     * @param object the context object
+     * @return a new JXPath context
+     */
+    private JXPathContext createContext(IMObject object) {
+        HistoryFunctions history = new HistoryFunctions(getArchetypeService());
+        ArchetypeServiceFunctions functions = new ArchetypeServiceFunctions(getArchetypeService(), getLookupService());
+        FunctionLibrary library = new FunctionLibrary();
+        library.addFunctions(new ObjectFunctions(history, "history"));
+        library.addFunctions(new ObjectFunctions(functions, "openvpms"));
+        return JXPathHelper.newContext(object, library);
     }
 
 }

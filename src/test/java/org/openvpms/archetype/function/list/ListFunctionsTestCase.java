@@ -11,15 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.list;
 
 import org.apache.commons.jxpath.ExpressionContext;
+import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.JXPathContext;
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.function.expression.ExpressionFunctions;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -27,6 +29,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
+import org.openvpms.component.system.common.jxpath.ObjectFunctions;
 
 import java.util.Arrays;
 import java.util.List;
@@ -55,7 +58,7 @@ public class ListFunctionsTestCase extends ArchetypeServiceTest {
         Party pet3 = createPet("B", "Bovine");
 
         List<Party> objects = Arrays.asList(pet1, pet2, pet3);
-        ctx = JXPathHelper.newContext(objects);
+        ctx = createContext(objects);
     }
 
     /**
@@ -77,12 +80,12 @@ public class ListFunctionsTestCase extends ArchetypeServiceTest {
         vet.addClassification(createVetSpecialty("Large Animals"));
         vet.addClassification(createVetSpecialty("Snakes"));
 
-        JXPathContext ctx = JXPathHelper.newContext(vet);
+        JXPathContext ctx = createContext(vet);
 
         assertEquals("Large Animals, Snakes, Surgery", ctx.getValue("list:sortNamesOf('classifications')"));
 
-        assertEquals("(Large Animals, Snakes, Surgery)", ctx.getValue("expr:concatIf('(', list:sortNamesOf('classifications'), ')')"));
-
+        assertEquals("(Large Animals, Snakes, Surgery)",
+                     ctx.getValue("expr:concatIf('(', list:sortNamesOf('classifications'), ')')"));
     }
 
     /**
@@ -131,5 +134,19 @@ public class ListFunctionsTestCase extends ArchetypeServiceTest {
         lookup.setCode(name);
         lookup.setName(name);
         return lookup;
+    }
+
+    /**
+     * Creates a new JXPathContext.
+     *
+     * @param object the context object
+     * @return a new JXPathContext
+     */
+    private JXPathContext createContext(Object object) {
+        ListFunctions listFunctions = new ListFunctions(getArchetypeService(), getLookupService());
+        FunctionLibrary library = new FunctionLibrary();
+        library.addFunctions(new ObjectFunctions(listFunctions, "list"));
+        library.addFunctions(new ExpressionFunctions("expr"));
+        return JXPathHelper.newContext(object, library);
     }
 }

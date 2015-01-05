@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Date;
@@ -41,12 +40,6 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
  * @author Tim Anderson
  */
 public class PatientAgeFormatterTestCase extends ArchetypeServiceTest {
-
-    /**
-     * The lookup service.
-     */
-    @Autowired
-    protected ILookupService lookupService;
 
     /**
      * The bean factory.
@@ -119,7 +112,7 @@ public class PatientAgeFormatterTestCase extends ArchetypeServiceTest {
      */
     protected PatientAgeFormatter createFormatter() {
         PracticeRules rules = new PracticeRules(getArchetypeService());
-        return new PatientAgeFormatter(lookupService, rules, factory);
+        return new PatientAgeFormatter(getLookupService(), rules, factory);
     }
 
     /**

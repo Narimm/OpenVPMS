@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -37,8 +37,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the {@link DemographicUpdater} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DemographicUpdaterTestCase extends ArchetypeServiceTest {
 
@@ -86,7 +85,7 @@ public class DemographicUpdaterTestCase extends ArchetypeServiceTest {
 
         List<Lookup> lookups = Arrays.asList(desex, deceased);
         Party patient = TestHelper.createPatient();
-        DemographicUpdater updater = new DemographicUpdater();
+        DemographicUpdater updater = new DemographicUpdater(getArchetypeService());
         updater.evaluate(patient, lookups);
 
         IMObjectBean bean = new IMObjectBean(get(patient));
@@ -105,7 +104,7 @@ public class DemographicUpdaterTestCase extends ArchetypeServiceTest {
         IMObjectBean bean = new IMObjectBean(patient);
         assertFalse(bean.getBoolean("desexed"));
 
-        DemographicUpdater updater = new DemographicUpdater();
+        DemographicUpdater updater = new DemographicUpdater(getArchetypeService());
         updater.evaluate(context, desex);
 
         patient = get(patient);
@@ -124,7 +123,7 @@ public class DemographicUpdaterTestCase extends ArchetypeServiceTest {
         IMObjectBean bean = new IMObjectBean(patient);
         assertFalse(bean.getBoolean("deceased"));
 
-        DemographicUpdater updater = new DemographicUpdater();
+        DemographicUpdater updater = new DemographicUpdater(getArchetypeService());
         updater.evaluate(context, deceased);
 
         patient = get(patient);

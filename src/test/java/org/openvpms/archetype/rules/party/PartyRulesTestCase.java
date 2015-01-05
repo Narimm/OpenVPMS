@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -461,7 +461,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        rules = new PartyRules(getArchetypeService());
+        rules = new PartyRules(getArchetypeService(), getLookupService());
 
         Lookup state = TestHelper.getLookup("lookup.state", "VIC", "Victoria", true);
         state.setDefaultLookup(true);

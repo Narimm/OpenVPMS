@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -35,7 +35,6 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -328,11 +327,10 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
      */
     @Before
     public void setUp() {
-        PlatformTransactionManager mgr = (PlatformTransactionManager)
-                applicationContext.getBean("txnManager");
+        PlatformTransactionManager mgr = applicationContext.getBean(PlatformTransactionManager.class);
         template = new TransactionTemplate(mgr);
 
-        customerRules = new CustomerRules(getArchetypeService());
+        customerRules = new CustomerRules(getArchetypeService(), getLookupService());
         practice = (Party) create("party.organisationPractice");
     }
 
@@ -343,9 +341,8 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
      * @param statementDate the statement date
      */
     private void runEOP(Party customer, Date statementDate) {
-        ILookupService lookups = applicationContext.getBean(ILookupService.class);
         EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate, true, practice, getArchetypeService(),
-                                                            lookups, customerAccountRules);
+                                                            getLookupService(), customerAccountRules);
         eop.process(customer);
     }
 
