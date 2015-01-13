@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.app;
@@ -62,10 +62,10 @@ public abstract class AbstractContext implements Context {
      * Set of recognised short names.
      */
     private static final String[] SHORT_NAMES = {
-            CUSTOMER_SHORTNAME, PATIENT_SHORTNAME, SUPPLIER_SHORTNAME,
-            PRODUCT_SHORTNAME, TILL_SHORTNAME, CLINICIAN_SHORTNAME,
-            SCHEDULE_VIEW_SHORTNAME, SCHEDULE_SHORTNAME, APPOINTMENT_SHORTNAME, WORKLIST_SHORTNAME, TASK_SHORTNAME,
-            LOCATION_SHORTNAME, STOCK_LOCATION_SHORTNAME, DEPOSIT_SHORTNAME};
+            APPOINTMENT_SHORTNAME, CLINICIAN_SHORTNAME, CUSTOMER_SHORTNAME, DEPOSIT_SHORTNAME, LOCATION_SHORTNAME,
+            PATIENT_SHORTNAME, PRACTICE_SHORTNAME, PRODUCT_SHORTNAME, SCHEDULE_SHORTNAME, SCHEDULE_VIEW_SHORTNAME,
+            STOCK_LOCATION_SHORTNAME, SUPPLIER_SHORTNAME, TASK_SHORTNAME, TILL_SHORTNAME, WORKLIST_SHORTNAME,
+            WORKLIST_VIEW_SHORTNAME};
 
     /**
      * The current schedule date.
@@ -572,8 +572,12 @@ public abstract class AbstractContext implements Context {
     public IMObject[] getObjects() {
         Set<IMObject> result = new HashSet<IMObject>();
         result.addAll(objects.values());
-        result.add(current);
-        result.add(user);
+        if (current != null) {
+            result.add(current);
+        }
+        if (user != null) {
+            result.add(user);
+        }
         return result.toArray(new IMObject[result.size()]);
     }
 
