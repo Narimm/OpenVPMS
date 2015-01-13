@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient;
@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.patient;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -37,7 +38,10 @@ import org.openvpms.web.component.property.DatePropertyTransformer;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
@@ -75,6 +79,41 @@ public class PatientEditor extends AbstractIMObjectEditor {
     private PatientLayoutStrategy strategy;
 
     /**
+     * Listener for deceased flag changes.
+     */
+    private final ModifiableListener deceasedListener;
+
+    /**
+     * Listener for deceased date changes.
+     */
+    private final ModifiableListener deceasedDateListener;
+
+    /**
+     * Species node.
+     */
+    private static final String SPECIES = "species";
+
+    /**
+     * Active node.
+     */
+    private static final String ACTIVE = "active";
+
+    /**
+     * Deceased date node.
+     */
+    private static final String DECEASED = "deceased";
+
+    /**
+     * Deceased date node.
+     */
+    private static final String DECEASED_DATE = "deceasedDate";
+
+    /**
+     * New breed node.
+     */
+    private static final String NEW_BREED = "newBreed";
+
+    /**
      * Constructs a {@link PatientEditor}.
      *
      * @param patient the object to edit
@@ -88,13 +127,13 @@ public class PatientEditor extends AbstractIMObjectEditor {
                 addOwnerRelationship(patient);
             }
         }
-        getProperty("species").addModifiableListener(new ModifiableListener() {
+        getProperty(SPECIES).addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 speciesChanged();
             }
         });
         Property breed = getProperty("breed");
-        Property newBreed = getProperty("newBreed");
+        Property newBreed = getProperty(NEW_BREED);
         breedEditor = new BreedEditor(breed, patient);
 
         if (StringUtils.isEmpty(breed.getString()) && !StringUtils.isEmpty(newBreed.getString())) {
@@ -112,8 +151,28 @@ public class PatientEditor extends AbstractIMObjectEditor {
 
         // restrict the date of birth entry
         Property dateOfBirth = getProperty("dateOfBirth");
-        Date maxDate = new Date();
+        Date maxDate = DateRules.getTomorrow(); // the maximum date, exclusive
         dateOfBirth.setTransformer(new DatePropertyTransformer(dateOfBirth, MIN_DATE, maxDate));
+
+        // restrict the deceased date entry
+        Property deceasedDate = getProperty("deceasedDate");
+        deceasedDate.setTransformer(new DatePropertyTransformer(dateOfBirth, MIN_DATE, maxDate));
+
+        deceasedDateListener = new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                deceasedDateChanged();
+            }
+        };
+        deceasedDate.addModifiableListener(deceasedDateListener);
+
+        deceasedListener = new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                deceasedChanged();
+            }
+        };
+        getProperty(DECEASED).addModifiableListener(deceasedListener);
 
         CollectionProperty customField = (CollectionProperty) getProperty("customFields");
         customFieldEditor = new EntityRelationshipCollectionTargetEditor(customField, patient, getLayoutContext());
@@ -134,6 +193,31 @@ public class PatientEditor extends AbstractIMObjectEditor {
             strategy.addComponent(new ComponentState(breedEditor));
         }
         return strategy;
+    }
+
+    /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        boolean valid = super.doValidation(validator);
+        if (valid) {
+            Date date = getDeceasedDate();
+            boolean deceased = isDeceased();
+            if (date != null && !deceased) {
+                Property property = getProperty(DECEASED);
+                validator.add(property, new ValidatorError(property, Messages.get("patient.deceased.required")));
+                valid = false;
+            } else if (deceased && isActive()) {
+                Property property = getProperty(DECEASED);
+                validator.add(property, new ValidatorError(property, Messages.get("patient.deceased.inactive")));
+                valid = false;
+            }
+        }
+        return valid;
     }
 
     /**
@@ -168,7 +252,7 @@ public class PatientEditor extends AbstractIMObjectEditor {
     private void updateCustomFields() {
         getComponent(); // force render to ensure the strategy has a focus group set
 
-        String species = (String) getProperty("species").getValue();
+        String species = (String) getProperty(SPECIES).getValue();
         String shortName = getCustomFieldsArchetype(species);
         String currentShortName = null;
         Entity fields = getCustomFields();
@@ -204,9 +288,95 @@ public class PatientEditor extends AbstractIMObjectEditor {
     private void breedChanged() {
         boolean newBreed = breedEditor.isNewBreed();
         if (!newBreed) {
-            getProperty("newBreed").setValue(null);
+            getProperty(NEW_BREED).setValue(null);
         }
         strategy.updateNewBreed(newBreed);
+    }
+
+    /**
+     * Sets the patient's deceased state. This sets the deceased node to the value supplied, and the active node to
+     * {@code !deceased}.
+     *
+     * @param deceased the deceased state
+     */
+    private void setDeceased(boolean deceased) {
+        Property property = getProperty(DECEASED);
+        try {
+            property.removeModifiableListener(deceasedListener);
+            property.setValue(deceased);
+            setActive(!deceased);
+        } finally {
+            property.addModifiableListener(deceasedListener);
+        }
+    }
+
+    /**
+     * Determines if the patient is deceased.
+     *
+     * @return {@code true} if the patient is deceased, otherwise {@code false}
+     */
+    private boolean isDeceased() {
+        return getProperty(DECEASED).getBoolean();
+    }
+
+    /**
+     * Sets the patient's active flag.
+     *
+     * @param active if {@code true}, the patient is active, else it is inactive
+     */
+    private void setActive(boolean active) {
+        getProperty(ACTIVE).setValue(active);
+    }
+
+    /**
+     * Determines if the patient is active or not.
+     *
+     * @return {@code true} if the patient is active, {@code false if it is inactive
+     */
+    private boolean isActive() {
+        return getProperty(ACTIVE).getBoolean();
+    }
+
+    /**
+     * Sets the patient deceased date. This sets the active flag accordingly.
+     *
+     * @param date the patient deceased date. May be {@code null}
+     */
+    private void setDeceasedDate(Date date) {
+        Property property = getProperty(DECEASED_DATE);
+        try {
+            property.removeModifiableListener(deceasedDateListener);
+            property.setValue(date);
+            setActive(date == null);
+        } finally {
+            property.addModifiableListener(deceasedDateListener);
+        }
+    }
+
+    /**
+     * Returns the patient deceased date.
+     *
+     * @return the deceased date. May be {@code null}
+     */
+    private Date getDeceasedDate() {
+        Property deceasedDate = getProperty(DECEASED_DATE);
+        return deceasedDate.getDate();
+    }
+
+    /**
+     * Invoked when the deceased date changes. Toggles the deceased and active nodes accordingly.
+     */
+    private void deceasedDateChanged() {
+        Date date = getDeceasedDate();
+        setDeceased(date != null);
+    }
+
+    /**
+     * Invoked when the deceased flag changes. Sets the deceased date and active nodes accordingly.
+     */
+    private void deceasedChanged() {
+        boolean deceased = isDeceased();
+        setDeceasedDate(deceased ? new Date() : null);
     }
 
     /**
