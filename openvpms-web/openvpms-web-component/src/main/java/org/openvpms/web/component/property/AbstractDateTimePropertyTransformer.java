@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -41,12 +41,12 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
     }
 
     /**
-     * The minimum value for the date. If {@code null}, the date has no minimum.
+     * The minimum value for the date, inclusive. If {@code null}, the date has no minimum.
      */
     private Date minDate;
 
     /**
-     * The maximum value for the date. If {@code null}, the date has no maximum.
+     * The maximum value for the date, exclusive. If {@code null}, the date has no maximum.
      */
     private Date maxDate;
 
@@ -65,8 +65,8 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
      * Constructs a {@code AbstractDateTimePropertyTransformer}.
      *
      * @param property the property
-     * @param min      the minimum value for the date. If {@code null}, the date has no minimum
-     * @param max      the maximum value for the date. If {@code null}, the date has no maximum
+     * @param min      the minimum value for the date, inclusive. If {@code null}, the date has no minimum
+     * @param max      the maximum value for the date, exclusive. If {@code null}, the date has no maximum
      * @param format   the format for date range validation errors
      */
     public AbstractDateTimePropertyTransformer(Property property, Date min, Date max, Format format) {
@@ -166,7 +166,7 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
      * @return the date, or {@code null} if there is no date
      */
     protected Date getDate() {
-        return (Date) getProperty().getValue();
+        return getProperty().getDate();
     }
 
     /**
@@ -234,7 +234,7 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
             String msg = Messages.format("property.error.minDate", formatDate, formatMin);
             throw new PropertyException(getProperty(), msg);
         }
-        if (max != null && date.getTime() > max.getTime()) {
+        if (max != null && date.getTime() >= max.getTime()) {
             String formatDate;
             String formatMax;
             if (format == Format.DATE) {
