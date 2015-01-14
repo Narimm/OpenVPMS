@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace;
@@ -60,7 +60,7 @@ class LockScreenDialog extends PopupDialog {
      * @param app the app
      */
     public LockScreenDialog(final OpenVPMSApp app) {
-        super(Messages.get("lockscreen.title"), "MessageDialog", OK);
+        super(Messages.get("lockscreen.title"), "LockScreenDialog", OK);
         setModal(true);
         setClosable(false);
         addButton("button.logout", new ActionListener() {
