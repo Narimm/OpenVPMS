@@ -2893,8 +2893,10 @@ where not exists (select * from lookups where arch_short_name = "lookup.contactP
 insert into contact_classifications(contact_id, lookup_id)
 select contact_id, lookup_id
 from contacts c, lookups l
-where c.arch_short_name = "contact.faxNumber" and l.code = "FAX" and l.arch_short_name = "lookup.contactPurpose";
-
+where c.arch_short_name = "contact.faxNumber" and l.code = "FAX" and l.arch_short_name = "lookup.contactPurpose"
+  and not exists (select *
+                  from contact_classifications cl
+                  where cl.contact_id = c.contact_id and cl.lookup_id = l.lookup_id);
 
 # Change the detail name to telephoneNumber
 
