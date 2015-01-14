@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -34,6 +34,11 @@ public class PurposeMatcher extends ContactMatcher {
      * The purpose to match on.
      */
     private final List<String> purposes;
+
+    /**
+     * A purpose to exclude.
+     */
+    private String exclusion;
 
     /**
      * If {@code true} the contact must contain the purpose to be returned
@@ -78,6 +83,17 @@ public class PurposeMatcher extends ContactMatcher {
     }
 
     /**
+     * Sets a contact purpose to exclude.
+     * <p/>
+     * Any contact with a purpose matching that supplied won't be considered a match.
+     *
+     * @param exclusion the purpose to exclude. May be {@code null}
+     */
+    public void setExclusion(String exclusion) {
+        this.exclusion = exclusion;
+    }
+
+    /**
      * Determines if a contact matches the criteria.
      *
      * @param contact the contact
@@ -85,7 +101,17 @@ public class PurposeMatcher extends ContactMatcher {
      */
     @Override
     public boolean matches(Contact contact) {
-        return super.matches(contact) && matchesPurpose(contact);
+        return super.matches(contact) && !excluded(contact) && matchesPurpose(contact);
+    }
+
+    /**
+     * Determines if a contact is excluded.
+     *
+     * @param contact the contact
+     * @return {@code true} if the contact is excluded otherwise {@code false}
+     */
+    protected boolean excluded(Contact contact) {
+        return exclusion != null && hasContactPurpose(contact, exclusion);
     }
 
     /**
@@ -161,4 +187,5 @@ public class PurposeMatcher extends ContactMatcher {
         }
         return false;
     }
+
 }
