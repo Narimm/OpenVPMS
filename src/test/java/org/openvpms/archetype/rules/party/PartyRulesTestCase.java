@@ -457,6 +457,60 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies that a phone contact with FAX classifications are never returned by the {@code get*Telephone()}
+     * methods.
+     */
+    @Test
+    public void getPhoneExcludesFaxContacts() {
+        Party customer = (Party) create(CustomerArchetypes.PERSON);
+        IMObjectBean bean = new IMObjectBean(customer);
+        bean.setValue("firstName", "Foo");
+        bean.setValue("lastName", "Bar");
+
+        Contact fax = (Contact) create(ContactArchetypes.PHONE);
+        populatePhone(fax, "7777 1234", true, "FAX");
+        customer.addContact(fax);
+        save(customer);
+
+        // add the phone contact afterwards, to ensure it gets a higher id. Contacts are sorted by id in the rules
+        // to ensure deterministic behaviour
+        Contact phone = (Contact) create(ContactArchetypes.PHONE);
+        populatePhone(phone, "9999 6789", false, null);
+        customer.addContact(phone);
+
+        save(customer);
+        assertEquals("(03) 9999 6789", rules.getTelephone(customer));
+        assertEquals("(03) 9999 6789", rules.getHomeTelephone(customer));
+        assertEquals("", rules.getWorkTelephone(customer));
+        assertEquals("", rules.getMobileTelephone(customer));
+
+        Contact work = (Contact) create(ContactArchetypes.PHONE);
+        populatePhone(work, "8888 1234", false, "WORK");
+        customer.addContact(work);
+        save(customer);
+        assertEquals("(03) 9999 6789", rules.getTelephone(customer));
+        assertEquals("(03) 9999 6789", rules.getHomeTelephone(customer));
+        assertEquals("(03) 8888 1234", rules.getWorkTelephone(customer));
+        assertEquals("", rules.getMobileTelephone(customer));
+
+        Contact mobile = (Contact) create(ContactArchetypes.PHONE);
+        populatePhone(mobile, "6666 5432", false, "MOBILE");
+        customer.addContact(mobile);
+        save(customer);
+        assertEquals("(03) 9999 6789", rules.getTelephone(customer));
+        assertEquals("(03) 9999 6789", rules.getHomeTelephone(customer));
+        assertEquals("(03) 8888 1234", rules.getWorkTelephone(customer));
+        assertEquals("(03) 6666 5432", rules.getMobileTelephone(customer));
+
+        // add a FAX classification to the work contact. The work contact should no longer be returned
+        work.addClassification(getContactPurpose("FAX"));
+        assertEquals("(03) 9999 6789", rules.getTelephone(customer));
+        assertEquals("(03) 9999 6789", rules.getHomeTelephone(customer));
+        assertEquals("", rules.getWorkTelephone(customer));
+        assertEquals("(03) 6666 5432", rules.getMobileTelephone(customer));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
