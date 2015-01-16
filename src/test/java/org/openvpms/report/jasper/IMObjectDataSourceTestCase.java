@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -127,7 +127,7 @@ public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCa
         fields.put("fieldA", "A");
         fields.put("field.B", "B");
         fields.put("field1", 1);
-        fields.put("customer", object);
+        fields.put("OpenVPMS.customer", object);
         fields.put("title", "OVERRIDE");
 
         IMObjectDataSource ds = createDataSource(object, fields);
@@ -136,8 +136,12 @@ public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCa
         JRField fieldA = createField("fieldA", String.class);
         JRField fieldB = createField("field.B", String.class);
         JRField field1 = createField("field1", Integer.class);
-        JRField customerFirstName = createField("customer.firstName", String.class);
+        JRField customerFirstName = createField("OpenVPMS.customer.firstName", String.class);
         JRField title = createField("title", String.class); // overrides the default field
+
+        // verify that fields can also be accessed as variables.
+        JRField exprCustomerFirstName = createField("[openvpms:get($OpenVPMS.customer, 'firstName')]", String.class);
+        JRField exprCustomerLastName = createField("[openvpms:get($OpenVPMS.customer, 'lastName')]", String.class);
 
         assertTrue(ds.next());
         assertEquals("Foo", ds.getFieldValue(firstName));
@@ -147,7 +151,12 @@ public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCa
         assertEquals(1, ds.getFieldValue(field1));
         assertEquals("Foo", ds.getFieldValue(customerFirstName));
         assertEquals("OVERRIDE", ds.getFieldValue(title));
+
+        assertEquals("Foo", ds.getFieldValue(exprCustomerFirstName));
+        assertEquals("Bar", ds.getFieldValue(exprCustomerLastName));
+
         assertFalse(ds.next());
+
     }
 
     /**
