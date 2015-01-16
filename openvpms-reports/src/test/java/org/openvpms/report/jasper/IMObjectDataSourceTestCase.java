@@ -120,7 +120,7 @@ public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCa
         fields.put("fieldA", "A");
         fields.put("field.B", "B");
         fields.put("field1", 1);
-        fields.put("customer", object);
+        fields.put("OpenVPMS.customer", object);
         fields.put("title", "OVERRIDE");
 
         IMObjectDataSource ds = createDataSource(object, fields);
@@ -129,8 +129,12 @@ public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCa
         JRField fieldA = createField("fieldA", String.class);
         JRField fieldB = createField("field.B", String.class);
         JRField field1 = createField("field1", Integer.class);
-        JRField customerFirstName = createField("customer.firstName", String.class);
+        JRField customerFirstName = createField("OpenVPMS.customer.firstName", String.class);
         JRField title = createField("title", String.class); // overrides the default field
+
+        // verify that fields can also be accessed as variables.
+        JRField exprCustomerFirstName = createField("[openvpms:get($OpenVPMS.customer, 'firstName')]", String.class);
+        JRField exprCustomerLastName = createField("[openvpms:get($OpenVPMS.customer, 'lastName')]", String.class);
 
         assertTrue(ds.next());
         assertEquals("Foo", ds.getFieldValue(firstName));
@@ -140,7 +144,12 @@ public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCa
         assertEquals(1, ds.getFieldValue(field1));
         assertEquals("Foo", ds.getFieldValue(customerFirstName));
         assertEquals("OVERRIDE", ds.getFieldValue(title));
+
+        assertEquals("Foo", ds.getFieldValue(exprCustomerFirstName));
+        assertEquals("Bar", ds.getFieldValue(exprCustomerLastName));
+
         assertFalse(ds.next());
+
     }
 
     /**
