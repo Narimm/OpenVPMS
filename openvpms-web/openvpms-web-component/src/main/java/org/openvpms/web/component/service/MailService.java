@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.service;
@@ -53,6 +53,14 @@ public class MailService extends JavaMailSenderImpl {
      */
     private static final String MAIL_SMTP_AUTH = "mail.smtp.auth";
 
+    /**
+     * Constructs a {@link MailService}.
+     * <p/>
+     * This sets the default encoding to UTF-8.
+     */
+    public MailService() {
+        setDefaultEncoding("UTF-8");
+    }
 
     /**
      * Return the mail server host.
