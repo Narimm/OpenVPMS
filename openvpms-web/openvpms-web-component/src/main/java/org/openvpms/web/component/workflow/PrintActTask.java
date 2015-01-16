@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workflow;
@@ -34,12 +34,12 @@ public class PrintActTask extends PrintIMObjectTask {
     /**
      * Constructs a {@link PrintActTask}.
      *
-     * @param act         the act to print
-     * @param context     the mail context. May be {@code null}
-     * @param interactive if {@code true} print interactively, otherwise attempt to print in the background
+     * @param act       the object to print
+     * @param context   the mail context. May be {@code null}
+     * @param printMode the print mode
      */
-    public PrintActTask(Act act, MailContext context, boolean interactive) {
-        super(act, context, interactive);
+    public PrintActTask(Act act, MailContext context, PrintMode printMode) {
+        super(act, context, printMode);
     }
 
     /**
