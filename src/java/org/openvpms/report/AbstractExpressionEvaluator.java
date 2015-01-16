@@ -169,6 +169,11 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
     protected Object evaluate(String expression) {
         if (context == null) {
             context = JXPathHelper.newContext(object, functions);
+            if (fields != null) {
+                for (String name : fields.getNames()) {
+                    context.getVariables().declareVariable(name, fields.get(name));
+                }
+            }
         }
         return context.getValue(expression);
     }
