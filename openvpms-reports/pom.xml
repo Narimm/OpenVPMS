@@ -197,6 +197,12 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <version>${groovy.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
             <version>${poi.version}</version>
@@ -273,6 +279,7 @@
 
     <properties>
         <openoffice.version>4.0.0</openoffice.version>
+        <groovy.version>2.0.1</groovy.version>
     </properties>
 
 </project>
