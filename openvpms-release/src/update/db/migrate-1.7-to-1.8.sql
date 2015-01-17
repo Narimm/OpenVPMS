@@ -87,6 +87,22 @@ INSERT INTO entity_details (entity_id, name, type, value)
                        FROM entity_details d
                        WHERE d.entity_id = e.entity_id AND d.name = "showCustomerAccountSummary");
 
+#
+# Update party.organisationPractice for OVPMS-1531 Screen auto lock
+#
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    DISTINCT e.entity_id,
+    "autoLockScreen",
+    "int",
+    "0"
+  FROM entities e
+  WHERE e.arch_short_name = "party.organisationPractice"
+        AND NOT exists(SELECT
+                         *
+                       FROM entity_details d
+                       WHERE d.entity_id = e.entity_id AND d.name = "autoLockScreen");
+
 
 #
 # Migrate act.patientClinicalEvent, lookup.appointmentReason for OVPMS-1498
@@ -2882,41 +2898,56 @@ DROP TABLE venom_presenting_complaint;
 
 # Add the FAX lookup.contactPurpose if it doesn't exist.
 
-insert into lookups (version, linkId, arch_short_name, active, arch_version,
-    code, name, description, default_lookup)
-select 0, UUID(), "lookup.contactPurpose", 1, "1.0", "FAX", "Fax", "Fax Contact Purpose", 0
-from dual
-where not exists (select * from lookups where arch_short_name = "lookup.contactPurpose" and code = "FAX");
+INSERT INTO lookups (version, linkId, arch_short_name, active, arch_version,
+                     code, name, description, default_lookup)
+  SELECT
+    0,
+    UUID(),
+    "lookup.contactPurpose",
+    1,
+    "1.0",
+    "FAX",
+    "Fax",
+    "Fax Contact Purpose",
+    0
+  FROM dual
+  WHERE NOT exists(SELECT
+                     *
+                   FROM lookups
+                   WHERE arch_short_name = "lookup.contactPurpose" AND code = "FAX");
 
 #  Add new purpose to existing fax
 
-insert into contact_classifications(contact_id, lookup_id)
-select contact_id, lookup_id
-from contacts c, lookups l
-where c.arch_short_name = "contact.faxNumber" and l.code = "FAX" and l.arch_short_name = "lookup.contactPurpose"
-  and not exists (select *
-                  from contact_classifications cl
-                  where cl.contact_id = c.contact_id and cl.lookup_id = l.lookup_id);
+INSERT INTO contact_classifications (contact_id, lookup_id)
+  SELECT
+    contact_id,
+    lookup_id
+  FROM contacts c, lookups l
+  WHERE c.arch_short_name = "contact.faxNumber" AND l.code = "FAX" AND l.arch_short_name = "lookup.contactPurpose"
+        AND NOT exists(SELECT
+                         *
+                       FROM contact_classifications cl
+                       WHERE cl.contact_id = c.contact_id AND cl.lookup_id = l.lookup_id);
 
 # Change the detail name to telephoneNumber
 
-update contacts c, contact_details d
-set d.name = "telephoneNumber"
-where c.arch_short_name = "contact.faxNumber" and c.contact_id = d.contact_id and d.name = "faxNumber";
+UPDATE contacts c, contact_details d
+SET d.name = "telephoneNumber"
+WHERE c.arch_short_name = "contact.faxNumber" AND c.contact_id = d.contact_id AND d.name = "faxNumber";
 
 # Change the contact archetype
 
-update contacts
-set arch_short_name = "contact.phoneNumber"
-where arch_short_name = "contact.faxNumber";
+UPDATE contacts
+SET arch_short_name = "contact.phoneNumber"
+WHERE arch_short_name = "contact.faxNumber";
 
 # Remove contact.faxNumber archetype from the database
 
-delete d
-from assertion_descriptors d, node_descriptors n, archetype_descriptors a
-where d.node_desc_id = n.node_desc_id and n.archetype_desc_id = a.archetype_desc_id
-      and a.name = "contact.faxNumber.1.0";
+DELETE d
+FROM assertion_descriptors d, node_descriptors n, archetype_descriptors a
+WHERE d.node_desc_id = n.node_desc_id AND n.archetype_desc_id = a.archetype_desc_id
+      AND a.name = "contact.faxNumber.1.0";
 
-delete a, n
-from node_descriptors n, archetype_descriptors a
-where n.archetype_desc_id = a.archetype_desc_id and a.name = "contact.faxNumber.1.0";
+DELETE a, n
+FROM node_descriptors n, archetype_descriptors a
+WHERE n.archetype_desc_id = a.archetype_desc_id AND a.name = "contact.faxNumber.1.0";
