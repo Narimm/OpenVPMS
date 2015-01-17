@@ -1,6 +1,7 @@
 OpenVPMS ${pom.version} (${buildNumber}) Release
 ===============================================================================
 
+
 1. Installation Notes
 
 See section 2 if you are upgrading an existing system.
@@ -410,3 +411,14 @@ change to:
   to a single user with a strong password.
   These directories contain files that could enable an attacker to gain access
   to the OpenVPMS web application, or the MySQL database.
+
+7. Documentation
+
+There is comprehensive online documentation available at
+  http://www.openvpms.org/documentation/csh/1.8/topics
+
+Note that the Reference|Setup section contains information useful for setting
+up the system.
+
+Existing users should read
+  http://www.openvpms.org/documentation/csh/1.8/new-features
