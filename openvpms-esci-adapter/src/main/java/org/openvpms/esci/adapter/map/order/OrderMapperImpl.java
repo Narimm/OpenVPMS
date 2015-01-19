@@ -13,6 +13,7 @@
  *
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.esci.adapter.map.order;
 
 import org.apache.commons.lang.StringUtils;
@@ -496,7 +497,7 @@ public class OrderMapperImpl implements OrderMapper {
         } else {
             customer = location;
         }
-        Contact phoneContact = partyRules.getContact(customer, ContactArchetypes.PHONE, "BILLING");
+        Contact phoneContact = partyRules.getContact(customer, ContactArchetypes.PHONE, false, "FAX", "BILLING");
         Contact faxContact = partyRules.getContact(customer, ContactArchetypes.PHONE, true, null, "FAX", "BILLING");
         if (faxContact == null) {
             faxContact = partyRules.getContact(customer, ContactArchetypes.PHONE, true, null, "FAX");
