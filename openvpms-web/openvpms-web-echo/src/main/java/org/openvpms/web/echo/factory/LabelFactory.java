@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.factory;
@@ -51,7 +51,7 @@ public final class LabelFactory extends ComponentFactory {
     /**
      * Creates a new label that may support multiple lines.
      *
-     * @param multiline if <tt>true</tt>, iterprets new lines in the text
+     * @param multiline if {@code true}, interprets new lines in the text
      * @return a new label
      */
     public static Label create(boolean multiline) {
@@ -61,8 +61,8 @@ public final class LabelFactory extends ComponentFactory {
     /**
      * Creates a new label that may support multiple lines, and wrap long lines.
      *
-     * @param multiline if <tt>true</tt>, iterprets new lines in the text
-     * @param wrap      if <tt>true</tt>, long lines will be wrapped
+     * @param multiline if {@code true}, interprets new lines in the text
+     * @param wrap      if {@code true}, long lines will be wrapped
      * @return a new label
      */
     public static Label create(boolean multiline, boolean wrap) {
@@ -112,7 +112,7 @@ public final class LabelFactory extends ComponentFactory {
     /**
      * Create a new label with localised text, and default style.
      *
-     * @param key the resource bundle key. May be <code>null</code>
+     * @param key the resource bundle key. May be {@code null}
      * @return a new label
      */
     public static Label create(String key) {
@@ -122,8 +122,8 @@ public final class LabelFactory extends ComponentFactory {
     /**
      * Create a new label with localised text, and default style.
      *
-     * @param key       the resource bundle key. May be <code>null</code>
-     * @param multiline if <tt>true</tt>, iterprets new lines in the text
+     * @param key       the resource bundle key. May be {@code null}
+     * @param multiline if {@code true}, iterprets new lines in the text
      * @return a new label
      */
     public static Label create(String key, boolean multiline) {
@@ -137,7 +137,7 @@ public final class LabelFactory extends ComponentFactory {
     /**
      * Create a new label with localised text, and specific style.
      *
-     * @param key   the resource bundle key. May be <code>null</code>
+     * @param key   the resource bundle key. May be {@code null}
      * @param style the label style
      * @return a new label
      */
