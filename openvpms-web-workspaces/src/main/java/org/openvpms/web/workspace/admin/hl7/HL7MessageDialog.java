@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.hl7;
 
 import nextapp.echo2.app.Column;
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -122,6 +123,12 @@ public class HL7MessageDialog extends PopupDialog {
             protected String getDateValue(Property property) {
                 Date value = (Date) property.getValue();
                 return (value != null) ? DateFormatter.formatDateTimeAbbrev(value) : null;
+            }
+
+            @Override
+            protected Component createString(Property property) {
+                // display labels with new-lines
+                return super.createLabel(property, true);
             }
         };
         layoutContext.setComponentFactory(factory);
