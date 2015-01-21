@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetype>
@@ -246,6 +246,27 @@
     <data id="RCUSNOT" archetype="security.archetypeAuthority" name="Customer Note Remove"
           description="Authority to Remove Customer Note"
           serviceName="archetypeService" method="remove" archetypeShortName="act.customerAlert"/>
+    <!-- Customer Order Authorities -->
+    <data id="CCUSORD" archetype="security.archetypeAuthority" name="Customer Order Act Create"
+          description="Authority to Create Customer Orders"
+          serviceName="archetypeService" method="create" archetypeShortName="act.customerOrder*"/>
+    <data id="SCUSORD" archetype="security.archetypeAuthority" name="Customer Order Act Save"
+          description="Authority to Save Customer Orders"
+          serviceName="archetypeService" method="save" archetypeShortName="act.customerOrder*"/>
+    <data id="RCUSORD" archetype="security.archetypeAuthority" name="Customer Order Act Remove"
+          description="Authority to Save Customer Orders"
+          serviceName="archetypeService" method="remove" archetypeShortName="act.customerOrder*"/>
+
+    <!-- Customer Return Authorities -->
+    <data id="CCUSRET" archetype="security.archetypeAuthority" name="Customer Return Act Create"
+          description="Authority to Create Customer Returns"
+          serviceName="archetypeService" method="create" archetypeShortName="act.customerReturn*"/>
+    <data id="SCUSRET" archetype="security.archetypeAuthority" name="Customer Return Act Save"
+          description="Authority to Save Customer Returns"
+          serviceName="archetypeService" method="save" archetypeShortName="act.customerReturn*"/>
+    <data id="RCUSRET" archetype="security.archetypeAuthority" name="Customer Return Act Remo"
+          description="Authority to Remove Customer Returns"
+          serviceName="archetypeService" method="remove" archetypeShortName="act.customerReturn*"/>
 
     <!-- Patient Authorities  -->
     <!-- Patient Party Authorities -->
@@ -486,6 +507,18 @@
           description="Authority to Remove Messages"
           serviceName="archetypeService" method="remove" archetypeShortName="act.userMessage"/>
 
+    <!-- HL7 Authorities -->
+    <!-- HL7 Message Authorities -->
+    <data id="CHL7MA" archetype="security.archetypeAuthority" name="HL7 Message Act Create"
+          description="Authority to Create HL7 Message Act"
+          serviceName="archetypeService" method="create" archetypeShortName="act.HL7Message"/>
+    <data id="SHL7MA" archetype="security.archetypeAuthority" name="HL7 Message Act Save"
+          description="Authority to Save HL7 Message Act"
+          serviceName="archetypeService" method="save" archetypeShortName="act.HL7Message"/>
+    <data id="RHL7MA" archetype="security.archetypeAuthority" name="HL7 Message Act Remove"
+          description="Authority to Remove HL7 Message Act"
+          serviceName="archetypeService" method="remove" archetypeShortName="act.HL7Message"/>
+
     <!-- ROLES -->
     <!-- Base Role that contains all the commonly required authorities -->
     <data id="ROLE1" archetype="security.role" name="Base Role">
@@ -554,6 +587,15 @@
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CBANKD"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SBANKD"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SORGALL"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CCUSORD"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SCUSORD"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RCUSORD"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CCUSRET"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SCUSRET"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RCUSRET"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CHL7MA"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SHL7MA"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RHL7MA"/>
     </data>
 
     <data id="ROLE_S" archetype="security.role" name="Stock Control">
