@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -21,7 +21,9 @@ import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.PartyRules;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -52,7 +54,8 @@ public class ReminderCSVExporter implements ReminderExporter {
             "Customer Phone", "Customer SMS", "Customer Email",
             "Patient Identifier", "Patient Name", "Patient Species", "Patient Breed", "Patient Sex", "Patient Colour",
             "Patient Date of Birth", "Reminder Type Identifier", "Reminder Type Name", "Reminder Due Date",
-            "Reminder Count", "Reminder Last Sent Date"};
+            "Reminder Count", "Reminder Last Sent Date", "Patient Weight", "Patient Weight Units",
+            "Patient Weight Date"};
 
     /**
      * The practice rules.
@@ -63,6 +66,11 @@ public class ReminderCSVExporter implements ReminderExporter {
      * The party rules.
      */
     private final PartyRules partyRules;
+
+    /**
+     * The patient rules.
+     */
+    private final PatientRules patientRules;
 
     /**
      * The archetype service.
@@ -91,14 +99,16 @@ public class ReminderCSVExporter implements ReminderExporter {
      *
      * @param practiceRules the practice rules
      * @param partyRules    the party rules
+     * @param patientRules  the patient rules
      * @param service       the archetype service
      * @param lookups       the lookup service
      * @param handlers      the document handlers
      */
-    public ReminderCSVExporter(PracticeRules practiceRules, PartyRules partyRules, IArchetypeService service,
-                               ILookupService lookups, DocumentHandlers handlers) {
+    public ReminderCSVExporter(PracticeRules practiceRules, PartyRules partyRules, PatientRules patientRules,
+                               IArchetypeService service, ILookupService lookups, DocumentHandlers handlers) {
         this.practiceRules = practiceRules;
         this.partyRules = partyRules;
+        this.patientRules = patientRules;
         this.service = service;
         this.lookups = lookups;
         this.handlers = handlers;
@@ -180,10 +190,21 @@ public class ReminderCSVExporter implements ReminderExporter {
         String dueDate = getDate(event.getReminder().getActivityEndTime());
         String reminderCount = reminder.getString("reminderCount");
         String lastSentDate = getDate(reminder.getDate("lastSent"));
+        Act lastWeight = patientRules.getWeightAct(event.getPatient());
+        String weight = null;
+        String weightUnits = null;
+        String weightDate = null;
+        if (lastWeight != null) {
+            IMObjectBean bean = new IMObjectBean(lastWeight, service);
+            weight = bean.getString("weight");
+            weightUnits = bean.getString("units");
+            weightDate = getDate(lastWeight.getActivityStartTime());
+        }
 
         String[] line = {customerId, title, firstName, initials, lastName, companyName, address, suburb, state,
                          postCode, phone, sms, email, patientId, patientName, species, breed, sex, colour, dateOfBirth,
-                         reminderTypeId, reminderTypeName, dueDate, reminderCount, lastSentDate};
+                         reminderTypeId, reminderTypeName, dueDate, reminderCount, lastSentDate, weight, weightUnits,
+                         weightDate};
         writer.writeNext(line);
     }
 
