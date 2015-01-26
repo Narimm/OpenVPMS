@@ -2,7 +2,7 @@ OpenVPMS ${pom.version} (${buildNumber}) Release
 ===============================================================================
 
 For installation instructions see:
-     http://www.openvpms.org/documentation/csh/1.8/topics/installing-openvpms
+     http://www.openvpms.org/documentation/csh/1.8/topics/install
 
 There is comprehensive documentation available at:
      http://www.openvpms.org/documentation/csh/1.8/topics
