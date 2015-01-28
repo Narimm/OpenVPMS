@@ -56,10 +56,10 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.echo.factory.ComponentFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
-import org.openvpms.web.echo.style.UserStyleSheets;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
@@ -759,13 +759,9 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * Initialises the typePadding, typeWidth, and clinicianWidth style properties.
      */
     private void initStyles() {
-        UserStyleSheets styleSheets = ServiceHelper.getBean(UserStyleSheets.class);
-        org.openvpms.web.echo.style.Style style = styleSheets.getStyle();
-        if (style != null) {
-            typePadding = style.getProperty("padding.large", 10);
-            typeWidth = style.getProperty("history.type.width", DEFAULT_WIDTH);
-            clinicianWidth = style.getProperty("history.clinician.width", DEFAULT_WIDTH);
-        }
+        typePadding = StyleSheetHelper.getProperty("padding.large", 10);
+        typeWidth = StyleSheetHelper.getProperty("history.type.width", DEFAULT_WIDTH);
+        clinicianWidth = StyleSheetHelper.getProperty("history.clinician.width", DEFAULT_WIDTH);
         if (typePadding <= 0) {
             typePadding = 10;
         }

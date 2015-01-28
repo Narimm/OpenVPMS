@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -21,15 +21,9 @@ import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Border;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Color;
-import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Extent;
-import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.LayoutData;
-import nextapp.echo2.app.ListBox;
-import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
@@ -37,14 +31,11 @@ import nextapp.echo2.app.layout.GridLayoutData;
 import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableModel;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.macro.Macros;
 import org.openvpms.macro.Variables;
 import org.openvpms.report.DocFormats;
@@ -56,32 +47,25 @@ import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.doc.Downloader;
 import org.openvpms.web.component.im.doc.DownloaderListener;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.list.AbstractListCellRenderer;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ErrorListener;
-import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
-import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
-import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.factory.ListBoxFactory;
 import org.openvpms.web.echo.factory.RowFactory;
-import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.factory.TableFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.popup.DropDown;
 import org.openvpms.web.echo.table.AbstractTableCellRenderer;
 import org.openvpms.web.echo.table.DefaultTableCellRenderer;
 import org.openvpms.web.echo.text.TextArea;
-import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.echo.util.DoubleClickMonitor;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -90,6 +74,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static org.openvpms.web.echo.style.Styles.LARGE_INSET;
 
 
 /**
@@ -100,29 +86,9 @@ import java.util.List;
 public class MailEditor extends AbstractModifiable {
 
     /**
-     * The from-address selector, if multiple addresses are provided.
+     * The from, to, and subject.
      */
-    private SelectField fromAddressSelector;
-
-    /**
-     * The 'from' addresses.
-     */
-    private final List<Contact> fromAddresses;
-
-    /**
-     * The 'to' addresses.
-     */
-    private final List<Contact> toAddresses;
-
-    /**
-     * The 'from' address formatter.
-     */
-    private final AddressFormatter fromFormatter;
-
-    /**
-     * The 'to' address formatter.
-     */
-    private final AddressFormatter toFormatter;
+    private final MailHeader header;
 
     /**
      * The context.
@@ -133,41 +99,6 @@ public class MailEditor extends AbstractModifiable {
      * The help context.
      */
     private final HelpContext help;
-
-    /**
-     * Variables for macro expansion. May be {@code null}
-     */
-    private final Variables variables;
-
-    /**
-     * The selected 'from' contact.
-     */
-    private Contact selectedFrom;
-
-    /**
-     * The selected 'to' contact.
-     */
-    private Contact selectedTo;
-
-    /**
-     * The from address.
-     */
-    private SimpleProperty from;
-
-    /**
-     * The 'to' listener.
-     */
-    private ModifiableListener toListener;
-
-    /**
-     * The 'to' address.
-     */
-    private SimpleProperty to;
-
-    /**
-     * The subject.
-     */
-    private SimpleProperty subject;
 
     /**
      * The message body property. Used to support macro expansion.
@@ -200,14 +131,10 @@ public class MailEditor extends AbstractModifiable {
     private FocusGroup focus;
 
     /**
-     * The split pane holding the grid and attachments.
+     * The split pane holding the header and attachments.
      */
-    private SplitPane gridAttachmentsPane;
+    private SplitPane headerAttachmentsPane;
 
-    /**
-     * The grid containing the from, to, and subject.
-     */
-    private Grid grid;
 
     /**
      * The attachment table model.
@@ -220,23 +147,12 @@ public class MailEditor extends AbstractModifiable {
     private SplitPane component;
 
     /**
-     * The column holding the grid, when no attachments are being displayed.
-     */
-    private Column gridColumn;
-
-    /**
      * Monitors double clicks on attachments.
      */
     private DoubleClickMonitor monitor = new DoubleClickMonitor();
 
     /**
-     * Default extent - 100%.
-     */
-    private static final Extent EXTENT = new Extent(100, Extent.PERCENT);
-
-
-    /**
-     * Constructs a {@code MailEditor}.
+     * Constructs a {@link MailEditor}.
      * <p/>
      * If no 'to' addresses are supplied the address will be editable, otherwise it will be read-only.
      * If there are multiple addresses, they will be displayed in a dropdown, and the preferred contact selected
@@ -247,39 +163,16 @@ public class MailEditor extends AbstractModifiable {
      * @param help        the help context
      */
     public MailEditor(MailContext mailContext, Contact preferredTo, Context context, HelpContext help) {
-        this.fromAddresses = mailContext.getFromAddresses();
-        this.toAddresses = mailContext.getToAddresses();
-        this.fromFormatter = mailContext.getFromAddressFormatter();
-        this.toFormatter = mailContext.getToAddressFormatter();
+        header = new MailHeader(mailContext, preferredTo);
         this.context = context;
         this.help = help;
-        this.variables = mailContext.getVariables();
+        Variables variables = mailContext.getVariables();
         Macros macros = ServiceHelper.getMacros();
-        from = createProperty("from", "mail.from", true, null);
-        to = createProperty("to", "mail.to", true, null);
-        toListener = new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                toAddressChanged();
-            }
-        };
-        to.addModifiableListener(toListener);
 
-        if (preferredTo != null) {
-            setTo(preferredTo);
-        }
-
-        subject = createProperty("subject", "mail.subject", true, macros);
-        ModifiableListener listener = new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onModified();
-            }
-        };
-        subject.addModifiableListener(listener);
-
-        message = createProperty("message", "mail.message", false, macros);
+        message = MailHelper.createProperty("message", "mail.message", false, macros, variables);
         message.setRequired(false);
         message.setMaxLength(-1);     // no maximum length
-        message.addModifiableListener(listener);
+        // message.addModifiableListener(listener); TODO
     }
 
     /**
@@ -288,9 +181,7 @@ public class MailEditor extends AbstractModifiable {
      * @param from the from address. May be {@code null}
      */
     public void setFrom(Contact from) {
-        this.selectedFrom = from;
-        String value = (from != null) ? fromFormatter.format(from) : null;
-        this.from.setValue(value);
+        header.setFrom(from);
     }
 
     /**
@@ -299,7 +190,7 @@ public class MailEditor extends AbstractModifiable {
      * @return the from address
      */
     public String getFrom() {
-        return fromFormatter.getAddress(selectedFrom);
+        return header.getFrom();
     }
 
     /**
@@ -308,14 +199,7 @@ public class MailEditor extends AbstractModifiable {
      * @param toAddress the to address. May be {@code null}
      */
     public void setTo(Contact toAddress) {
-        selectedTo = toAddress;
-        to.removeModifiableListener(toListener);
-        try {
-            String value = toAddress != null ? toFormatter.format(toAddress) : null;
-            to.setValue(value);
-        } finally {
-            to.addModifiableListener(toListener);
-        }
+        header.setTo(toAddress);
     }
 
     /**
@@ -324,11 +208,7 @@ public class MailEditor extends AbstractModifiable {
      * @return the from name
      */
     public String getFromName() {
-        String name = null;
-        if (selectedFrom != null && selectedFrom.getParty() != null) {
-            name = selectedFrom.getParty().getName();
-        }
-        return name;
+        return header.getFromName();
     }
 
     /**
@@ -337,7 +217,25 @@ public class MailEditor extends AbstractModifiable {
      * @return the to address. May be {@code null}
      */
     public String getTo() {
-        return toFormatter.getAddress(selectedTo);
+        return header.getTo();
+    }
+
+    /**
+     * Returns the CC address.
+     *
+     * @return the CC address. May be {@code null}
+     */
+    public String getCc() {
+        return header.getCc();
+    }
+
+    /**
+     * Returns the BCC address.
+     *
+     * @return the BCC address. May be {@code null}
+     */
+    public String getBcc() {
+        return header.getBcc();
     }
 
     /**
@@ -346,7 +244,7 @@ public class MailEditor extends AbstractModifiable {
      * @param subject the subject
      */
     public void setSubject(String subject) {
-        this.subject.setValue(subject);
+        header.setSubject(subject);
     }
 
     /**
@@ -355,7 +253,7 @@ public class MailEditor extends AbstractModifiable {
      * @return the message subject
      */
     public String getSubject() {
-        return (String) subject.getValue();
+        return header.getSubject();
     }
 
     /**
@@ -539,21 +437,7 @@ public class MailEditor extends AbstractModifiable {
      * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     protected boolean doValidation(Validator validator) {
-        return validator.validate(from) && validator.validate(to) && validator.validate(subject)
-               && validator.validate(message);
-    }
-
-    /**
-     * Creates an address selector for a list of addresses.
-     *
-     * @param addresses the addresses
-     * @return an address editor
-     */
-    protected SelectField createAddressSelector(List<Contact> addresses) {
-        SelectField result = SelectFieldFactory.create(addresses);
-        result.setCellRenderer(new EmailCellRenderer(fromFormatter));
-        result.setWidth(EXTENT);
-        return result;
+        return header.validate(validator) && validator.validate(message);
     }
 
     /**
@@ -577,35 +461,6 @@ public class MailEditor extends AbstractModifiable {
     }
 
     /**
-     * Invoked when the 'to' address changes.
-     */
-    private void toAddressChanged() {
-        String text = (String) to.getValue();
-        Contact result = null;
-        if (!StringUtils.isEmpty(text)) {
-            int start = text.indexOf('<');
-            int end = text.indexOf('>');
-            if (start != -1 && end != -1) {
-                text = text.substring(start + 1, end);
-            }
-            for (Contact contact : toAddresses) {
-                String email = toFormatter.getAddress(contact);
-                if (StringUtils.equals(text, email)) {
-                    result = contact;
-                    break;
-                }
-            }
-            if (result == null) {
-                //  contact not in the list, so create a temporary one to hold the email address
-                result = (Contact) ServiceHelper.getArchetypeService().create(ContactArchetypes.EMAIL);
-                IMObjectBean bean = new IMObjectBean(result);
-                bean.setValue("emailAddress", text);
-            }
-        }
-        selectedTo = result;
-    }
-
-    /**
      * Creates the table to display attachments.
      */
     private void createAttachments() {
@@ -625,7 +480,7 @@ public class MailEditor extends AbstractModifiable {
             }
         });
         attachments.setHeaderVisible(true);
-        component.remove(gridColumn);
+        component.remove(header.getComponent());
         KeyStrokeListener listener = new KeyStrokeListener();
         listener.setCancelMode(true);
         listener.addKeyCombination(KeyStrokeListener.VK_DELETE);
@@ -638,10 +493,10 @@ public class MailEditor extends AbstractModifiable {
             }
         });
 
-        gridAttachmentsPane = SplitPaneFactory.create(SplitPane.ORIENTATION_HORIZONTAL, "MailEditor.grid",
-                                                      ColumnFactory.create("Inset.Large", grid),
-                                                      ColumnFactory.create("Inset.Large", attachments, listener));
-        component.add(gridAttachmentsPane, 0);
+        headerAttachmentsPane = SplitPaneFactory.create(SplitPane.ORIENTATION_HORIZONTAL, "MailEditor.grid",
+                                                        header.getComponent(),
+                                                        ColumnFactory.create(LARGE_INSET, attachments, listener));
+        component.add(headerAttachmentsPane, 0);
     }
 
     /**
@@ -669,9 +524,8 @@ public class MailEditor extends AbstractModifiable {
         documents.remove(index);
         model.deleteRow(index);
         if (documents.isEmpty()) {
-            component.remove(gridAttachmentsPane);
-            gridColumn.add(grid);
-            component.add(gridColumn, 0);
+            component.remove(headerAttachmentsPane);
+            component.add(header.getComponent(), 0);
             attachments = null;
         } else {
             updateAttachments();
@@ -686,115 +540,19 @@ public class MailEditor extends AbstractModifiable {
     private SplitPane createComponent() {
         focus = new FocusGroup("MailEditor");
 
-        Component fromAddress;
-        if (fromAddresses.size() <= 1) {
-            TextField fromText = BoundTextComponentFactory.create(from, 40);
-            fromText.setWidth(EXTENT);
-            fromAddress = fromText;
-            fromAddress.setEnabled(false);
-            if (fromAddresses.size() == 1) {
-                setFrom(fromAddresses.get(0));
-            }
-        } else {
-            fromAddressSelector = createAddressSelector(fromAddresses);
-            setFrom((Contact) fromAddressSelector.getSelectedItem());
-            fromAddressSelector.addActionListener(new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    setFrom((Contact) fromAddressSelector.getSelectedItem());
-                    onModified();
-                }
-            });
-            fromAddress = fromAddressSelector;
-            focus.add(fromAddressSelector);
-        }
+        int inset = StyleSheetHelper.getProperty("padding.large", 1);
 
-        TextField toText = BoundTextComponentFactory.create(to, 40);
-        toText.setWidth(EXTENT);
-        Component toAddress = toText;
-        if (!toAddresses.isEmpty()) {
-            final ListBox toAddressSelector = ListBoxFactory.create(toAddresses);
-            if (toAddresses.size() > 1) {
-                // don't default the selection as per OVPMS-1295
-                toAddressSelector.getSelectionModel().clearSelection();
-            } else {
-                setTo(toAddresses.get(0));
-            }
-
-            toAddressSelector.setWidth(EXTENT);
-            toAddressSelector.setCellRenderer(new EmailCellRenderer(toFormatter));
-
-            final DropDown toAddressDropDown = new DropDown();
-            toAddressDropDown.setWidth(EXTENT);
-            toAddress = toAddressDropDown;
-            toAddressDropDown.setTarget(toText);
-            toAddressDropDown.setPopUpAlwaysOnTop(true);
-            toAddressDropDown.setFocusOnExpand(true);
-            toAddressDropDown.setPopUp(toAddressSelector);
-            toAddressDropDown.setFocusComponent(toText);
-            toAddressSelector.addActionListener(new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    setTo((Contact) toAddressSelector.getSelectedValue());
-                    toAddressDropDown.setExpanded(false);
-                    onModified();
-                }
-            });
-        }
-        focus.add(toText);
-
-        TextField subjectText = BoundTextComponentFactory.create(subject, 40);
-        subjectText.setWidth(EXTENT);
+        GridLayoutData rightInset = new GridLayoutData();
+        rightInset.setInsets(new Insets(0, 0, inset, 0));
 
         TextArea messageArea = createMessageEditor(message);
 
-        focus.add(subjectText);
+        focus.add(header.getFocusGroup());
         focus.add(messageArea);
-        focus.setDefault(subjectText);
+        focus.setDefault(header.getFocusGroup().getDefaultFocus());
 
-        GridLayoutData align = new GridLayoutData();
-        align.setAlignment(Alignment.ALIGN_RIGHT);
-        align.setInsets(new Insets(0, 0, 10, 0));
-
-        grid = GridFactory.create(2, createLabel(from, align), fromAddress,
-                                  createLabel(to, align), toAddress,
-                                  createLabel(subject, align), subjectText);
-        grid.setColumnWidth(0, new Extent(10, Extent.PERCENT));
-        grid.setWidth(EXTENT);
-
-        gridColumn = ColumnFactory.create("Inset.Large", grid);
-        return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, "MailEditor", gridColumn,
-                                       ColumnFactory.create("Inset.Large", messageArea));
-    }
-
-    /**
-     * Helper to create a mandatory property.
-     *
-     * @param name   the property name
-     * @param key    the message resource bundle key
-     * @param trim   if {@code true} trim the string of leading and trailing spaces, new lines
-     * @param macros if non-null enable macro expansion
-     * @return a new property
-     */
-    private SimpleProperty createProperty(String name, String key, boolean trim, Macros macros) {
-        SimpleProperty result = new SimpleProperty(name, String.class);
-        result.setDisplayName(Messages.get(key));
-        result.setRequired(true);
-        StringPropertyTransformer transformer = new StringPropertyTransformer(result, trim, macros, null, variables);
-        result.setTransformer(transformer);
-        return result;
-    }
-
-    /**
-     * Helper to create a label for a property.
-     *
-     * @param property the property
-     * @param layout   the layout
-     * @return a new label
-     */
-    private Label createLabel(Property property, LayoutData layout) {
-        Label label = LabelFactory.create();
-        label.setText(property.getDisplayName());
-        label.setLayoutData(layout);
-        return label;
+        return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, "MailEditor", header.getComponent(),
+                                       ColumnFactory.create(LARGE_INSET, messageArea));
     }
 
     /**
@@ -875,61 +633,6 @@ public class MailEditor extends AbstractModifiable {
     private String getSize(long size, long divisor, String key) {
         BigDecimal result = new BigDecimal(size).divide(BigDecimal.valueOf(divisor), BigDecimal.ROUND_CEILING);
         return Messages.format(key, result);
-    }
-
-
-    private static class EmailCellRenderer extends AbstractListCellRenderer<Contact> {
-
-        /**
-         * The address formatter.
-         */
-        private final AddressFormatter formatter;
-
-        /**
-         * Constructs an {@code EmailCellRenderer}.
-         *
-         * @param formatter the address formatter
-         */
-        private EmailCellRenderer(AddressFormatter formatter) {
-            super(Contact.class);
-            this.formatter = formatter;
-        }
-
-        /**
-         * Renders an object.
-         *
-         * @param list   the list component
-         * @param object the object to render. May be {@code null}
-         * @param index  the object index
-         * @return the rendered object
-         */
-        protected Object getComponent(Component list, Contact object, int index) {
-            return (object != null) ? formatter.format(object) : null;
-        }
-
-        /**
-         * Determines if an object represents 'All'.
-         *
-         * @param list   the list component
-         * @param object the object. May be {@code null}
-         * @param index  the object index
-         * @return {@code false}
-         */
-        protected boolean isAll(Component list, Contact object, int index) {
-            return false;
-        }
-
-        /**
-         * Determines if an object represents 'None'.
-         *
-         * @param list   the list component
-         * @param object the object. May be {@code null}
-         * @param index  the object index
-         * @return {@code false}
-         */
-        protected boolean isNone(Component list, Contact object, int index) {
-            return false;
-        }
     }
 
     /**

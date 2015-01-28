@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -55,6 +56,16 @@ public abstract class AbstractMailer implements Mailer {
     private String to;
 
     /**
+     * The Cc address.
+     */
+    private String cc;
+
+    /**
+     * The Bcc address.
+     */
+    private String bcc;
+
+    /**
      * The email subject.
      */
     private String subject;
@@ -81,7 +92,7 @@ public abstract class AbstractMailer implements Mailer {
 
 
     /**
-     * Constructs an <tt>AbstractMailer</tt>.
+     * Constructs an {@link AbstractMailer}.
      *
      * @param sender   the mail sender
      * @param handlers the document handlers
@@ -146,6 +157,46 @@ public abstract class AbstractMailer implements Mailer {
     }
 
     /**
+     * Sets the CC address.
+     *
+     * @param cc the CC address. May be {@code null}
+     */
+    @Override
+    public void setCc(String cc) {
+        this.cc = cc;
+    }
+
+    /**
+     * Returns the CC address.
+     *
+     * @return the CC address. May be {@code null}
+     */
+    @Override
+    public String getCc() {
+        return cc;
+    }
+
+    /**
+     * Sets the BCC address.
+     *
+     * @param bcc the BCC address. May be {@code null}
+     */
+    @Override
+    public void setBcc(String bcc) {
+        this.bcc = bcc;
+    }
+
+    /**
+     * Returns the BCC address.
+     *
+     * @return the BCC address. May be {@code null}
+     */
+    @Override
+    public String getBcc() {
+        return bcc;
+    }
+
+    /**
      * Sets the subject.
      *
      * @param subject the subject
@@ -196,20 +247,10 @@ public abstract class AbstractMailer implements Mailer {
      * @throws OpenVPMSException for any error
      */
     public void send() {
-        send(to);
-    }
-
-    /**
-     * Sends the object to the specified email address.
-     *
-     * @param address the address to send to
-     * @throws OpenVPMSException for any error
-     */
-    public void send(String address) {
         MimeMessage message = sender.createMimeMessage();
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            populateMessage(helper, address);
+            populateMessage(helper);
             sender.send(message);
         } catch (OpenVPMSException exception) {
             throw exception;
@@ -221,15 +262,25 @@ public abstract class AbstractMailer implements Mailer {
     /**
      * Populates the mail message.
      *
-     * @param helper  the message helper
-     * @param address the to address
+     * @param helper the message helper
      * @throws MessagingException           for any messaging error
      * @throws UnsupportedEncodingException if the character encoding is not supported
      */
-    protected void populateMessage(MimeMessageHelper helper, String address)
+    protected void populateMessage(MimeMessageHelper helper)
             throws MessagingException, UnsupportedEncodingException {
         helper.setFrom(getFrom(), getFromName());
-        helper.setTo(address);
+        String to = getTo();
+        if (!StringUtils.isEmpty(to)) {
+            helper.setTo(to);
+        }
+        String cc = getCc();
+        if (!StringUtils.isEmpty(cc)) {
+            helper.setCc(cc);
+        }
+        String bcc = getBcc();
+        if (!StringUtils.isEmpty(bcc)) {
+            helper.setBcc(bcc);
+        }
         helper.setSubject(getSubject());
         if (body != null) {
             helper.setText(body);
