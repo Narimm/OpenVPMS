@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -301,6 +301,8 @@ public class MailDialog extends PopupDialog {
                 mailer.setFrom(editor.getFrom());
                 mailer.setFromName(editor.getFromName());
                 mailer.setTo(editor.getTo());
+                mailer.setCc(editor.getCc());
+                mailer.setBcc(editor.getBcc());
                 mailer.setSubject(editor.getSubject());
                 mailer.setBody(editor.getMessage());
                 for (IMObjectReference attachment : editor.getAttachments()) {
