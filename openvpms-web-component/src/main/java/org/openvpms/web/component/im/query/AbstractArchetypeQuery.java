@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -404,6 +404,7 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
                     int index = shortNameSelector.getSelectedIndex();
                     String shortName = model.getShortName(index);
                     setShortName(shortName);
+                    onShortNameChanged();
                 }
             });
             shortNameSelector.setCellRenderer(new ShortNameListCellRenderer());
@@ -484,6 +485,14 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
      */
     protected void onSearchFieldChanged() {
         onQuery();
+    }
+
+    /**
+     * Invoked when the short name is selected.
+     * <p/>
+     * This implementation is a no-op.
+     */
+    protected void onShortNameChanged() {
     }
 
     /**

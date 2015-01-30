@@ -27,10 +27,10 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.doc.DocumentGenerator;
 import org.openvpms.web.component.im.doc.DocumentUploadListener;
 import org.openvpms.web.component.im.doc.UploadDialog;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -74,9 +74,9 @@ public class MailDialog extends PopupDialog {
     private final Browser<Act> documents;
 
     /**
-     * The context.
+     * The layout context.
      */
-    private final Context context;
+    private final LayoutContext context;
 
     /**
      * Don't send button identifier.
@@ -115,26 +115,24 @@ public class MailDialog extends PopupDialog {
 
 
     /**
-     * Constructs a {@code MailDialog}.
+     * Constructs a {@link MailDialog}.
      *
      * @param mailContext the mail context
-     * @param context     the context
-     * @param help        the help context
+     * @param context     the layout context
      */
-    public MailDialog(MailContext mailContext, Context context, HelpContext help) {
-        this(mailContext, (Contact) null, context, help);
+    public MailDialog(MailContext mailContext, LayoutContext context) {
+        this(mailContext, (Contact) null, context);
     }
 
     /**
-     * Constructs a {@code MailDialog}.
+     * Constructs a {@link MailDialog}.
      *
      * @param mailContext the mail context
      * @param preferred   the preferred contact. May be {@code null}
-     * @param context     the context
-     * @param help        the help context
+     * @param context     the layout context
      */
-    public MailDialog(MailContext mailContext, Contact preferred, Context context, HelpContext help) {
-        this(mailContext, preferred, mailContext.createAttachmentBrowser(), context, help);
+    public MailDialog(MailContext mailContext, Contact preferred, LayoutContext context) {
+        this(mailContext, preferred, mailContext.createAttachmentBrowser(), context);
     }
 
     /**
@@ -142,45 +140,42 @@ public class MailDialog extends PopupDialog {
      *
      * @param mailContext the mail context
      * @param documents   the document browser. May be {@code null}
-     * @param context     the context
-     * @param help        the help context
+     * @param context     the layout context
      */
-    public MailDialog(MailContext mailContext, Browser<Act> documents, Context context, HelpContext help) {
-        this(mailContext, null, documents, context, help);
+    public MailDialog(MailContext mailContext, Browser<Act> documents, LayoutContext context) {
+        this(mailContext, null, documents, context);
     }
 
     /**
-     * Constructs a {@code MailDialog}.
+     * Constructs a {@link MailDialog}.
      *
      * @param mailContext the mail context
      * @param preferred   the preferred contact. May be {@code null}
      * @param documents   the document browser. May be {@code null}
-     * @param context     context
-     * @param help        the help context
+     * @param context     the layout context
      */
-    public MailDialog(MailContext mailContext, Contact preferred, Browser<Act> documents, Context context,
-                      HelpContext help) {
-        this(Messages.get("mail.write"), mailContext, preferred, documents, context, help);
+    public MailDialog(MailContext mailContext, Contact preferred, Browser<Act> documents, LayoutContext context) {
+        this(Messages.get("mail.write"), mailContext, preferred, documents, context);
     }
 
     /**
-     * Constructs a {@code MailDialog}.
+     * Constructs a {@link MailDialog}.
      *
      * @param title       the window title
      * @param mailContext the mail context
      * @param preferred   the preferred contact to display. May be {@code null}
      * @param documents   the document browser. May be {@code null}
-     * @param context     the context
-     * @param help        the help context
+     * @param context     the layout context
      */
     public MailDialog(String title, MailContext mailContext, Contact preferred, Browser<Act> documents,
-                      Context context, HelpContext help) {
-        super(title, "MailDialog", documents != null ? SEND_ATTACH_ALL_CANCEL : SEND_ATTACH_FILE_CANCEL, help);
+                      LayoutContext context) {
+        super(title, "MailDialog", documents != null ? SEND_ATTACH_ALL_CANCEL : SEND_ATTACH_FILE_CANCEL,
+              context.getHelpContext());
         setModal(true);
         setDefaultCloseAction(CANCEL_ID);
         this.documents = documents;
         this.context = context;
-        editor = new MailEditor(mailContext, preferred, context, help);
+        editor = new MailEditor(mailContext, preferred, context);
 
         getLayout().add(editor.getComponent());
         getFocusGroup().add(editor.getFocusGroup());
@@ -306,7 +301,7 @@ public class MailDialog extends PopupDialog {
                 mailer.setSubject(editor.getSubject());
                 mailer.setBody(editor.getMessage());
                 for (IMObjectReference attachment : editor.getAttachments()) {
-                    Document document = (Document) IMObjectHelper.getObject(attachment, context);
+                    Document document = (Document) IMObjectHelper.getObject(attachment, context.getContext());
                     if (document != null) {
                         mailer.addAttachment(document);
                     }
@@ -328,7 +323,7 @@ public class MailDialog extends PopupDialog {
      * @param act the document act
      */
     private void attachDocument(DocumentAct act) {
-        Document document = (Document) IMObjectHelper.getObject(act.getDocument(), context);
+        Document document = (Document) IMObjectHelper.getObject(act.getDocument(), context.getContext());
         if (document != null) {
             editor.addAttachment(document);
         } else {
@@ -338,7 +333,7 @@ public class MailDialog extends PopupDialog {
                     editor.addAttachment(document);
                 }
             };
-            DocumentGenerator generator = new DocumentGenerator(act, context, help, listener);
+            DocumentGenerator generator = new DocumentGenerator(act, context.getContext(), help, listener);
             generator.generate();
         }
     }
@@ -373,7 +368,7 @@ public class MailDialog extends PopupDialog {
      * Displays the macros.
      */
     protected void onMacro() {
-        MacroDialog dialog = new MacroDialog(context, getHelpContext());
+        MacroDialog dialog = new MacroDialog(context.getContext(), getHelpContext());
         dialog.show();
     }
 

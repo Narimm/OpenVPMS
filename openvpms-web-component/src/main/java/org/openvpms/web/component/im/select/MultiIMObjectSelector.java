@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.select;
@@ -42,6 +42,7 @@ import org.openvpms.web.echo.focus.FocusCommand;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.text.TextField;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -55,7 +56,7 @@ public class MultiIMObjectSelector<T extends IMObject> {
     /**
      * The selected objects.
      */
-    private final SelectedObjects<T> objects = new SelectedObjects<T>();
+    private final SelectedObjects<T> objects;
 
     /**
      * The archetype short names to query on.
@@ -116,25 +117,28 @@ public class MultiIMObjectSelector<T extends IMObject> {
 
 
     /**
-     * Constructs a {@code MultiIMObjectSelector}.
+     * Constructs a {@link MultiIMObjectSelector}.
      *
      * @param type       display name for the types of objects this may select
      * @param context    the layout context
      * @param shortNames the archetype short names to query
      */
     public MultiIMObjectSelector(String type, LayoutContext context, String... shortNames) {
-        this(type, false, context, shortNames);
+        this(type, new SelectedObjects<T>(), false, context, shortNames);
     }
 
     /**
-     * Constructs a {@code MultiIMObjectSelector}.
+     * Constructs a {@link MultiIMObjectSelector}.
      *
      * @param type        display name for the types of objects this may select
+     * @param objects     the selected objects
      * @param allowCreate determines if objects may be created
      * @param context     the layout context
      * @param shortNames  the archetype short names to query
      */
-    public MultiIMObjectSelector(String type, boolean allowCreate, LayoutContext context, String... shortNames) {
+    public MultiIMObjectSelector(String type, SelectedObjects<T> objects, boolean allowCreate, LayoutContext context,
+                                 String... shortNames) {
+        this.objects = objects;
         this.type = type;
         this.context = context;
         this.shortNames = shortNames;
@@ -156,6 +160,17 @@ public class MultiIMObjectSelector<T extends IMObject> {
                 onTextAction();
             }
         });
+    }
+
+    /**
+     * Sets the current object.
+     *
+     * @param object the object
+     */
+    public void setObject(T object) {
+        List<T> objects = new ArrayList<T>();
+        objects.add(object);
+        setObjects(objects);
     }
 
     /**
@@ -274,6 +289,10 @@ public class MultiIMObjectSelector<T extends IMObject> {
     protected void refresh() {
         field.getDocument().removeDocumentListener(textListener);
         field.setText(objects.getText());
+        String text = field.getText();
+        if (text != null) {
+            field.setCursorPosition(field.getText().length());
+        }
         field.getDocument().addDocumentListener(textListener);
 
         prevText = field.getText();
@@ -311,8 +330,8 @@ public class MultiIMObjectSelector<T extends IMObject> {
         }
         try {
             final FocusCommand focus = new FocusCommand();
-            final Browser<T> browser = BrowserFactory.create(query, context);
-            final BrowserDialog<T> popup = new BrowserDialog<T>(type, browser, allowCreate, context.getHelpContext());
+            final Browser<T> browser = createBrowser(query, context);
+            final BrowserDialog<T> popup = createBrowserDialog(browser, context);
 
             popup.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
@@ -376,21 +395,83 @@ public class MultiIMObjectSelector<T extends IMObject> {
     /**
      * Creates a new browser.
      *
-     * @param query the query
-     * @return a return a new browser
+     * @param query   the query
+     * @param context the layout context
+     * @return a a new browser
      */
-    protected Browser<IMObject> createBrowser(Query<IMObject> query) {
+    protected Browser<T> createBrowser(Query<T> query, LayoutContext context) {
         return BrowserFactory.create(query, context);
+    }
+
+    /**
+     * Creates a browser dialog.
+     *
+     * @param browser the browser
+     * @param context the layout context
+     * @return a new browser dialog
+     */
+    protected BrowserDialog<T> createBrowserDialog(Browser<T> browser, LayoutContext context) {
+        return new BrowserDialog<T>(type, browser, allowCreate, context.getHelpContext());
     }
 
     /**
      * Determines if a selection dialog has been popped up.
      *
-     * @param select if {@code true} denotes that a selection dialog has
-     *               been popped up
+     * @param select if {@code true} denotes that a selection dialog has been popped up
      */
     protected void setInSelect(boolean select) {
         this.inSelect = select;
+    }
+
+    /**
+     * Queries the supplied text.
+     * <p/>
+     * If there is a single match, the selected object is updated at the specified index.
+     * If there are no matches, or multiple matches, then a browser is displayed.
+     *
+     * @param text  the text to query
+     * @param index the index to store the selection
+     * @return {@code true} if querying is complete, {@code false} if a browser was displayed
+     */
+    protected boolean query(String text, int index) {
+        boolean result = true;
+        try {
+            Query<T> query = createQuery(text);
+            ResultSet<T> set = query.query(null);
+            if (set != null) {
+                T selected = null;
+                if (set.hasNext()) {
+                    IPage<T> page = set.next();
+                    List<T> rows = page.getResults();
+                    if (rows.size() == 1) {
+                        // exact match
+                        selected = rows.get(0);
+                    }
+                }
+                if (selected != null) {
+                    setObject(index, selected);
+                    notifySelected(selected);
+                } else {
+                    onSelect(query, true, index);
+                    result = false;
+                }
+            }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+            listener.selected(null);
+        }
+        return result;
+    }
+
+    /**
+     * Sets the object at the specified index and refreshes the field.
+     *
+     * @param index  the index
+     * @param object the object
+     */
+    protected void setObject(int index, T object) {
+        objects.setObject(index, object);
+        refresh();
     }
 
     /**
@@ -429,46 +510,6 @@ public class MultiIMObjectSelector<T extends IMObject> {
     }
 
     /**
-     * Queries the supplied text.
-     * <p/>
-     * If there is a single match, the selected object is updated at the specified index.
-     * If there are no matches, or multiple matches, then a browser is displayed.
-     *
-     * @param text  the text to query
-     * @param index the index to store the selection
-     * @return {@code true} if querying is complete, {@code false} if a browser was displayed
-     */
-    private boolean query(String text, int index) {
-        boolean result = true;
-        try {
-            Query<T> query = createQuery(text);
-            ResultSet<T> set = query.query(null);
-            if (set != null) {
-                T selected = null;
-                if (set.hasNext()) {
-                    IPage<T> page = set.next();
-                    List<T> rows = page.getResults();
-                    if (rows.size() == 1) {
-                        // exact match
-                        selected = rows.get(0);
-                    }
-                }
-                if (selected != null) {
-                    setObject(index, selected);
-                    notifySelected(selected);
-                } else {
-                    onSelect(query, true, index);
-                    result = false;
-                }
-            }
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-            listener.selected(null);
-        }
-        return result;
-    }
-
-    /**
      * Invoked by the action listener associated with the text field.
      * <p/>
      * This is provided to handle Enter being pressed in the field to display a search dialog.
@@ -497,17 +538,6 @@ public class MultiIMObjectSelector<T extends IMObject> {
         if (listener != null) {
             listener.selected(object);
         }
-    }
-
-    /**
-     * Sets the object at the specified index and refreshes the field.
-     *
-     * @param index  the index
-     * @param object the object
-     */
-    private void setObject(int index, T object) {
-        objects.setObject(index, object);
-        refresh();
     }
 
 }

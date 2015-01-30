@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -76,7 +76,8 @@ public interface MailContext {
     /**
      * Returns a formatter to format 'to' addresses.
      *
+     * @param contacts the contacts
      * @return the 'to' address formatter
      */
-    AddressFormatter getToAddressFormatter();
+    AddressFormatter getToAddressFormatter(List<Contact> contacts);
 }

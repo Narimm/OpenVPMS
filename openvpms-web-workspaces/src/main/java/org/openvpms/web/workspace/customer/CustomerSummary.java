@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -35,6 +35,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.contact.ContactHelper;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.sms.SMSDialog;
 import org.openvpms.web.component.im.sms.SMSHelper;
@@ -213,9 +214,9 @@ public class CustomerSummary extends PartySummary {
         Button mail = ButtonFactory.create(null, "hyperlink", new ActionListener() {
             public void onAction(ActionEvent event) {
                 Context context = getContext();
-                HelpContext mail = getHelpContext().topic("customer/email");
-                MailContext mailContext = new CustomerMailContext(context, mail);
-                MailDialog dialog = new MailDialog(mailContext, email, context, mail);
+                HelpContext help = getHelpContext().topic("customer/email");
+                MailContext mailContext = new CustomerMailContext(context, help);
+                MailDialog dialog = new MailDialog(mailContext, email, new DefaultLayoutContext(context, help));
                 dialog.show();
             }
         });

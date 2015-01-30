@@ -47,6 +47,7 @@ import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.doc.Downloader;
 import org.openvpms.web.component.im.doc.DownloaderListener;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -160,12 +161,11 @@ public class MailEditor extends AbstractModifiable {
      * @param mailContext the mail context
      * @param preferredTo the preferred 'to' address. May be {@code null}
      * @param context     the context
-     * @param help        the help context
      */
-    public MailEditor(MailContext mailContext, Contact preferredTo, Context context, HelpContext help) {
-        header = new MailHeader(mailContext, preferredTo);
-        this.context = context;
-        this.help = help;
+    public MailEditor(MailContext mailContext, Contact preferredTo, LayoutContext context) {
+        header = new MailHeader(mailContext, preferredTo, context);
+        this.context = context.getContext();
+        this.help = context.getHelpContext();
         Variables variables = mailContext.getVariables();
         Macros macros = ServiceHelper.getMacros();
 
@@ -212,29 +212,29 @@ public class MailEditor extends AbstractModifiable {
     }
 
     /**
-     * Returns the to address.
+     * Returns the to addresses.
      *
-     * @return the to address. May be {@code null}
+     * @return the to addresses. May be {@code null}
      */
-    public String getTo() {
+    public String[] getTo() {
         return header.getTo();
     }
 
     /**
-     * Returns the CC address.
+     * Returns the Cc addresses.
      *
-     * @return the CC address. May be {@code null}
+     * @return the Cc addresses. May be {@code null}
      */
-    public String getCc() {
+    public String[] getCc() {
         return header.getCc();
     }
 
     /**
-     * Returns the BCC address.
+     * Returns the Bcc addresses.
      *
-     * @return the BCC address. May be {@code null}
+     * @return the Bcc addresses. May be {@code null}
      */
-    public String getBcc() {
+    public String[] getBcc() {
         return header.getBcc();
     }
 
