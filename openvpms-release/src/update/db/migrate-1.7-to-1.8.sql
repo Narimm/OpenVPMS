@@ -3007,3 +3007,61 @@ INSERT INTO roles_authorities (security_role_id, authority_id)
    WHERE x.security_role_id = r.security_role_id AND x.authority_id = g.granted_authority_id);
 
 DROP TABLE new_authorities;
+
+
+# Migration for OVPMS-1555 Add support for multiple To, CC, and BCC addresses when emailing
+
+# The following procedure is used to drop the foreign key from users -> entities.
+# Largely from http://stackoverflow.com/a/16717776
+DROP PROCEDURE IF EXISTS dropForeignKeysFromTable;
+
+delimiter $$
+create procedure dropForeignKeysFromTable(IN param_table_schema varchar(255), IN param_table_name varchar(255))
+  begin
+    declare done int default FALSE;
+    declare dropCommand varchar(255);
+    declare dropCur cursor for
+      select concat('ALTER TABLE ',table_schema,'.',table_name,' DROP FOREIGN KEY ',constraint_name,
+                    ' DROP KEY ', constraint_name, ';')
+      from information_schema.table_constraints
+      where constraint_type='FOREIGN KEY'
+            and table_name = param_table_name
+            and table_schema = param_table_schema;
+
+    declare continue handler for not found set done = true;
+
+    open dropCur;
+
+      read_loop: loop
+      fetch dropCur into dropCommand;
+    if done then
+      leave read_loop;
+    end if;
+
+    set @sdropCommand = dropCommand;
+
+    prepare dropClientUpdateKeyStmt from @sdropCommand;
+
+      execute dropClientUpdateKeyStmt;
+
+      deallocate prepare dropClientUpdateKeyStmt;
+    end loop;
+
+    close dropCur;
+  end$$
+
+delimiter ;
+
+CALL dropForeignKeysFromTable(DATABASE(), 'users');
+
+DROP PROCEDURE IF EXISTS dropForeignKeysFromTable;
+
+INSERT INTO parties (party_id)
+  SELECT entity_id
+  FROM entities
+  WHERE arch_short_name = "security.user"
+        AND NOT EXISTS (SELECT * FROM parties WHERE party_id = entity_id);
+
+ALTER TABLE USERS
+ADD KEY `FK6A68E0826A12449` (`user_id`),
+ADD CONSTRAINT `FK6A68E0826A12449` FOREIGN KEY (`user_id`) REFERENCES `parties` (`party_id`) ON DELETE CASCADE;
