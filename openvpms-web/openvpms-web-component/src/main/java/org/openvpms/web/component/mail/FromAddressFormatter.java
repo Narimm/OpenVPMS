@@ -11,14 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
 
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.resource.i18n.Messages;
 
 /**
  * An {@link AddressFormatter} for 'from' addresses.
@@ -28,14 +26,10 @@ import org.openvpms.web.resource.i18n.Messages;
 public class FromAddressFormatter extends AbstractAddressFormatter {
 
     /**
-     * The singleton instance.
-     */
-    public static final AddressFormatter INSTANCE = new FromAddressFormatter();
-
-    /**
      * Default constructor.
      */
-    protected FromAddressFormatter() {
+    public FromAddressFormatter() {
+        super();
     }
 
     /**
@@ -45,7 +39,6 @@ public class FromAddressFormatter extends AbstractAddressFormatter {
      * @return the formatted contact
      */
     public String format(Contact contact) {
-        Party party = contact.getParty();
-        return Messages.format("mail.contact.from", party.getName(), getAddress(contact));
+        return getNameAddress(contact);
     }
 }

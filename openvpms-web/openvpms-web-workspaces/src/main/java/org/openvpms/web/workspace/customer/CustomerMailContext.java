@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -24,7 +24,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
@@ -158,11 +157,12 @@ public class CustomerMailContext extends ContextMailContext {
     /**
      * Returns a formatter to format 'to' addresses.
      *
+     * @param contacts the contacts
      * @return the 'to' address formatter
      */
     @Override
-    public AddressFormatter getToAddressFormatter() {
-        return ReferringAddressFormatter.INSTANCE;
+    public AddressFormatter getToAddressFormatter(List<Contact> contacts) {
+        return new ReferringAddressFormatter(contacts);
     }
 
     /**
@@ -201,10 +201,16 @@ public class CustomerMailContext extends ContextMailContext {
      */
     private static class ReferringAddressFormatter extends ToAddressFormatter {
 
-        /**
-         * The singleton instance.
-         */
-        public static final AddressFormatter INSTANCE = new ReferringAddressFormatter();
+        private Set<IMObjectReference> references = new HashSet<IMObjectReference>();
+
+        public ReferringAddressFormatter(List<Contact> contacts) {
+            for (Contact contact : contacts) {
+                Party party = contact.getParty();
+                if (TypeHelper.isA(party, SupplierArchetypes.SUPPLIER_VET, SupplierArchetypes.SUPPLIER_VET_PRACTICE)) {
+                    references.add(party.getObjectReference());
+                }
+            }
+        }
 
         /**
          * Formats an email address contact.
@@ -215,11 +221,27 @@ public class CustomerMailContext extends ContextMailContext {
         @Override
         public String format(Contact contact) {
             Party party = contact.getParty();
-            if (TypeHelper.isA(party, SupplierArchetypes.SUPPLIER_VET, SupplierArchetypes.SUPPLIER_VET_PRACTICE)) {
-                String type = DescriptorHelper.getDisplayName(party);
-                return Messages.format("mail.contact.to.referring", party.getName(), getAddress(contact), type);
+            if (party != null && references.contains(party.getObjectReference())) {
+                String type = getType(contact);
+                return Messages.format("mail.contact.to", party.getName(), getAddress(contact), type);
             }
             return super.format(contact);
+        }
+
+        /**
+         * Returns the type of a contact.
+         *
+         * @param contact the contact
+         * @return the type of the contact. May be {@code null}
+         */
+        @Override
+        public String getType(Contact contact) {
+            String type = super.getType(contact);
+            Party party = contact.getParty();
+            if (party != null && references.contains(party.getObjectReference())) {
+                type = Messages.format("mail.type.referring", type);
+            }
+            return type;
         }
     }
 

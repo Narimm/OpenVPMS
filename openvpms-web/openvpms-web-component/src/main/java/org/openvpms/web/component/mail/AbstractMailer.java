@@ -51,19 +51,19 @@ public abstract class AbstractMailer implements Mailer {
     private String fromName;
 
     /**
-     * The to-address.
+     * The to addresses.
      */
-    private String to;
+    private String[] to;
 
     /**
-     * The Cc address.
+     * The Cc addresses.
      */
-    private String cc;
+    private String[] cc;
 
     /**
-     * The Bcc address.
+     * The Bcc addresses.
      */
-    private String bcc;
+    private String[] bcc;
 
     /**
      * The email subject.
@@ -141,58 +141,60 @@ public abstract class AbstractMailer implements Mailer {
     /**
      * Sets the to address.
      *
-     * @param to the to address
+     * @param to the to addresses. May be {@code null}
      */
-    public void setTo(String to) {
+    @Override
+    public void setTo(String[] to) {
         this.to = to;
     }
 
     /**
-     * Returns the to address.
+     * Returns the to addresses.
      *
-     * @return the to address
+     * @return the to addresses. May be {@code null}
      */
-    public String getTo() {
+    @Override
+    public String[] getTo() {
         return to;
     }
 
     /**
-     * Sets the CC address.
+     * Sets the CC addresses.
      *
-     * @param cc the CC address. May be {@code null}
+     * @param cc the CC addresses. May be {@code null}
      */
     @Override
-    public void setCc(String cc) {
+    public void setCc(String[] cc) {
         this.cc = cc;
     }
 
     /**
-     * Returns the CC address.
+     * Returns the CC addresses.
      *
-     * @return the CC address. May be {@code null}
+     * @return the CC addresses. May be {@code null}
      */
     @Override
-    public String getCc() {
+    public String[] getCc() {
         return cc;
     }
 
     /**
-     * Sets the BCC address.
+     * Sets the BCC addresses.
      *
-     * @param bcc the BCC address. May be {@code null}
+     * @param bcc the BCC addresses. May be {@code null}
      */
     @Override
-    public void setBcc(String bcc) {
+    public void setBcc(String[] bcc) {
         this.bcc = bcc;
     }
 
     /**
-     * Returns the BCC address.
+     * Returns the BCC addresses.
      *
-     * @return the BCC address. May be {@code null}
+     * @return the BCC addresses. May be {@code null}
      */
     @Override
-    public String getBcc() {
+    public String[] getBcc() {
         return bcc;
     }
 
@@ -255,7 +257,8 @@ public abstract class AbstractMailer implements Mailer {
         } catch (OpenVPMSException exception) {
             throw exception;
         } catch (Throwable exception) {
-            throw new MailException(MailException.ErrorCode.FailedToSend, getTo(), exception.getMessage());
+            String address = (to != null) ? StringUtils.join(to, ", ") : null;
+            throw new MailException(MailException.ErrorCode.FailedToSend, address, exception.getMessage());
         }
     }
 
@@ -269,16 +272,16 @@ public abstract class AbstractMailer implements Mailer {
     protected void populateMessage(MimeMessageHelper helper)
             throws MessagingException, UnsupportedEncodingException {
         helper.setFrom(getFrom(), getFromName());
-        String to = getTo();
-        if (!StringUtils.isEmpty(to)) {
+        String[] to = getTo();
+        if (to != null && to.length != 0) {
             helper.setTo(to);
         }
-        String cc = getCc();
-        if (!StringUtils.isEmpty(cc)) {
+        String[] cc = getCc();
+        if (cc != null && cc.length != 0) {
             helper.setCc(cc);
         }
-        String bcc = getBcc();
-        if (!StringUtils.isEmpty(bcc)) {
+        String[] bcc = getBcc();
+        if (bcc != null && bcc.length != 0) {
             helper.setBcc(bcc);
         }
         helper.setSubject(getSubject());

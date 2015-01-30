@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.app;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.macro.Variables;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.mail.AddressFormatter;
@@ -24,6 +25,8 @@ import org.openvpms.web.component.mail.AttachmentBrowserFactory;
 import org.openvpms.web.component.mail.FromAddressFormatter;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.ToAddressFormatter;
+
+import java.util.List;
 
 
 /**
@@ -71,15 +74,16 @@ public abstract class AbstractMailContext implements MailContext {
      * @return the 'from' address formatter
      */
     public AddressFormatter getFromAddressFormatter() {
-        return FromAddressFormatter.INSTANCE;
+        return new FromAddressFormatter();
     }
 
     /**
      * Returns a formatter to format 'to' addresses.
      *
+     * @param contacts the contacts
      * @return the 'to' address formatter
      */
-    public AddressFormatter getToAddressFormatter() {
-        return ToAddressFormatter.INSTANCE;
+    public AddressFormatter getToAddressFormatter(List<Contact> contacts) {
+        return new ToAddressFormatter();
     }
 }

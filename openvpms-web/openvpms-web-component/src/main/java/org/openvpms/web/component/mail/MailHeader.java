@@ -21,32 +21,28 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.macro.Macros;
 import org.openvpms.macro.Variables;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.AbstractModifiable;
+import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
-import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
-import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -54,32 +50,22 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-class MailHeader {
-
-    /**
-     * The selected 'from' contact.
-     */
-    private Contact selectedFrom;
-
-    /**
-     * The from address.
-     */
-    private SimpleProperty from;
+class MailHeader extends AbstractModifiable {
 
     /**
      * The to address.
      */
-    private AddressLine to;
+    private ToAddressSelector to;
 
     /**
      * The CC address.
      */
-    private AddressLine cc;
+    private ToAddressSelector cc;
 
     /**
      * The BCC address.
      */
-    private AddressLine bcc;
+    private ToAddressSelector bcc;
 
     /**
      * The subject.
@@ -87,14 +73,9 @@ class MailHeader {
     private SimpleProperty subject;
 
     /**
-     * The from-address selector, if multiple addresses are provided.
+     * The from-address selector.
      */
-    private SelectField fromAddressSelector;
-
-    /**
-     * The 'from' address formatter.
-     */
-    private final AddressFormatter fromFormatter;
+    private AddressSelector from;
 
     /**
      * The header component.
@@ -112,38 +93,24 @@ class MailHeader {
      *
      * @param mailContext the mail context
      * @param preferredTo the preferred to address
+     * @param context     the layout context
      */
-    public MailHeader(MailContext mailContext, Contact preferredTo) {
+    public MailHeader(MailContext mailContext, Contact preferredTo, LayoutContext context) {
         List<Contact> fromAddresses = mailContext.getFromAddresses();
-        this.fromFormatter = mailContext.getFromAddressFormatter();
         focus = new FocusGroup("MailHeader");
 
-        from = MailHelper.createProperty("from", "mail.from", true);
-        to = new AddressLine("to", mailContext.getToAddresses(), mailContext.getToAddressFormatter());
-        cc = new AddressLine("cc", new ArrayList<Contact>(), mailContext.getToAddressFormatter());
-        bcc = new AddressLine("bcc", new ArrayList<Contact>(), mailContext.getToAddressFormatter());
-
-        Component fromAddress;
-        if (fromAddresses.size() <= 1) {
-            TextField fromText = BoundTextComponentFactory.create(from, 40);
-            fromText.setWidth(Styles.FULL_WIDTH);
-            fromAddress = fromText;
-            fromAddress.setEnabled(false);
-            if (fromAddresses.size() == 1) {
-                setFrom(fromAddresses.get(0));
+        from = new FromAddressSelector(fromAddresses, mailContext.getFromAddressFormatter());
+        if (!fromAddresses.isEmpty()) {
+            from.setSelected(fromAddresses.get(0));
+            if (fromAddresses.size() > 1) {
+                focus.add(from.getComponent());
             }
-        } else {
-            fromAddressSelector = createAddressSelector(fromAddresses);
-            setFrom((Contact) fromAddressSelector.getSelectedItem());
-            fromAddressSelector.addActionListener(new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    setFrom((Contact) fromAddressSelector.getSelectedItem());
-                    // onModified(); TODO
-                }
-            });
-            fromAddress = fromAddressSelector;
-            focus.add(fromAddressSelector);
         }
+
+        List<Contact> contacts = mailContext.getToAddresses();
+        to = new ToAddressSelector(contacts, mailContext.getToAddressFormatter(contacts), context);
+        cc = new ToAddressSelector(contacts, mailContext.getToAddressFormatter(contacts), context);
+        bcc = new ToAddressSelector(contacts, mailContext.getToAddressFormatter(contacts), context);
 
         if (preferredTo != null) {
             setTo(preferredTo);
@@ -163,11 +130,11 @@ class MailHeader {
         TextField subjectText = BoundTextComponentFactory.create(subject, 40);
         subjectText.setWidth(Styles.FULL_WIDTH);
 
-        Grid grid = GridFactory.create(2, createLabel(from), fromAddress,
-                                       createLabel(to.getProperty()), to.getComponent(),
-                                       createLabel(cc.getProperty()), cc.getComponent(),
-                                       createLabel(bcc.getProperty()), bcc.getComponent(),
-                                       createLabel(subject), subjectText);
+        Grid grid = GridFactory.create(2, createLabel("mail.from"), from.getComponent(),
+                                       createLabel("mail.to"), to.getComponent(),
+                                       createLabel("mail.cc"), cc.getComponent(),
+                                       createLabel("mail.bcc"), bcc.getComponent(),
+                                       createLabel("mail.subject"), subjectText);
         grid.setColumnWidth(0, new Extent(10, Extent.PERCENT));
         grid.setWidth(Styles.FULL_WIDTH);
 
@@ -177,16 +144,6 @@ class MailHeader {
         focus.add(cc.getField());
         focus.add(bcc.getField());
         focus.add(subjectText);
-    }
-
-    /**
-     * Validates the header.
-     *
-     * @param validator the validator
-     * @return {@code true} if the header is valid
-     */
-    public boolean validate(Validator validator) {
-        return from.validate(validator) && validateTo(validator) && validator.validate(subject);
     }
 
     /**
@@ -213,9 +170,7 @@ class MailHeader {
      * @param from the from address. May be {@code null}
      */
     public void setFrom(Contact from) {
-        this.selectedFrom = from;
-        String value = (from != null) ? fromFormatter.format(from) : null;
-        this.from.setValue(value);
+        this.from.setSelected(from);
     }
 
     /**
@@ -224,16 +179,17 @@ class MailHeader {
      * @return the from address
      */
     public String getFrom() {
-        return fromFormatter.getAddress(selectedFrom);
+        AddressFormatter formatter = from.getFormatter();
+        return formatter.getAddress(from.getSelected());
     }
 
     /**
      * Sets the 'to' address.
      *
-     * @param toAddress the to address. May be {@code null}
+     * @param contact the to address. May be {@code null}
      */
-    public void setTo(Contact toAddress) {
-        to.setAddress(toAddress);
+    public void setTo(Contact contact) {
+        to.setSelected(contact);
     }
 
     /**
@@ -243,37 +199,41 @@ class MailHeader {
      */
     public String getFromName() {
         String name = null;
-        if (selectedFrom != null && selectedFrom.getParty() != null) {
-            name = selectedFrom.getParty().getName();
+        Contact contact = from.getSelected();
+        if (contact != null && contact.getParty() != null) {
+            name = contact.getParty().getName();
+            if (name != null) {
+                name = name.replaceAll(",", "");
+            }
         }
         return name;
     }
 
     /**
-     * Returns the to address.
+     * Returns the to addresses.
      *
-     * @return the to address. May be {@code null}
+     * @return the to addresses. May be {@code null}
      */
-    public String getTo() {
-        return to.getAddress();
+    public String[] getTo() {
+        return to.getAddresses();
     }
 
     /**
-     * Returns the Cc address.
+     * Returns the Cc addresses.
      *
-     * @return the Cc address. May be {@code null}
+     * @return the Cc addresses. May be {@code null}
      */
-    public String getCc() {
-        return cc.getAddress();
+    public String[] getCc() {
+        return cc.getAddresses();
     }
 
     /**
-     * Returns the Bcc address.
+     * Returns the Bcc addresses.
      *
-     * @return the Bcc address. May be {@code null}
+     * @return the Bcc addresses. May be {@code null}
      */
-    public String getBcc() {
-        return bcc.getAddress();
+    public String[] getBcc() {
+        return bcc.getAddresses();
     }
 
     /**
@@ -295,44 +255,107 @@ class MailHeader {
     }
 
     /**
-     * Validates the to, cc, and bcc addresses.
+     * Determines if the object has been modified.
+     *
+     * @return {@code true} if the object has been modified
+     */
+    @Override
+    public boolean isModified() {
+        return false;
+    }
+
+    /**
+     * Clears the modified status of the object.
+     */
+    @Override
+    public void clearModified() {
+        // no-op
+    }
+
+    /**
+     * Adds a listener to be notified when this changes.
+     * <p/>
+     * Listeners will be notified in the order they were registered.
+     *
+     * @param listener the listener to add
+     */
+    @Override
+    public void addModifiableListener(ModifiableListener listener) {
+        // no-op
+    }
+
+    /**
+     * Adds a listener to be notified when this changes, specifying the order of the listener.
+     *
+     * @param listener the listener to add
+     * @param index    the index to add the listener at. The 0-index listener is notified first
+     */
+    @Override
+    public void addModifiableListener(ModifiableListener listener, int index) {
+        // no-op
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    @Override
+    public void removeModifiableListener(ModifiableListener listener) {
+        // no-op
+    }
+
+    /**
+     * Sets a listener to be notified of errors.
+     *
+     * @param listener the listener to register. May be {@code null}
+     */
+    @Override
+    public void setErrorListener(ErrorListener listener) {
+        // no-op
+    }
+
+    /**
+     * Returns the listener to be notified of errors.
+     *
+     * @return the listener. May be {@code null}
+     */
+    @Override
+    public ErrorListener getErrorListener() {
+        return null;
+    }
+
+    /**
+     * Validates the object.
      *
      * @param validator the validator
-     * @return {@code true} if the addresses are valid
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
-    private boolean validateTo(Validator validator) {
-        boolean valid = to.validate(validator) && cc.validate(validator) && bcc.validate(validator);
-        if (valid) {
-            if (StringUtils.isEmpty(getTo()) && StringUtils.isEmpty(getCc()) && StringUtils.isEmpty(getBcc())) {
-                validator.add(to.getProperty(), new ValidatorError(Messages.get("mail.notoaddress")));
-                valid = false;
+    @Override
+    protected boolean doValidation(Validator validator) {
+        boolean valid = from.getSelected() != null;
+        if (!valid) {
+            validator.add(this, new ValidatorError(Messages.get("mail.nofromaddress")));
+        } else {
+            valid = validator.validate(subject);
+            if (valid) {
+                if (getTo() == null && getCc() == null && getBcc() == null) {
+                    validator.add(this, new ValidatorError(Messages.get("mail.notoaddress")));
+                    valid = false;
+                }
             }
         }
         return valid;
     }
 
     /**
-     * Creates an address selector for a list of addresses.
+     * Helper to create a right aligned label.
      *
-     * @param addresses the addresses
-     * @return an address editor
-     */
-    private SelectField createAddressSelector(List<Contact> addresses) {
-        SelectField result = SelectFieldFactory.create(addresses);
-        result.setCellRenderer(new EmailCellRenderer(fromFormatter));
-        result.setWidth(Styles.FULL_WIDTH);
-        return result;
-    }
-
-    /**
-     * Helper to create a label for a property.
-     *
-     * @param property the property
+     * @param key the resource bundle key
      * @return a new label
      */
-    private Label createLabel(Property property) {
-        Label label = LabelFactory.create();
-        label.setText(property.getDisplayName());
+    private Label createLabel(String key) {
+        Label label = LabelFactory.create(key);
         GridLayoutData layout = new GridLayoutData();
         layout.setAlignment(Alignment.ALIGN_RIGHT);
         label.setLayoutData(layout);

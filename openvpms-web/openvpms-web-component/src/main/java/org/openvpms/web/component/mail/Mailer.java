@@ -58,44 +58,44 @@ public interface Mailer {
     /**
      * Sets the to address.
      *
-     * @param to the to address. May be {@code null}
+     * @param to the to addresses. May be {@code null}
      */
-    void setTo(String to);
+    void setTo(String[] to);
 
     /**
-     * Returns the to address.
+     * Returns the to addresses.
      *
-     * @return the to address. May be {@code null}
+     * @return the to addresses. May be {@code null}
      */
-    String getTo();
+    String[] getTo();
 
     /**
-     * Sets the CC address.
+     * Sets the CC addresses.
      *
-     * @param cc the CC address. May be {@code null}
+     * @param cc the CC addresses. May be {@code null}
      */
-    void setCc(String cc);
+    void setCc(String[] cc);
 
     /**
-     * Returns the CC address.
+     * Returns the CC addresses.
      *
-     * @return the CC address. May be {@code null}
+     * @return the CC addresses. May be {@code null}
      */
-    String getCc();
+    String[] getCc();
 
     /**
-     * Sets the BCC address.
+     * Sets the BCC addresses.
      *
-     * @param bcc the BCC address. May be {@code null}
+     * @param bcc the BCC addresses. May be {@code null}
      */
-    void setBcc(String bcc);
+    void setBcc(String[] bcc);
 
     /**
-     * Returns the BCC address.
+     * Returns the BCC addresses.
      *
-     * @return the BCC address. May be {@code null}
+     * @return the BCC addresses. May be {@code null}
      */
-    String getBcc();
+    String[] getBcc();
 
     /**
      * Sets the subject.
@@ -138,13 +138,5 @@ public interface Mailer {
      * @throws OpenVPMSException for any error
      */
     void send();
-
-    /**
-     * Sends the object to the specified email address.
-     *
-     * @param address the address to send to
-     * @throws OpenVPMSException for any error
-     */
-    void send(String address);
 
 }

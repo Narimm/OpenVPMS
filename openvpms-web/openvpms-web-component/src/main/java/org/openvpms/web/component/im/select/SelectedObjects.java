@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.select;
@@ -117,10 +117,10 @@ public class SelectedObjects<T extends IMObject> {
     public void setObject(int index, T object) {
         if (index < objects.size()) {
             objects.set(index, object);
-            names.set(index, object.getName());
+            names.set(index, getName(object));
         } else {
             objects.add(index, object);
-            names.add(index, object.getName());
+            names.add(index, getName(object));
         }
     }
 
@@ -157,7 +157,7 @@ public class SelectedObjects<T extends IMObject> {
         for (int i = 0; i < names.size() && i < objects.size(); ++i) {
             String name = names.get(i);
             T object = objects.get(i);
-            if (object == null || !StringUtils.equals(name, object.getName())) {
+            if (object == null || !matches(name, object, false)) {
                 result = (name == null) ? "" : name;
             }
         }
@@ -234,7 +234,30 @@ public class SelectedObjects<T extends IMObject> {
      */
     public boolean haveMatch(int index) {
         T object = objects.get(index);
-        return object != null && StringUtils.equals(names.get(index), object.getName());
+        return object != null && matches(names.get(index), object, false);
+    }
+
+    /**
+     * Returns the object name.
+     *
+     * @param object the object
+     * @return the object name
+     */
+    protected String getName(T object) {
+        return object.getName();
+    }
+
+    /**
+     * Determines if a name matches an object.
+     *
+     * @param name       the name
+     * @param object     the object
+     * @param ignoreCase if {@code true}, ignore case
+     * @return {@code true} if they match
+     */
+    protected boolean matches(String name, T object, boolean ignoreCase) {
+        return ignoreCase ? StringUtils.equalsIgnoreCase(name, object.getName())
+                          : StringUtils.equals(name, object.getName());
     }
 
     /**
@@ -247,7 +270,7 @@ public class SelectedObjects<T extends IMObject> {
     private int indexOf(String name, int start) {
         for (int i = start; i < objects.size(); ++i) {
             T object = objects.get(i);
-            if (object != null && StringUtils.equalsIgnoreCase(name, object.getName())) {
+            if (object != null && matches(name, object, true)) {
                 return i;
             }
         }

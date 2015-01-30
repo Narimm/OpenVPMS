@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -35,10 +35,33 @@ public interface AddressFormatter {
     String getAddress(Contact contact);
 
     /**
+     * Returns the contact name.
+     *
+     * @return the contact name. May be {@code null}
+     */
+    String getName(Contact contact);
+
+    /**
+     * Returns the contact name and address.
+     *
+     * @return the contact name and address. May {@code null}
+     */
+    String getNameAddress(Contact contact);
+
+    /**
      * Formats an email address contact.
      *
      * @param contact the email address contact
      * @return the formatted contact
      */
     String format(Contact contact);
+
+
+    /**
+     * Returns the type of a contact.
+     *
+     * @param contact the contact
+     * @return the type of the contact. May be {@code null}
+     */
+    String getType(Contact contact);
 }
