@@ -121,6 +121,7 @@ class MultiContactSelector extends MultiIMObjectSelector<Contact> {
      */
     @Override
     protected boolean query(String text, int index) {
+        boolean result;
         int less = text.indexOf('<');
         if (less != -1) {
             text = text.substring(0, less);
@@ -132,8 +133,11 @@ class MultiContactSelector extends MultiIMObjectSelector<Contact> {
             IMObjectBean bean = new IMObjectBean(contact);
             bean.setValue("emailAddress", text);
             setObject(index, contact);
+            result = true;
+        } else {
+            result = super.query(text, index);
         }
-        return super.query(text, index);
+        return result;
     }
 
     private static class Contacts extends SelectedObjects<Contact> {
@@ -159,7 +163,7 @@ class MultiContactSelector extends MultiIMObjectSelector<Contact> {
          */
         @Override
         protected boolean matches(String name, Contact object, boolean ignoreCase) {
-            String formatted = formatter.format(object);
+            String formatted = getName(object);
             return ignoreCase ? StringUtils.equalsIgnoreCase(name, formatted) : StringUtils.equals(name, formatted);
         }
     }
@@ -243,7 +247,7 @@ class MultiContactSelector extends MultiIMObjectSelector<Contact> {
                     result = formatter.getAddress(object);
                     break;
                 case TYPE_INDEX:
-                    result = formatter.getType(object);
+                    result = object.getParty() != null ? DescriptorHelper.getDisplayName(object.getParty()) : null;
                     break;
                 case ACTIVE_INDEX:
                     if (object.getParty() != null) {

@@ -37,21 +37,43 @@ public interface AddressFormatter {
     /**
      * Returns the contact name.
      *
+     * @param contact the email contact
      * @return the contact name. May be {@code null}
      */
     String getName(Contact contact);
 
     /**
+     * Returns the qualified name.
+     * <p/>
+     * This includes the party name and contact name, if a contact name is specified.
+     *
+     * @param contact the email contact
+     * @return the contact name. May be {@code null}
+     */
+    String getQualifiedName(Contact contact);
+
+    /**
      * Returns the contact name and address.
      *
+     * @param contact the email contact
      * @return the contact name and address. May {@code null}
      */
     String getNameAddress(Contact contact);
 
     /**
+     * Returns the qualified name and address.
+     * <p/>
+     * This includes the party name and contact name, if a contact name is specified.
+     *
+     * @param contact the email contact
+     * @return the qualified name and address
+     */
+    String getQualifiedNameAddress(Contact contact);
+
+    /**
      * Formats an email address contact.
      *
-     * @param contact the email address contact
+     * @param contact the email contact
      * @return the formatted contact
      */
     String format(Contact contact);
@@ -60,7 +82,7 @@ public interface AddressFormatter {
     /**
      * Returns the type of a contact.
      *
-     * @param contact the contact
+     * @param contact the email contact
      * @return the type of the contact. May be {@code null}
      */
     String getType(Contact contact);

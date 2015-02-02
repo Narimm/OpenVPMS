@@ -83,18 +83,26 @@ public abstract class AbstractAddressFormatter implements AddressFormatter {
      * @return the name. May be {@code null}
      */
     public String getName(Contact contact) {
-        String name = contact.getName();
         Party party = contact.getParty();
+        return (party != null) ? party.getName() : null;
+    }
+
+    /**
+     * Returns the qualified name.
+     * <p/>
+     * This includes the party name and contact name, if a contact name is specified.
+     *
+     * @param contact the email contact
+     * @return the contact name. May be {@code null}
+     */
+    @Override
+    public String getQualifiedName(Contact contact) {
+        String name = contact.getName();
+        String partyName = getName(contact);
         if (StringUtils.isEmpty(name) || StringUtils.equals(defaultValue, name)) {
-            if (party != null) {
-                name = party.getName();
-            } else {
-                name = null;
-            }
+            name = partyName;
         } else {
-            if (party != null) {
-                name = Messages.format("mail.qualifiedname", party.getName(), name);
-            }
+            name = (partyName != null) ? Messages.format("mail.qualifiedname", partyName, name) : name;
         }
         return name;
     }
@@ -106,23 +114,22 @@ public abstract class AbstractAddressFormatter implements AddressFormatter {
      */
     @Override
     public String getNameAddress(Contact contact) {
-        String result;
-        Party party = contact.getParty();
-        String name = null;
-        if (party != null) {
-            name = party.getName();
-        }
-        String address = getAddress(contact);
-        if (name != null) {
-            if (address != null) {
-                result = Messages.format("mail.contact", name, address);
-            } else {
-                result = name;
-            }
-        } else {
-            result = address;
-        }
-        return result;
+        String name = getName(contact);
+        return getNameAddress(contact, name);
+    }
+
+    /**
+     * Returns the qualified name and address.
+     * <p/>
+     * This includes the party name and contact name, if a contact name is specified.
+     *
+     * @param contact the email contact
+     * @return the qualified name and address
+     */
+    @Override
+    public String getQualifiedNameAddress(Contact contact) {
+        String name = getQualifiedName(contact);
+        return getNameAddress(contact, name);
     }
 
     /**
@@ -134,6 +141,28 @@ public abstract class AbstractAddressFormatter implements AddressFormatter {
     @Override
     public String getType(Contact contact) {
         return (contact.getParty() != null) ? DescriptorHelper.getDisplayName(contact.getParty()) : null;
+    }
+
+    /**
+     * Returns the contact name and address.
+     *
+     * @param contact the contact
+     * @param name    the contact name
+     * @return the contact name and address
+     */
+    private String getNameAddress(Contact contact, String name) {
+        String result;
+        String address = getAddress(contact);
+        if (name != null) {
+            if (address != null) {
+                result = Messages.format("mail.contact", name, address);
+            } else {
+                result = name;
+            }
+        } else {
+            result = address;
+        }
+        return result;
     }
 
 }

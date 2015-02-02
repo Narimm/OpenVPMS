@@ -108,9 +108,9 @@ class MailHeader extends AbstractModifiable {
         }
 
         List<Contact> contacts = mailContext.getToAddresses();
-        to = new ToAddressSelector(contacts, mailContext.getToAddressFormatter(contacts), context);
-        cc = new ToAddressSelector(contacts, mailContext.getToAddressFormatter(contacts), context);
-        bcc = new ToAddressSelector(contacts, mailContext.getToAddressFormatter(contacts), context);
+        to = new ToAddressSelector(contacts, mailContext.getToAddressFormatter(), context);
+        cc = new ToAddressSelector(contacts, mailContext.getToAddressFormatter(), context);
+        bcc = new ToAddressSelector(contacts, mailContext.getToAddressFormatter(), context);
 
         if (preferredTo != null) {
             setTo(preferredTo);
@@ -203,7 +203,7 @@ class MailHeader extends AbstractModifiable {
         if (contact != null && contact.getParty() != null) {
             name = contact.getParty().getName();
             if (name != null) {
-                name = name.replaceAll(",", "");
+                name = name.replaceAll("[,@<>#]", "");
             }
         }
         return name;

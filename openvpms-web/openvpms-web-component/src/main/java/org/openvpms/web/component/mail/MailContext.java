@@ -76,8 +76,7 @@ public interface MailContext {
     /**
      * Returns a formatter to format 'to' addresses.
      *
-     * @param contacts the contacts
      * @return the 'to' address formatter
      */
-    AddressFormatter getToAddressFormatter(List<Contact> contacts);
+    AddressFormatter getToAddressFormatter();
 }
