@@ -94,6 +94,7 @@ class EmailQuery extends AbstractArchetypeQuery<Contact> {
         ShortNameConstraint parties = Constraints.shortName("party", getArchetypeConstraint().getShortNames());
         parties.add(Constraints.join("contacts", "c").add(Constraints.idEq("contact", "c")));
         contact.add(parties);
+        parties.setState(getArchetypeConstraint().getState());
         return new DefaultResultSet<Contact>(contact, getValue(), null, sort, getMaxResults(), isDistinct()) {
             @Override
             protected List<IConstraint> createValueConstraints(String value, List<String> nodes) {
