@@ -43,12 +43,12 @@ public class ToAddressFormatter extends AbstractAddressFormatter {
      */
     public String format(Contact contact) {
         String result;
-        String address = getAddress(contact);
+        String nameAddress = getQualifiedNameAddress(contact);
         String type = getType(contact);
         if (type != null) {
-            result = Messages.format("mail.contact.to", contact.getParty().getName(), address, type);
+            result = Messages.format("mail.contact.to", nameAddress, type);
         } else {
-            result = address;
+            result = nameAddress;
         }
         return result;
     }

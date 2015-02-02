@@ -39,6 +39,6 @@ public class FromAddressFormatter extends AbstractAddressFormatter {
      * @return the formatted contact
      */
     public String format(Contact contact) {
-        return getNameAddress(contact);
+        return getQualifiedNameAddress(contact);
     }
 }

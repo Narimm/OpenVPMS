@@ -157,12 +157,11 @@ public class CustomerMailContext extends ContextMailContext {
     /**
      * Returns a formatter to format 'to' addresses.
      *
-     * @param contacts the contacts
      * @return the 'to' address formatter
      */
     @Override
-    public AddressFormatter getToAddressFormatter(List<Contact> contacts) {
-        return new ReferringAddressFormatter(contacts);
+    public AddressFormatter getToAddressFormatter() {
+        return new ReferringAddressFormatter();
     }
 
     /**
@@ -201,33 +200,6 @@ public class CustomerMailContext extends ContextMailContext {
      */
     private static class ReferringAddressFormatter extends ToAddressFormatter {
 
-        private Set<IMObjectReference> references = new HashSet<IMObjectReference>();
-
-        public ReferringAddressFormatter(List<Contact> contacts) {
-            for (Contact contact : contacts) {
-                Party party = contact.getParty();
-                if (TypeHelper.isA(party, SupplierArchetypes.SUPPLIER_VET, SupplierArchetypes.SUPPLIER_VET_PRACTICE)) {
-                    references.add(party.getObjectReference());
-                }
-            }
-        }
-
-        /**
-         * Formats an email address contact.
-         *
-         * @param contact the email address contact
-         * @return the formatted contact
-         */
-        @Override
-        public String format(Contact contact) {
-            Party party = contact.getParty();
-            if (party != null && references.contains(party.getObjectReference())) {
-                String type = getType(contact);
-                return Messages.format("mail.contact.to", party.getName(), getAddress(contact), type);
-            }
-            return super.format(contact);
-        }
-
         /**
          * Returns the type of a contact.
          *
@@ -237,8 +209,8 @@ public class CustomerMailContext extends ContextMailContext {
         @Override
         public String getType(Contact contact) {
             String type = super.getType(contact);
-            Party party = contact.getParty();
-            if (party != null && references.contains(party.getObjectReference())) {
+            if (TypeHelper.isA(contact.getParty(), SupplierArchetypes.SUPPLIER_VET,
+                               SupplierArchetypes.SUPPLIER_VET_PRACTICE)) {
                 type = Messages.format("mail.type.referring", type);
             }
             return type;
