@@ -3022,7 +3022,7 @@ create procedure dropForeignKeysFromTable(IN param_table_schema varchar(255), IN
     declare dropCommand varchar(255);
     declare dropCur cursor for
       select concat('ALTER TABLE ',table_schema,'.',table_name,' DROP FOREIGN KEY ',constraint_name,
-                    ' DROP KEY ', constraint_name, ';')
+                    ', DROP KEY ', constraint_name, ';')
       from information_schema.table_constraints
       where constraint_type='FOREIGN KEY'
             and table_name = param_table_name
