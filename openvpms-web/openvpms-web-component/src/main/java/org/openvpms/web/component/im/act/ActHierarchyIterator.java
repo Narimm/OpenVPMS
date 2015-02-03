@@ -11,12 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
 
 import org.apache.commons.collections.Predicate;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.act.Act;
 
 import java.util.ArrayList;
@@ -61,6 +63,12 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
      * The maximum depth to iterate to. Use {@code -1} to not limit the depth.
      */
     private int maxDepth;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(ActHierarchyIterator.class);
+
 
     /**
      * Constructs an {@link ActHierarchyIterator}.
@@ -194,7 +202,10 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
         for (T child : new ArrayList<T>(children)) {
             Node<T> node = nodes.get(child);
             if (node != null) {
-                if (node.getDepth() < depth) {
+                if (node == parent) {
+                    log.warn("Attempt to add node to itself: " + child.getObjectReference());
+                } else if (node.getDepth() < depth) {
+                    // if the node already exists at a shallower depth, move it deeper so it is not duplicated.
                     node.remove();
                     parent.add(node);
                 }
