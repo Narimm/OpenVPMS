@@ -3015,53 +3015,61 @@ DROP TABLE new_authorities;
 # Largely from http://stackoverflow.com/a/16717776
 DROP PROCEDURE IF EXISTS dropForeignKeysFromTable;
 
-delimiter $$
-create procedure dropForeignKeysFromTable(IN param_table_schema varchar(255), IN param_table_name varchar(255))
-  begin
-    declare done int default FALSE;
-    declare dropCommand varchar(255);
-    declare dropCur cursor for
-      select concat('ALTER TABLE ',table_schema,'.',table_name,' DROP FOREIGN KEY ',constraint_name,
-                    ', DROP KEY ', constraint_name, ';')
-      from information_schema.table_constraints
-      where constraint_type='FOREIGN KEY'
-            and table_name = param_table_name
-            and table_schema = param_table_schema;
+DELIMITER $$
+CREATE PROCEDURE dropForeignKeysFromTable(IN param_table_schema VARCHAR(255), IN param_table_name VARCHAR(255))
+  BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE dropCommand VARCHAR(255);
+    DECLARE dropCur CURSOR FOR
+      SELECT
+        concat('ALTER TABLE ', table_schema, '.', table_name, ' DROP FOREIGN KEY ', constraint_name,
+               ', DROP KEY ', constraint_name, ';')
+      FROM information_schema.table_constraints
+      WHERE constraint_type = 'FOREIGN KEY'
+            AND table_name = param_table_name
+            AND table_schema = param_table_schema;
 
-    declare continue handler for not found set done = true;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
-    open dropCur;
+    OPEN dropCur;
 
-      read_loop: loop
-      fetch dropCur into dropCommand;
-    if done then
-      leave read_loop;
-    end if;
+      read_loop: LOOP
+      FETCH dropCur
+      INTO dropCommand;
+    IF done
+    THEN
+      LEAVE read_loop;
+    END IF;
 
-    set @sdropCommand = dropCommand;
+    SET @sdropCommand = dropCommand;
 
-    prepare dropClientUpdateKeyStmt from @sdropCommand;
+    PREPARE dropClientUpdateKeyStmt FROM @sdropCommand;
 
-      execute dropClientUpdateKeyStmt;
+      EXECUTE dropClientUpdateKeyStmt;
 
-      deallocate prepare dropClientUpdateKeyStmt;
-    end loop;
+      DEALLOCATE PREPARE dropClientUpdateKeyStmt;
+    END LOOP;
 
-    close dropCur;
-  end$$
+    CLOSE dropCur;
+  END$$
 
-delimiter ;
+DELIMITER ;
 
 CALL dropForeignKeysFromTable(DATABASE(), 'users');
 
 DROP PROCEDURE IF EXISTS dropForeignKeysFromTable;
 
 INSERT INTO parties (party_id)
-  SELECT entity_id
+  SELECT
+    entity_id
   FROM entities
   WHERE arch_short_name = "security.user"
-        AND NOT EXISTS (SELECT * FROM parties WHERE party_id = entity_id);
+        AND NOT EXISTS(SELECT
+                         *
+                       FROM parties
+                       WHERE party_id = entity_id);
 
-ALTER TABLE USERS
+ALTER TABLE users
 ADD KEY `FK6A68E0826A12449` (`user_id`),
-ADD CONSTRAINT `FK6A68E0826A12449` FOREIGN KEY (`user_id`) REFERENCES `parties` (`party_id`) ON DELETE CASCADE;
+ADD CONSTRAINT `FK6A68E0826A12449` FOREIGN KEY (`user_id`) REFERENCES `parties` (`party_id`)
+  ON DELETE CASCADE;
