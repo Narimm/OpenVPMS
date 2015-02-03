@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.customer.estimate;
 
@@ -85,13 +85,13 @@ public class CustomerEstimates {
      */
     private ArchetypeQuery createQuery(Party customer, Party patient) {
         ArchetypeQuery query = new ArchetypeQuery(ESTIMATE);
-        query.add(join("customer").add(eq("entity", customer.getObjectReference())));
+        query.setDistinct(true);
+        query.add(join("customer").add(eq("entity", customer)));
         query.add(ne("status", EstimateActStatus.CANCELLED));
         query.add(ne("status", EstimateActStatus.INVOICED));
         query.add(or(isNull("endTime"), gt("endTime", new Date())));
         if (patient != null) {
-            query.add(join("items").add(join("target").add(
-                    join("patient").add(eq("entity", patient.getObjectReference())))));
+            query.add(join("items").add(join("target").add(join("patient").add(eq("entity", patient)))));
         }
         return query;
     }
