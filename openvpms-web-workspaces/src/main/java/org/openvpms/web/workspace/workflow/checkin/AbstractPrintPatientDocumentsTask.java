@@ -94,10 +94,11 @@ public abstract class AbstractPrintPatientDocumentsTask extends Tasks {
             String title = Messages.get("workflow.print.title");
             Query<Entity> query;
             query = new ScheduleDocumentTemplateQuery(schedule, worklist);
+            HelpContext help = context.getHelpContext().subtopic("print");
             final PatientDocumentTemplateBrowser browser = new PatientDocumentTemplateBrowser(
-                    query, new DefaultLayoutContext(context, context.getHelpContext()));
+                    query, new DefaultLayoutContext(context, help));
             String[] buttons = canCancel() ? PopupDialog.OK_SKIP_CANCEL : PopupDialog.OK_SKIP;
-            dialog = new BrowserDialog<Entity>(title, buttons, browser, context.getHelpContext());
+            dialog = new BrowserDialog<Entity>(title, buttons, browser, help);
             dialog.getButtons().setEnabled(PopupDialog.OK_ID, false);
             browser.addBrowserListener(new AbstractBrowserListener<Entity>() {
                 @Override
