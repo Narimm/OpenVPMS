@@ -16,16 +16,23 @@
 
 package org.openvpms.web.workspace.admin.job;
 
+import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.resource.i18n.Messages;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
+import static org.openvpms.archetype.rules.doc.DocumentArchetypes.DOCUMENT_TEMPLATE_ACT;
 
 /**
  * An editor for <em>entity.jobDocumentLoader</em>.
@@ -53,7 +60,8 @@ public class DocumentLoaderJobConfigurationEditor extends JobConfigurationEditor
      */
     @Override
     protected boolean doValidation(Validator validator) {
-        return super.doValidation(validator) && validateDirs(validator) && validateIdPattern(validator);
+        return super.doValidation(validator) && validateDirs(validator) && validateIdPattern(validator)
+               && validateArchetypes(validator);
     }
 
     /**
@@ -115,6 +123,39 @@ public class DocumentLoaderJobConfigurationEditor extends JobConfigurationEditor
             result = true;
         } catch (PatternSyntaxException exception) {
             validator.add(property, new ValidatorError(property, exception.getMessage()));
+        }
+        return result;
+    }
+
+    /**
+     * Validates the archetype property.
+     *
+     * @param validator the validator
+     * @return {@code true} if the property is valid
+     */
+    private boolean validateArchetypes(Validator validator) {
+        boolean result = true;
+        Property property = getProperty("archetypes");
+        String[] shortNames = property.getString("archetypes").split(",");
+        shortNames = StringUtils.trimArrayElements(shortNames);
+        for (String shortName : shortNames) {
+            List<ArchetypeDescriptor> descriptors = DescriptorHelper.getArchetypeDescriptors(shortName);
+            if (descriptors.isEmpty()) {
+                validator.add(property, new ValidatorError(property, Messages.format("docload.archetype.notfound",
+                                                                                     shortName)));
+                result = false;
+                break;
+            }
+            for (ArchetypeDescriptor descriptor : descriptors) {
+                if (DOCUMENT_TEMPLATE_ACT.equals(descriptor.getShortName())
+                    || !DocumentAct.class.isAssignableFrom(descriptor.getClazz())
+                    || descriptor.getNodeDescriptor("document") == null) {
+                    validator.add(property, new ValidatorError(property, Messages.format("docload.archetype.invalid",
+                                                                                         descriptor.getShortName())));
+                    result = false;
+                    break;
+                }
+            }
         }
         return result;
     }
