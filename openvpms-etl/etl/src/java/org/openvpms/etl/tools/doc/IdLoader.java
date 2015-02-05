@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008-2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
@@ -68,7 +68,7 @@ import java.util.regex.Pattern;
  *
  * @author Tim Anderson
  */
-class IdLoader extends AbstractLoader {
+public class IdLoader extends AbstractLoader {
 
     /**
      * The default regular expression for extracting act ids from file names.
@@ -112,7 +112,7 @@ class IdLoader extends AbstractLoader {
 
 
     /**
-     * Constructs a new {@code IdLoader}.
+     * Constructs an {@link IdLoader}.
      *
      * @param dir                the source directory
      * @param shortNames         the document archetype(s) that may be loaded to. May be {@code null}, or contain
@@ -129,7 +129,24 @@ class IdLoader extends AbstractLoader {
     }
 
     /**
-     * Constructs a new {@code IdLoader}.
+     * Constructs an {@link IdLoader}.
+     *
+     * @param dir                the source directory
+     * @param shortNames         the document archetype(s) that may be loaded to. May be {@code null}, or contain
+     *                           wildcards
+     * @param service            the archetype service
+     * @param transactionManager the transaction manager
+     * @param recurse            if {@code true} recursively scan the source dir
+     * @param overwrite          if {@code true} overwrite existing documents
+     */
+    public IdLoader(File dir, String[] shortNames, IArchetypeService service,
+                    PlatformTransactionManager transactionManager, boolean recurse, boolean overwrite,
+                    Pattern pattern) {
+        this(dir, shortNames, service, new DefaultDocumentFactory(), transactionManager, recurse, overwrite, pattern);
+    }
+
+    /**
+     * Constructs an {@link IdLoader}.
      *
      * @param dir                the source directory
      * @param shortNames         the document archetype(s) that may be loaded to. May be {@code null}, or contain
