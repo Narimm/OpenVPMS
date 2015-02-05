@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.scheduler;
@@ -31,7 +31,6 @@ import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.StatefulJob;
 import org.quartz.Trigger;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -98,7 +97,7 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      * @param applicationContext the ApplicationContext object to be used by this object
      */
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(ApplicationContext applicationContext) {
         context = applicationContext;
     }
 

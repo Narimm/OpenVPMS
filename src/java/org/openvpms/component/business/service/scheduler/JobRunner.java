@@ -11,11 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.scheduler;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -69,6 +71,11 @@ public class JobRunner implements InterruptableJob {
     private Job job;
 
     /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(JobRunner.class);
+
+    /**
      * Sets the job configuration.
      *
      * @param configuration the configuration. An instance of <em>entity.job*</em>
@@ -113,6 +120,8 @@ public class JobRunner implements InterruptableJob {
         if (service == null) {
             throw new JobExecutionException("ArchetypeService has not been registered");
         }
+        long start = System.currentTimeMillis();
+        log.info("Job " + getName(configuration) + " - starting");
 
         User user = getUser();
         Callable<Void> callable = new Callable<Void>() {
@@ -125,9 +134,14 @@ public class JobRunner implements InterruptableJob {
         };
         try {
             RunAs.run(user, callable);
-        } catch (JobExecutionException exception) {
-            throw exception;
+            long end = System.currentTimeMillis();
+            log.info("Job " + getName(configuration) + " - finished in " + (end - start) + "ms");
         } catch (Throwable exception) {
+            long end = System.currentTimeMillis();
+            log.error("Job " + getName(configuration) + " - failed in " + (end - start) + "ms", exception);
+            if (exception instanceof JobExecutionException) {
+                throw (JobExecutionException) exception;
+            }
             throw new JobExecutionException(exception);
         }
     }
@@ -175,5 +189,9 @@ public class JobRunner implements InterruptableJob {
             throw new JobExecutionException("User not found");
         }
         return user;
+    }
+
+    private String getName(IMObject configuration) {
+        return (configuration != null) ? configuration.getName() + " (" + configuration.getId() + ")" : null;
     }
 }
