@@ -19,26 +19,22 @@
                type="org.openvpms.component.business.domain.im.common.Entity"
                displayName="Job Configuration: Document Loader">
         <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
-        <node name="name" path="/name" type="java.lang.String" minCardinality="1"
-              defaultValue="'Document Loader'"/>
-        <node name="description" type="java.lang.String" path="/description" minCardinality="0"
-              defaultValue="'Periodically loads documents from a directory'"/>
+        <node name="name" path="/name" type="java.lang.String" minCardinality="1"/>
+        <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="class" path="/details/class" type="java.lang.String" minCardinality="1" readOnly="true"
-              hidden="true"
-              defaultValue="'org.openvpms.web.jobs.docload.DocumentLoaderJob'"/>
+              hidden="true" defaultValue="'org.openvpms.web.jobs.docload.DocumentLoaderJob'"/>
         <node name="sourceDir" displayName="Source Directory" path="/details/sourceDir" type="java.lang.String"
               minCardinality="1"/>
         <node name="targetDir" displayName="Destination Directory" path="/details/targetDir" type="java.lang.String"
               minCardinality="1"/>
         <node name="idPattern" path="/details/idPattern" type="java.lang.String" minCardinality="1"
               defaultValue="'[^\d]*(\d+).*'"/>
-        <node name="overwrite" displayName="Overwrite Duplicates" path="/details/overwrite" type="java.lang.Boolean"
+        <node name="overwrite" path="/details/overwrite" type="java.lang.Boolean"
               minCardinality="1" defaultValue="false()"/>
         <node name="recurse" displayName="Recurse Subdirectories" path="/details/recurse" type="java.lang.Boolean"
               minCardinality="1" defaultValue="false()"/>
-        <node name="archetypes" path="/details/archetypes" type="java.lang.String"
-              minCardinality="1" defaultValue="'act.*Document*, act.patientInvestigation'"/>
+        <node name="archetypes" path="/details/archetypes" type="java.lang.String" minCardinality="1"/>
         <node name="log" displayName="Enable Logging" path="/details/log" type="java.lang.Boolean"
               minCardinality="1" defaultValue="false()"/>
         <node name="stopOnError" path="/details/stopOnError" type="java.lang.Boolean" minCardinality="1"
@@ -60,7 +56,7 @@
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="1" maxCardinality="1"
               filter="entityRelationship.jobUser"/>
         <node name="notify" path="/sourceEntityRelationships"
-              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="1" maxCardinality="1"
+              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="1"
               filter="entityRelationship.jobUserGroup"/>
     </archetype>
 </archetypes>
