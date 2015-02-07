@@ -3073,3 +3073,45 @@ ALTER TABLE users
 ADD KEY `FK6A68E0826A12449` (`user_id`),
 ADD CONSTRAINT `FK6A68E0826A12449` FOREIGN KEY (`user_id`) REFERENCES `parties` (`party_id`)
   ON DELETE CASCADE;
+
+#
+# Replace entityRelationship.productIncludes with entityLink.productIncludes for OVPMS-1559 Nested product templates
+#
+
+insert into entity_links (version, linkId, arch_short_name, arch_version, name, description, active_start_time,
+                          active_end_time, sequence, source_id, target_id)
+select version, linkId, "entityLink.productIncludes", "1.0", name, description, active_start_time, active_end_time,
+       sequence, source_id, target_id
+from entity_relationships r
+where r.arch_short_name = "entityRelationship.productIncludes"
+    and not exists (
+        select *
+        from entity_links l
+        where l.source_id =  r.source_id
+            and l.target_id = r.target_id
+            and (l.active_start_time = r.active_start_time or (l.active_start_time is null and l.active_start_time is null))
+            and (l.active_end_time = r.active_end_time or (l.active_end_time is null and l.active_end_time is null))
+            and l.arch_short_name = "entityLink.productIncludes");
+
+insert into entity_link_details (id, type, value, name)
+select l.id, d.type, d.value, d.name
+from entity_relationships r
+join entity_relationship_details d on r.entity_relationship_id = d.entity_relationship_id
+join entity_links l on l.arch_short_name = "entityLink.productIncludes"
+    and l.source_id = r.source_id and l.target_id = r.target_id
+    and (l.active_start_time = r.active_start_time or (l.active_start_time is null and l.active_start_time is null))
+    and (l.active_end_time = r.active_end_time or (l.active_end_time is null and l.active_end_time is null))
+where r.arch_short_name = "entityRelationship.productIncludes"
+    and not exists (
+        select *
+        from entity_link_details ld
+        where ld.id = l.id);
+
+delete d
+from entity_relationship_details d
+join entity_relationships r on d.entity_relationship_id = r.entity_relationship_id
+where r.arch_short_name = "entityRelationship.productIncludes";
+
+delete r
+from entity_relationships r
+where r.arch_short_name = "entityRelationship.productIncludes";
