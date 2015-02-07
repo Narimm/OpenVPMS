@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -1163,9 +1163,9 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         Product product3 = createProduct(ProductArchetypes.SERVICE, fixedPrice);
         Product template = createProduct(ProductArchetypes.TEMPLATE);
         EntityBean templateBean = new EntityBean(template);
-        templateBean.addNodeRelationship("includes", product1);
-        templateBean.addNodeRelationship("includes", product2);
-        templateBean.addNodeRelationship("includes", product3);
+        templateBean.addNodeTarget("includes", product1);
+        templateBean.addNodeTarget("includes", product2);
+        templateBean.addNodeTarget("includes", product3);
         save(template);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);

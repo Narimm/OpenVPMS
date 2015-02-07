@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
 import org.junit.Test;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.workflow.MessageArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -38,6 +39,7 @@ import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.product.ProductPriceEditor;
 import org.openvpms.web.component.im.product.ProductReminderRelationshipEditor;
 import org.openvpms.web.component.im.product.ProductStockLocationEditor;
+import org.openvpms.web.component.im.product.ProductTemplateEditor;
 import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
@@ -207,7 +209,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verfies that a {@link org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActItemEditor} is created for
+     * Verifies that a {@link org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActItemEditor} is created for
      * <em>act.customerAccountInvoiceItem, act.customerAccountCreditItem and
      * act.customerAccountCounterItem</em>
      */
@@ -301,12 +303,16 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
 
     /**
      * Verifies that an {@link ProductEditor} is created for each
-     * <em>product.*</em> archetype.
+     * <em>product.*</em> archetype except <em>product.template</em> which uses {@link ProductTemplateEditor}.
      */
     @Test
     public void testCreateProductEditor() {
         for (String shortName : DescriptorHelper.getShortNames("product.*")) {
-            checkCreate(shortName, ProductEditor.class);
+            if (ProductArchetypes.TEMPLATE.equals(shortName)) {
+                checkCreate(shortName, ProductTemplateEditor.class);
+            } else {
+                checkCreate(shortName, ProductEditor.class);
+            }
         }
     }
 
