@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.list;
@@ -27,6 +27,7 @@ import org.openvpms.component.business.service.archetype.helper.sort.IMObjectSor
 import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -70,7 +71,7 @@ public class ListFunctions {
      * @param node    the node to sort on
      * @return the sorted objects
      */
-    public <T extends IMObject> List<T> sort(List<T> objects, String node) {
+    public <T extends IMObject> List<T> sort(Collection<T> objects, String node) {
         return sorter.sort(new ArrayList<T>(objects), node, true);
     }
 
@@ -80,7 +81,7 @@ public class ListFunctions {
      * @param objects the objects
      * @return the concatenated names
      */
-    public <T extends IMObject> String names(List<T> objects) {
+    public <T extends IMObject> String names(Collection<T> objects) {
         return names(objects, SEPARATOR);
     }
 
@@ -91,7 +92,7 @@ public class ListFunctions {
      * @param separator the separator
      * @return the concatenated names
      */
-    public <T extends IMObject> String names(List<T> objects, String separator) {
+    public <T extends IMObject> String names(Collection<T> objects, String separator) {
         return join(objects, "name", separator);
     }
 
@@ -118,7 +119,7 @@ public class ListFunctions {
      * @param objects the objects
      * @return the concatenated names
      */
-    public <T extends IMObject> String sortNames(List<T> objects) {
+    public <T extends IMObject> String sortNames(Collection<T> objects) {
         return sortNames(objects, SEPARATOR);
     }
 
@@ -130,7 +131,7 @@ public class ListFunctions {
      * @param separator the separator
      * @return the concatenated names
      */
-    public <T extends IMObject> String sortNames(List<T> objects, String separator) {
+    public <T extends IMObject> String sortNames(Collection<T> objects, String separator) {
         return names(sort(new ArrayList<T>(objects), "name"), separator);
     }
 
@@ -141,7 +142,7 @@ public class ListFunctions {
      * @param node    the node name
      * @return the concatenated node
      */
-    public <T extends IMObject> String join(List<T> objects, String node) {
+    public <T extends IMObject> String join(Collection<T> objects, String node) {
         return join(objects, node, SEPARATOR);
     }
 
@@ -153,19 +154,21 @@ public class ListFunctions {
      * @param separator the separator
      * @return the concatenated node
      */
-    public <T extends IMObject> String join(List<T> objects, String node, String separator) {
+    public <T extends IMObject> String join(Collection<T> objects, String node, String separator) {
         StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < objects.size(); ++i) {
+        int i = 0;
+        for (T object : objects) {
             if (i > 0) {
                 builder.append(separator);
             }
-            NodeResolver resolver = new NodeResolver(objects.get(i), service);
+            NodeResolver resolver = new NodeResolver(object, service);
             try {
                 Object value = resolver.getObject(node);
                 builder.append(value);
             } catch (PropertyResolverException ignore) {
                 // do nothing
             }
+            ++i;
         }
         return builder.toString();
     }
