@@ -32,6 +32,7 @@ import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.jxpath.ObjectFunctions;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -62,7 +63,7 @@ public class ListFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ListFunctions#names(List)} and {@link ListFunctions#names(List, String)} methods.
+     * Tests the {@link ListFunctions#names(Collection)} and {@link ListFunctions#names(Collection, String)} methods.
      */
     @Test
     public void testNames() {
@@ -89,7 +90,8 @@ public class ListFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ListFunctions#sortNames(List)} and {@link ListFunctions#sortNames(List, String)} methods.
+     * Tests the {@link ListFunctions#sortNames(Collection)} and {@link ListFunctions#sortNames(Collection, String)}
+     * methods.
      */
     @Test
     public void testSortNames() {
@@ -98,7 +100,8 @@ public class ListFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ListFunctions#join(List, String)} and {@link ListFunctions#join(List, String, String)} methods.
+     * Tests the {@link ListFunctions#join(Collection, String)} and
+     * {@link ListFunctions#join(Collection, String, String)} methods.
      */
     @Test
     public void testJoin() {
