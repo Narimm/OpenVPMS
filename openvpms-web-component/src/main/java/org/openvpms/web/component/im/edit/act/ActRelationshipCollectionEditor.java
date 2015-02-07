@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -24,13 +24,11 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
@@ -389,15 +387,11 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
         ActRelationshipCollectionPropertyEditor collection = getEditor();
 
         IMObjectCopier copier = new IMObjectCopier(new ActItemCopyHandler());
-        IMObjectBean bean = new IMObjectBean(template);
-        List<IMObject> values = bean.getValues("includes");
+        Map<Product, BigDecimal> includes = getProductIncludes(template);
         Act act = (Act) editor.getObject();
         Act copy = act; // replace the existing act with the first
         Date startTime = act.getActivityStartTime();
-        for (IMObject value : values) {
-            EntityRelationship relationship = (EntityRelationship) value;
-            IMObjectReference product = relationship.getTarget();
-
+        for (Map.Entry<Product, BigDecimal> include : includes.entrySet()) {
             if (copy == null) {
                 // copy the act, and associate the product
                 List<IMObject> objects = copier.apply(act);
@@ -413,15 +407,8 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
                 // create the component - must do this to ensure that the product editor is created
                 editor.getComponent();
             }
-            editor.setProductRef(product);
-
-            IMObjectBean relationshipBean = new IMObjectBean(relationship);
-            if (relationshipBean.hasNode("includeQty")) {
-                BigDecimal quantity = relationshipBean.getBigDecimal("includeQty");
-                if (quantity != null) {
-                    editor.setQuantity(quantity);
-                }
-            }
+            editor.setProduct(include.getKey());
+            editor.setQuantity(include.getValue());
 
             collection.add(copy);
             collection.setEditor(copy, editor);
@@ -430,6 +417,17 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
             copy = null;
         }
         return result;
+    }
+
+    /**
+     * Expands a product template.
+     *
+     * @param template the template to expand
+     * @return a map of included products to their quantities
+     */
+    protected Map<Product, BigDecimal> getProductIncludes(Product template) {
+        ProductTemplateExpander expander = new ProductTemplateExpander();
+        return expander.expand(template, getContext().getCache());
     }
 
     /**
