@@ -41,14 +41,19 @@ import java.math.BigDecimal;
 public class ProductIncludesRelationshipStateTableModel extends RelationshipStateTableModel {
 
     /**
-     * The quantity index.
+     * The low quantity index.
      */
-    private static final int QUANTITY_INDEX = ACTIVE_INDEX + 1;
+    private static final int LOW_QUANTITY_INDEX = ACTIVE_INDEX + 1;
+
+    /**
+     * The high quantity index.
+     */
+    private static final int HIGH_QUANTITY_INDEX = LOW_QUANTITY_INDEX + 1;
 
     /**
      * The weight range index.
      */
-    private static final int WEIGHT_RANGE_INDEX = QUANTITY_INDEX + 1;
+    private static final int WEIGHT_INDEX = HIGH_QUANTITY_INDEX + 1;
 
 
     /**
@@ -86,7 +91,7 @@ public class ProductIncludesRelationshipStateTableModel extends RelationshipStat
         Object result;
         if (column instanceof DescriptorTableColumn) {
             result = ((DescriptorTableColumn) column).getComponent(object.getRelationship(), getContext());
-        } else if (column.getModelIndex() == WEIGHT_RANGE_INDEX) {
+        } else if (column.getModelIndex() == WEIGHT_INDEX) {
             result = getWeightRange(object);
         } else {
             result = super.getValue(object, column, row);
@@ -121,9 +126,10 @@ public class ProductIncludesRelationshipStateTableModel extends RelationshipStat
         DefaultTableColumnModel model = new DefaultTableColumnModel();
         ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(ProductArchetypes.PRODUCT_INCLUDES);
 
-        model.addColumn(new DescriptorTableColumn(NAME_INDEX, "name", archetype));
-        model.addColumn(new DescriptorTableColumn(QUANTITY_INDEX, "includeQty", archetype));
-        model.addColumn(createTableColumn(WEIGHT_RANGE_INDEX, "product.template.weight"));
+        model.addColumn(createTableColumn(NAME_INDEX, "table.imobject.name"));
+        model.addColumn(new DescriptorTableColumn(LOW_QUANTITY_INDEX, "lowQuantity", archetype));
+        model.addColumn(new DescriptorTableColumn(HIGH_QUANTITY_INDEX, "highQuantity", archetype));
+        model.addColumn(createTableColumn(WEIGHT_INDEX, "product.template.weight"));
         if (getShowActive()) {
             model.addColumn(createTableColumn(ACTIVE_INDEX, ACTIVE));
         }

@@ -59,9 +59,10 @@ class ProductTemplateExpander {
      * @param cache    the object cache
      * @return a map products to their corresponding quantities
      */
-    public Map<Product, BigDecimal> expand(Product template, BigDecimal weight, IMObjectCache cache) {
-        Map<Product, BigDecimal> includes = new LinkedHashMap<Product, BigDecimal>();
-        if (!expand(template, template, weight, includes, BigDecimal.ONE, new ArrayDeque<Product>(), cache)) {
+    public Map<Product, Quantity> expand(Product template, BigDecimal weight, IMObjectCache cache) {
+        Map<Product, Quantity> includes = new LinkedHashMap<Product, Quantity>();
+        Quantity quantity = new Quantity(BigDecimal.ONE, BigDecimal.ONE);
+        if (!expand(template, template, weight, includes, quantity, new ArrayDeque<Product>(), cache)) {
             includes.clear();
         } else if (includes.isEmpty()) {
             reportNoExpansion(template, weight);
@@ -81,8 +82,8 @@ class ProductTemplateExpander {
      * @param cache    the cache
      * @return {@code true} if the template expanded
      */
-    protected boolean expand(Product root, Product template, BigDecimal weight, Map<Product, BigDecimal> includes,
-                             BigDecimal quantity, Deque<Product> parents, IMObjectCache cache) {
+    protected boolean expand(Product root, Product template, BigDecimal weight, Map<Product, Quantity> includes,
+                             Quantity quantity, Deque<Product> parents, IMObjectCache cache) {
         boolean result = true;
         if (!parents.contains(template)) {
             parents.push(template);
@@ -96,16 +97,16 @@ class ProductTemplateExpander {
                 } else if (include.isIncluded(weight)) {
                     Product product = include.getProduct(cache);
                     if (product != null) {
-                        BigDecimal included = quantity.multiply(include.getQuantity());
+                        Quantity included = quantity.multiply(include.getQuantity());
                         if (TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
                             if (!expand(root, product, weight, includes, included, parents, cache)) {
                                 result = false;
                                 break;
                             }
                         } else {
-                            BigDecimal existing = includes.get(product);
+                            Quantity existing = includes.get(product);
                             if (existing == null) {
-                                existing = ZERO;
+                                existing = new Quantity(ZERO, ZERO);
                             }
                             included = included.add(existing);
                             includes.put(product, included);
@@ -178,21 +179,32 @@ class ProductTemplateExpander {
         private final BigDecimal maxWeight;
 
         /**
-         * The included quantity.
+         * The low quantity.
          */
-        private final BigDecimal quantity;
+        private final BigDecimal lowQuantity;
+
+        /**
+         * The high quantity.
+         */
+        private final BigDecimal highQuantity;
 
         /**
          * The product reference.
          */
         private final IMObjectReference product;
 
+        /**
+         * Constructs an {@link Include}.
+         *
+         * @param relationship the relationship
+         */
         public Include(IMObjectRelationship relationship) {
             IMObjectBean bean = new IMObjectBean(relationship);
             WeightUnits units = getUnits(bean);
             minWeight = getWeight("minWeight", bean, units);
             maxWeight = getWeight("maxWeight", bean, units);
-            quantity = bean.getBigDecimal("includeQty", ZERO);
+            lowQuantity = bean.getBigDecimal("lowQuantity", ZERO);
+            highQuantity = bean.getBigDecimal("highQuantity", ZERO);
             product = relationship.getTarget();
         }
 
@@ -220,8 +232,8 @@ class ProductTemplateExpander {
          *
          * @return the quantity
          */
-        public BigDecimal getQuantity() {
-            return quantity;
+        public Quantity getQuantity() {
+            return new Quantity(lowQuantity, highQuantity);
         }
 
         /**

@@ -390,11 +390,11 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
         ActRelationshipCollectionPropertyEditor collection = getEditor();
 
         IMObjectCopier copier = new IMObjectCopier(new ActItemCopyHandler());
-        Map<Product, BigDecimal> includes = getProductIncludes(template, editor.getPatient());
+        Map<Product, Quantity> includes = getProductIncludes(template, editor.getPatient());
         Act act = (Act) editor.getObject();
         Act copy = act; // replace the existing act with the first
         Date startTime = act.getActivityStartTime();
-        for (Map.Entry<Product, BigDecimal> include : includes.entrySet()) {
+        for (Map.Entry<Product, Quantity> include : includes.entrySet()) {
             if (copy == null) {
                 // copy the act, and associate the product
                 List<IMObject> objects = copier.apply(act);
@@ -411,7 +411,7 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
                 editor.getComponent();
             }
             editor.setProduct(include.getKey());
-            editor.setQuantity(include.getValue());
+            setQuantity(editor, include.getValue());
 
             collection.add(copy);
             collection.setEditor(copy, editor);
@@ -423,13 +423,23 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
     }
 
     /**
+     * Sets the quantity.
+     *
+     * @param editor   the editor
+     * @param quantity the quantity
+     */
+    protected void setQuantity(ActItemEditor editor, Quantity quantity) {
+        editor.setQuantity(quantity.getHighQuantity());
+    }
+
+    /**
      * Expands a product template.
      *
      * @param template the template to expand
      * @param patient  the patient. May be {@code null}
      * @return a map of included products to their quantities
      */
-    protected Map<Product, BigDecimal> getProductIncludes(Product template, Party patient) {
+    protected Map<Product, Quantity> getProductIncludes(Product template, Party patient) {
         BigDecimal weight = BigDecimal.ZERO;
         if (patient != null) {
             PatientRules rules = ServiceHelper.getBean(PatientRules.class);

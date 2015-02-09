@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.estimate;
@@ -26,21 +26,21 @@ import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.workspace.customer.estimate.EstimateActRelationshipCollectionEditor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Enter description.
+ * Estimate item collection editor for visits.
  *
  * @author Tim Anderson
  */
-public class VisitEstimateItemRelationshipCollectionEditor extends ActRelationshipCollectionEditor {
+public class VisitEstimateItemRelationshipCollectionEditor extends EstimateActRelationshipCollectionEditor {
 
     /**
      * Constructs a {@link VisitEstimateItemRelationshipCollectionEditor}.
