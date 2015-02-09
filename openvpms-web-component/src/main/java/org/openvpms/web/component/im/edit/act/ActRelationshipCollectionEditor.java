@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.edit.act;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Predicate;
 import org.openvpms.archetype.rules.act.ActCopyHandler;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
@@ -27,6 +28,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
@@ -41,6 +43,7 @@ import org.openvpms.web.component.im.relationship.MultipleRelationshipCollection
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -387,7 +390,7 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
         ActRelationshipCollectionPropertyEditor collection = getEditor();
 
         IMObjectCopier copier = new IMObjectCopier(new ActItemCopyHandler());
-        Map<Product, BigDecimal> includes = getProductIncludes(template);
+        Map<Product, BigDecimal> includes = getProductIncludes(template, editor.getPatient());
         Act act = (Act) editor.getObject();
         Act copy = act; // replace the existing act with the first
         Date startTime = act.getActivityStartTime();
@@ -423,11 +426,17 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
      * Expands a product template.
      *
      * @param template the template to expand
+     * @param patient  the patient. May be {@code null}
      * @return a map of included products to their quantities
      */
-    protected Map<Product, BigDecimal> getProductIncludes(Product template) {
+    protected Map<Product, BigDecimal> getProductIncludes(Product template, Party patient) {
+        BigDecimal weight = BigDecimal.ZERO;
+        if (patient != null) {
+            PatientRules rules = ServiceHelper.getBean(PatientRules.class);
+            weight = rules.getWeight(patient);
+        }
         ProductTemplateExpander expander = new ProductTemplateExpander();
-        return expander.expand(template, getContext().getCache());
+        return expander.expand(template, weight, getContext().getCache());
     }
 
     /**

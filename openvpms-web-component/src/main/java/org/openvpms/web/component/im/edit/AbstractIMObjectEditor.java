@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -151,7 +151,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
 
     /**
-     * Constructs an {@code AbstractIMObjectEditor}.
+     * Constructs an {@link AbstractIMObjectEditor}.
      *
      * @param object        the object to edit
      * @param parent        the parent object. May be {@code null}

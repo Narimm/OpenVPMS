@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -22,6 +20,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
@@ -35,8 +34,7 @@ import java.util.Iterator;
  * Contains the details required to render an {@link IMObjectRelationship}.
  * This is used to reduce database accesses.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class RelationshipState {
 
@@ -80,9 +78,14 @@ public class RelationshipState {
      */
     private boolean active;
 
+    /**
+     * Bean to access relationship nodes.
+     */
+    private IMObjectBean bean;
+
 
     /**
-     * Creates a new <tt>RelationshipState</tt>.
+     * Constructs an {@link RelationshipState}.
      *
      * @param relationship      the relationship
      * @param sourceId          the source id
@@ -110,7 +113,7 @@ public class RelationshipState {
     }
 
     /**
-     * Creates a new <tt>RelationshipState</tt>.
+     * Constructs an {@link RelationshipState}.
      *
      * @param parent       the parent object
      * @param relationship the relationship
@@ -124,8 +127,7 @@ public class RelationshipState {
         IMObjectReference reference = (source)
                                       ? relationship.getTarget() : relationship.getSource();
         if (reference != null) {
-            ObjectRefConstraint constraint
-                = new ObjectRefConstraint("o", reference);
+            ObjectRefConstraint constraint = new ObjectRefConstraint("o", reference);
             ArchetypeQuery query = new ArchetypeQuery(constraint);
             query.add(new NodeSelectConstraint("o.id"));
             query.add(new NodeSelectConstraint("o.name"));
@@ -172,7 +174,7 @@ public class RelationshipState {
     /**
      * Returns the source name.
      *
-     * @return the source name. May be <tt>null</tt>
+     * @return the source name. May be {@code null}
      */
     public String getSourceName() {
         return sourceName;
@@ -181,7 +183,7 @@ public class RelationshipState {
     /**
      * Returns the source description.
      *
-     * @return the source description. May be <tt>null</tt>
+     * @return the source description. May be {@code null}
      */
     public String getSourceDescription() {
         return sourceDescription;
@@ -199,7 +201,7 @@ public class RelationshipState {
     /**
      * Returns the target name.
      *
-     * @return the target name. May be <tt>null</tt>
+     * @return the target name. May be {@code null}
      */
     public String getTargetName() {
         return targetName;
@@ -208,7 +210,7 @@ public class RelationshipState {
     /**
      * Returns the target description.
      *
-     * @return the target description. May be <tt>null</tt>
+     * @return the target description. May be {@code null}
      */
     public String getTargetDescription() {
         return targetDescription;
@@ -222,7 +224,7 @@ public class RelationshipState {
      * <li>the underlying entities are active
      * </ul>
      *
-     * @return <tt>true</tt> if this is active; otherwise <tt>false</tt>
+     * @return {@code true} if this is active; otherwise {@code false}
      */
     public boolean isActive() {
         return (active && relationship.isActive());
@@ -253,6 +255,18 @@ public class RelationshipState {
      */
     public IMObjectRelationship getRelationship() {
         return relationship;
+    }
+
+    /**
+     * Returns a bean to access the relationship nodes.
+     *
+     * @return a bean
+     */
+    public IMObjectBean getBean() {
+        if (bean == null) {
+            bean = new IMObjectBean(relationship);
+        }
+        return bean;
     }
 
 }

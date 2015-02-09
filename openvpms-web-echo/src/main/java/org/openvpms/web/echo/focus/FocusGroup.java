@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: FocusGroup.java 757 2006-04-13 02:02:07Z tanderson $
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.focus;
@@ -30,18 +28,17 @@ import java.util.List;
 /**
  * Manages the focus traversal indexes of a set of components.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-04-13 02:02:07Z $
+ * @author Tim Anderson
  */
 public class FocusGroup {
 
     /**
-     * The symbolic name for the group. May be <tt>null</tt>.
+     * The symbolic name for the group. May be {@code null}.
      */
     private final String name;
 
     /**
-     * The parent. May be <tt>null</tt>.
+     * The parent. May be {@code null}.
      */
     private FocusGroup parent;
 
@@ -72,7 +69,7 @@ public class FocusGroup {
 
 
     /**
-     * Construct a new <tt>FocusGroup</tt>.
+     * Constructs a {@link FocusGroup}.
      *
      * @param name a symbolic name for the group
      */
@@ -81,7 +78,7 @@ public class FocusGroup {
     }
 
     /**
-     * Construct a new <tt>FocusGroup</tt>.
+     * Constructs a {@link FocusGroup}.
      *
      * @param name  a symbolic name for the group
      * @param first the first focus traversal index
@@ -92,9 +89,22 @@ public class FocusGroup {
     }
 
     /**
+     * Constructs a {@link FocusGroup}.
+     *
+     * @param name       a symbolic name for the group
+     * @param components the components to add
+     */
+    public FocusGroup(String name, Component... components) {
+        this(name);
+        for (Component component : components) {
+            add(component);
+        }
+    }
+
+    /**
      * Returns a symbolic name for the group.
      *
-     * @return a symbolic name for the group. May be <tt>null</tt>
+     * @return a symbolic name for the group. May be {@code null}
      */
     public String getName() {
         return name;
@@ -103,7 +113,7 @@ public class FocusGroup {
     /**
      * Sets the parent group.
      *
-     * @param group the parent group. May be <tt>null</tt>
+     * @param group the parent group. May be {@code null}
      */
     public void setParent(FocusGroup group) {
         parent = group;
@@ -113,7 +123,7 @@ public class FocusGroup {
     /**
      * Returns the parent group.
      *
-     * @return the parent group. May be <tt>null</tt>
+     * @return the parent group. May be {@code null}
      */
     public FocusGroup getParent() {
         return parent;
@@ -122,7 +132,7 @@ public class FocusGroup {
     /**
      * Sets the default component to focus on.
      *
-     * @param component the component. May be <tt>null</tt>
+     * @param component the component. May be {@code null}
      */
     public void setDefault(Component component) {
         defaultFocus = component;
@@ -131,7 +141,7 @@ public class FocusGroup {
     /**
      * Returns the default component to focus on.
      *
-     * @return the component. May be <tt>null</tt>
+     * @return the component. May be {@code null}
      */
     public Component getDefaultFocus() {
         return defaultFocus;
@@ -140,8 +150,8 @@ public class FocusGroup {
     /**
      * Determines if reindexing is required.
      *
-     * @return <tt>true</tt> if reindexing is required, otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if reindexing is required, otherwise
+     *         {@code false}
      */
     public boolean isDirty() {
         return dirty;
@@ -150,7 +160,7 @@ public class FocusGroup {
     /**
      * Sets the dirty flag.
      *
-     * @param dirty if <tt>true</tt>  indicates reindexing is required
+     * @param dirty if {@code true}  indicates reindexing is required
      */
     public void setDirty(boolean dirty) {
         this.dirty = dirty;
@@ -212,7 +222,7 @@ public class FocusGroup {
      * Returns the index of a focus group.
      *
      * @param group the group
-     * @return the index of the group, or <tt>-1</tt> if it doesn't exist
+     * @return the index of the group, or {@code -1} if it doesn't exist
      */
     public int indexOf(FocusGroup group) {
         return components.indexOf(group);
@@ -250,7 +260,7 @@ public class FocusGroup {
     /**
      * Returns the components.
      *
-     * @return a list containing <tt>Component</tt> and {@link FocusGroup}
+     * @return a list containing {@code Component} and {@link FocusGroup}
      *         instances.
      */
     public List<Object> getComponents() {
@@ -260,7 +270,7 @@ public class FocusGroup {
     /**
      * Returns the first focus traversal index.
      *
-     * @return the first focus traversal index, or <tt>-1</tt> if there are
+     * @return the first focus traversal index, or {@code -1} if there are
      *         no indexes
      */
     public int getFirst() {
@@ -270,7 +280,7 @@ public class FocusGroup {
     /**
      * Returns the last focus traversal index.
      *
-     * @return the last focus traversal index, or <tt>-1</tt> if there are
+     * @return the last focus traversal index, or {@code -1} if there are
      *         no indexes
      */
     public int getLast() {
@@ -325,7 +335,7 @@ public class FocusGroup {
      * Returns the first component that may have focus set.
      *
      * @return the first component that may have focus set, or
-     *         <tt>null</tt> if none may have focus set
+     *         {@code null} if none may have focus set
      */
     public Component getFocusable() {
         Component result = null;
