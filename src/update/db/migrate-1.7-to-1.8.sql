@@ -3078,40 +3078,80 @@ ADD CONSTRAINT `FK6A68E0826A12449` FOREIGN KEY (`user_id`) REFERENCES `parties` 
 # Replace entityRelationship.productIncludes with entityLink.productIncludes for OVPMS-1559 Nested product templates
 #
 
-insert into entity_links (version, linkId, arch_short_name, arch_version, name, description, active_start_time,
+INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, description, active_start_time,
                           active_end_time, sequence, source_id, target_id)
-select version, linkId, "entityLink.productIncludes", "1.0", name, description, active_start_time, active_end_time,
-       sequence, source_id, target_id
-from entity_relationships r
-where r.arch_short_name = "entityRelationship.productIncludes"
-    and not exists (
-        select *
-        from entity_links l
-        where l.source_id =  r.source_id
-            and l.target_id = r.target_id
-            and (l.active_start_time = r.active_start_time or (l.active_start_time is null and l.active_start_time is null))
-            and (l.active_end_time = r.active_end_time or (l.active_end_time is null and l.active_end_time is null))
-            and l.arch_short_name = "entityLink.productIncludes");
+  SELECT
+    version,
+    linkId,
+    "entityLink.productIncludes",
+    "1.0",
+    name,
+    description,
+    active_start_time,
+    active_end_time,
+    sequence,
+    source_id,
+    target_id
+  FROM entity_relationships r
+  WHERE r.arch_short_name = "entityRelationship.productIncludes"
+        AND NOT exists(
+      SELECT
+        *
+      FROM entity_links l
+      WHERE l.source_id = r.source_id
+            AND l.target_id = r.target_id
+            AND
+            (l.active_start_time = r.active_start_time OR (l.active_start_time IS null AND l.active_start_time IS null))
+            AND (l.active_end_time = r.active_end_time OR (l.active_end_time IS null AND l.active_end_time IS null))
+            AND l.arch_short_name = "entityLink.productIncludes");
 
-insert into entity_link_details (id, type, value, name)
-select l.id, d.type, d.value, d.name
-from entity_relationships r
-join entity_relationship_details d on r.entity_relationship_id = d.entity_relationship_id
-join entity_links l on l.arch_short_name = "entityLink.productIncludes"
-    and l.source_id = r.source_id and l.target_id = r.target_id
-    and (l.active_start_time = r.active_start_time or (l.active_start_time is null and l.active_start_time is null))
-    and (l.active_end_time = r.active_end_time or (l.active_end_time is null and l.active_end_time is null))
-where r.arch_short_name = "entityRelationship.productIncludes"
-    and not exists (
-        select *
-        from entity_link_details ld
-        where ld.id = l.id);
+INSERT INTO entity_link_details (id, name, type, value)
+  SELECT
+    l.id,
+    "lowQuantity",
+    d.type,
+    d.value
+  FROM entity_relationships r
+    JOIN entity_relationship_details d
+      ON r.entity_relationship_id = d.entity_relationship_id
+         AND d.name = "includeQty"
+    JOIN entity_links l
+      ON l.arch_short_name = "entityLink.productIncludes"
+         AND l.source_id = r.source_id AND l.target_id = r.target_id
+         AND
+         (l.active_start_time = r.active_start_time OR (l.active_start_time IS null AND l.active_start_time IS null))
+         AND (l.active_end_time = r.active_end_time OR (l.active_end_time IS null AND l.active_end_time IS null))
+  WHERE r.arch_short_name = "entityRelationship.productIncludes"
+        AND NOT exists(
+      SELECT
+        *
+      FROM entity_link_details ld
+      WHERE ld.id = l.id);
 
-delete d
-from entity_relationship_details d
-join entity_relationships r on d.entity_relationship_id = r.entity_relationship_id
-where r.arch_short_name = "entityRelationship.productIncludes";
+# Copy the lowQuantity to the highQuantity
+INSERT INTO entity_link_details (id, name, type, value)
+  SELECT
+    d.id,
+    "highQuantity",
+    d.type,
+    d.value
+  FROM entity_link_details d
+    JOIN entity_links l
+      ON l.arch_short_name = "entityLink.productIncludes"
+         AND d.id = l.id AND d.name = "lowQuantity"
+         AND NOT exists(
+        SELECT
+          *
+        FROM entity_link_details e
+        WHERE e.id = d.id AND e.name = "highQuantity");
 
-delete r
-from entity_relationships r
-where r.arch_short_name = "entityRelationship.productIncludes";
+# Remove the old relationships
+DELETE d
+FROM entity_relationship_details d
+  JOIN entity_relationships r
+    ON d.entity_relationship_id = r.entity_relationship_id
+WHERE r.arch_short_name = "entityRelationship.productIncludes";
+
+DELETE r
+FROM entity_relationships r
+WHERE r.arch_short_name = "entityRelationship.productIncludes";
