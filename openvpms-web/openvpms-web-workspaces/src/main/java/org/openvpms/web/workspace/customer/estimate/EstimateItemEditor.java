@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -73,8 +73,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * Nodes to display when a product template is selected.
      */
     private static final ArchetypeNodes TEMPLATE_NODES = new ArchetypeNodes().exclude(
-            "lowQty", "highQty", "fixedPrice", "lowUnitPrice", "highUnitPrice",
-            "lowTotal", "highTotal");
+            "lowQty", "highQty", "fixedPrice", "lowUnitPrice", "highUnitPrice", "lowTotal", "highTotal");
 
 
     /**
@@ -114,14 +113,32 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * @param quantity the product quantity
      */
     public void setQuantity(BigDecimal quantity) {
+        setLowQuantity(quantity);
+        setHighQuantity(quantity);
+    }
+
+    /**
+     * Sets the low quantity.
+     *
+     * @param quantity the low quantity
+     */
+    public void setLowQuantity(BigDecimal quantity) {
         getProperty("lowQty").setValue(quantity);
+    }
+
+    /**
+     * Sets the high quantity.
+     *
+     * @param quantity the high quantity
+     */
+    public void setHighQuantity(BigDecimal quantity) {
         getProperty("highQty").setValue(quantity);
     }
 
     /**
      * Returns the quantity.
      * <p/>
-     * This implememntation returns the high quantity.
+     * This implementation returns the high quantity.
      *
      * @return the quantity
      */
@@ -134,7 +151,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
     /**
      * Returns the unit price.
      * <p/>
-     * This implememntation returns the high unit price.
+     * This implementation returns the high unit price.
      *
      * @return the unit price
      */

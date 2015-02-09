@@ -24,6 +24,8 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.EntityLinkEditor;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.Validator;
@@ -53,7 +55,22 @@ public class ProductIncludesEditor extends EntityLinkEditor {
     public ProductIncludesEditor(EntityLink object, IMObject parent, LayoutContext layoutContext) {
         super(object, parent, layoutContext);
         getArchetypeNodes().exclude("maxWeight", "weightUnits");
+
+        getProperty("lowQuantity").addModifiableListener(new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                onLowQuantityChanged();
+            }
+        });
+
+        getProperty("highQuantity").addModifiableListener(new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                onHighQuantityChanged();
+            }
+        });
     }
+
 
     /**
      * Validates the object.
@@ -94,6 +111,32 @@ public class ProductIncludesEditor extends EntityLinkEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new ProductIncludesLayoutStrategy();
+    }
+
+    /**
+     * Invoked when the low quantity changes.
+     */
+    private void onLowQuantityChanged() {
+        Property highQuantity = getProperty("highQuantity");
+        Property lowQuantity = getProperty("lowQuantity");
+        BigDecimal low = lowQuantity.getBigDecimal(BigDecimal.ZERO);
+        BigDecimal high = highQuantity.getBigDecimal(BigDecimal.ZERO);
+        if (low.compareTo(high) > 0) {
+            highQuantity.setValue(low);
+        }
+    }
+
+    /**
+     * Invoked when the high quantity changes.
+     */
+    private void onHighQuantityChanged() {
+        Property highQuantity = getProperty("highQuantity");
+        Property lowQuantity = getProperty("lowQuantity");
+        BigDecimal low = lowQuantity.getBigDecimal(BigDecimal.ZERO);
+        BigDecimal high = highQuantity.getBigDecimal(BigDecimal.ZERO);
+        if (low.compareTo(high) > 0) {
+            lowQuantity.setValue(high);
+        }
     }
 
     private class ProductIncludesLayoutStrategy extends LayoutStrategy {

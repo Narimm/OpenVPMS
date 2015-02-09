@@ -30,6 +30,7 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Tests the {@link ProductTemplateExpander}.
@@ -51,19 +52,19 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         Product templateB = createTemplate("templateB");
         Product templateC = createTemplate("templateC");
 
-        addInclude(templateA, templateB, 1);
-        addInclude(templateA, templateC, 2);
-        addInclude(templateB, productX, 5);
-        addInclude(templateB, productY, 2);
-        addInclude(templateC, productX, 1);
-        addInclude(templateC, productZ, 10);
+        addInclude(templateA, templateB, 1, 2);
+        addInclude(templateA, templateC, 2, 2);
+        addInclude(templateB, productX, 5, 5);
+        addInclude(templateB, productY, 2, 2);
+        addInclude(templateC, productX, 1, 1);
+        addInclude(templateC, productZ, 10, 10);
 
-        Map<Product, BigDecimal> includes = expand(templateA, BigDecimal.ZERO);
+        Map<Product, Quantity> includes = expand(templateA, BigDecimal.ZERO);
         assertEquals(3, includes.size());
 
-        checkInclude(includes, productX, 7);
-        checkInclude(includes, productY, 2);
-        checkInclude(includes, productZ, 20);
+        checkInclude(includes, productX, 7, 12);
+        checkInclude(includes, productY, 2, 4);
+        checkInclude(includes, productZ, 20, 20);
     }
 
     /**
@@ -79,22 +80,23 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         Product templateB = createTemplate("templateB");
         Product templateC = createTemplate("templateC");
 
-        addInclude(templateA, templateB, 1, 0, 2);
-        addInclude(templateA, templateC, 2, 2, 4);
-        addInclude(templateB, productX, 1, 0, 2);
-        addInclude(templateB, productY, 1, 2, 4);
-        addInclude(templateC, productX, 1, 0, 2);
-        addInclude(templateC, productZ, 1, 2, 4);
+        addInclude(templateA, templateB, 1, 1, 0, 2);
+        addInclude(templateA, templateC, 2, 4, 2, 4);
+        addInclude(templateB, productX, 1, 1, 0, 2);
+        addInclude(templateB, productY, 1, 1, 2, 4);
+        addInclude(templateC, productX, 1, 1, 0, 2);
+        addInclude(templateC, productZ, 1, 1, 2, 4);
 
-        Map<Product, BigDecimal> includes = expand(templateA, BigDecimal.ZERO);
+        Map<Product, Quantity> includes = expand(templateA, BigDecimal.ZERO);
         assertEquals(0, includes.size());  // failed to expand as no weight specified
 
         includes = expand(templateA, BigDecimal.ONE);
         assertEquals(1, includes.size());
-        checkInclude(includes, productX, 1);
+        checkInclude(includes, productX, 1, 1);
 
         includes = expand(templateA, BigDecimal.valueOf(2));
         assertEquals(1, includes.size());
+        checkInclude(includes, productZ, 2, 4);
 
         includes = expand(templateA, BigDecimal.valueOf(4));
         assertEquals(0, includes.size()); // nothing in the weight range
@@ -111,14 +113,14 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         Product templateB = createTemplate("templateB");
         Product templateC = createTemplate("templateC");
 
-        addInclude(templateA, templateB, 1);
-        addInclude(templateA, productX, 1);
-        addInclude(templateB, templateC, 1);
-        addInclude(templateB, productX, 1);
-        addInclude(templateC, templateA, 1);
-        addInclude(templateC, productX, 1);
+        addInclude(templateA, templateB, 1, 1);
+        addInclude(templateA, productX, 1, 1);
+        addInclude(templateB, templateC, 1, 1);
+        addInclude(templateB, productX, 1, 1);
+        addInclude(templateC, templateA, 1, 1);
+        addInclude(templateC, productX, 1, 1);
 
-        Map<Product, BigDecimal> includes = expand(templateA, BigDecimal.ZERO);
+        Map<Product, Quantity> includes = expand(templateA, BigDecimal.ZERO);
         assertEquals(0, includes.size());
     }
 
@@ -129,7 +131,7 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
      * @param weight   the patient weigtht. May be {@code null}
      * @return the expanded template
      */
-    private Map<Product, BigDecimal> expand(Product template, BigDecimal weight) {
+    private Map<Product, Quantity> expand(Product template, BigDecimal weight) {
         ProductTemplateExpander expander = new ProductTemplateExpander();
         return expander.expand(template, weight, new SoftRefIMObjectCache(getArchetypeService()));
     }
@@ -137,13 +139,15 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
     /**
      * Verifies a product and quantity is included.
      *
-     * @param includes the includes
-     * @param product  the expected product
-     * @param quantity the expected quantity
+     * @param includes    the includes
+     * @param product     the expected product
+     * @param lowQuantity the expected quantity
      */
-    private void checkInclude(Map<Product, BigDecimal> includes, Product product, int quantity) {
-        BigDecimal value = includes.get(product);
-        checkEquals(BigDecimal.valueOf(quantity), value);
+    private void checkInclude(Map<Product, Quantity> includes, Product product, int lowQuantity, int highQuantity) {
+        Quantity quantity = includes.get(product);
+        assertNotNull(quantity);
+        checkEquals(BigDecimal.valueOf(lowQuantity), quantity.getLowQuantity());
+        checkEquals(BigDecimal.valueOf(highQuantity), quantity.getHighQuantity());
     }
 
     /**
@@ -162,29 +166,31 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
     /**
      * Adds an include to the template with no weight restrictions.
      *
-     * @param template the template
-     * @param include  the product to include
-     * @param quantity the include quantity
+     * @param template     the template
+     * @param include      the product to include
+     * @param lowQuantity  the low quantity
+     * @param highQuantity the high quantity
      */
-    private void addInclude(Product template, Product include, int quantity) {
-        addInclude(template, include, quantity, 0, 0);
+    private void addInclude(Product template, Product include, int lowQuantity, int highQuantity) {
+        addInclude(template, include, lowQuantity, highQuantity, 0, 0);
     }
 
     /**
      * Adds an include to the template.
      *
-     * @param template  the template
-     * @param include   the product to include
-     * @param quantity  the include quantity
-     * @param minWeight the minimum weight
-     * @param maxWeight the maximum weight
+     * @param template    the template
+     * @param include     the product to include
+     * @param lowQuantity the include quantity
+     * @param minWeight   the minimum weight
+     * @param maxWeight   the maximum weight
      */
-    private void addInclude(Product template, Product include, int quantity, int minWeight,
+    private void addInclude(Product template, Product include, int lowQuantity, int highQuantity, int minWeight,
                             int maxWeight) {
         EntityBean bean = new EntityBean(template);
         IMObjectRelationship relationship = bean.addNodeTarget("includes", include);
         IMObjectBean relBean = new IMObjectBean(relationship);
-        relBean.setValue("includeQty", quantity);
+        relBean.setValue("lowQuantity", lowQuantity);
+        relBean.setValue("highQuantity", highQuantity);
         relBean.setValue("minWeight", minWeight);
         relBean.setValue("maxWeight", maxWeight);
         bean.save();

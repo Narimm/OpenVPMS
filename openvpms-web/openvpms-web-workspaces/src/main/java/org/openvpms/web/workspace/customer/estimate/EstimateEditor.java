@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -34,6 +34,7 @@ import org.openvpms.web.component.im.lookup.LookupFilter;
 import org.openvpms.web.component.im.lookup.LookupQuery;
 import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 
 import java.math.BigDecimal;
@@ -90,6 +91,18 @@ public class EstimateEditor extends ActEditor {
      */
     public ActRelationshipCollectionEditor getDocuments() {
         return (ActRelationshipCollectionEditor) getEditors().getEditor("documents");
+    }
+
+    /**
+     * Creates a collection editor for the items collection.
+     *
+     * @param act   the act
+     * @param items the items collection
+     * @return a new collection editor
+     */
+    @Override
+    protected ActRelationshipCollectionEditor createItemsEditor(Act act, CollectionProperty items) {
+        return new EstimateActRelationshipCollectionEditor(items, act, getLayoutContext());
     }
 
     /**
