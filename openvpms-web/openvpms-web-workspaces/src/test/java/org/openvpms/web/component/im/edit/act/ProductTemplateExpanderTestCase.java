@@ -58,12 +58,46 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         addInclude(templateC, productX, 1);
         addInclude(templateC, productZ, 10);
 
-        Map<Product, BigDecimal> includes = expand(templateA);
+        Map<Product, BigDecimal> includes = expand(templateA, BigDecimal.ZERO);
         assertEquals(3, includes.size());
 
         checkInclude(includes, productX, 7);
         checkInclude(includes, productY, 2);
         checkInclude(includes, productZ, 20);
+    }
+
+    /**
+     * Tests template expansion where products are included based on weight ranges.
+     */
+    @Test
+    public void testExpandWeightRange() {
+        Product productX = TestHelper.createProduct();
+        Product productY = TestHelper.createProduct();
+        Product productZ = TestHelper.createProduct();
+
+        Product templateA = createTemplate("templateA");
+        Product templateB = createTemplate("templateB");
+        Product templateC = createTemplate("templateC");
+
+        addInclude(templateA, templateB, 1, 0, 2);
+        addInclude(templateA, templateC, 2, 2, 4);
+        addInclude(templateB, productX, 1, 0, 2);
+        addInclude(templateB, productY, 1, 2, 4);
+        addInclude(templateC, productX, 1, 0, 2);
+        addInclude(templateC, productZ, 1, 2, 4);
+
+        Map<Product, BigDecimal> includes = expand(templateA, BigDecimal.ZERO);
+        assertEquals(0, includes.size());  // failed to expand as no weight specified
+
+        includes = expand(templateA, BigDecimal.ONE);
+        assertEquals(1, includes.size());
+        checkInclude(includes, productX, 1);
+
+        includes = expand(templateA, BigDecimal.valueOf(2));
+        assertEquals(1, includes.size());
+
+        includes = expand(templateA, BigDecimal.valueOf(4));
+        assertEquals(0, includes.size()); // nothing in the weight range
     }
 
     /**
@@ -84,7 +118,7 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         addInclude(templateC, templateA, 1);
         addInclude(templateC, productX, 1);
 
-        Map<Product, BigDecimal> includes = expand(templateA);
+        Map<Product, BigDecimal> includes = expand(templateA, BigDecimal.ZERO);
         assertEquals(0, includes.size());
     }
 
@@ -92,13 +126,13 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
      * Expands a template.
      *
      * @param template the template to expand
+     * @param weight   the patient weigtht. May be {@code null}
      * @return the expanded template
      */
-    private Map<Product, BigDecimal> expand(Product template) {
+    private Map<Product, BigDecimal> expand(Product template, BigDecimal weight) {
         ProductTemplateExpander expander = new ProductTemplateExpander();
-        return expander.expand(template, new SoftRefIMObjectCache(getArchetypeService()));
+        return expander.expand(template, weight, new SoftRefIMObjectCache(getArchetypeService()));
     }
-
 
     /**
      * Verifies a product and quantity is included.
@@ -126,17 +160,33 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
     }
 
     /**
-     * Adds an include to the template.
+     * Adds an include to the template with no weight restrictions.
      *
      * @param template the template
      * @param include  the product to include
      * @param quantity the include quantity
      */
     private void addInclude(Product template, Product include, int quantity) {
+        addInclude(template, include, quantity, 0, 0);
+    }
+
+    /**
+     * Adds an include to the template.
+     *
+     * @param template  the template
+     * @param include   the product to include
+     * @param quantity  the include quantity
+     * @param minWeight the minimum weight
+     * @param maxWeight the maximum weight
+     */
+    private void addInclude(Product template, Product include, int quantity, int minWeight,
+                            int maxWeight) {
         EntityBean bean = new EntityBean(template);
         IMObjectRelationship relationship = bean.addNodeTarget("includes", include);
         IMObjectBean relBean = new IMObjectBean(relationship);
         relBean.setValue("includeQty", quantity);
+        relBean.setValue("minWeight", minWeight);
+        relBean.setValue("maxWeight", maxWeight);
         bean.save();
     }
 

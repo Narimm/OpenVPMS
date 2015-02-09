@@ -11,14 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.layout.GridLayoutData;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.SequencedRelationship;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -30,8 +33,10 @@ import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.button.ButtonColumn;
 import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.style.Styles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -121,6 +126,7 @@ public abstract class MultipleSequencedRelationshipCollectionEditor extends Rela
         List<RelationshipState> relationships = new ArrayList<RelationshipState>(editor.getRelationships());
         if (sequenced) {
             SequencedRelationshipCollectionHelper.sort(relationships);
+            SequencedRelationshipCollectionHelper.sequence(relationships);
             result = new ListResultSet<RelationshipState>(relationships, ROWS);
             this.relationships = relationships;
         } else {
@@ -184,8 +190,8 @@ public abstract class MultipleSequencedRelationshipCollectionEditor extends Rela
         IMObjectEditor editor2 = getEditor(r2.getRelationship());
         Property property1 = editor1.getProperty("sequence");
         Property property2 = editor2.getProperty("sequence");
-        int value1 = (Integer) property1.getValue();
-        int value2 = (Integer) property2.getValue();
+        int value1 = property1.getInt();
+        int value2 = property2.getInt();
         property1.setValue(value2);
         property2.setValue(value1);
 
@@ -221,11 +227,20 @@ public abstract class MultipleSequencedRelationshipCollectionEditor extends Rela
             }
         });
 
-        Row row = RowFactory.create("CellSpacing", table, moveButtons);
+
+        table.getTable().setWidth(Styles.FULL_WIDTH);
+        Row row = RowFactory.create(moveButtons);
+
+        GridLayoutData alignTop = new GridLayoutData();
+        alignTop.setAlignment(Alignment.ALIGN_TOP);
+        row.setLayoutData(alignTop);
+        table.setLayoutData(alignTop);
+        Grid grid = GridFactory.create(2, table, row);
+        grid.setWidth(Styles.FULL_WIDTH);
 
         populateTable();
 
-        container.add(row);
+        container.add(grid);
 
         enableNavigation(true);
     }

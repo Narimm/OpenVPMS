@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -42,8 +42,7 @@ class SequencedRelationshipCollectionHelper {
     }
 
     /**
-     * Determines if there is a sequence node in each of a set of relationship
-     * archetypes.
+     * Determines if there is a sequence node in each of a set of relationship archetypes.
      *
      * @return <tt>true</tt> if all archetypes have a sequence node
      */
@@ -62,13 +61,30 @@ class SequencedRelationshipCollectionHelper {
     }
 
     /**
-     * Comparator to help order {@link RelationshipState} instances on sequence.
+     * Sequences relationships, using the first relationship sequence as the starting point.
+     * <p/>
+     * This preserves gaps in the sequence.
      *
-     * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
-     * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+     * @param states the states to sequence
      */
-    private static class SequenceComparator
-            implements Comparator<RelationshipState> {
+    public static void sequence(List<RelationshipState> states) {
+        int last = -1;
+        for (RelationshipState state : states) {
+            if (state.getRelationship() instanceof SequencedRelationship) {
+                SequencedRelationship relationship = (SequencedRelationship) state.getRelationship();
+                if (last != -1 && relationship.getSequence() <= last) {
+                    relationship.setSequence(++last);
+                } else {
+                    last = relationship.getSequence();
+                }
+            }
+        }
+    }
+
+    /**
+     * Comparator to help order {@link RelationshipState} instances on sequence.
+     */
+    private static class SequenceComparator implements Comparator<RelationshipState> {
 
         /**
          * Singleton instance.

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -23,7 +23,6 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
@@ -72,7 +71,7 @@ public class RelationshipStateTableModel
     /**
      * The context.
      */
-    private final Context context;
+    private final LayoutContext context;
 
     /**
      * Name column index.
@@ -108,7 +107,7 @@ public class RelationshipStateTableModel
         setTableColumnModel(createTableColumnModel());
         setEnableSelection(context.isEdit());
         this.listener = context.getContextSwitchListener();
-        this.context = context.getContext();
+        this.context = context;
     }
 
     /**
@@ -121,6 +120,15 @@ public class RelationshipStateTableModel
             showActive = show;
             setTableColumnModel(createTableColumnModel());
         }
+    }
+
+    /**
+     * Determines if the active column is displayed.
+     *
+     * @return {@code true} if the active column is displayed
+     */
+    public boolean getShowActive() {
+        return showActive;
     }
 
     /**
@@ -210,7 +218,7 @@ public class RelationshipStateTableModel
      */
     protected Component getEntityViewer(IMObjectReference ref, String name) {
         ContextSwitchListener link = (!getEnableSelection()) ? listener : null;
-        return new IMObjectReferenceViewer(ref, name, link, context).getComponent();
+        return new IMObjectReferenceViewer(ref, name, link, context.getContext()).getComponent();
     }
 
     /**
@@ -238,6 +246,15 @@ public class RelationshipStateTableModel
             model.addColumn(createTableColumn(ACTIVE_INDEX, ACTIVE));
         }
         return model;
+    }
+
+    /**
+     * Returns the layout context.
+     *
+     * @return the layout context
+     */
+    protected LayoutContext getContext() {
+        return context;
     }
 
 }
