@@ -21,11 +21,18 @@
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" readOnly="true"
               defaultValue="'Product Includes'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
-              derivedValue="concat('Qty Included - ', /details/includeQty)"/>
+              derivedValue="concat('Low Quantity - ', /details/lowQuantity, ', High Quantity - ',
+                            /details/highQuantity)"/>
         <node name="activeStartTime" path="/activeStartTime" type="java.util.Date" minCardinality="1"
               hidden="true" defaultValue="java.util.Date.new()"/>
-        <node name="includeQty" displayName="Quantity" path="/details/includeQty" type="java.math.BigDecimal"
-              defaultValue="1.0" minCardinality="1">
+        <node name="lowQuantity" path="/details/lowQuantity" type="java.math.BigDecimal" defaultValue="1.0"
+              minCardinality="1">
+            <assertion name="positive">
+                <errorMessage>Value must be > 0</errorMessage>
+            </assertion>
+        </node>
+        <node name="highQuantity" path="/details/highQuantity" type="java.math.BigDecimal" defaultValue="1.0"
+              minCardinality="1">
             <assertion name="positive">
                 <errorMessage>Value must be > 0</errorMessage>
             </assertion>

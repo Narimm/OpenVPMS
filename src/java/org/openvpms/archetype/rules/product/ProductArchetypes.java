@@ -94,5 +94,5 @@ public class ProductArchetypes {
     /**
      * Template product include relationship
      */
-    public static final String PRODUCT_INCLUDES = "entityLink.produceIncludes";
+    public static final String PRODUCT_INCLUDES = "entityLink.productIncludes";
 }
