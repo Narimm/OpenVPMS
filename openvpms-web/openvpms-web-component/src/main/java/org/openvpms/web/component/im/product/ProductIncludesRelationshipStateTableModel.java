@@ -55,6 +55,11 @@ public class ProductIncludesRelationshipStateTableModel extends RelationshipStat
      */
     private static final int WEIGHT_INDEX = HIGH_QUANTITY_INDEX + 1;
 
+    /**
+     * The zero price index.
+     */
+    private static final int ZERO_PRICE_INDEX = WEIGHT_INDEX + 1;
+
 
     /**
      * Constructs a {@link ProductIncludesRelationshipStateTableModel}.
@@ -130,6 +135,7 @@ public class ProductIncludesRelationshipStateTableModel extends RelationshipStat
         model.addColumn(new DescriptorTableColumn(LOW_QUANTITY_INDEX, "lowQuantity", archetype));
         model.addColumn(new DescriptorTableColumn(HIGH_QUANTITY_INDEX, "highQuantity", archetype));
         model.addColumn(createTableColumn(WEIGHT_INDEX, "product.template.weight"));
+        model.addColumn(new DescriptorTableColumn(ZERO_PRICE_INDEX, "zeroPrice", archetype));
         if (getShowActive()) {
             model.addColumn(createTableColumn(ACTIVE_INDEX, ACTIVE));
         }

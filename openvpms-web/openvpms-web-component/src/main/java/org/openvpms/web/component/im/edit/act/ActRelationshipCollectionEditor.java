@@ -47,6 +47,7 @@ import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -390,11 +391,11 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
         ActRelationshipCollectionPropertyEditor collection = getEditor();
 
         IMObjectCopier copier = new IMObjectCopier(new ActItemCopyHandler());
-        Map<Product, Quantity> includes = getProductIncludes(template, editor.getPatient());
+        Collection<TemplateProduct> includes = getProductIncludes(template, editor.getPatient());
         Act act = (Act) editor.getObject();
         Act copy = act; // replace the existing act with the first
         Date startTime = act.getActivityStartTime();
-        for (Map.Entry<Product, Quantity> include : includes.entrySet()) {
+        for (TemplateProduct include : includes) {
             if (copy == null) {
                 // copy the act, and associate the product
                 List<IMObject> objects = copier.apply(act);
@@ -410,8 +411,7 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
                 // create the component - must do this to ensure that the product editor is created
                 editor.getComponent();
             }
-            editor.setProduct(include.getKey());
-            setQuantity(editor, include.getValue());
+            setTemplateProduct(editor, include);
 
             collection.add(copy);
             collection.setEditor(copy, editor);
@@ -423,13 +423,18 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
     }
 
     /**
-     * Sets the quantity.
+     * Populates an editor from a template product.
      *
-     * @param editor   the editor
-     * @param quantity the quantity
+     * @param editor  the editor
+     * @param product the template product
      */
-    protected void setQuantity(ActItemEditor editor, Quantity quantity) {
-        editor.setQuantity(quantity.getHighQuantity());
+    protected void setTemplateProduct(ActItemEditor editor, TemplateProduct product) {
+        editor.setProduct(product.getProduct());
+        editor.setQuantity(product.getHighQuantity());
+        if (product.getZeroPrice()) {
+            editor.setFixedPrice(BigDecimal.ZERO);
+            editor.setUnitPrice(BigDecimal.ZERO);
+        }
     }
 
     /**
@@ -437,9 +442,9 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
      *
      * @param template the template to expand
      * @param patient  the patient. May be {@code null}
-     * @return a map of included products to their quantities
+     * @return a collection of included products
      */
-    protected Map<Product, Quantity> getProductIncludes(Product template, Party patient) {
+    protected Collection<TemplateProduct> getProductIncludes(Product template, Party patient) {
         BigDecimal weight = BigDecimal.ZERO;
         if (patient != null) {
             PatientRules rules = ServiceHelper.getBean(PatientRules.class);

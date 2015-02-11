@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -396,25 +396,27 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     protected void updateDiscount() {
         super.updateDiscount();
         BigDecimal discount = getProperty("discount").getBigDecimal(BigDecimal.ZERO);
-        BigDecimal quantity = getQuantity();
-        BigDecimal fixedCost = getFixedCost();
-        BigDecimal fixedPrice = getFixedPrice();
-        BigDecimal unitCost = getUnitCost();
-        BigDecimal unitPrice = getUnitPrice();
-        BigDecimal costPrice = fixedCost.add(unitCost.multiply(quantity));
-        BigDecimal salePrice = fixedPrice.add(unitPrice.multiply(quantity));
-        if (costPrice.compareTo(salePrice.subtract(discount)) > 0) {
-            ConfirmationDialog dialog = new ConfirmationDialog(Messages.get("customer.charge.discount.title"),
-                                                               Messages.get("customer.charge.discount.message"),
-                                                               ConfirmationDialog.YES_NO);
-            dialog.addWindowPaneListener(new PopupDialogListener() {
-                @Override
-                public void onYes() {
-                    getProperty("discount").setValue(BigDecimal.ZERO);
-                    super.onYes();
-                }
-            });
-            editorQueue.queue(dialog);
+        if (discount.compareTo(BigDecimal.ZERO) != 0) {
+            BigDecimal quantity = getQuantity();
+            BigDecimal fixedCost = getFixedCost();
+            BigDecimal fixedPrice = getFixedPrice();
+            BigDecimal unitCost = getUnitCost();
+            BigDecimal unitPrice = getUnitPrice();
+            BigDecimal costPrice = fixedCost.add(unitCost.multiply(quantity));
+            BigDecimal salePrice = fixedPrice.add(unitPrice.multiply(quantity));
+            if (costPrice.compareTo(salePrice.subtract(discount)) > 0) {
+                ConfirmationDialog dialog = new ConfirmationDialog(Messages.get("customer.charge.discount.title"),
+                                                                   Messages.get("customer.charge.discount.message"),
+                                                                   ConfirmationDialog.YES_NO);
+                dialog.addWindowPaneListener(new PopupDialogListener() {
+                    @Override
+                    public void onYes() {
+                        getProperty("discount").setValue(BigDecimal.ZERO);
+                        super.onYes();
+                    }
+                });
+                editorQueue.queue(dialog);
+            }
         }
     }
 

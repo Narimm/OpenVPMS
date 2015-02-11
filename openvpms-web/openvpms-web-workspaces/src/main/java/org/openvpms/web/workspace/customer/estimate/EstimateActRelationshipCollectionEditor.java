@@ -19,7 +19,7 @@ package org.openvpms.web.workspace.customer.estimate;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
-import org.openvpms.web.component.im.edit.act.Quantity;
+import org.openvpms.web.component.im.edit.act.TemplateProduct;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
 
@@ -42,15 +42,17 @@ public class EstimateActRelationshipCollectionEditor extends ActRelationshipColl
     }
 
     /**
-     * Sets the quantity.
+     * Populates an editor from a template product.
      *
-     * @param editor   the editor
-     * @param quantity the quantity
+     * @param editor  the editor
+     * @param product the template product
      */
     @Override
-    protected void setQuantity(ActItemEditor editor, Quantity quantity) {
+    protected void setTemplateProduct(ActItemEditor editor, TemplateProduct product) {
+        super.setTemplateProduct(editor, product);
+
         EstimateItemEditor itemEditor = (EstimateItemEditor) editor;
-        itemEditor.setLowQuantity(quantity.getLowQuantity());
-        itemEditor.setHighQuantity(quantity.getHighQuantity());
+        itemEditor.setLowQuantity(product.getLowQuantity());
+        itemEditor.setHighQuantity(product.getHighQuantity());
     }
 }

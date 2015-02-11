@@ -149,6 +149,19 @@ public class EstimateItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Sets the unit price.
+     * <p/>
+     * This implementation updates both the lowUnitPrice and highUnitPrice.
+     *
+     * @param unitPrice the unit price
+     */
+    @Override
+    public void setUnitPrice(BigDecimal unitPrice) {
+        getProperty("lowUnitPrice").setValue(unitPrice);
+        getProperty("highUnitPrice").setValue(unitPrice);
+    }
+
+    /**
      * Returns the unit price.
      * <p/>
      * This implementation returns the high unit price.

@@ -16,21 +16,20 @@
 
 package org.openvpms.web.component.im.edit.act;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.junit.Test;
-import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.cache.SoftRefIMObjectCache;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
-import java.util.Map;
+import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import static org.openvpms.archetype.rules.product.ProductTestHelper.addInclude;
+import static org.openvpms.archetype.rules.product.ProductTestHelper.createTemplate;
 
 /**
  * Tests the {@link ProductTemplateExpander}.
@@ -59,12 +58,12 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         addInclude(templateC, productX, 1, 1);
         addInclude(templateC, productZ, 10, 10);
 
-        Map<Product, Quantity> includes = expand(templateA, BigDecimal.ZERO);
+        Collection<TemplateProduct> includes = expand(templateA, BigDecimal.ZERO);
         assertEquals(3, includes.size());
 
-        checkInclude(includes, productX, 7, 12);
-        checkInclude(includes, productY, 2, 4);
-        checkInclude(includes, productZ, 20, 20);
+        checkInclude(includes, productX, 7, 12, false);
+        checkInclude(includes, productY, 2, 4, false);
+        checkInclude(includes, productZ, 20, 20, false);
     }
 
     /**
@@ -87,16 +86,16 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         addInclude(templateC, productX, 1, 1, 0, 2);
         addInclude(templateC, productZ, 1, 1, 2, 4);
 
-        Map<Product, Quantity> includes = expand(templateA, BigDecimal.ZERO);
+        Collection<TemplateProduct> includes = expand(templateA, BigDecimal.ZERO);
         assertEquals(0, includes.size());  // failed to expand as no weight specified
 
         includes = expand(templateA, BigDecimal.ONE);
         assertEquals(1, includes.size());
-        checkInclude(includes, productX, 1, 1);
+        checkInclude(includes, productX, 1, 1, false);
 
         includes = expand(templateA, BigDecimal.valueOf(2));
         assertEquals(1, includes.size());
-        checkInclude(includes, productZ, 2, 4);
+        checkInclude(includes, productZ, 2, 4, false);
 
         includes = expand(templateA, BigDecimal.valueOf(4));
         assertEquals(0, includes.size()); // nothing in the weight range
@@ -120,8 +119,40 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         addInclude(templateC, templateA, 1, 1);
         addInclude(templateC, productX, 1, 1);
 
-        Map<Product, Quantity> includes = expand(templateA, BigDecimal.ZERO);
+        Collection<TemplateProduct> includes = expand(templateA, BigDecimal.ZERO);
         assertEquals(0, includes.size());
+    }
+
+    /**
+     * Verifies that the zero price flag is inherited by included templates and products if it is set {@code true}.
+     */
+    @Test
+    public void testZeroPrice() {
+        Product productX = TestHelper.createProduct();
+        Product productY = TestHelper.createProduct();
+        Product productZ = TestHelper.createProduct();
+
+        Product templateA = createTemplate("templateA");
+        Product templateB = createTemplate("templateB");
+        Product templateC = createTemplate("templateC");
+
+        addInclude(templateA, templateB, 1, false);
+        addInclude(templateA, templateC, 1, true);
+        addInclude(templateA, productY, 1, true);
+
+        addInclude(templateB, productX, 1, false);
+        addInclude(templateB, productY, 1, false);
+
+        addInclude(templateC, productY, 1, false);
+        addInclude(templateC, productZ, 1, false);
+
+        Collection<TemplateProduct> includes = expand(templateA, BigDecimal.ZERO);
+        assertEquals(4, includes.size());
+
+        checkInclude(includes, productY, 2, 2, true);  // included by template A and template C
+        checkInclude(includes, productX, 1, 1, false); // included by template B
+        checkInclude(includes, productY, 1, 1, false); // included by template B
+        checkInclude(includes, productZ, 1, 1, true);  // included by template C
     }
 
     /**
@@ -131,7 +162,7 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
      * @param weight   the patient weigtht. May be {@code null}
      * @return the expanded template
      */
-    private Map<Product, Quantity> expand(Product template, BigDecimal weight) {
+    private Collection<TemplateProduct> expand(Product template, BigDecimal weight) {
         ProductTemplateExpander expander = new ProductTemplateExpander();
         return expander.expand(template, weight, new SoftRefIMObjectCache(getArchetypeService()));
     }
@@ -142,58 +173,19 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
      * @param includes    the includes
      * @param product     the expected product
      * @param lowQuantity the expected quantity
+     * @param zeroPrice   the expected zero price indicator
      */
-    private void checkInclude(Map<Product, Quantity> includes, Product product, int lowQuantity, int highQuantity) {
-        Quantity quantity = includes.get(product);
-        assertNotNull(quantity);
-        checkEquals(BigDecimal.valueOf(lowQuantity), quantity.getLowQuantity());
-        checkEquals(BigDecimal.valueOf(highQuantity), quantity.getHighQuantity());
+    private void checkInclude(Collection<TemplateProduct> includes, Product product, int lowQuantity,
+                              int highQuantity, boolean zeroPrice) {
+        for (TemplateProduct include : includes) {
+            if (ObjectUtils.equals(product, include.getProduct()) && zeroPrice == include.getZeroPrice()) {
+                checkEquals(BigDecimal.valueOf(lowQuantity), include.getLowQuantity());
+                checkEquals(BigDecimal.valueOf(highQuantity), include.getHighQuantity());
+                return;
+            }
+        }
+        fail("TemplateProduct not found");
     }
 
-    /**
-     * Creates a template.
-     *
-     * @param name the template name
-     * @return a new template
-     */
-    private Product createTemplate(String name) {
-        Product template = (Product) create(ProductArchetypes.TEMPLATE);
-        template.setName(name);
-        save(template);
-        return template;
-    }
-
-    /**
-     * Adds an include to the template with no weight restrictions.
-     *
-     * @param template     the template
-     * @param include      the product to include
-     * @param lowQuantity  the low quantity
-     * @param highQuantity the high quantity
-     */
-    private void addInclude(Product template, Product include, int lowQuantity, int highQuantity) {
-        addInclude(template, include, lowQuantity, highQuantity, 0, 0);
-    }
-
-    /**
-     * Adds an include to the template.
-     *
-     * @param template    the template
-     * @param include     the product to include
-     * @param lowQuantity the include quantity
-     * @param minWeight   the minimum weight
-     * @param maxWeight   the maximum weight
-     */
-    private void addInclude(Product template, Product include, int lowQuantity, int highQuantity, int minWeight,
-                            int maxWeight) {
-        EntityBean bean = new EntityBean(template);
-        IMObjectRelationship relationship = bean.addNodeTarget("includes", include);
-        IMObjectBean relBean = new IMObjectBean(relationship);
-        relBean.setValue("lowQuantity", lowQuantity);
-        relBean.setValue("highQuantity", highQuantity);
-        relBean.setValue("minWeight", minWeight);
-        relBean.setValue("maxWeight", maxWeight);
-        bean.save();
-    }
 
 }
