@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -64,7 +64,7 @@ public class CustomerChargeTestHelper {
      * @param editor   the editor
      * @param patient  the patient
      * @param product  the product
-     * @param quantity the quantity
+     * @param quantity the quantity. If {@code null}, indicates the quantity won't be changed
      * @param mgr      the popup editor manager
      * @return the editor for the new item
      */
@@ -87,7 +87,7 @@ public class CustomerChargeTestHelper {
      * @param itemEditor the charge item editor
      * @param patient    the patient
      * @param product    the product
-     * @param quantity   the quantity
+     * @param quantity   the quantity. If {@code null}, indicates the quantity won't be changed
      * @param mgr        the popup editor manager
      */
     public static void setItem(AbstractCustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
@@ -96,7 +96,9 @@ public class CustomerChargeTestHelper {
             itemEditor.setPatient(patient);
         }
         itemEditor.setProduct(product);
-        itemEditor.setQuantity(quantity);
+        if (quantity != null) {
+            itemEditor.setQuantity(quantity);
+        }
         if (TypeHelper.isA(editor.getObject(), CustomerAccountArchetypes.INVOICE)) {
             if (!TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
                 checkSavePopups(editor, itemEditor, product, mgr);

@@ -35,12 +35,14 @@ import org.openvpms.web.system.ServiceHelper;
 import java.math.BigDecimal;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.openvpms.archetype.rules.math.WeightUnits.KILOGRAMS;
 
@@ -59,31 +61,34 @@ class ProductTemplateExpander {
      * @param cache    the object cache
      * @return a map products to their corresponding quantities
      */
-    public Map<Product, Quantity> expand(Product template, BigDecimal weight, IMObjectCache cache) {
-        Map<Product, Quantity> includes = new LinkedHashMap<Product, Quantity>();
-        Quantity quantity = new Quantity(BigDecimal.ONE, BigDecimal.ONE);
-        if (!expand(template, template, weight, includes, quantity, new ArrayDeque<Product>(), cache)) {
+    public Collection<TemplateProduct> expand(Product template, BigDecimal weight, IMObjectCache cache) {
+        Map<TemplateProduct, TemplateProduct> includes = new LinkedHashMap<TemplateProduct, TemplateProduct>();
+        if (!expand(template, template, weight, includes, ONE, ONE, false, new ArrayDeque<Product>(), cache)) {
             includes.clear();
         } else if (includes.isEmpty()) {
             reportNoExpansion(template, weight);
         }
-        return includes;
+        return includes.values();
     }
 
     /**
      * Expands a product template.
      *
-     * @param root     the root template
-     * @param template the template to expand
-     * @param weight   the patient weight, in kilograms. If {@code 0}, indicates the weight is unknown
-     * @param includes the existing includes
-     * @param quantity the included quantity
-     * @param parents  the parent templates
-     * @param cache    the cache
+     * @param root         the root template
+     * @param template     the template to expand
+     * @param weight       the patient weight, in kilograms. If {@code 0}, indicates the weight is unknown
+     * @param includes     the existing includes
+     * @param lowQuantity  the low quantity
+     * @param highQuantity the high quantity
+     * @param zeroPrice    if {@code true}, zero prices for all included products
+     * @param parents      the parent templates
+     * @param cache        the cache
      * @return {@code true} if the template expanded
      */
-    protected boolean expand(Product root, Product template, BigDecimal weight, Map<Product, Quantity> includes,
-                             Quantity quantity, Deque<Product> parents, IMObjectCache cache) {
+    protected boolean expand(Product root, Product template, BigDecimal weight,
+                             Map<TemplateProduct, TemplateProduct> includes, BigDecimal lowQuantity,
+                             BigDecimal highQuantity, boolean zeroPrice, Deque<Product> parents,
+                             IMObjectCache cache) {
         boolean result = true;
         if (!parents.contains(template)) {
             parents.push(template);
@@ -97,19 +102,22 @@ class ProductTemplateExpander {
                 } else if (include.isIncluded(weight)) {
                     Product product = include.getProduct(cache);
                     if (product != null) {
-                        Quantity included = quantity.multiply(include.getQuantity());
+                        BigDecimal newLowQty = include.lowQuantity.multiply(lowQuantity);
+                        BigDecimal newHighQty = include.highQuantity.multiply(highQuantity);
+                        boolean zero = include.zeroPrice || zeroPrice;
                         if (TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
-                            if (!expand(root, product, weight, includes, included, parents, cache)) {
+                            if (!expand(root, product, weight, includes, newLowQty, newHighQty, zero, parents, cache)) {
                                 result = false;
                                 break;
                             }
                         } else {
-                            Quantity existing = includes.get(product);
+                            TemplateProduct included = new TemplateProduct(product, newLowQty, newHighQty, zero);
+                            TemplateProduct existing = includes.get(included);
                             if (existing == null) {
-                                existing = new Quantity(ZERO, ZERO);
+                                includes.put(included, included);
+                            } else {
+                                existing.add(newLowQty, newHighQty);
                             }
-                            included = included.add(existing);
-                            includes.put(product, included);
                         }
                     }
                 }
@@ -123,25 +131,25 @@ class ProductTemplateExpander {
     }
 
     /**
-     * Reports an error where a template includes a product on patient weight, but no weight has been supplied.
+     * Invoked when a template includes a product on patient weight, but no weight has been supplied.
      *
      * @param template     the template
      * @param relationship the included relationship
      */
-    private void reportWeightError(Product template, EntityLink relationship) {
+    protected void reportWeightError(Product template, EntityLink relationship) {
         String message = Messages.format("product.template.weightrequired", template.getName(),
                                          IMObjectHelper.getName(relationship.getTarget()));
         ErrorDialog.show(message);
     }
 
     /**
-     * Reports an error where are product template is included recursively.
+     * Invoked when a product template is included recursively.
      *
      * @param root     the root template
      * @param template the template included recursively
      * @param parents  the parent templates
      */
-    private void reportRecursionError(Product root, Product template, Deque<Product> parents) {
+    protected void reportRecursionError(Product root, Product template, Deque<Product> parents) {
         ListFunctions functions = new ListFunctions(ServiceHelper.getArchetypeService(),
                                                     ServiceHelper.getLookupService());
         List<Product> products = new ArrayList<Product>(parents);
@@ -152,21 +160,24 @@ class ProductTemplateExpander {
         ErrorDialog.show(message);
     }
 
-    private void reportNoExpansion(Product root, BigDecimal weight) {
+    /**
+     * Invoked when a product template expansion results in no included products.
+     *
+     * @param root   the root template
+     * @param weight the patient weight
+     */
+    protected void reportNoExpansion(Product root, BigDecimal weight) {
         String message = Messages.format("product.template.noproducts", root.getName(), weight);
         ErrorDialog.show(message);
     }
-
 
     /**
      * Represents a product included by a product template.
      * <p/>
      * Products may be included by patient weight range. To be included: <br/>
      * <pre> {@code minWeight <= patientWeight < maxWeight}</pre>
-     *
-     * @author Tim Anderson
      */
-    public static class Include {
+    private static class Include {
 
         /**
          * The minimum weight.
@@ -194,6 +205,12 @@ class ProductTemplateExpander {
         private final IMObjectReference product;
 
         /**
+         * Determines if prices should be zeroed.
+         */
+        private final boolean zeroPrice;
+
+
+        /**
          * Constructs an {@link Include}.
          *
          * @param relationship the relationship
@@ -205,6 +222,7 @@ class ProductTemplateExpander {
             maxWeight = getWeight("maxWeight", bean, units);
             lowQuantity = bean.getBigDecimal("lowQuantity", ZERO);
             highQuantity = bean.getBigDecimal("highQuantity", ZERO);
+            zeroPrice = bean.getBoolean("zeroPrice");
             product = relationship.getTarget();
         }
 
@@ -225,15 +243,6 @@ class ProductTemplateExpander {
          */
         public boolean isIncluded(BigDecimal weight) {
             return !requiresWeight() || weight.compareTo(minWeight) >= 0 && weight.compareTo(maxWeight) < 0;
-        }
-
-        /**
-         * Returns the include quantity.
-         *
-         * @return the quantity
-         */
-        public Quantity getQuantity() {
-            return new Quantity(lowQuantity, highQuantity);
         }
 
         /**
@@ -267,5 +276,6 @@ class ProductTemplateExpander {
         private WeightUnits getUnits(IMObjectBean bean) {
             return WeightUnits.valueOf(bean.getString("weightUnits", KILOGRAMS.toString()));
         }
+
     }
 }

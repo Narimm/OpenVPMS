@@ -27,6 +27,7 @@ import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.prescription.PrescriptionTestHelper;
 import org.openvpms.archetype.rules.patient.reminder.ReminderStatus;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.archetype.test.TestHelper;
@@ -60,11 +61,13 @@ import java.util.List;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.ZERO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.MEDICATION;
 import static org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelper.checkOrder;
 import static org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelper.createPharmacy;
 import static org.openvpms.web.workspace.customer.charge.TestPharmacyOrderService.Order;
@@ -431,7 +434,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         BigDecimal total = itemTotal.multiply(BigDecimal.valueOf(3));
 
         Entity pharmacy = CustomerChargeTestHelper.createPharmacy(location);
-        Product product1 = createProduct(ProductArchetypes.MEDICATION, fixedPrice, pharmacy);
+        Product product1 = createProduct(MEDICATION, fixedPrice, pharmacy);
         Entity reminderType1 = addReminder(product1);
         Entity investigationType1 = addInvestigation(product1);
         Entity template1 = addTemplate(product1);
@@ -469,7 +472,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         editor.getPharmacyOrderService().clear();
 
         BigDecimal balance = (charge.isCredit()) ? total.negate() : total;
-        checkBalance(customer, balance, BigDecimal.ZERO);
+        checkBalance(customer, balance, ZERO);
 
         Act investigation1 = getInvestigation(item1, investigationType1);
         Act investigation2 = getInvestigation(item2, investigationType2);
@@ -534,7 +537,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         assertNotNull(get(doc2));
         assertNotNull(get(doc3));
 
-        checkBalance(customer, BigDecimal.ZERO, BigDecimal.ZERO);
+        checkBalance(customer, ZERO, ZERO);
     }
 
     /**
@@ -637,7 +640,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      */
     @Test
     public void testPrescription() {
-        Product product1 = createProduct(ProductArchetypes.MEDICATION, ONE);
+        Product product1 = createProduct(MEDICATION, ONE);
 
         Act prescription = PrescriptionTestHelper.createPrescription(patient, product1, clinician);
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
@@ -658,8 +661,8 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      */
     @Test
     public void testDeleteInvoiceItemLinkedToPrescription() {
-        Product product1 = createProduct(ProductArchetypes.MEDICATION, ONE);
-        Product product2 = createProduct(ProductArchetypes.MEDICATION, ONE);
+        Product product1 = createProduct(MEDICATION, ONE);
+        Product product2 = createProduct(MEDICATION, ONE);
 
         Act prescription = PrescriptionTestHelper.createPrescription(patient, product1, clinician);
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
@@ -713,7 +716,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      */
     @Test
     public void testInitClinician() {
-        Product product1 = createProduct(ProductArchetypes.MEDICATION, BigDecimal.ONE);
+        Product product1 = createProduct(MEDICATION, BigDecimal.ONE);
         Entity reminderType1 = addReminder(product1);
         Entity investigationType1 = addInvestigation(product1);
         Entity template1 = addTemplate(product1);
@@ -748,7 +751,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      */
     @Test
     public void testChangePatient() {
-        Product product1 = createProduct(ProductArchetypes.MEDICATION, BigDecimal.ONE);
+        Product product1 = createProduct(MEDICATION, BigDecimal.ONE);
         Entity investigationType1 = addInvestigation(product1);
         Entity template1 = addTemplate(product1);
 
@@ -809,7 +812,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     @Test
     public void testChangePharmacyOrderQuantity() {
         Entity pharmacy = createPharmacy(location);
-        Product product = createProduct(ProductArchetypes.MEDICATION, TEN, pharmacy);
+        Product product = createProduct(MEDICATION, TEN, pharmacy);
 
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
 
@@ -843,7 +846,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     @Test
     public void testDeleteInvoiceItemWithPharmacyOrder() {
         Entity pharmacy = createPharmacy(location);
-        Product product1 = createProduct(ProductArchetypes.MEDICATION, TEN, pharmacy);
+        Product product1 = createProduct(MEDICATION, TEN, pharmacy);
         Product product2 = createProduct(ProductArchetypes.MERCHANDISE, TEN, pharmacy);
 
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
@@ -875,12 +878,78 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
+     * Tests expansion for invoices.
+     */
+    @Test
+    public void testTemplateExpansionForInvoice() {
+        checkTemplateExpansion(CustomerAccountArchetypes.INVOICE, 1);
+    }
+
+    /**
+     * Tests expansion for credits.
+     */
+    @Test
+    public void testTemplateExpansionForCredit() {
+        checkTemplateExpansion(CustomerAccountArchetypes.CREDIT, 0);
+    }
+
+    /**
+     * Tests expansion for counter sales.
+     */
+    @Test
+    public void testTemplateExpansionForCounter() {
+        checkTemplateExpansion(CustomerAccountArchetypes.COUNTER, 0);
+    }
+
+    /**
+     * Tests template expansion.
+     *
+     * @param shortName the charge short name
+     * @param childActs the expected no. of child acts
+     */
+    private void checkTemplateExpansion(String shortName, int childActs) {
+        BigDecimal fixedPrice = ONE;
+
+        Product template = ProductTestHelper.createTemplate("templateA");
+        Product product1 = createProduct(MEDICATION, fixedPrice);
+        Product product2 = createProduct(MEDICATION, fixedPrice);
+        Product product3 = createProduct(MEDICATION, fixedPrice);
+        ProductTestHelper.addInclude(template, product1, 1, false);
+        ProductTestHelper.addInclude(template, product2, 2, false);
+        ProductTestHelper.addInclude(template, product3, 3, true); // zero price
+
+        FinancialAct charge = (FinancialAct) create(shortName);
+
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        ChargeEditorQueue queue = editor.getQueue();
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        addItem(editor, patient, template, null, queue);
+        assertTrue(SaveHelper.save(editor));
+
+        charge = get(charge);
+        ActBean bean = new ActBean(charge);
+        List<FinancialAct> items = bean.getNodeActs("items", FinancialAct.class);
+        assertEquals(3, items.size());
+
+        checkItem(items, patient, product1, author, clinician, ONE, ZERO, ZERO, ZERO, ONE, ZERO,
+                  new BigDecimal("0.091"), ONE, null, childActs);
+        checkItem(items, patient, product2, author, clinician, BigDecimal.valueOf(2), ZERO, ZERO, ZERO, ONE, ZERO,
+                  new BigDecimal("0.091"), ONE, null, childActs);
+
+        // verify that product3 is charged at zero price
+        checkItem(items, patient, product3, author, clinician, BigDecimal.valueOf(3), ZERO, ZERO, ZERO, ZERO, ZERO,
+                  ZERO, ZERO, null, childActs);
+    }
+
+    /**
      * Verifies that an unsaved charge item can be deleted, when there is a prescription associated with the item's
      * product.
      */
     private void checkDeleteUnsavedItemWithPrescription(FinancialAct charge) {
-        Product product1 = createProduct(ProductArchetypes.MEDICATION, ONE);
-        Product product2 = createProduct(ProductArchetypes.MEDICATION, ONE);
+        Product product1 = createProduct(MEDICATION, ONE);
+        Product product2 = createProduct(MEDICATION, ONE);
 
         Act prescription = PrescriptionTestHelper.createPrescription(patient, product1, clinician);
 
@@ -918,7 +987,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         BigDecimal itemTotal = BigDecimal.valueOf(11);
         BigDecimal total = itemTotal.multiply(BigDecimal.valueOf(3));
 
-        Product product1 = createProduct(ProductArchetypes.MEDICATION, fixedPrice);
+        Product product1 = createProduct(MEDICATION, fixedPrice);
         Product product2 = createProduct(ProductArchetypes.MERCHANDISE, fixedPrice);
         Product product3 = createProduct(ProductArchetypes.SERVICE, fixedPrice);
 
@@ -934,7 +1003,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
 
         assertTrue(SaveHelper.save(editor));
         BigDecimal balance = (charge.isCredit()) ? total.negate() : total;
-        checkBalance(customer, balance, BigDecimal.ZERO);
+        checkBalance(customer, balance, ZERO);
 
         charge = get(charge);
         ActBean bean = new ActBean(charge);
@@ -947,7 +1016,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             assertNull(get(item));
         }
 
-        checkBalance(customer, BigDecimal.ZERO, BigDecimal.ZERO);
+        checkBalance(customer, ZERO, ZERO);
     }
 
     /**
@@ -960,11 +1029,11 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         editor.getComponent();
         assertTrue(editor.isValid());
         assertTrue(editor.save());
-        checkBalance(customer, BigDecimal.ZERO, BigDecimal.ZERO);
+        checkBalance(customer, ZERO, ZERO);
 
         editor.setStatus(ActStatus.POSTED);
         assertTrue(editor.save());
-        checkBalance(customer, BigDecimal.ZERO, BigDecimal.ZERO);
+        checkBalance(customer, ZERO, ZERO);
     }
 
     /**
@@ -987,7 +1056,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
 
         boolean invoice = TypeHelper.isA(charge, CustomerAccountArchetypes.INVOICE);
 
-        Product product1 = createProduct(ProductArchetypes.MEDICATION, fixedPrice, pharmacy);
+        Product product1 = createProduct(MEDICATION, fixedPrice, pharmacy);
         addReminder(product1);
         addInvestigation(product1);
         addTemplate(product1);
@@ -1023,10 +1092,10 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         assertTrue(editor.isValid());
         assertTrue(SaveHelper.save(editor));
         BigDecimal balance = (charge.isCredit()) ? total.negate() : total;
-        checkBalance(customer, balance, BigDecimal.ZERO);
+        checkBalance(customer, balance, ZERO);
         editor.setStatus(ActStatus.POSTED);
         assertTrue(editor.save());
-        checkBalance(customer, BigDecimal.ZERO, balance);
+        checkBalance(customer, ZERO, balance);
 
         if (invoice) {
             List<Order> orders = editor.getPharmacyOrderService().getOrders(true);
@@ -1058,18 +1127,18 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             assertNull(event);
         }
 
-        BigDecimal discount = BigDecimal.ZERO;
-        checkItem(items, patient, product1, author, clinician, quantity, BigDecimal.ZERO, BigDecimal.ZERO,
-                  BigDecimal.ZERO, fixedPrice, discount, itemTax, itemTotal, event, product1Acts);
-        checkItem(items, patient, product2, author, clinician, quantity, BigDecimal.ZERO, BigDecimal.ZERO,
-                  BigDecimal.ZERO, fixedPrice, discount, itemTax, itemTotal, event, product2Acts);
-        checkItem(items, patient, product3, author, clinician, quantity, BigDecimal.ZERO, BigDecimal.ZERO,
-                  BigDecimal.ZERO, fixedPrice, discount, itemTax, itemTotal, event, product3Acts);
+        BigDecimal discount = ZERO;
+        checkItem(items, patient, product1, author, clinician, quantity, ZERO, ZERO,
+                  ZERO, fixedPrice, discount, itemTax, itemTotal, event, product1Acts);
+        checkItem(items, patient, product2, author, clinician, quantity, ZERO, ZERO,
+                  ZERO, fixedPrice, discount, itemTax, itemTotal, event, product2Acts);
+        checkItem(items, patient, product3, author, clinician, quantity, ZERO, ZERO,
+                  ZERO, fixedPrice, discount, itemTax, itemTotal, event, product3Acts);
 
         boolean add = bean.isA(CustomerAccountArchetypes.CREDIT);
         checkStock(product1, stockLocation, product1Stock, quantity, add);
         checkStock(product2, stockLocation, product2Stock, quantity, add);
-        checkStock(product3, stockLocation, BigDecimal.ZERO, BigDecimal.ZERO, add);
+        checkStock(product3, stockLocation, ZERO, ZERO, add);
     }
 
     /**
@@ -1083,7 +1152,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         layoutContext.getContext().setLocation(location);
         layoutContext.getContext().setStockLocation(stockLocation);
 
-        Product product1 = createProduct(ProductArchetypes.MEDICATION);
+        Product product1 = createProduct(MEDICATION);
         Product product2 = createProduct(ProductArchetypes.MERCHANDISE);
         Product product3 = createProduct(ProductArchetypes.SERVICE);
         Product product4 = createProduct(ProductArchetypes.MERCHANDISE);
@@ -1116,10 +1185,10 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         BigDecimal product2Stock = checkStock(product2, stockLocation, product2InitialStock, quantity2, add);
         checkStock(product4, stockLocation, product4InitialStock, quantity4, add);
 
-        item1.setQuantity(BigDecimal.ZERO);
+        item1.setQuantity(ZERO);
         item1.setQuantity(quantity1);
         assertTrue(item1.isModified());
-        item2.setQuantity(BigDecimal.ZERO);
+        item2.setQuantity(ZERO);
         item2.setQuantity(quantity2);
         assertTrue(item2.isModified());
         assertTrue(SaveHelper.save(editor));
@@ -1152,13 +1221,13 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
 
         BigDecimal quantity = BigDecimal.valueOf(1);
         BigDecimal fixedPrice = BigDecimal.valueOf(11);
-        BigDecimal discount = BigDecimal.ZERO;
+        BigDecimal discount = ZERO;
         BigDecimal itemTax = BigDecimal.valueOf(1);
         BigDecimal itemTotal = BigDecimal.valueOf(11);
         BigDecimal tax = itemTax.multiply(BigDecimal.valueOf(3));
         BigDecimal total = itemTotal.multiply(BigDecimal.valueOf(3));
 
-        Product product1 = createProduct(ProductArchetypes.MEDICATION, fixedPrice);
+        Product product1 = createProduct(MEDICATION, fixedPrice);
         Product product2 = createProduct(ProductArchetypes.MERCHANDISE, fixedPrice);
         Product product3 = createProduct(ProductArchetypes.SERVICE, fixedPrice);
         Product template = createProduct(ProductArchetypes.TEMPLATE);
@@ -1180,7 +1249,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
 
         assertTrue(SaveHelper.save(editor));
         BigDecimal balance = (charge.isCredit()) ? total.negate() : total;
-        checkBalance(customer, balance, BigDecimal.ZERO);
+        checkBalance(customer, balance, ZERO);
 
         charge = get(charge);
         ActBean bean = new ActBean(charge);
@@ -1195,12 +1264,12 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             assertNull(event);
         }
 
-        checkItem(items, patient, product1, author, clinician, quantity, BigDecimal.ZERO, BigDecimal.ZERO,
-                  BigDecimal.ZERO, fixedPrice, discount, itemTax, itemTotal, event, product1Acts);
-        checkItem(items, patient, product2, author, clinician, quantity, BigDecimal.ZERO, BigDecimal.ZERO,
-                  BigDecimal.ZERO, fixedPrice, discount, itemTax, itemTotal, event, 0);
-        checkItem(items, patient, product3, author, clinician, quantity, BigDecimal.ZERO, BigDecimal.ZERO,
-                  BigDecimal.ZERO, fixedPrice, discount, itemTax, itemTotal, event, 0);
+        checkItem(items, patient, product1, author, clinician, quantity, ZERO, ZERO,
+                  ZERO, fixedPrice, discount, itemTax, itemTotal, event, product1Acts);
+        checkItem(items, patient, product2, author, clinician, quantity, ZERO, ZERO,
+                  ZERO, fixedPrice, discount, itemTax, itemTotal, event, 0);
+        checkItem(items, patient, product3, author, clinician, quantity, ZERO, ZERO,
+                  ZERO, fixedPrice, discount, itemTax, itemTotal, event, 0);
     }
 
     /**
