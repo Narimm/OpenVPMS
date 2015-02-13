@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetype>
@@ -5949,6 +5949,34 @@
         <data collection="prices" archetype="productPrice.fixedPrice" name="Medium Operation" price="150"/>
         <data collection="prices" archetype="productPrice.fixedPrice" name="Short Operation" price="75"/>
     </data>
+
+    <data id="P866" archetype="product.service" name="Desex - Dog &lt; 20kg"/>
+    <data id="P867" archetype="product.service" name="Desex - Dog &gt;= 20kg"/>
+    <data id="P868" archetype="product.medication" name="Carprofen Injection"/>
+    <data id="P869" archetype="product.medication" name="Carprofen Tablets 20mg"/>
+    <data id="P870" archetype="product.medication" name="Carprofen Tablets 50mg"/>
+    <data id="P871" archetype="product.merchandise" name="Elizabethan Collar 15cm"/>
+    <data id="P872" archetype="product.medication" name="Ketamine 100mg"/>
+    <data id="P873" archetype="product.medication" name="Methadone 10mg/ml"/>
+    <data id="P880" archetype="product.template" name="Desex - Dog">
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P866"
+              minWeight="0" maxWeight="20"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P867"
+              minWeight="20" maxWeight="999"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P6"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P868"
+              minWeight="0" maxWeight="20"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P868"
+              minWeight="20" maxWeight="999" lowQuantity="1.6" highQuantity="1.6"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P869"
+              minWeight="0" maxWeight="20" lowQuantity="3" highQuantity="3"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P870"
+              minWeight="20" maxWeight="999" lowQuantity="6" highQuantity="6"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P871"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P872"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P873"/>
+    </data>
+
 
     <data id="P900" archetype="product.medication" name="Fel-O-Vax 3">
         <data collection="prices" archetype="productPrice.unitPrice" cost="09.00" price="15.40"/>
