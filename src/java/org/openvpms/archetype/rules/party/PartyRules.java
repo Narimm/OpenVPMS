@@ -127,13 +127,25 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getFullName(Party party) {
+        return getFullName(party, true);
+    }
+
+    /**
+     * Returns the formatted full name of a party.
+     *
+     * @param party        the party
+     * @param includeTitle if {@code true} include the person's title
+     * @return the formatted full name of the party
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getFullName(Party party, boolean includeTitle) {
         String name;
         if (TypeHelper.isA(party, "party.customerperson")) {
             IMObjectBean bean = new IMObjectBean(party, service);
             if (bean.hasNode("companyName") && (bean.getString("companyName") != null)) {
                 name = party.getName();
             } else {
-                name = getPersonName(party);
+                name = getPersonName(party, includeTitle);
             }
         } else {
             name = party.getName();
@@ -545,18 +557,19 @@ public class PartyRules {
     /**
      * Returns a formatted name for a <em>party.customerPerson</em>.
      *
-     * @param party the party
+     * @param party        the party
+     * @param includeTitle if {@code true} include the person's title
      * @return a formatted name
      * @throws ArchetypeServiceException for any archetype service error
      * @throws LookupHelperException     if the title lookup is incorrect
      */
-    private String getPersonName(Party party) {
+    private String getPersonName(Party party, boolean includeTitle) {
 
         StringBuilder result = new StringBuilder();
         if (party != null) {
             IMObjectBean bean = new IMObjectBean(party, service);
             NodeDescriptor descriptor = bean.getDescriptor("title");
-            String title = LookupHelper.getName(service, lookups, descriptor, party);
+            String title = (includeTitle) ? LookupHelper.getName(service, lookups, descriptor, party) : null;
             String firstName = bean.getString("firstName", "");
             String lastName = bean.getString("lastName", "");
             if (title != null) {
@@ -747,7 +760,6 @@ public class PartyRules {
      *
      * @param party     the party. May be {@code null}
      * @param type      the contact type
-     * @param purposes  the contact purposes. May be empty
      * @param exact     if {@code true}, the contact must have the specified purpose
      * @param exclusion if present will exclude contacts with this purpose. May be {@code null}
      * @param purposes  the purposes to match, if any
