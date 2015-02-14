@@ -180,7 +180,7 @@ class MailHeader extends AbstractModifiable {
      */
     public String getFrom() {
         AddressFormatter formatter = from.getFormatter();
-        return formatter.getAddress(from.getSelected());
+        return formatter.getNameAddress(from.getSelected());
     }
 
     /**
@@ -190,23 +190,6 @@ class MailHeader extends AbstractModifiable {
      */
     public void setTo(Contact contact) {
         to.setSelected(contact);
-    }
-
-    /**
-     * Returns the from name.
-     *
-     * @return the from name
-     */
-    public String getFromName() {
-        String name = null;
-        Contact contact = from.getSelected();
-        if (contact != null && contact.getParty() != null) {
-            name = contact.getParty().getName();
-            if (name != null) {
-                name = name.replaceAll("[,@<>#]", "");
-            }
-        }
-        return name;
     }
 
     /**

@@ -46,11 +46,6 @@ public abstract class AbstractMailer implements Mailer {
     private String from;
 
     /**
-     * The from name.
-     */
-    private String fromName;
-
-    /**
      * The to addresses.
      */
     private String[] to;
@@ -118,24 +113,6 @@ public abstract class AbstractMailer implements Mailer {
      */
     public String getFrom() {
         return from;
-    }
-
-    /**
-     * The from name.
-     *
-     * @param name the from name
-     */
-    public void setFromName(String name) {
-        fromName = name;
-    }
-
-    /**
-     * Returns the from name.
-     *
-     * @return the from name
-     */
-    public String getFromName() {
-        return fromName;
     }
 
     /**
@@ -271,7 +248,7 @@ public abstract class AbstractMailer implements Mailer {
      */
     protected void populateMessage(MimeMessageHelper helper)
             throws MessagingException, UnsupportedEncodingException {
-        helper.setFrom(getFrom(), getFromName());
+        helper.setFrom(getFrom());
         String[] to = getTo();
         if (to != null && to.length != 0) {
             helper.setTo(to);

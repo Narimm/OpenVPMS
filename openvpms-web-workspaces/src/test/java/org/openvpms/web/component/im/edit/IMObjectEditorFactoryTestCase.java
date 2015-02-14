@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.im.contact.EmailEditor;
 import org.openvpms.web.component.im.contact.LocationEditor;
 import org.openvpms.web.component.im.doc.DocumentTemplateEditor;
 import org.openvpms.web.component.im.edit.act.DefaultParticipationEditor;
@@ -214,7 +215,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * act.customerAccountCounterItem</em>
      */
     @Test
-    public void testCreateCustomerIvoiceItemEditor() {
+    public void testCreateCustomerInvoiceItemEditor() {
         checkCreate("act.customerAccountInvoiceItem",
                     "act.customerAccountChargesInvoice",
                     DefaultCustomerChargeActItemEditor.class);
@@ -526,6 +527,14 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     public void testCreateProductPriceEditor() {
         checkCreate("productPrice.fixedPrice", ProductPriceEditor.class);
         checkCreate("productPrice.unitPrice", ProductPriceEditor.class);
+    }
+
+    /**
+     * Verifies that a {@link EmailEditor} is created for <em>contact.email</em>.
+     */
+    @Test
+    public void testEmailEditor() {
+        checkCreate("contact.email", EmailEditor.class);
     }
 
     /**

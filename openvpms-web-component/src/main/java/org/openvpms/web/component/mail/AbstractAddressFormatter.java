@@ -17,13 +17,11 @@
 package org.openvpms.web.component.mail;
 
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.archetype.rules.party.ContactArchetypes;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.resource.i18n.Messages;
 
 /**
@@ -42,23 +40,7 @@ public abstract class AbstractAddressFormatter implements AddressFormatter {
      * Constructs an {@link AbstractAddressFormatter}.
      */
     public AbstractAddressFormatter() {
-        ArchetypeDescriptor archetypeDescriptor = DescriptorHelper.getArchetypeDescriptor(ContactArchetypes.EMAIL);
-        String value = null;
-        if (archetypeDescriptor != null) {
-            NodeDescriptor descriptor = archetypeDescriptor.getNodeDescriptor("name");
-            if (descriptor != null) {
-                value = descriptor.getDefaultValue();
-                if (value != null) {
-                    // defaultValue is an xpath expression. Rather than evaluating it, just support the simple case of
-                    // a quoted string.
-                    value = StringUtils.strip(value, "'");
-                }
-                if (StringUtils.isEmpty(value)) {
-                    value = null;
-                }
-            }
-        }
-        defaultValue = value;
+        defaultValue = ContactHelper.getDefaultEmailName();
     }
 
     /**
@@ -83,33 +65,43 @@ public abstract class AbstractAddressFormatter implements AddressFormatter {
      * @return the name. May be {@code null}
      */
     public String getName(Contact contact) {
-        Party party = contact.getParty();
-        return (party != null) ? party.getName() : null;
-    }
-
-    /**
-     * Returns the qualified name.
-     * <p/>
-     * This includes the party name and contact name, if a contact name is specified.
-     *
-     * @param contact the email contact
-     * @return the contact name. May be {@code null}
-     */
-    @Override
-    public String getQualifiedName(Contact contact) {
         String name = contact.getName();
-        String partyName = getName(contact);
         if (StringUtils.isEmpty(name) || StringUtils.equals(defaultValue, name)) {
-            name = partyName;
-        } else {
-            name = (partyName != null) ? Messages.format("mail.qualifiedname", partyName, name) : name;
+            name = getPartyName(contact);
         }
         return name;
     }
 
     /**
-     * Returns the contact name and address.
+     * Returns the qualified name.
+     * <p/>
+     * This includes the contact name and party name, if a contact name is specified. If not, it just
+     * returns the party name.
      *
+     * @param contact the email contact
+     * @return the qualified name. May be {@code null}
+     */
+    @Override
+    public String getQualifiedName(Contact contact) {
+        String name = contact.getName();
+        String partyName = getPartyName(contact);
+        if (StringUtils.isEmpty(name) || StringUtils.equals(defaultValue, name)) {
+            name = partyName;
+        } else {
+            name = (partyName != null) ? Messages.format("mail.qualifiedname", name, partyName) : name;
+        }
+        return name;
+    }
+
+    /**
+     * Returns the contact name and address, or just the address, if the contact doesn't have a name.
+     * <p/>
+     * The returned email address is in RFC822 format. i.e.
+     * <pre>
+     *   name &lt;email address&gt;
+     * </pre>
+     *
+     * @param contact the email contact
      * @return the contact name and address. May {@code null}
      */
     @Override
@@ -144,6 +136,17 @@ public abstract class AbstractAddressFormatter implements AddressFormatter {
     }
 
     /**
+     * Returns the name of the party associated with a contact, if any.
+     *
+     * @param contact the contact
+     * @return the party name. May be {@code null}
+     */
+    private String getPartyName(Contact contact) {
+        Party party = contact.getParty();
+        return (party != null) ? party.getName() : null;
+    }
+
+    /**
      * Returns the contact name and address.
      *
      * @param contact the contact
@@ -151,18 +154,8 @@ public abstract class AbstractAddressFormatter implements AddressFormatter {
      * @return the contact name and address
      */
     private String getNameAddress(Contact contact, String name) {
-        String result;
         String address = getAddress(contact);
-        if (name != null) {
-            if (address != null) {
-                result = Messages.format("mail.contact", name, address);
-            } else {
-                result = name;
-            }
-        } else {
-            result = address;
-        }
-        return result;
+        return ContactHelper.getEmail(address, name);
     }
 
 }

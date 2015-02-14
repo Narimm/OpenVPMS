@@ -203,15 +203,6 @@ public class MailEditor extends AbstractModifiable {
     }
 
     /**
-     * Returns the from name.
-     *
-     * @return the from name
-     */
-    public String getFromName() {
-        return header.getFromName();
-    }
-
-    /**
      * Returns the to addresses.
      *
      * @return the to addresses. May be {@code null}

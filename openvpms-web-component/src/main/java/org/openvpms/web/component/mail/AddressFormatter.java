@@ -35,7 +35,8 @@ public interface AddressFormatter {
     String getAddress(Contact contact);
 
     /**
-     * Returns the contact name.
+     * Returns the name of a contact. If the contact name has been customised from its default, this will be returned,
+     * otherwise the name of the associated party will be returned.
      *
      * @param contact the email contact
      * @return the contact name. May be {@code null}
@@ -45,7 +46,8 @@ public interface AddressFormatter {
     /**
      * Returns the qualified name.
      * <p/>
-     * This includes the party name and contact name, if a contact name is specified.
+     * This includes the contact name and party name, if a contact name is specified. If not, it just
+     * returns the party name.
      *
      * @param contact the email contact
      * @return the contact name. May be {@code null}
@@ -53,7 +55,12 @@ public interface AddressFormatter {
     String getQualifiedName(Contact contact);
 
     /**
-     * Returns the contact name and address.
+     * Returns the contact name and address, or just the address, if the contact doesn't have a name.
+     * <p/>
+     * The returned email address is in RFC822 format. i.e.
+     * <pre>
+     *   name &lt;email address&gt;
+     * </pre>
      *
      * @param contact the email contact
      * @return the contact name and address. May {@code null}

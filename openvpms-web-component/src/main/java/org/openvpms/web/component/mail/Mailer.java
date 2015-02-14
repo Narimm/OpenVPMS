@@ -42,20 +42,6 @@ public interface Mailer {
     String getFrom();
 
     /**
-     * Sets the from name.
-     *
-     * @param name the from name
-     */
-    void setFromName(String name);
-
-    /**
-     * Returns the from name.
-     *
-     * @return the from name
-     */
-    String getFromName();
-
-    /**
      * Sets the to address.
      *
      * @param to the to addresses. May be {@code null}

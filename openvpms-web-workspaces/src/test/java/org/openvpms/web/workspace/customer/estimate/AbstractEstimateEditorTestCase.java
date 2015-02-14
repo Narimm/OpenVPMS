@@ -33,7 +33,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Tim Anderson
  */
-public class AbstractEstimateEditorTestCase extends AbstractCustomerChargeActEditorTest {
+public abstract class AbstractEstimateEditorTestCase extends AbstractCustomerChargeActEditorTest {
 
     /**
      * Verifies an item's properties match that expected.
