@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
@@ -19,7 +19,6 @@ package org.openvpms.web.component.im.util;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.web.system.ServiceHelper;
@@ -44,7 +43,8 @@ public class LookupNameHelper {
      * @throws LookupHelperException     if the lookup is incorrectly specified
      */
     public static Map<String, String> getLookupNames(String shortName, String node) {
-        return LookupHelper.getNames(ArchetypeServiceHelper.getArchetypeService(), shortName, node);
+        return LookupHelper.getNames(ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService(), shortName,
+                                     node);
     }
 
     /**
@@ -55,7 +55,24 @@ public class LookupNameHelper {
      * @return the corresponding lookup name, or {@code null} if none is found
      */
     public static String getName(IMObject object, String node) {
-        return ServiceHelper.getLookupService().getName(object, node);
+        return getName(object, node, null);
+    }
+
+    /**
+     * Returns the name of a lookup given the node containing its code.
+     *
+     * @param object       the object
+     * @param node         the node name
+     * @param defaultValue the default value if the lookup doesn't exist or its name is {@code null}.
+     *                     May be {@code null}
+     * @return the corresponding lookup name, or {@code defaultValue} if none is found or is {@code null}
+     */
+    public static String getName(IMObject object, String node, String defaultValue) {
+        String result = ServiceHelper.getLookupService().getName(object, node);
+        if (result == null) {
+            result = defaultValue;
+        }
+        return result;
     }
 
     /**

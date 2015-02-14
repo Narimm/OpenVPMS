@@ -294,7 +294,6 @@ public class MailDialog extends PopupDialog {
             if (editor.validate(validator)) {
                 Mailer mailer = new DefaultMailer();
                 mailer.setFrom(editor.getFrom());
-                mailer.setFromName(editor.getFromName());
                 mailer.setTo(editor.getTo());
                 mailer.setCc(editor.getCc());
                 mailer.setBcc(editor.getBcc());

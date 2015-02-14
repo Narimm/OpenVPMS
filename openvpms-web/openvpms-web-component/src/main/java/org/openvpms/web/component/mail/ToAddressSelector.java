@@ -17,7 +17,6 @@
 package org.openvpms.web.component.mail;
 
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 import java.util.List;
@@ -78,9 +77,9 @@ class ToAddressSelector extends AddressSelector {
         List<Contact> contacts = selector.getObjects();
         String[] result = (!contacts.isEmpty()) ? new String[contacts.size()] : null;
         if (result != null) {
+            AddressFormatter formatter = getFormatter();
             for (int i = 0; i < contacts.size(); ++i) {
-                IMObjectBean bean = new IMObjectBean(contacts.get(i));
-                result[i] = bean.getString("emailAddress");
+                result[i] = formatter.getNameAddress(contacts.get(i));
             }
         }
         return result;
