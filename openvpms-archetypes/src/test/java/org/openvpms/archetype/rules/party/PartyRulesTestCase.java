@@ -19,6 +19,7 @@ package org.openvpms.archetype.rules.party;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -51,7 +52,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
 
 
     /**
-     * Tests the {@link PartyRules#getFullName(Party)} method.
+     * Tests the {@link PartyRules#getFullName(Party)} and {@link PartyRules#getFullName(Party, boolean)} method.
      */
     @Test
     public void testGetFullName() {
@@ -62,12 +63,15 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         bean.setValue("firstName", "Foo");
         bean.setValue("lastName", "Bar");
         assertEquals("Mr Foo Bar", rules.getFullName(customer));
+        assertEquals("Foo Bar", rules.getFullName(customer, false));
+        assertEquals("Mr Foo Bar", rules.getFullName(customer, true));
 
         // verify no special formatting for other party types
-        Party pet = (Party) create("party.patientpet");
+        Party pet = (Party) create(PatientArchetypes.PATIENT);
         pet.setName("T Rex");
         assertEquals("T Rex", rules.getFullName(pet));
-
+        assertEquals("T Rex", rules.getFullName(pet, false));
+        assertEquals("T Rex", rules.getFullName(pet, true));
     }
 
     /**
