@@ -462,6 +462,7 @@
     <style name="VisitEditor.TabbedPane" type="echopointng.TabbedPane">
         <properties>
             <property name="height" value="${VisitEditor.TabbedPane.height}"/>
+            <property name="scrollBarPolicy" value="AUTO"/>
         </properties>
     </style>
 
