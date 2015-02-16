@@ -113,7 +113,6 @@ public class UserDOImpl extends PartyDOImpl implements UserDO {
      * @param role the role
      */
     public void addRole(SecurityRoleDO role) {
-        role.addUser(this);
         roles.add(role);
     }
 
@@ -123,7 +122,6 @@ public class UserDOImpl extends PartyDOImpl implements UserDO {
      * @param role the role
      */
     public void removeRole(SecurityRoleDO role) {
-        role.removeUser(this);
         roles.remove(role);
     }
 

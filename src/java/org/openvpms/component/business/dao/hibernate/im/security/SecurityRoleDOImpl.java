@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.security;
@@ -28,22 +26,15 @@ import java.util.Set;
 /**
  * Implementation of the {@link SecurityRoleDO} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
-public class SecurityRoleDOImpl extends IMObjectDOImpl
-        implements SecurityRoleDO {
+public class SecurityRoleDOImpl extends IMObjectDOImpl implements SecurityRoleDO {
 
     /**
      * The set of granted authorities for this role.
      */
-    private Set<ArchetypeAuthorityDO> authorities =
-            new HashSet<ArchetypeAuthorityDO>();
-
-    /**
-     * The set of users that are members of this role.
-     */
-    private Set<UserDO> users = new HashSet<UserDO>();
+    private Set<ArchetypeAuthorityDO> authorities = new HashSet<ArchetypeAuthorityDO>();
 
 
     /**
@@ -77,54 +68,16 @@ public class SecurityRoleDOImpl extends IMObjectDOImpl
      * @param authority the authority to add
      */
     public void addAuthority(ArchetypeAuthorityDO authority) {
-        authority.setRole(this);
         authorities.add(authority);
     }
 
     /**
      * Removes an authority.
      *
-     * @param authority the authhority to remove
+     * @param authority the authority to remove
      */
     public void removeAuthority(ArchetypeAuthorityDO authority) {
-        authority.setRole(null);
         authorities.remove(authority);
-    }
-
-    /**
-     * Returns the users.
-     *
-     * @return the users
-     */
-    public Set<UserDO> getUsers() {
-        return users;
-    }
-
-    /**
-     * Adds a user.
-     *
-     * @param user the user to add
-     */
-    public void addUser(UserDO user) {
-        users.add(user);
-    }
-
-    /**
-     * Removes a user.
-     *
-     * @param user the user to remove
-     */
-    public void removeUser(UserDO user) {
-        users.remove(user);
-    }
-
-    /**
-     * Sets the users.
-     *
-     * @param users the users to set
-     */
-    protected void setUsers(Set<UserDO> users) {
-        this.users = users;
     }
 
     /**
@@ -134,9 +87,6 @@ public class SecurityRoleDOImpl extends IMObjectDOImpl
      */
     protected void setAuthorities(Set<ArchetypeAuthorityDO> authorities) {
         this.authorities = authorities;
-        for (ArchetypeAuthorityDO authority : authorities) {
-            authority.setRole(this);
-        }
     }
 
 }

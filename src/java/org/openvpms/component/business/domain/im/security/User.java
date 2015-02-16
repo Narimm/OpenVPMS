@@ -181,7 +181,6 @@ public class User extends Party implements UserDetails {
      * @param role the role it should become a member off
      */
     public void addRole(SecurityRole role) {
-        role.addUser(this);
         roles.add(role);
     }
 
@@ -191,7 +190,6 @@ public class User extends Party implements UserDetails {
      * @param role the role to remove
      */
     public void removeRole(SecurityRole role) {
-        role.removeUser(this);
         roles.remove(role);
     }
 
