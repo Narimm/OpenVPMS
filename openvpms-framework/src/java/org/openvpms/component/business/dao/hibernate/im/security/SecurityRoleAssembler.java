@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.security;
@@ -22,7 +22,6 @@ import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler
 import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
-import org.openvpms.component.business.domain.im.security.User;
 
 
 /**
@@ -31,11 +30,6 @@ import org.openvpms.component.business.domain.im.security.User;
  * @author Tim Anderson
  */
 public class SecurityRoleAssembler extends IMObjectAssembler<SecurityRole, SecurityRoleDO> {
-
-    /**
-     * Assembles sets of users.
-     */
-    private SetAssembler<User, UserDO> USERS = SetAssembler.create(User.class, UserDO.class, true);
 
     /**
      * Assembles sets of authorities.
@@ -63,7 +57,6 @@ public class SecurityRoleAssembler extends IMObjectAssembler<SecurityRole, Secur
     protected void assembleDO(SecurityRoleDO target, SecurityRole source, DOState state, Context context) {
         super.assembleDO(target, source, state, context);
         AUTHS.assembleDO(target.getAuthorities(), source.getAuthorities(), state, context);
-        USERS.assembleDO(target.getUsers(), source.getUsers(), state, context);
     }
 
     /**
@@ -77,7 +70,6 @@ public class SecurityRoleAssembler extends IMObjectAssembler<SecurityRole, Secur
     protected void assembleObject(SecurityRole target, SecurityRoleDO source, Context context) {
         super.assembleObject(target, source, context);
         AUTHS.assembleObject(target.getAuthorities(), source.getAuthorities(), context);
-        USERS.assembleObject(target.getUsers(), source.getUsers(), context);
     }
 
     /**

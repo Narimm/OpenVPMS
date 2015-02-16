@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.security;
@@ -25,11 +23,10 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 /**
  * Implementation of the {@link ArchetypeAuthorityDO} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
-public class ArchetypeAuthorityDOImpl extends IMObjectDOImpl
-        implements ArchetypeAuthorityDO {
+public class ArchetypeAuthorityDOImpl extends IMObjectDOImpl implements ArchetypeAuthorityDO {
 
     /**
      * The service name, which is an alias to the actual service interface.
@@ -45,11 +42,6 @@ public class ArchetypeAuthorityDOImpl extends IMObjectDOImpl
      * The archetype short name, which can also be a regular expression.
      */
     private String shortName;
-
-    /**
-     * The role that the authority belongs to.
-     */
-    private SecurityRoleDO role;
 
 
     /**
@@ -120,24 +112,6 @@ public class ArchetypeAuthorityDOImpl extends IMObjectDOImpl
      */
     public void setServiceName(String name) {
         serviceName = name;
-    }
-
-    /**
-     * Returns the role.
-     *
-     * @return the role
-     */
-    public SecurityRoleDO getRole() {
-        return role;
-    }
-
-    /**
-     * Sets the role.
-     *
-     * @param role the role
-     */
-    public void setRole(SecurityRoleDO role) {
-        this.role = role;
     }
 
 }
