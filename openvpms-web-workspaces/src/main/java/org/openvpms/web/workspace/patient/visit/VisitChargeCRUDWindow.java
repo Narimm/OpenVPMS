@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -38,9 +38,8 @@ import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.message.InformationMessage;
-import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.customer.charge.OrderChargeManager;
 import org.openvpms.web.workspace.customer.order.OrderCharger;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
 import org.springframework.transaction.TransactionStatus;
@@ -80,9 +79,9 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
     private VisitChargeEditor editor;
 
     /**
-     * Customer order charger.
+     * The order charge manager.
      */
-    private final OrderCharger orderCharger;
+    private final OrderChargeManager manager;
 
     /**
      * Determines if the charge is posted.
@@ -99,11 +98,6 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
      */
     private int id;
 
-    /**
-     * The current order message.
-     */
-    private Component message;
-
 
     /**
      * Constructs a {@link VisitChargeCRUDWindow}.
@@ -117,8 +111,9 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
               context, help);
         this.event = event;
         OrderRules rules = ServiceHelper.getBean(OrderRules.class);
-        orderCharger = new OrderCharger(context.getCustomer(), context.getPatient(), rules, context,
-                                        help.subtopic("order"));
+        OrderCharger charger = new OrderCharger(context.getCustomer(), context.getPatient(), rules, context,
+                                                help.subtopic("order"));
+        manager = new OrderChargeManager(charger, container);
     }
 
     /**
@@ -193,7 +188,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
      */
     @Override
     public void show() {
-        checkOrders();
+        chargeCompleteOrders();
         if (editor != null) {
             editor.getFocusGroup().setFocus();
         }
@@ -212,11 +207,11 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
                 result = SaveHelper.save(editor, new TransactionCallback<Boolean>() {
                     @Override
                     public Boolean doInTransaction(TransactionStatus status) {
-                        return orderCharger.save();
+                        return manager.save();
                     }
                 });
                 if (result) {
-                    orderCharger.clear();
+                    manager.clear();
                 }
                 posted = ActStatus.POSTED.equals(getObject().getStatus());
             } else {
@@ -226,7 +221,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
         } else {
             result = true;
         }
-        checkOrders();
+        chargeCompleteOrders();
         return result;
     }
 
@@ -273,12 +268,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
      */
     public void chargeOrders() {
         if (!posted) {
-            orderCharger.charge(editor, new OrderCharger.CompletionListener() {
-                @Override
-                public void completed() {
-                    checkOrders();
-                }
-            });
+            manager.charge(editor);
         }
     }
 
@@ -336,16 +326,8 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
     /**
      * Determines if there are any pending orders, displaying a message if there are.
      */
-    private void checkOrders() {
-        if (message != null) {
-            container.remove(message);
-            message = null;
-        }
-        if (orderCharger.hasOrders()) {
-            message = new InformationMessage(Messages.format("customer.order.pending",
-                                                             orderCharger.getCustomer().getName()));
-            container.add(message, 0);
-        }
+    private void chargeCompleteOrders() {
+        manager.chargeCompleted(editor);
     }
 
 }

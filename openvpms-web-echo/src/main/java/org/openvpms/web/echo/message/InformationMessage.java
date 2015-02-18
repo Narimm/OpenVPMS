@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.message;
@@ -40,7 +40,8 @@ public class InformationMessage extends Row {
      */
     public InformationMessage(String message) {
         setStyleName(Styles.INSET);
-        Label label = LabelFactory.create(null, "InformationMessage");
+        Label label = LabelFactory.create(null, true);
+        label.setStyleName("InformationMessage");
         label.setText(message);
         Button button = ButtonFactory.create(null, "Message.close");
         button.addActionListener(new ActionListener() {

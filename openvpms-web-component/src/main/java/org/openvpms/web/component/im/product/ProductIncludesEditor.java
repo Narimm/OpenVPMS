@@ -84,12 +84,13 @@ public class ProductIncludesEditor extends EntityLinkEditor {
     }
 
     /**
-     * Validates that {@code minWeight < maxWeight}, if both are non-zero.
+     * Validates that {@code minWeight < maxWeight}, if both are non-zero, and that the units are set.
      *
      * @param validator the validator
      * @return {@code true} if the weights are valid
      */
     private boolean validateWeight(Validator validator) {
+        boolean valid = true;
         Property minWeight = getProperty("minWeight");
         Property maxWeight = getProperty("maxWeight");
         BigDecimal min = minWeight.getBigDecimal(BigDecimal.ZERO);
@@ -97,10 +98,13 @@ public class ProductIncludesEditor extends EntityLinkEditor {
         if (min.compareTo(BigDecimal.ZERO) != 0 || max.compareTo(BigDecimal.ZERO) != 0) {
             if (min.compareTo(max) >= 0) {
                 validator.add(this, new ValidatorError(Messages.format("product.template.weighterror", min, max)));
-                return false;
+                valid = false;
+            } else if (getProperty("weightUnits").getString() == null) {
+                validator.add(this, new ValidatorError(Messages.format("product.template.noweightunits", min, max)));
+                valid = false;
             }
         }
-        return true;
+        return valid;
     }
 
     /**
