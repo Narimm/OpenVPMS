@@ -116,7 +116,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
     public void show() {
         super.show();
         if (autoChargeOrders) {
-            manager.chargeCompleted(getEditor());
+            manager.charge(getEditor());
         }
     }
 
@@ -275,7 +275,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      */
     private void chargeOrders() {
         if (!isPosted()) {
-            manager.charge(getEditor());
+            manager.chargeSelected(getEditor());
         }
     }
 
