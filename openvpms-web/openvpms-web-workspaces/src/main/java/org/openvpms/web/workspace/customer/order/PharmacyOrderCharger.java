@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.order;
@@ -217,7 +217,8 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
 
         // NOTE: need to display the dialog as the process of populating medications and reminders can display
         // popups which would parent themselves on the wrong window otherwise.
-        CustomerChargeActEditDialog dialog = new CustomerChargeActEditDialog(editor, charger, context.getContext());
+        CustomerChargeActEditDialog dialog = new CustomerChargeActEditDialog(editor, charger, context.getContext(),
+                                                                             false);
         dialog.show();
         doCharge(editor);
         return dialog;

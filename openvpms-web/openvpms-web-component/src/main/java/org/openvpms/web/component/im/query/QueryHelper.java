@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -127,10 +128,22 @@ public class QueryHelper {
      * @return the matching objects
      */
     public static <T extends IMObject> List<T> query(ArchetypeQuery query) {
-        Iterator<T> iterator = new IMObjectQueryIterator<T>(query);
         List<T> matches = new ArrayList<T>();
-        while (iterator.hasNext()) {
-            matches.add(iterator.next());
+        CollectionUtils.addAll(matches, new IMObjectQueryIterator<T>(query));
+        return matches;
+    }
+
+    /**
+     * Returns all objects matching the specified query in a list.
+     *
+     * @param query the query
+     * @return the matching objects
+     */
+    public static <T extends IMObject> List<T> query(Query<T> query) {
+        List<T> matches = new ArrayList<T>();
+        ResultSet<T> set = query.query();
+        if (set != null) {
+            CollectionUtils.addAll(matches, new ResultSetIterator<T>(set));
         }
         return matches;
     }

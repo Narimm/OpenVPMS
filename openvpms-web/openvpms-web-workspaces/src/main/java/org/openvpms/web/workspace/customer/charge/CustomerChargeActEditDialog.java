@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -28,8 +28,6 @@ import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.message.InformationMessage;
-import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.order.OrderCharger;
 
@@ -52,14 +50,14 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
     private Column container;
 
     /**
-     * The current message. May be {@code null}
+     * Manages charging orders and returns.
      */
-    private InformationMessage message;
+    private final OrderChargeManager manager;
 
     /**
-     * Charges orders and returns.
+     * Determines if customer orders are automatically charged.
      */
-    private final OrderCharger orderCharger;
+    private final boolean autoChargeOrders;
 
     /**
      * Completed button identifier.
@@ -84,17 +82,19 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      * @param context the context
      */
     public CustomerChargeActEditDialog(CustomerChargeActEditor editor, Context context) {
-        this(editor, null, context);
+        this(editor, null, context, true);
     }
 
     /**
      * Constructs a {@link CustomerChargeActEditDialog}.
      *
-     * @param editor  the editor
-     * @param charger the order charger. May be {@code null}
-     * @param context the context
+     * @param editor           the editor
+     * @param charger          the order charger. May be {@code null}
+     * @param context          the context
+     * @param autoChargeOrders if {@code true}, automatically charge customer orders if they are complete
      */
-    public CustomerChargeActEditDialog(CustomerChargeActEditor editor, OrderCharger charger, Context context) {
+    public CustomerChargeActEditDialog(CustomerChargeActEditor editor, OrderCharger charger, Context context,
+                                       boolean autoChargeOrders) {
         super(editor, context);
         addButton(COMPLETED_ID);
         addButton(IN_PROGRESS_ID);
@@ -103,11 +103,21 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
         OrderRules rules = ServiceHelper.getBean(OrderRules.class);
         if (charger == null) {
             HelpContext help = editor.getHelpContext().subtopic("order");
-            orderCharger = new OrderCharger(getContext().getCustomer(), rules, context, help);
-        } else {
-            orderCharger = charger;
+            charger = new OrderCharger(getContext().getCustomer(), rules, context, help);
         }
-        checkOrders();
+        this.autoChargeOrders = autoChargeOrders;
+        manager = new OrderChargeManager(charger, getEditorContainer());
+    }
+
+    /**
+     * Show the window.
+     */
+    @Override
+    public void show() {
+        super.show();
+        if (autoChargeOrders) {
+            manager.chargeCompleted(getEditor());
+        }
     }
 
     /**
@@ -141,7 +151,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
                 close(OK_ID);
             }
         } else {
-            checkOrders();
+            manager.check();
         }
     }
 
@@ -157,7 +167,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
         if (save()) {
             docs.printNew(existing, null);
         }
-        checkOrders();
+        manager.check();
     }
 
     /**
@@ -169,7 +179,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
     protected boolean doSave() {
         boolean result = super.doSave();
         if (result) {
-            orderCharger.clear();
+            manager.clear();
         }
         return result;
     }
@@ -182,7 +192,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      */
     @Override
     protected boolean saved(IMObjectEditor editor) {
-        return orderCharger.save();
+        return manager.save();
     }
 
     /**
@@ -265,27 +275,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      */
     private void chargeOrders() {
         if (!isPosted()) {
-            orderCharger.charge(getEditor(), new OrderCharger.CompletionListener() {
-                @Override
-                public void completed() {
-                    checkOrders();
-                }
-            });
-        }
-    }
-
-    /**
-     * Determines if there are any pending orders, displaying a message if there are.
-     */
-    private void checkOrders() {
-        if (message != null) {
-            getEditorContainer().remove(message);
-            message = null;
-        }
-        if (orderCharger.hasOrders()) {
-            message = new InformationMessage(Messages.format("customer.order.pending",
-                                                             orderCharger.getCustomer().getName()));
-            getEditorContainer().add(message, 0);
+            manager.charge(getEditor());
         }
     }
 

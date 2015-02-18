@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.order;
@@ -35,6 +35,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.InformationDialog;
@@ -143,7 +144,13 @@ public class OrderCharger {
      * @return {@code true} if the customer has pending orders
      */
     public boolean hasOrders() {
-        return rules.hasOrders(customer, patient);
+        if (charged.isEmpty()) {
+            return rules.hasOrders(customer, patient);
+        } else {
+            PendingOrderQuery query = new PendingOrderQuery(customer, patient, charged);
+            List<Act> orders = QueryHelper.query(query);
+            return !orders.isEmpty();
+        }
     }
 
     /**
@@ -162,6 +169,15 @@ public class OrderCharger {
      */
     public void clear() {
         charged.clear();
+    }
+
+    /**
+     * Returns the number of charged orders.
+     *
+     * @return the number of charged orders
+     */
+    public int getCharged() {
+        return charged.size();
     }
 
     /**
@@ -231,6 +247,25 @@ public class OrderCharger {
     }
 
     /**
+     * Charges any complete orders.
+     *
+     * @param editor the editor to add charges to
+     */
+    public void chargeComplete(AbstractCustomerChargeActEditor editor) {
+        PendingOrderQuery query = new PendingOrderQuery(customer, null, charged);
+        List<Act> orders = QueryHelper.query(query);
+        for (Act order : orders) {
+            if (TypeHelper.isA(order, OrderArchetypes.PHARMACY_ORDER, OrderArchetypes.PHARMACY_RETURN)) {
+                PharmacyOrderCharger charger = new PharmacyOrderCharger((FinancialAct) order, rules);
+                if (charger.isValid() && charger.canCharge(editor) && (patient == null || charger.canCharge(patient))) {
+                    charger.charge(editor);
+                    charged.add(order);
+                }
+            }
+        }
+    }
+
+    /**
      * Charges orders.
      *
      * @param orders   the orders to charge
@@ -292,8 +327,15 @@ public class OrderCharger {
         } else {
             String displayName = DescriptorHelper.getDisplayName(current);
             String title = Messages.format("customer.order.currentcharge.title", displayName);
-            String message = Messages.format("customer.order.currentcharge.message",
-                                             DescriptorHelper.getDisplayName(act), displayName);
+            String message;
+            if (charger.getInvoice() != null && ActStatus.POSTED.equals(charger.getInvoice().getStatus())) {
+                // original charge is posted
+                message = Messages.format("customer.order.currentcharge.original",
+                                          DescriptorHelper.getDisplayName(act), displayName);
+            } else {
+                // no original charge
+                message = Messages.format("customer.order.currentcharge.current", displayName);
+            }
             final SelectChargeDialog dialog = new SelectChargeDialog(title, message, displayName);
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
@@ -367,7 +409,7 @@ public class OrderCharger {
          * @return {@code true} if a new charge should be created
          */
         public boolean createCharge() {
-            return currentInvoice.isSelected();
+            return newInvoice.isSelected();
         }
 
         /**
