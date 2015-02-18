@@ -98,6 +98,11 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
      */
     private int id;
 
+    /**
+     * Determines if orders should be automatically charged.
+     */
+    private boolean autoChargeOrders = true;
+
 
     /**
      * Constructs a {@link VisitChargeCRUDWindow}.
@@ -190,7 +195,11 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
     @Override
     public void show() {
         if (editor != null) {
-            manager.charge(editor);
+            if (autoChargeOrders) {
+                manager.charge(editor);
+            } else {
+                manager.check();
+            }
             editor.getFocusGroup().setFocus();
         }
     }
@@ -271,6 +280,24 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
         if (!posted) {
             manager.chargeSelected(editor);
         }
+    }
+
+    /**
+     * Determines if customer orders should automatically be charged when the window is displayed.
+     *
+     * @param charge if {@code true}, automatically charge customer orders
+     */
+    public void setAutoChargeOrders(boolean charge) {
+        autoChargeOrders = charge;
+    }
+
+    /**
+     * Determines if customer orders should automatically be charged when the window is displayed.
+     *
+     * @return {@code true} if customer orders will be automatically charged
+     */
+    public boolean isAutoChargeOrders() {
+        return autoChargeOrders;
     }
 
     /**
