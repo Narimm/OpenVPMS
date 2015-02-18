@@ -17,6 +17,8 @@
 package org.openvpms.web.workspace.customer.charge;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.message.InformationMessage;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.order.OrderCharger;
@@ -58,20 +60,6 @@ public class OrderChargeManager {
     }
 
     /**
-     * Displays a popup to charge pending orders and returns.
-     *
-     * @param editor the editor to add charges to
-     */
-    public void charge(final AbstractCustomerChargeActEditor editor) {
-        charger.charge(editor, new OrderCharger.CompletionListener() {
-            @Override
-            public void completed() {
-                check();
-            }
-        });
-    }
-
-    /**
      * Checks if there are orders pending for the customer.
      * If so, adds a message to the container.
      */
@@ -84,6 +72,30 @@ public class OrderChargeManager {
             message = new InformationMessage(Messages.format("customer.order.pending",
                                                              charger.getCustomer().getName()));
             container.add(message, 0);
+        }
+    }
+
+    /**
+     * Charges all orders.
+     * <p/>
+     * For completed orders. these are charged automatically.
+     * For other orders, a popup is displayed to charge them.
+     *
+     * @param editor the editor to add charges to
+     */
+    public void charge(final AbstractCustomerChargeActEditor editor) {
+        chargeCompleted(editor);
+        if (charger.hasOrders()) {
+            String title = Messages.get("customer.order.incomplete.title");
+            String prompt = Messages.format("customer.order.incomplete.message", charger.getCustomer().getName());
+            ConfirmationDialog dialog = new ConfirmationDialog(title, prompt, ConfirmationDialog.YES_NO);
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onYes() {
+                    chargeSelected(editor);
+                }
+            });
+            editor.queue(dialog);
         }
     }
 
@@ -119,6 +131,20 @@ public class OrderChargeManager {
             message = new InformationMessage(buffer.toString());
             container.add(message, 0);
         }
+    }
+
+    /**
+     * Displays a popup to charge pending orders and returns.
+     *
+     * @param editor the editor to add charges to
+     */
+    public void chargeSelected(final AbstractCustomerChargeActEditor editor) {
+        charger.charge(editor, new OrderCharger.CompletionListener() {
+            @Override
+            public void completed() {
+                check();
+            }
+        });
     }
 
     /**

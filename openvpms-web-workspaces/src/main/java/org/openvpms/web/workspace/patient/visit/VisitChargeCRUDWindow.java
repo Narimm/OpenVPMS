@@ -154,6 +154,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
             } else {
                 HelpContext edit = createEditTopic(object);
                 editor = createVisitChargeEditor(object, event, createLayoutContext(edit));
+                manager.clear();
                 container.add(editor.getComponent());
             }
         } else {
@@ -188,8 +189,8 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
      */
     @Override
     public void show() {
-        chargeCompleteOrders();
         if (editor != null) {
+            manager.charge(editor);
             editor.getFocusGroup().setFocus();
         }
     }
@@ -221,7 +222,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
         } else {
             result = true;
         }
-        chargeCompleteOrders();
+        manager.check();
         return result;
     }
 
@@ -268,7 +269,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
      */
     public void chargeOrders() {
         if (!posted) {
-            manager.charge(editor);
+            manager.chargeSelected(editor);
         }
     }
 
@@ -321,13 +322,6 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
             buttons.setEnabled(COMPLETED_ID, enable);
             buttons.setEnabled(INVOICE_ORDERS_ID, enable);
         }
-    }
-
-    /**
-     * Determines if there are any pending orders, displaying a message if there are.
-     */
-    private void chargeCompleteOrders() {
-        manager.chargeCompleted(editor);
     }
 
 }
