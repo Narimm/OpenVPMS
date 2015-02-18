@@ -117,6 +117,8 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
         super.show();
         if (autoChargeOrders) {
             manager.charge(getEditor());
+        } else {
+            manager.check();
         }
     }
 

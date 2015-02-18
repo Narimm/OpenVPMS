@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -125,13 +125,24 @@ public class VisitEstimateCRUDWindow extends EstimateCRUDWindow {
      */
     @Override
     protected void invoice(Act estimate) {
+        // disable automatic charging of orders when invoicing estimates
+        VisitChargeCRUDWindow window = visitEditor.getCharge();
+        boolean autoChargeOrders = window.isAutoChargeOrders();
+        window.setAutoChargeOrders(false);
+
+        // show the charge window
         visitEditor.selectCharges();
+
+        // invoice the estimate
         VisitChargeEditor editor = visitEditor.getChargeEditor();
         EstimateInvoicer invoicer = createEstimateInvoicer();
         invoicer.invoice(estimate, editor);
         estimate.setStatus(EstimateActStatus.INVOICED);
         SaveHelper.save(estimate);
         onRefresh(estimate);
+
+        // reset auto-charging
+        window.setAutoChargeOrders(autoChargeOrders);
     }
 
     /**
