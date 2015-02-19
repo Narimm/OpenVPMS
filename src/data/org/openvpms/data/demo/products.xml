@@ -5960,21 +5960,25 @@
     <data id="P873" archetype="product.medication" name="Methadone 10mg/ml"/>
     <data id="P880" archetype="product.template" name="Desex - Dog">
         <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P866"
-              minWeight="0" maxWeight="20"/>
-        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P867"
-              minWeight="20" maxWeight="999"/>
-        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P6"/>
+              minWeight="0" maxWeight="20" sequence="0"/>
         <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P868"
-              minWeight="0" maxWeight="20"/>
-        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P868"
-              minWeight="20" maxWeight="999" lowQuantity="1.6" highQuantity="1.6"/>
+              minWeight="0" maxWeight="20" sequence="1"/>
         <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P869"
-              minWeight="0" maxWeight="20" lowQuantity="3" highQuantity="3"/>
+              minWeight="0" maxWeight="20" lowQuantity="3" highQuantity="3" sequence="2"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P867"
+              minWeight="20" maxWeight="999" sequence="3"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P868"
+              minWeight="20" maxWeight="999" lowQuantity="1.6" highQuantity="1.6" sequence="4"/>
         <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P870"
-              minWeight="20" maxWeight="999" lowQuantity="6" highQuantity="6"/>
-        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P871"/>
-        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P872"/>
-        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P873"/>
+              minWeight="20" maxWeight="999" lowQuantity="6" highQuantity="6" sequence="5"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P6"
+              sequence="6"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P871"
+              sequence="7"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P872"
+              sequence="8"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P873"
+              sequence="9"/>
     </data>
 
 
