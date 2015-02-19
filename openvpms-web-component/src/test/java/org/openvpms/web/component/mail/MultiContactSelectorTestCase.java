@@ -51,11 +51,6 @@ public class MultiContactSelectorTestCase extends AbstractAppTest {
      */
     private MultiContactSelector selector;
 
-    /**
-     * Contacts to return in queries.
-     */
-    private List<Contact> contacts;
-
 
     /**
      * Sets up the test case.
@@ -64,15 +59,8 @@ public class MultiContactSelectorTestCase extends AbstractAppTest {
     public void setUp() {
         super.setUp();
         DefaultLayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
-        contacts = new ArrayList<Contact>();
-        selector = new MultiContactSelector(new ToAddressFormatter(), context) {
-            @Override
-            protected Query<Contact> createQuery(String value) {
-                return new ListQuery<Contact>(contacts, ContactArchetypes.EMAIL, false, Contact.class);
-            }
-        };
+        selector = new MultiContactSelector(new ToAddressFormatter(), context);
     }
-
 
     /**
      * Verifies that multiple email addresses can be entered.
@@ -124,10 +112,28 @@ public class MultiContactSelectorTestCase extends AbstractAppTest {
      */
     @Test
     public void testQuery() {
-        Party customer = TestHelper.createCustomer("Foo", "Bar", false);
-        Contact contact = TestHelper.createEmailContact("foo@bar.com");
-        customer.addContact(contact);
-        contacts.add(contact);      // returned by the query
+        Party customer1 = TestHelper.createCustomer("Foo", "Bar", false);
+        final Contact contact1 = TestHelper.createEmailContact("foo@bar.com");
+        customer1.addContact(contact1);
+
+        Party customer2 = TestHelper.createCustomer("J", "Smith", false);
+        final Contact contact2 = TestHelper.createEmailContact("jsmith@gmail.com");
+        contact2.setName("J Smith");
+        customer2.addContact(contact2);
+
+        DefaultLayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
+        selector = new MultiContactSelector(new ToAddressFormatter(), context) {
+            @Override
+            protected Query<Contact> createQuery(String value) {
+                List<Contact> contacts = new ArrayList<Contact>();
+                if ("Foo Bar".equals(value)) {
+                    contacts.add(contact1);
+                } else if ("J Smith".equals(value)) {
+                    contacts.add(contact2);
+                }
+                return new ListQuery<Contact>(contacts, ContactArchetypes.EMAIL, false, Contact.class);
+            }
+        };
 
         TextField field = selector.getTextField();
         field.setText("Foo Bar");
@@ -138,6 +144,17 @@ public class MultiContactSelectorTestCase extends AbstractAppTest {
         List<Contact> objects = selector.getObjects();
         assertEquals(1, objects.size());
         checkEmail(objects.get(0), "Email Address", "foo@bar.com");
+
+        // verify that multiple contacts can be queried
+        field.setText("Foo Bar; J Smith");
+        field.processInput(TextComponent.INPUT_ACTION, null);
+        assertTrue(selector.isValid());
+        assertEquals("foo@bar.com; J Smith <jsmith@gmail.com>; ", field.getText());
+
+        objects = selector.getObjects();
+        assertEquals(2, objects.size());
+        checkEmail(objects.get(0), "Email Address", "foo@bar.com");
+        checkEmail(objects.get(1), "J Smith", "jsmith@gmail.com");
     }
 
     /**
