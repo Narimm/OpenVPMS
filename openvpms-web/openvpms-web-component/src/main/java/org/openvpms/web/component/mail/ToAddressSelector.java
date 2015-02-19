@@ -18,6 +18,9 @@ package org.openvpms.web.component.mail;
 
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
+import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.List;
 
@@ -34,16 +37,23 @@ class ToAddressSelector extends AddressSelector {
     private MultiContactSelector selector;
 
     /**
+     * The localisation key.
+     */
+    private final String key;
+
+    /**
      * Constructs a {@link ToAddressSelector}.
      *
      * @param contacts  the available contacts
      * @param formatter the address formatter
      * @param context   the layout context
+     * @param key       localisation key
      */
-    public ToAddressSelector(List<Contact> contacts, AddressFormatter formatter, LayoutContext context) {
+    public ToAddressSelector(List<Contact> contacts, AddressFormatter formatter, LayoutContext context, String key) {
         super(contacts, formatter);
         selector = new MultiContactSelector(formatter, context);
         setField(selector.getTextField());
+        this.key = key;
     }
 
     /**
@@ -74,23 +84,35 @@ class ToAddressSelector extends AddressSelector {
      * @return the addresses
      */
     public String[] getAddresses() {
-        List<Contact> contacts = selector.getObjects();
-        String[] result = (!contacts.isEmpty()) ? new String[contacts.size()] : null;
-        if (result != null) {
-            AddressFormatter formatter = getFormatter();
-            for (int i = 0; i < contacts.size(); ++i) {
-                result[i] = formatter.getNameAddress(contacts.get(i));
+        String[] result = null;
+        if (selector.isValid()) {
+            List<Contact> contacts = selector.getObjects();
+            result = (!contacts.isEmpty()) ? new String[contacts.size()] : null;
+            if (result != null) {
+                AddressFormatter formatter = getFormatter();
+                for (int i = 0; i < contacts.size(); ++i) {
+                    result[i] = formatter.getNameAddress(contacts.get(i));
+                }
             }
         }
         return result;
     }
 
     /**
-     * Determines if the selector is valid.
+     * Validates the object.
      *
-     * @return {@code true} if the selector is valid
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
-    public boolean isValid() {
-        return selector.isValid();
+    @Override
+    protected boolean doValidation(Validator validator) {
+        boolean valid = selector.isValid();
+        if (!valid) {
+            String name = selector.getFirstNotFound();
+            if (name != null) {
+                validator.add(this, new ValidatorError(Messages.format("mail.notfound", Messages.get(key), name)));
+            }
+        }
+        return valid;
     }
 }

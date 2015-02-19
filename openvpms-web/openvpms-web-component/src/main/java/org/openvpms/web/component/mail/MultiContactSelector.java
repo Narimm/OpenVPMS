@@ -122,14 +122,21 @@ class MultiContactSelector extends MultiIMObjectSelector<Contact> {
     @Override
     protected boolean query(String text, int index) {
         boolean result;
+        String name = null;
         int less = text.indexOf('<');
         if (less != -1) {
-            text = text.substring(0, less);
-            text = text.trim();
+            name = text.substring(0, less).trim();
+            int greater = text.indexOf('>', less);
+            if (greater != -1) {
+                text = text.substring(less + 1, greater);
+            }
         }
         if (text.indexOf('@') != -1) {
             // have an email address. Just create a dummy contact
             Contact contact = (Contact) ServiceHelper.getArchetypeService().create(ContactArchetypes.EMAIL);
+            if (name != null) {
+                contact.setName(name);
+            }
             IMObjectBean bean = new IMObjectBean(contact);
             bean.setValue("emailAddress", text);
             setObject(index, contact);

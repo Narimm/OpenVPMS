@@ -31,6 +31,7 @@ import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.ModifiableListeners;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
@@ -87,6 +88,11 @@ class MailHeader extends AbstractModifiable {
      */
     private final FocusGroup focus;
 
+    /**
+     * The listeners.
+     */
+    private final ModifiableListeners listeners = new ModifiableListeners();
+
 
     /**
      * Constructs an {@link MailHeader}.
@@ -108,9 +114,9 @@ class MailHeader extends AbstractModifiable {
         }
 
         List<Contact> contacts = mailContext.getToAddresses();
-        to = new ToAddressSelector(contacts, mailContext.getToAddressFormatter(), context);
-        cc = new ToAddressSelector(contacts, mailContext.getToAddressFormatter(), context);
-        bcc = new ToAddressSelector(contacts, mailContext.getToAddressFormatter(), context);
+        to = new ToAddressSelector(contacts, mailContext.getToAddressFormatter(), context, "mail.to");
+        cc = new ToAddressSelector(contacts, mailContext.getToAddressFormatter(), context, "mail.cc");
+        bcc = new ToAddressSelector(contacts, mailContext.getToAddressFormatter(), context, "mail.bcc");
 
         if (preferredTo != null) {
             setTo(preferredTo);
@@ -120,11 +126,16 @@ class MailHeader extends AbstractModifiable {
         Macros macros = ServiceHelper.getMacros();
 
         subject = MailHelper.createProperty("subject", "mail.subject", true, macros, variables);
+
         ModifiableListener listener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
-                // onModified(); TODO
+                listeners.notifyListeners(MailHeader.this);
             }
         };
+        from.addModifiableListener(listener);
+        to.addModifiableListener(listener);
+        cc.addModifiableListener(listener);
+        bcc.addModifiableListener(listener);
         subject.addModifiableListener(listener);
 
         TextField subjectText = BoundTextComponentFactory.create(subject, 40);
@@ -244,7 +255,7 @@ class MailHeader extends AbstractModifiable {
      */
     @Override
     public boolean isModified() {
-        return false;
+        return from.isModified() || to.isModified() || cc.isModified() || bcc.isModified() || subject.isModified();
     }
 
     /**
@@ -252,7 +263,11 @@ class MailHeader extends AbstractModifiable {
      */
     @Override
     public void clearModified() {
-        // no-op
+        from.clearModified();
+        to.clearModified();
+        cc.clearModified();
+        bcc.clearModified();
+        subject.clearModified();
     }
 
     /**
@@ -264,7 +279,7 @@ class MailHeader extends AbstractModifiable {
      */
     @Override
     public void addModifiableListener(ModifiableListener listener) {
-        // no-op
+        listeners.addListener(listener);
     }
 
     /**
@@ -275,7 +290,7 @@ class MailHeader extends AbstractModifiable {
      */
     @Override
     public void addModifiableListener(ModifiableListener listener, int index) {
-        // no-op
+        listeners.addListener(listener, index);
     }
 
     /**
@@ -285,7 +300,7 @@ class MailHeader extends AbstractModifiable {
      */
     @Override
     public void removeModifiableListener(ModifiableListener listener) {
-        // no-op
+        listeners.removeListener(listener);
     }
 
     /**
@@ -316,16 +331,12 @@ class MailHeader extends AbstractModifiable {
      */
     @Override
     protected boolean doValidation(Validator validator) {
-        boolean valid = from.getSelected() != null;
-        if (!valid) {
-            validator.add(this, new ValidatorError(Messages.get("mail.nofromaddress")));
-        } else {
-            valid = validator.validate(subject);
-            if (valid) {
-                if (getTo() == null && getCc() == null && getBcc() == null) {
-                    validator.add(this, new ValidatorError(Messages.get("mail.notoaddress")));
-                    valid = false;
-                }
+        boolean valid = validator.validate(from) && validator.validate(to) && validator.validate(cc)
+                        && validator.validate(cc) && validator.validate(subject);
+        if (valid) {
+            if (getTo() == null && getCc() == null && getBcc() == null) {
+                validator.add(this, new ValidatorError(Messages.get("mail.notoaddress")));
+                valid = false;
             }
         }
         return valid;
