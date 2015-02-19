@@ -17,7 +17,10 @@
 package org.openvpms.web.component.mail;
 
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.factory.TextComponentFactory;
+import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.List;
 
@@ -66,4 +69,20 @@ public class FromAddressSelector extends AddressSelector {
         return selected;
     }
 
+    /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        boolean valid = false;
+        if (selected != null) {
+            valid = true;
+        } else {
+            validator.add(this, new ValidatorError(Messages.get("mail.nofromaddress")));
+        }
+        return valid;
+    }
 }

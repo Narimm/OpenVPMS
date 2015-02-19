@@ -19,9 +19,15 @@ package org.openvpms.web.component.mail;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.ListBox;
 import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.DocumentEvent;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.web.component.property.AbstractModifiable;
+import org.openvpms.web.component.property.ErrorListener;
+import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.ModifiableListeners;
 import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.event.DocumentListener;
 import org.openvpms.web.echo.factory.ListBoxFactory;
 import org.openvpms.web.echo.popup.DropDown;
 import org.openvpms.web.echo.text.TextField;
@@ -35,7 +41,7 @@ import static org.openvpms.web.echo.style.Styles.FULL_WIDTH;
  *
  * @author Tim Anderson
  */
-abstract class AddressSelector {
+abstract class AddressSelector extends AbstractModifiable {
 
     /**
      * The address formatter.
@@ -52,11 +58,20 @@ abstract class AddressSelector {
      */
     private DropDown dropDown;
 
-
     /**
      * The drop-down list, if there are contacts.
      */
     private ListBox listBox;
+
+    /**
+     * The listeners.
+     */
+    private final ModifiableListeners listeners = new ModifiableListeners();
+
+    /**
+     * Determines if the field has been modified.
+     */
+    private boolean modified = false;
 
     /**
      * Constructs an {@link AddressSelector}.
@@ -111,6 +126,7 @@ abstract class AddressSelector {
      * @param contact the contact. May be {@code null}
      */
     public void setSelected(Contact contact) {
+        resetValid();
         if (listBox != null) {
             int size = listBox.getModel().size();
             boolean found = false;
@@ -164,6 +180,76 @@ abstract class AddressSelector {
     }
 
     /**
+     * Determines if the object has been modified.
+     *
+     * @return {@code true} if the object has been modified
+     */
+    @Override
+    public boolean isModified() {
+        return modified;
+    }
+
+    /**
+     * Clears the modified status of the object.
+     */
+    @Override
+    public void clearModified() {
+        modified = false;
+    }
+
+    /**
+     * Adds a listener to be notified when this changes.
+     * <p/>
+     * Listeners will be notified in the order they were registered.
+     *
+     * @param listener the listener to add
+     */
+    @Override
+    public void addModifiableListener(ModifiableListener listener) {
+        listeners.addListener(listener);
+    }
+
+    /**
+     * Adds a listener to be notified when this changes, specifying the order of the listener.
+     *
+     * @param listener the listener to add
+     * @param index    the index to add the listener at. The 0-index listener is notified first
+     */
+    @Override
+    public void addModifiableListener(ModifiableListener listener, int index) {
+        listeners.addListener(listener, index);
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    @Override
+    public void removeModifiableListener(ModifiableListener listener) {
+        listeners.removeListener(listener);
+    }
+
+    /**
+     * Sets a listener to be notified of errors.
+     *
+     * @param listener the listener to register. May be {@code null}
+     */
+    @Override
+    public void setErrorListener(ErrorListener listener) {
+    }
+
+    /**
+     * Returns the listener to be notified of errors.
+     *
+     * @return the listener. May be {@code null}
+     */
+    @Override
+    public ErrorListener getErrorListener() {
+        return null;
+    }
+
+    /**
      * Sets the field.
      *
      * @param field the field
@@ -175,7 +261,22 @@ abstract class AddressSelector {
             if (dropDown != null) {
                 dropDown.setTarget(field);
             }
+            field.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void onUpdate(DocumentEvent event) {
+                    onModified();
+                }
+            });
         }
+    }
+
+    /**
+     * Invoked when this is modified.
+     * Notifies registered listeners.
+     */
+    protected void onModified() {
+        modified = true;
+        listeners.notifyListeners(this);
     }
 
 }
