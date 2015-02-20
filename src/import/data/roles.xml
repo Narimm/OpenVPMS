@@ -36,6 +36,16 @@
     <data id="RENTREL" archetype="security.archetypeAuthority" name="Entity Relationships Remove"
           description="Authority to Remove Entity Relationships"
           serviceName="archetypeService" method="remove" archetypeShortName="entityRelationship.*"/>
+    <!-- Entity Link All Authorities -->
+    <data id="CENTLIN" archetype="security.archetypeAuthority" name="Entity Links Create"
+          description="Authority to Create Entity Links"
+          serviceName="archetypeService" method="create" archetypeShortName="entityLink.*"/>
+    <data id="SENTLIN" archetype="security.archetypeAuthority" name="Entity Links Save"
+          description="Authority to Save Entity Links"
+          serviceName="archetypeService" method="save" archetypeShortName="entityLink.*"/>
+    <data id="RENTLIN" archetype="security.archetypeAuthority" name="Entity Links Remove"
+          description="Authority to Remove Entity Links"
+          serviceName="archetypeService" method="remove" archetypeShortName="entityLink.*"/>
     <!-- Act Relationship All Authorities -->
     <data id="CACTREL" archetype="security.archetypeAuthority" name="Act Relationships Create"
           description="Authority to Create Act Relationships"
@@ -534,6 +544,9 @@
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CENTREL"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SENTREL"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RENTREL"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CENTLIN"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SENTLIN"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RENTLIN"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CENTIDE"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SENTIDE"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RENTIDE"/>
