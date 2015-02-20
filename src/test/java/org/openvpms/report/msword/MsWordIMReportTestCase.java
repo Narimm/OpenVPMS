@@ -84,7 +84,7 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
         // result not used for merge testing until we can figure out how to
         // maintain fields in generated document.
 
-        report.generate(objects.iterator(), null, fields, DocFormats.DOC_TYPE);
+        report.generate(objects, null, fields, DocFormats.DOC_TYPE);
     }
 
     /**
@@ -116,7 +116,7 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
         act.setParticipant("participation.customer", party);
 
         List<IMObject> objects = Arrays.asList((IMObject) act.getAct());
-        Document result = report.generate(objects.iterator(), parameters, null, DocFormats.ODT_TYPE);
+        Document result = report.generate(objects, parameters, null, DocFormats.ODT_TYPE);
 
         Map<String, String> inputFields = getInputFields(result);
         assertEquals("the input value", inputFields.get("Enter Field 1"));

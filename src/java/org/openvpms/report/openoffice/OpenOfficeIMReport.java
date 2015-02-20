@@ -190,7 +190,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Document generate(Iterator<T> objects) {
+    public Document generate(Iterable<T> objects) {
         return generate(objects, getDefaultMimeType());
     }
 
@@ -204,7 +204,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    public Document generate(Iterator<T> objects, String mimeType) {
+    public Document generate(Iterable<T> objects, String mimeType) {
         Map<String, Object> empty = Collections.emptyMap();
         return generate(objects, empty, null, mimeType);
     }
@@ -222,7 +222,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    public Document generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields) {
+    public Document generate(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields) {
         return generate(objects, parameters, fields, getDefaultMimeType());
     }
 
@@ -237,7 +237,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    public Document generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
+    public Document generate(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
                              String mimeType) {
         OpenOfficeDocument doc = null;
         OOConnection connection = null;
@@ -263,7 +263,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    public void generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
+    public void generate(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
                          String mimeType, OutputStream stream) {
         OpenOfficeDocument doc = null;
         OOConnection connection = null;
@@ -299,7 +299,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public void print(Iterator<T> objects, PrintProperties properties) {
+    public void print(Iterable<T> objects, PrintProperties properties) {
         print(objects, Collections.<String, Object>emptyMap(), null, properties);
     }
 
@@ -314,7 +314,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    public void print(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
+    public void print(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
                       PrintProperties properties) {
         OpenOfficeDocument doc = null;
         OOConnection connection = null;
@@ -341,14 +341,15 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected OpenOfficeDocument create(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
+    protected OpenOfficeDocument create(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
                                         OOConnection connection) {
         OpenOfficeDocument doc = null;
+        Iterator<T> iter = objects.iterator();
         T object = null;
-        if (objects.hasNext()) {
-            object = objects.next();
+        if (iter.hasNext()) {
+            object = iter.next();
         }
-        if (object == null || objects.hasNext()) {
+        if (object == null || iter.hasNext()) {
             throw new ReportException(FailedToGenerateReport, "Can only report on single objects");
         }
 

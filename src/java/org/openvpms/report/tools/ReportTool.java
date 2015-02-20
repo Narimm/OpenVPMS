@@ -156,7 +156,7 @@ public class ReportTool {
     public void save(IMObject object, String path) throws IOException {
         IMReport<IMObject> report = getReport(object);
         List<IMObject> list = Arrays.asList(object);
-        Document doc = report.generate(list.iterator());
+        Document doc = report.generate(list);
         path = new File(path, doc.getName()).getPath();
         FileOutputStream output = new FileOutputStream(path);
         DocumentHandler handler = handlers.get(doc);

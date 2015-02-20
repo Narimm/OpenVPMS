@@ -135,7 +135,7 @@ public abstract class AbstractOpenOfficeLoadTestCase extends AbstractOpenOfficeD
             act.setParticipant("participation.customer", party);
 
             List<IMObject> objects = Arrays.asList((IMObject) act.getAct());
-            Document result = report.generate(objects.iterator(),
+            Document result = report.generate(objects,
                                               DocFormats.ODT_TYPE);
             Map<String, String> fields = getUserFields(result);
             assertEquals("4/08/2006",

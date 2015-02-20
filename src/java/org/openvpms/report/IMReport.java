@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
@@ -20,7 +20,6 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 
 import java.io.OutputStream;
-import java.util.Iterator;
 import java.util.Map;
 
 
@@ -42,7 +41,7 @@ public interface IMReport<T> extends Report {
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    Document generate(Iterator<T> objects);
+    Document generate(Iterable<T> objects);
 
     /**
      * Generates a report for a collection of objects.
@@ -54,7 +53,7 @@ public interface IMReport<T> extends Report {
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    Document generate(Iterator<T> objects, String mimeType);
+    Document generate(Iterable<T> objects, String mimeType);
 
     /**
      * Generates a report for a collection of objects.
@@ -69,7 +68,7 @@ public interface IMReport<T> extends Report {
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    Document generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields);
+    Document generate(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields);
 
     /**
      * Generates a report for a collection of objects.
@@ -83,7 +82,7 @@ public interface IMReport<T> extends Report {
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    Document generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields, String mimeType);
+    Document generate(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields, String mimeType);
 
     /**
      * Generates a report for a collection of objects to the specified stream.
@@ -97,7 +96,7 @@ public interface IMReport<T> extends Report {
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    void generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields, String mimeType,
+    void generate(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields, String mimeType,
                   OutputStream stream);
 
     /**
@@ -109,7 +108,7 @@ public interface IMReport<T> extends Report {
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    void print(Iterator<T> objects, PrintProperties properties);
+    void print(Iterable<T> objects, PrintProperties properties);
 
     /**
      * Prints a report directly to a printer.
@@ -122,7 +121,7 @@ public interface IMReport<T> extends Report {
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    void print(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
+    void print(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
                PrintProperties properties);
 
 }

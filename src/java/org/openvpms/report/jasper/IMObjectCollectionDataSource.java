@@ -16,9 +16,9 @@
 
 package org.openvpms.report.jasper;
 
-import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
+import net.sf.jasperreports.engine.JRRewindableDataSource;
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.collections.comparators.TransformingComparator;
@@ -43,12 +43,17 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
+public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource implements JRRewindableDataSource {
+
+    /**
+     * The collection.
+     */
+    private final Iterable<IMObject> collection;
 
     /**
      * The collection iterator.
      */
-    private final Iterator<IMObject> iter;
+    private Iterator<IMObject> iterator;
 
     /**
      * Additional fields. May be {@code null}
@@ -86,7 +91,8 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
         for (String sortNode : sortNodes) {
             sort(values, sortNode);
         }
-        iter = values.iterator();
+        collection = values;
+        iterator = collection.iterator();
         this.fields = fields;
         displayName = descriptor.getDisplayName();
     }
@@ -101,10 +107,11 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
      * @param handlers  the document handlers
      * @param functions the JXPath extension functions
      */
-    public IMObjectCollectionDataSource(Iterator<IMObject> objects, PropertySet fields, IArchetypeService service,
+    public IMObjectCollectionDataSource(Iterable<IMObject> objects, PropertySet fields, IArchetypeService service,
                                         ILookupService lookups, DocumentHandlers handlers, Functions functions) {
         super(service, lookups, handlers, functions);
-        iter = objects;
+        collection = objects;
+        iterator = collection.iterator();
         this.fields = fields;
     }
 
@@ -114,9 +121,9 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
      * @return true if there is a next record, false otherwise
      */
     public boolean next() {
-        boolean result = iter.hasNext();
+        boolean result = iterator.hasNext();
         if (result) {
-            current = new IMObjectDataSource(iter.next(), fields, getArchetypeService(), getLookupService(),
+            current = new IMObjectDataSource(iterator.next(), fields, getArchetypeService(), getLookupService(),
                                              getDocumentHandlers(), getFunctions());
         }
         return result;
@@ -129,7 +136,7 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
      * @param sortNodes the list of nodes to sort on
      * @throws JRException for any error
      */
-    public JRDataSource getDataSource(String name, String[] sortNodes) throws JRException {
+    public JRRewindableDataSource getDataSource(String name, String[] sortNodes) throws JRException {
         return current.getDataSource(name, sortNodes);
     }
 
@@ -141,7 +148,7 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
      * @throws JRException for any error
      */
     @Override
-    public JRDataSource getExpressionDataSource(String expression) throws JRException {
+    public JRRewindableDataSource getExpressionDataSource(String expression) throws JRException {
         return current.getExpressionDataSource(expression);
     }
 
@@ -162,6 +169,14 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
             }
         }
         return result;
+    }
+
+    /**
+     * Moves back to the first element in the data source.
+     */
+    @Override
+    public void moveFirst() {
+        iterator = collection.iterator();
     }
 
     /**

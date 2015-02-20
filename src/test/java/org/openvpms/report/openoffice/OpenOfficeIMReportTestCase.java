@@ -73,7 +73,7 @@ public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeDocumentTest {
         act.setParticipant("participation.customer", party);
 
         List<IMObject> objects = Arrays.asList((IMObject) act.getAct());
-        Document result = report.generate(objects.iterator(), null, fields, DocFormats.ODT_TYPE);
+        Document result = report.generate(objects, null, fields, DocFormats.ODT_TYPE);
         Map<String, String> userFields = getUserFields(result);
         String expectedStartTime = DateFormat.getDateInstance(DateFormat.MEDIUM).format(startTime);
         assertEquals(expectedStartTime, userFields.get("startTime"));
@@ -118,7 +118,7 @@ public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeDocumentTest {
         act.setParticipant("participation.customer", party);
 
         List<IMObject> objects = Arrays.asList((IMObject) act.getAct());
-        Document result = report.generate(objects.iterator(), parameters, null, DocFormats.ODT_TYPE);
+        Document result = report.generate(objects, parameters, null, DocFormats.ODT_TYPE);
 
         Map<String, String> inputFields = getInputFields(result);
         assertEquals("the input value", inputFields.get("inputField1"));

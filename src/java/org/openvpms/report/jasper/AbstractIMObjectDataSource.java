@@ -18,6 +18,7 @@ package org.openvpms.report.jasper;
 
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRRewindableDataSource;
 import org.apache.commons.jxpath.Functions;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -75,7 +76,7 @@ public abstract class AbstractIMObjectDataSource implements JRDataSource {
      * @return the data source
      * @throws JRException for any error
      */
-    public JRDataSource getDataSource(String name) throws JRException {
+    public JRRewindableDataSource getDataSource(String name) throws JRException {
         return getDataSource(name, new String[0]);
     }
 
@@ -86,7 +87,7 @@ public abstract class AbstractIMObjectDataSource implements JRDataSource {
      * @return the data source
      * @throws JRException for any error
      */
-    public abstract JRDataSource getExpressionDataSource(String expression) throws JRException;
+    public abstract JRRewindableDataSource getExpressionDataSource(String expression) throws JRException;
 
     /**
      * Returns a data source for a collection node.
@@ -96,8 +97,7 @@ public abstract class AbstractIMObjectDataSource implements JRDataSource {
      * @return the data source
      * @throws JRException for any error
      */
-    public abstract JRDataSource getDataSource(String name, String[] sortNodes)
-            throws JRException;
+    public abstract JRRewindableDataSource getDataSource(String name, String[] sortNodes) throws JRException;
 
     /**
      * Returns the archetype service.

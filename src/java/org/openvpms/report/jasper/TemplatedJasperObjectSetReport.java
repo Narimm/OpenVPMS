@@ -16,7 +16,7 @@
 
 package org.openvpms.report.jasper;
 
-import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.JRRewindableDataSource;
 import org.apache.commons.jxpath.Functions;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -26,7 +26,6 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.util.PropertySet;
 
-import java.util.Iterator;
 import java.util.Map;
 
 
@@ -59,7 +58,7 @@ public class TemplatedJasperObjectSetReport extends AbstractTemplatedJasperIMRep
      * @return a new data source
      */
     @Override
-    protected JRDataSource createDataSource(Iterator<ObjectSet> objects, Map<String, Object> fields) {
+    protected JRRewindableDataSource createDataSource(Iterable<ObjectSet> objects, Map<String, Object> fields) {
         PropertySet f = (fields != null) ? new ResolvingPropertySet(fields, getArchetypeService()) : null;
         return new ObjectSetDataSource(objects, f, getArchetypeService(), getLookupService(), getFunctions());
     }

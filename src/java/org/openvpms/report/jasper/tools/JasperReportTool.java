@@ -85,8 +85,7 @@ public class JasperReportTool extends ReportTool {
         if (report instanceof JasperIMReport) {
             JasperIMReport<IMObject> r = (JasperIMReport<IMObject>) report;
             List<IMObject> list = Arrays.asList(object);
-            JasperViewer viewer = new JasperViewer(r.report(list.iterator()),
-                                                   true);
+            JasperViewer viewer = new JasperViewer(r.report(list), true);
             viewer.setVisible(true);
         } else {
             System.out.println("Can't view reports of type "

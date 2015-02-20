@@ -20,6 +20,7 @@ import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExpression;
 import net.sf.jasperreports.engine.JRParameter;
+import net.sf.jasperreports.engine.JRRewindableDataSource;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -79,7 +80,6 @@ import java.io.OutputStream;
 import java.sql.Connection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -282,7 +282,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
-    public Document generate(Iterator<T> objects) {
+    public Document generate(Iterable<T> objects) {
         return generate(objects, getDefaultMimeType());
     }
 
@@ -296,7 +296,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
-    public Document generate(Iterator<T> objects, String mimeType) {
+    public Document generate(Iterable<T> objects, String mimeType) {
         Map<String, Object> empty = Collections.emptyMap();
         return generate(objects, empty, null, mimeType);
     }
@@ -313,7 +313,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Document generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields) {
+    public Document generate(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields) {
         return generate(objects, parameters, fields, getDefaultMimeType());
     }
 
@@ -328,7 +328,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Document generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
+    public Document generate(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
                              String mimeType) {
         Document document;
         parameters = (parameters != null) ? new HashMap<String, Object>(parameters) : new HashMap<String, Object>();
@@ -354,7 +354,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @param stream     the stream to write to   @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public void generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
+    public void generate(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
                          String mimeType, OutputStream stream) {
         try {
             if (mimeType.equals(DocFormats.CSV_TYPE) || mimeType.equals(DocFormats.XLS_TYPE)) {
@@ -405,7 +405,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
-    public void print(Iterator<T> objects, PrintProperties properties) {
+    public void print(Iterable<T> objects, PrintProperties properties) {
         Map<String, Object> empty = Collections.emptyMap();
         print(objects, empty, null, properties);
     }
@@ -420,7 +420,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public void print(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
+    public void print(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
                       PrintProperties properties) {
         try {
             JasperPrint print = report(objects, parameters, fields);
@@ -438,7 +438,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @throws JRException for any error
      */
     @Override
-    public JasperPrint report(Iterator<T> objects) throws JRException {
+    public JasperPrint report(Iterable<T> objects) throws JRException {
         return report(objects, null, null);
     }
 
@@ -451,7 +451,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @return the report
      * @throws JRException for any error
      */
-    public JasperPrint report(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields)
+    public JasperPrint report(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields)
             throws JRException {
         JRDataSource source = createDataSource(objects, fields);
         HashMap<String, Object> properties = new HashMap<String, Object>(getDefaultParameters());
@@ -470,7 +470,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @param fields  a map of additional field names and their values, to pass to the report. May be {@code null}
      * @return a new data source
      */
-    protected abstract JRDataSource createDataSource(Iterator<T> objects, Map<String, Object> fields);
+    protected abstract JRRewindableDataSource createDataSource(Iterable<T> objects, Map<String, Object> fields);
 
     /**
      * Returns the archetype service.
