@@ -16,9 +16,9 @@
 
 package org.openvpms.report.jasper;
 
-import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
+import net.sf.jasperreports.engine.JRRewindableDataSource;
 import org.apache.commons.jxpath.Functions;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
@@ -34,7 +34,7 @@ import java.util.Iterator;
  *
  * @author Tim Anderson
  */
-public class ObjectSetDataSource implements JRDataSource {
+class ObjectSetDataSource implements JRRewindableDataSource {
 
     /**
      * The current object.
@@ -42,9 +42,14 @@ public class ObjectSetDataSource implements JRDataSource {
     private ObjectSetExpressionEvaluator current;
 
     /**
-     * The iterator.
+     * The collection.
      */
-    private final Iterator<ObjectSet> iterator;
+    private final Iterable<ObjectSet> collection;
+
+    /**
+     * The collection iterator.
+     */
+    private Iterator<ObjectSet> iterator;
 
     /**
      * Additional fields. May be {@code null}
@@ -70,15 +75,16 @@ public class ObjectSetDataSource implements JRDataSource {
     /**
      * Constructs a {@link ObjectSetDataSource}.
      *
-     * @param iterator  the iterator
-     * @param fields    additional report fields. These override any in the report. May be {@code null}
-     * @param service   the archetype service
-     * @param lookups   the lookup service
-     * @param functions the JXPath extension functions
+     * @param collection the iterator
+     * @param fields     additional report fields. These override any in the report. May be {@code null}
+     * @param service    the archetype service
+     * @param lookups    the lookup service
+     * @param functions  the JXPath extension functions
      */
-    public ObjectSetDataSource(Iterator<ObjectSet> iterator, PropertySet fields, IArchetypeService service,
+    public ObjectSetDataSource(Iterable<ObjectSet> collection, PropertySet fields, IArchetypeService service,
                                ILookupService lookups, Functions functions) {
-        this.iterator = iterator;
+        this.collection = collection;
+        this.iterator = collection.iterator();
         this.fields = fields;
         this.service = service;
         this.lookups = lookups;
@@ -110,5 +116,13 @@ public class ObjectSetDataSource implements JRDataSource {
      */
     public Object getFieldValue(JRField field) throws JRException {
         return current.getValue(field.getName());
+    }
+
+    /**
+     * Moves back to the first element in the data source.
+     */
+    @Override
+    public void moveFirst() {
+        iterator = collection.iterator();
     }
 }

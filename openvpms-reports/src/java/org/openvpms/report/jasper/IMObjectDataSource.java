@@ -16,9 +16,9 @@
 
 package org.openvpms.report.jasper;
 
-import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
+import net.sf.jasperreports.engine.JRRewindableDataSource;
 import org.apache.commons.jxpath.Functions;
 import org.apache.commons.jxpath.JXPathContext;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
@@ -36,7 +36,6 @@ import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.report.ExpressionEvaluator;
 import org.openvpms.report.IMObjectExpressionEvaluator;
 
-import java.util.Iterator;
 import java.util.Map;
 
 
@@ -130,7 +129,7 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
      * @param sortNodes the list of nodes to sort on
      * @throws JRException for any error
      */
-    public JRDataSource getDataSource(String name, String[] sortNodes) throws JRException {
+    public JRRewindableDataSource getDataSource(String name, String[] sortNodes) throws JRException {
         ArchetypeDescriptor archetype = resolver.getArchetype();
         NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
         if (descriptor == null) {
@@ -149,20 +148,17 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
      */
     @Override
     @SuppressWarnings("unchecked")
-    public JRDataSource getExpressionDataSource(String expression) throws JRException {
+    public JRRewindableDataSource getExpressionDataSource(String expression) throws JRException {
         JXPathContext context = JXPathHelper.newContext(object, getFunctions());
         Object value = context.getValue(expression);
-        Iterator<IMObject> iterator;
+        Iterable<IMObject> iterable;
         if (value instanceof Iterable) {
-            Iterable<IMObject> iterable = (Iterable<IMObject>) value;
-            iterator = iterable.iterator();
-        } else if (value instanceof Iterator) {
-            iterator = (Iterator<IMObject>) value;
+            iterable = (Iterable<IMObject>) value;
         } else {
             throw new JRException("Unsupported value type=" + ((value != null) ? value.getClass() : null)
                                   + " returned by expression=" + expression);
         }
-        return new IMObjectCollectionDataSource(iterator, fields, getArchetypeService(), getLookupService(),
+        return new IMObjectCollectionDataSource(iterable, fields, getArchetypeService(), getLookupService(),
                                                 getDocumentHandlers(), getFunctions());
     }
 

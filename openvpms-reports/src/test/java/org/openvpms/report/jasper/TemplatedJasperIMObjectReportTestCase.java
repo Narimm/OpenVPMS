@@ -31,7 +31,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -44,7 +44,7 @@ import static org.junit.Assert.assertEquals;
 public class TemplatedJasperIMObjectReportTestCase extends AbstractReportTest {
 
     /**
-     * Tests the {@link TemplatedJasperIMObjectReport#generate(Iterator, Map, Map, String)} method.
+     * Tests the {@link TemplatedJasperIMObjectReport#generate(Iterable, Map, Map, String)} method.
      *
      * @throws Exception for any error
      */
@@ -58,14 +58,14 @@ public class TemplatedJasperIMObjectReportTestCase extends AbstractReportTest {
                                                                                  getLookupService(), getHandlers(),
                                                                                  functions);
         Party customer = createCustomer("Foo", "Bar");
-        Iterator<IMObject> iterator = Arrays.<IMObject>asList(customer).iterator();
+        List<IMObject> list = Arrays.<IMObject>asList(customer);
 
         // verify a field can be supplied
         Map<String, Object> fields = new HashMap<String, Object>();
         fields.put("Globals.Location", location);
 
         // generate the report as a CSV to allow comparison
-        Document csv = report.generate(iterator, null, fields, DocFormats.CSV_TYPE);
+        Document csv = report.generate(list, null, fields, DocFormats.CSV_TYPE);
         String string = IOUtils.toString(getHandlers().get(document).getContent(csv), "UTF-8");
         assertEquals("Foo,Bar,Main Clinic", string.trim());
     }

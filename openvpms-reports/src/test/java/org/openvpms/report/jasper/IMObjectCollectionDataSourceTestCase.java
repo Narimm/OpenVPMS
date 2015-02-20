@@ -52,7 +52,7 @@ public class IMObjectCollectionDataSourceTestCase extends AbstractIMObjectDataSo
         fields.put("Globals.1", 1);
         PropertySet f = new ResolvingPropertySet(fields, getArchetypeService());
         Functions functions = applicationContext.getBean(Functions.class);
-        IMObjectCollectionDataSource ds = new IMObjectCollectionDataSource(objects.iterator(), f,
+        IMObjectCollectionDataSource ds = new IMObjectCollectionDataSource(objects, f,
                                                                            getArchetypeService(), getLookupService(),
                                                                            handlers, functions);
         assertTrue(ds.next());
