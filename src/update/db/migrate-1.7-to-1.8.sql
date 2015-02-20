@@ -3022,7 +3022,7 @@ CREATE PROCEDURE dropForeignKeysFromTable(IN param_table_schema VARCHAR(255), IN
     DECLARE dropCommand VARCHAR(255);
     DECLARE dropCur CURSOR FOR
       SELECT
-        concat('ALTER TABLE ', table_schema, '.', table_name, ' DROP FOREIGN KEY ', constraint_name,
+        concat('ALTER TABLE `', table_schema, '`.', table_name, ' DROP FOREIGN KEY ', constraint_name,
                ', DROP KEY ', constraint_name, ';')
       FROM information_schema.table_constraints
       WHERE constraint_type = 'FOREIGN KEY'
@@ -3155,3 +3155,5 @@ WHERE r.arch_short_name = "entityRelationship.productIncludes";
 DELETE r
 FROM entity_relationships r
 WHERE r.arch_short_name = "entityRelationship.productIncludes";
+
+
