@@ -81,7 +81,7 @@ public class ReportMacroRunner extends AbstractExpressionMacroRunner {
             IMReport<IMObject> report = factory.createIMObjectReport(document);
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             List<IMObject> objects = Arrays.asList((IMObject) object);
-            report.generate(objects.iterator(), parameters, null, DocFormats.TEXT_TYPE, output);
+            report.generate(objects, parameters, null, DocFormats.TEXT_TYPE, output);
             try {
                 result = new String(output.toByteArray(), ENCODING);
             } catch (UnsupportedEncodingException exception) {
