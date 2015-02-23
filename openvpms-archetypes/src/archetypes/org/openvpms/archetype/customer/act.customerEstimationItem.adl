@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -36,29 +36,72 @@
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
-        <node name="lowQty" path="/details/lowQty" type="java.math.BigDecimal" defaultValue="1.0" minCardinality="1"/>
-        <node name="highQty" path="/details/highQty" type="java.math.BigDecimal" defaultValue="1.0" minCardinality="1"/>
+        <node name="lowQty" path="/details/lowQty" type="java.math.BigDecimal" defaultValue="1.0" minCardinality="1">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
+        <node name="highQty" path="/details/highQty" type="java.math.BigDecimal" defaultValue="1.0" minCardinality="1">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
         <node name="fixedPrice" path="/details/fixedPrice"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"
-              minCardinality="1"/>
+              minCardinality="1">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
         <node name="lowUnitPrice" path="/details/lowUnitPrice"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"
-              minCardinality="1"/>
+              minCardinality="1">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
         <node name="highUnitPrice" path="/details/highUnitPrice"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"
-              minCardinality="1"/>
-        <node name="discount" path="/details/discount"
+              minCardinality="1">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
+        <node name="lowDiscount" path="/details/lowDiscount"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"
-              minCardinality="0"/>
+              minCardinality="0">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
+        <node name="highDiscount" path="/details/highDiscount"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"
+              minCardinality="0">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
+        <node name="discount" path="/details/highDiscount"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"
+              minCardinality="0" hidden="true"/>
+        <!-- retained for backward compatibility -->
         <node name="lowTotal" path="/details/lowTotal"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
               derived="true"
-              derivedValue="math:roundAmount(number(//details/lowQty > 0) * /details/fixedPrice - /details/discount + /details/lowQty * /details/lowUnitPrice)"
-              minCardinality="1"/>
+              derivedValue="math:roundAmount(number(//details/lowQty > 0) * /details/fixedPrice - /details/lowDiscount + /details/lowQty * /details/lowUnitPrice)"
+              minCardinality="1">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
         <node name="highTotal" path="/details/highTotal"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
               derived="true"
-              derivedValue="math:roundAmount(number(//details/highQty > 0) * /details/fixedPrice - /details/discount + /details/highQty * /details/highUnitPrice)"
-              minCardinality="1"/>
+              derivedValue="math:roundAmount(number(//details/highQty > 0) * /details/fixedPrice - /details/highDiscount + /details/highQty * /details/highUnitPrice)"
+              minCardinality="1">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
     </archetype>
 </archetypes>
