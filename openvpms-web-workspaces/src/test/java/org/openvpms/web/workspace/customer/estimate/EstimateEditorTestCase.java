@@ -86,13 +86,14 @@ public class EstimateEditorTestCase extends AbstractEstimateEditorTestCase {
         Party patient = TestHelper.createPatient(customer);
 
         BigDecimal fixedPrice = ONE;
+        BigDecimal unitPrice = ONE;
         Product template = ProductTestHelper.createTemplate("templateA");
-        Product product1 = createProduct(MEDICATION, fixedPrice);
-        Product product2 = createProduct(MEDICATION, fixedPrice);
-        Product product3 = createProduct(MEDICATION, fixedPrice);
-        ProductTestHelper.addInclude(template, product1, 1, false);
-        ProductTestHelper.addInclude(template, product2, 2, false);
-        ProductTestHelper.addInclude(template, product3, 3, true); // zero price
+        Product product1 = createProduct(MEDICATION, fixedPrice, unitPrice);
+        Product product2 = createProduct(MEDICATION, fixedPrice, unitPrice);
+        Product product3 = createProduct(MEDICATION, fixedPrice, unitPrice);
+        ProductTestHelper.addInclude(template, product1, 1, 2, false);
+        ProductTestHelper.addInclude(template, product2, 2, 4, false);
+        ProductTestHelper.addInclude(template, product3, 3, 6, true); // zero price
 
         Act estimate = (Act) TestHelper.create(EstimateArchetypes.ESTIMATE);
         EstimateEditor editor = new EstimateEditor(estimate, null, layout);
@@ -115,9 +116,28 @@ public class EstimateEditorTestCase extends AbstractEstimateEditorTestCase {
         User author = context.getUser();
         BigDecimal two = BigDecimal.valueOf(2);
         BigDecimal three = BigDecimal.valueOf(3);
+        BigDecimal five = BigDecimal.valueOf(5);
 
-        checkItem(items, patient, product1, author, ONE, ZERO, fixedPrice, BigDecimal.ZERO, ONE);
-        checkItem(items, patient, product2, author, two, ZERO, fixedPrice, BigDecimal.ZERO, ONE);
-        checkItem(items, patient, product3, author, three, ZERO, ZERO, BigDecimal.ZERO, ZERO);
+        checkEstimate(estimate, customer, author, five, new BigDecimal("8"));
+        checkItem(items, patient, product1, author, 1, 2, unitPrice, unitPrice, fixedPrice, ZERO, ZERO, two, three);
+        checkItem(items, patient, product2, author, 2, 4, unitPrice, unitPrice, fixedPrice, ZERO, ZERO, three, five);
+        checkItem(items, patient, product3, author, 3, 6, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO);
+    }
+
+    /**
+     * Verifies an estimate matches that expected.
+     *
+     * @param estimate  the estimate to check
+     * @param customer  the expected customer
+     * @param author    the expected author
+     * @param lowTotal  the expected low total
+     * @param highTotal the expected high total
+     */
+    private void checkEstimate(Act estimate, Party customer, User author, BigDecimal lowTotal, BigDecimal highTotal) {
+        ActBean bean = new ActBean(estimate);
+        assertEquals(customer.getObjectReference(), bean.getNodeParticipantRef("customer"));
+        assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
+        checkEquals(lowTotal, bean.getBigDecimal("lowTotal"));
+        checkEquals(highTotal, bean.getBigDecimal("highTotal"));
     }
 }
