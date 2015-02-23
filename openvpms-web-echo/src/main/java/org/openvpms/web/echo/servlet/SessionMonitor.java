@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.servlet;
@@ -24,7 +24,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.web.echo.spring.SpringApplicationInstance;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
@@ -87,6 +91,8 @@ public class SessionMonitor implements DisposableBean {
      */
     public SessionMonitor() {
         executor = Executors.newSingleThreadScheduledExecutor();
+        log.info("Using default session auto-lock time=" + (autoLock / DateUtils.MILLIS_PER_MINUTE) + " minutes");
+        log.info("Using default session auto-logout time=" + (autoLogout / DateUtils.MILLIS_PER_MINUTE) + " minutes");
     }
 
     /**
@@ -118,19 +124,21 @@ public class SessionMonitor implements DisposableBean {
     public void active() {
         Connection connection = WebRenderServlet.getActiveConnection();
         if (connection != null) {
-            active(connection.getRequest().getSession());
+            HttpServletRequest request = connection.getRequest();
+            active(request, SecurityContextHolder.getContext().getAuthentication());
         }
     }
 
     /**
      * Marks a session as active.
      *
-     * @param session the session
+     * @param request        the request
+     * @param authentication the user authentication
      */
-    public void active(HttpSession session) {
-        Monitor monitor = monitors.get(session);
+    public void active(HttpServletRequest request, Authentication authentication) {
+        Monitor monitor = monitors.get(request.getSession());
         if (monitor != null) {
-            monitor.active();
+            monitor.active(request, authentication);
         }
     }
 
@@ -211,6 +219,7 @@ public class SessionMonitor implements DisposableBean {
      */
     @Override
     public void destroy() {
+        log.info("Shutting down SessionMonitor");
         executor.shutdown();
         monitors.clear();
     }
@@ -256,22 +265,51 @@ public class SessionMonitor implements DisposableBean {
         private volatile ScheduledFuture<?> future;
 
         /**
+         * The user, used for logging.
+         */
+        private volatile String user;
+
+        /**
+         * The user's IP address, used for logging.
+         */
+        private volatile String address;
+
+        /**
          * Constructs a {@link Monitor}.
          *
          * @param session the session
          */
         public Monitor(HttpSession session) {
-            active();
+            lastAccessedTime = System.currentTimeMillis();
             this.session = new WeakReference<HttpSession>(session);
         }
 
         /**
          * Marks the session as active.
+         *
+         * @param request        the servlet request
+         * @param authentication the user authentication
          */
-        public void active() {
+        public void active(HttpServletRequest request, Authentication authentication) {
             lastAccessedTime = System.currentTimeMillis();
+            boolean doLog = (user == null);
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof UserDetails) {
+                user = ((UserDetails) principal).getUsername();
+            } else {
+                user = principal.toString();
+            }
+            address = request.getRemoteAddr();
+            if (doLog && log.isInfoEnabled()) {
+                log.info("Active session, user=" + user + ", address=" + address);
+            }
         }
 
+        /**
+         * Registers an application.
+         *
+         * @param application the application.
+         */
         public synchronized void newApplication(SpringApplicationInstance application) {
             apps.put(application, application);
         }
@@ -293,13 +331,10 @@ public class SessionMonitor implements DisposableBean {
             long lock = autoLock;
             if (logout != 0 && inactive > logout) {
                 // session is inactive, so kill it
-                HttpSession httpSession = session.get();
-                if (httpSession != null) {
-                    httpSession.invalidate();
-                }
+                invalidate();
             } else {
                 long reschedule = (logout != 0) ? logout - inactive : 0;
-                if (lock != 0) {
+                if (lock != 0 && lock < logout) {
                     if (inactive > lock) {
                         if (!locked) {
                             lock();
@@ -319,8 +354,9 @@ public class SessionMonitor implements DisposableBean {
          */
         public void schedule() {
             long time = autoLock;
-            if (time == 0) {
-                time = autoLogout;
+            long logout = autoLogout;
+            if (time == 0 || (logout != 0 && logout < time)) {
+                time = logout;
             }
             if (time != 0) {
                 schedule(time);
@@ -359,6 +395,9 @@ public class SessionMonitor implements DisposableBean {
                 locked = false;
                 reschedule();
             }
+            if (log.isInfoEnabled()) {
+                log.info("Unlocked session for user=" + user + ", address=" + address);
+            }
         }
 
         /**
@@ -386,6 +425,22 @@ public class SessionMonitor implements DisposableBean {
             for (SpringApplicationInstance app : list) {
                 if (app != null) {
                     app.lock();
+                }
+            }
+            if (log.isInfoEnabled()) {
+                log.info("Locked session for user=" + user + ", address=" + address);
+            }
+        }
+
+        /**
+         * Invalidates a session.
+         */
+        private void invalidate() {
+            HttpSession httpSession = session.get();
+            if (httpSession != null) {
+                httpSession.invalidate();
+                if (log.isInfoEnabled()) {
+                    log.info("Invalidated session for user=" + user + ", address=" + address);
                 }
             }
         }
