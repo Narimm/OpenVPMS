@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
+import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.patient.InvestigationActStatus;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.prescription.PrescriptionTestHelper;
@@ -612,16 +613,16 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         BigDecimal itemTotal = BigDecimal.valueOf(20);
         Product product1 = createProduct(ProductArchetypes.SERVICE, itemTotal);
 
-        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(itemTotal, customer, patient, product1,
+                                                                           ActStatus.IN_PROGRESS);
+        save(acts);
+        FinancialAct charge = acts.get(0);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
         editor.getComponent();
-        assertTrue(editor.isValid());
-
-        BigDecimal quantity = ONE;
-        addItem(editor, patient, product1, quantity, editor.getQueue());
-        assertTrue(editor.isValid());
         charge.setTotal(Money.ONE);
+        assertFalse(editor.isValid());
+
         Validator validator = new DefaultValidator();
         assertFalse(editor.validate(validator));
         List<ValidatorError> list = validator.getErrors(editor);
@@ -633,7 +634,6 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         String expected = Messages.format(ValidatorError.MSG_KEY, message);
         assertEquals(expected, list.get(0).toString());
     }
-
 
     /**
      * Verifies a prescription can be selected during invoicing.

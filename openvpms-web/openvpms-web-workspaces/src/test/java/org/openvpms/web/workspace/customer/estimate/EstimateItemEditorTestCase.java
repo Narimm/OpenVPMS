@@ -19,15 +19,19 @@ package org.openvpms.web.workspace.customer.estimate;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.finance.discount.DiscountRules;
+import org.openvpms.archetype.rules.finance.discount.DiscountTestHelper;
 import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
 import org.openvpms.archetype.rules.finance.estimate.EstimateTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
@@ -63,14 +67,25 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
     private List<String> errors = new ArrayList<String>();
 
     /**
-     * The context.
-     */
-    private Context context;
-
-    /**
      * The customer.
      */
     private Party customer;
+
+    /**
+     * The patient.
+     */
+    private Party patient;
+
+    /**
+     * The author.
+     */
+    private User author;
+
+    /**
+     * The layout context.
+     */
+    private LayoutContext layout;
+
 
     /**
      * Sets up the test case.
@@ -80,6 +95,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
     public void setUp() {
         super.setUp();
         customer = TestHelper.createCustomer();
+        patient = TestHelper.createPatient();
+        author = TestHelper.createUser();
 
         // register an ErrorHandler to collect errors
         ErrorHandler.setInstance(new ErrorHandler() {
@@ -92,10 +109,71 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
                 errors.add(message);
             }
         });
-        context = new LocalContext();
+        Context context = new LocalContext();
         context.setPractice(getPractice());
+        context.setUser(author);
+        layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
     }
 
+    /**
+     * Tests a product with a 10% discount.
+     */
+    @Test
+    public void testDiscounts() {
+        BigDecimal lowQuantity = BigDecimal.ONE;
+        BigDecimal highQuantity = BigDecimal.valueOf(2);
+        BigDecimal unitCost = BigDecimal.valueOf(5);
+        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal fixedCost = BigDecimal.valueOf(1);
+        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+        Entity discount = DiscountTestHelper.createDiscount(BigDecimal.TEN, true, DiscountRules.PERCENTAGE);
+
+        EntityBean patientBean = new EntityBean(patient);
+        patientBean.addNodeRelationship("discounts", discount);
+        patientBean.save();
+
+        Product product = createProduct(ProductArchetypes.MEDICATION, fixedCost, fixedPrice, unitCost, unitPrice);
+        EntityBean productBean = new EntityBean(product);
+        productBean.addNodeRelationship("discounts", discount);
+        productBean.save();
+
+        Act item = (Act) create(EstimateArchetypes.ESTIMATE_ITEM);
+        Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
+
+        // create the editor
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
+        editor.getComponent();
+        assertFalse(editor.isValid());
+
+        editor.setPatient(patient);
+        editor.setProduct(product);
+        editor.setLowQuantity(lowQuantity);
+        editor.setHighQuantity(highQuantity);
+
+        // editor should now be valid
+        assertTrue(editor.isValid());
+
+        checkSave(estimate, editor);
+
+        item = get(item);
+        BigDecimal lowDiscount1 = new BigDecimal("1.20");
+        BigDecimal highDiscount1 = new BigDecimal("2.20");
+        BigDecimal lowTotal1 = new BigDecimal("10.80");
+        BigDecimal highTotal1 = new BigDecimal("19.80");
+        checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPrice, unitPrice, fixedPrice,
+                  lowDiscount1, highDiscount1, lowTotal1, highTotal1);
+
+        // now remove the discounts
+        editor.setLowDiscount(BigDecimal.ZERO);
+        editor.setHighDiscount(BigDecimal.ZERO);
+        checkSave(estimate, editor);
+
+        item = get(item);
+        BigDecimal lowTotal2 = new BigDecimal("12.00");
+        BigDecimal highTotal2 = new BigDecimal("22.00");
+        checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPrice, unitPrice, fixedPrice,
+                  BigDecimal.ZERO, BigDecimal.ZERO, lowTotal2, highTotal2);
+    }
 
     /**
      * Verifies that prices and totals are correct when the customer has tax exemptions.
@@ -108,10 +186,6 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         customer.addClassification(taxes.get(0));
         save(customer);
 
-        LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
-        Party patient = TestHelper.createPatient();
-        User author = TestHelper.createUser();
-
         BigDecimal quantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);
         BigDecimal unitPrice = BigDecimal.valueOf(10);
@@ -122,9 +196,6 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
 
         Act item = (Act) create(EstimateArchetypes.ESTIMATE_ITEM);
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
-
-        // set up the context
-        layout.getContext().setUser(author); // to propagate to acts
 
         // create the editor
         EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
@@ -150,7 +221,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         BigDecimal fixedPriceExTax = new BigDecimal("1.82");
         BigDecimal unitPriceExTax = new BigDecimal("9.09");
         BigDecimal totalExTax = new BigDecimal("20");
-        checkItem(item, patient, product, author, quantity, unitPriceExTax, fixedPriceExTax, discount, totalExTax);
+        checkItem(item, patient, product, author, quantity, quantity, unitPriceExTax, unitPriceExTax, fixedPriceExTax,
+                  discount, discount, totalExTax, totalExTax);
 
         // verify no errors were logged
         assertTrue(errors.isEmpty());

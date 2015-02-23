@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -221,21 +221,31 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * @return the discount, or {@code BigDecimal.ZERO} if the discount can't be calculated
      */
     protected BigDecimal calculateDiscount() {
+        BigDecimal unitPrice = getUnitPrice();
+        BigDecimal quantity = getQuantity();
+        return calculateDiscount(unitPrice, quantity);
+    }
+
+    /**
+     * Calculates the discount.
+     *
+     * @param unitPrice the unit price
+     * @param quantity  the quantity
+     * @return the discount, or {@code BigDecimal.ZERO} if the discount can't be calculated
+     */
+    protected BigDecimal calculateDiscount(BigDecimal unitPrice, BigDecimal quantity) {
         BigDecimal amount = BigDecimal.ZERO;
         Party customer = getCustomer();
         Party patient = getPatient();
         Product product = getProduct();
 
         if (customer != null && product != null && !TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
+            DiscountRules rules = ServiceHelper.getBean(DiscountRules.class);
             BigDecimal fixedCost = getFixedCost();
             BigDecimal unitCost = getUnitCost();
             BigDecimal fixedPrice = getFixedPrice();
-            BigDecimal unitPrice = getUnitPrice();
-            BigDecimal quantity = getQuantity();
             BigDecimal fixedPriceMaxDiscount = getFixedPriceMaxDiscount();
             BigDecimal unitPriceMaxDiscount = getUnitPriceMaxDiscount();
-            DiscountRules rules = new DiscountRules(ServiceHelper.getArchetypeService(),
-                                                    ServiceHelper.getLookupService());
             Date startTime = getStartTime();
             if (startTime == null) {
                 Act parent = (Act) getParent();

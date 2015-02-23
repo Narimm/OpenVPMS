@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -94,12 +94,8 @@ public class FinancialActEditor extends ActEditor {
      * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     @Override
-    public boolean validate(Validator validator) {
-        boolean result = super.validate(validator);
-        if (result) {
-            result = validateAmounts(validator);
-        }
-        return result;
+    protected boolean doValidation(Validator validator) {
+        return super.doValidation(validator) && validateAmounts(validator);
     }
 
     /**

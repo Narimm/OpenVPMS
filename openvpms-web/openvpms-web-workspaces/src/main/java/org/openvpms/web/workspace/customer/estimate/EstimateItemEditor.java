@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -36,6 +37,7 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.system.ServiceHelper;
@@ -73,7 +75,8 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * Nodes to display when a product template is selected.
      */
     private static final ArchetypeNodes TEMPLATE_NODES = new ArchetypeNodes().exclude(
-            "lowQty", "highQty", "fixedPrice", "lowUnitPrice", "highUnitPrice", "lowTotal", "highTotal");
+            "lowQty", "highQty", "fixedPrice", "lowUnitPrice", "highUnitPrice", "lowDiscount", "highDiscount",
+            "lowTotal", "highTotal");
 
 
     /**
@@ -102,9 +105,23 @@ public class EstimateItemEditor extends PriceActItemEditor {
                 updateDiscount();
             }
         };
+        ModifiableListener lowListener = new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                updateLowDiscount();
+            }
+        };
+        ModifiableListener highListener = new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                updateHighDiscount();
+            }
+        };
         getProperty("fixedPrice").addModifiableListener(listener);
-        getProperty("highUnitPrice").addModifiableListener(listener);
-        getProperty("highQty").addModifiableListener(listener);
+        getProperty("lowUnitPrice").addModifiableListener(lowListener);
+        getProperty("lowQty").addModifiableListener(lowListener);
+        getProperty("highUnitPrice").addModifiableListener(highListener);
+        getProperty("highQty").addModifiableListener(highListener);
     }
 
     /**
@@ -118,6 +135,27 @@ public class EstimateItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Returns the quantity.
+     * <p/>
+     * This implementation returns the high quantity.
+     *
+     * @return the quantity
+     */
+    @Override
+    public BigDecimal getQuantity() {
+        return getHighQuantity();
+    }
+
+    /**
+     * Returns the low quantity.
+     *
+     * @return the low quantity
+     */
+    public BigDecimal getLowQuantity() {
+        return getProperty("lowQty").getBigDecimal(BigDecimal.ZERO);
+    }
+
+    /**
      * Sets the low quantity.
      *
      * @param quantity the low quantity
@@ -127,25 +165,21 @@ public class EstimateItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Returns the high quantity.
+     *
+     * @return the high quantity
+     */
+    public BigDecimal getHighQuantity() {
+        return getProperty("highQty").getBigDecimal(BigDecimal.ZERO);
+    }
+
+    /**
      * Sets the high quantity.
      *
      * @param quantity the high quantity
      */
     public void setHighQuantity(BigDecimal quantity) {
         getProperty("highQty").setValue(quantity);
-    }
-
-    /**
-     * Returns the quantity.
-     * <p/>
-     * This implementation returns the high quantity.
-     *
-     * @return the quantity
-     */
-    @Override
-    public BigDecimal getQuantity() {
-        BigDecimal value = (BigDecimal) getProperty("highQty").getValue();
-        return (value != null) ? value : BigDecimal.ZERO;
     }
 
     /**
@@ -170,8 +204,43 @@ public class EstimateItemEditor extends PriceActItemEditor {
      */
     @Override
     public BigDecimal getUnitPrice() {
-        BigDecimal value = (BigDecimal) getProperty("highUnitPrice").getValue();
-        return (value != null) ? value : BigDecimal.ZERO;
+        return getHighUnitPrice();
+    }
+
+    /**
+     * Returns the low unit price.
+     *
+     * @return the low unit price
+     */
+    public BigDecimal getLowUnitPrice() {
+        return getProperty("lowUnitPrice").getBigDecimal(BigDecimal.ZERO);
+    }
+
+    /**
+     * Returns the high unit price.
+     *
+     * @return the high unit price
+     */
+    public BigDecimal getHighUnitPrice() {
+        return getProperty("highUnitPrice").getBigDecimal(BigDecimal.ZERO);
+    }
+
+    /**
+     * Sets the low discount.
+     *
+     * @param lowDiscount the low discount
+     */
+    public void setLowDiscount(BigDecimal lowDiscount) {
+        getProperty("lowDiscount").setValue(lowDiscount);
+    }
+
+    /**
+     * Sets the high discount.
+     *
+     * @param highDiscount the high discount
+     */
+    public void setHighDiscount(BigDecimal highDiscount) {
+        getProperty("highDiscount").setValue(highDiscount);
     }
 
     /**
@@ -257,6 +326,15 @@ public class EstimateItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Calculates the discount amounts.
+     */
+    @Override
+    protected void updateDiscount() {
+        updateLowDiscount();
+        updateHighDiscount();
+    }
+
+    /**
      * Creates the layout strategy.
      *
      * @param fixedPrice the fixed price editor
@@ -296,6 +374,42 @@ public class EstimateItemEditor extends PriceActItemEditor {
         }
         lowQtySellingUnits.setText(units);
         highQtySellingUnits.setText(units);
+    }
+
+    /**
+     * Updates the low discount.
+     */
+    private void updateLowDiscount() {
+        try {
+            BigDecimal unitPrice = getLowUnitPrice();
+            BigDecimal quantity = getLowQuantity();
+            BigDecimal amount = calculateDiscount(unitPrice, quantity);
+            // If discount amount calculates to zero don't update any existing value as may have been manually modified.
+            if (amount.compareTo(BigDecimal.ZERO) != 0) {
+                Property discount = getProperty("lowDiscount");
+                discount.setValue(amount);
+            }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+    }
+
+    /**
+     * Updates the high discount.
+     */
+    private void updateHighDiscount() {
+        try {
+            BigDecimal unitPrice = getHighUnitPrice();
+            BigDecimal quantity = getHighQuantity();
+            BigDecimal amount = calculateDiscount(unitPrice, quantity);
+            // If discount amount calculates to zero don't update any existing value as may have been manually modified.
+            if (amount.compareTo(BigDecimal.ZERO) != 0) {
+                Property discount = getProperty("highDiscount");
+                discount.setValue(amount);
+            }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
     protected class EstimateItemLayoutStrategy extends PriceItemLayoutStrategy {
