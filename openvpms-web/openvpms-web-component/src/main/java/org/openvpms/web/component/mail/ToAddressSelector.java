@@ -91,7 +91,7 @@ class ToAddressSelector extends AddressSelector {
             if (result != null) {
                 AddressFormatter formatter = getFormatter();
                 for (int i = 0; i < contacts.size(); ++i) {
-                    result[i] = formatter.getNameAddress(contacts.get(i));
+                    result[i] = formatter.getNameAddress(contacts.get(i), true);
                 }
             }
         }

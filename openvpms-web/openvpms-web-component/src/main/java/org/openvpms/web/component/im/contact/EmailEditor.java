@@ -106,7 +106,7 @@ public class EmailEditor extends AbstractIMObjectEditor {
         if (StringUtils.equals(name, defaultEmailName)) {
             name = null;
         }
-        String email = ContactHelper.getEmail(getEmailAddress(), name);
+        String email = ContactHelper.getEmail(getEmailAddress(), name, true);
         try {
             new InternetAddress(email, true);
             valid = true;

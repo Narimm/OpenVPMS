@@ -96,18 +96,20 @@ public abstract class AbstractAddressFormatter implements AddressFormatter {
     /**
      * Returns the contact name and address, or just the address, if the contact doesn't have a name.
      * <p/>
-     * The returned email address is in RFC822 format. i.e.
+     * If {@code strict} is {@code true}, the returned email address is in RFC822 format. i.e:
      * <pre>
-     *   name &lt;email address&gt;
+     *   "name" &lt;email address&gt;
      * </pre>
+     * If {@code false}, the name is unquoted.
      *
      * @param contact the email contact
+     * @param strict  if {@code true}, quote the name to ensure the address conforms to RFC822
      * @return the contact name and address. May {@code null}
      */
     @Override
-    public String getNameAddress(Contact contact) {
+    public String getNameAddress(Contact contact, boolean strict) {
         String name = getName(contact);
-        return getNameAddress(contact, name);
+        return getNameAddress(contact, name, strict);
     }
 
     /**
@@ -121,7 +123,7 @@ public abstract class AbstractAddressFormatter implements AddressFormatter {
     @Override
     public String getQualifiedNameAddress(Contact contact) {
         String name = getQualifiedName(contact);
-        return getNameAddress(contact, name);
+        return getNameAddress(contact, name, false);
     }
 
     /**
@@ -151,11 +153,12 @@ public abstract class AbstractAddressFormatter implements AddressFormatter {
      *
      * @param contact the contact
      * @param name    the contact name
+     * @param strict  if {@code true}, quote the name to ensure the address is valid RFC822
      * @return the contact name and address
      */
-    private String getNameAddress(Contact contact, String name) {
+    private String getNameAddress(Contact contact, String name, boolean strict) {
         String address = getAddress(contact);
-        return ContactHelper.getEmail(address, name);
+        return ContactHelper.getEmail(address, name, strict);
     }
 
 }

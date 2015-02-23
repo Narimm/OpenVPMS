@@ -93,14 +93,16 @@ public abstract class AbstractAddressFormatterTest extends ArchetypeServiceTest 
     }
 
     /**
-     * Tests the {@link AddressFormatter#getNameAddress(Contact)} method.
+     * Tests the {@link AddressFormatter#getNameAddress(Contact, boolean)} method.
      */
     @Test
     public void testGetNameAddress() {
-        assertEquals("Bar,Foo <foo@bar.com>", formatter.getNameAddress(email));
+        assertEquals("Bar,Foo <foo@bar.com>", formatter.getNameAddress(email, false));
+        assertEquals("\"Bar,Foo\" <foo@bar.com>", formatter.getNameAddress(email, true));
 
         email.setName("Foo Bar");
-        assertEquals("Foo Bar <foo@bar.com>", formatter.getNameAddress(email));
+        assertEquals("Foo Bar <foo@bar.com>", formatter.getNameAddress(email, false));
+        assertEquals("\"Foo Bar\" <foo@bar.com>", formatter.getNameAddress(email, true));
     }
 
     /**

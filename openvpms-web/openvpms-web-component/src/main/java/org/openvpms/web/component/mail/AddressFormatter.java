@@ -57,15 +57,17 @@ public interface AddressFormatter {
     /**
      * Returns the contact name and address, or just the address, if the contact doesn't have a name.
      * <p/>
-     * The returned email address is in RFC822 format. i.e.
+     * If {@code strict} is {@code true}, the returned email address is in RFC822 format. i.e:
      * <pre>
-     *   name &lt;email address&gt;
+     *   "name" &lt;email address&gt;
      * </pre>
+     * If {@code false}, the name is unquoted.
      *
      * @param contact the email contact
+     * @param strict  if {@code true}, quote the name to ensure the address conforms to RFC822
      * @return the contact name and address. May {@code null}
      */
-    String getNameAddress(Contact contact);
+    String getNameAddress(Contact contact, boolean strict);
 
     /**
      * Returns the qualified name and address.
