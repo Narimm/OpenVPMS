@@ -157,7 +157,7 @@ class MultiContactSelector extends MultiIMObjectSelector<Contact> {
 
         @Override
         protected String getName(Contact object) {
-            return formatter.getNameAddress(object);
+            return formatter.getNameAddress(object, false);
         }
 
         /**
@@ -245,7 +245,7 @@ class MultiContactSelector extends MultiIMObjectSelector<Contact> {
             Object result = null;
             switch (column.getModelIndex()) {
                 case NAME_INDEX:
-                    result = formatter.getName(object);
+                    result = formatter.getQualifiedName(object);
                     if (object == null) {
                         result = formatter.getAddress(object);
                     }

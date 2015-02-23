@@ -191,7 +191,7 @@ class MailHeader extends AbstractModifiable {
      */
     public String getFrom() {
         AddressFormatter formatter = from.getFormatter();
-        return formatter.getNameAddress(from.getSelected());
+        return formatter.getNameAddress(from.getSelected(), true);
     }
 
     /**

@@ -56,7 +56,7 @@ public class FromAddressSelector extends AddressSelector {
     public void setSelected(Contact contact) {
         super.setSelected(contact);
         this.selected = contact;
-        getField().setText(getFormatter().getNameAddress(contact));
+        getField().setText(getFormatter().getNameAddress(contact, false));
     }
 
     /**
