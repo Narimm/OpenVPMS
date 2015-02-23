@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.servlet;
@@ -29,6 +29,8 @@ import org.openvpms.web.echo.service.LaunchService;
 import org.openvpms.web.echo.service.WindowService;
 import org.openvpms.web.echo.spring.SpringApplicationInstance;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.ServletException;
@@ -157,7 +159,8 @@ public class SpringWebContainerServlet extends WebContainerServlet {
         String serviceId = request.getParameter(SERVICE_ID_PARAMETER);
         if (!AsyncMonitorService.SERVICE_ID.equals(serviceId)) {
             // flag the session as active, if the request isn't associated with echo2 asynchronous tasks
-            getSessionMonitor().active(session);
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            getSessionMonitor().active(request, authentication);
         }
 
         if (supportsMultipleInstances(request)) {
