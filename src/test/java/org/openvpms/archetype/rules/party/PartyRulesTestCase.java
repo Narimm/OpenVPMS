@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -57,14 +58,24 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     @Test
     public void testGetFullName() {
         Party customer = (Party) create(CustomerArchetypes.PERSON);
-        IMObjectBean bean = new IMObjectBean(customer);
+        IMObjectBean bean1 = new IMObjectBean(customer);
         Lookup mr = TestHelper.getLookup("lookup.personTitle", "MR");
-        bean.setValue("title", mr.getCode());
-        bean.setValue("firstName", "Foo");
-        bean.setValue("lastName", "Bar");
+        bean1.setValue("title", mr.getCode());
+        bean1.setValue("firstName", "Foo");
+        bean1.setValue("lastName", "Bar");
         assertEquals("Mr Foo Bar", rules.getFullName(customer));
         assertEquals("Foo Bar", rules.getFullName(customer, false));
         assertEquals("Mr Foo Bar", rules.getFullName(customer, true));
+
+        Party vet = (Party) create(SupplierArchetypes.SUPPLIER_VET);
+        Lookup ms = TestHelper.getLookup("lookup.personTitle", "MS");
+        IMObjectBean bean2 = new IMObjectBean(vet);
+        bean2.setValue("title", ms.getCode());
+        bean2.setValue("firstName", "Jenny");
+        bean2.setValue("lastName", "Smith");
+        assertEquals("Ms Jenny Smith", rules.getFullName(vet));
+        assertEquals("Jenny Smith", rules.getFullName(vet, false));
+        assertEquals("Ms Jenny Smith", rules.getFullName(vet, true));
 
         // verify no special formatting for other party types
         Party pet = (Party) create(PatientArchetypes.PATIENT);
