@@ -3157,3 +3157,30 @@ FROM entity_relationships r
 WHERE r.arch_short_name = "entityRelationship.productIncludes";
 
 
+#
+# Copy discount to lowDiscount, rename discount to highDiscount for OVPMS-1564 Estimates: use separate discounts for
+# low and high totals
+#
+
+# Copy the discount to the lowDiscount
+INSERT INTO act_details (act_id, name, type, value)
+  SELECT
+    d.act_id,
+    "lowDiscount",
+    d.type,
+    d.value
+  FROM act_details d
+    JOIN acts a
+      ON a.arch_short_name = "act.customerEstimationItem"
+         AND d.act_id = a.act_id AND d.name = "discount"
+         AND NOT exists(
+        SELECT
+          *
+        FROM act_details e
+        WHERE e.act_id = d.act_id AND e.name = "lowDiscount");
+
+# rename discount to highDiscount
+UPDATE act_details d
+  JOIN acts a
+    ON a.arch_short_name = "act.customerEstimationItem" AND a.act_id = d.act_id AND d.name = "discount"
+SET d.name = "highDiscount";
