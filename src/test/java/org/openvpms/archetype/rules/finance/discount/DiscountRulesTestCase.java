@@ -39,6 +39,7 @@ import java.util.Random;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.openvpms.archetype.rules.finance.discount.DiscountTestHelper.createDiscount;
 
 
 /**
@@ -921,25 +922,6 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         bean.save();
     }
 
-    /**
-     * Helper to create and save a new discount type entity.
-     *
-     * @param rate          the discount rate
-     * @param fixedDiscount determines if the discount applies to the fixed price. If {@code false} it only applies to
-     *                      the unit price
-     * @param type          the discount type
-     * @return a new discount
-     */
-    private Entity createDiscount(BigDecimal rate, boolean fixedDiscount, String type) {
-        Entity discount = (Entity) create("entity.discountType");
-        IMObjectBean bean = new IMObjectBean(discount);
-        bean.setValue("name", "XDISCOUNT_RULES_TESTCASE_" + Math.abs(new Random().nextInt()));
-        bean.setValue("rate", rate);
-        bean.setValue("discountFixed", fixedDiscount);
-        bean.setValue("type", type);
-        save(discount);
-        return discount;
-    }
 
     /**
      * Helper to create and save a new discount group type entity.

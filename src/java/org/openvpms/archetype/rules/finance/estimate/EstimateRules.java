@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.estimate;
@@ -240,6 +240,8 @@ public class EstimateRules {
                     return target.getNodeDescriptor("quantity");
                 } else if (name.equals("highUnitPrice")) {
                     return target.getNodeDescriptor("unitPrice");
+                } else if (name.equals("highDiscount")) {
+                    return target.getNodeDescriptor("discount");
                 }
             } else if (TypeHelper.isA(target, INVOICE)) {
                 if (name.equals("highTotal")) {

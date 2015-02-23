@@ -139,7 +139,21 @@ public class ProductTestHelper {
      * @param highQuantity the high quantity
      */
     public static void addInclude(Product template, Product include, int lowQuantity, int highQuantity) {
-        addInclude(template, include, lowQuantity, highQuantity, 0, 0);
+        addInclude(template, include, lowQuantity, highQuantity, false);
+    }
+
+    /**
+     * Adds an include to the template with no weight restrictions.
+     *
+     * @param template     the template
+     * @param include      the product to include
+     * @param lowQuantity  the low quantity
+     * @param highQuantity the high quantity
+     * @param zeroPrice    the zero price indicator
+     */
+    public static void addInclude(Product template, Product include, int lowQuantity, int highQuantity,
+                                  boolean zeroPrice) {
+        addInclude(template, include, lowQuantity, highQuantity, 0, 0, zeroPrice);
     }
 
     /**
