@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
 
+import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -106,7 +107,20 @@ public class ValidationHelper {
      * @param validator the validator
      */
     public static void showError(Validator validator) {
-        showError(null, validator, null, true);
+        showError(null, validator, null);
+    }
+
+    /**
+     * Displays the first error from a validator.
+     * <p/>
+     * The error will be formatted.
+     *
+     * @param title     the dialog title. May  be {@code null}
+     * @param validator the validator
+     * @param listener  the listener to notify when the dialog closes. May be {@code null}
+     */
+    public static void showError(String title, Validator validator, WindowPaneListener listener) {
+        showError(title, validator, null, true, listener);
     }
 
     /**
@@ -118,6 +132,20 @@ public class ValidationHelper {
      * @param formatted if {@code true} format the message, otherwise display as is
      */
     public static void showError(String title, Validator validator, String key, boolean formatted) {
+        showError(title, validator, key, formatted, null);
+    }
+
+    /**
+     * Display the first error from a validator.
+     *
+     * @param title     the dialog title. May  be {@code null}
+     * @param validator the validator
+     * @param key       resource bundle key, if the error should be included in text. May be {@code null}
+     * @param formatted if {@code true} format the message, otherwise display as is
+     * @param listener  the listener to notify when the dialog closes. May be {@code null}
+     */
+    public static void showError(String title, Validator validator, String key, boolean formatted,
+                                 WindowPaneListener listener) {
         Collection<Modifiable> invalid = validator.getInvalid();
         if (!invalid.isEmpty()) {
             Modifiable modifiable = invalid.iterator().next();
@@ -128,7 +156,7 @@ public class ValidationHelper {
                 if (key != null) {
                     message = Messages.format(key, message);
                 }
-                ErrorHandler.getInstance().error(title, message, null, null);
+                ErrorHandler.getInstance().error(title, message, null, listener);
             }
         }
     }

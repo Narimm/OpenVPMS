@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.order;
@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
@@ -33,6 +34,7 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.print.BasicPrinterListener;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.ResultSetCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ErrorDialog;
@@ -143,6 +145,11 @@ public class CustomerOrderCRUDWindow extends ResultSetCRUDWindow<FinancialAct> {
                     onRefresh(act);
                 }
             });
+        } else {
+            String title = Messages.format("customer.order.invalid", DescriptorHelper.getDisplayName(act));
+            String message = Messages.format("property.error.required",
+                                             DescriptorHelper.getDisplayName(act, "customer"));
+            ErrorHelper.show(title, message);
         }
     }
 

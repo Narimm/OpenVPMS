@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.order;
@@ -37,6 +37,10 @@ import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.DefaultValidator;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditorTest;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
@@ -474,6 +478,66 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
     }
 
     /**
+     * Verifies a validation error is produced if an order or return is missing a customer.
+     */
+    @Test
+    public void testMissingCustomer() {
+        String expected = "Customer is required";
+        FinancialAct act1 = createOrder(null, patient, product, ONE, null);
+        checkRequired(act1, expected);
+
+        FinancialAct act2 = createReturn(null, patient, product, ONE, null);
+        checkRequired(act2, expected);
+    }
+
+    /**
+     * Verifies a validation error is produced if an order or return is missing a patient.
+     */
+    @Test
+    public void testMissingPatient() {
+        String expected = "Patient is required";
+        FinancialAct act1 = createOrder(customer, null, product, ONE, null);
+        checkRequired(act1, expected);
+
+        FinancialAct act2 = createReturn(customer, null, product, ONE, null);
+        checkRequired(act2, expected);
+    }
+
+    /**
+     * Verifies a validation error is produced if an order or return is missing a product.
+     */
+    @Test
+    public void testMissingProduct() {
+        String expected = "Product is required";
+        FinancialAct act1 = createOrder(customer, patient, null, ONE, null);
+        checkRequired(act1, expected);
+
+        FinancialAct act2 = createReturn(customer, patient, null, ONE, null);
+        checkRequired(act2, expected);
+    }
+
+    /**
+     * Verifies that a validation error is raised if a required field is missing.
+     * <p/>
+     * Validation cannot occur using the archetype as as the delivery processor must be able to save incomplete/invalid
+     * orders and returns.
+     *
+     * @param act      the order/return
+     * @param expected the expected validation error
+     */
+    private void checkRequired(FinancialAct act, String expected) {
+        PharmacyOrderCharger charger = new TestPharmacyOrderCharger(act, rules);
+        assertFalse(charger.isValid());
+        Validator validator = new DefaultValidator();
+        assertFalse(charger.validate(validator));
+        assertEquals(1, validator.getInvalid().size());
+        Modifiable modifiable = validator.getInvalid().iterator().next();
+        List<ValidatorError> errors = validator.getErrors(modifiable);
+        assertEquals(1, errors.size());
+        assertEquals(expected, errors.get(0).getMessage());
+    }
+
+    /**
      * Creates a new invoice in an editor.
      *
      * @param product  the product to invoice
@@ -492,9 +556,9 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
     /**
      * Creates a pharmacy order.
      *
-     * @param customer    the customer
-     * @param patient     the patient
-     * @param product     the product
+     * @param customer    the customer. May be {@code null}
+     * @param patient     the patient. May be {@code null}
+     * @param product     the product. May be {@code null}
      * @param quantity    the order quantity
      * @param invoiceItem the related invoice item. May be {@code null}
      * @return a new order
@@ -507,9 +571,9 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
     /**
      * Creates a pharmacy return.
      *
-     * @param customer    the customer
-     * @param patient     the patient
-     * @param product     the product
+     * @param customer    the customer. May be {@code null}
+     * @param patient     the patient. May be {@code null}
+     * @param product     the product. May be {@code null}
      * @param quantity    the order quantity
      * @param invoiceItem the related invoice item. May be {@code null}
      * @return a new return
@@ -523,9 +587,9 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
      * Creates a pharmacy order/return.
      *
      * @param isOrder     if {@code true}, create an order, else create a return
-     * @param customer    the customer
-     * @param patient     the patient
-     * @param product     the product
+     * @param customer    the customer. May be {@code null}
+     * @param patient     the patient. May be {@code null}
+     * @param product     the product. May be {@code null}
      * @param quantity    the order quantity
      * @param invoiceItem the related invoice item. May be {@code null}
      * @return a new order/rr
@@ -537,12 +601,18 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
         FinancialAct item = (FinancialAct) create(isOrder ? OrderArchetypes.PHARMACY_ORDER_ITEM
                                                           : OrderArchetypes.PHARMACY_RETURN_ITEM);
         ActBean bean = new ActBean(act);
-        bean.addNodeParticipation("customer", customer);
+        if (customer != null) {
+            bean.addNodeParticipation("customer", customer);
+        }
         bean.addNodeRelationship("items", item);
 
         ActBean itemBean = new ActBean(item);
-        itemBean.addNodeParticipation("patient", patient);
-        itemBean.addNodeParticipation("product", product);
+        if (patient != null) {
+            itemBean.addNodeParticipation("patient", patient);
+        }
+        if (product != null) {
+            itemBean.addNodeParticipation("product", product);
+        }
         if (invoiceItem != null) {
             itemBean.setValue("sourceInvoiceItem", invoiceItem.getObjectReference());
         }

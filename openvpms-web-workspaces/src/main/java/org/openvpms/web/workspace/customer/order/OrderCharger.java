@@ -37,6 +37,9 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.property.DefaultValidator;
+import org.openvpms.web.component.property.ValidationHelper;
+import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
@@ -186,9 +189,10 @@ public class OrderCharger {
      * @param act      the order/return
      * @param listener the listener to notify when charging completes
      */
-    public void charge(FinancialAct act, CompletionListener listener) {
+    public void charge(FinancialAct act, final CompletionListener listener) {
         final PharmacyOrderCharger charger = new PharmacyOrderCharger(act, rules);
-        if (charger.isValid()) {
+        Validator validator = new DefaultValidator();
+        if (charger.validate(validator)) {
             FinancialAct invoice = charger.getInvoice();
             if (invoice == null || ActStatus.POSTED.equals(invoice.getStatus())) {
                 // the order doesn't relate to an invoice, or the invoice is POSTED
@@ -211,7 +215,13 @@ public class OrderCharger {
                 }
             }
         } else {
-            show(Messages.format("customer.order.invalid", DescriptorHelper.getDisplayName(act)), listener);
+            String title = Messages.format("customer.order.invalid", DescriptorHelper.getDisplayName(act));
+            ValidationHelper.showError(title, validator, new WindowPaneListener() {
+                @Override
+                public void onClose(WindowPaneEvent event) {
+                    listener.completed();
+                }
+            });
         }
     }
 

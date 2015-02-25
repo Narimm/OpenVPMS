@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -64,17 +64,26 @@ public class PropertySet {
 
 
     /**
-     * Constructs a {@code PropertySet} from an object.
+     * Constructs a {@link PropertySet} from an object.
+     *
+     * @param object the object
+     */
+    public PropertySet(IMObject object) {
+        this(object, null);
+    }
+
+    /**
+     * Constructs a {@link PropertySet} from an object.
      *
      * @param object  the object
      * @param context the layout context. May be {@code null}
      */
     public PropertySet(IMObject object, LayoutContext context) {
-        this(object, getArchetypeDescriptor(object, context), context.getVariables());
+        this(object, getArchetypeDescriptor(object, context), (context != null) ? context.getVariables() : null);
     }
 
     /**
-     * Constructs a {@code PropertySet} for an object and descriptor.
+     * Constructs a {@link PropertySet} for an object and descriptor.
      *
      * @param object    the object
      * @param archetype the archetype descriptor
@@ -105,7 +114,7 @@ public class PropertySet {
     }
 
     /**
-     * Constructs a {@code PropertySet} from a list of properties.
+     * Constructs a {@link PropertySet} from a list of properties.
      *
      * @param properties the properties
      */
@@ -128,8 +137,7 @@ public class PropertySet {
      * Returns a property given its descriptor.
      *
      * @param descriptor the descriptor
-     * @return the property corresponding to {@code descriptor}, or
-     *         {@code null} if none exists
+     * @return the property corresponding to {@code descriptor}, or {@code null} if none exists
      */
     public Property get(NodeDescriptor descriptor) {
         return get(descriptor.getName());
