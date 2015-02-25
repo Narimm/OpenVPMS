@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -75,8 +75,6 @@ public class ProductPriceCollectionEditor extends IMObjectTableCollectionEditor 
             filter.setListener(new ActionListener() {
                 @Override
                 public void onAction(ActionEvent event) {
-                    ProductPriceTableModel model = (ProductPriceTableModel) getTable().getModel().getModel();
-                    model.setShowPricingGroups(filter.showAll());
                     populateTable();
                 }
             });
@@ -123,6 +121,10 @@ public class ProductPriceCollectionEditor extends IMObjectTableCollectionEditor 
     protected IMTableModel<IMObject> createTableModel(LayoutContext context) {
         context = new DefaultLayoutContext(context);
         context.setComponentFactory(new TableComponentFactory(context));
-        return new ProductPriceTableModel(getProperty().getArchetypeRange(), context);
+        ProductPriceTableModel model = new ProductPriceTableModel(getProperty().getArchetypeRange(), context);
+        if (filter.needsFilter()) {
+            model.setShowPricingGroups(true);
+        }
+        return model;
     }
 }

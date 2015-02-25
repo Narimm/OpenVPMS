@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -42,7 +42,7 @@ public class PricingGroupHelper {
      * Returns the pricing group for the context practice location.
      *
      * @param context the context
-     * @return the pricing group, or {@code null} if none is found
+     * @return the pricing group, or {@link PricingGroup#NONE} if the location has no pricing group
      */
     public static PricingGroup getPricingGroup(Context context) {
         Lookup result = null;
@@ -51,14 +51,15 @@ public class PricingGroupHelper {
             LocationRules rules = ServiceHelper.getBean(LocationRules.class);
             result = rules.getPricingGroup(location);
         }
-        return (result != null) ? new PricingGroup(result) : null;
+        return (result != null) ? new PricingGroup(result) : PricingGroup.NONE;
     }
 
     /**
      * Filters prices on pricing group.
      *
      * @param prices       the prices to filter
-     * @param pricingGroup the pricing group to filter on
+     * @param pricingGroup the pricing group to filter on. May be {@code null}, to indicate prices with no pricing
+     *                     groups
      * @return the filtered prices
      */
     public static List<IMObject> filterPrices(List<IMObject> prices, PricingGroup pricingGroup) {
@@ -66,7 +67,11 @@ public class PricingGroupHelper {
         for (IMObject object : prices) {
             IMObjectBean bean = new IMObjectBean(object);
             List<Lookup> groups = bean.getValues("pricingGroups", Lookup.class);
-            if (pricingGroup.matches(groups)) {
+            if (pricingGroup == null) {
+                if (groups.isEmpty()) {
+                    result.add(object);
+                }
+            } else if (pricingGroup.matches(groups)) {
                 result.add(object);
             }
         }

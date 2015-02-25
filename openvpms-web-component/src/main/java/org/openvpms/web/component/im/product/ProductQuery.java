@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -122,6 +122,17 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
     }
 
     /**
+     * Sets the pricing group.
+     * <p/>
+     * NOTE: this does not update the selector, so should only be invoked prior to its construction.
+     *
+     * @param group the pricing group
+     */
+    protected void setPricingGroup(PricingGroup group) {
+        pricingGroup = group;
+    }
+
+    /**
      * Creates the result set.
      *
      * @param sort the sort criteria. May be {@code null}
@@ -139,7 +150,7 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
      * @param all       if {@code true}, include an option to select 'All'
      */
     protected void addPricingGroupSelector(Component container, boolean all) {
-        final PricingGroupSelectField field = new PricingGroupSelectField(pricingGroup.getGroup(), all);
+        final PricingGroupSelectField field = new PricingGroupSelectField(pricingGroup, all);
         field.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 PricingGroup group = (field.isAllSelected()) ? PricingGroup.ALL : field.getSelected();

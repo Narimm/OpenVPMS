@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.io;
@@ -22,6 +22,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.list.ListCellRenderer;
+import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -120,6 +121,7 @@ public class ProductExportQuery extends ProductQuery {
      */
     public ProductExportQuery(LayoutContext context) {
         super(SHORT_NAMES, context.getContext());
+        setPricingGroup(PricingGroup.ALL); // don't use the practice location pricing group
     }
 
     /**

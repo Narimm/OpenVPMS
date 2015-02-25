@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -20,7 +20,6 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -64,8 +63,7 @@ public class PricingGroupFilter {
      */
     public PricingGroupFilter(LayoutContext context) {
         pricingGroup = PricingGroupHelper.getPricingGroup(context.getContext());
-        needsFilter = pricingGroup != null || PricingGroupHelper.pricingGroupsConfigured();
-        showAll = pricingGroup == null;
+        needsFilter = PricingGroupHelper.pricingGroupsConfigured();
     }
 
     /**
@@ -75,16 +73,6 @@ public class PricingGroupFilter {
      */
     public boolean needsFilter() {
         return needsFilter;
-    }
-
-    /**
-     * Determines if prices for all pricing locations should be displayed.
-     *
-     * @return {@code true} if prices for all pricing locations should be displayed, {@code false} if the prices for
-     *         the selected pricing location should be displayed
-     */
-    public boolean showAll() {
-        return showAll;
     }
 
     /**
@@ -124,8 +112,7 @@ public class PricingGroupFilter {
      * @return the filter component
      */
     public Component getComponent() {
-        Lookup group = (pricingGroup != null) ? pricingGroup.getGroup() : null;
-        final PricingGroupSelectField filter = new PricingGroupSelectField(group, true);
+        final PricingGroupSelectField filter = new PricingGroupSelectField(pricingGroup, true);
         filter.addActionListener(new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
