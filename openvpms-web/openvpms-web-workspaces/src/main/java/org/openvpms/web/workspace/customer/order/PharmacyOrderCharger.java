@@ -32,6 +32,12 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.property.DefaultValidator;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.AbstractInvoicer;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
@@ -84,6 +90,11 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
      */
     private final Map<IMObjectReference, FinancialAct> invoices = new HashMap<IMObjectReference, FinancialAct>();
 
+    /**
+     * The properties, used for validation.
+     */
+    private final PropertySet properties;
+
 
     /**
      * Constructs a {@link PharmacyOrderCharger}.
@@ -107,6 +118,7 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
         }
 
         invoice = (invoices.size() == 1) ? invoices.values().iterator().next() : null;
+        properties = new PropertySet(act);
     }
 
     /**
@@ -133,16 +145,35 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
      * @return {@code true} if the order can be charged
      */
     public boolean isValid() {
-        boolean result = !items.isEmpty() && customer != null && invoices.size() <= 1;
-        if (result) {
+        return validate(new DefaultValidator());
+    }
+
+    /**
+     * Determines if the order can be charged.
+     *
+     * @param validator the validator
+     * @return {@code true} if the order can be charged
+     */
+    public boolean validate(Validator validator) {
+        boolean valid = false;
+        Property property = properties.get("items");
+        if (items.isEmpty()) {
+            String message = Messages.format("property.error.minSize", property.getDisplayName(), 1);
+            validator.add(property, new ValidatorError(property, message));
+        } else if (invoices.size() > 1) {
+            validator.add(property, new ValidatorError(Messages.get("customer.order.invoice.unsupported")));
+        } else {
+            valid = validateRequired(validator, properties, "customer", customer);
+        }
+        if (valid) {
             for (Item item : items) {
-                result = item.isValid();
-                if (!result) {
+                valid = item.validate(validator);
+                if (!valid) {
                     break;
                 }
             }
         }
-        return result;
+        return valid;
     }
 
     /**
@@ -334,7 +365,18 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
             }
         }
         return invoice;
+    }
 
+    private boolean validateRequired(Validator validator, PropertySet properties, String name, Object value) {
+        boolean valid = false;
+        if (value != null) {
+            valid = true;
+        } else {
+            Property property = properties.get(name);
+            validator.add(property, new ValidatorError(property, Messages.format("property.error.required",
+                                                                                 property.getDisplayName())));
+        }
+        return valid;
     }
 
     private class Item {
@@ -347,6 +389,7 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
         final BigDecimal invoiceQty;
         final boolean isOrder;
         final boolean posted;
+        final PropertySet properties;
 
         public Item(FinancialAct orderItem, FinancialAct invoiceItem, FinancialAct invoice) {
             ActBean bean = new ActBean(orderItem);
@@ -358,11 +401,17 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
             isOrder = !orderItem.isCredit();
             invoiceQty = (invoiceItem != null) ? invoiceItem.getQuantity() : ZERO;
             posted = (invoice != null) && ActStatus.POSTED.equals(invoice.getStatus());
+            properties = new PropertySet(orderItem);
         }
 
         public boolean isValid() {
-            return patient != null && quantity != null && product != null &&
-                   TypeHelper.isA(product, ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE);
+            return validate(new DefaultValidator());
+        }
+
+        public boolean validate(Validator validator) {
+            return validateRequired(validator, properties, "patient", patient)
+                   && validateRequired(validator, properties, "quantity", quantity)
+                   && validateProduct(validator);
         }
 
         public boolean canInvoice() {
@@ -452,6 +501,20 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
                 }
             }
             return result;
+        }
+
+        private boolean validateProduct(Validator validator) {
+            boolean valid = false;
+            if (validateRequired(validator, properties, "product", product)) {
+                if (TypeHelper.isA(product, ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE)) {
+                    valid = true;
+                } else {
+                    Property property = properties.get("product");
+                    String msg = Messages.format(property.getDisplayName(), "imobject.invalidreference");
+                    validator.add(property, new ValidatorError(property, msg));
+                }
+            }
+            return valid;
         }
 
     }
