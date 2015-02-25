@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -31,6 +31,11 @@ public class PricingGroup {
      * Indicates all pricing groups.
      */
     public static final PricingGroup ALL = new PricingGroup();
+
+    /**
+     * Indicates prices with no pricing groups.
+     */
+    public static final PricingGroup NONE = new PricingGroup(null);
 
     /**
      * Determines if all groups are being queried.
@@ -104,6 +109,15 @@ public class PricingGroup {
      */
     public boolean isAll() {
         return all;
+    }
+
+    /**
+     * Determines if prices with no pricing groups are being queried.
+     *
+     * @return {@code true} if prices with no pricing groups are being queried
+     */
+    public boolean isNone() {
+        return !all && group == null;
     }
 
     /**
