@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -32,6 +32,19 @@ import org.openvpms.web.echo.factory.ComponentFactory;
  * @author Tim Anderson
  */
 public class PricingGroupSelectField extends SelectField {
+
+    /**
+     * Constructs a {@link PricingGroupSelectField}.
+     *
+     * @param initialSelection the initial selection. May be {@code null}
+     * @param all              if {@code true}, include an option to select 'All'
+     */
+    public PricingGroupSelectField(PricingGroup initialSelection, boolean all) {
+        this((initialSelection != null) ? initialSelection.getGroup() : null, all);
+        if (initialSelection != null && initialSelection.isNone()) {
+            setSelectedIndex(getModel().getNoneIndex());
+        }
+    }
 
     /**
      * Constructs a {@link PricingGroupSelectField}.
