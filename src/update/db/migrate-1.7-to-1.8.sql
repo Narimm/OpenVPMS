@@ -43,7 +43,7 @@ CREATE PROCEDURE alter_node_descriptors()
     SET _count = (SELECT
                     COUNT(*)
                   FROM INFORMATION_SCHEMA.COLUMNS
-                  WHERE TABLE_NAME = 'node_descriptors' AND
+                  WHERE TABLE_NAME = 'node_descriptors' AND TABLE_SCHEMA = DATABASE() AND
                         COLUMN_NAME = 'description');
     IF _count = 0
     THEN
