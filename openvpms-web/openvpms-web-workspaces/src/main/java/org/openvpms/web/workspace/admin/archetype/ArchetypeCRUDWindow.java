@@ -11,12 +11,11 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.archetype;
 
-import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.filetransfer.UploadEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
@@ -30,6 +29,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionT
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptors;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheDB;
 import org.openvpms.tools.archetype.comparator.ArchetypeChange;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
@@ -41,10 +41,12 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.ResultSetCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.servlet.DownloadServlet;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.io.ByteArrayInputStream;
@@ -65,12 +67,17 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
     /**
      * The import button identifier.
      */
-    private static final String IMPORT_ID = "import";
+    private static final String IMPORT_ID = "button.import";
 
     /**
      * The export button identifier.
      */
-    private static final String EXPORT_ID = "export";
+    private static final String EXPORT_ID = "button.export";
+
+    /**
+     * The reload identifier.
+     */
+    private static final String RELOAD_ID = "button.reload";
 
     /**
      * The export mime type.
@@ -113,19 +120,22 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
     @Override
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
-        Button importButton = ButtonFactory.create(IMPORT_ID, new ActionListener() {
+        buttons.add(IMPORT_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onImport();
             }
         });
-        Button exportButton = ButtonFactory.create(EXPORT_ID, new ActionListener() {
+        buttons.add(EXPORT_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onExport();
             }
         });
-
-        buttons.add(importButton);
-        buttons.add(exportButton);
+        buttons.add(RELOAD_ID, new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                onReload();
+            }
+        });
     }
 
     /**
@@ -173,6 +183,23 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
         }
+    }
+
+    /**
+     * Invoked when the reload button is pressed.
+     */
+    private void onReload() {
+        String title = Messages.get("archetype.reload.title");
+        String message = Messages.get("archetype.reload.message");
+        ConfirmationDialog dialog = new ConfirmationDialog(title, message, ConfirmationDialog.YES_NO);
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onYes() {
+                ArchetypeDescriptorCacheDB cache = ServiceHelper.getBean(ArchetypeDescriptorCacheDB.class);
+                cache.refresh();
+            }
+        });
+        dialog.show();
     }
 
     /**
