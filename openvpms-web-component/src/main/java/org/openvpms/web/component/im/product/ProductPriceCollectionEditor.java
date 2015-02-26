@@ -18,6 +18,7 @@ package org.openvpms.web.component.im.product;
 
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -85,16 +86,17 @@ public class ProductPriceCollectionEditor extends IMObjectTableCollectionEditor 
     /**
      * Creates a new price, subject to a short name being selected.
      * <p/>
-     * If there is a pricing location selected, this will be added to the price.
+     * If there is a pricing group selected, this will be added to the price.
      *
      * @return a new price, or {@code null} if the price can't be created
      */
     @Override
     public IMObject create() {
         IMObject object = super.create();
-        if (object != null && filter.getPricingGroup() != null) {
+        PricingGroup pricingGroup = filter.getPricingGroup();
+        if (object != null && pricingGroup != null && pricingGroup.getGroup() != null) {
             IMObjectBean bean = new IMObjectBean(object);
-            bean.addValue("pricingGroups", filter.getPricingGroup().getGroup());
+            bean.addValue("pricingGroups", pricingGroup.getGroup());
         }
         return object;
     }
