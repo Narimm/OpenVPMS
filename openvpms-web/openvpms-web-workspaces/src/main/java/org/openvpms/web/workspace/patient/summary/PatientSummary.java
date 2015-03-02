@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.patient.summary;
 
@@ -55,6 +55,7 @@ import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.alert.Alert;
 import org.openvpms.web.workspace.alert.AlertSummary;
@@ -219,6 +220,7 @@ public class PatientSummary extends PartySummary {
 
         addPopupButtons(patient, grid);
         addAge(patient, grid);
+        addDateOfBirth(patient, grid);
         addWeight(patient, grid);
         addMicrochip(patient, grid);
         return grid;
@@ -300,6 +302,23 @@ public class PatientSummary extends PartySummary {
         age.setText(rules.getPatientAge(patient));
         grid.add(ageTitle);
         grid.add(age);
+    }
+
+    /**
+     * Displays the patient date of birth in a grid.
+     *
+     * @param patient the patient
+     * @param grid    the grid
+     */
+    protected void addDateOfBirth(Party patient, Grid grid) {
+        Label title = LabelFactory.create("patient.dateOfBirth");
+        Label text = LabelFactory.create();
+        Date dateOfBirth = rules.getDateOfBirth(patient);
+        if (dateOfBirth != null) {
+            text.setText(DateFormatter.formatDate(dateOfBirth, false));
+        }
+        grid.add(title);
+        grid.add(text);
     }
 
     /**
