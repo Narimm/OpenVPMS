@@ -1206,6 +1206,14 @@
            type="nextapp.echo2.app.WindowPane">
     </style>
 
+    <style name="InformationDialog.Compact" base-name="InformationDialog"
+           type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${InformationDialog.Compact.width}"/>
+            <property name="height" value="${InformationDialog.Compact.height}"/>
+        </properties>
+    </style>
+
     <style name="ConfirmationDialog" base-name="MessageDialog"
            type="nextapp.echo2.app.WindowPane">
     </style>
