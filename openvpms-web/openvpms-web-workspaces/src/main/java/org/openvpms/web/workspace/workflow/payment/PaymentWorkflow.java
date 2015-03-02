@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.payment;
@@ -151,6 +151,7 @@ public class PaymentWorkflow extends WorkflowImpl {
 
         Tasks tasks = new Tasks(getHelpContext());
         tasks.addTask(new PaymentEditTask(chargeAmount));
+        tasks.addTask(new OpenDrawerTask());
 
         // add a task to update the parent context at the end of the workflow
         tasks.addTask(new SynchronousTask() {

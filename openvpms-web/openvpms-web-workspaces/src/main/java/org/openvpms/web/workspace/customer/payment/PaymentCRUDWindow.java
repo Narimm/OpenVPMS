@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.payment;
@@ -27,6 +27,7 @@ import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.customer.CustomerActCRUDWindow;
+import org.openvpms.web.workspace.workflow.payment.OpenDrawerTask;
 
 
 /**
@@ -45,6 +46,19 @@ public class PaymentCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     public PaymentCRUDWindow(Archetypes<FinancialAct> archetypes, Context context, HelpContext help) {
         super(archetypes, ActActions.<FinancialAct>edit(), context, help);
+    }
+
+    /**
+     * Invoked when posting of an act is complete. This pops up a dialog to print the act, and opens the cash drawer
+     * if required.
+     *
+     * @param act the act
+     */
+    @Override
+    protected void onPosted(FinancialAct act) {
+        super.onPosted(act);
+        OpenDrawerTask task = new OpenDrawerTask();
+        task.open(act);
     }
 
     /**
