@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -20,7 +20,6 @@ import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -159,6 +158,19 @@ public class FinancialTestHelper extends TestHelper {
     }
 
     /**
+     * Creates a new <em>act.customerAmountPayment</em>.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param till     the till
+     * @param status   the status
+     * @return a new payment
+     */
+    public static FinancialAct createPayment(BigDecimal amount, Party customer, Party till, String status) {
+        return createPaymentRefund(PAYMENT, amount, customer, till, status);
+    }
+
+    /**
      * Helper to create a new <em>act.customerAccountPayment</em> and
      * corresponding <em>act.customerAccountPaymentCash</em>.
      *
@@ -168,8 +180,8 @@ public class FinancialTestHelper extends TestHelper {
      * @param status   the status
      * @return a list containing the refund act and its item
      */
-    public static List<FinancialAct> createPayment(Money amount, Party customer, Party till, String status) {
-        return createPaymentRefund(PAYMENT, PAYMENT_CASH, amount, customer, till, status);
+    public static List<FinancialAct> createPaymentCash(BigDecimal amount, Party customer, Party till, String status) {
+        return createPaymentRefund(PAYMENT, PAYMENT_CASH, amount, customer, till, status, false);
     }
 
     /**
@@ -182,23 +194,11 @@ public class FinancialTestHelper extends TestHelper {
      * @param status   the status
      * @return a list containing the refund act and its item
      */
-    public static List<FinancialAct> createRefund(Money amount, Party customer, Party till, String status) {
-        List<FinancialAct> result = createPaymentRefund(REFUND, REFUND_CASH, amount, customer, till, status);
+    public static List<FinancialAct> createRefundCash(BigDecimal amount, Party customer, Party till, String status) {
+        List<FinancialAct> result = createPaymentRefund(REFUND, REFUND_CASH, amount, customer, till, status, false);
         ActBean bean = new ActBean(result.get(0));
         bean.setValue("notes", "Dummy notes");
         return result;
-    }
-
-    /**
-     * Helper to create a POSTED <em>act.customerAccountPayment</em>.
-     *
-     * @param amount   the act total
-     * @param customer the customer
-     * @param till     the till
-     * @return a new act
-     */
-    public static FinancialAct createPayment(Money amount, Party customer, Party till) {
-        return createPaymentCash(amount, customer, till);
     }
 
     /**
@@ -212,7 +212,7 @@ public class FinancialTestHelper extends TestHelper {
      * @param till     the till
      * @return a new act
      */
-    public static FinancialAct createPaymentCash(Money amount, Party customer, Party till) {
+    public static FinancialAct createPaymentCash(BigDecimal amount, Party customer, Party till) {
         return createPaymentRefund(PAYMENT, PAYMENT_CASH, amount, customer, till);
     }
 
@@ -225,7 +225,7 @@ public class FinancialTestHelper extends TestHelper {
      * @param till     the till
      * @return a new act
      */
-    public static FinancialAct createPaymentCheque(Money amount, Party customer, Party till) {
+    public static FinancialAct createPaymentCheque(BigDecimal amount, Party customer, Party till) {
         return createPaymentRefund(PAYMENT, PAYMENT_CHEQUE, amount, customer, till);
     }
 
@@ -238,7 +238,7 @@ public class FinancialTestHelper extends TestHelper {
      * @param till     the till
      * @return a new act
      */
-    public static FinancialAct createPaymentCredit(Money amount, Party customer, Party till) {
+    public static FinancialAct createPaymentCredit(BigDecimal amount, Party customer, Party till) {
         return createPaymentRefund(PAYMENT, PAYMENT_CREDIT, amount, customer, till);
     }
 
@@ -251,7 +251,7 @@ public class FinancialTestHelper extends TestHelper {
      * @param till     the till
      * @return a new act
      */
-    public static FinancialAct createPaymentDiscount(Money amount, Party customer, Party till) {
+    public static FinancialAct createPaymentDiscount(BigDecimal amount, Party customer, Party till) {
         return createPaymentRefund(PAYMENT, PAYMENT_DISCOUNT, amount, customer, till);
     }
 
@@ -264,10 +264,9 @@ public class FinancialTestHelper extends TestHelper {
      * @param till     the till
      * @return a new act
      */
-    public static FinancialAct createPaymentEFT(Money amount, Party customer, Party till) {
+    public static FinancialAct createPaymentEFT(BigDecimal amount, Party customer, Party till) {
         return createPaymentRefund(PAYMENT, PAYMENT_EFT, amount, customer, till);
     }
-
 
     /**
      * Helper to create a POSTED <em>act.customerAccountPayment</em>
@@ -278,20 +277,20 @@ public class FinancialTestHelper extends TestHelper {
      * @param till     the till
      * @return a new act
      */
-    public static FinancialAct createPaymentOther(Money amount, Party customer, Party till) {
+    public static FinancialAct createPaymentOther(BigDecimal amount, Party customer, Party till) {
         return createPaymentRefund(PAYMENT, PAYMENT_OTHER, amount, customer, till);
     }
 
     /**
-     * Helper to create a POSTED <em>act.customerAccountRefund</em>.
+     * Helper to create a <em>act.customerAccountRefund</em>.
      *
      * @param amount   the act total
      * @param customer the customer
      * @param till     the till
      * @return a new act
      */
-    public static FinancialAct createRefund(Money amount, Party customer, Party till) {
-        return createRefundCash(amount, customer, till);
+    public static FinancialAct createRefund(BigDecimal amount, Party customer, Party till, String status) {
+        return createPaymentRefund(CustomerAccountArchetypes.REFUND, amount, customer, till, status);
     }
 
     /**
@@ -305,7 +304,7 @@ public class FinancialTestHelper extends TestHelper {
      * @param till     the till
      * @return a new act
      */
-    public static FinancialAct createRefundCash(Money amount, Party customer, Party till) {
+    public static FinancialAct createRefundCash(BigDecimal amount, Party customer, Party till) {
         FinancialAct result = createPaymentRefund(REFUND, REFUND_CASH, amount, customer, till);
         ActBean bean = new ActBean(result);
         bean.setValue("notes", "Dummy notes");
@@ -321,7 +320,7 @@ public class FinancialTestHelper extends TestHelper {
      * @param till     the till
      * @return a new act
      */
-    public static FinancialAct createRefundCheque(Money amount, Party customer, Party till) {
+    public static FinancialAct createRefundCheque(BigDecimal amount, Party customer, Party till) {
         FinancialAct result = createPaymentRefund(REFUND, REFUND_CHEQUE, amount, customer, till);
         ActBean bean = new ActBean(result);
         bean.setValue("notes", "Dummy notes");
@@ -337,7 +336,7 @@ public class FinancialTestHelper extends TestHelper {
      * @param till     the till
      * @return a new act
      */
-    public static FinancialAct createRefundCredit(Money amount, Party customer, Party till) {
+    public static FinancialAct createRefundCredit(BigDecimal amount, Party customer, Party till) {
         FinancialAct result = createPaymentRefund(REFUND, REFUND_CREDIT, amount, customer, till);
         ActBean bean = new ActBean(result);
         bean.setValue("notes", "Dummy notes");
@@ -353,7 +352,7 @@ public class FinancialTestHelper extends TestHelper {
      * @param till     the till
      * @return a new act
      */
-    public static FinancialAct createRefundDiscount(Money amount, Party customer, Party till) {
+    public static FinancialAct createRefundDiscount(BigDecimal amount, Party customer, Party till) {
         FinancialAct result = createPaymentRefund(REFUND, REFUND_DISCOUNT, amount, customer, till);
         ActBean bean = new ActBean(result);
         bean.setValue("notes", "Dummy notes");
@@ -369,7 +368,7 @@ public class FinancialTestHelper extends TestHelper {
      * @param till     the till
      * @return a new act
      */
-    public static FinancialAct createRefundEFT(Money amount, Party customer, Party till) {
+    public static FinancialAct createRefundEFT(BigDecimal amount, Party customer, Party till) {
         FinancialAct result = createPaymentRefund(REFUND, REFUND_EFT, amount, customer, till);
         ActBean bean = new ActBean(result);
         bean.setValue("notes", "Dummy notes");
@@ -385,7 +384,7 @@ public class FinancialTestHelper extends TestHelper {
      * @param till     the till
      * @return a new act
      */
-    public static FinancialAct createRefundOther(Money amount, Party customer, Party till) {
+    public static FinancialAct createRefundOther(BigDecimal amount, Party customer, Party till) {
         FinancialAct result = createPaymentRefund(REFUND, REFUND_OTHER, amount, customer, till);
         ActBean bean = new ActBean(result);
         bean.setValue("notes", "Dummy notes");
@@ -523,7 +522,8 @@ public class FinancialTestHelper extends TestHelper {
      */
     private static List<FinancialAct> createCharges(String shortName, String itemShortName, BigDecimal amount,
                                                     Party customer, Party patient, Product product, String status) {
-        return createCharges(shortName, itemShortName, customer, patient, null, product, ONE, ZERO, amount, ZERO, status);
+        return createCharges(shortName, itemShortName, customer, patient, null, product, ONE, ZERO, amount, ZERO,
+                             status);
     }
 
     /**
@@ -564,22 +564,29 @@ public class FinancialTestHelper extends TestHelper {
      * @param till          the till
      * @return a new act
      */
-    private static FinancialAct createPaymentRefund(String shortName, String itemShortName, Money amount,
+    private static FinancialAct createPaymentRefund(String shortName, String itemShortName, BigDecimal amount,
                                                     Party customer, Party till) {
-        FinancialAct act = createAct(shortName, amount, customer, null, FinancialActStatus.POSTED);
+        List<FinancialAct> acts = createPaymentRefund(shortName, itemShortName, amount, customer, till,
+                                                      FinancialActStatus.POSTED, true);
+        return acts.get(0);
+    }
+
+    /**
+     * Creates a new payment/refund.
+     *
+     * @param shortName the act short name
+     * @param amount    the act amount
+     * @param customer  the customer
+     * @param till      the till
+     * @param status    the act status
+     * @return the payment/refund act
+     */
+    private static FinancialAct createPaymentRefund(String shortName, BigDecimal amount, Party customer, Party till,
+                                                    String status) {
+        FinancialAct act = createAct(shortName, amount, customer, null, status);
         ActBean bean = new ActBean(act);
-        FinancialAct item = (FinancialAct) create(itemShortName);
-        item.setTotal(amount);
-        ActBean itemBean = new ActBean(item);
-        if (itemBean.isA(PAYMENT_CASH, REFUND_CASH)) {
-            itemBean.setValue("roundedAmount", amount);
-            if (itemBean.isA(PAYMENT_CASH)) {
-                itemBean.setValue("tendered", amount);
-            }
-        }
+        bean.setValue("amount", amount);
         bean.addNodeParticipation("till", till);
-        itemBean.save();
-        bean.addNodeRelationship("items", item);
         return act;
     }
 
@@ -592,24 +599,40 @@ public class FinancialTestHelper extends TestHelper {
      * @param customer      the customer
      * @param till          the till
      * @param status        the act status
+     * @param saveItem      determines if the item should be saved
      * @return a list containing the payment/refund act and its item
      */
-    private static List<FinancialAct> createPaymentRefund(String shortName, String itemShortName,
-                                                          Money amount, Party customer, Party till, String status) {
-        FinancialAct act = createAct(shortName, amount, customer, null, status);
+    private static List<FinancialAct> createPaymentRefund(String shortName, String itemShortName, BigDecimal amount,
+                                                          Party customer, Party till, String status, boolean saveItem) {
+        FinancialAct act = createPaymentRefund(shortName, amount, customer, till, status);
         ActBean bean = new ActBean(act);
+        FinancialAct item = createPaymentRefundItem(itemShortName, amount);
+        if (saveItem) {
+            ActBean itemBean = new ActBean(item);
+            itemBean.save();
+        }
+        bean.addNodeRelationship("items", item);
+        return Arrays.asList(act, item);
+    }
+
+    /**
+     * Creates a new payment/refund act item.
+     *
+     * @param itemShortName the item short name
+     * @param amount        the act amount
+     * @return the payment/refund item
+     */
+    public static FinancialAct createPaymentRefundItem(String itemShortName, BigDecimal amount) {
         FinancialAct item = (FinancialAct) create(itemShortName);
-        item.setTotal(amount);
         ActBean itemBean = new ActBean(item);
+        itemBean.setValue("amount", amount);
         if (itemBean.isA(PAYMENT_CASH, REFUND_CASH)) {
             itemBean.setValue("roundedAmount", amount);
             if (itemBean.isA(PAYMENT_CASH)) {
                 itemBean.setValue("tendered", amount);
             }
         }
-        bean.addNodeParticipation("till", till);
-        bean.addNodeRelationship("items", item);
-        return Arrays.asList(act, item);
+        return item;
     }
 
     /**
