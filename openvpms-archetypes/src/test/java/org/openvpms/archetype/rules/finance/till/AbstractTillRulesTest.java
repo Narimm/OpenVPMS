@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.till;
@@ -115,7 +115,7 @@ public abstract class AbstractTillRulesTest extends ArchetypeServiceTest {
      */
     protected List<FinancialAct> createPayment(Party till) {
         Party party = TestHelper.createCustomer();
-        return FinancialTestHelper.createPayment(ONE, party, till, IN_PROGRESS);
+        return FinancialTestHelper.createPaymentCash(ONE, party, till, IN_PROGRESS);
     }
 
     /**
@@ -128,7 +128,7 @@ public abstract class AbstractTillRulesTest extends ArchetypeServiceTest {
      */
     protected List<FinancialAct> createRefund(Party till) {
         Party party = TestHelper.createCustomer();
-        return FinancialTestHelper.createRefund(ONE, party, till, IN_PROGRESS);
+        return FinancialTestHelper.createRefundCash(ONE, party, till, IN_PROGRESS);
     }
 
     /**

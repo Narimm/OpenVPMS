@@ -397,8 +397,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
      * @param customer  the customer
      */
     private void addPayment(Date startTime, Money amount, Party customer) {
-        Act act = FinancialTestHelper.createPayment(
-                amount, customer, FinancialTestHelper.createTill());
+        Act act = FinancialTestHelper.createPaymentCash(amount, customer, FinancialTestHelper.createTill());
         act.setActivityStartTime(startTime);
         save(act);
     }
