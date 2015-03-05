@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient;
@@ -42,8 +42,7 @@ import java.util.List;
 /**
  * Layout strategy for <em>party.patientpet</em>.
  * <p/>
- * Renders the <em>customField</em> node inline if there is an
- * <em>entity.customPatient*</em> associated with it.
+ * Renders the <em>customField</em> node inline if there is an <em>entity.customPatient*</em> associated with it.
  *
  * @author Tim Anderson
  */
@@ -60,6 +59,11 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
     private final RelationshipCollectionTargetEditor customFieldEditor;
 
     /**
+     * The breed editor, if the object is being edited.
+     */
+    private final BreedEditor breedEditor;
+
+    /**
      * The tab model containing the customFields node.
      */
     private IMObjectTabPaneModel tabModel;
@@ -68,11 +72,6 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
      * The current custom field editor state.
      */
     private ComponentState customFieldState;
-
-    /**
-     * The new breed field.
-     */
-    private ComponentState newBreedState;
 
     /**
      * The index of the custom fields tab, or {@code -1} if it is not displayed.
@@ -93,17 +92,19 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
      * Constructs a {@link PatientLayoutStrategy} to view a patient.
      */
     public PatientLayoutStrategy() {
-        this(null);
+        this(null, null);
     }
 
     /**
      * Constructs a {@link PatientLayoutStrategy} to edit a patient.
      *
+     * @param breedEditor       the breed editor
      * @param customFieldEditor the customField node editor
      */
-    public PatientLayoutStrategy(RelationshipCollectionTargetEditor customFieldEditor) {
+    public PatientLayoutStrategy(BreedEditor breedEditor, RelationshipCollectionTargetEditor customFieldEditor) {
         super(true);
         this.customFieldEditor = customFieldEditor;
+        this.breedEditor = breedEditor;
     }
 
     /**
@@ -132,19 +133,6 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
         addTab(tabModel, customFieldEditor.getProperty(), createCustomEditorComponent(), true);
     }
 
-
-    /**
-     * Determines if the 'newBreed' field should be visible.
-     *
-     * @param show if {@code true} display the new breed
-     */
-    public void updateNewBreed(boolean show) {
-        if (newBreedState != null) {
-            newBreedState.getLabel().setVisible(show);
-            newBreedState.getComponent().setVisible(show);
-        }
-    }
-
     /**
      * Apply the layout strategy.
      * <p/>
@@ -161,19 +149,29 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
         customFieldsTab = -1;
         Property breed = properties.get("breed");
         Property newBreed = properties.get("newBreed");
-        newBreedState = createComponent(newBreed, object, context);
-        boolean show = StringUtils.isEmpty(breed.getString()) && !StringUtils.isEmpty(newBreed.getString());
-        if (show && !context.isEdit()) {
-            Property copy = new SimpleProperty(breed);
-            copy.setValue(Messages.get("patient.newbreed"));
-            addComponent(createComponent(copy, object, context));
-        }
-        updateNewBreed(show);
-        addComponent(newBreedState);
-        if (hideCustomFields || !hasCustomFields(object)) {
-            nodes = NO_CUSTOM_NODES;
+        boolean show;
+        if (breedEditor != null) {
+            addComponent(new ComponentState(breedEditor));
+            show = breedEditor.isNewBreed();
         } else {
-            nodes = DEFAULT_NODES;
+            show = StringUtils.isEmpty(breed.getString()) && !StringUtils.isEmpty(newBreed.getString());
+        }
+        if (show) {
+            if (!context.isEdit()) {
+                Property copy = new SimpleProperty(breed);
+                copy.setValue(Messages.get("patient.newbreed"));
+                addComponent(createComponent(copy, object, context));
+            } else {
+                addComponent(createComponent(newBreed, object, context));
+            }
+        }
+        if (hideCustomFields || !hasCustomFields(object)) {
+            nodes = new ArchetypeNodes(NO_CUSTOM_NODES);
+        } else {
+            nodes = new ArchetypeNodes(DEFAULT_NODES);
+        }
+        if (!show) {
+            nodes.exclude("newBreed");
         }
         return super.apply(object, properties, parent, context);
     }
@@ -282,12 +280,10 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
     }
 
     /**
-     * Determines if the object has an <em>entity.customPatient*</em> associated
-     * with it.
+     * Determines if the object has an <em>entity.customPatient*</em> associated with it.
      *
      * @param object the object. Must be an {@link Entity}.
-     * @return {@code true} if there is any <em>entity.customPatient*</em>
-     *         associated with the object
+     * @return {@code true} if there is any <em>entity.customPatient*</em> associated with the object
      */
     private boolean hasCustomFields(IMObject object) {
         EntityBean bean = new EntityBean((Entity) object);

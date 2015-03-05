@@ -32,7 +32,6 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.EntityRelationshipCollectionTargetEditor;
 import org.openvpms.web.component.im.relationship.RelationshipCollectionTargetEditor;
 import org.openvpms.web.component.im.util.IMObjectCreator;
-import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.DatePropertyTransformer;
 import org.openvpms.web.component.property.Modifiable;
@@ -72,6 +71,11 @@ public class PatientEditor extends AbstractIMObjectEditor {
      * The breed editor.
      */
     private BreedEditor breedEditor;
+
+    /**
+     * Determines if the New Breed field is displayed.
+     */
+    private boolean showNewBreed;
 
     /**
      * The layout strategy.
@@ -137,6 +141,7 @@ public class PatientEditor extends AbstractIMObjectEditor {
         breedEditor = new BreedEditor(breed, patient);
 
         if (StringUtils.isEmpty(breed.getString()) && !StringUtils.isEmpty(newBreed.getString())) {
+            showNewBreed = true;
             breedEditor.selectNewBreed();
         }
 
@@ -176,6 +181,7 @@ public class PatientEditor extends AbstractIMObjectEditor {
 
         CollectionProperty customField = (CollectionProperty) getProperty("customFields");
         customFieldEditor = new EntityRelationshipCollectionTargetEditor(customField, patient, getLayoutContext());
+        getEditors().add(breedEditor);
         getEditors().add(customFieldEditor);
         createLayoutStrategy();
         updateCustomFields();
@@ -188,10 +194,7 @@ public class PatientEditor extends AbstractIMObjectEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        if (strategy == null) {
-            strategy = new PatientLayoutStrategy(customFieldEditor);
-            strategy.addComponent(new ComponentState(breedEditor));
-        }
+        strategy = new PatientLayoutStrategy(breedEditor, customFieldEditor);
         return strategy;
     }
 
@@ -286,11 +289,24 @@ public class PatientEditor extends AbstractIMObjectEditor {
      * Invoked when the breed changes. If it is 'New Breed', displays the 'newBreed' node.
      */
     private void breedChanged() {
-        boolean newBreed = breedEditor.isNewBreed();
-        if (!newBreed) {
-            getProperty(NEW_BREED).setValue(null);
+        boolean previous = showNewBreed;
+        if (breedEditor.isNewBreed()) {
+            showNewBreed = true;
+        } else {
+            Property newBreed = getProperty(NEW_BREED);
+            newBreed.setValue(null);
+            showNewBreed = false;
         }
-        strategy.updateNewBreed(newBreed);
+        if (previous != showNewBreed) {
+            onLayout();
+            if (showNewBreed) {
+                // need to re-select as component re-registration has reset it to None
+                breedEditor.selectNewBreed();
+                getEditor("newBreed").getFocusGroup().setFocus();
+            } else {
+                breedEditor.getFocusGroup().setFocus();
+            }
+        }
     }
 
     /**
