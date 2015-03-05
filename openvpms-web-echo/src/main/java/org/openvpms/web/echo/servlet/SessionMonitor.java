@@ -404,7 +404,9 @@ public class SessionMonitor implements DisposableBean {
          * Destroys the monitor.
          */
         public void destroy() {
-            future.cancel(true);
+            if (future != null) {
+                future.cancel(true);
+            }
         }
 
         /**
