@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.factory;
@@ -22,21 +20,21 @@ import echopointng.BalloonHelp;
 import echopointng.TemplatePanel;
 import echopointng.template.StringTemplateDataSource;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.openvpms.web.echo.style.Styles;
 
 
 /**
- * Factory for <tt>BalloonHelp</tt> instances.
+ * Factory for {@code BalloonHelp} instances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class BalloonHelpFactory {
 
     /**
-     * Creates a new <tt>BalloonHelp</tt>.
+     * Creates a new {@code BalloonHelp}.
      *
      * @param text the help text
-     * @return a new <tt>BalloonHelp</tt>
+     * @return a new {@code BalloonHelp}
      */
     public static BalloonHelp create(String text) {
         String xml = "<bdo>" + StringEscapeUtils.escapeXml(text) + "</bdo>";
@@ -44,6 +42,7 @@ public class BalloonHelpFactory {
         StringTemplateDataSource dataSource = new StringTemplateDataSource(xml);
         dataSource.setCachingHints(null); // no caching
         result.setPopUp(new TemplatePanel(dataSource));
+        result.setStyleName(Styles.DEFAULT);
         return result;
     }
 }
