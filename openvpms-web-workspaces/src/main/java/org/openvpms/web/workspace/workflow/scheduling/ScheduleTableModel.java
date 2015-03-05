@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -37,6 +37,7 @@ import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.echo.factory.BalloonHelpFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.style.Styles;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -477,7 +478,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * @return a new column model
      */
     protected abstract TableColumnModel createColumnModel(
-        ScheduleEventGrid grid);
+            ScheduleEventGrid grid);
 
     /**
      * Returns a viewer for an object reference.
@@ -570,8 +571,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
         }
         if (displayNotes && notes != null) {
             BalloonHelp help = BalloonHelpFactory.create(notes);
-            result = RowFactory.create("CellSpacing", label, help);
-            help.setPopUpTopOffset(-45);       // workaround for OVPMS-1233
+            result = RowFactory.create(Styles.CELL_SPACING, label, help);
         } else {
             result = label;
         }
