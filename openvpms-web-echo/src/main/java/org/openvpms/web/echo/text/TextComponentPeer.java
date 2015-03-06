@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.text;
@@ -56,6 +56,7 @@ import nextapp.echo2.webrender.servermessage.DomUpdate;
 import nextapp.echo2.webrender.servermessage.WindowUpdate;
 import nextapp.echo2.webrender.service.JavaScriptService;
 import nextapp.echo2.webrender.util.DomUtil;
+import org.openvpms.web.echo.util.ExtentHelper;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -342,13 +343,13 @@ public abstract class TextComponentPeer
             ci.getUpdateManager().getClientUpdateManager().setComponentProperty(component,
                                                                                 TEXT_CHANGED_PROPERTY, propertyValue);
         } else if (PROPERTY_HORIZONTAL_SCROLL.equals(propertyName)) {
-            Extent propertyValue = new Extent(Integer.parseInt(
-                    propertyElement.getAttribute(PropertyUpdateProcessor.PROPERTY_VALUE)));
+            Extent propertyValue = ExtentHelper.toExtent(
+                    propertyElement.getAttribute(PropertyUpdateProcessor.PROPERTY_VALUE));
             ci.getUpdateManager().getClientUpdateManager().setComponentProperty(
                     component, PROPERTY_HORIZONTAL_SCROLL, propertyValue);
         } else if (PROPERTY_VERTICAL_SCROLL.equals(propertyName)) {
-            Extent propertyValue = new Extent(Integer.parseInt(
-                    propertyElement.getAttribute(PropertyUpdateProcessor.PROPERTY_VALUE)));
+            Extent propertyValue = ExtentHelper.toExtent(
+                    propertyElement.getAttribute(PropertyUpdateProcessor.PROPERTY_VALUE));
             ci.getUpdateManager().getClientUpdateManager().setComponentProperty(
                     component, PROPERTY_VERTICAL_SCROLL, propertyValue);
         } else if (PROPERTY_CURSOR_POSITION.equals(propertyName)) {
