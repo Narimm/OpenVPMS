@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
 
+import net.sf.jasperreports.engine.util.ObjectUtils;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
@@ -99,17 +100,19 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
             setObject((Entity) object);
         } else if (TypeHelper.isA(object, ScheduleArchetypes.APPOINTMENT)) {
             Act act = (Act) object;
-            ActBean bean = new ActBean(act);
-            Entity schedule = bean.getNodeParticipant("schedule");
-            Party location = getContext().getLocation();
-            if (schedule != null && location != null) {
-                AppointmentRules rules = ServiceHelper.getBean(AppointmentRules.class);
-                Entity view = rules.getScheduleView(location, schedule);
-                if (view != null) {
-                    setScheduleView(view, act.getActivityStartTime());
-                    ScheduleBrowser scheduleBrowser = getBrowser();
-                    scheduleBrowser.setSelected(scheduleBrowser.getEvent(act));
-                    getCRUDWindow().setObject(act);
+            if (!ObjectUtils.equals(getCRUDWindow().getObject(), act)) {
+                ActBean bean = new ActBean(act);
+                Entity schedule = bean.getNodeParticipant("schedule");
+                Party location = getContext().getLocation();
+                if (schedule != null && location != null) {
+                    AppointmentRules rules = ServiceHelper.getBean(AppointmentRules.class);
+                    Entity view = rules.getScheduleView(location, schedule);
+                    if (view != null) {
+                        setScheduleView(view, act.getActivityStartTime());
+                        ScheduleBrowser scheduleBrowser = getBrowser();
+                        scheduleBrowser.setSelected(scheduleBrowser.getEvent(act));
+                        getCRUDWindow().setObject(act);
+                    }
                 }
             }
         }
