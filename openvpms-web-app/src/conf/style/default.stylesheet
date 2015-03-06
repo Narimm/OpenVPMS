@@ -2527,7 +2527,7 @@
     <!-- =================================================================== -->
     <style name="default" type="echopointng.BalloonHelp">
         <properties>
-            <property name="popUpAlwaysOnTop" value="true"/>
+            <!--property name="popUpAlwaysOnTop" value="true"/-->
         </properties>
     </style>
 
