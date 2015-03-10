@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
 
 import nextapp.echo2.app.table.TableCellRenderer;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.web.component.im.act.PagedActHierarchyTableModel;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
@@ -35,7 +36,7 @@ public class PatientHistoryBrowser extends AbstractPatientHistoryBrowser {
     /**
      * The table model that wraps the underlying model, to filter acts.
      */
-    private PagedPatientHistoryTableModel pagedModel;
+    private PagedActHierarchyTableModel<Act> pagedModel;
 
     /**
      * The cell renderer.
@@ -121,8 +122,8 @@ public class PatientHistoryBrowser extends AbstractPatientHistoryBrowser {
      * @param query the history query
      * @return a new paged table model
      */
-    protected PagedPatientHistoryTableModel createPagedModel(IMObjectTableModel<Act> model, PatientHistoryQuery query) {
-        return new PagedPatientHistoryTableModel(model, getContext().getContext(), query.getActItemShortNames());
+    protected PagedActHierarchyTableModel<Act> createPagedModel(IMObjectTableModel<Act> model, PatientHistoryQuery query) {
+        return new PagedPatientHistoryTableModel((PatientHistoryTableModel) model, query.getActItemShortNames());
     }
 
     /**

@@ -11,14 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.PagedIMObjectTableModel;
 
@@ -32,8 +31,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class PagedActHierarchyTableModel<T extends Act>
-        extends PagedIMObjectTableModel<T> {
+public class PagedActHierarchyTableModel<T extends Act> extends PagedIMObjectTableModel<T> {
 
     /**
      * The archetype short names of the child acts to display.
@@ -46,40 +44,31 @@ public class PagedActHierarchyTableModel<T extends Act>
     private int maxDepth;
 
     /**
-     * The context.
-     */
-    private final Context context;
-
-    /**
      * Determines if items are being sorted ascending or descending.
      */
     private boolean sortAscending = true;
 
     /**
-     * Constructs a {@code PagedActHierarchyTableModel}.
+     * Constructs a {@link PagedActHierarchyTableModel}.
      *
      * @param model      the underlying table model
-     * @param context    the context
      * @param shortNames the archetype short names of the child acts to display
      */
-    public PagedActHierarchyTableModel(IMObjectTableModel<T> model, Context context, String... shortNames) {
-        this(model, -1, context, shortNames);
+    public PagedActHierarchyTableModel(IMObjectTableModel<T> model, String... shortNames) {
+        this(model, -1, shortNames);
     }
 
     /**
-     * Construct a new {@code PagedActHierarchyTableModel}.
+     * Constructs a {@link PagedActHierarchyTableModel}.
      *
      * @param model      the underlying table model
      * @param maxDepth   the maximum depth in the hierarchy to display. Use {@code -1} to specify unlimited depth
-     * @param context    the context
      * @param shortNames the archetype short names of the child acts to display
      */
-    public PagedActHierarchyTableModel(IMObjectTableModel<T> model, int maxDepth, Context context,
-                                       String... shortNames) {
+    public PagedActHierarchyTableModel(IMObjectTableModel<T> model, int maxDepth, String... shortNames) {
         super(model);
         this.shortNames = shortNames;
         this.maxDepth = maxDepth;
-        this.context = context;
     }
 
     /**
@@ -89,6 +78,15 @@ public class PagedActHierarchyTableModel<T extends Act>
      */
     public void setShortNames(String[] shortNames) {
         this.shortNames = shortNames;
+    }
+
+    /**
+     * Returns the archetype short names of the child acts to display.
+     *
+     * @return the archetype short names
+     */
+    public String[] getShortNames() {
+        return shortNames;
     }
 
     /**
@@ -125,7 +123,7 @@ public class PagedActHierarchyTableModel<T extends Act>
      */
     @Override
     protected void setPage(List<T> objects) {
-        List<T> acts = flattenHierarchy(objects, shortNames, context);
+        List<T> acts = flattenHierarchy(objects, shortNames);
         getModel().setObjects(acts);
     }
 
@@ -134,10 +132,9 @@ public class PagedActHierarchyTableModel<T extends Act>
      *
      * @param objects    the acts
      * @param shortNames the child archetype short names
-     * @param context    the context
      * @return the acts
      */
-    protected List<T> flattenHierarchy(List<T> objects, String[] shortNames, Context context) {
+    protected List<T> flattenHierarchy(List<T> objects, String[] shortNames) {
         List<T> list = new ArrayList<T>();
         CollectionUtils.addAll(list, createIterator(objects, shortNames));
         return list;

@@ -84,8 +84,6 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
 
     /**
      * Filters child acts.
-     * <p/>
-     * This implementation returns {@code children} unmodified.
      *
      * @param parent   the parent act
      * @param children the child acts

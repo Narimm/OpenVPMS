@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -61,7 +61,17 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
      * @param context the layout context
      */
     public PatientHistoryTableModel(LayoutContext context) {
-        super(PatientArchetypes.CLINICAL_EVENT, context);
+        this(context, DEFAULT_CACHE_SIZE);
+    }
+
+    /**
+     * Constructs a {@link PatientHistoryTableModel}.
+     *
+     * @param context   the layout context
+     * @param cacheSize the render cache size
+     */
+    public PatientHistoryTableModel(LayoutContext context, int cacheSize) {
+        super(PatientArchetypes.CLINICAL_EVENT, context, cacheSize);
     }
 
     /**
@@ -70,16 +80,15 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
      * This indents the type depending on the acts depth in the act hierarchy.
      *
      * @param bean the act
-     * @param row  the current row
      * @return a component representing the act type
      */
     @Override
-    protected Component getType(ActBean bean, int row) {
+    protected Component getType(ActBean bean) {
         Component result;
         if (bean.isA(PatientArchetypes.CLINICAL_PROBLEM)) {
-            result = getHyperlinkedType(bean, row);
+            result = getHyperlinkedType(bean);
         } else {
-            result = super.getType(bean, row);
+            result = super.getType(bean);
         }
         return result;
     }
@@ -88,12 +97,11 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
      * Returns the name of an act to display in the Type column.
      *
      * @param bean the act
-     * @param row  the current row
      * @return the name
      */
     @Override
-    protected String getTypeName(ActBean bean, int row) {
-        String result = super.getTypeName(bean, row);
+    protected String getTypeName(ActBean bean) {
+        String result = super.getTypeName(bean);
         if (bean.isA(PatientArchetypes.CLINICAL_PROBLEM)) {
             if (isOngoingProblem(bean)) {
                 result = Messages.format("patient.record.summary.ongoingProblem", result);
@@ -106,14 +114,13 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
      * Returns a component for a parent act.
      *
      * @param bean the parent act
-     * @param row  the current row
      * @return a component representing the act
      * @throws OpenVPMSException for any error
      */
     @Override
-    protected Component formatParent(ActBean bean, int row) {
+    protected Component formatParent(ActBean bean) {
         String date = formatDateRange(bean);
-        String text = formatEventText(bean, row);
+        String text = formatEventText(bean);
         Label summary = LabelFactory.create(null, Styles.BOLD);
         summary.setText(Messages.format("patient.record.summary.datedTitle", date, text));
         return summary;
@@ -123,11 +130,10 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
      * Formats an act item.
      *
      * @param bean the item bean
-     * @param row  the current row
      * @return a component representing the item
      */
     @Override
-    protected Component formatItem(ActBean bean, int row) {
+    protected Component formatItem(ActBean bean) {
         Component detail;
         if (bean.isA(PatientArchetypes.PATIENT_MEDICATION)) {
             detail = getMedicationDetail(bean);
@@ -136,7 +142,7 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
         } else if (bean.isA(PatientArchetypes.CLINICAL_PROBLEM)) {
             detail = getProblemDetail(bean);
         } else {
-            detail = super.formatItem(bean, row);
+            detail = super.formatItem(bean);
         }
         return detail;
     }
@@ -178,7 +184,6 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
                 text = Messages.format("patient.record.summary.medication", text,
                                        NumberFormatter.formatCurrency(set.getBigDecimal("act.total")));
             }
-
         }
         return getTextDetail(text);
     }
