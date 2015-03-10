@@ -18,40 +18,26 @@ package org.openvpms.component.system.common.cache;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-
-import java.util.Map;
-
 
 /**
- * Abstract implementation of the {@link IMObjectCache} interface.
- * <p/>
- * Note that this implementation excludes {@link Document} instances which may be too large to cache for long periods.
+ * Implementation of {@link IMObjectCache} that delegating to another.
  *
  * @author Tim Anderson
  */
-public abstract class AbstractIMObjectCache implements IMObjectCache {
+public class DelegatingIMObjectCache implements IMObjectCache {
 
     /**
-     * The cache.
+     * The underlying cache.
      */
-    private final Map<IMObjectReference, IMObject> cache;
+    private final IMObjectCache cache;
 
     /**
-     * The archetype service. May be {@code null}
-     */
-    private final IArchetypeService service;
-
-    /**
-     * Constructs an {@link AbstractIMObjectCache}
+     * Constructs a {@link DelegatingIMObjectCache}.
      *
-     * @param cache   the cache
-     * @param service the archetype service. If non-null, non-cached objects may retrieved
+     * @param cache the cache to delegate to
      */
-    protected AbstractIMObjectCache(Map<IMObjectReference, IMObject> cache, IArchetypeService service) {
+    public DelegatingIMObjectCache(IMObjectCache cache) {
         this.cache = cache;
-        this.service = service;
     }
 
     /**
@@ -59,8 +45,9 @@ public abstract class AbstractIMObjectCache implements IMObjectCache {
      *
      * @param object the object to cache
      */
+    @Override
     public void add(IMObject object) {
-        cache.put(object.getObjectReference(), object);
+        cache.add(object);
     }
 
     /**
@@ -68,30 +55,22 @@ public abstract class AbstractIMObjectCache implements IMObjectCache {
      *
      * @param object the object to remove
      */
+    @Override
     public void remove(IMObject object) {
-        cache.remove(object.getObjectReference());
+        cache.remove(object);
     }
 
     /**
      * Returns an object given its reference.
      * <p/>
-     * If the object isn't cached, it will be retrieved from the archetype service and added to the cache if it exists.
+     * If the object isn't cached, it may be retrieved.
      *
      * @param reference the object reference. May be {@code null}
      * @return the object corresponding to {@code reference} or {@code null} if none exists
      */
+    @Override
     public IMObject get(IMObjectReference reference) {
-        IMObject result = null;
-        if (reference != null) {
-            result = cache.get(reference);
-            if (result == null && service != null) {
-                result = service.get(reference);
-                if (result != null && !(result instanceof Document)) {
-                    cache.put(reference, result);
-                }
-            }
-        }
-        return result;
+        return cache.get(reference);
     }
 
     /**
