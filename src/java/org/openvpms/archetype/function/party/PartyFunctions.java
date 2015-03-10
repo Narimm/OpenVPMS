@@ -632,15 +632,16 @@ public class PartyFunctions {
      * @return the account balance
      */
     public BigDecimal getAccountBalance(ExpressionContext context) {
+        BigDecimal result = BigDecimal.ZERO;
         Pointer pointer = context.getContextNodePointer();
         Object value = pointer.getValue();
         if (value instanceof Party) {
-            return getAccountBalance((Party) value);
+            result = getAccountBalance((Party) value);
 
         } else if (value instanceof Act) {
-            return getAccountBalance((Act) value);
+            result = getAccountBalance((Act) value);
         }
-        return BigDecimal.ZERO;
+        return result;
     }
 
     /**
@@ -650,11 +651,12 @@ public class PartyFunctions {
      * @return the current account Balance
      */
     public BigDecimal getAccountBalance(Party party) {
+        BigDecimal result = BigDecimal.ZERO;
         if (party != null) {
             BalanceCalculator calculator = new BalanceCalculator(service);
-            calculator.getBalance(party);
+            result = calculator.getBalance(party);
         }
-        return BigDecimal.ZERO;
+        return result;
     }
 
     /**
@@ -667,14 +669,17 @@ public class PartyFunctions {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getAccountBalance(Act act) {
+        BigDecimal result = BigDecimal.ZERO;
         if (act != null) {
             Party party = partyRules.getCustomer(act);
             if (party == null) {
                 party = patientRules.getOwner(act);
             }
-            return (party != null) ? getAccountBalance(party) : BigDecimal.ZERO;
+            if (party != null) {
+                result = getAccountBalance(party);
+            }
         }
-        return BigDecimal.ZERO;
+        return result;
     }
 
     /**
