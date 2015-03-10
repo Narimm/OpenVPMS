@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
@@ -131,9 +131,20 @@ public class IMObjectHelper {
      * @return the name or {@code null} if none exists
      */
     public static String getName(IMObjectReference reference) {
+        return reference != null ? getName(reference, ServiceHelper.getArchetypeService()) : null;
+    }
+
+    /**
+     * Returns the name of an object, given its reference.
+     *
+     * @param reference the object reference. May be {@code null}
+     * @param service   the archetype service
+     * @return the name or {@code null} if none exists
+     */
+    public static String getName(IMObjectReference reference, IArchetypeService service) {
         String result = null;
         try {
-            result = ArchetypeQueryHelper.getName(reference, ServiceHelper.getArchetypeService());
+            result = ArchetypeQueryHelper.getName(reference, service);
         } catch (OpenVPMSException error) {
             log.error(error, error);
         }
