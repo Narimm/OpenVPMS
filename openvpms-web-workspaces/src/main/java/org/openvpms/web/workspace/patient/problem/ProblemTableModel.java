@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.problem;
@@ -46,7 +46,7 @@ public class ProblemTableModel extends AbstractPatientHistoryTableModel {
      * @param context the layout context
      */
     public ProblemTableModel(LayoutContext context) {
-        super(PatientArchetypes.CLINICAL_PROBLEM, context);
+        super(PatientArchetypes.CLINICAL_PROBLEM, context, DEFAULT_CACHE_SIZE);
     }
 
     /**
@@ -55,33 +55,31 @@ public class ProblemTableModel extends AbstractPatientHistoryTableModel {
      * This indents the type depending on the act's depth in the act hierarchy.
      *
      * @param bean the act
-     * @param row  the current row
      * @return a component representing the act type
      */
     @Override
-    protected Component getType(ActBean bean, int row) {
+    protected Component getType(ActBean bean) {
         if (bean.isA(PatientArchetypes.CLINICAL_EVENT)) {
-            return getHyperlinkedType(bean, row);
+            return getHyperlinkedType(bean);
         }
-        return super.getType(bean, row);
+        return super.getType(bean);
     }
 
     /**
      * Returns a component for a parent act.
      *
      * @param bean the parent act
-     * @param row  the current row
      * @return a component representing the act
      * @throws OpenVPMSException for any error
      */
     @Override
-    protected Component formatParent(ActBean bean, int row) {
+    protected Component formatParent(ActBean bean) {
         Component result;
         String presentingComplaint = LookupNameHelper.getName(bean.getAct(), "presentingComplaint");
 
         if (presentingComplaint != null) {
             String date = formatDateRange(bean);
-            String title = formatProblemText(bean, row);
+            String title = formatProblemText(bean);
             Label dateLabel = LabelFactory.create(null, Styles.BOLD);
             Label titleLabel = LabelFactory.create(null, Styles.BOLD);
             Label complaintLabel = LabelFactory.create();
@@ -101,7 +99,7 @@ public class ProblemTableModel extends AbstractPatientHistoryTableModel {
             result = ColumnFactory.create(Styles.CELL_SPACING, row1, row2);
         } else {
             String date = formatDateRange(bean);
-            String text = formatProblemText(bean, row);
+            String text = formatProblemText(bean);
             Label summary = LabelFactory.create(null, Styles.BOLD);
             summary.setText(Messages.format("patient.record.summary.datedTitle", date, text));
             result = summary;
@@ -113,42 +111,39 @@ public class ProblemTableModel extends AbstractPatientHistoryTableModel {
      * Formats the text for a clinical event.
      *
      * @param bean the act
-     * @param row  the current row
      * @return the formatted text
      */
-    protected String formatProblemText(ActBean bean, int row) {
+    protected String formatProblemText(ActBean bean) {
         String reason = LookupNameHelper.getName(bean.getAct(), "reason");
         if (reason == null) {
             reason = Messages.get("patient.record.summary.diagnosis.none");
         }
-        return formatParentText(bean, reason, row);
+        return formatParentText(bean, reason);
     }
 
     /**
      * Formats an act item.
      *
      * @param bean the item bean
-     * @param row  the current row
      * @return a component representing the item
      */
     @Override
-    protected Component formatItem(ActBean bean, int row) {
+    protected Component formatItem(ActBean bean) {
         if (bean.isA(PatientArchetypes.CLINICAL_EVENT)) {
-            return formatEvent(bean, row);
+            return formatEvent(bean);
         }
-        return super.formatItem(bean, row);
+        return super.formatItem(bean);
     }
 
     /**
      * Returns a component for an <em>act.patientClinicalEvent</em>.
      *
      * @param bean the act
-     * @param row  the current row
      * @return a component representing the act
      * @throws OpenVPMSException for any error
      */
-    private Component formatEvent(ActBean bean, int row) {
-        String text = formatEventText(bean, row);
+    private Component formatEvent(ActBean bean) {
+        String text = formatEventText(bean);
         Label summary = LabelFactory.create();
         summary.setText(text);
         return summary;

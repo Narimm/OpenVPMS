@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.table;
@@ -23,6 +21,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Font;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.table.TableModel;
 
 import java.util.EventListener;
 
@@ -30,19 +29,15 @@ import java.util.EventListener;
 /**
  * Table implementation that supports keyboard navigation.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class KeyTable extends Table {
 
-    public static final String PROPERTY_SELECTION_BLUR_FOREGROUND
-        = "selectionBlurForeground";
+    public static final String PROPERTY_SELECTION_BLUR_FOREGROUND = "selectionBlurForeground";
 
-    public static final String PROPERTY_SELECTION_BLUR_BACKGROUND
-        = "selectionBlurBackground";
+    public static final String PROPERTY_SELECTION_BLUR_BACKGROUND = "selectionBlurBackground";
 
-    public static final String PROPERTY_SELECTION_BLUR_FONT
-        = "selectionBlurFont";
+    public static final String PROPERTY_SELECTION_BLUR_FONT = "selectionBlurFont";
 
     protected static final String PAGE_ACTION = "page";
 
@@ -140,6 +135,24 @@ public class KeyTable extends Table {
     }
 
     /**
+     * Re-renders changed rows.
+     */
+    @Override
+    protected void doRender() {
+        TableModel model = getModel();
+        try {
+            if (model instanceof RenderTableModel) {
+                ((RenderTableModel) model).preRender();
+            }
+            super.doRender();
+        } finally {
+            if (model instanceof RenderTableModel) {
+                ((RenderTableModel) model).postRender();
+            }
+        }
+    }
+
+    /**
      * Fires an page event to all listeners.
      *
      * @param page the page command
@@ -148,8 +161,7 @@ public class KeyTable extends Table {
         if (!hasEventListenerList()) {
             return;
         }
-        EventListener[] listeners = getEventListenerList().getListeners(
-            PageListener.class);
+        EventListener[] listeners = getEventListenerList().getListeners(PageListener.class);
         ActionEvent event = null;
         for (EventListener listener : listeners) {
             if (event == null) {

@@ -16,8 +16,6 @@
 
 package org.openvpms.web.workspace.patient.problem;
 
-import org.apache.commons.collections4.comparators.ReverseComparator;
-import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -52,21 +50,6 @@ public class ProblemFilter extends ActHierarchyFilter<Act> {
     private static final String[] EVENT_NODES = new String[]{"event", "events"};
 
     /**
-     * Comparator to order acts on start time, oldest first.
-     */
-    private static final Comparator<Act> ASCENDING = new Comparator<Act>() {
-        @Override
-        public int compare(Act o1, Act o2) {
-            return DateRules.compareTo(o1.getActivityStartTime(), o2.getActivityStartTime());
-        }
-    };
-
-    /**
-     * Comparator to order acts on start time, most recent first.
-     */
-    private static final ReverseComparator<Act> DESCENDING = new ReverseComparator<Act>(ASCENDING);
-
-    /**
      * Constructs an {@link ProblemFilter}.
      *
      * @param shortNames the act short names
@@ -74,7 +57,7 @@ public class ProblemFilter extends ActHierarchyFilter<Act> {
      */
     public ProblemFilter(String[] shortNames, boolean ascending) {
         super(shortNames, true);
-        comparator = (ascending) ? ASCENDING : DESCENDING;
+        comparator = getComparator(ascending);
     }
 
     /**
@@ -118,19 +101,6 @@ public class ProblemFilter extends ActHierarchyFilter<Act> {
             addActsByEvent(result, actsByEvent);
         }
         return result;
-    }
-
-    /**
-     * Sorts act on start time.
-     * <p/>
-     * This implementation is a no-op as items are sorted by {@link #addActs(List, List)}.
-     *
-     * @param acts the items to sort
-     * @param act  the parent act
-     */
-    @Override
-    protected void sortItems(List<Act> acts, Act act) {
-        // do nothing
     }
 
     /**

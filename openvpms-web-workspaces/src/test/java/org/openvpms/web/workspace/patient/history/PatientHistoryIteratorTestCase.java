@@ -16,9 +16,11 @@
 
 package org.openvpms.web.workspace.patient.history;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.junit.Test;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
+import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -26,10 +28,9 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.component.im.act.ActHierarchyIterator;
-import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -50,7 +51,7 @@ import static org.openvpms.archetype.test.TestHelper.getDatetime;
  *
  * @author Tim Anderson
  */
-public class PatientHistoryIteratorTestCase extends AbstractAppTest {
+public class PatientHistoryIteratorTestCase extends ArchetypeServiceTest {
 
     /**
      * The short names to filter on.
@@ -62,7 +63,7 @@ public class PatientHistoryIteratorTestCase extends AbstractAppTest {
      */
     @Test
     public void testIterator() {
-        Party patient = TestHelper.createPatient(true);
+        Party patient = TestHelper.createPatient();
         User clinician = TestHelper.createClinician();
 
         Act weight = createWeight(getDatetime("2014-05-09 10:00:00"), patient, clinician);
@@ -74,15 +75,43 @@ public class PatientHistoryIteratorTestCase extends AbstractAppTest {
         List<Act> acts = Arrays.asList(event);
 
         String[] none = new String[0];
-        checkIterator(acts, none, true, event);
-        checkIterator(acts, none, false, event);
+        check(acts, none, true, event);
+        check(acts, none, false, event);
 
         String[] problemWeight = {CLINICAL_PROBLEM, PATIENT_WEIGHT};
-        checkIterator(acts, problemWeight, true, event, weight, problem);
-        checkIterator(acts, problemWeight, false, event, problem, weight);
+        check(acts, problemWeight, true, event, weight, problem);
+        check(acts, problemWeight, false, event, problem, weight);
 
-        checkIterator(acts, SHORT_NAMES, true, event, weight, problem, problemNote);
-        checkIterator(acts, SHORT_NAMES, false, event, problem, problemNote, weight);
+        check(acts, SHORT_NAMES, true, event, weight, problem, problemNote);
+        check(acts, SHORT_NAMES, false, event, problem, problemNote, weight);
+    }
+
+    /**
+     * Verifies that items linked to a problem but not linked to an event are still returned.
+     */
+    @Test
+    public void testUnlinkProblemItems() {
+        Party patient = TestHelper.createPatient();
+        User clinician = TestHelper.createClinician();
+
+        Act weight = createWeight(getDatetime("2014-05-09 10:00:00"), patient, clinician);
+        Act problemNote = createNote(getDatetime("2014-05-09 10:04:00"), patient, clinician);
+        Act problem = createProblem(getDatetime("2014-05-09 10:05:00"), patient, clinician, problemNote);
+        Act event = PatientTestHelper.createEvent(getDatetime("2014-05-09 10:00:00"), patient, clinician,
+                                                  weight, problem);
+
+        List<Act> acts = Arrays.asList(event);
+
+        String[] none = new String[0];
+        check(acts, none, true, event);
+        check(acts, none, false, event);
+
+        String[] problemWeight = {CLINICAL_PROBLEM, PATIENT_WEIGHT};
+        check(acts, problemWeight, true, event, weight, problem);
+        check(acts, problemWeight, false, event, problem, weight);
+
+        check(acts, SHORT_NAMES, true, event, weight, problem, problemNote);
+        check(acts, SHORT_NAMES, false, event, problem, problemNote, weight);
     }
 
     /**
@@ -115,11 +144,53 @@ public class PatientHistoryIteratorTestCase extends AbstractAppTest {
         String[] withCharge = {CLINICAL_PROBLEM, PATIENT_WEIGHT, PATIENT_MEDICATION, INVOICE_ITEM, CLINICAL_NOTE};
         String[] noCharge = {CLINICAL_PROBLEM, PATIENT_WEIGHT, PATIENT_MEDICATION, CLINICAL_NOTE};
 
-        checkIterator(acts, withCharge, true, event, weight, medication1, charge2, problem, problemNote, charge3);
-        checkIterator(acts, withCharge, false, event, charge3, problem, problemNote, charge2, medication1, weight);
+        check(acts, withCharge, true, event, weight, medication1, charge2, problem, problemNote, charge3);
+        check(acts, withCharge, false, event, charge3, problem, problemNote, charge2, medication1, weight);
 
-        checkIterator(acts, noCharge, true, event, weight, medication1, problem, problemNote);
-        checkIterator(acts, noCharge, false, event, problem, problemNote, medication1, weight);
+        check(acts, noCharge, true, event, weight, medication1, problem, problemNote);
+        check(acts, noCharge, false, event, problem, problemNote, medication1, weight);
+    }
+
+    /**
+     * Verifies that when a problem is linked to 2 visits, only the items linked to the event will appear listed
+     * under the problem for that event.
+     */
+    @Test
+    public void testProblemLinkedTo2Visits() {
+        Party patient = TestHelper.createPatient(true);
+        User clinician = TestHelper.createClinician();
+
+        Act note1a = createNote(getDatetime("2014-05-09 10:04:00"), patient, clinician);
+        Act note1b = createNote(getDatetime("2014-05-09 10:05:00"), patient, clinician);
+        Act note2 = createNote(getDatetime("2014-05-14 13:15:00"), patient, clinician);
+
+        Act problem = createProblem(getDatetime("2014-05-09 10:05:00"), patient, clinician, note1a, note1b, note2);
+        Act event1 = PatientTestHelper.createEvent(getDatetime("2014-05-09 10:00:00"), patient, clinician,
+                                                   note1a, note1b, problem);
+
+        Act event2 = PatientTestHelper.createEvent(getDatetime("2014-05-14 13:10:00"), patient, clinician,
+                                                   note2, problem);
+
+        List<Act> acts = Arrays.asList(event2, event1);
+        check(acts, SHORT_NAMES, true, event2, problem, note2, event1, problem, note1a, note1b);
+        check(acts, SHORT_NAMES, false, event2, problem, note2, event1, problem, note1b, note1a);
+    }
+
+    /**
+     * Verifies that {@link PatientHistoryIterator} returns the expected acts, in the correct order.
+     *
+     * @param events        the events
+     * @param shortNames    the child act short names
+     * @param sortAscending if {@code true} sort items on ascending timestamp; otherwise sort on descending timestamp
+     * @param expected      the expected acts
+     */
+    private void check(List<Act> events, String[] shortNames, boolean sortAscending, Act... expected) {
+        int index = 0;
+        List<Act> acts = getActs(events, shortNames, sortAscending);
+        assertEquals(expected.length, acts.size());
+        for (Act act : acts) {
+            assertEquals(expected[index++], act);
+        }
     }
 
     /**
@@ -159,18 +230,16 @@ public class PatientHistoryIteratorTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that {@link ActHierarchyIterator} returns the expected acts, in the correct order.
+     * Verifies that {@link PatientHistoryIterator} returns the expected acts, in the correct order.
      *
      * @param events        the events
      * @param shortNames    the child act short names
      * @param sortAscending if {@code true} sort items on ascending timestamp; otherwise sort on descending timestamp
-     * @param expected      the expected acts
      */
-    private void checkIterator(List<Act> events, String[] shortNames, boolean sortAscending, Act... expected) {
-        int index = 0;
-        for (Act act : new PatientHistoryIterator(events, shortNames, sortAscending)) {
-            assertEquals(expected[index++], act);
-        }
-        assertEquals(expected.length, index);
+    private List<Act> getActs(List<Act> events, String[] shortNames, boolean sortAscending) {
+        PatientHistoryIterator iterator = new PatientHistoryIterator(events, shortNames, sortAscending);
+        List<Act> result = new ArrayList<Act>();
+        CollectionUtils.addAll(result, iterator);
+        return result;
     }
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.problem;
@@ -21,7 +21,6 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.act.PagedActHierarchyTableModel;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -147,7 +146,7 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
     @Override
     protected PagedIMTable<Act> createTable(IMTableModel<Act> model) {
         ProblemQuery query = getQuery();
-        pagedModel = new PagedProblemTableModel(model, query, getContext().getContext());
+        pagedModel = new PagedProblemTableModel(model, query);
         pagedModel.setSortAscending(query.isSortAscending());
         PagedIMTable<Act> result = super.createTable(pagedModel);
         initTable(result);
@@ -180,12 +179,11 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
         /**
          * Constructs a {@link PagedProblemTableModel}.
          *
-         * @param model   the underlying table model
-         * @param query   the problem query
-         * @param context the context
+         * @param model the underlying table model
+         * @param query the problem query
          */
-        public PagedProblemTableModel(IMTableModel<Act> model, ProblemQuery query, Context context) {
-            super((IMObjectTableModel<Act>) model, context, query.getActItemShortNames());
+        public PagedProblemTableModel(IMTableModel<Act> model, ProblemQuery query) {
+            super((IMObjectTableModel<Act>) model, query.getActItemShortNames());
         }
 
         /**

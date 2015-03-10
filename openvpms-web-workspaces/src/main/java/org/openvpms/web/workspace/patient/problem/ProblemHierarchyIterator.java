@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.problem;
@@ -48,7 +48,7 @@ public class ProblemHierarchyIterator extends ActHierarchyIterator<Act> {
      */
     @Override
     protected List<Act> flattenTree(Act root) {
-        List<Act> result = getFilter().filter(root, root);
+        List<Act> result = getFilter().filter(root);
         result.add(0, root);
         return result;
     }

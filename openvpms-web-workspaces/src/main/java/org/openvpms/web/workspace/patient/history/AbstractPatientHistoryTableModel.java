@@ -30,11 +30,13 @@ import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -42,10 +44,13 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
+import org.openvpms.component.business.service.archetype.CachingReadOnlyArchetypeService;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.cache.IMObjectCache;
+import org.openvpms.component.system.common.cache.LRUIMObjectCache;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -80,6 +85,11 @@ import java.util.Map;
  * @author Tim Anderson
  */
 public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
+
+    /**
+     * The default render cache size.
+     */
+    protected static final int DEFAULT_CACHE_SIZE = 100;
 
     /**
      * Path of the selected parent act icon.
@@ -117,15 +127,15 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     private boolean showClinician;
 
     /**
+     * The archetype service.
+     */
+    private IArchetypeService service;
+
+    /**
      * Cache of clinician names. This is refreshed each time the table is rendered to ensure the data doesn't
      * become stale.
      */
     private Map<Long, String> clinicianNames = new HashMap<Long, String>();
-
-    /**
-     * The last processed row, used to determine if the clinician cache needs to be refreshed.
-     */
-    private int lastRow;
 
     /**
      * The padding, in pixels, used to indent the Type.
@@ -143,9 +153,14 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     private int clinicianWidth = -1;
 
     /**
-     * Helper functions.
+     * The jxpath function library.
      */
-    private final ArchetypeServiceFunctions functions;
+    private final FunctionLibrary functions;
+
+    /**
+     * The object cache, used during rendering.
+     */
+    private final IMObjectCache cache;
 
     /**
      * Default fixed column width, in pixels.
@@ -177,8 +192,9 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      *
      * @param parentShortName the parent act short name
      * @param context         the layout context
+     * @param cacheSize       the render cache size
      */
-    public AbstractPatientHistoryTableModel(String parentShortName, LayoutContext context) {
+    public AbstractPatientHistoryTableModel(String parentShortName, LayoutContext context, int cacheSize) {
         this.parentShortName = parentShortName;
         this.context = context;
         patientRules = ServiceHelper.getBean(PatientRules.class);
@@ -192,7 +208,11 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
             IMObjectBean bean = new IMObjectBean(practice);
             showClinician = bean.getBoolean("showClinicianInHistoryItems");
         }
-        functions = ServiceHelper.getBean(ArchetypeServiceFunctions.class);
+        ArchetypeFunctionsFactory factory = ServiceHelper.getBean(ArchetypeFunctionsFactory.class);
+        IArchetypeService archetypeService = ServiceHelper.getArchetypeService();
+        cache = new LRUIMObjectCache(cacheSize, archetypeService);
+        service = new CachingReadOnlyArchetypeService(cache, archetypeService);
+        functions = factory.create(service);
         initStyles();
     }
 
@@ -288,6 +308,16 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     }
 
     /**
+     * Invoked after the table has been rendered.
+     */
+    @Override
+    public void postRender() {
+        super.postRender();
+        cache.clear();
+        clinicianNames.clear();
+    }
+
+    /**
      * Returns the layout context.
      *
      * @return the layout context
@@ -306,7 +336,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      */
     protected Object getValue(Act act, TableColumn column, int row) {
         Object result = null;
-        ActBean bean = new ActBean(act);
+        ActBean bean = new ActBean(act, service);
         switch (column.getModelIndex()) {
             case SELECTION_COLUMN:
                 if (row == selectedParent) {
@@ -316,7 +346,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
             case SUMMARY_COLUMN:
                 try {
                     if (TypeHelper.isA(act, parentShortName)) {
-                        result = formatParent(bean, row);
+                        result = formatParent(bean);
                     } else {
                         result = formatItem(bean, row, showClinician);
                     }
@@ -332,11 +362,10 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * Returns a component for a parent act.
      *
      * @param bean the parent act
-     * @param row  the current row
      * @return a component representing the act
      * @throws OpenVPMSException for any error
      */
-    protected abstract Component formatParent(ActBean bean, int row);
+    protected abstract Component formatParent(ActBean bean);
 
     /**
      * Formats an act date range.
@@ -371,17 +400,16 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      *
      * @param bean   the act
      * @param reason the reason. May be {@code null}
-     * @param row    the current row
      * @return the formatted text
      */
-    protected String formatParentText(ActBean bean, String reason, int row) {
+    protected String formatParentText(ActBean bean, String reason) {
         Act act = bean.getAct();
         String clinician;
         if (StringUtils.isEmpty(reason)) {
             reason = Messages.get("patient.record.summary.reason.none");
         }
-        String status = functions.lookup(act, "status");
-        clinician = getClinician(bean, row);
+        String status = LookupNameHelper.getName(act, "status");
+        clinician = getClinician(bean);
         String age = getAge(bean);
         return Messages.format("patient.record.summary.title", reason, clinician, status, age);
     }
@@ -390,22 +418,21 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * Formats the text for a clinical event.
      *
      * @param bean the act
-     * @param row  the current row
      * @return the formatted text
      */
-    protected String formatEventText(ActBean bean, int row) {
+    protected String formatEventText(ActBean bean) {
         Act act = bean.getAct();
-        String reason = getReason(bean.getAct());
+        String reason = getReason(act);
         String title = act.getTitle();
         if (!StringUtils.isEmpty(reason) && !StringUtils.isEmpty(title)) {
             String text = reason + " - " + title;
-            return formatParentText(bean, text, row);
+            return formatParentText(bean, text);
         } else if (!StringUtils.isEmpty(reason)) {
-            return formatParentText(bean, reason, row);
+            return formatParentText(bean, reason);
         } else if (!StringUtils.isEmpty(title)) {
-            return formatParentText(bean, title, row);
+            return formatParentText(bean, title);
         }
-        return formatParentText(bean, null, row);
+        return formatParentText(bean, null);
     }
 
     /**
@@ -429,7 +456,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     protected Component formatItem(ActBean bean, int row, boolean showClinician) {
         Act act = bean.getAct();
         Component date = getDate(act, row);
-        Component type = getType(bean, row);
+        Component type = getType(bean);
         Component clinician = (showClinician) ? getClinicianLabel(bean, row) : null;
         Component detail;
 
@@ -442,7 +469,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
             clinician.setLayoutData(layout);
         }
 
-        detail = formatItem(bean, row);
+        detail = formatItem(bean);
         Row padding = RowFactory.create(Styles.INSET, new Label(""));
         Row item = RowFactory.create(Styles.CELL_SPACING, padding, date, type);
         if (clinician != null) {
@@ -456,10 +483,9 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * Formats an act item.
      *
      * @param bean the item bean
-     * @param row  the current row
      * @return a component representing the item
      */
-    protected Component formatItem(ActBean bean, int row) {
+    protected Component formatItem(ActBean bean) {
         if (bean.isA("act.patientInvestigation*") || bean.isA("act.patientDocument*")) {
             return getDocumentDetail((DocumentAct) bean.getAct());
         }
@@ -472,12 +498,11 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * This indents the type depending on the act's depth in the act hierarchy.
      *
      * @param bean the act
-     * @param row  the current row
      * @return a component representing the act type
      */
-    protected Component getType(ActBean bean, int row) {
+    protected Component getType(ActBean bean) {
         Component result;
-        String text = getTypeName(bean, row);
+        String text = getTypeName(bean);
         LabelEx label = new LabelEx(text);
         label.setStyleName("MedicalRecordSummary.type");
         int depth = getDepth(bean);
@@ -494,13 +519,12 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * Returns a hyperlinked type component.
      *
      * @param bean the act
-     * @param row  the current row
      * @return a component representing the act type
      */
-    protected Component getHyperlinkedType(ActBean bean, int row) {
+    protected Component getHyperlinkedType(ActBean bean) {
         LayoutContext context = getContext();
         IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(bean.getObject().getObjectReference(),
-                                                                     getTypeName(bean, row),
+                                                                     getTypeName(bean),
                                                                      context.getContextSwitchListener(),
                                                                      context.getContext());
         viewer.setWidth(typeWidth);
@@ -511,10 +535,9 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * Returns the name of an act to display in the Type column.
      *
      * @param bean the act
-     * @param row  the current row
      * @return the name
      */
-    protected String getTypeName(ActBean bean, int row) {
+    protected String getTypeName(ActBean bean) {
         return bean.getDisplayName();
     }
 
@@ -557,7 +580,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * @return a new label
      */
     protected Component getClinicianLabel(ActBean bean, int row) {
-        String clinician = getClinician(bean, row);
+        String clinician = getClinician(bean);
         // Need to jump through some hoops to restrict long clinician names from exceeding the column width.
         String content = "<div xmlns='http://www.w3.org/1999/xhtml' style='width:" + clinicianWidth
                          + "px; overflow:hidden'>" + clinician + "</div>";
@@ -572,15 +595,10 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * This caches clinician names for the duration of a single table render, to improve performance.
      *
      * @param bean the act
-     * @param row  the row being processed
      * @return the clinician name or a formatted string indicating the act has no clinician
      */
-    protected String getClinician(ActBean bean, int row) {
+    protected String getClinician(ActBean bean) {
         String clinician = null;
-        if (row < lastRow) {
-            clinicianNames.clear();
-        }
-        lastRow = row;
         IMObjectReference clinicianRef = bean.getParticipantRef(UserArchetypes.CLINICIAN_PARTICIPATION);
         if (clinicianRef != null) {
             clinician = clinicianNames.get(clinicianRef.getId());
@@ -664,7 +682,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
         String expr = getExpression(shortName);
         if (!StringUtils.isEmpty(expr)) {
             try {
-                JXPathContext context = JXPathHelper.newContext(act);
+                JXPathContext context = JXPathHelper.newContext(act, functions);
                 Object value = context.getValue(expr);
                 if (value != null) {
                     text = value.toString();

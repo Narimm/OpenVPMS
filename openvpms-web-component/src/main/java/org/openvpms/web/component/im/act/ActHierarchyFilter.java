@@ -16,21 +16,16 @@
 
 package org.openvpms.web.component.im.act;
 
-import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.Predicate;
-import org.apache.commons.collections.Transformer;
 import org.apache.commons.collections.functors.NotPredicate;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.service.archetype.functor.IsA;
 import org.openvpms.component.business.service.archetype.functor.RelationshipRef;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 
@@ -40,7 +35,7 @@ import java.util.List;
  * @author Tim Anderson
  * @see ActHierarchyIterator
  */
-public class ActHierarchyFilter<T extends Act> {
+public class ActHierarchyFilter<T extends Act> extends ActFilter<T> {
 
     /**
      * The predicate to filter relationships. May be {@code null}
@@ -86,17 +81,28 @@ public class ActHierarchyFilter<T extends Act> {
      * @param root the root of the tree
      * @return the immediate children of the act, or an empty list if they have been filtered
      */
+    @Override
     public List<T> filter(T act, T root) {
         List<T> result = new ArrayList<T>();
         if (include(act)) {
             List<T> items = getIncludedTargets(act, root);
             items = filter(act, items);
             if (include(act, items)) {
-                sortItems(items, act);
                 result.addAll(items);
             }
         }
         return result;
+    }
+
+    /**
+     * Returns a comparator to sort the children of an act.
+     *
+     * @param act the parent act
+     * @return the comparator to sort the act's children
+     */
+    @Override
+    public Comparator<T> getComparator(T act) {
+        return getComparator(sortAscending);
     }
 
     /**
@@ -195,32 +201,6 @@ public class ActHierarchyFilter<T extends Act> {
     }
 
     /**
-     * Sorts act on start time.
-     *
-     * @param acts the items to sort
-     * @param act  the parent act
-     */
-    @SuppressWarnings("unchecked")
-    protected void sortItems(List<T> acts, Act act) {
-        Transformer transformer = new Transformer() {
-            public Object transform(Object input) {
-                Date date = ((Act) input).getActivityStartTime();
-                if (date instanceof Timestamp) {
-                    // to avoid ClassCastException when doing compareTo
-                    date = new Date(date.getTime());
-                }
-                return date;
-            }
-        };
-        Comparator comparator = ComparatorUtils.transformedComparator(
-                ComparatorUtils.nullHighComparator(null), transformer);
-        if (!sortAscending) {
-            comparator = ComparatorUtils.reversedComparator(comparator);
-        }
-        Collections.sort(acts, comparator);
-    }
-
-    /**
      * Returns the included target acts in set of relationships.
      *
      * @param act  the parent act
@@ -251,6 +231,5 @@ public class ActHierarchyFilter<T extends Act> {
         Predicate result = new IsA(RelationshipRef.TARGET, shortNames);
         return (include) ? result : new NotPredicate(result);
     }
-
 
 }
