@@ -157,7 +157,7 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
      */
     private Component getInvoiceItemDetail(ActBean bean) {
         IMObjectReference product = bean.getNodeParticipantRef("product");
-        String name = IMObjectHelper.getName(product);
+        String name = IMObjectHelper.getName(product, getService());
         FinancialAct act = (FinancialAct) bean.getAct();
         String text = Messages.format("patient.record.summary.invoiceitem", name, act.getQuantity(),
                                       NumberFormatter.formatCurrency(act.getTotal()));
