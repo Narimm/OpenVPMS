@@ -34,6 +34,14 @@ public class MapIMObjectCache extends AbstractIMObjectCache {
 
     /**
      * Constructs a {@link MapIMObjectCache}.
+     */
+    public MapIMObjectCache() {
+        super(new HashMap<IMObjectReference, IMObject>(), null);
+    }
+
+    /**
+     * Constructs a {@link MapIMObjectCache} that will retrieve objects from the archetype service if they are
+     * not cached.
      *
      * @param service the archetype service
      */
