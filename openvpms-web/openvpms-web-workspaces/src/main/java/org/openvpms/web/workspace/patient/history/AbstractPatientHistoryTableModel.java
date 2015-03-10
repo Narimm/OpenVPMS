@@ -129,7 +129,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     /**
      * The archetype service.
      */
-    private IArchetypeService service;
+    private final IArchetypeService service;
 
     /**
      * Cache of clinician names. This is refreshed each time the table is rendered to ensure the data doesn't
@@ -603,7 +603,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
         if (clinicianRef != null) {
             clinician = clinicianNames.get(clinicianRef.getId());
             if (clinician == null) {
-                clinician = IMObjectHelper.getName(clinicianRef);
+                clinician = IMObjectHelper.getName(clinicianRef, service);
                 if (clinician != null) {
                     clinicianNames.put(clinicianRef.getId(), clinician);
                 }
@@ -721,6 +721,15 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
         layout.setAlignment(Alignment.ALIGN_TOP);
         label.setLayoutData(layout);
         return label;
+    }
+
+    /**
+     * Returns the archetype service.
+     *
+     * @return the archetype service
+     */
+    protected IArchetypeService getService() {
+        return service;
     }
 
     /**
