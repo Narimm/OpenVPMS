@@ -20,6 +20,8 @@ import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.JXPathContext;
 import org.junit.Test;
+import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
@@ -28,6 +30,7 @@ import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -43,6 +46,7 @@ import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.jxpath.ObjectFunctions;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
@@ -451,6 +455,28 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         // verify the practice can be retrieved
         assertEquals(practice, ctx.getValue("party:getPatientReferralVetPractice()"));
         assertEquals(practice, ctx.getValue("party:getPatientReferralVetPractice(.)"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getAccountBalance} methods.
+     */
+    @Test
+    public void testGetAccountBalance() {
+        Party customer = TestHelper.createCustomer();
+        Party patient = TestHelper.createPatient(customer);
+        BigDecimal total = BigDecimal.valueOf(100);
+
+        JXPathContext ctx1 = createContext(customer);
+        checkEquals(BigDecimal.ZERO, (BigDecimal) ctx1.getValue("party:getAccountBalance(.)"));
+
+        List<FinancialAct> invoice = FinancialTestHelper.createChargesInvoice(
+                total, customer, patient, TestHelper.createProduct(), ActStatus.POSTED);
+        save(invoice);
+
+        checkEquals(total, (BigDecimal) ctx1.getValue("party:getAccountBalance(.)"));
+
+        JXPathContext ctx2 = createContext(invoice.get(1));
+        checkEquals(total, (BigDecimal) ctx2.getValue("party:getAccountBalance(.)"));
     }
 
     /**
