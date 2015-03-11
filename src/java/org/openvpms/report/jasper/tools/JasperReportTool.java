@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper.tools;
@@ -25,6 +25,7 @@ import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import net.sf.jasperreports.view.JasperViewer;
+import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -84,8 +85,7 @@ public class JasperReportTool extends ReportTool {
         if (report instanceof JasperIMReport) {
             JasperIMReport<IMObject> r = (JasperIMReport<IMObject>) report;
             List<IMObject> list = Arrays.asList(object);
-            JasperViewer viewer = new JasperViewer(r.report(list.iterator()),
-                                                   true);
+            JasperViewer viewer = new JasperViewer(r.report(list), true);
             viewer.setVisible(true);
         } else {
             System.out.println("Can't view reports of type "
@@ -156,6 +156,8 @@ public class JasperReportTool extends ReportTool {
         String shortName = object.getArchetypeId().getShortName();
         TemplateHelper helper = new TemplateHelper(service);
         Document doc = helper.getDocumentForArchetype(shortName);
+        ArchetypeFunctionsFactory factory = getFunctionsFactory();
+
         if (doc == null) {
             throw new ReportException(NoTemplateForArchetype, shortName);
         }
@@ -164,7 +166,7 @@ public class JasperReportTool extends ReportTool {
         try {
             if (doc.getName().endsWith(DocFormats.JRXML_EXT)) {
                 JasperDesign design = JasperReportHelper.getReport(doc, handlers);
-                report = new TemplatedJasperIMObjectReport(design, service, lookups, handlers);
+                report = new TemplatedJasperIMObjectReport(design, service, lookups, handlers, factory.create(service));
             } else {
                 throw new ReportException(UnsupportedTemplate, doc.getName());
             }

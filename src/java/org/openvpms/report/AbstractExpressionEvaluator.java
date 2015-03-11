@@ -16,6 +16,7 @@
 
 package org.openvpms.report;
 
+import org.apache.commons.jxpath.Functions;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -70,6 +71,11 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
     private final ILookupService lookups;
 
     /**
+     * The JXPath extension functions.
+     */
+    private final Functions functions;
+
+    /**
      * The JXPath context.
      */
     private JXPathContext context;
@@ -83,17 +89,19 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
     /**
      * Constructs an {@link AbstractExpressionEvaluator}.
      *
-     * @param object  the object
-     * @param fields  additional report fields. These override any in the report. May be {@code null}
-     * @param service the archetype service
-     * @param lookups the lookup service
+     * @param object    the object
+     * @param fields    additional report fields. These override any in the report. May be {@code null}
+     * @param service   the archetype service
+     * @param lookups   the lookup service
+     * @param functions the JXPath extension functions
      */
     public AbstractExpressionEvaluator(T object, PropertySet fields, IArchetypeService service,
-                                       ILookupService lookups) {
+                                       ILookupService lookups, Functions functions) {
         this.object = object;
         this.fields = fields;
         this.service = service;
         this.lookups = lookups;
+        this.functions = functions;
     }
 
     /**
@@ -160,7 +168,7 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
      */
     protected Object evaluate(String expression) {
         if (context == null) {
-            context = JXPathHelper.newContext(object);
+            context = JXPathHelper.newContext(object, functions);
             if (fields != null) {
                 for (String name : fields.getNames()) {
                     context.getVariables().declareVariable(name, fields.get(name));

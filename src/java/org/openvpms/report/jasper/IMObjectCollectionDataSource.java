@@ -1,27 +1,28 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
 
-import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
+import net.sf.jasperreports.engine.JRRewindableDataSource;
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.collections.comparators.TransformingComparator;
+import org.apache.commons.jxpath.Functions;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -42,12 +43,17 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
+public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource implements JRRewindableDataSource {
+
+    /**
+     * The collection.
+     */
+    private final Iterable<IMObject> collection;
 
     /**
      * The collection iterator.
      */
-    private final Iterator<IMObject> iter;
+    private Iterator<IMObject> iterator;
 
     /**
      * Additional fields. May be {@code null}
@@ -74,17 +80,19 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
      * @param service    the archetype service
      * @param lookups    the lookup service
      * @param handlers   the document handlers
+     * @param functions  the JXPath extension functions
      * @param sortNodes  the sort nodes
      */
     public IMObjectCollectionDataSource(IMObject parent, PropertySet fields, NodeDescriptor descriptor,
                                         IArchetypeService service, ILookupService lookups, DocumentHandlers handlers,
-                                        String... sortNodes) {
-        super(service, lookups, handlers);
+                                        Functions functions, String... sortNodes) {
+        super(service, lookups, handlers, functions);
         List<IMObject> values = descriptor.getChildren(parent);
         for (String sortNode : sortNodes) {
             sort(values, sortNode);
         }
-        iter = values.iterator();
+        collection = values;
+        iterator = collection.iterator();
         this.fields = fields;
         displayName = descriptor.getDisplayName();
     }
@@ -92,16 +100,18 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
     /**
      * Constructs a {@link IMObjectCollectionDataSource} for a collection of objects.
      *
-     * @param objects  the objects
-     * @param fields   additional report fields. These override any in the report. May be {@code null}
-     * @param service  the archetype service
-     * @param lookups  the lookup service
-     * @param handlers the document handlers
+     * @param objects   the objects
+     * @param fields    additional report fields. These override any in the report. May be {@code null}
+     * @param service   the archetype service
+     * @param lookups   the lookup service
+     * @param handlers  the document handlers
+     * @param functions the JXPath extension functions
      */
-    public IMObjectCollectionDataSource(Iterator<IMObject> objects, PropertySet fields, IArchetypeService service,
-                                        ILookupService lookups, DocumentHandlers handlers) {
-        super(service, lookups, handlers);
-        iter = objects;
+    public IMObjectCollectionDataSource(Iterable<IMObject> objects, PropertySet fields, IArchetypeService service,
+                                        ILookupService lookups, DocumentHandlers handlers, Functions functions) {
+        super(service, lookups, handlers, functions);
+        collection = objects;
+        iterator = collection.iterator();
         this.fields = fields;
     }
 
@@ -111,10 +121,10 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
      * @return true if there is a next record, false otherwise
      */
     public boolean next() {
-        boolean result = iter.hasNext();
+        boolean result = iterator.hasNext();
         if (result) {
-            current = new IMObjectDataSource(iter.next(), fields, getArchetypeService(), getLookupService(),
-                                             getDocumentHandlers());
+            current = new IMObjectDataSource(iterator.next(), fields, getArchetypeService(), getLookupService(),
+                                             getDocumentHandlers(), getFunctions());
         }
         return result;
     }
@@ -126,7 +136,7 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
      * @param sortNodes the list of nodes to sort on
      * @throws JRException for any error
      */
-    public JRDataSource getDataSource(String name, String[] sortNodes) throws JRException {
+    public JRRewindableDataSource getDataSource(String name, String[] sortNodes) throws JRException {
         return current.getDataSource(name, sortNodes);
     }
 
@@ -138,7 +148,7 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
      * @throws JRException for any error
      */
     @Override
-    public JRDataSource getExpressionDataSource(String expression) throws JRException {
+    public JRRewindableDataSource getExpressionDataSource(String expression) throws JRException {
         return current.getExpressionDataSource(expression);
     }
 
@@ -159,6 +169,14 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
             }
         }
         return result;
+    }
+
+    /**
+     * Moves back to the first element in the data source.
+     */
+    @Override
+    public void moveFirst() {
+        iterator = collection.iterator();
     }
 
     /**

@@ -1,31 +1,28 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
 
+import org.apache.commons.jxpath.Functions;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.util.PropertySet;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.text.DateFormat;
@@ -43,18 +40,10 @@ import static org.junit.Assert.assertNull;
 public class ObjectSetExpressionEvaluatorTestCase extends AbstractReportTest {
 
     /**
-     * The lookup service.
-     */
-    @Autowired
-    private ILookupService lookups;
-
-    /**
      * Tests the {@link ObjectSetExpressionEvaluator#getValue(String)} method.
      */
     @Test
     public void testGetValue() {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
         ObjectSet set = new ObjectSet();
         set.set("int", 10);
         set.set("string", "astring");
@@ -64,7 +53,10 @@ public class ObjectSetExpressionEvaluatorTestCase extends AbstractReportTest {
         set.set("act.customer", customer);
         set.set("anull", null);
 
-        ObjectSetExpressionEvaluator eval = new ObjectSetExpressionEvaluator(set, (PropertySet) null, service, lookups);
+        Functions functions = applicationContext.getBean(Functions.class);
+        ObjectSetExpressionEvaluator eval = new ObjectSetExpressionEvaluator(set, (PropertySet) null,
+                                                                             getArchetypeService(), getLookupService(),
+                                                                             functions);
         assertEquals(10, eval.getValue("int"));
         assertEquals("astring", eval.getValue("string"));
         assertEquals(date, eval.getValue("date"));
@@ -88,8 +80,6 @@ public class ObjectSetExpressionEvaluatorTestCase extends AbstractReportTest {
      */
     @Test
     public void testGetFormattedValue() {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
         ObjectSet set = new ObjectSet();
         set.set("int", 10);
         set.set("string", "astring");
@@ -99,7 +89,10 @@ public class ObjectSetExpressionEvaluatorTestCase extends AbstractReportTest {
         IMObject customer = createCustomer("Foo", "Bar");
         set.set("act.customer", customer);
 
-        ObjectSetExpressionEvaluator eval = new ObjectSetExpressionEvaluator(set, (PropertySet) null, service, lookups);
+        Functions functions = applicationContext.getBean(Functions.class);
+        ObjectSetExpressionEvaluator eval = new ObjectSetExpressionEvaluator(set, (PropertySet) null,
+                                                                             getArchetypeService(), getLookupService(),
+                                                                             functions);
         assertEquals("10", eval.getFormattedValue("int"));
         assertEquals("astring", eval.getFormattedValue("string"));
         assertEquals("$100.00", eval.getFormattedValue("money"));  // todo localise

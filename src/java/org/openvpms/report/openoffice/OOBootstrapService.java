@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.report.openoffice;
@@ -30,23 +28,26 @@ import com.sun.star.lang.XMultiComponentFactory;
 import com.sun.star.uno.UnoRuntime;
 import com.sun.star.uno.XComponentContext;
 import com.sun.star.util.XCloseable;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.lang.StringUtils;
-import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToStartService;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToStartService;
 
 
 /**
  * Service to bootstrap an OpenOffice instance on the local host.
  * The OpenOffice binaries must be in the path.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class OOBootstrapService {
 
@@ -90,6 +91,18 @@ public abstract class OOBootstrapService {
     private static final int DEFAULT_RETRIES = 10;
 
     /**
+     * Default arguments to supply to OpenOffice.
+     * From https://wiki.openoffice.org/wiki/Framework/Article/Command_Line_Arguments
+     */
+    private static List<String> DEFAULT_ARGS = Arrays.asList(
+            "-nodefault",            // Don't start with an empty document.
+            "-nofirststartwizard",   // Don't show the first start wizard on the first start
+            "-nolockcheck",          // Don't check for remote instances using a .lock file in the user folder.
+            "-nologo",               // Don't show the splash screen.
+            "-norestore"             // Suppress restart/restore after a fatal error.
+    );
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(OOBootstrapService.class);
@@ -111,8 +124,7 @@ public abstract class OOBootstrapService {
      */
     public synchronized void start() {
         if (process != null) {
-            throw new OpenOfficeException(FailedToStartService,
-                                          "service already running");
+            throw new OpenOfficeException(FailedToStartService, "service already running");
         }
         log.info("Starting OpenOffice");
         try {
@@ -120,34 +132,29 @@ public abstract class OOBootstrapService {
             XComponentContext localContext =
                     Bootstrap.createInitialComponentContext(null);
             if (localContext == null) {
-                throw new OpenOfficeException(FailedToStartService,
-                                              "no local component context");
+                throw new OpenOfficeException(FailedToStartService, "no local component context");
             }
 
             String office;
             if (StringUtils.isEmpty(path)) {
-                office = System.getProperty("os.name").startsWith("Windows") ?
-                            "soffice.exe" : "soffice";
+                office = System.getProperty("os.name").startsWith("Windows") ? "soffice.exe" : "soffice";
             } else {
                 office = path;
             }
 
             // command line arguments
-            String[] args;
-            String accept = "-accept=" + parameters + ";urp;";
+            List<String> argList = new ArrayList<String>();
+            argList.add(office);
             if (headless) {
-                args = new String[]{office, "-headless", accept};
-            } else {
-                // -nocrashreport not required in 2.1, added for compatibility
-                // with 2.0.4
-                args = new String[]{office, "-nologo", "-nodefault",
-                                    "-norestore", "-nocrashreport",
-                                    "-nolockcheck", accept};
+                argList.add("-headless");
             }
+            argList.addAll(DEFAULT_ARGS);
+            String accept = "-accept=" + parameters + ";urp;";
+            argList.add(accept);
 
+            String[] args = argList.toArray(new String[argList.size()]);
             if (log.isDebugEnabled()) {
-                log.debug("Attempting to start soffice using: "
-                        + StringUtils.join(args, " "));
+                log.debug("Attempting to start soffice using: " + StringUtils.join(args, " "));
             }
 
             // start the office process
@@ -156,26 +163,22 @@ public abstract class OOBootstrapService {
             pipe(process.getErrorStream(), System.err, "CE> ");
 
             // initial service manager
-            XMultiComponentFactory localServiceManager
-                    = localContext.getServiceManager();
+            XMultiComponentFactory localServiceManager = localContext.getServiceManager();
             if (localServiceManager == null) {
-                throw new OpenOfficeException(FailedToStartService,
-                                              "no initial service manager");
+                throw new OpenOfficeException(FailedToStartService, "no initial service manager");
             }
 
             // create a URL resolver
             XUnoUrlResolver urlResolver = UnoUrlResolver.create(localContext);
 
             // connection string
-            String connect = "uno:" + parameters +
-                    ";urp;StarOffice.ComponentContext";
+            String connect = "uno:" + parameters + ";urp;StarOffice.ComponentContext";
 
             // wait until office is started
             boolean connected = false;
             for (int i = 0; i < retries && !connected; ++i) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Attempting to connect, attempt "
-                            + (i + 1) + " of " + retries);
+                    log.debug("Attempting to connect, attempt " + (i + 1) + " of " + retries);
                 }
                 connected = connect(urlResolver, connect);
                 if (!connected) {
@@ -188,9 +191,7 @@ public abstract class OOBootstrapService {
                 }
             }
             if (!connected) {
-                throw new OpenOfficeException(
-                        FailedToStartService, "failed to connect after "
-                        + retries + " attempts");
+                throw new OpenOfficeException(FailedToStartService, "failed to connect after " + retries + " attempts");
             }
         } catch (OpenOfficeException exception) {
             if (process != null) {
@@ -328,12 +329,12 @@ public abstract class OOBootstrapService {
             Object context = urlResolver.resolve(connect);
             if (context != null) {
                 context = UnoRuntime.queryInterface(
-                          XComponentContext.class, context);
-                  if (context == null) {
-                      throw new OpenOfficeException(FailedToStartService,
-                                                    "no component context");
-                  }
-                  connected = true;
+                        XComponentContext.class, context);
+                if (context == null) {
+                    throw new OpenOfficeException(FailedToStartService,
+                                                  "no component context");
+                }
+                connected = true;
             }
         } catch (NoConnectException exception) {
             // see if the process is still running. Don't use
@@ -394,7 +395,7 @@ public abstract class OOBootstrapService {
                 BufferedReader r = new BufferedReader(
                         new InputStreamReader(in));
                 try {
-                    for (; ;) {
+                    for (; ; ) {
                         String s = r.readLine();
                         if (s == null) {
                             break;

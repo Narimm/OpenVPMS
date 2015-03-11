@@ -1,31 +1,31 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.openoffice;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
+import org.openvpms.archetype.function.factory.DefaultArchetypeFunctionsFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.math.BigDecimal;
@@ -43,14 +43,7 @@ import static org.junit.Assert.assertFalse;
  * @author Tim Anderson
  */
 @ContextConfiguration(locations = "applicationContextNoOOPool.xml", inheritLocations = false)
-public abstract class AbstractOpenOfficeLoadTestCase
-        extends AbstractOpenOfficeDocumentTest {
-
-    /**
-     * The lookups service.
-     */
-    @Autowired
-    private ILookupService lookups;
+public abstract class AbstractOpenOfficeLoadTestCase extends AbstractOpenOfficeDocumentTest {
 
     /**
      * Load tests the OpenOffice interface.
@@ -128,12 +121,12 @@ public abstract class AbstractOpenOfficeLoadTestCase
 
         @Test
         public void test() {
-            Document doc = getDocument(
-                    "src/test/reports/act.customerEstimation.odt",
-                    DocFormats.ODT_TYPE);
+            Document doc = getDocument("src/test/reports/act.customerEstimation.odt", DocFormats.ODT_TYPE);
 
-            IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(doc, getArchetypeService(), lookups,
-                                                                         getHandlers());
+            ArchetypeFunctionsFactory factory = new DefaultArchetypeFunctionsFactory(getArchetypeService(),
+                                                                                     getLookupService(), null);
+            IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(doc, getArchetypeService(), getLookupService(),
+                                                                         getHandlers(), factory.create());
 
             Party party = createCustomer();
             ActBean act = createAct("act.customerEstimation");
@@ -142,7 +135,7 @@ public abstract class AbstractOpenOfficeLoadTestCase
             act.setParticipant("participation.customer", party);
 
             List<IMObject> objects = Arrays.asList((IMObject) act.getAct());
-            Document result = report.generate(objects.iterator(),
+            Document result = report.generate(objects,
                                               DocFormats.ODT_TYPE);
             Map<String, String> fields = getUserFields(result);
             assertEquals("4/08/2006",

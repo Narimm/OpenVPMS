@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -20,6 +20,7 @@ import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JRQuery;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.design.JasperDesign;
+import org.apache.commons.jxpath.Functions;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -50,30 +51,32 @@ public abstract class AbstractTemplatedJasperIMReport<T> extends AbstractJasperI
     /**
      * Constructs an {@link AbstractTemplatedJasperIMReport}.
      *
-     * @param template the document template
-     * @param service  the archetype service
-     * @param lookups  the lookup service
-     * @param handlers the document handlers
+     * @param template  the document template
+     * @param service   the archetype service
+     * @param lookups   the lookup service
+     * @param handlers  the document handlers
+     * @param functions the JXPath extension functions
      * @throws ReportException if the report cannot be created
      */
-    public AbstractTemplatedJasperIMReport(Document template, IArchetypeService service,
-                                           ILookupService lookups, DocumentHandlers handlers) {
-        super(service, lookups, handlers);
+    public AbstractTemplatedJasperIMReport(Document template, IArchetypeService service, ILookupService lookups,
+                                           DocumentHandlers handlers, Functions functions) {
+        super(service, lookups, handlers, functions);
         this.template = new JasperTemplateLoader(template, service, handlers);
     }
 
     /**
      * Constructs an {@link AbstractTemplatedJasperIMReport}.
      *
-     * @param design   the master report design
-     * @param service  the archetype service
-     * @param lookups  the lookup service
-     * @param handlers the document handlers
+     * @param design    the master report design
+     * @param service   the archetype service
+     * @param lookups   the lookup service
+     * @param handlers  the document handlers
+     * @param functions the JXPath extension functions
      * @throws ReportException if the report cannot be created
      */
     public AbstractTemplatedJasperIMReport(JasperDesign design, IArchetypeService service, ILookupService lookups,
-                                           DocumentHandlers handlers) {
-        super(service, lookups, handlers);
+                                           DocumentHandlers handlers, Functions functions) {
+        super(service, lookups, handlers, functions);
         this.template = new JasperTemplateLoader(design, service, handlers);
     }
 

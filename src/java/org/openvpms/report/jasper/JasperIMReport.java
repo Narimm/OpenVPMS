@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -20,8 +20,6 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import org.openvpms.report.IMReport;
-
-import java.util.Iterator;
 
 
 /**
@@ -38,7 +36,7 @@ public interface JasperIMReport<T> extends IMReport<T> {
      * @return the report
      * @throws JRException for any error
      */
-    JasperPrint report(Iterator<T> objects) throws JRException;
+    JasperPrint report(Iterable<T> objects) throws JRException;
 
     /**
      * Returns the master report.
