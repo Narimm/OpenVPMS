@@ -11,8 +11,9 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.esci.adapter.map.invoice;
 
 import org.junit.Before;
@@ -26,11 +27,11 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.esci.adapter.AbstractESCITest;
 import org.openvpms.esci.adapter.map.UBLHelper;
 import org.openvpms.esci.ubl.common.AmountType;
@@ -63,7 +64,6 @@ import org.openvpms.esci.ubl.common.basic.TaxExclusiveAmountType;
 import org.openvpms.esci.ubl.common.basic.TaxTypeCodeType;
 import org.openvpms.esci.ubl.common.basic.UBLVersionIDType;
 import org.openvpms.esci.ubl.invoice.Invoice;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -88,11 +88,6 @@ public class AbstractInvoiceTest extends AbstractESCITest {
      */
     private Currency currency;
 
-    /**
-     * The lookup service.
-     */
-    @Autowired
-    private ILookupService lookupService;
 
     /**
      * Sets up the test case.
@@ -104,7 +99,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         // get the practice currency
         Party practice = getPractice();
         IMObjectBean bean = new IMObjectBean(practice);
-        Currencies currencies = new Currencies();
+        Currencies currencies = new Currencies(getArchetypeService(), getLookupService());
         currency = currencies.getCurrency(bean.getString("currency"));
 
         try {
@@ -262,7 +257,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         BigDecimal listPrice = bean.getBigDecimal("listPrice");
         BigDecimal unitPrice = bean.getBigDecimal("unitPrice");
         String packageUnits = bean.getString("packageUnits");
-        Lookup lookup = lookupService.getLookup("lookup.uom", packageUnits);
+        Lookup lookup = getLookupService().getLookup("lookup.uom", packageUnits);
         String unitCode = null;
         if (lookup != null) {
             IMObjectBean uom = new IMObjectBean(lookup);
@@ -472,14 +467,16 @@ public class AbstractInvoiceTest extends AbstractESCITest {
      * @return a new mapper
      */
     protected InvoiceMapperImpl createMapper() {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         InvoiceMapperImpl mapper = new InvoiceMapperImpl();
-        mapper.setPracticeRules(new PracticeRules(getArchetypeService()));
-        mapper.setProductRules(new ProductRules(getArchetypeService()));
-        mapper.setLookupService(LookupServiceHelper.getLookupService());
-        mapper.setCurrencies(new Currencies());
-        mapper.setArchetypeService(getArchetypeService());
-        mapper.setBeanFactory(new IMObjectBeanFactory(getArchetypeService()));
-        mapper.setSupplierRules(new SupplierRules(getArchetypeService()));
+        mapper.setPracticeRules(new PracticeRules(service));
+        mapper.setProductRules(new ProductRules(service));
+        mapper.setLookupService(lookups);
+        mapper.setCurrencies(new Currencies(service, lookups));
+        mapper.setArchetypeService(service);
+        mapper.setBeanFactory(new IMObjectBeanFactory(service));
+        mapper.setSupplierRules(new SupplierRules(service));
         return mapper;
     }
 

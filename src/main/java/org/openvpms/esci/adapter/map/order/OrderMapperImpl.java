@@ -1,20 +1,19 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.esci.adapter.map.order;
 
 import org.apache.commons.lang.StringUtils;
@@ -95,8 +94,8 @@ import java.util.GregorianCalendar;
 /**
  * Maps <em>act.supplierOrder</em> acts to UBL Orders.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
+ * @author bcharlton(benjicharlton@gmail.com)
  */
 public class OrderMapperImpl implements OrderMapper {
 
@@ -184,7 +183,7 @@ public class OrderMapperImpl implements OrderMapper {
     }
 
     /**
-     * Registes the party rules.
+     * Registers the party rules.
      *
      * @param rules the party rules
      */
@@ -498,8 +497,11 @@ public class OrderMapperImpl implements OrderMapper {
         } else {
             customer = location;
         }
-        Contact phoneContact = partyRules.getContact(customer, ContactArchetypes.PHONE, "BILLING");
-        Contact faxContact = partyRules.getContact(customer, ContactArchetypes.FAX, "BILLING");
+        Contact phoneContact = partyRules.getContact(customer, ContactArchetypes.PHONE, false, "FAX", "BILLING");
+        Contact faxContact = partyRules.getContact(customer, ContactArchetypes.PHONE, true, null, "FAX", "BILLING");
+        if (faxContact == null) {
+            faxContact = partyRules.getContact(customer, ContactArchetypes.PHONE, true, null, "FAX");
+        }
         Contact emailContact = partyRules.getContact(customer, ContactArchetypes.EMAIL, "BILLING");
 
         CustomerAssignedAccountIDType customerId
@@ -590,13 +592,13 @@ public class OrderMapperImpl implements OrderMapper {
     }
 
     /**
-     * Returns an <tt>TelefaxType</tt> for a <em>contact.faxNumber</em>.
+     * Returns an <tt>TelefaxType</tt> for a fax contact.
      *
      * @param contact the fax contact. May be <tt>null</tt>
      * @return a new <tt>TelefaxType</tt> or <tt>null</tt> if <tt>contact</tt> is null or unpopulated
      */
     private TelefaxType getFax(Contact contact) {
-        String fax = formatPhone(contact, "areaCode", "faxNumber");
+        String fax = formatPhone(contact, "areaCode", "telephoneNumber");
         return (fax != null) ? UBLHelper.initText(new TelefaxType(), fax) : null;
     }
 

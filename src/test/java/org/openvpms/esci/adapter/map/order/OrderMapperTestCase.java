@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.esci.adapter.map.order;
@@ -29,16 +29,18 @@ import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.esci.adapter.AbstractESCITest;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.esci.ubl.common.AmountType;
@@ -104,6 +106,11 @@ public class OrderMapperTestCase extends AbstractESCITest {
      * Order author.
      */
     private User author;
+
+    /**
+     * Helper functions.
+     */
+    private ArchetypeServiceFunctions functions;
 
     /**
      * Id for the customer, assigned by the supplier.
@@ -284,6 +291,7 @@ public class OrderMapperTestCase extends AbstractESCITest {
     @Before
     public void setUp() {
         super.setUp();
+        functions = new ArchetypeServiceFunctions(getArchetypeService(), getLookupService());
         Party practice = getPractice();
         practice.getContacts().clear();
         practiceContact = TestHelper.createLocationContact("1 Broadwater Avenue", "CAPE_WOOLAMAI", "VIC", "3925");
@@ -291,8 +299,8 @@ public class OrderMapperTestCase extends AbstractESCITest {
 
         phoneContact = createContact(ContactArchetypes.PHONE, "telephoneNumber", "59527054");
         practice.addContact(phoneContact);
-
-        faxContact = createContact(ContactArchetypes.FAX, "faxNumber", "59527053");
+        faxContact = createContact(ContactArchetypes.PHONE, "telephoneNumber", "59527053");
+        faxContact.addClassification(getContactPurpose("FAX"));
         practice.addContact(faxContact);
 
         emailContact = createContact(ContactArchetypes.EMAIL, "emailAddress", "foo@bar.com");
@@ -326,13 +334,15 @@ public class OrderMapperTestCase extends AbstractESCITest {
      */
     private OrderMapper createMapper() {
         OrderMapperImpl mapper = new OrderMapperImpl();
-        mapper.setPracticeRules(new PracticeRules(getArchetypeService()));
-        mapper.setLocationRules(new LocationRules());
-        mapper.setPartyRules(new PartyRules(getArchetypeService()));
-        mapper.setSupplierRules(new SupplierRules(getArchetypeService()));
-        mapper.setLookupService(LookupServiceHelper.getLookupService());
-        mapper.setCurrencies(new Currencies());
-        mapper.setBeanFactory(new IMObjectBeanFactory(getArchetypeService()));
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
+        mapper.setPracticeRules(new PracticeRules(service));
+        mapper.setLocationRules(new LocationRules(service));
+        mapper.setPartyRules(new PartyRules(service, lookups));
+        mapper.setSupplierRules(new SupplierRules(service));
+        mapper.setLookupService(lookups);
+        mapper.setCurrencies(new Currencies(service, lookups));
+        mapper.setBeanFactory(new IMObjectBeanFactory(service));
         return mapper;
     }
 
@@ -379,8 +389,19 @@ public class OrderMapperTestCase extends AbstractESCITest {
                               Contact emailContact) {
         assertEquals(name, contact.getName().getValue());
         assertEquals(phoneContact.getDetails().get("telephoneNumber"), contact.getTelephone().getValue());
-        assertEquals(faxContact.getDetails().get("faxNumber"), contact.getTelefax().getValue());
+        assertEquals(faxContact.getDetails().get("telephoneNumber"), contact.getTelefax().getValue());
         assertEquals(emailContact.getDetails().get("emailAddress"), contact.getElectronicMail().getValue());
+    }
+
+    /**
+     * Gets an <em>lookup.contactPurpose</em> lookup, creating it if it
+     * doesn't exist.
+     *
+     * @param purpose the purpose
+     * @return the lookup
+     */
+    private Lookup getContactPurpose(String purpose) {
+        return TestHelper.getLookup(ContactArchetypes.PURPOSE, purpose);
     }
 
     /**
@@ -467,8 +488,8 @@ public class OrderMapperTestCase extends AbstractESCITest {
 
         IMObjectBean bean = new IMObjectBean(contact);
         String address = bean.getString("address");
-        String cityName = ArchetypeServiceFunctions.lookup(contact, "suburb");
-        String countrySubentity = ArchetypeServiceFunctions.lookup(contact, "state");
+        String cityName = functions.lookup(contact, "suburb");
+        String countrySubentity = functions.lookup(contact, "state");
         String postalZone = bean.getString("postcode");
 
         AddressType postalAddress = party.getPostalAddress();

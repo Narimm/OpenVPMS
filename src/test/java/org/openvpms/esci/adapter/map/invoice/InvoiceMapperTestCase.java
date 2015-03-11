@@ -13,6 +13,7 @@
  *
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.esci.adapter.map.invoice;
 
 import org.junit.Before;
@@ -1315,7 +1316,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     private void addProductSupplierRelationship(Product product, Party supplier, String reorderCode, int packageSize,
                                                 String packageUnits, BigDecimal listPrice) {
-        ProductRules rules = new ProductRules();
+        ProductRules rules = new ProductRules(getArchetypeService());
         ProductSupplier ps = rules.createProductSupplier(product, supplier);
         ps.setReorderCode(reorderCode);
         ps.setPackageSize(packageSize);
