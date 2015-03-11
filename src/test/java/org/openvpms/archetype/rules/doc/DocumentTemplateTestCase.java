@@ -1,40 +1,43 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.archetype.rules.doc;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.OrientationRequested;
 import java.math.BigDecimal;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * Tests the {@link DocumentTemplate} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentTemplateTestCase extends ArchetypeServiceTest {
 
@@ -49,7 +52,7 @@ public class DocumentTemplateTestCase extends ArchetypeServiceTest {
 
         Entity entity = (Entity) create(DocumentArchetypes.DOCUMENT_TEMPLATE);
         DocumentTemplate template = new DocumentTemplate(entity, getArchetypeService());
-        
+
         assertNull(template.getName());
         assertNull(template.getDescription());
         assertTrue(template.isActive());
@@ -65,9 +68,11 @@ public class DocumentTemplateTestCase extends ArchetypeServiceTest {
         assertEquals(DocumentTemplate.MM, template.getPaperUnits());
         assertNull(template.getEmailSubject());
         assertNull(template.getEmailText());
+        assertNull(template.getSMS());
         assertNull(template.getMediaSize());
         assertEquals(OrientationRequested.PORTRAIT, template.getOrientationRequested());
         assertTrue(template.getPrinters().isEmpty());
+        assertNull(template.getFileNameExpression());
     }
 
     /**
@@ -99,6 +104,7 @@ public class DocumentTemplateTestCase extends ArchetypeServiceTest {
         template.setPaperUnits(DocumentTemplate.MM);
         template.setEmailSubject("test subject");
         template.setEmailText("test text");
+        template.setSMS("test SMS");
         template.save();
 
         template = new DocumentTemplate(get(entity), getArchetypeService());
@@ -117,6 +123,7 @@ public class DocumentTemplateTestCase extends ArchetypeServiceTest {
         assertEquals(DocumentTemplate.MM, template.getPaperUnits());
         assertEquals("test subject", template.getEmailSubject());
         assertEquals("test text", template.getEmailText());
+        assertEquals("test SMS", template.getSMS());
         assertEquals(MediaSizeName.ISO_A5, template.getMediaSize());
         assertEquals(OrientationRequested.LANDSCAPE, template.getOrientationRequested());
     }
@@ -141,5 +148,24 @@ public class DocumentTemplateTestCase extends ArchetypeServiceTest {
         assertEquals(2, template.getPrinters().size());
         assertTrue(template.getPrinters().contains(location1Printer));
         assertTrue(template.getPrinters().contains(practicePrinter));
+    }
+
+    /**
+     * Tests the {@link DocumentTemplate#getFileNameExpression()} method.
+     */
+    @Test
+    public void testGetFileNameExpression() {
+        Entity entity = (Entity) create(DocumentArchetypes.DOCUMENT_TEMPLATE);
+        Lookup lookup = (Lookup) create(DocumentArchetypes.FILE_NAME_FORMAT);
+
+        DocumentTemplate template = new DocumentTemplate(entity, getArchetypeService());
+        assertNull(template.getFileNameExpression());
+
+        IMObjectBean bean = new IMObjectBean(lookup);
+        String expression = "concat($file, ' - ', date:format(java.util.Date.new(), 'd MMM yyyy'))";
+        bean.setValue("expression", expression);
+        entity.addClassification(lookup);
+
+        assertEquals(expression, template.getFileNameExpression());
     }
 }

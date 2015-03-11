@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.practice;
@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
@@ -156,6 +157,21 @@ public class PracticeRulesTestCase extends ArchetypeServiceTest {
         bean.setValue("prescriptionExpiryPeriod", 6);
         bean.setValue("prescriptionExpiryUnits", "MONTHS");
         assertEquals(TestHelper.getDate("2014-01-01"), rules.getPrescriptionExpiryDate(startDate, practice));
+    }
+
+    /**
+     * Tests the {@link PracticeRules#getServiceUser(Party)} method.
+     */
+    @Test
+    public void testGetServiceUser() {
+        Party practice = createPractice();
+        assertNull(rules.getServiceUser(practice));
+
+        User user = TestHelper.createUser();
+        EntityBean bean = new EntityBean(practice);
+        bean.addNodeTarget("serviceUser", user);
+
+        assertEquals(user, rules.getServiceUser(practice));
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.discount;
@@ -25,6 +25,7 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -38,6 +39,7 @@ import java.util.Random;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.openvpms.archetype.rules.finance.discount.DiscountTestHelper.createDiscount;
 
 
 /**
@@ -83,6 +85,11 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
     private Party practice;
 
     /**
+     * The practice tax type.
+     */
+    private Lookup taxType;
+
+    /**
      * The rules.
      */
     private DiscountRules rules;
@@ -105,11 +112,12 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         discountGroup = createDiscountGroup(discount10, discount5);
         costDiscountGroup = createDiscountGroup(costDiscount0, costDiscount10);
 
-        rules = new DiscountRules();
+        rules = new DiscountRules(getArchetypeService(), getLookupService());
 
         // set up practice with 10% tax rate
         practice = (Party) TestHelper.create(PracticeArchetypes.PRACTICE);
-        practice.addClassification(TestHelper.createTaxType(BigDecimal.TEN));
+        taxType = TestHelper.createTaxType(BigDecimal.TEN);
+        practice.addClassification(taxType);
     }
 
     /**
@@ -226,8 +234,15 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         checkCalculateDiscountForDummyProduct(ProductArchetypes.TEMPLATE);
     }
 
+    /**
+     * Verifies that when two at-cost discounts are present with the same rate but different discountFixed flags:
+     * <ul>
+     * <li>only one rate is used; and</li>
+     * <li>it is the rate with {@code discountFixed=false}</li>
+     * </ul>
+     */
     @Test
-    public void testMultipleCostDiscountsWithSameRate() {
+    public void testMultipleCostDiscountsWithSameRateSelectsNoDiscountFixed() {
         Entity discount1 = createDiscount(BigDecimal.ZERO, true, DiscountRules.COST_RATE);
         Entity discount2 = createDiscount(BigDecimal.ZERO, false, DiscountRules.COST_RATE);
 
@@ -237,6 +252,43 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
 
         Date now = new Date();
         checkCalculateCostDiscount(now, customer, patient, product, new BigDecimal("1.20"));
+    }
+
+    /**
+     * Verifies that when a customer has a percentage discount, the discount is not affected by any tax exclusions.
+     */
+    @Test
+    public void testCalculatePercentageDiscountForCustomerWithTaxExclusions() {
+        // set up two customers with the same percentage discount, but give the first a tax exclusion.
+        Party customer1 = createCustomerWithDiscount(discount10);
+        Party customer2 = createCustomerWithDiscount(discount10);
+        customer1.addClassification(taxType);
+
+        Product product = createProductWithDiscounts(ProductArchetypes.MEDICATION, discount10);
+        Party patient = createPatient();
+
+        Date now = new Date();
+        checkCalculatePercentageDiscount(now, customer1, patient, product, new BigDecimal("0.10"));
+        checkCalculatePercentageDiscount(now, customer2, patient, product, new BigDecimal("0.10"));
+    }
+
+    /**
+     * Verifies that at-cost discounts are calculated correctly for a customer that has a tax exclusion.
+     */
+    @Test
+    public void testAtCostDiscountForCustomerWithTaxExclusions() {
+        // set up two customers with the same at-cost discount, but give the first a tax exclusion.
+        Party customer1 = createCustomerWithDiscount(costDiscount10);
+        Party customer2 = createCustomerWithDiscount(costDiscount10);
+        customer1.addClassification(taxType);
+
+        Product product = createProductWithDiscounts(ProductArchetypes.MEDICATION, costDiscount10);
+        Party patient = createPatient();
+
+        Date now = new Date();
+        // customer1 should get a bigger discount as they have a tax exclusion
+        checkCalculateCostDiscount(now, customer1, patient, product, new BigDecimal("4.60"));
+        checkCalculateCostDiscount(now, customer2, patient, product, new BigDecimal("3.06"));
     }
 
     /**
@@ -870,25 +922,6 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         bean.save();
     }
 
-    /**
-     * Helper to create and save a new discount type entity.
-     *
-     * @param rate          the discount rate
-     * @param fixedDiscount determines if the discount applies to the fixed price. If {@code false} it only applies to
-     *                      the unit price
-     * @param type          the discount type
-     * @return a new discount
-     */
-    private Entity createDiscount(BigDecimal rate, boolean fixedDiscount, String type) {
-        Entity discount = (Entity) create("entity.discountType");
-        IMObjectBean bean = new IMObjectBean(discount);
-        bean.setValue("name", "XDISCOUNT_RULES_TESTCASE_" + Math.abs(new Random().nextInt()));
-        bean.setValue("rate", rate);
-        bean.setValue("discountFixed", fixedDiscount);
-        bean.setValue("type", type);
-        save(discount);
-        return discount;
-    }
 
     /**
      * Helper to create and save a new discount group type entity.

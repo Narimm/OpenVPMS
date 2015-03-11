@@ -100,7 +100,7 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
     /**
      * Determines if statements that have been printed should be reprinted.
      * A statement is printed if the printed flag of its
-     * <em>act.customerAccountOpeningBalance</em> is <tt>true</tt>.
+     * <em>act.customerClosingOpeningBalance</em> is <tt>true</tt>.
      * Defaults to <tt>false</tt>.
      *
      * @param reprint if <tt>true</tt>, process statements that have been

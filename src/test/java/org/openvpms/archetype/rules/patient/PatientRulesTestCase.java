@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -30,7 +30,6 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
-import org.openvpms.component.business.service.lookup.LookupService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
@@ -40,6 +39,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.test.TestHelper.getDate;
 
 
 /**
@@ -48,12 +48,6 @@ import static org.junit.Assert.assertTrue;
  * @author Tim Anderson
  */
 public class PatientRulesTestCase extends ArchetypeServiceTest {
-
-    /**
-     * The lookup service.
-     */
-    @Autowired
-    private LookupService lookups;
 
     /**
      * The bean factory.
@@ -174,11 +168,11 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         assertNull(rules.getPatientWeight(patient));
 
         Date date1 = getDate("2006-12-22");
-        TestHelper.createWeight(patient, date1, new BigDecimal("5.0"), WeightUnits.KILOGRAMS);
+        PatientTestHelper.createWeight(patient, date1, new BigDecimal("5.0"), WeightUnits.KILOGRAMS);
         assertEquals("5 Kilograms", rules.getPatientWeight(patient));
 
         Date date2 = getDate("2007-02-25");
-        TestHelper.createWeight(patient, date2, new BigDecimal("13"), WeightUnits.POUNDS);
+        PatientTestHelper.createWeight(patient, date2, new BigDecimal("13"), WeightUnits.POUNDS);
         assertEquals("13 Pounds", rules.getPatientWeight(patient));
     }
 
@@ -293,7 +287,8 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         Date birthDate = getDate("2010-01-01");
         bean.setValue("dateOfBirth", birthDate);
         String age = rules.getPatientAge(patient);
-        PatientAgeFormatter formatter = new PatientAgeFormatter(lookups, new PracticeRules(getArchetypeService()),
+        PatientAgeFormatter formatter = new PatientAgeFormatter(getLookupService(),
+                                                                new PracticeRules(getArchetypeService()),
                                                                 factory);
         String expected = formatter.format(birthDate);
         assertEquals(expected, age);
@@ -311,7 +306,8 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         bean.setValue("dateOfBirth", birth);
         bean.setValue("deceasedDate", deceased);
         String age = rules.getPatientAge(patient);
-        PatientAgeFormatter formatter = new PatientAgeFormatter(lookups, new PracticeRules(getArchetypeService()),
+        PatientAgeFormatter formatter = new PatientAgeFormatter(getLookupService(),
+                                                                new PracticeRules(getArchetypeService()),
                                                                 factory);
         String expected = formatter.format(birth, deceased);
         assertEquals(expected, age);
@@ -322,7 +318,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        rules = new PatientRules(getArchetypeService(), lookups);
+        rules = new PatientRules(getArchetypeService(), getLookupService());
     }
 
     /**
@@ -369,17 +365,6 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         IMObjectBean bean = new IMObjectBean(result);
         bean.setValue("microchip", microchip);
         return result;
-    }
-
-
-    /**
-     * Helper to convert a string to a date.
-     *
-     * @param value the date string
-     * @return the date
-     */
-    private Date getDate(String value) {
-        return java.sql.Date.valueOf(value);
     }
 
 }

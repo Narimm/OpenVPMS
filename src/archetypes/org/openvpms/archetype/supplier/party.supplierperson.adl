@@ -11,8 +11,9 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="party.supplierperson.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party" displayName="Supplier(Person)">
@@ -28,7 +29,6 @@
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
                 <property name="source" value="lookup.personTitle"/>
-                <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
         <node name="firstName" path="/details/firstName" type="java.lang.String"
@@ -49,77 +49,28 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="contact.location"/>
+                        <property name="shortName" value="contact.location"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="contact.phoneNumber"/>
+                        <property name="shortName" value="contact.phoneNumber"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="contact.email"/>
-                    </propertyMap>
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="contact.faxNumber"/>
+                        <property name="shortName" value="contact.email"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="organisations" path="/entityRelationships"
               type="java.util.HashSet" baseName="entityRelationship" minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.supplierRepresentatives">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.supplierRepresentatives"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-            <assertion name="uniqueEntityRelationship">
-                <errorMessage>Duplicate active organisations relationship</errorMessage>
-            </assertion>
-        </node>
+              filter="entityRelationship.supplierRepresentatives"/>
         <node name="type" displayName="Account Type" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="1"
-              filter="lookup.supplierAccountType">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="lookup.supplierAccountType"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
+              filter="lookup.supplierAccountType"/>
         <node name="classifications" displayName="Categories" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
-              filter="lookup.supplierType">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="lookup.supplierType"/>
-                    </propertyMap>
-                </propertyList>
-            </assertion>
-        </node>
+              filter="lookup.supplierType"/>
         <node name="products" path="/entityRelationships"
               type="java.util.HashSet" baseName="entityRelationship" minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.productSupplier" hidden="true">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.productSupplier"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
+              filter="entityRelationship.productSupplier" hidden="true"/>
     </archetype>
 </archetypes>

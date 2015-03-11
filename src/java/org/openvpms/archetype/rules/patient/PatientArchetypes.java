@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -77,7 +77,7 @@ public class PatientArchetypes {
     public static final String CLINICAL_NOTE = "act.patientClinicalNote";
 
     /**
-     * Patient clinical note act short name.
+     * Patient clinical problem act short name.
      */
     public static final String CLINICAL_PROBLEM = "act.patientClinicalProblem";
 
@@ -140,4 +140,9 @@ public class PatientArchetypes {
      * Prescription medication relationship short name.
      */
     public static final String PRESCRIPTION_MEDICATION = "actRelationship.patientPrescriptionMedication";
+
+    /**
+     * Customer note act short name.
+     */
+    public static final String CUSTOMER_NOTE = "act.patientCustomerNote";
 }

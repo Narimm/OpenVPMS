@@ -11,19 +11,24 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.archetype.rules.doc;
 
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import javax.print.attribute.Size2DSyntax;
 import javax.print.attribute.standard.MediaSize;
@@ -103,7 +108,7 @@ public class DocumentTemplate {
 
 
     /**
-     * Constructs a <tt>DocumentTemplate</tt>.
+     * Constructs a {@link DocumentTemplate}.
      *
      * @param template the template
      * @param service  the archetype service
@@ -116,7 +121,7 @@ public class DocumentTemplate {
     /**
      * Returns the document template name.
      *
-     * @return the document template name. May be <tt>null</tt>
+     * @return the document template name. May be {@code null}
      */
     public String getName() {
         return bean.getString("name");
@@ -134,7 +139,7 @@ public class DocumentTemplate {
     /**
      * Returns the document template description.
      *
-     * @return the document template description. May be <tt>null</tt>
+     * @return the document template description. May be {@code null}
      */
     public String getDescription() {
         return bean.getString("description");
@@ -152,7 +157,7 @@ public class DocumentTemplate {
     /**
      * Determines if the template is active.
      *
-     * @return <tt>true</tt> if the template is active; otherwise it is inactive
+     * @return {@code true} if the template is active; otherwise it is inactive
      */
     public boolean isActive() {
         return bean.getBoolean("active");
@@ -161,7 +166,7 @@ public class DocumentTemplate {
     /**
      * Determines if the template is active.
      *
-     * @param active if <tt>true<tt> the template is active, otherwise it is inactive
+     * @param active if {@code true{@code  the template is active, otherwise it is inactive
      */
     public void setActive(boolean active) {
         bean.setValue("active", active);
@@ -175,7 +180,7 @@ public class DocumentTemplate {
      * <p/>
      * TODO: this node should be changed to better reflect its usage
      *
-     * @return the archetype. May be <tt>null</tt>
+     * @return the archetype. May be {@code null}
      */
     public String getArchetype() {
         return bean.getString("archetype");
@@ -195,7 +200,7 @@ public class DocumentTemplate {
      * <p/>
      * TODO - need a better facility for user authorisation
      *
-     * @return the user level that the template applies to. May be <tt>null</tt>
+     * @return the user level that the template applies to. May be {@code null}
      */
     public String getUserLevel() {
         return bean.getString("userLevel");
@@ -213,7 +218,7 @@ public class DocumentTemplate {
     /**
      * Returns the report type.
      *
-     * @return the report type. May be <tt>null</tt>
+     * @return the report type. May be {@code null}
      */
     public String getReportType() {
         return bean.getString("reportType");
@@ -231,7 +236,7 @@ public class DocumentTemplate {
     /**
      * Returns the print mode.
      *
-     * @return the print mode. May be <tt>null</tt>
+     * @return the print mode. May be {@code null}
      */
     public PrintMode getPrintMode() {
         String mode = bean.getString("printMode");
@@ -241,7 +246,7 @@ public class DocumentTemplate {
     /**
      * Sets the print mode.
      *
-     * @param mode the print mode. May be <tt>null</tt>
+     * @param mode the print mode. May be {@code null}
      */
     public void setPrintMode(PrintMode mode) {
         bean.setValue("printMode", mode != null ? mode.name() : null);
@@ -258,7 +263,7 @@ public class DocumentTemplate {
      * <li>{@link #CUSTOM}
      * </ul>
      *
-     * @return the paper size. May be <tt>null</tt>
+     * @return the paper size. May be {@code null}
      */
     public String getPaperSize() {
         return bean.getString("paperSize");
@@ -282,7 +287,7 @@ public class DocumentTemplate {
      * <li>{@link #LANDSCAPE}
      * </ul>
      *
-     * @return the print orientation. May be <tt>null</tt>
+     * @return the print orientation. May be {@code null}
      */
     public String getOrientation() {
         return bean.getString("orientation");
@@ -365,7 +370,7 @@ public class DocumentTemplate {
      * <li>{@link #INCH}
      * </ul>
      *
-     * @return the paper units. May be <tt>null</tt>
+     * @return the paper units. May be {@code null}
      */
     public String getPaperUnits() {
         return bean.getString("paperUnits");
@@ -383,7 +388,7 @@ public class DocumentTemplate {
     /**
      * Returns the email subject to use when documents generated from the template are emailed.
      *
-     * @return the email subject. May be <tt>null</tt>
+     * @return the email subject. May be {@code null}
      */
     public String getEmailSubject() {
         return bean.getString("emailSubject");
@@ -401,7 +406,7 @@ public class DocumentTemplate {
     /**
      * Returns the email text to use when documents generated from the template are emailed.
      *
-     * @return the email text. May be <tt>null</tt>
+     * @return the email text. May be {@code null}
      */
     public String getEmailText() {
         return bean.getString("emailText");
@@ -417,9 +422,27 @@ public class DocumentTemplate {
     }
 
     /**
+     * Returns the text to use when the template is sent via SMS.
+     *
+     * @return the SMS text. May be {@code null}
+     */
+    public String getSMS() {
+        return bean.getString("sms");
+    }
+
+    /**
+     * Sets the text to use when the the template is sent via SMS.
+     *
+     * @param text the text. May be {@code null}
+     */
+    public void setSMS(String text) {
+        bean.setValue("sms", text);
+    }
+
+    /**
      * Returns the media size.
      *
-     * @return the media size for the template, or <tt>null</tt> if none is defined
+     * @return the media size for the template, or {@code null} if none is defined
      */
     public MediaSizeName getMediaSize() {
         String size = getPaperSize();
@@ -441,7 +464,7 @@ public class DocumentTemplate {
     /**
      * Returns the print orientation.
      *
-     * @return the print orientation. May be <tt>null</tt>
+     * @return the print orientation. May be {@code null}
      */
     public OrientationRequested getOrientationRequested() {
         return getOrientation() != null ? Orientation.getOrientation(getOrientation()) : null;
@@ -465,7 +488,7 @@ public class DocumentTemplate {
      * Returns the printer for a given practice organisation.
      *
      * @param location an <em>party.organisationPractice</em> or <em>party.organisationLocation</em>
-     * @return the corresponding printer, or <tt>null</tt> if none is defined
+     * @return the corresponding printer, or {@code null} if none is defined
      */
     public DocumentTemplatePrinter getPrinter(Entity location) {
         Predicate predicate = AndPredicate.getInstance(
@@ -488,19 +511,42 @@ public class DocumentTemplate {
     /**
      * Returns the document associated with the template.
      *
-     * @return the corresponding document, or <tt>null</tt> if none is found
-     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
-     *          for any archetype service error
+     * @return the corresponding document, or {@code null} if none is found
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public Document getDocument() {
         return new TemplateHelper(service).getDocumentFromTemplate(bean.getEntity());
     }
 
     /**
+     * Returns the name of the document associated with the template.
+     *
+     * @return the document name, or {@code null} if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getDocumentName() {
+        DocumentAct act = new TemplateHelper(service).getDocumentAct(bean.getEntity());
+        return (act != null) ? act.getName() : null;
+    }
+
+    /**
+     * Returns the file name format expression.
+     *
+     * @return the file name format expression. May be {@code null}
+     */
+    public String getFileNameExpression() {
+        List<IMObject> fileNameFormat = bean.getValues("fileNameFormat");
+        if (!fileNameFormat.isEmpty()) {
+            IMObjectBean format = new IMObjectBean(fileNameFormat.get(0));
+            return format.getString("expression");
+        }
+        return null;
+    }
+
+    /**
      * Saves the template.
      *
-     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
-     *          for any archetype service error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public void save() {
         bean.save();
@@ -520,7 +566,7 @@ public class DocumentTemplate {
      * Indicates whether some other object is "equal to" this one.
      *
      * @param obj the reference object with which to compare.
-     * @return <tt>true</tt> if this object is the same as the obj argument; <tt>false</tt> otherwise.
+     * @return {@code true} if this object is the same as the obj argument; {@code false} otherwise.
      */
     @Override
     public boolean equals(Object obj) {

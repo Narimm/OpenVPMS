@@ -1,24 +1,23 @@
-<!-- 
- *  Version: 1.0
- *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
- *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
- *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $$Id$$
--->
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
 <archetypes>
     <archetype name="entityRelationship.productSupplier.1.0"
                latest="true"
-               type="org.openvpms.component.business.domain.im.common.EntityRelationship" displayName="Product Supplier">
+               type="org.openvpms.component.business.domain.im.common.EntityRelationship"
+               displayName="Product Supplier">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"
@@ -30,11 +29,12 @@
               type="java.util.Date" minCardinality="1"
               defaultValue="java.util.Date.new()"/>
         <node name="activeEndTime" displayname="End Date" path="/activeEndTime"
-              type="java.util.Date" minCardinality="0" />
+              type="java.util.Date" minCardinality="0"/>
         <node name="preferred" path="/details/preferred" type="java.lang.Boolean" defaultValue="false()"/>
         <node name="reorderCode" path="/details/reorderCode" type="java.lang.String" minCardinality="0"/>
         <node name="reorderDescription" path="/details/reorderDescription" type="java.lang.String" minCardinality="0"/>
-        <node name="barCode" displayName="Reorder Bar Code" path="/details/barCode" type="java.lang.String" minCardinality="0"/>
+        <node name="barCode" displayName="Reorder Bar Code" path="/details/barCode" type="java.lang.String"
+              minCardinality="0"/>
         <node name="packageSize" path="/details/packageSize" type="java.lang.Integer" minCardinality="0">
             <assertion name="nonNegative">
                 <errorMessage>Package Size must be >= 0</errorMessage>
@@ -47,10 +47,14 @@
                 <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
-        <node name="minimumQty" displayName="Minimum Order Qty" path="/details/minimumOrderQty" type="java.lang.Integer" minCardinality="0"/>
-        <node name="orderQtyInc" displayName="Order Qty Increments" path="/details/orderQtyInc" type="java.lang.Integer" minCardinality="0"/>
-        <node name="leadTime" displayName="Lead Time" path="/details/leadTime" type="java.lang.Integer" minCardinality="0"/>
-        <node name="leadTimeUnits" path="/details/leadTimeUnits" type="java.lang.String" minCardinality="0" defaultValue="'DAYS'">
+        <node name="minimumQty" displayName="Minimum Order Qty" path="/details/minimumOrderQty" type="java.lang.Integer"
+              minCardinality="0"/>
+        <node name="orderQtyInc" displayName="Order Qty Increments" path="/details/orderQtyInc" type="java.lang.Integer"
+              minCardinality="0"/>
+        <node name="leadTime" displayName="Lead Time" path="/details/leadTime" type="java.lang.Integer"
+              minCardinality="0"/>
+        <node name="leadTimeUnits" path="/details/leadTimeUnits" type="java.lang.String" minCardinality="0"
+              defaultValue="'DAYS'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="hours" value="hours"/>
@@ -61,17 +65,22 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node name="listPrice" path="/details/listPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="0">
+        <node name="listPrice" path="/details/listPrice"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"
+              minCardinality="0">
             <assertion name="nonNegative">
                 <errorMessage>List Price must be >= 0.0</errorMessage>
             </assertion>
         </node>
-        <node name="nettPrice" path="/details/nettPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="0">
+        <node name="nettPrice" path="/details/nettPrice"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"
+              minCardinality="0">
             <assertion name="nonNegative">
                 <errorMessage>Nett Price must be >= 0.0</errorMessage>
             </assertion>
         </node>
-        <node name="autoPriceUpdate" path="/details/autoPriceUpdate" type="java.lang.Boolean" defaultValue="false()" minCardinality="0"/>
+        <node name="autoPriceUpdate" path="/details/autoPriceUpdate" type="java.lang.Boolean" defaultValue="false()"
+              minCardinality="0"/>
         <node name="source" displayName="Product" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
             <assertion name="archetypeRange">

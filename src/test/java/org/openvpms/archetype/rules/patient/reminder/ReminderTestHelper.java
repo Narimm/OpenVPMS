@@ -11,30 +11,40 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
 
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
+import org.openvpms.archetype.rules.doc.DocumentHandler;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+
+import static org.junit.Assert.assertNotNull;
 
 
 /**
@@ -56,6 +66,8 @@ public class ReminderTestHelper extends TestHelper {
 
     /**
      * Creates and saves a new <em>entity.reminderType</em>.
+     * <p/>
+     * The cancelInterval will be set to {@code 2 * defaultInterval}.
      *
      * @param defaultInterval the default reminder interval
      * @param defaultUnits    the default reminder interval units
@@ -63,7 +75,7 @@ public class ReminderTestHelper extends TestHelper {
      * @return a new reminder
      */
     public static Entity createReminderType(int defaultInterval, DateUnits defaultUnits, Lookup... groups) {
-        return createReminderType(defaultInterval, defaultUnits, -1, null, groups);
+        return createReminderType(defaultInterval, defaultUnits, 2 * defaultInterval, defaultUnits, groups);
     }
 
     /**
@@ -119,9 +131,10 @@ public class ReminderTestHelper extends TestHelper {
      * @param reminderCount   the reminder count
      * @param overdueInterval the overdue interval
      * @param overdueUnits    the overdue interval units
+     * @return the template relationship
      */
-    public static void addTemplate(Entity reminderType, Entity template, int reminderCount, int overdueInterval,
-                                   DateUnits overdueUnits) {
+    public static EntityRelationship addTemplate(Entity reminderType, Entity template, int reminderCount,
+                                                 int overdueInterval, DateUnits overdueUnits) {
         EntityBean bean = new EntityBean(reminderType);
         EntityRelationship relationship = bean.addRelationship("entityRelationship.reminderTypeTemplate", template);
         IMObjectBean relBean = new IMObjectBean(relationship);
@@ -129,6 +142,7 @@ public class ReminderTestHelper extends TestHelper {
         relBean.setValue("interval", overdueInterval);
         relBean.setValue("units", overdueUnits.toString());
         save(reminderType, template);
+        return relationship;
     }
 
     /**
@@ -212,5 +226,44 @@ public class ReminderTestHelper extends TestHelper {
             result.add(reminder);
         }
         return result;
+    }
+
+    /**
+     * Creates an <em>entity.documentTemplate</em> with associated document.
+     *
+     * @return the new template
+     */
+    public static Entity createDocumentTemplate() {
+        String file = "/vaccination first reminder.odt";
+        String mimeType = "application/vnd.oasis.opendocument.text";
+        InputStream stream = ReminderTestHelper.class.getResourceAsStream(file);
+        assertNotNull(stream);
+
+        DocumentHandlers handlers = new DocumentHandlers();
+        DocumentHandler handler = handlers.get(file, mimeType);
+        Document document = handler.create(file, stream, mimeType, -1);
+
+        Entity template = (Entity) TestHelper.create(DocumentArchetypes.DOCUMENT_TEMPLATE);
+        EntityBean bean = new EntityBean(template);
+        bean.setValue("name", "XDocumentTemplate");
+        bean.setValue("archetype", PatientArchetypes.DOCUMENT_FORM);
+        bean.save();
+
+        DocumentAct act = (DocumentAct) TestHelper.create(DocumentArchetypes.DOCUMENT_TEMPLATE_ACT);
+        act.setFileName(document.getName());
+        act.setMimeType(document.getMimeType());
+
+        act.setDescription(DescriptorHelper.getDisplayName(document));
+        act.setDocument(document.getObjectReference());
+        ActBean actBean = new ActBean(act);
+        actBean.addNodeParticipation("template", template);
+
+        String name = template.getName();
+        if (name == null) {
+            name = document.getName();
+        }
+        template.setName(name);
+        TestHelper.save(document, template, act);
+        return template;
     }
 }

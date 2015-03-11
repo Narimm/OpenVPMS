@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.math;
@@ -67,7 +65,8 @@ public class CurrencyTestCase extends TestCase {
     /**
      * Tests the {@link Currency#roundCash(BigDecimal)} method.
      */
-    @Test public void testRoundCash() {
+    @Test
+    public void testRoundCash() {
         Currency halfUp = new Currency(java.util.Currency.getInstance("AUD"),
                                        RoundingMode.HALF_UP,
                                        new BigDecimal("0.05"));
@@ -103,11 +102,12 @@ public class CurrencyTestCase extends TestCase {
      * Verifies that the {@link Currency} constructor only supports
      * {@link RoundingMode#HALF_UP}, {@link RoundingMode#HALF_DOWN} and {@link RoundingMode#HALF_EVEN}.
      */
-    @Test public void testValidRoundingModes() {
+    @Test
+    public void testValidRoundingModes() {
         for (RoundingMode mode : RoundingMode.values()) {
             boolean valid = mode == RoundingMode.HALF_UP
-                    || mode == RoundingMode.HALF_DOWN
-                    || mode == RoundingMode.HALF_EVEN;
+                            || mode == RoundingMode.HALF_DOWN
+                            || mode == RoundingMode.HALF_EVEN;
             try {
                 new Currency(java.util.Currency.getInstance("AUD"),
                              mode, new BigDecimal("0.05"));

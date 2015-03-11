@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -40,7 +40,6 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -53,6 +52,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.BALANCE_PARTICIPATION;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 
@@ -218,7 +218,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     public void testGetBalanceForRefundAndPayment() {
         Money amount = new Money(100);
         List<FinancialAct> refund = Arrays.asList(createRefund(amount));
-        List<FinancialAct> payment = Arrays.asList(createCreditAdjust(amount));
+        List<FinancialAct> payment = Arrays.asList(createPayment(amount));
         checkCalculateBalanceForSameAmount(refund, payment);
     }
 
@@ -544,51 +544,51 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         checkReverse(createPaymentCash(new Money(75)),
                      "act.customerAccountRefund",
-                     "act.customerAccountRefundCash");
+                     "act.customerAccountRefundCash", false);
 
         checkReverse(createPaymentCheque(new Money(23)),
                      "act.customerAccountRefund",
-                     "act.customerAccountRefundCheque");
+                     "act.customerAccountRefundCheque", false);
 
         checkReverse(createPaymentCredit(new Money(24)),
                      "act.customerAccountRefund",
-                     "act.customerAccountRefundCredit");
+                     "act.customerAccountRefundCredit", false);
 
         checkReverse(createPaymentDiscount(new Money(25)),
                      "act.customerAccountRefund",
-                     "act.customerAccountRefundDiscount");
+                     "act.customerAccountRefundDiscount", false);
 
         checkReverse(createPaymentEFT(new Money(26)),
                      "act.customerAccountRefund",
-                     "act.customerAccountRefundEFT");
+                     "act.customerAccountRefundEFT", false);
 
         checkReverse(createPaymentOther(new Money(26)),
                      "act.customerAccountRefund",
-                     "act.customerAccountRefundOther");
+                     "act.customerAccountRefundOther", false);
 
         checkReverse(createRefundCash(new Money(10)),
                      "act.customerAccountPayment",
-                     "act.customerAccountPaymentCash");
+                     "act.customerAccountPaymentCash", false);
 
         checkReverse(createRefundCheque(new Money(11)),
                      "act.customerAccountPayment",
-                     "act.customerAccountPaymentCheque");
+                     "act.customerAccountPaymentCheque", false);
 
         checkReverse(createRefundCredit(new Money(12)),
                      "act.customerAccountPayment",
-                     "act.customerAccountPaymentCredit");
+                     "act.customerAccountPaymentCredit", false);
 
         checkReverse(createRefundDiscount(new Money(13)),
                      "act.customerAccountPayment",
-                     "act.customerAccountPaymentDiscount");
+                     "act.customerAccountPaymentDiscount", false);
 
         checkReverse(createRefundEFT(new Money(15)),
                      "act.customerAccountPayment",
-                     "act.customerAccountPaymentEFT");
+                     "act.customerAccountPaymentEFT", false);
 
         checkReverse(createRefundOther(new Money(15)),
                      "act.customerAccountPayment",
-                     "act.customerAccountPaymentOther");
+                     "act.customerAccountPaymentOther", false);
 
         checkReverse(createDebitAdjust(new Money(5)),
                      "act.customerAccountCreditAdjust");
@@ -619,7 +619,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         checkBalance(BigDecimal.ZERO);
 
-        rules.reverse(payment, new Date(), "Test reversal");
+        rules.reverse(payment, new Date(), "Test reversal", null, false);
         checkBalance(amount);
     }
 
@@ -636,7 +636,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         checkBalance(amount);
 
-        rules.reverse(invoice.get(0), new Date(), "Test reversal");
+        rules.reverse(invoice.get(0), new Date(), "Test reversal", null, false);
         checkBalance(BigDecimal.ZERO);
     }
 
@@ -669,7 +669,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         checkBalance(forty);
 
         // reverse the payment.
-        FinancialAct reversal = rules.reverse(payment, new Date(), "Test reversal");
+        FinancialAct reversal = rules.reverse(payment, new Date(), "Test reversal", null, false);
         checkEquals(BigDecimal.ZERO, reversal.getAllocatedAmount());
 
         // invoice and payment retain their allocations
@@ -678,6 +678,146 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         payment = get(payment);
         checkEquals(sixty, payment.getAllocatedAmount());
+
+        checkBalance(amount);
+    }
+
+    /**
+     * Verifies an act can't be reversed twice.
+     */
+    @Test
+    public void testReverseTwice() {
+        CustomerAccountRules rules = getRules();
+
+        Money amount = new Money(100);
+        List<FinancialAct> invoice = createChargesInvoice(amount);
+        save(invoice);
+
+        checkBalance(amount);
+
+        rules.reverse(invoice.get(0), new Date(), "Test reversal", null, false);
+        checkBalance(BigDecimal.ZERO);
+
+        try {
+            rules.reverse(invoice.get(0), new Date(), "Test reversal 2", null, false);
+            fail("Expected IllegalStateException");
+        } catch (IllegalStateException expected) {
+            // do nothing
+        }
+    }
+
+    /**
+     * Checks the behaviour of the {@code hide} parameter, when reversing transactions.
+     */
+    @Test
+    public void testReverseHide() {
+        List<FinancialAct> invoice1 = createChargesInvoice(new Money(100));
+        save(invoice1);
+        checkReverse(invoice1.get(0), "act.customerAccountChargesCredit", "act.customerAccountCreditItem", true);
+
+        List<FinancialAct> invoice2 = createChargesInvoice(new Money(100));
+        save(invoice2);
+
+        checkReverse(invoice2.get(0), "act.customerAccountChargesCredit", "act.customerAccountCreditItem", false);
+    }
+
+    /**
+     * Tests the {@link CustomerAccountRules#isReversed(FinancialAct)} method and
+     * {@link CustomerAccountRules#isReversal(FinancialAct)} methods.
+     */
+    @Test
+    public void testIsReversedIsReversal() {
+        List<FinancialAct> invoice = createChargesInvoice(new Money(100));
+        save(invoice);
+        CustomerAccountRules rules = getRules();
+        FinancialAct act = invoice.get(0);
+        FinancialAct reverse = rules.reverse(act, new Date());
+
+        assertTrue(rules.isReversed(act));
+        assertFalse(rules.isReversed(reverse));
+
+        assertFalse(rules.isReversal(act));
+        assertTrue(rules.isReversal(reverse));
+
+        FinancialAct reverse2 = rules.reverse(reverse, new Date());
+
+        assertTrue(rules.isReversed(reverse));
+        assertTrue(rules.isReversal(reverse));
+
+        assertFalse(rules.isReversed(reverse2));
+        assertTrue(rules.isReversal(reverse2));
+    }
+
+    /**
+     * Tests the {@link CustomerAccountRules#setHidden(FinancialAct, boolean)} method.
+     */
+    @Test
+    public void testSetHidden() {
+        CustomerAccountRules rules = getRules();
+
+        Money amount = new Money(100);
+        List<FinancialAct> invoice = createChargesInvoice(amount);
+        save(invoice);
+
+        checkBalance(amount);
+
+        FinancialAct act = invoice.get(0);
+        assertFalse(rules.isHidden(act));
+
+        FinancialAct reversal = rules.reverse(act, new Date(), "Test reversal", null, false);
+        assertFalse(rules.isHidden(reversal));
+
+        checkBalance(BigDecimal.ZERO);
+
+        rules.setHidden(act, true);
+        checkBalance(BigDecimal.ZERO);
+
+        rules.setHidden(reversal, true);
+        checkBalance(BigDecimal.ZERO);
+
+        assertTrue(rules.isHidden(act));
+        assertTrue(rules.isHidden(reversal));
+
+        rules.setHidden(act, false);
+        assertFalse(rules.isHidden(act));
+        checkBalance(BigDecimal.ZERO);
+
+        rules.setHidden(reversal, false);
+        assertFalse(rules.isHidden(reversal));
+        checkBalance(BigDecimal.ZERO);
+    }
+
+    /**
+     * Verifies that the reversal of a reversal cannot be hidden by
+     * {@link CustomerAccountRules#reverse(FinancialAct, Date, String, String, boolean)}.
+     * <p/>
+     * If allowed by default, the customer statement would not add up.
+     */
+    @Test
+    public void testHideIgnoredForReverseOfReverse() {
+        CustomerAccountRules rules = getRules();
+
+        Money amount = new Money(100);
+        List<FinancialAct> invoice = createChargesInvoice(amount);
+        save(invoice);
+
+        checkBalance(amount);
+
+        FinancialAct act = invoice.get(0);
+        FinancialAct reversal = rules.reverse(act, new Date(), "Test reversal", null, true);
+        checkBalance(BigDecimal.ZERO);
+
+        assertTrue(rules.isHidden(act));
+        assertTrue(rules.isHidden(reversal));
+
+        FinancialAct reversal2 = rules.reverse(reversal, new Date(), "Test reversal 2", null, true);
+
+        act = get(act);
+        reversal = get(reversal);
+
+        assertTrue(rules.isHidden(act));
+        assertTrue(rules.isHidden(reversal));
+        assertFalse(rules.isHidden(reversal2));
 
         checkBalance(amount);
     }
@@ -786,6 +926,32 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     }
 
     /**
+     * Tests the {@link CustomerAccountRules#getCredit(Party)} method.
+     */
+    @Test
+    public void testGetCredit() {
+        CustomerAccountRules rules = getRules();
+
+        Party customer = getCustomer();
+        assertNull(rules.getCredit(customer));
+
+        // verify posted credits not returned
+        createCredit(getDate("2013-05-02"), FinancialActStatus.POSTED);
+        assertNull(rules.getInvoice(customer));
+
+        FinancialAct credit2 = createCredit(getDate("2013-05-02"), FinancialActStatus.COMPLETED);
+        assertEquals(credit2, rules.getCredit(customer));
+
+        // verify back-dated IN_PROGRESS invoice returned in preference to COMPLETED credit
+        FinancialAct credit3 = createCredit(getDate("2013-05-01"), FinancialActStatus.IN_PROGRESS);
+        assertEquals(credit3, rules.getCredit(customer));
+
+        // verify more recent IN_PROGRESS returned
+        FinancialAct credit4 = createCredit(getDate("2013-05-05"), FinancialActStatus.IN_PROGRESS);
+        assertEquals(credit4, rules.getCredit(customer));
+    }
+
+    /**
      * Verifies that when an invoice is reversed, any invoice items and medication acts are unlinked from the patient
      * history.
      * <p/>
@@ -800,7 +966,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     public void testReverseInvoiceRemovesEntriesFromHistory() {
         CustomerAccountRules rules = getRules();
 
-        PatientRules patientRules = new PatientRules(getArchetypeService(), LookupServiceHelper.getLookupService());
+        PatientRules patientRules = new PatientRules(getArchetypeService(), getLookupService());
         Party patient = getPatient();
         User author = TestHelper.createUser();
         Party location = TestHelper.createLocation();
@@ -897,16 +1063,14 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         save(acts);
         Act act = get(acts.get(0));
         bean = new ActBean(act);
-        assertEquals(getCustomer(), bean.getParticipant(
-                "participation.customerAccountBalance"));
+        assertEquals(getCustomer(), bean.getParticipant("participation.customerAccountBalance"));
     }
 
     private void checkAddToBalance(Act act) {
         save(act);
         act = get(act);
         ActBean bean = new ActBean(act);
-        assertEquals(getCustomer(), bean.getParticipant(
-                "participation.customerAccountBalance"));
+        assertEquals(getCustomer(), bean.getParticipant("participation.customerAccountBalance"));
 
     }
 
@@ -916,8 +1080,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * @param debits  the debit acts
      * @param credits the credit act
      */
-    private void checkCalculateBalanceForSameAmount(List<FinancialAct> debits,
-                                                    List<FinancialAct> credits) {
+    private void checkCalculateBalanceForSameAmount(List<FinancialAct> debits, List<FinancialAct> credits) {
         FinancialAct debit = debits.get(0);
         FinancialAct credit = credits.get(0);
 
@@ -972,7 +1135,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     /**
      * Verifies the total amount allocated to an act matches that of the
      * amounts from the associated
-     * <em>actRelationship.customerAccountllocation</em> relationships.
+     * <em>actRelationship.customerAccountAllocation</em> relationships.
      *
      * @param act  the act
      * @param acts the acts contributing to the allocated amount
@@ -1022,7 +1185,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * @param shortName the reversal act short name
      */
     private void checkReverse(FinancialAct act, String shortName) {
-        checkReverse(act, shortName, null);
+        checkReverse(act, shortName, null, false);
     }
 
     /**
@@ -1049,7 +1212,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         }
 
         // reverse the charge
-        checkReverse(acts.get(0), shortName, itemShortName);
+        checkReverse(acts.get(0), shortName, itemShortName, false);
 
         // ensure the stock has gone back to its initial value
         checkStock(relationship, quantity);
@@ -1082,14 +1245,14 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
     /**
      * Verifies that an act can be reversed by {@link CustomerAccountRules#reverse}, and has the correct child act,
-     * if any.
+     * if any, and that the {@code hide} flag of the original and reversed transactions match that expected.
      *
      * @param act           the act to reverse
      * @param shortName     the reversal act short name
      * @param itemShortName the reversal act child short name.
-     *                      May be <tt>null</tt>
+     * @param hide          if {@code true}, set the hide flag on both the original and reversed transactions
      */
-    private void checkReverse(FinancialAct act, String shortName, String itemShortName) {
+    private void checkReverse(FinancialAct act, String shortName, String itemShortName, boolean hide) {
         CustomerAccountRules rules = getRules();
         BigDecimal amount = act.getTotal();
         act.setStatus(ActStatus.POSTED);
@@ -1100,7 +1263,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         checkBalance(balance);
 
         Date now = new Date();
-        FinancialAct reversal = rules.reverse(act, now, "Test reversal");
+        FinancialAct reversal = rules.reverse(act, now, "Test reversal", null, hide);
         assertTrue(TypeHelper.isA(reversal, shortName));
         ActBean bean = new ActBean(reversal);
         if (itemShortName != null) {
@@ -1123,6 +1286,21 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
             }
         }
 
+        assertTrue(rules.isReversed(act));
+        assertFalse(rules.isReversed(reversal));
+
+        // verify the two acts have a relationship
+        ActBean original = new ActBean(act);
+        assertTrue(original.hasNodeTarget("reversal", reversal));
+
+        // check the notes and reference
+        assertEquals("Test reversal", bean.getString("notes"));
+        assertEquals(Long.toString(act.getId()), bean.getString("reference"));
+
+        // check the hide flags
+        assertEquals(hide, original.getBoolean("hide"));
+        assertEquals(hide, bean.getBoolean("hide"));
+
         // check the balance
         checkBalance(BigDecimal.ZERO);
     }
@@ -1140,6 +1318,22 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         invoice.setActivityStartTime(startTime);
         invoice.setStatus(status);
         save(invoices);
+        return invoice;
+    }
+
+    /**
+     * Helper to create an invoice with the specified start time and status.
+     *
+     * @param startTime the start time
+     * @param status    the status
+     * @return the invoice
+     */
+    private FinancialAct createCredit(Date startTime, String status) {
+        List<FinancialAct> acts = createChargesCredit(Money.ZERO);
+        FinancialAct invoice = acts.get(0);
+        invoice.setActivityStartTime(startTime);
+        invoice.setStatus(status);
+        save(acts);
         return invoice;
     }
 

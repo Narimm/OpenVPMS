@@ -1,13 +1,38 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <archetype>
-    <data archetype="lookup.macro" code="@oid" name="Once daily" expression="concat($dispensingVerb, ' ', $number, ' ', $dispensingUnits, '(s) Once Daily')"/>
-    <data archetype="lookup.macro" code="@bid" name="Twice a day" expression="concat($dispensingVerb, ' ', $number, ' ', $dispensingUnits, '(s) Twice a Day')"/>
-    <data archetype="lookup.macro" code="@tid" name="Three times a day" expression="concat($dispensingVerb, ' ', $number, ' ', $dispensingUnits, '(s) Three Times a Day')"/>
-    <data archetype="lookup.macro" code="@qid" name="Four times a day" expression="concat($dispensingVerb, ' ', $number, ' ', $dispensingUnits, '(s) Four Times a Day')"/>
-    <data archetype="lookup.macro" code="@ald" name="Every alternate day" expression="concat($dispensingVerb, ' ', $number, ' ', $dispensingUnits, '(s) Every Alternate Day')"/>
-    <data archetype="lookup.macro" code="@owk" name="Once a week" expression="concat($dispensingVerb, ' ', $number, ' ', $dispensingUnits, '(s) Once a Week')"/>
-    <data archetype="lookup.macro" code="@bwk" name="Twice a week" expression="concat($dispensingVerb, ' ', $number, ' ', $dispensingUnits, '(s) Twice a Week')"/>
-    <data archetype="lookup.macro" code="@alw" name="Every alternate week" expression="concat($dispensingVerb, ' ', $number, ' ', $dispensingUnits, '(s) Every Alternate Week')"/>
-    <data archetype="lookup.macro" code="@mth" name="Monthly" expression="concat($dispensingVerb, ' ', $number, ' ', $dispensingUnits, '(s) Monthly')"/>
+    <data archetype="lookup.macro" code="@oid" name="Once daily"
+          expression="concat($dispensingVerb, ' ', $number, ' ', $dispensingUnits, '(s) Once Daily')"/>
+    <data archetype="lookup.macro" code="@bid" name="Twice a day"
+          expression="concat($dispensingVerb, ' ', $number, ' ', $dispensingUnits, '(s) Twice a Day')"/>
+    <data archetype="lookup.macro" code="@tid" name="Three times a day"
+          expression="concat($dispensingVerb, ' ', $number, ' ', $dispensingUnits, '(s) Three Times a Day')"/>
+    <data archetype="lookup.macro" code="@qid" name="Four times a day"
+          expression="concat($dispensingVerb, ' ', $number, ' ', $dispensingUnits, '(s) Four Times a Day')"/>
+    <data archetype="lookup.macro" code="@ald" name="Every alternate day"
+          expression="concat($dispensingVerb, ' ', $number, ' ', $dispensingUnits, '(s) Every Alternate Day')"/>
+    <data archetype="lookup.macro" code="@owk" name="Once a week"
+          expression="concat($dispensingVerb, ' ', $number, ' ', $dispensingUnits, '(s) Once a Week')"/>
+    <data archetype="lookup.macro" code="@bwk" name="Twice a week"
+          expression="concat($dispensingVerb, ' ', $number, ' ', $dispensingUnits, '(s) Twice a Week')"/>
+    <data archetype="lookup.macro" code="@alw" name="Every alternate week"
+          expression="concat($dispensingVerb, ' ', $number, ' ', $dispensingUnits, '(s) Every Alternate Week')"/>
+    <data archetype="lookup.macro" code="@mth" name="Monthly"
+          expression="concat($dispensingVerb, ' ', $number, ' ', $dispensingUnits, '(s) Monthly')"/>
     <data archetype="lookup.macro" code="@ley" name="To left eye" expression="'To Left Eye'"/>
     <data archetype="lookup.macro" code="@rey" name="To right eye" expression="'To Right Eye'"/>
     <data archetype="lookup.macro" code="@bey" name="To both eyes" expression="'To Both Eyes'"/>
@@ -27,7 +52,10 @@
     <data archetype="lookup.macro" code="@m" name="Months" expression="concat('for ', $number, 'month(s)')"/>
     <data archetype="lookup.macro" code="@hr" name="Hours" expression="concat('every ', $number, ' hour(s)')"/>
     <data archetype="lookup.macro" code="@sh" name="Shake well" expression="'shake well before use'"/>
-    <data archetype="lookup.macro" code="sellingUnits" name="Selling units" expression="openvpms:lookup(openvpms:get(.,'product.entity'), 'sellingUnits')"/>
-    <data archetype="lookup.macro" code="dispensingUnits" name="Dispensing units" expression="openvpms:lookup(openvpms:get(.,'product.entity'), 'dispensingUnits')"/>
-    <data archetype="lookup.macro" code="dispensingVerb" name="Dispensing verb" expression="openvpms:lookup(openvpms:get(.,'product.entity'), 'dispensingVerb')"/>
+    <data archetype="lookup.macro" code="sellingUnits" name="Selling units"
+          expression="openvpms:lookup(openvpms:get(.,'product.entity'), 'sellingUnits')"/>
+    <data archetype="lookup.macro" code="dispensingUnits" name="Dispensing units"
+          expression="openvpms:lookup(openvpms:get(.,'product.entity'), 'dispensingUnits')"/>
+    <data archetype="lookup.macro" code="dispensingVerb" name="Dispensing verb"
+          expression="openvpms:lookup(openvpms:get(.,'product.entity'), 'dispensingVerb')"/>
 </archetype>

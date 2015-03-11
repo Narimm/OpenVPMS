@@ -11,30 +11,42 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.party;
 
 import org.apache.commons.jxpath.ExpressionContext;
+import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.JXPathContext;
 import org.junit.Test;
+import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
+import org.openvpms.component.system.common.jxpath.ObjectFunctions;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
@@ -59,7 +71,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         Party party = TestHelper.createCustomer(false);
         party.getContacts().clear(); // remove all contacts
 
-        JXPathContext ctx = JXPathHelper.newContext(party);
+        JXPathContext ctx = createContext(party);
         assertEquals("", ctx.getValue("party:getTelephone(.)"));
 
         party.addContact(createPhone("12345", false, "HOME"));
@@ -77,7 +89,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         party.getContacts().clear(); // remove all contacts
         save(party);
 
-        JXPathContext ctx = JXPathHelper.newContext(act);
+        JXPathContext ctx = createContext(act);
         assertEquals("", ctx.getValue("party:getTelephone(.)"));
 
         party.addContact(createPhone("12345", false, "HOME"));
@@ -97,7 +109,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     public void testGetHomeTelephone() {
         Party party = TestHelper.createCustomer(false);
 
-        JXPathContext ctx = JXPathHelper.newContext(party);
+        JXPathContext ctx = createContext(party);
         assertEquals("", ctx.getValue("party:getHomeTelephone(.)"));
 
         party.addContact(createPhone("12345", true, "HOME"));
@@ -112,7 +124,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         Act act = (Act) create("act.customerEstimation");
         Party party = TestHelper.createCustomer();
 
-        JXPathContext ctx = JXPathHelper.newContext(act);
+        JXPathContext ctx = createContext(act);
         assertEquals("", ctx.getValue("party:getHomeTelephone(.)"));
 
         party.addContact(createPhone("12345", true, "HOME"));
@@ -133,7 +145,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         Party party = TestHelper.createCustomer();
         party.getContacts().clear();
 
-        JXPathContext ctx = JXPathHelper.newContext(party);
+        JXPathContext ctx = createContext(party);
         assertEquals("", ctx.getValue("party:getWorkTelephone(.)"));
 
         party.addContact(createPhone("56789", true, "WORK"));
@@ -150,7 +162,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         Party party = TestHelper.createCustomer();
         party.getContacts().clear();
 
-        JXPathContext ctx = JXPathHelper.newContext(act);
+        JXPathContext ctx = createContext(act);
         assertEquals("", ctx.getValue("party:getWorkTelephone(.)"));
 
         party.addContact(createPhone("56789", true, "WORK"));
@@ -169,7 +181,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     public void testIdentities() {
         Party party = TestHelper.createPatient(false);
 
-        JXPathContext ctx = JXPathHelper.newContext(party);
+        JXPathContext ctx = createContext(party);
         assertEquals("", ctx.getValue("party:identities()"));
 
         String tag = "1234567";
@@ -185,7 +197,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         Act act = (Act) create("act.customerEstimationItem");
         Party party = TestHelper.createPatient();
 
-        JXPathContext ctx = JXPathHelper.newContext(act);
+        JXPathContext ctx = createContext(act);
 
         assertEquals("", ctx.getValue("party:identities(openvpms:get(., 'patient.entity'))"));
         String tag = "1234567";
@@ -205,7 +217,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     @Test
     public void testGetPatientMicrochip() {
         Party patient = TestHelper.createPatient(false);
-        JXPathContext ctx = JXPathHelper.newContext(patient);
+        JXPathContext ctx = createContext(patient);
 
         assertEquals("", ctx.getValue("party:getPatientMicrochip(.)"));
 
@@ -224,7 +236,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     @Test
     public void testGetPatientMicrochips() {
         Party patient = TestHelper.createPatient(false);
-        JXPathContext ctx = JXPathHelper.newContext(patient);
+        JXPathContext ctx = createContext(patient);
 
         assertEquals("", ctx.getValue("party:getPatientMicrochips(.)"));
 
@@ -251,17 +263,17 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     @Test
     public void testGetWeight() {
         Party patient = TestHelper.createPatient();
-        JXPathContext ctx = JXPathHelper.newContext(patient);
+        JXPathContext ctx = createContext(patient);
         assertEquals(ZERO, ctx.getValue("party:getWeight(.)"));
 
-        Act weight1 = TestHelper.createWeight(patient, ONE, WeightUnits.KILOGRAMS);
+        Act weight1 = PatientTestHelper.createWeight(patient, ONE, WeightUnits.KILOGRAMS);
         checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(.)"));
         checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(., 'KILOGRAMS')"));
         checkEquals(ONE_THOUSAND, (BigDecimal) ctx.getValue("party:getWeight(., 'GRAMS')"));
         assertEquals(new BigDecimal("2.20462262"), ctx.getValue("party:getWeight(., 'POUNDS')"));
 
         remove(weight1);
-        Act weight2 = TestHelper.createWeight(patient, ONE_THOUSAND, WeightUnits.GRAMS);
+        Act weight2 = PatientTestHelper.createWeight(patient, ONE_THOUSAND, WeightUnits.GRAMS);
         checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(.)"));
         checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(., 'KILOGRAMS')"));
         checkEquals(ONE_THOUSAND, (BigDecimal) ctx.getValue("party:getWeight(., 'GRAMS')"));
@@ -269,7 +281,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
 
         remove(weight2);
 
-        TestHelper.createWeight(patient, ONE, WeightUnits.POUNDS);
+        PatientTestHelper.createWeight(patient, ONE, WeightUnits.POUNDS);
         checkEquals(ONE_POUND_IN_KILOS, (BigDecimal) ctx.getValue("party:getWeight(.)"));
         checkEquals(ONE_POUND_IN_KILOS, (BigDecimal) ctx.getValue("party:getWeight(., 'KILOGRAMS')"));
         checkEquals(ONE_POUND_IN_GRAMS, (BigDecimal) ctx.getValue("party:getWeight(., 'GRAMS')"));
@@ -286,17 +298,17 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         ActBean bean = new ActBean(visit);
         bean.addNodeParticipation("patient", patient);
 
-        JXPathContext ctx = JXPathHelper.newContext(visit);
+        JXPathContext ctx = createContext(visit);
         assertEquals(ZERO, ctx.getValue("party:getWeight(.)"));
 
-        Act weight1 = TestHelper.createWeight(patient, ONE, WeightUnits.KILOGRAMS);
+        Act weight1 = PatientTestHelper.createWeight(patient, ONE, WeightUnits.KILOGRAMS);
         checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(.)"));
         checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(., 'KILOGRAMS')"));
         checkEquals(ONE_THOUSAND, (BigDecimal) ctx.getValue("party:getWeight(., 'GRAMS')"));
         assertEquals(new BigDecimal("2.20462262"), ctx.getValue("party:getWeight(., 'POUNDS')"));
 
         remove(weight1);
-        Act weight2 = TestHelper.createWeight(patient, ONE_THOUSAND, WeightUnits.GRAMS);
+        Act weight2 = PatientTestHelper.createWeight(patient, ONE_THOUSAND, WeightUnits.GRAMS);
         checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(.)"));
         checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(., 'KILOGRAMS')"));
         checkEquals(ONE_THOUSAND, (BigDecimal) ctx.getValue("party:getWeight(., 'GRAMS')"));
@@ -304,7 +316,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
 
         remove(weight2);
 
-        TestHelper.createWeight(patient, ONE, WeightUnits.POUNDS);
+        PatientTestHelper.createWeight(patient, ONE, WeightUnits.POUNDS);
         checkEquals(ONE_POUND_IN_KILOS, (BigDecimal) ctx.getValue("party:getWeight(.)"));
         checkEquals(ONE_POUND_IN_KILOS, (BigDecimal) ctx.getValue("party:getWeight(., 'KILOGRAMS')"));
         checkEquals(ONE_POUND_IN_GRAMS, (BigDecimal) ctx.getValue("party:getWeight(., 'GRAMS')"));
@@ -319,7 +331,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         Act act = (Act) create("act.customerEstimation");
         Party patient = TestHelper.createPatient(false);
 
-        JXPathContext ctx = JXPathHelper.newContext(act);
+        JXPathContext ctx = createContext(act);
         assertEquals("", ctx.getValue("party:getPatientMicrochip(.)"));
 
         EntityIdentity microchip = (EntityIdentity) create("entityIdentity.microchip");
@@ -340,14 +352,14 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testActGetPatientReferralVet() {
-        Act act = (Act) create("act.customerEstimationItem");
         Party patient = TestHelper.createPatient();
         Party vet = TestHelper.createSupplierVet();
         EntityBean bean = new EntityBean(patient);
         bean.addRelationship(PatientArchetypes.REFERRED_FROM, vet);
         save(patient, vet);
+        Act act = (Act) create("act.customerEstimationItem");
 
-        JXPathContext ctx = JXPathHelper.newContext(act);
+        JXPathContext ctx = createContext(act);
         assertNull(ctx.getValue("party:getPatientReferralVet()"));  // invokes getPatientReferralVet(ExpressionContext)
         assertNull(ctx.getValue("party:getPatientReferralVet(.)")); // invokes getPatientReferralVet(Act)
 
@@ -367,7 +379,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         Party patient = TestHelper.createPatient();
         Party vet = TestHelper.createSupplierVet();
 
-        JXPathContext ctx = JXPathHelper.newContext(patient);
+        JXPathContext ctx = createContext(patient);
 
         // verify that if the patient can't be resolved, null is returned
         assertNull(ctx.getValue("party:getPatientReferralVet()"));  // invokes getPatientReferralVet(ExpressionContext)
@@ -397,7 +409,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         save(patient, vet, practice);
 
         Act act = (Act) create("act.customerEstimationItem");
-        JXPathContext ctx = JXPathHelper.newContext(act);
+        JXPathContext ctx = createContext(act);
 
         // verify that if the patient can't be resolved, null is returned
         assertNull(ctx.getValue("party:getPatientReferralVetPractice()"));
@@ -424,7 +436,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         Party vet = TestHelper.createSupplierVet();
         Party practice = TestHelper.createSupplierVetPractice();
 
-        JXPathContext ctx = JXPathHelper.newContext(patient);
+        JXPathContext ctx = createContext(patient);
 
         // verify that if the vet can't be resolved, null is returned
         assertNull(ctx.getValue("party:getPatientReferralVetPractice()"));
@@ -446,6 +458,28 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link PartyFunctions#getAccountBalance} methods.
+     */
+    @Test
+    public void testGetAccountBalance() {
+        Party customer = TestHelper.createCustomer();
+        Party patient = TestHelper.createPatient(customer);
+        BigDecimal total = BigDecimal.valueOf(100);
+
+        JXPathContext ctx1 = createContext(customer);
+        checkEquals(BigDecimal.ZERO, (BigDecimal) ctx1.getValue("party:getAccountBalance(.)"));
+
+        List<FinancialAct> invoice = FinancialTestHelper.createChargesInvoice(
+                total, customer, patient, TestHelper.createProduct(), ActStatus.POSTED);
+        save(invoice);
+
+        checkEquals(total, (BigDecimal) ctx1.getValue("party:getAccountBalance(.)"));
+
+        JXPathContext ctx2 = createContext(invoice.get(1));
+        checkEquals(total, (BigDecimal) ctx2.getValue("party:getAccountBalance(.)"));
+    }
+
+    /**
      * Creates a new <em>contact.phoneNumber</em>.
      *
      * @param number    the phone number
@@ -460,7 +494,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         bean.setValue("telephoneNumber", number);
         bean.setValue("preferred", preferred);
         if (purpose != null) {
-            Lookup lookup = TestHelper.getLookup("lookup.contactPurpose", purpose);
+            Lookup lookup = TestHelper.getLookup(ContactArchetypes.PURPOSE, purpose);
             contact.addClassification(lookup);
         }
         return contact;
@@ -479,4 +513,22 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         tagBean.setValue("petTag", tag);
         return result;
     }
+
+    /**
+     * Creates a new JXPathContext, with the party functions registered.
+     *
+     * @param object the context object
+     * @return a new JXPathContext
+     */
+    private JXPathContext createContext(IMObject object) {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
+        ArchetypeServiceFunctions functions = new ArchetypeServiceFunctions(service, lookups);
+        PartyFunctions partyFunctions = new PartyFunctions(service, lookups, new PatientRules(service, lookups));
+        FunctionLibrary library = new FunctionLibrary();
+        library.addFunctions(new ObjectFunctions(functions, "openvpms"));
+        library.addFunctions(new ObjectFunctions(partyFunctions, "party"));
+        return JXPathHelper.newContext(object, library);
+    }
+
 }

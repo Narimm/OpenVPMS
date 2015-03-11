@@ -81,5 +81,7 @@
                 </propertyList>
             </assertion>
         </node>
+        <node name="problem" path="/targetActRelationships" type="java.util.HashSet" baseName="TargetActRelationship"
+              minCardinality="0" maxCardinality="1" hidden="true" filter="actRelationship.patientClinicalProblemItem"/>
     </archetype>
 </archetypes>

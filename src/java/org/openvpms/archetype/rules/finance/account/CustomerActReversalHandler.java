@@ -1,25 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
 
 import org.openvpms.archetype.rules.act.ActCopyHandler;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.*;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -31,12 +28,41 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHandler;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.BAD_DEBT;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.COUNTER;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.COUNTER_ITEM;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.COUNTER_ITEM_RELATIONSHIP;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.CREDIT;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.CREDIT_ADJUST;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.CREDIT_ITEM;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.CREDIT_ITEM_RELATIONSHIP;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.DEBIT_ADJUST;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INITIAL_BALANCE;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE_ITEM;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE_ITEM_RELATIONSHIP;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.PAYMENT;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.PAYMENT_CASH;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.PAYMENT_CHEQUE;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.PAYMENT_CREDIT;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.PAYMENT_DISCOUNT;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.PAYMENT_EFT;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.PAYMENT_ITEM_RELATIONSHIP;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.PAYMENT_OTHER;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.REFUND;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.REFUND_CASH;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.REFUND_CHEQUE;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.REFUND_CREDIT;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.REFUND_DISCOUNT;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.REFUND_EFT;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.REFUND_ITEM_RELATIONSHIP;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.REFUND_OTHER;
+
 
 /**
  * {@link IMObjectCopyHandler} that creates reversals for customer acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-12-12 04:10:40Z $
+ * @author Tim Anderson
  */
 class CustomerActReversalHandler extends ActCopyHandler {
 
@@ -65,14 +91,13 @@ class CustomerActReversalHandler extends ActCopyHandler {
 
 
     /**
-     * Constructs a new <tt>CustomerActReversalHandler</tt>.
+     * Constructs a {@link CustomerActReversalHandler}.
      *
      * @param act the act to reverse
      */
     public CustomerActReversalHandler(Act act) {
         super(TYPE_MAP);
-        setReverse(TypeHelper.isA(act, CREDIT, REFUND, CREDIT_ADJUST,
-                                  BAD_DEBT));
+        setReverse(TypeHelper.isA(act, CREDIT, REFUND, CREDIT_ADJUST, BAD_DEBT));
     }
 
     /**
@@ -80,16 +105,14 @@ class CustomerActReversalHandler extends ActCopyHandler {
      *
      * @param object  the source object
      * @param service the archetype service
-     * @return <tt>object</tt> if the object shouldn't be copied,
-     *         <tt>null</tt> if it should be replaced with
-     *         <tt>null</tt>, or a new instance if the object should be
-     *         copied
+     * @return {@code object} if the object shouldn't be copied, {@code null} if it should be replaced with
+     *         {@code null}, or a new instance if the object should be copied
      */
     @Override
     public IMObject getObject(IMObject object, IArchetypeService service) {
         IMObject result = super.getObject(object, service);
         if (TypeHelper.isA(object, REFUND_CASH)
-                && TypeHelper.isA(result, PAYMENT_CASH)) {
+            && TypeHelper.isA(result, PAYMENT_CASH)) {
             FinancialAct refund = (FinancialAct) object;
             ActBean payment = new ActBean((Act) result, service);
             payment.setValue("tendered", refund.getTotal());
@@ -102,16 +125,15 @@ class CustomerActReversalHandler extends ActCopyHandler {
      *
      * @param archetype the archetype descriptor
      * @param node      the node descriptor
-     * @param source    if <tt>true</tt> the node is the source; otherwise its
-     *                  the target
-     * @return <tt>true</tt> if the node is copyable; otherwise <tt>false</tt>
+     * @param source    if {@code true} the node is the source; otherwise its the target
+     * @return {@code true} if the node is copyable; otherwise {@code false}
      */
     @Override
-    protected boolean isCopyable(ArchetypeDescriptor archetype,
-                                 NodeDescriptor node, boolean source) {
+    protected boolean isCopyable(ArchetypeDescriptor archetype, NodeDescriptor node, boolean source) {
         String name = node.getName();
         if ("credit".equals(name) || "allocatedAmount".equals(name)
-                || "accountBalance".equals(name) || "allocation".equals(name)) {
+            || "accountBalance".equals(name) || "allocation".equals(name) || "reversals".equals(name)
+            || "reverses".equals(name) || "hide".equals(name)) {
             return false;
         } else {
             return super.isCopyable(archetype, node, source);

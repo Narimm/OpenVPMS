@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.expression;
@@ -19,6 +19,7 @@ package org.openvpms.archetype.function.expression;
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Function;
 import org.apache.commons.jxpath.Variables;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.system.common.jxpath.AbstractObjectFunctions;
 import org.openvpms.component.system.common.jxpath.ObjectFunctions;
 
@@ -106,4 +107,57 @@ public class ExpressionFunctions extends AbstractObjectFunctions {
         }
         return elseValue;
     }
+
+    /**
+     * Concatenates a list of values if all of them are non-null/empty.
+     *
+     * @param value1 the first value
+     * @param value2 the second value
+     * @return the concatenated values, or an empty string if a value is null or empty
+     */
+    public String concatIf(String value1, String value2) {
+        return concatIf(new String[]{value1, value2});
+    }
+
+    /**
+     * Concatenates a list of values if all of them are non-null/empty.
+     *
+     * @param value1 the first value
+     * @param value2 the second value
+     * @param value3 the third value
+     * @return the concatenated values, or an empty string if a value is null or empty
+     */
+    public String concatIf(String value1, String value2, String value3) {
+        return concatIf(new String[]{value1, value2, value3});
+    }
+
+    /**
+     * Truncates a string if it exceeds a maximum length.
+     *
+     * @param value     the string
+     * @param maxLength the maximum length
+     * @return the string, truncated to maxLength characters if it exceeds maxLength, otherwise the string unchanged
+     */
+    public String trim(String value, int maxLength) {
+        return value != null && value.length() > maxLength ? value.substring(0, maxLength) : value;
+    }
+
+    /**
+     * Concatenates a list of values if all of them are non-null/empty.
+     *
+     * @param values the values to concatenate
+     * @return the concatenated values, or an empty string if a value is null or empty
+     */
+    private String concatIf(String[] values) {
+        StringBuilder result = new StringBuilder();
+
+        for (String value : values) {
+            if (StringUtils.isEmpty(value)) {
+                return "";
+            }
+            result.append(value);
+        }
+        return result.toString();
+    }
+
 }

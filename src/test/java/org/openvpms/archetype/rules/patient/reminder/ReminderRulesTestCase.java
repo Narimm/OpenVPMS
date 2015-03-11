@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -39,13 +39,12 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.lookup.ILookupService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -72,17 +71,10 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      */
     private ReminderRules rules;
 
-    /**
-     * The lookup service.
-     */
-    @Autowired
-    private ILookupService lookups;
-
 
     /**
      * Tests the {@link ReminderRules#markMatchingRemindersCompleted(Act)}
-     * method, when invoked via the
-     * <em>archetypeService.save.act.patientReminder.before</em> rule.
+     * method, when invoked via the <em>archetypeService.save.act.patientReminder.before</em> rule.
      */
     @Test
     public void testMarkMatchingRemindersCompleted() {
@@ -219,14 +211,10 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testCalculateReminderDueDate() {
-        checkCalculateReminderDueDate(1, DateUnits.DAYS, "2007-01-01",
-                                      "2007-01-02");
-        checkCalculateReminderDueDate(2, DateUnits.WEEKS, "2007-01-01",
-                                      "2007-01-15");
-        checkCalculateReminderDueDate(2, DateUnits.MONTHS, "2007-01-01",
-                                      "2007-03-01");
-        checkCalculateReminderDueDate(5, DateUnits.YEARS, "2007-01-01",
-                                      "2012-01-01");
+        checkCalculateReminderDueDate(1, DateUnits.DAYS, "2007-01-01", "2007-01-02");
+        checkCalculateReminderDueDate(2, DateUnits.WEEKS, "2007-01-01", "2007-01-15");
+        checkCalculateReminderDueDate(2, DateUnits.MONTHS, "2007-01-01", "2007-03-01");
+        checkCalculateReminderDueDate(5, DateUnits.YEARS, "2007-01-01", "2012-01-01");
     }
 
     /**
@@ -338,7 +326,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Lookup group = ReminderTestHelper.createReminderGroup();
         Party patient = TestHelper.createPatient();
         Entity reminderType = ReminderTestHelper.createReminderType(
-                1, DateUnits.MONTHS, group);
+                1, DateUnits.MONTHS, 0, DateUnits.MONTHS, group);
         Date start = java.sql.Date.valueOf("2007-01-01");
         Act reminder = ReminderTestHelper.createReminder(patient, reminderType);
         reminder.setActivityStartTime(start);
@@ -400,8 +388,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
 
         // add a REMINDER classification to the email contact and verify it is
         // returned instead of the preferred location contact
-        Lookup reminder = TestHelper.getLookup("lookup.contactPurpose",
-                                               "REMINDER");
+        Lookup reminder = TestHelper.getLookup(ContactArchetypes.PURPOSE, "REMINDER");
         email.addClassification(reminder);
         checkContact(owner, email, email);
 
@@ -427,8 +414,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         assertNull(rules.getDocumentFormReminder(form));
 
         // create an invoice item and associate the form with it
-        Act item = FinancialTestHelper.createItem(CustomerAccountArchetypes.INVOICE_ITEM, Money.ONE,
-                                                  patient, TestHelper.createProduct());
+        Act item = FinancialTestHelper.createChargeItem(CustomerAccountArchetypes.INVOICE_ITEM, patient,
+                                                        TestHelper.createProduct(), BigDecimal.ONE);
         ActBean itemBean = new ActBean(item);
         itemBean.addNodeRelationship("documents", form);
         save(item, form);
@@ -529,8 +516,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         checkReminder(reminder1, reminderType1, patient, product, form, dueDate1);
 
         // create an invoice item and associate the form with it
-        Act item = FinancialTestHelper.createItem(CustomerAccountArchetypes.INVOICE_ITEM, Money.ONE,
-                                                  patient, product);
+        Act item = FinancialTestHelper.createChargeItem(CustomerAccountArchetypes.INVOICE_ITEM, patient, product, Money.ONE
+        );
         ActBean itemBean = new ActBean(item);
         itemBean.addNodeRelationship("documents", form);
         save(item, form);
@@ -584,11 +571,32 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies that reminders are marked COMPLETED if they are IN_PROGRESS on save and
+     * {@link ReminderRules#shouldCancel(Act, Date)} is {@code true}.
+     * <p/>
+     * Note that COMPLETED is used an not CANCELLED, which is only used when processing reminders.
+     * This behaviour is to support reminders that complete other reminders, but should also be marked COMPLETED rather
+     * than left IN_PROGRESS.
+     */
+    @Test
+    public void testCompleteOnSave() {
+        Party patient = TestHelper.createPatient();
+        Entity reminderType = ReminderTestHelper.createReminderType(0, DateUnits.MONTHS, 0, DateUnits.MONTHS);
+        Act reminder = ReminderTestHelper.createReminder(patient, reminderType);
+        reminder.setActivityEndTime(new Date());
+        assertEquals(ActStatus.IN_PROGRESS, reminder.getStatus());
+        assertTrue(rules.shouldCancel(reminder, new Date()));
+        save(reminder);
+        assertEquals(ActStatus.COMPLETED, reminder.getStatus());
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
-        rules = new ReminderRules(getArchetypeService(), new PatientRules(getArchetypeService(), lookups, null));
+        rules = new ReminderRules(getArchetypeService(), new PatientRules(getArchetypeService(), getLookupService(),
+                                                                          null));
     }
 
     /**

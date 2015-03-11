@@ -11,16 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.test;
 
 import org.apache.commons.lang.StringUtils;
-import org.junit.Assert;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.till.TillArchetypes;
-import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
@@ -29,7 +27,6 @@ import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
@@ -41,10 +38,10 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -58,13 +55,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import static org.junit.Assert.assertNotNull;
+
 
 /**
  * Unit test helper.
  *
  * @author Tim Anderson
  */
-public class TestHelper extends Assert {
+public class TestHelper {
 
     /**
      * Random no. generator for creating unique names.
@@ -127,7 +126,8 @@ public class TestHelper extends Assert {
      */
     public static Party createCustomer(String firstName, String lastName, boolean save) {
         Party customer = (Party) create(CustomerArchetypes.PERSON);
-        PartyRules rules = new PartyRules(ArchetypeServiceHelper.getArchetypeService());
+        PartyRules rules = new PartyRules(ArchetypeServiceHelper.getArchetypeService(),
+                                          LookupServiceHelper.getLookupService());
         customer.setContacts(rules.getDefaultContacts());
         IMObjectBean bean = new IMObjectBean(customer);
         bean.setValue("firstName", firstName);
@@ -156,6 +156,20 @@ public class TestHelper extends Assert {
     public static Party createCustomer(boolean save) {
 
         return createCustomer("J", "Zoo-" + nextId(), save);
+    }
+
+    /**
+     * Creates a customer linked to a location.
+     *
+     * @param location the location
+     * @return the customer
+     */
+    public static Party createCustomer(Party location) {
+        Party customer = createCustomer();
+        EntityBean bean = new EntityBean(customer);
+        bean.addNodeTarget("practice", location);
+        bean.save();
+        return customer;
     }
 
     /**
@@ -207,10 +221,25 @@ public class TestHelper extends Assert {
      * @return a new email contact
      */
     public static Contact createEmailContact(String address) {
+        return createEmailContact(address, true, null);
+    }
+
+    /**
+     * Creates a new <em>contact.email</em>
+     *
+     * @param address   the phone number
+     * @param preferred if {@code true}, flags the contact as preferred
+     * @param purpose   the contact purpose. May be {@code null}
+     * @return a new email contact
+     */
+    public static Contact createEmailContact(String address, boolean preferred, String purpose) {
         Contact contact = (Contact) create(ContactArchetypes.EMAIL);
         IMObjectBean bean = new IMObjectBean(contact);
         bean.setValue("emailAddress", address);
-        bean.setValue("preferred", true);
+        bean.setValue("preferred", preferred);
+        if (purpose != null) {
+            contact.addClassification(getLookup(ContactArchetypes.PURPOSE, purpose));
+        }
         return contact;
     }
 
@@ -283,37 +312,6 @@ public class TestHelper extends Assert {
         return patient;
     }
 
-    /**
-     * Creates a new <em>act.patientWeight</em> for a patient for the current date, and saves it.
-     *
-     * @param patient the patient
-     * @param weight  the weight
-     * @return the weight act
-     */
-    public static Act createWeight(Party patient, BigDecimal weight, WeightUnits units) {
-        return createWeight(patient, new Date(), weight, units);
-    }
-
-    /**
-     * Creates a new <em>act.patientWeight</em> for a patient and saves it.
-     *
-     * @param patient the patient
-     * @param date    the date
-     * @param weight  the weight
-     * @param units   the weight units
-     * @return the weight act
-     */
-    public static Act createWeight(Party patient, Date date, BigDecimal weight, WeightUnits units) {
-        Act act = (Act) create(PatientArchetypes.PATIENT_WEIGHT);
-        ActBean bean = new ActBean(act);
-        bean.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
-        bean.setValue("startTime", date);
-        bean.setValue("weight", weight);
-        bean.setValue("units", units.toString());
-        save(act);
-        return act;
-    }
-
 
     /**
      * Creates and saves a new user.
@@ -321,8 +319,7 @@ public class TestHelper extends Assert {
      * @return a new user
      */
     public static User createUser() {
-        // use an int to avoid exceeding the length of the db field
-        return createUser("zuser" + Math.abs((int) System.nanoTime()), true);
+        return createUser("zuser" + nextId(), true);
     }
 
     /**
@@ -513,7 +510,8 @@ public class TestHelper extends Assert {
             party.setName("XPractice");
         }
 
-        PartyRules rules = new PartyRules(ArchetypeServiceHelper.getArchetypeService());
+        PartyRules rules = new PartyRules(ArchetypeServiceHelper.getArchetypeService(),
+                                          LookupServiceHelper.getLookupService());
         party.setContacts(rules.getDefaultContacts());
 
         Lookup currency = getCurrency("AUD");
@@ -703,10 +701,8 @@ public class TestHelper extends Assert {
      */
     public static String getLookupName(IMObject object, String node) {
         IMObjectBean bean = new IMObjectBean(object);
-        return LookupHelper.getName(
-                ArchetypeServiceHelper.getArchetypeService(),
-                bean.getDescriptor(node),
-                object);
+        return LookupHelper.getName(ArchetypeServiceHelper.getArchetypeService(),
+                                    LookupServiceHelper.getLookupService(), bean.getDescriptor(node), object);
     }
 
     /**

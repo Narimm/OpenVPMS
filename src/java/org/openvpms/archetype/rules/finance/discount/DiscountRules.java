@@ -16,7 +16,7 @@
 
 package org.openvpms.archetype.rules.finance.discount;
 
-import org.openvpms.archetype.rules.finance.tax.TaxRules;
+import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -24,12 +24,11 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -85,21 +84,21 @@ public class DiscountRules {
      */
     private final IArchetypeService service;
 
-
     /**
-     * Constructs a {@link DiscountRules}.
+     * The lookup service.
      */
-    public DiscountRules() {
-        this(ArchetypeServiceHelper.getArchetypeService());
-    }
+    private final ILookupService lookups;
+
 
     /**
      * Constructs a {@link DiscountRules}.
      *
      * @param service the archetype service
+     * @param lookups the lookup service
      */
-    public DiscountRules(IArchetypeService service) {
+    public DiscountRules(IArchetypeService service, ILookupService lookups) {
         this.service = service;
+        this.lookups = lookups;
     }
 
     /**
@@ -148,9 +147,8 @@ public class DiscountRules {
         BigDecimal discount;
         BigDecimal taxRate = BigDecimal.ZERO;
         if (practice != null) {
-            // TODO - need lookups passed in ctor
-            TaxRules taxRules = new TaxRules(practice, service, LookupServiceHelper.getLookupService());
-            taxRate = taxRules.getTaxRate(product);
+            CustomerTaxRules taxRules = new CustomerTaxRules(practice, service, lookups);
+            taxRate = taxRules.getTaxRate(product, customer);
         }
 
         if (fixedPrice.compareTo(BigDecimal.ZERO) == 0
@@ -222,6 +220,7 @@ public class DiscountRules {
      * @param fixedCost  the fixed cost price
      * @param unitCost   the unit cost price
      * @param quantity   the quantity
+     * @param taxRate    the taxRate expressed as a percentage. Only applicable to COST_RATE discounts
      * @param discounts  a set of <em>entity.discountType</em>s. This list is modified if there are multiple
      *                   COST_RATE discounts
      * @return the discount amount for the act

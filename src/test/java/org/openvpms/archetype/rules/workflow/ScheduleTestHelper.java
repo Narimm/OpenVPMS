@@ -46,6 +46,18 @@ import java.util.Date;
 public class ScheduleTestHelper extends TestHelper {
 
     /**
+     * Helper to a add schedule view to a practice location.
+     *
+     * @param location the practice location
+     * @param view     the schedule view
+     */
+    public static void addScheduleView(Party location, Entity view) {
+        EntityBean bean = new EntityBean(location);
+        bean.addNodeRelationship("scheduleViews", view);
+        save(location, view);
+    }
+
+    /**
      * Helper to create and save an <em>entity.organisationScheduleView</em>,
      * with associated <em>party.organisationSchedule</em>s.
      *
@@ -89,7 +101,7 @@ public class ScheduleTestHelper extends TestHelper {
     }
 
     /**
-     * Helper to create and save a {@code party.organisationSchedule</em>.
+     * Helper to create and save a <em>party.organisationSchedule</em>.
      *
      * @return a new schedule
      */
@@ -98,7 +110,7 @@ public class ScheduleTestHelper extends TestHelper {
     }
 
     /**
-     * Helper to create and save new {@code party.organisationSchedule</em>.
+     * Helper to create and save new <em>party.organisationSchedule</em>.
      *
      * @param slotSize        the schedule slot size
      * @param slotUnits       the schedule slot units
@@ -197,7 +209,7 @@ public class ScheduleTestHelper extends TestHelper {
                                         Party schedule, Entity appointmentType, Party customer,
                                         Party patient, User clinician, User author) {
         Act act = (Act) create(ScheduleArchetypes.APPOINTMENT);
-        Lookup reason = TestHelper.getLookup("lookup.appointmentReason", "XREASON", "Reason X", true);
+        Lookup reason = TestHelper.getLookup(ScheduleArchetypes.VISIT_REASON, "XREASON", "Reason X", true);
 
         ActBean bean = new ActBean(act);
         bean.setValue("startTime", startTime);

@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -56,14 +55,7 @@ public class TemplateHelper {
 
 
     /**
-     * Constructs a new <tt>TemplateHelper</tt>.
-     */
-    public TemplateHelper() {
-        this(ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Constructs a new <tt>TemplateHelper</tt>.
+     * Constructs a {@link TemplateHelper}.
      *
      * @param service the archetype service
      */
@@ -76,7 +68,7 @@ public class TemplateHelper {
      *
      * @param name the document name
      * @return the document associated with an <em>act.documentTemplate</em>
-     *         having the specified name, or <tt>null</tt> if none is found
+     *         having the specified name, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Document getDocument(String name) {
@@ -99,7 +91,7 @@ public class TemplateHelper {
      * short name.
      *
      * @param shortName the archetype short name
-     * @return the template corresponding to <tt>shortName</tt> or <tt>null</tt>
+     * @return the template corresponding to {@code shortName} or {@code null}
      *         if none can be found
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -126,7 +118,7 @@ public class TemplateHelper {
      *
      * @param shortName    the archetype short name
      * @param organisation the <em>party.organisationLocation</em> or <em>party.organisationPractice</em>
-     * @return the template corresponding to <tt>shortName</tt> or <tt>null</tt> if none can be found
+     * @return the template corresponding to {@code shortName} or {@code null} if none can be found
      */
     public Entity getTemplateForArchetype(String shortName, Party organisation) {
         Entity result = null;
@@ -155,7 +147,7 @@ public class TemplateHelper {
      * Returns the document template for the specified archetype.
      *
      * @param shortName the archetype short name
-     * @return the template corresponding to <tt>shortName</tt> or <tt>null</tt> if none can be found
+     * @return the template corresponding to {@code shortName} or {@code null} if none can be found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public DocumentTemplate getDocumentTemplate(String shortName) {
@@ -170,7 +162,7 @@ public class TemplateHelper {
      *
      * @param shortName    the archetype short name
      * @param organisation the <em>party.organisationLocation</em> or <em>party.organisationPractice</em>
-     * @return the template corresponding to <tt>shortName</tt> or <tt>null</tt> if none can be found
+     * @return the template corresponding to {@code shortName} or {@code null} if none can be found
      */
     public DocumentTemplate getDocumentTemplate(String shortName, Party organisation) {
         Entity result = getTemplateForArchetype(shortName, organisation);
@@ -181,7 +173,7 @@ public class TemplateHelper {
      * Retrieves a document template with matching archetype short name.
      *
      * @param shortName the archetype short name
-     * @return the template corresponding to <tt>shortName</tt> or <tt>null</tt>
+     * @return the template corresponding to {@code shortName} or {@code null}
      *         if none can be found
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -201,7 +193,7 @@ public class TemplateHelper {
      * Returns the document associated with an <em>entity.documentTemplate</em>.
      *
      * @param template the template. An <em>entity.documentTemplate</em>
-     * @return the corresponding document, or <tt>null</tt> if none is found
+     * @return the corresponding document, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Document getDocumentFromTemplate(Entity template) {
@@ -253,7 +245,7 @@ public class TemplateHelper {
      *
      * @param template  the template
      * @param shortName the archetype short name
-     * @return <tt>true</tt> if the template has the archetype short name, otherwise <tt>false</tt>
+     * @return {@code true} if the template has the archetype short name, otherwise {@code false}
      */
     private boolean hasArchetype(Entity template, String shortName) {
         EntityBean bean = new EntityBean(template, service);

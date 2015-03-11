@@ -1,51 +1,42 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.i18n.time;
 
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-import static org.openvpms.archetype.i18n.time.DurationFormatterTestHelper.addFormat;
-import static org.openvpms.archetype.i18n.time.DurationFormatterTestHelper.createDurationFormats;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
-import static org.openvpms.archetype.test.TestHelper.getDate;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Date;
+
+import static org.junit.Assert.assertEquals;
+import static org.openvpms.archetype.i18n.time.DurationFormatterTestHelper.addFormat;
+import static org.openvpms.archetype.i18n.time.DurationFormatterTestHelper.createDurationFormats;
+import static org.openvpms.archetype.test.TestHelper.getDate;
 
 
 /**
  * Tests the {@link LookupDateDurationFormatter} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class LookupDateDurationFormatterTestCase extends ArchetypeServiceTest {
-
-    /**
-     * The lookup service.
-     */
-    @Autowired
-    private ILookupService lookupService;
 
     /**
      * The bean factory.
@@ -63,7 +54,7 @@ public class LookupDateDurationFormatterTestCase extends ArchetypeServiceTest {
         addFormat(formats, 90, DateUnits.DAYS, false, false, true, false); // weeks
         addFormat(formats, 1, DateUnits.YEARS, false, true, false, false); // months
         addFormat(formats, 2, DateUnits.YEARS, true, true, false, false);  // years, months
-        LookupDateDurationFormatter formatter = new LookupDateDurationFormatter(formats, lookupService, factory);
+        LookupDateDurationFormatter formatter = new LookupDateDurationFormatter(formats, getLookupService(), factory);
 
         Date from = getDate("2011-01-01");
         Date to1 = getDate("2011-01-07");

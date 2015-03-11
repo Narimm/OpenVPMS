@@ -21,6 +21,20 @@
         'http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd'>
 <hibernate-mapping>
 
+    <sql-query name="getSupplierAccountBalance" cache-mode="ignore">
+        <![CDATA[
+        select sum(if(f.credit,-f.total,f.total))
+        from financial_acts f
+        join acts a on a.act_id = f.financial_act_id and a.status = 'POSTED'
+        join participations p on a.act_id = p.act_id and p.arch_short_name = 'participation.supplier'
+             and p.entity_id = :supplierId
+        where a.arch_short_name in ('act.supplierAccountChargesInvoice',
+                                    'act.supplierAccountChargesCredit',
+                                    'act.supplierAccountPayment',
+                                    'act.supplierAccountRefund')
+               ]]>
+    </sql-query>
+
     <sql-query name="getStockToOrderByStockLocationAndSupplier" cache-mode="ignore">
         <return-scalar column="productId" type="long"/>
         <return-scalar column="productShortName" type="string"/>
@@ -38,7 +52,6 @@
         <return-scalar column="orderedQty" type="big_decimal"/>
         <return-scalar column="receivedQty" type="big_decimal"/>
         <return-scalar column="cancelledQty" type="big_decimal"/>
-        <return-scalar column="orderPackageSize" type="int"/>
         <![CDATA[
         select  product.entity_id as productId,
                 product.arch_short_name as productShortName,
@@ -55,8 +68,7 @@
                 listPrice.value as listPrice,
                 o.orderedQty as orderedQty,
                 o.receivedQty as receivedQty,
-                o.cancelledQty as cancelledQty,
-                o.orderPackageSize as orderPackageSize
+                o.cancelledQty as cancelledQty
         from    entities product
         join    entity_relationships productStock on product.entity_id = productStock.source_id
                     and productStock.arch_short_name = "entityRelationship.productStockLocation"
@@ -122,10 +134,9 @@
         left join (
             select  productParticipation.entity_id as product_id,
                     stockParticipation.entity_id as stock_id,
-                    sum(forderItem.quantity) as orderedQty,
-                    sum(receivedQty.value) as receivedQty,
-                    sum(cancelledQty.value) as cancelledQty,
-                    orderPackageSize.value as orderPackageSize
+		            sum(forderItem.quantity*convert(orderPackageSize.value, decimal)) as orderedQty,
+        		    sum(convert(receivedQty.value,decimal)*convert(orderPackageSize.value, decimal)) as receivedQty,
+            		sum(convert(cancelledQty.value,decimal)*convert(orderPackageSize.value, decimal)) as cancelledQty
             from    participations productParticipation
             join    acts orderItem
                         on orderItem.act_id = productParticipation.act_id

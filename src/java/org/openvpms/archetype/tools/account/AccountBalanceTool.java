@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.tools.account;
@@ -112,7 +110,7 @@ public class AccountBalanceTool {
         if (service instanceof IArchetypeRuleService) {
             throw new IllegalStateException(
                     "Rules must be disabled to run "
-                            + AccountBalanceTool.class.getName());
+                    + AccountBalanceTool.class.getName());
         }
         this.service = service;
     }
@@ -146,15 +144,15 @@ public class AccountBalanceTool {
      */
     public void generate(Party customer) {
         log.info("Generating account balance for " + customer.getName()
-                + ", ID=" + customer.getId());
+                 + ", ID=" + customer.getId());
         BalanceCalculator calc = new BalanceCalculator(service);
         BigDecimal oldBalance = calc.getBalance(customer);
         Generator generator = new Generator(customer);
         BigDecimal balance = generator.generate();
         log.info("\tProcessed " + generator.getModified() + " of "
-                + generator.getProcessed() + " acts");
+                 + generator.getProcessed() + " acts");
         log.info("\tUpdated account balance from " + oldBalance + " to "
-                + balance);
+                 + balance);
     }
 
     /**
@@ -200,7 +198,7 @@ public class AccountBalanceTool {
      */
     public boolean check(Party customer) {
         log.info("Checking account balance for " + customer.getName()
-                + ", ID=" + customer.getId());
+                 + ", ID=" + customer.getId());
         BalanceCalculator calc = new BalanceCalculator(service);
         boolean result = false;
         try {
@@ -209,15 +207,15 @@ public class AccountBalanceTool {
             result = expected.compareTo(actual) == 0;
             if (!result) {
                 log.error("Failed to check account balance for "
-                        + customer.getName() + ", ID=" + customer.getId()
-                        + ": expected balance=" + expected
-                        + ", actual balance=" + actual);
+                          + customer.getName() + ", ID=" + customer.getId()
+                          + ": expected balance=" + expected
+                          + ", actual balance=" + actual);
             }
         } catch (CustomerAccountRuleException exception) {
             // thrown when an opening or closing balance doesn't match
             log.error("Failed to check account balance for "
-                    + customer.getName() + ", ID=" + customer.getId()
-                    + ": " + exception.getMessage());
+                      + customer.getName() + ", ID=" + customer.getId()
+                      + ": " + exception.getMessage());
         }
         return result;
     }
@@ -293,7 +291,7 @@ public class AccountBalanceTool {
                 } else {
                     ++errors;
                     log.error("Failed to generate account balance for "
-                            + customer.getName(), exception);
+                              + customer.getName(), exception);
                 }
             }
         }
@@ -337,7 +335,7 @@ public class AccountBalanceTool {
                 } else {
                     ++errors;
                     log.error("Failed to check account balance for "
-                            + customer.getName(), exception);
+                              + customer.getName(), exception);
                 }
             }
         }
@@ -389,28 +387,28 @@ public class AccountBalanceTool {
     private static JSAP createParser() throws JSAPException {
         JSAP parser = new JSAP();
         parser.registerParameter(new FlaggedOption("name").setShortFlag('n')
-                .setLongFlag("name")
-                .setHelp("Customer name. May contain wildcards"));
+                                         .setLongFlag("name")
+                                         .setHelp("Customer name. May contain wildcards"));
         parser.registerParameter(new FlaggedOption("id").setShortFlag('i')
-                .setLongFlag("id")
-                .setStringParser(JSAP.LONG_PARSER).setDefault("-1")
-                .setHelp("Customer identifier."));
+                                         .setLongFlag("id")
+                                         .setStringParser(JSAP.LONG_PARSER).setDefault("-1")
+                                         .setHelp("Customer identifier."));
         parser.registerParameter(new Switch("check").setShortFlag('c')
-                .setLongFlag("check").setDefault("false")
-                .setHelp("Check account balances."));
+                                         .setLongFlag("check").setDefault("false")
+                                         .setHelp("Check account balances."));
         parser.registerParameter(new Switch("generate").setShortFlag('g')
-                .setLongFlag("generate").setDefault("false")
-                .setHelp("Generate account balances."));
+                                         .setLongFlag("generate").setDefault("false")
+                                         .setHelp("Generate account balances."));
         parser.registerParameter(new FlaggedOption("failOnError")
-                .setShortFlag('e')
-                .setLongFlag("failOnError")
-                .setDefault("false")
-                .setStringParser(BooleanStringParser.getParser())
-                .setHelp("Fail on error"));
+                                         .setShortFlag('e')
+                                         .setLongFlag("failOnError")
+                                         .setDefault("false")
+                                         .setStringParser(BooleanStringParser.getParser())
+                                         .setHelp("Fail on error"));
         parser.registerParameter(new FlaggedOption("context")
-                .setLongFlag("context")
-                .setDefault(APPLICATION_CONTEXT)
-                .setHelp("Application context path"));
+                                         .setLongFlag("context")
+                                         .setDefault(APPLICATION_CONTEXT)
+                                         .setHelp("Application context path"));
         return parser;
     }
 
@@ -422,7 +420,7 @@ public class AccountBalanceTool {
     private static void displayUsage(JSAP parser) {
         System.err.println();
         System.err.println("Usage: java "
-                + AccountBalanceTool.class.getName());
+                           + AccountBalanceTool.class.getName());
         System.err.println("                " + parser.getUsage());
         System.err.println();
         System.err.println(parser.getHelp());
@@ -453,8 +451,8 @@ public class AccountBalanceTool {
                                BigDecimal toTotal) {
             String displayName = DescriptorHelper.getDisplayName(act, service);
             log.warn("Updated " + displayName
-                    + " dated " + act.getActivityStartTime()
-                    + " from " + fromTotal + " to " + toTotal);
+                     + " dated " + act.getActivityStartTime()
+                     + " from " + fromTotal + " to " + toTotal);
         }
     }
 

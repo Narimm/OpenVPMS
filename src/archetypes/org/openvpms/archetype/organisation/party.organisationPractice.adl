@@ -71,10 +71,16 @@
                 </propertyList>
             </assertion>
         </node>
+        <node name="autoLockScreen" path="/details/autoLockScreen" type="java.lang.Integer" minCardinality="0"
+              defaultValue="5"/>
         <node name="autoLogout" path="/details/autoLogout" type="java.lang.Integer" minCardinality="0"
               defaultValue="30"/>
         <node name="showClinicianInHistoryItems" path="/details/showClinicianInHistoryItems" type="java.lang.Boolean"
               defaultValue="false()"/>
+        <node name="showProblemsInVisit" path="/details/showProblemsInVisit" type="java.lang.Boolean"
+              defaultValue="false()"/>
+        <node name="showCustomerAccountSummary" path="/details/showCustomerAccountSummary" type="java.lang.Boolean"
+              defaultValue="true()"/>
         <node name="contacts" path="/contacts"
               type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
             <assertion name="archetypeRange">
@@ -86,15 +92,14 @@
                         <property name="shortName" value="contact.phoneNumber"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName" value="contact.faxNumber"/>
-                    </propertyMap>
-                    <propertyMap name="archetype">
                         <property name="shortName" value="contact.email"/>
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
+        <node name="serviceUser" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink" minCardinality="0"
+              maxCardinality="1" filter="entityLink.practiceServiceUser"/>
         <node name="locations" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.practiceLocation">

@@ -1,25 +1,21 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.test;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -27,6 +23,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
@@ -36,12 +33,15 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
 
 /**
  * Abstract base class for tests using the archetype service.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-24 00:49:15Z $
+ * @author Tim Anderson
  */
 @ContextConfiguration("/applicationContext.xml")
 public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTests {
@@ -53,6 +53,12 @@ public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTe
     @Qualifier("archetypeService")
     private IArchetypeService service;
 
+    /**
+     * The lookup service.
+     */
+    @Autowired
+    private ILookupService lookups;
+
 
     /**
      * Returns the archetype service.
@@ -61,6 +67,15 @@ public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTe
      */
     protected IArchetypeService getArchetypeService() {
         return service;
+    }
+
+    /**
+     * Returns the lookup service.
+     *
+     * @return the lookup service
+     */
+    protected ILookupService getLookupService() {
+        return lookups;
     }
 
     /**
@@ -153,11 +168,13 @@ public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTe
     /**
      * Verifies two <tt>BigDecimals</tt> are equal.
      *
-     * @param expected the expected value
-     * @param actual   the actual value
+     * @param expected the expected value. May be {@code null}
+     * @param actual   the actual value. May be {@code null}
      */
     protected void checkEquals(BigDecimal expected, BigDecimal actual) {
-        if (expected.compareTo(actual) != 0) {
+        if (expected == null) {
+            assertNull(actual);
+        } else if (actual == null || expected.compareTo(actual) != 0) {
             fail("Expected " + expected + ", but got " + actual);
         }
     }

@@ -1,20 +1,18 @@
-<!-- 
- *  Version: 1.0
- *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
- *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
- *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $$Id$$
--->
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
 <archetypes>
     <archetype name="entity.reminderType.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.common.Entity" displayName="Reminder Type">
@@ -26,8 +24,10 @@
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="group" path="/details/group" type="java.lang.Boolean" defaultValue="false()"/>
         <node name="interactive" path="/details/interactive" type="java.lang.Boolean" defaultValue="false()"/>
-        <node name="defaultInterval" displayName="Reminder Interval" path="/details/interval" type="java.lang.Integer" minCardinality="1"/>
-        <node name="defaultUnits" displayName="Interval Units" path="/details/units" type="java.lang.String" minCardinality="1" defaultValue="'YEARS'">
+        <node name="defaultInterval" displayName="Reminder Interval" path="/details/interval" type="java.lang.Integer"
+              minCardinality="1"/>
+        <node name="defaultUnits" displayName="Interval Units" path="/details/units" type="java.lang.String"
+              minCardinality="1" defaultValue="'YEARS'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="DAYS" value="days"/>
@@ -38,8 +38,10 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node name="cancelInterval" displayName="Cancel Interval" path="/details/cancelInterval" type="java.lang.Integer" minCardinality="0"/>
-        <node name="cancelUnits" displayName="Cancel Units" path="/details/cancelUnits" type="java.lang.String" minCardinality="0" defaultValue="'YEARS'">
+        <node name="cancelInterval" displayName="Cancel Interval" path="/details/cancelInterval"
+              type="java.lang.Integer" minCardinality="0"/>
+        <node name="cancelUnits" displayName="Cancel Units" path="/details/cancelUnits" type="java.lang.String"
+              minCardinality="0" defaultValue="'YEARS'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="DAYS" value="days"/>
@@ -50,18 +52,20 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-		<node name="sensitivityInterval" displayName="Sensitivity Interval" path="/details/sensitivityInterval" type="java.lang.Integer" minCardinality="0" />
-		<node name="sensitivityUnits" displayName="Sensitivity Units" path="/details/sensitivityUnits" type="java.lang.String" minCardinality="0" defaultValue="'DAYS'" >
-			<assertion name="lookup.local">
-				<propertyList name="entries">
-					<property name="DAYS" value="days" />
-					<property name="WEEKS" value="weeks" />
-					<property name="MONTHS" value="months" />
-					<property name="YEARS" value="years" />
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
+        <node name="sensitivityInterval" displayName="Sensitivity Interval" path="/details/sensitivityInterval"
+              type="java.lang.Integer" minCardinality="0"/>
+        <node name="sensitivityUnits" displayName="Sensitivity Units" path="/details/sensitivityUnits"
+              type="java.lang.String" minCardinality="0" defaultValue="'DAYS'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="DAYS" value="days"/>
+                    <property name="WEEKS" value="weeks"/>
+                    <property name="MONTHS" value="months"/>
+                    <property name="YEARS" value="years"/>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
         <node name="templates" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.reminderTypeTemplate">

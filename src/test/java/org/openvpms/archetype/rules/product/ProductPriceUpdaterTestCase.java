@@ -18,7 +18,9 @@ package org.openvpms.archetype.rules.product;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -143,6 +145,42 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
     }
 
     /**
+     * Verifies that when a product has multiple active unit prices with different pricing groups,
+     * each is updated when the product-supplier relationship is saved.
+     */
+    @Test
+    public void testPricingGroups() {
+        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION, null);
+
+        // add prices
+        ProductPrice price1 = addUnitPrice(product, "1", "100", "2", "GROUP1");
+        ProductPrice price2 = addUnitPrice(product, "1", "200", "3", "GROUP2");
+        ProductPrice price3 = addUnitPrice(product, "1", "300", "4", null);
+        ProductPrice price4 = addUnitPrice(product, "1", "400", "5", null);
+        price4.setToDate(DateRules.getYesterday()); // now inactive
+
+        Party supplier = TestHelper.createSupplier();
+        int packageSize = 30;
+        ProductSupplier ps = createProductSupplier(product, supplier);
+        ps.setPackageSize(packageSize);
+        ps.setNettPrice(new BigDecimal("10.00"));
+        ps.setListPrice(new BigDecimal("20.00"));
+        ps.setAutoPriceUpdate(true);
+        product.addEntityRelationship(ps.getRelationship());
+        save(product);
+
+        price1 = get(price1);
+        price2 = get(price2);
+        price3 = get(price3);
+        price4 = get(price4);
+
+        checkPrice(price1, new BigDecimal("0.67"), new BigDecimal("1.34"));
+        checkPrice(price2, new BigDecimal("0.67"), new BigDecimal("2.01"));
+        checkPrice(price3, new BigDecimal("0.67"), new BigDecimal("2.68"));
+        checkPrice(price4, new BigDecimal("1"), new BigDecimal("5"));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -160,6 +198,18 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      */
     private Party initPractice() {
         return TestHelper.getPractice();
+    }
+
+    private ProductPrice addUnitPrice(Product product, String cost, String markup, String price, String pricingGroup) {
+        ProductPrice unit = ProductPriceTestHelper.createUnitPrice(new BigDecimal(price), new BigDecimal(cost),
+                                                                   new BigDecimal(markup), BigDecimal.valueOf(100),
+                                                                   (Date) null, null);
+        if (pricingGroup != null) {
+            Lookup lookup = TestHelper.getLookup(ProductArchetypes.PRICING_GROUP, pricingGroup);
+            unit.addClassification(lookup);
+        }
+        product.addProductPrice(unit);
+        return unit;
     }
 
     /**
@@ -192,7 +242,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
 
         // create a product-supplier relationship.
         int packageSize = 30;
-        ProductRules rules = new ProductRules();
+        ProductRules rules = new ProductRules(getArchetypeService());
         ProductSupplier ps = rules.createProductSupplier(product, supplier);
         ps.setPackageUnits(PACKAGE_UNITS);
         ps.setPackageSize(packageSize);
@@ -306,10 +356,10 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      * @param product     the product
      * @param supplier    the supplier
      * @param packageSize the package size
-     * @return the corresponding product supplier, or {@code null} if none is found
+     * @return the corresponding product supplier, or <tt>null</tt> if none is found
      */
     private ProductSupplier getProductSupplier(Product product, Party supplier, int packageSize) {
-        ProductRules rules = new ProductRules();
+        ProductRules rules = new ProductRules(getArchetypeService());
         return rules.getProductSupplier(product, supplier, null, packageSize, PACKAGE_UNITS);
     }
 
@@ -321,7 +371,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      * @return the new relationship
      */
     private ProductSupplier createProductSupplier(Product product, Party supplier) {
-        ProductRules rules = new ProductRules();
+        ProductRules rules = new ProductRules(getArchetypeService());
         supplier = get(supplier);         // make sure using the latest
         product = get(product);           // instance of each
         ProductSupplier ps = rules.createProductSupplier(product, supplier);

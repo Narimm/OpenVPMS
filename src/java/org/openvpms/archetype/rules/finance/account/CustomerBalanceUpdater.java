@@ -1,27 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import static org.openvpms.archetype.rules.customer.CustomerArchetypes.CUSTOMER_PARTICIPATION;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.*;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountRuleException.ErrorCode.MissingCustomer;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -40,6 +35,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+
+import static org.openvpms.archetype.rules.customer.CustomerArchetypes.CUSTOMER_PARTICIPATION;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.ACCOUNT_ALLOCATION_RELATIONSHIP;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.BALANCE_PARTICIPATION;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.DEBITS_CREDITS;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountRuleException.ErrorCode.MissingCustomer;
 
 
 /**
@@ -98,7 +99,7 @@ public class CustomerBalanceUpdater {
      */
     public void updateBalance(FinancialAct act) {
         if (FinancialActStatus.POSTED.equals(act.getStatus())
-                && hasBalanceParticipation(act)) {
+            && hasBalanceParticipation(act)) {
             ActBean bean = new ActBean(act, service);
             Party customer = (Party) bean.getParticipant(
                     CUSTOMER_PARTICIPATION);
@@ -156,7 +157,7 @@ public class CustomerBalanceUpdater {
         List<FinancialAct> modified = new ArrayList<FinancialAct>();
         for (BalanceAct credit : credits) {
             for (ListIterator<BalanceAct> iter = debits.listIterator();
-                 iter.hasNext();) {
+                 iter.hasNext(); ) {
                 BalanceAct debit = iter.next();
                 allocate(credit, debit);
                 if (debit.isAllocated()) {

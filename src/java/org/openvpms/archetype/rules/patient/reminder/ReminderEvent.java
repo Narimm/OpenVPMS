@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -35,6 +35,7 @@ public class ReminderEvent {
         CANCEL,      // indicates reminder should be cancelled
         EMAIL,       // indicates reminder should be emailed
         PHONE,       // indicates reminder should be phoned
+        SMS,         // indicates reminder should be sent via SMS
         PRINT,       // indicates reminder should be printed
         EXPORT,      // indicates reminder should be exported
         LIST         // indicates reminder has no or unrecognised contact

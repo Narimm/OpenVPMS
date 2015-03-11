@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -21,14 +21,15 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.lookup.ILookupService;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -46,12 +47,6 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
 public class ProductUpdaterTestCase extends AbstractProductIOTest {
 
     /**
-     * The lookup service.
-     */
-    @Autowired
-    private ILookupService lookups;
-
-    /**
      * The product updater.
      */
     private ProductUpdater updater;
@@ -67,7 +62,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
      */
     @Before
     public void setUp() {
-        ProductPriceRules rules = new ProductPriceRules(getArchetypeService(), lookups);
+        ProductPriceRules rules = new ProductPriceRules(getArchetypeService(), getLookupService());
         updater = new ProductUpdater(rules, getArchetypeService());
         practice = (Party) create(PracticeArchetypes.PRACTICE);
     }
@@ -384,7 +379,8 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
      */
     private PriceData createPriceData(long id, String shortName, String price, String cost, String maxDiscount,
                                       String from, String to, boolean isDefault) {
+        Set<Lookup> groups = Collections.emptySet();
         return new PriceData(id, shortName, new BigDecimal(price), new BigDecimal(cost), new BigDecimal(maxDiscount),
-                             getDate(from), getDate(to), isDefault, 1);
+                             getDate(from), getDate(to), isDefault, groups, 1);
     }
 }

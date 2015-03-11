@@ -1,31 +1,27 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.practice;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.finance.deposit.DepositTestHelper;
+import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
-import static org.openvpms.archetype.rules.practice.PracticeArchetypes.PRACTICE_LOCATION_RELATIONSHIP;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -33,12 +29,15 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.openvpms.archetype.rules.practice.PracticeArchetypes.PRACTICE_LOCATION_RELATIONSHIP;
+
 
 /**
  * Tests the {@link LocationRules} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class LocationRulesTestCase extends ArchetypeServiceTest {
 
@@ -164,11 +163,28 @@ public class LocationRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link LocationRules#getDefaultStockLocation(Party)}
+     * and {@link LocationRules#getDefaultStockLocationRef(Party)} methods.
+     */
+    @Test
+    public void testGetStockLocation() {
+        Party location = TestHelper.createLocation();
+        assertNull(rules.getDefaultStockLocation(location));
+        assertNull(rules.getDefaultStockLocationRef(location));
+        Party stockLocation = ProductTestHelper.createStockLocation();
+        EntityBean bean = new EntityBean(location);
+        bean.addNodeTarget("stockLocations", stockLocation);
+
+        assertEquals(stockLocation, rules.getDefaultStockLocation(location));
+        assertEquals(stockLocation.getObjectReference(), rules.getDefaultStockLocationRef(location));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
-        rules = new LocationRules();
+        rules = new LocationRules(getArchetypeService());
     }
 
     /**

@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -19,8 +19,7 @@
                type="org.openvpms.component.business.domain.im.product.Product" displayName="Template">
         <node name="id" path="/id"
               type="java.lang.Long" readOnly="true"/>
-        <node name="name" path="/name" type="java.lang.String"
-              minCardinality="1">
+        <node name="name" path="/name" type="java.lang.String" minCardinality="1">
             <assertion name="propercase"/>
         </node>
         <node name="description" type="java.lang.String" path="/description"/>
@@ -28,33 +27,17 @@
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="invoiceNote" path="/details/invoiceNote" type="java.lang.String" maxLength="300"/>
         <node name="visitNote" path="/details/visitNote" type="java.lang.String" maxLength="1000"/>
-        <node name="includes" path="/entityRelationships"
-              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.productIncludes">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.productIncludes"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-            <assertion name="uniqueEntityRelationship">
-                <errorMessage>Duplicate active product includes relationship</errorMessage>
-            </assertion>
-        </node>
+        <node name="includes" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="0" maxCardinality="*" filter="entityLink.productIncludes"/>
         <node name="species" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
               filter="lookup.species">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="lookup.species"/>
+                        <property name="shortName" value="lookup.species"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="classifications" path="/classifications" parentChild="false"
@@ -63,19 +46,15 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="lookup.productType"/>
+                        <property name="shortName" value="lookup.productType"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="lookup.productGroup"/>
+                        <property name="shortName" value="lookup.productGroup"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="lookup.productIncomeType"/>
+                        <property name="shortName" value="lookup.productIncomeType"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="taxes" path="/classifications" parentChild="false"
@@ -84,11 +63,9 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="lookup.taxType"/>
+                        <property name="shortName" value="lookup.taxType"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="type" path="/targetEntityRelationships"
@@ -97,11 +74,9 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.productTypeProduct"/>
+                        <property name="shortName" value="entityRelationship.productTypeProduct"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active product type relationship</errorMessage>
@@ -113,11 +88,9 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityIdentity.code"/>
+                        <property name="shortName" value="entityIdentity.code"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="suppliers" path="/entityRelationships"
@@ -126,11 +99,9 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.productSupplier"/>
+                        <property name="shortName" value="entityRelationship.productSupplier"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="discounts" path="/entityRelationships"
@@ -140,8 +111,7 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.discountProduct"/>
+                        <property name="shortName" value="entityRelationship.discountProduct"/>
                     </propertyMap>
                 </propertyList>
             </assertion>

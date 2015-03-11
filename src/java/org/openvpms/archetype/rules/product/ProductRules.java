@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -19,27 +19,41 @@ package org.openvpms.archetype.rules.product;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.JoinConstraint;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActiveNow;
+import static org.openvpms.component.system.common.query.Constraints.eq;
+import static org.openvpms.component.system.common.query.Constraints.gte;
+import static org.openvpms.component.system.common.query.Constraints.join;
+import static org.openvpms.component.system.common.query.Constraints.lt;
+import static org.openvpms.component.system.common.query.Constraints.sort;
 
 /**
  * Product rules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z` $
+ * @author Tim Anderson
  */
 public class ProductRules {
 
@@ -50,14 +64,7 @@ public class ProductRules {
 
 
     /**
-     * Creates a new <tt>ProductRules</tt>.
-     */
-    public ProductRules() {
-        this(ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Creates a new <tt>ProductRules</tt>.
+     * Constructs a {@link ProductRules}.
      *
      * @param service the archetype service
      */
@@ -69,7 +76,7 @@ public class ProductRules {
      * Copies a product.
      *
      * @param product the product to copy
-     * @return a copy of <tt>product</tt>
+     * @return a copy of {@code product}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Product copy(Product product) {
@@ -81,7 +88,7 @@ public class ProductRules {
      *
      * @param product the product to copy
      * @param name    the new product name
-     * @return a copy of <tt>product</tt>
+     * @return a copy of {@code product}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Product copy(Product product, String name) {
@@ -102,8 +109,7 @@ public class ProductRules {
      * @param supplier the supplier
      * @return the relationships, wrapped in {@link ProductSupplier} instances
      */
-    public List<ProductSupplier> getProductSuppliers(Product product,
-                                                     Party supplier) {
+    public List<ProductSupplier> getProductSuppliers(Product product, Party supplier) {
         List<ProductSupplier> result = new ArrayList<ProductSupplier>();
         EntityBean bean = new EntityBean(product, service);
         Predicate predicate = AndPredicate.getInstance(isActiveNow(), RefEquals.getTargetEquals(supplier));
@@ -121,15 +127,15 @@ public class ProductRules {
      * <p/>
      * If there is a match on reorder code
      * If there is a match on supplier and product, but no match on package
-     * size, but there is a relationship where the size is <tt>0</tt>, then
+     * size, but there is a relationship where the size is {@code 0}, then
      * this will be returned.
      *
      * @param product      the product
      * @param supplier     the supplier
-     * @param reorderCode  the reorder code. May be <tt>null</tt>
+     * @param reorderCode  the reorder code. May be {@code null}
      * @param packageSize  the package size
-     * @param packageUnits the package units. May be <tt>null</tt>
-     * @return the relationship, wrapped in a {@link ProductSupplier}, or <tt>null</tt> if none is found
+     * @param packageUnits the package units. May be {@code null}
+     * @return the relationship, wrapped in a {@link ProductSupplier}, or {@code null} if none is found
      */
     public ProductSupplier getProductSupplier(Product product, Party supplier, String reorderCode,
                                               int packageSize, String packageUnits) {
@@ -202,6 +208,112 @@ public class ProductRules {
         EntityRelationship rel = bean.addRelationship(
                 ProductArchetypes.PRODUCT_SUPPLIER_RELATIONSHIP, supplier);
         return new ProductSupplier(rel, service);
+    }
+
+    /**
+     * Returns all product batches matching the criteria.
+     *
+     * @param product      the product
+     * @param batchNumber  the batch number
+     * @param expiryDate   the expiry date. May be {@code null}
+     * @param manufacturer the manufacturer. May be {@code null}
+     * @return the batches
+     */
+    public List<Entity> getBatches(Product product, String batchNumber, Date expiryDate, Party manufacturer) {
+        return getBatches(product.getObjectReference(), batchNumber, expiryDate,
+                          (manufacturer != null) ? manufacturer.getObjectReference() : null);
+    }
+
+    /**
+     * Returns all product batches matching the criteria, ordered on batch number and entity Id.
+     * <p/>
+     * Note that this should not be used if the expected number of results is large; use a query instead.
+     *
+     * @param product      the product
+     * @param batchNumber  the batch number. May be {@code null}
+     * @param expiryDate   the expiry date. May be {@code null}
+     * @param manufacturer the manufacturer. May be {@code null}
+     * @return the batches
+     */
+    public List<Entity> getBatches(IMObjectReference product, String batchNumber, Date expiryDate,
+                                   IMObjectReference manufacturer) {
+        ArchetypeQuery query = new ArchetypeQuery(ProductArchetypes.PRODUCT_BATCH, false, false);
+        if (!StringUtils.isEmpty(batchNumber)) {
+            query.add(eq("name", batchNumber));
+        }
+        JoinConstraint join = join("product", "product");
+        query.add(join.add(eq("target", product)));
+        if (expiryDate != null) {
+            join.add(gte("activeEndTime", DateRules.getDate(expiryDate)));   // need to ignore any time components
+            join.add(lt("activeEndTime", DateRules.getNextDate(expiryDate)));
+        }
+        if (manufacturer != null) {
+            query.add(join("manufacturer").add(eq("target", manufacturer)));
+        }
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        IPage<IMObject> page = service.get(query);
+        query.add(sort("name"));
+        query.add(sort("id"));
+
+        List<Entity> batches = new ArrayList<Entity>();
+        for (IMObject object : page.getResults()) {
+            batches.add((Entity) object);
+        }
+        return batches;
+    }
+
+
+    /**
+     * Creates a new batch.
+     *
+     * @param product      the product
+     * @param batchNumber  the batch number
+     * @param expiryDate   the expiry date. May be {@code null}
+     * @param manufacturer the manufacturer. May be {@code null}
+     * @return a new batch
+     */
+    public Entity createBatch(Product product, String batchNumber, Date expiryDate, Party manufacturer) {
+        return createBatch(product.getObjectReference(), batchNumber, expiryDate,
+                           (manufacturer != null) ? manufacturer.getObjectReference() : null);
+    }
+
+    /**
+     * Creates a new batch.
+     *
+     * @param product      the product
+     * @param batchNumber  the batch number
+     * @param expiryDate   the expiry date. May be {@code null}
+     * @param manufacturer the manufacturer. May be {@code null}
+     * @return a new batch
+     */
+    public Entity createBatch(IMObjectReference product, String batchNumber, Date expiryDate,
+                              IMObjectReference manufacturer) {
+        Entity result = (Entity) service.create(ProductArchetypes.PRODUCT_BATCH);
+        EntityBean bean = new EntityBean(result, service);
+        bean.setValue("name", batchNumber);
+        IMObjectRelationship relationship = bean.addNodeTarget("product", product);
+        IMObjectBean relBean = new IMObjectBean(relationship, service);
+        relBean.setValue("activeEndTime", expiryDate);
+        if (manufacturer != null) {
+            bean.addNodeTarget("manufacturer", manufacturer);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the expiry date of a batch.
+     *
+     * @param batch the batch
+     * @return the batch expiry date, or {@code null} if none is set
+     */
+    public Date getBatchExpiry(Entity batch) {
+        Date result = null;
+        EntityBean bean = new EntityBean(batch, service);
+        List<EntityLink> product = bean.getValues("product", EntityLink.class);
+        if (!product.isEmpty()) {
+            result = product.get(0).getActiveEndTime();
+        }
+        return result;
     }
 
 }

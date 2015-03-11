@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.estimate;
@@ -27,8 +27,7 @@ import java.math.BigDecimal;
 /**
  * Tests the <em>act.customerEstimationItem</em> archetype.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class EstimationItemTestCase extends ArchetypeServiceTest {
 
@@ -37,7 +36,7 @@ public class EstimationItemTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testCalculateLowTotal() {
-        checkCalculate("lowUnitPrice", "lowQty", "lowTotal");
+        checkCalculate("lowUnitPrice", "lowQty", "lowDiscount", "lowTotal");
     }
 
     /**
@@ -45,7 +44,7 @@ public class EstimationItemTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testCalculateHighTotal() {
-        checkCalculate("highUnitPrice", "highQty", "highTotal");
+        checkCalculate("highUnitPrice", "highQty", "highDiscount", "highTotal");
     }
 
     /**
@@ -53,9 +52,10 @@ public class EstimationItemTestCase extends ArchetypeServiceTest {
      *
      * @param unitPriceNode the unit price node name
      * @param quantityNode  the quantity node name
+     * @param discountNode  the discount node name
      * @param totalNode     the total node name
      */
-    private void checkCalculate(String unitPriceNode, String quantityNode, String totalNode) {
+    private void checkCalculate(String unitPriceNode, String quantityNode, String discountNode, String totalNode) {
         Act item = (Act) create(EstimateArchetypes.ESTIMATE_ITEM);
 
         ActBean bean = new ActBean(item);
@@ -63,9 +63,9 @@ public class EstimationItemTestCase extends ArchetypeServiceTest {
 
         // populate the values
         bean.setValue("fixedPrice", 10);
-        bean.setValue("discount", 5);
         bean.setValue(unitPriceNode, new BigDecimal("0.50"));
         bean.setValue(quantityNode, 2);
+        bean.setValue(discountNode, 5);
 
         BigDecimal expected1 = new BigDecimal(6);
         checkEquals(expected1, bean.getBigDecimal(totalNode));
@@ -77,9 +77,9 @@ public class EstimationItemTestCase extends ArchetypeServiceTest {
 
         // check null handling
         bean.setValue("fixedPrice", null);
-        bean.setValue("discount", null);
         bean.setValue(unitPriceNode, null);
         bean.setValue(quantityNode, null);
+        bean.setValue(discountNode, null);
         checkEquals(BigDecimal.ZERO, bean.getBigDecimal(totalNode));
     }
 

@@ -1,134 +1,23 @@
 <?xml version="1.0"?>
 <!--
-  #  Version: 1.0
-  #
-  #  The contents of this file are subject to the OpenVPMS License Version
-  #  1.0 (the 'License'); you may not use this file except in compliance with
-  #  the License. You may obtain a copy of the License at
-  #  http://www.openvpms.org/license/
-  #
-  #  Software distributed under the License is distributed on an 'AS IS' basis,
-  #  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-  #  for the specific language governing rights and limitations under the
-  #  License.
-  #
-  #  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
-  #
-  #  $Id$
--->
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
 <!DOCTYPE hibernate-mapping PUBLIC
         "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
-
-    <query name="getBalances">
-        <![CDATA[
-select e.name, e.archetypeId, e.id, e.linkId, a.archetypeId, a.id, a.linkId,
-      a.activityStartTime, a.status, a.total, a.allocatedAmount, a.credit, c.code
-from  org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p,
-      org.openvpms.component.business.dao.hibernate.im.act.FinancialActDOImpl as a,
-      org.openvpms.component.business.dao.hibernate.im.party.PartyDOImpl as e
-left outer join e.classifications c with c.archetypeId.shortName='lookup.customerAccountType'
-where a = p.act
-      and p.entity = e
-      and p.archetypeId.shortName='participation.customerAccountBalance'
-      and (a.status = 'POSTED' or a.status='COMPLETED')
-      and p.activityStartTime <= :startTime
-order by e.name, e.id, p.activityStartTime
-      ]]>
-    </query>
-
-    <query name="getBalancesForCustomersFrom">
-        <![CDATA[
-select e.name, e.archetypeId, e.id, e.linkId, a.archetypeId, a.id, a.linkId,
-      a.activityStartTime, a.status, a.total, a.allocatedAmount, a.credit, c.code
-from  org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p,
-      org.openvpms.component.business.dao.hibernate.im.act.FinancialActDOImpl as a,
-      org.openvpms.component.business.dao.hibernate.im.party.PartyDOImpl as e
-left outer join e.classifications c with c.archetypeId.shortName='lookup.customerAccountType'
-where a = p.act
-      and p.entity = e
-      and p.archetypeId.shortName='participation.customerAccountBalance'
-      and (a.status = 'POSTED' or a.status='COMPLETED')
-      and e.name >= :from
-      and p.activityStartTime <= :startTime
-order by e.name, e.id, p.activityStartTime
-      ]]>
-    </query>
-
-    <query name="getBalancesForCustomersBetween">
-        <![CDATA[
-select e.name, e.archetypeId, e.id, e.linkId, a.archetypeId, a.id, a.linkId,
-      a.activityStartTime, a.status, a.total, a.allocatedAmount, a.credit, c.code
-from  org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p,
-      org.openvpms.component.business.dao.hibernate.im.act.FinancialActDOImpl as a,
-      org.openvpms.component.business.dao.hibernate.im.party.PartyDOImpl as e
-left outer join e.classifications c with c.archetypeId.shortName='lookup.customerAccountType'
-where a = p.act
-      and p.entity = e
-      and p.archetypeId.shortName='participation.customerAccountBalance'
-      and (a.status = 'POSTED' or a.status='COMPLETED')
-      and e.name >= :from and e.name <= :to
-      and p.activityStartTime <= :startTime
-order by e.name, e.id, p.activityStartTime
-      ]]>
-    </query>
-
-    <query name="getBalancesForAccountType">
-        <![CDATA[
-select e.name, e.archetypeId, e.id, e.linkId, a.archetypeId, a.id, a.linkId,
-      a.activityStartTime, a.status, a.total, a.allocatedAmount, a.credit, c.code
-from  org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p,
-      org.openvpms.component.business.dao.hibernate.im.act.FinancialActDOImpl as a,
-      org.openvpms.component.business.dao.hibernate.im.party.PartyDOImpl as e
-left outer join e.classifications c with c.archetypeId.shortName='lookup.customerAccountType'
-where a = p.act
-      and p.entity = e
-      and p.archetypeId.shortName='participation.customerAccountBalance'
-      and c.id = :accountType
-      and (a.status = 'POSTED' or a.status='COMPLETED')
-      and p.activityStartTime <= :startTime
-order by e.name, e.id, p.activityStartTime
-      ]]>
-    </query>
-
-    <query name="getBalancesForAccountTypeAndCustomerFrom">
-        <![CDATA[
-select e.name, e.archetypeId, e.id, e.linkId, a.archetypeId, a.id, a.linkId,
-      a.activityStartTime, a.status, a.total, a.allocatedAmount, a.credit, c.code
-from  org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p,
-      org.openvpms.component.business.dao.hibernate.im.act.FinancialActDOImpl as a,
-      org.openvpms.component.business.dao.hibernate.im.party.PartyDOImpl as e
-left outer join e.classifications c with c.archetypeId.shortName='lookup.customerAccountType'
-where a = p.act
-      and p.entity = e
-      and p.archetypeId.shortName='participation.customerAccountBalance'
-      and c.id = :accountType
-      and (a.status = 'POSTED' or a.status='COMPLETED')
-      and e.name >= :from
-      and p.activityStartTime <= :startTime
-order by e.name, e.id, p.activityStartTime
-      ]]>
-    </query>
-
-    <query name="getBalancesForAccountTypeAndCustomerBetween">
-        <![CDATA[
-select e.name, e.archetypeId, e.id, e.linkId, a.archetypeId, a.id, a.linkId,
-      a.activityStartTime, a.status, a.total, a.allocatedAmount, a.credit, c.code
-from  org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl as p,
-      org.openvpms.component.business.dao.hibernate.im.act.FinancialActDOImpl as a,
-      org.openvpms.component.business.dao.hibernate.im.party.PartyDOImpl as e
-left outer join e.classifications c with c.archetypeId.shortName='lookup.customerAccountType'
-where a = p.act
-      and p.entity = e
-      and p.archetypeId.shortName='participation.customerAccountBalance'
-      and c.id = :accountType
-      and (a.status = 'POSTED' or a.status='COMPLETED')
-      and e.name >= :from and e.name <= :to
-      and p.activityStartTime <= :startTime
-order by e.name, e.id, p.activityStartTime
-      ]]>
-    </query>
 
     <!--
       Returns all debits for :customer that were overdue as of :overdueDate
@@ -142,11 +31,11 @@ order by e.name, e.id, p.activityStartTime
                               :date
       -->
     <sql-query name="getOverdueAmounts" cache-mode="ignore">
-      <return-scalar column="id" type="long"/>
-      <return-scalar column="total" type="big_decimal"/>
-      <return-scalar column="allocatedTotal" type="big_decimal"/>
-      <return-scalar column="allocatedAmount" type="big_decimal"/>
-      <return-scalar column="overdueAllocationTime" type="date"/>
+        <return-scalar column="id" type="long"/>
+        <return-scalar column="total" type="big_decimal"/>
+        <return-scalar column="allocatedTotal" type="big_decimal"/>
+        <return-scalar column="allocatedAmount" type="big_decimal"/>
+        <return-scalar column="overdueAllocationTime" type="date"/>
         <![CDATA[
 select f.financial_act_id as id,
        f.total as total,
