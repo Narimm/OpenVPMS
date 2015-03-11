@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.info;
@@ -107,7 +107,8 @@ class CustomerMergeWorkflow extends MergeWorkflow<Party> {
                 ServiceHelper.getTransactionManager());
         template.execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus status) {
-                CustomerRules rules = new CustomerRules(ServiceHelper.getArchetypeService());
+                CustomerRules rules = new CustomerRules(ServiceHelper.getArchetypeService(),
+                                                        ServiceHelper.getLookupService());
                 rules.mergeCustomers(from, getObject());
                 return true;
             }

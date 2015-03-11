@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting;
@@ -21,6 +21,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.macro.Variables;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
 import org.openvpms.web.component.mail.MailEditor;
@@ -140,7 +141,8 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
      * @param document the document to mail
      */
     private void mail(Document document) {
-        MailDialog dialog = new MailDialog(getMailContext(), getContext(), getHelpContext().subtopic("email"));
+        HelpContext help = getHelpContext().subtopic("email");
+        MailDialog dialog = new MailDialog(getMailContext(), new DefaultLayoutContext(getContext(), help));
         MailEditor editor = dialog.getMailEditor();
         editor.addAttachment(document);
         editor.setSubject(getDisplayName());

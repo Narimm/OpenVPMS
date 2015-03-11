@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace;
@@ -21,7 +21,6 @@ import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.ImageReference;
 import nextapp.echo2.app.Label;
@@ -47,6 +46,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.component.workspace.Refreshable;
 import org.openvpms.web.component.workspace.Workspace;
 import org.openvpms.web.component.workspace.Workspaces;
@@ -62,9 +62,8 @@ import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.ContentPaneFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
-import org.openvpms.web.echo.style.Style;
+import org.openvpms.web.echo.pane.ContentPane;
 import org.openvpms.web.echo.style.Styles;
-import org.openvpms.web.echo.style.UserStyleSheets;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.history.CustomerPatient;
@@ -254,12 +253,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
 
         menu.addButton("help", new ActionListener() {
             public void onAction(ActionEvent event) {
-                String features = null;
-                UserStyleSheets styleSheets = ServiceHelper.getBean(UserStyleSheets.class);
-                Style style = styleSheets.getStyle();
-                if (style != null) {
-                    features = style.getProperty("HelpBrowser.features");
-                }
+                String features = StyleSheetHelper.getProperty("HelpBrowser.features");
                 HelpDialog dialog = new HelpDialog(ServiceHelper.getArchetypeService(), features);
                 dialog.show();
             }

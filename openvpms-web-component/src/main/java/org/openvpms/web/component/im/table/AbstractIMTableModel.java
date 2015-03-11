@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -210,12 +210,26 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
     }
 
     /**
-     * Notfies the table to refresh.
+     * Notifies the table to refresh.
      * <p/>
      * This can be used to refresh the table if properties of objects held by the model have changed.
      */
     public void refresh() {
         fireTableDataChanged();
+    }
+
+    /**
+     * Invoked prior to the table being rendered.
+     */
+    @Override
+    public void preRender() {
+    }
+
+    /**
+     * Invoked after the table has been rendered.
+     */
+    @Override
+    public void postRender() {
     }
 
     /**

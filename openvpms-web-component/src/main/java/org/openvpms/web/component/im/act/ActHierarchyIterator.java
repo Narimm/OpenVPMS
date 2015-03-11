@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
@@ -19,15 +19,15 @@ package org.openvpms.web.component.im.act;
 import org.apache.commons.collections.Predicate;
 import org.openvpms.component.business.domain.im.act.Act;
 
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Stack;
 
 
 /**
- * This class enables supports iteration over the first level of an act
- * heirarchy, optionally filtering child acts.
- * e.g, given a heirarchy of:
+ * This class enables supports iteration over the first level of an act hierarchy, optionally filtering child acts.
+ * e.g, given a hierarchy of:
  * <ul>
  * <li>event1</li>
  * <ul><li>note1</li><li>problem1</li><li>weight1</li></ul>
@@ -59,8 +59,9 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
      */
     private int maxDepth;
 
+
     /**
-     * Constructs an {@code ActHierarchyIterator}.
+     * Constructs an {@link ActHierarchyIterator}.
      *
      * @param acts the collection of acts
      */
@@ -69,7 +70,7 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
     }
 
     /**
-     * Constructs an {@code ActHierarchyIterator}.
+     * Constructs an {@link ActHierarchyIterator}.
      *
      * @param acts       the collection of acts
      * @param shortNames the child short names to include
@@ -79,7 +80,7 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
     }
 
     /**
-     * Constructs an {@code ActHierarchyIterator}.
+     * Constructs an {@link ActHierarchyIterator}.
      *
      * @param acts       the collection of acts
      * @param shortNames the child short names to include
@@ -90,7 +91,7 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
     }
 
     /**
-     * Constructs an {@code ActHierarchyIterator}.
+     * Constructs an {@link ActHierarchyIterator}.
      *
      * @param acts       the collection of acts
      * @param shortNames the child short names to include/exclude
@@ -102,7 +103,7 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
     }
 
     /**
-     * Constructs an {@code ActHeirarchyFlattener}.
+     * Constructs an {@link ActHierarchyIterator}.
      *
      * @param acts      the collection of acts
      * @param predicate the predicate to select act relationships. If {@code null}, indicates to select all child acts
@@ -113,10 +114,10 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
     }
 
     /**
-     * Constructs an {@code ActHeirarchyFlattener}.
+     * Constructs an {@link ActHierarchyIterator}.
      *
      * @param acts     the collection of acts
-     * @param filter   the hierarchy flattener
+     * @param filter   the hierarchy filter
      * @param maxDepth the maximum depth to iterate to, or {@code -1} to have unlimited depth
      */
     public ActHierarchyIterator(Iterable<T> acts, ActHierarchyFilter<T> filter, int maxDepth) {
@@ -134,12 +135,40 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
         return new ActIterator(maxDepth);
     }
 
+    /**
+     * Returns the filter.
+     *
+     * @return the filter
+     */
+    protected ActHierarchyFilter<T> getFilter() {
+        return filter;
+    }
+
+    /**
+     * Flattens the tree of child acts beneath the specified root.
+     * <p/>
+     * Child acts are filtered using the {@link #filter}, and recursively processed up to depth maxDepth.
+     * The result is an in-order traversal of the tree.
+     *
+     * @param root the root element
+     * @return the flattened tree
+     */
+    protected List<T> flattenTree(T root) {
+        ActHierarchyLister<T> flattener = new ActHierarchyLister<T>();
+        return flattener.list(root, filter, maxDepth);
+    }
+
     private class ActIterator implements Iterator<T> {
 
         /**
-         * Stack of iterators, top level acts pushed first.
+         * Iterator over the parent acts.
          */
-        private Stack<Iterator<T>> stack = new Stack<Iterator<T>>();
+        private final Iterator<T> parent;
+
+        /**
+         * Iterator over the child acts.
+         */
+        private Iterator<T> child;
 
         /**
          * The current act.
@@ -147,26 +176,29 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
         private T current;
 
         /**
-         * The maximum depth in the heirarchy to descend to.
+         * The maximum depth in the hierarchy to descend to.
          */
-        private int maxDepth;
+        private final int maxDepth;
 
 
         /**
-         * Constructs an {@code ActIterator}.
+         * Constructs an {@link ActIterator}.
          *
-         * @param maxDepth the maximum depth in the heirarchy to descend to, or {@code -1} if there is no limit
+         * @param maxDepth the maximum depth in the hierarchy to descend to, or {@code -1} if there is no limit
          */
         public ActIterator(int maxDepth) {
-            stack.push(acts.iterator());
             this.maxDepth = maxDepth;
+            parent = acts.iterator();
         }
 
         /**
          * Returns {@code true} if the iteration has more elements.
+         * (In other words, returns {@code true} if {@link #next} would
+         * return an element rather than throwing an exception.)
          *
-         * @return {@code true} if the iterator has more elements.
+         * @return {@code true} if the iteration has more elements
          */
+        @Override
         public boolean hasNext() {
             if (current == null) {
                 advance();
@@ -207,25 +239,22 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
          */
         private boolean advance() {
             current = null;
-            while (!stack.isEmpty()) {
-                Iterator<T> iterator = stack.peek();
-                while (iterator.hasNext()) {
-                    T act = iterator.next();
-                    if (filter.include(act)) {
-                        current = act;
-                        if (maxDepth == -1 || stack.size() < maxDepth) {
-                            iterator = filter.filter(current).iterator();
-                            if (iterator.hasNext()) {
-                                stack.push(iterator);
-                            }
-                        }
-                        return true;
+            while (child == null || !child.hasNext()) {
+                if (parent.hasNext()) {
+                    T root = parent.next();
+                    if (maxDepth == -1 || maxDepth > 1) {
+                        child = flattenTree(root).iterator();
+                    } else {
+                        child = Arrays.asList(root).iterator();
                     }
+                } else {
+                    return false;
                 }
-                stack.pop();
             }
-            return false;
+            current = child.next();
+            return true;
         }
 
     }
+
 }

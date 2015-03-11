@@ -37,7 +37,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public abstract class SingleIMObjectCollectionEditor extends AbstractIMObjectCollectionEditor {
+public abstract class SingleIMObjectCollectionEditor extends AbstractEditableIMObjectCollectionEditor {
 
     /**
      * Constructs a {@link SingleIMObjectCollectionEditor}.

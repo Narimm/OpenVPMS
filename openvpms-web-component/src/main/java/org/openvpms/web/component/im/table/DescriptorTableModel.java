@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.table;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -79,10 +80,8 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * Returns the sort criteria.
      *
      * @param column    the primary sort column
-     * @param ascending if {@code true} sort in ascending order; otherwise
-     *                  sort in {@code descending} order
-     * @return the sort criteria, or {@code null} if the column isn't
-     *         sortable
+     * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
+     * @return the sort criteria, or {@code null} if the column isn't sortable
      */
     @Override
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
@@ -90,14 +89,50 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
         TableColumn col = getColumn(column);
         if (col instanceof DescriptorTableColumn) {
             DescriptorTableColumn descCol = (DescriptorTableColumn) col;
-            if (descCol.isSortable()) {
-                SortConstraint sort = descCol.createSortConstraint(ascending);
-                result = new SortConstraint[]{sort};
-            } else {
-                result = null;
-            }
+            List<SortConstraint> list = getSortConstraints(descCol, ascending);
+            result = (list != null) ? list.toArray(new SortConstraint[list.size()]) : null;
         } else {
             result = super.getSortConstraints(column, ascending);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the sort constraints, given a primary sort column.
+     * <p/>
+     * If the column is not sortable, this implementation returns null.
+     *
+     * @param primary   the primary sort column
+     * @param ascending whether to sort in ascending or descending order
+     * @return the sort criteria, or {@code null} if the column isn't sortable
+     */
+    protected List<SortConstraint> getSortConstraints(DescriptorTableColumn primary, boolean ascending) {
+        if (!primary.isSortable()) {
+            return null;
+        }
+        if (primary.getName().equals("description")) {
+            return getSortConstraints(primary, ascending, "name", "id");
+        }
+        return getSortConstraints(primary, ascending, "description", "id");
+    }
+
+    /**
+     * Returns the sort constraints, given a primary sort column.
+     *
+     * @param primary   the primary sort column
+     * @param ascending whether to sort in ascending or descending order
+     * @param names     the secondary sort column names
+     * @return the sort constraints
+     */
+    protected List<SortConstraint> getSortConstraints(DescriptorTableColumn primary, boolean ascending,
+                                                      String... names) {
+        List<SortConstraint> result = new ArrayList<SortConstraint>();
+        result.add(primary.createSortConstraint(ascending));
+        for (String name : names) {
+            DescriptorTableColumn column = getColumn(name);
+            if (column != null && column.isSortable()) {
+                result.add(column.createSortConstraint(ascending));
+            }
         }
         return result;
     }
@@ -152,7 +187,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
         List<ArchetypeDescriptor> archetypes = DescriptorHelper.getArchetypeDescriptors(shortNames);
         if (archetypes.isEmpty()) {
             throw new IllegalArgumentException(
-                    "Argument 'shortNames' doesn't refer to a valid archetype");
+                    "Argument 'shortNames' doesn't refer to a valid archetype: " + StringUtils.join(shortNames, ", "));
         }
         return createColumnModel(archetypes, context);
     }
@@ -170,16 +205,35 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
         List<String> names = getNodeNames(archetypes, context);
         TableColumnModel columns = new DefaultTableColumnModel();
 
+        int idIndex = names.indexOf("id");
+        if (idIndex != -1) {
+            if (!(names instanceof ArrayList)) {
+                names = new ArrayList<String>(names);  // Arrays.asList() doesn't support remove
+            }
+            names.remove(idIndex);
+            // use default formatting for ID columns.
+            TableColumn column = createTableColumn(ID_INDEX, "table.imobject.id");
+            columns.addColumn(column);
+        }
+
         if (showArchetypeColumn(archetypes)) {
             addColumns(archetypes, names, columns);
-            int index = getArchetypeColumnIndex();
-            TableColumn column = createTableColumn(
-                    ARCHETYPE_INDEX, "table.imobject.archetype");
+            int index = getArchetypeColumnIndex(idIndex != -1);
+            TableColumn column = createTableColumn(ARCHETYPE_INDEX, "table.imobject.archetype");
             columns.addColumn(column);
             columns.moveColumn(columns.getColumnCount() - 1, index);
         } else {
             addColumns(archetypes, names, columns);
         }
+
+        // if an id column is present, and has not be explicitly placed, move it to the first column
+        if (names.contains("id") && getNodeNames() == null) {
+            int offset = getColumnOffset(columns, "id");
+            if (offset != -1) {
+                columns.moveColumn(offset, 0);
+            }
+        }
+
         return columns;
     }
 
@@ -267,24 +321,46 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
     }
 
     /**
-     * Returns a column model index given its node name.
+     * Returns a column, given its node name.
+     *
+     * @param name the node name
+     * @return the descriptor column, or {@code null} if none exists
+     */
+    protected DescriptorTableColumn getColumn(String name) {
+        return getColumn(getColumnModel(), name);
+    }
+
+    /**
+     * Returns a column, given its node name.
      *
      * @param model the model
      * @param name  the node name
-     * @return the column index, or {@code -1} if a column with the specified name doesn't exist
+     * @return the descriptor column, or {@code null} if none exists
      */
-    protected int getColumnModelIndex(TableColumnModel model, String name) {
+    protected DescriptorTableColumn getColumn(TableColumnModel model, String name) {
         Iterator iterator = model.getColumns();
         while (iterator.hasNext()) {
             TableColumn col = (TableColumn) iterator.next();
             if (col instanceof DescriptorTableColumn) {
                 DescriptorTableColumn descriptorCol = (DescriptorTableColumn) col;
                 if (descriptorCol.getName().equals(name)) {
-                    return descriptorCol.getModelIndex();
+                    return descriptorCol;
                 }
             }
         }
-        return -1;
+        return null;
+    }
+
+    /**
+     * Returns a column model index given its node name.
+     *
+     * @param model the model
+     * @param name  the node name
+     * @return the column index, or {@code -1} if a column with the specified name doesn't exist
+     */
+    protected int getModelIndex(TableColumnModel model, String name) {
+        DescriptorTableColumn column = getColumn(model, name);
+        return (column != null) ? column.getModelIndex() : -1;
     }
 
     /**
@@ -359,10 +435,11 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
     /**
      * Returns the index to insert the archetype column.
      *
+     * @param showId determines if the Id column is being displayed
      * @return the index to insert the archetype column
      */
-    protected int getArchetypeColumnIndex() {
-        return 0;
+    protected int getArchetypeColumnIndex(boolean showId) {
+        return showId ? 1 : 0;
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient;
@@ -26,6 +26,9 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.retry.AbstractRetryable;
 import org.openvpms.web.system.ServiceHelper;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 
 /**
@@ -40,17 +43,27 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
     /**
      * The original patient clinical event.
      */
-    private final Act event;
+    private Act event;
+
+    /**
+     * The original patient clinical problem.
+     */
+    private Act problem;
 
     /**
      * The original patient record item.
      */
-    private final Act item;
+    private Act item;
 
     /**
      * The current event.
      */
     private Act currentEvent;
+
+    /**
+     * The current problem;
+     */
+    private Act currentProblem;
 
     /**
      * The current item.
@@ -75,24 +88,27 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
      * @param item  the patient record item
      */
     public PatientMedicalRecordLinker(Act event, Act item) {
-        this.event = event;
-        this.item = item;
-        if (event.isNew()) {
-            throw new IllegalStateException("Argument 'event' must be saved");
-        }
-        if (item.isNew()) {
-            throw new IllegalStateException("Argument 'item' must be saved: " + item.getArchetypeId().getShortName());
-        }
-        if (!TypeHelper.isA(event, PatientArchetypes.CLINICAL_EVENT)) {
-            throw new IllegalArgumentException("Argument 'event' is invalid: " + event.getArchetypeId().getShortName());
-        }
         rules = ServiceHelper.getBean(MedicalRecordRules.class);
+        boolean isProblem = TypeHelper.isA(item, PatientArchetypes.CLINICAL_PROBLEM);
+        init(event, isProblem ? item : null, isProblem ? null : item);
+    }
+
+    /**
+     * Constructs a {@link PatientMedicalRecordLinker}.
+     *
+     * @param event   the patient clinical event. May be {@code null}
+     * @param problem the patient clinical problem. May be {@code null}
+     * @param item    the patient record item. May be {@code null}
+     */
+    public PatientMedicalRecordLinker(Act event, Act problem, Act item) {
+        rules = ServiceHelper.getBean(MedicalRecordRules.class);
+        init(event, problem, item);
     }
 
     /**
      * Returns the current instance of the event.
      * <p/>
-     * If the link was successful, this will be non-null
+     * If the link was successful, and one was supplied at construction, this will be non-null.
      *
      * @return the current instance of the event. May be {@code null}
      */
@@ -101,9 +117,20 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
     }
 
     /**
+     * Returns the current instance of the problem.
+     * <p/>
+     * If the link was successful, and one was supplied at construction, this will be non-null.
+     *
+     * @return the current instance of og the problem. May be {@code null}
+     */
+    public Act getProblem() {
+        return currentProblem;
+    }
+
+    /**
      * Returns the current instance of the item.
      * <p/>
-     * If the link was successful, this will be non-null
+     * If the link was successful, and one was supplied at construction, this will be non-null.
      *
      * @return the current instance of the item. May be {@code null}
      */
@@ -121,6 +148,19 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
     }
 
     /**
+     * Links the records.
+     * <p/>
+     * This is invoked in a transaction.
+     *
+     * @param currentEvent   the current instance of the event. May be {@code null}
+     * @param currentProblem the current instance of the problem. May be {@code null}
+     * @param currentItem    the current instance of the item. May be {@code null}
+     */
+    protected void link(Act currentEvent, Act currentProblem, Act currentItem) {
+        rules.linkMedicalRecords(currentEvent, currentProblem, currentItem);
+    }
+
+    /**
      * Runs the action for the first time.
      * <p/>
      * This implementation delegates to {@link #runAction()}.
@@ -131,7 +171,7 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
      */
     @Override
     protected boolean runFirst() {
-        return linkRecords(event, item);
+        return linkRecords(event, problem, item);
     }
 
     /**
@@ -143,26 +183,63 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
      */
     @Override
     protected boolean runAction() {
-        return linkRecords(IMObjectHelper.reload(event), IMObjectHelper.reload(item));
+        return linkRecords(IMObjectHelper.reload(event), IMObjectHelper.reload(problem), IMObjectHelper.reload(item));
+    }
+
+    /**
+     * Initialises this.
+     *
+     * @param event   the patient clinical event. May be {@code null}
+     * @param problem the patient clinical problem. May be {@code null}
+     * @param item    the patient record item. May be {@code null}
+     */
+    private void init(Act event, Act problem, Act item) {
+        if (event != null) {
+            if (!TypeHelper.isA(event, PatientArchetypes.CLINICAL_EVENT)) {
+                throw new IllegalArgumentException("Argument 'event' is invalid: "
+                                                   + event.getArchetypeId().getShortName());
+            }
+            if (event.isNew()) {
+                throw new IllegalStateException("Argument 'event' must be saved");
+            }
+        }
+        if (problem != null && problem.isNew()) {
+            throw new IllegalStateException("Argument 'problem' must be saved");
+        }
+        if (item != null && item.isNew()) {
+            throw new IllegalStateException("Argument 'item' must be saved: " + item.getArchetypeId().getShortName());
+        }
+        this.event = event;
+        this.problem = problem;
+        this.item = item;
     }
 
     /**
      * Links the records.
      *
-     * @param currentEvent the current instance of the event. May be {@code null}
-     * @param currentItem  the current instance of the item. May be {@code null}
-     * @return {@code true} if the records were linked, {@code false} if one or both of the events is missing.
+     * @param currentEvent   the current instance of the event. May be {@code null}
+     * @param currentProblem the current instance of the problem. May be {@code null}
+     * @param currentItem    the current instance of the item. May be {@code null}
+     * @return {@code true} if the records were linked, {@code false} if an act is no longer available
      */
-    private boolean linkRecords(Act currentEvent, Act currentItem) {
+    private boolean linkRecords(final Act currentEvent, final Act currentProblem, final Act currentItem) {
         boolean result = false;
-        if (currentEvent == null) {
-            logMissing(event, item, event);
-        } else if (currentItem == null) {
-            logMissing(event, item, item);
+        if (currentEvent == null && event != null) {
+            logMissing(event);
+        } else if (currentProblem == null && problem != null) {
+            logMissing(problem);
+        } else if (currentItem == null && item != null) {
+            logMissing(item);
         } else {
-            // link the records to the event
-            rules.linkMedicalRecords(currentEvent, currentItem);
+            TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
+            template.execute(new TransactionCallbackWithoutResult() {
+                @Override
+                protected void doInTransactionWithoutResult(TransactionStatus status) {
+                    link(currentEvent, currentProblem, currentItem);
+                }
+            });
             this.currentEvent = currentEvent;
+            this.currentProblem = currentProblem;
             this.currentItem = currentItem;
             result = true;
         }
@@ -172,13 +249,10 @@ public class PatientMedicalRecordLinker extends AbstractRetryable {
     /**
      * Logs a failure to link due to missing act.
      *
-     * @param source  the source act
-     * @param target  the target act
-     * @param missing the missing act
+     * @param source the source act
      */
-    private void logMissing(Act source, Act target, Act missing) {
-        log.warn("Cannot link " + getId(source) + " with " + getId(target) + ": " + getId(missing)
-                 + " no longer exists");
+    private void logMissing(Act source) {
+        log.warn("Cannot link " + getId(source) + ": it no longer exists");
     }
 
     /**

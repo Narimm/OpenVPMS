@@ -11,25 +11,25 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro.impl;
 
+import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.JXPathContext;
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
+import org.openvpms.archetype.function.factory.DefaultArchetypeFunctionsFactory;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.macro.Macros;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.openvpms.report.ReportFactory;
 
 import static org.junit.Assert.assertEquals;
 
@@ -42,11 +42,14 @@ import static org.junit.Assert.assertEquals;
 public class MacroFunctionsTestCase extends ArchetypeServiceTest {
 
     /**
-     * The lookup service.
+     * The macros.
      */
-    @Autowired
-    private ILookupService lookupService;
+    private Macros macros;
 
+    /**
+     * The JXPath extension functions factory.
+     */
+    private ArchetypeFunctionsFactory functions;
 
     /**
      * Sets up the test case.
@@ -56,12 +59,19 @@ public class MacroFunctionsTestCase extends ArchetypeServiceTest {
         MacroTestHelper.createMacro("displayName", "openvpms:get(., 'displayName')");
         MacroTestHelper.createMacro("numbertest", "concat('input number: ', $number)");
 
-        Macros macros = new LookupMacros(lookupService, getArchetypeService(), new DocumentHandlers());
+        functions = new DefaultArchetypeFunctionsFactory(getArchetypeService(),
+                                                         getLookupService(), null) {
+            @Override
+            public FunctionLibrary create(IArchetypeService service) {
+                FunctionLibrary library = super.create(service);
+                library.addFunctions(create("macro", new MacroFunctions(macros)));
+                return library;
+            }
+        };
 
-        // register the macro functions
-        Map properties = new HashMap();
-        properties.put("macro", new MacroFunctions(macros));
-        new JXPathHelper(properties);
+        ReportFactory factory = new ReportFactory(getArchetypeService(), getLookupService(), new DocumentHandlers(),
+                                                  functions);
+        macros = new LookupMacros(getLookupService(), getArchetypeService(), factory);
     }
 
     /**
@@ -74,7 +84,7 @@ public class MacroFunctionsTestCase extends ArchetypeServiceTest {
     @Test
     public void testSingleArgEval() {
         Party customer = TestHelper.createCustomer(false);
-        JXPathContext ctx = JXPathHelper.newContext(customer);
+        JXPathContext ctx = createContext(customer);
         assertEquals("Customer", ctx.getValue("macro:eval('displayName')"));
     }
 
@@ -90,10 +100,10 @@ public class MacroFunctionsTestCase extends ArchetypeServiceTest {
     public void testTwoArgEval() {
         Party customer = TestHelper.createCustomer(false);
 
-        JXPathContext ctx = JXPathHelper.newContext(customer);
+        JXPathContext ctx = createContext(customer);
         assertEquals("Customer", ctx.getValue("macro:eval('displayName', .)"));
 
-        ctx = JXPathHelper.newContext(new Object());
+        ctx = createContext(new Object());
         ctx.getVariables().declareVariable("customer", customer);
         assertEquals("Customer", ctx.getValue("macro:eval('displayName', $customer)"));
     }
@@ -104,7 +114,7 @@ public class MacroFunctionsTestCase extends ArchetypeServiceTest {
     @Test
     public void testNumericPrefix() {
         Object dummy = new Object();
-        JXPathContext ctx = JXPathHelper.newContext(dummy);
+        JXPathContext ctx = createContext(dummy);
 
         // verify that when no prefix is specified, the number doesn't evaluate
         // to anything
@@ -113,6 +123,10 @@ public class MacroFunctionsTestCase extends ArchetypeServiceTest {
 
         Object text2 = ctx.getValue("macro:eval('99numbertest')");
         assertEquals("input number: 99", text2);
+    }
+
+    private JXPathContext createContext(Object object) {
+        return JXPathHelper.newContext(object, functions.create());
     }
 
 }

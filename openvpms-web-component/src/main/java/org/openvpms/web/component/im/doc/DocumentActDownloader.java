@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.doc;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
@@ -74,7 +75,7 @@ public class DocumentActDownloader extends Downloader {
 
 
     /**
-     * Constructs a {@code DocumentActDownloader}.
+     * Constructs a {@link DocumentActDownloader}.
      *
      * @param act     the act
      * @param context the context
@@ -84,7 +85,7 @@ public class DocumentActDownloader extends Downloader {
     }
 
     /**
-     * Constructs a {@code DocumentActDownloader}.
+     * Constructs a {@link DocumentActDownloader}.
      *
      * @param act        the act
      * @param asTemplate determines if the document should be downloaded as a template
@@ -106,7 +107,15 @@ public class DocumentActDownloader extends Downloader {
         Button button;
         boolean generated = false;
         String name = act.getFileName();
-        if (act.getDocument() == null) {
+        if (asTemplate) {
+            DocumentTemplate template = getTemplate();
+            if (template != null) {
+                String docName = template.getDocumentName();
+                if (!StringUtils.isEmpty(docName)) {
+                    name = docName;
+                }
+            }
+        } else if (act.getDocument() == null) {
             DocumentTemplate template = getTemplate();
             if (template != null) {
                 name = template.getName();

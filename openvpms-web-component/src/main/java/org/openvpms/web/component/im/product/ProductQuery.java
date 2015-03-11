@@ -11,17 +11,26 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
 
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.AbstractEntityQuery;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -42,17 +51,29 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
      */
     private Party location;
 
+    /**
+     * The pricing group.
+     */
+    private PricingGroup pricingGroup;
+
 
     /**
-     * Construct a new {@code ProductQuery} that queries products with the
-     * specified short names.
+     * Constructs a {@link ProductQuery} that queries products with the specified short names.
      *
      * @param shortNames the short names
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
+     * @param context    the context
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
-    public ProductQuery(String[] shortNames) {
+    public ProductQuery(String[] shortNames, Context context) {
         super(shortNames, Product.class);
+
+        Party location = context.getLocation();
+        if (location != null) {
+            LocationRules rules = ServiceHelper.getBean(LocationRules.class);
+            pricingGroup = new PricingGroup(rules.getPricingGroup(location));
+        } else {
+            pricingGroup = new PricingGroup(null);
+        }
     }
 
     /**
@@ -92,6 +113,26 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
     }
 
     /**
+     * Returns the pricing group.
+     *
+     * @return the pricing group
+     */
+    public PricingGroup getPricingGroup() {
+        return pricingGroup;
+    }
+
+    /**
+     * Sets the pricing group.
+     * <p/>
+     * NOTE: this does not update the selector, so should only be invoked prior to its construction.
+     *
+     * @param group the pricing group
+     */
+    protected void setPricingGroup(PricingGroup group) {
+        pricingGroup = group;
+    }
+
+    /**
      * Creates the result set.
      *
      * @param sort the sort criteria. May be {@code null}
@@ -102,4 +143,33 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
                                     sort, getMaxResults());
     }
 
+    /**
+     * Adds a selector to constrain prices by pricing group.
+     *
+     * @param container the container to add the component to
+     * @param all       if {@code true}, include an option to select 'All'
+     */
+    protected void addPricingGroupSelector(Component container, boolean all) {
+        final PricingGroupSelectField field = new PricingGroupSelectField(pricingGroup, all);
+        field.addActionListener(new ActionListener() {
+            public void onAction(ActionEvent event) {
+                PricingGroup group = (field.isAllSelected()) ? PricingGroup.ALL : field.getSelected();
+                onPricingGroupChanged(group);
+            }
+        });
+
+        Label label = LabelFactory.create("product.pricingGroup");
+        container.add(label);
+        container.add(field);
+        getFocusGroup().add(field);
+    }
+
+    /**
+     * Invoked when the pricing group changes.
+     *
+     * @param group the selected pricing group
+     */
+    protected void onPricingGroupChanged(PricingGroup group) {
+        pricingGroup = group;
+    }
 }

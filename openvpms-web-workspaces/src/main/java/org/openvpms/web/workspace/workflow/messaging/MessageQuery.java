@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.messaging;
@@ -49,7 +49,7 @@ public class MessageQuery extends DateRangeActQuery<Act> {
     /**
      * The archetypes to query.
      */
-    public static final String[] ARCHETYPES = {MessageArchetypes.USER, MessageArchetypes.SYSTEM};
+    public static final String[] ARCHETYPES = {MessageArchetypes.USER, MessageArchetypes.SYSTEM_MESSAGES};
 
     /**
      * The user selector.

@@ -11,26 +11,21 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
 
-import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.Predicate;
-import org.apache.commons.collections.Transformer;
 import org.apache.commons.collections.functors.NotPredicate;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.service.archetype.functor.IsA;
 import org.openvpms.component.business.service.archetype.functor.RelationshipRef;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 
@@ -40,7 +35,7 @@ import java.util.List;
  * @author Tim Anderson
  * @see ActHierarchyIterator
  */
-public class ActHierarchyFilter<T extends Act> {
+public class ActHierarchyFilter<T extends Act> extends ActFilter<T> {
 
     /**
      * The predicate to filter relationships. May be {@code null}
@@ -82,20 +77,32 @@ public class ActHierarchyFilter<T extends Act> {
     /**
      * Returns the immediate children of an act, after applying filters.
      *
-     * @param act the act
+     * @param act  the act
+     * @param root the root of the tree
      * @return the immediate children of the act, or an empty list if they have been filtered
      */
-    public List<T> filter(T act) {
+    @Override
+    public List<T> filter(T act, T root) {
         List<T> result = new ArrayList<T>();
         if (include(act)) {
-            List<T> items = getIncludedTargets(act);
+            List<T> items = getIncludedTargets(act, root);
             items = filter(act, items);
             if (include(act, items)) {
-                sortItems(items);
                 result.addAll(items);
             }
         }
         return result;
+    }
+
+    /**
+     * Returns a comparator to sort the children of an act.
+     *
+     * @param act the parent act
+     * @return the comparator to sort the act's children
+     */
+    @Override
+    public Comparator<T> getComparator(T act) {
+        return getComparator(sortAscending);
     }
 
     /**
@@ -157,7 +164,7 @@ public class ActHierarchyFilter<T extends Act> {
      * <p/>
      * This implementation returns {@code children} unmodified.
      *
-     * @param parent   the top level act
+     * @param parent   the parent act
      * @param children the child acts
      * @return the filtered acts
      */
@@ -186,35 +193,31 @@ public class ActHierarchyFilter<T extends Act> {
      *
      * @param child  the child act
      * @param parent the parent act
+     * @param root   the root act
      * @return {@code true} if the child act should be included
      */
-    protected boolean include(T child, T parent) {
+    protected boolean include(T child, T parent, T root) {
         return true;
     }
 
     /**
-     * Sorts act on start time.
+     * Returns the included target acts in set of relationships.
      *
-     * @param acts the items to sort
+     * @param act  the parent act
+     * @param root the root act
+     * @return the include target acts
      */
     @SuppressWarnings("unchecked")
-    protected void sortItems(List<T> acts) {
-        Transformer transformer = new Transformer() {
-            public Object transform(Object input) {
-                Date date = ((Act) input).getActivityStartTime();
-                if (date instanceof Timestamp) {
-                    // to avoid ClassCastException when doing compareTo
-                    date = new Date(date.getTime());
-                }
-                return date;
+    protected List<T> getIncludedTargets(T act, T root) {
+        List<T> result = new ArrayList<T>();
+        Collection<ActRelationship> relationships = getRelationships(act);
+        for (Act match : ActHelper.getTargetActs(relationships)) {
+            T item = (T) match;
+            if (include(item, act, root)) {
+                result.add(item);
             }
-        };
-        Comparator comparator = ComparatorUtils.transformedComparator(
-                ComparatorUtils.nullHighComparator(null), transformer);
-        if (!sortAscending) {
-            comparator = ComparatorUtils.reversedComparator(comparator);
         }
-        Collections.sort(acts, comparator);
+        return result;
     }
 
     /**
@@ -227,25 +230,6 @@ public class ActHierarchyFilter<T extends Act> {
     protected static Predicate createIsA(final String[] shortNames, boolean include) {
         Predicate result = new IsA(RelationshipRef.TARGET, shortNames);
         return (include) ? result : new NotPredicate(result);
-    }
-
-    /**
-     * Returns the included target acts in set of relationships.
-     *
-     * @param act the parent act
-     * @return the include target acts
-     */
-    @SuppressWarnings("unchecked")
-    private List<T> getIncludedTargets(T act) {
-        List<T> result = new ArrayList<T>();
-        Collection<ActRelationship> relationships = getRelationships(act);
-        for (Act match : ActHelper.getTargetActs(relationships)) {
-            T item = (T) match;
-            if (include(item, act)) {
-                result.add(item);
-            }
-        }
-        return result;
     }
 
 }

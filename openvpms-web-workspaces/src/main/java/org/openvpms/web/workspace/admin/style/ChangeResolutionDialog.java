@@ -25,7 +25,7 @@ import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.OpenVPMSApp;
 
-import java.awt.*;
+import java.awt.Dimension;
 
 
 /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.customer;
@@ -21,6 +21,7 @@ import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.AbstractBrowserState;
+import org.openvpms.web.component.im.query.AbstractQueryBrowser;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserState;
 import org.openvpms.web.component.im.query.CustomerQuery;
@@ -29,7 +30,6 @@ import org.openvpms.web.component.im.query.CustomerResultSetAdapter;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowserAdapter;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.query.TableBrowser;
 
 
 /**
@@ -132,7 +132,7 @@ public class CustomerBrowser extends QueryBrowserAdapter<ObjectSet, Party> {
     private static Browser<ObjectSet> createBrowser(final CustomerQuery query, LayoutContext context) {
         final CustomerTableModel model = new CustomerTableModel();
         Query<ObjectSet> delegate = query.getQuery();
-        return new TableBrowser<ObjectSet>(delegate, delegate.getDefaultSortConstraint(), model, context) {
+        return new AbstractQueryBrowser<ObjectSet>(delegate, delegate.getDefaultSortConstraint(), model, context) {
             /**
              * Performs the query.
              *

@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009-2012 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.doc;
 
@@ -43,7 +43,12 @@ public class DocumentActLayoutStrategy extends ActLayoutStrategy {
     /**
      * Treats the document node as a simple rather than complex node.
      */
-    private static ArchetypeNodes NODES = new ArchetypeNodes().simple(DOCUMENT);
+    protected static ArchetypeNodes NODES = new ArchetypeNodes().simple(DOCUMENT);
+
+    /**
+     * Nodes to display when viewing document acts. This suppresses the versions node if its empty
+     */
+    protected static ArchetypeNodes VIEW_NODES = new ArchetypeNodes(NODES).excludeIfEmpty(VERSIONS);
 
     /**
      * Constructs a {@code DocumentActLayoutStrategy} for viewing document acts.

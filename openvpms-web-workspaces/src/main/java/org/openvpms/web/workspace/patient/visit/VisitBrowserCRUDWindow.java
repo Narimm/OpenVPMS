@@ -1,119 +1,148 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient.visit;
 
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.workspace.AbstractCRUDWindow;
+import org.openvpms.web.component.workspace.AbstractViewCRUDWindow;
+import org.openvpms.web.component.workspace.BrowserCRUDWindow;
+import org.openvpms.web.component.workspace.CRUDWindow;
+import org.openvpms.web.echo.button.ButtonSet;
+import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.workspace.customer.CustomerMailContext;
-import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
-import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
+import org.openvpms.web.echo.pane.ContentPane;
 
-import java.util.List;
 
 /**
- * A patient medical record browser that CRUD operations.
+ * Links a {@link Browser} to a {@link CRUDWindow}.
  *
  * @author Tim Anderson
  */
-public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
+public class VisitBrowserCRUDWindow<T extends Act> extends BrowserCRUDWindow<T> implements VisitEditorTab {
 
     /**
-     * The help context.
+     * The tab identifier.
      */
-    private final HelpContext help;
+    private int id;
 
     /**
      * Constructs a {@code VisitBrowserCRUDWindow}.
-     *
-     * @param query   the patient medical record query
-     * @param context the context
-     * @param help    the help context
      */
-    public VisitBrowserCRUDWindow(PatientHistoryQuery query, Context context, HelpContext help) {
-        this.help = help;
-        DefaultLayoutContext layout = new DefaultLayoutContext(context, help);
-        PatientHistoryBrowser browser = new PatientHistoryBrowser(query, layout);
-        if (browser.getSelected() == null) {
-            browser.query();
-            List<Act> objects = browser.getObjects();
-            if (!objects.isEmpty()) {
-                browser.setSelected(objects.get(0));
-            }
+    protected VisitBrowserCRUDWindow() {
+        super();
+    }
+
+    /**
+     * Constructs a {@link VisitBrowserCRUDWindow}.
+     *
+     * @param browser the browser
+     * @param window  the window
+     */
+    public VisitBrowserCRUDWindow(Browser<T> browser, AbstractCRUDWindow<T> window) {
+        super(browser, window);
+    }
+
+
+    /**
+     * Sets the buttons.
+     *
+     * @param buttons the buttons
+     */
+    public void setButtons(ButtonSet buttons) {
+        ((AbstractCRUDWindow<T>) getWindow()).setButtons(buttons);
+    }
+
+    /**
+     * Returns the help context.
+     *
+     * @return the help context
+     */
+    public HelpContext getHelpContext() {
+        return getWindow().getHelpContext();
+    }
+
+    /**
+     * Returns the identifier of this tab.
+     *
+     * @return the tab identifier
+     */
+    @Override
+    public int getId() {
+        return id;
+    }
+
+    /**
+     * Sets the identifier of this tab.
+     *
+     * @param id the tab identifier
+     */
+    @Override
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    /**
+     * Invoked when the tab is displayed.
+     */
+    @Override
+    public void show() {
+        Browser<T> browser = getBrowser();
+        T selected = browser.getSelected();
+        browser.query();
+        if (selected != null) {
+            browser.setSelected(selected);
         }
-        setBrowser(browser);
-        VisitCRUDWindow window = createWindow(context);
-        window.setMailContext(new CustomerMailContext(context, help));
-        window.setQuery(query);
-        window.setEvent(browser.getEvent());
-        setWindow(window);
+        browser.setFocusOnResults();
     }
 
     /**
-     * Sets the selected object.
+     * Invoked prior to switching to another tab, in order to save state.
+     * <p/>
+     * If the save fails, then switching is cancelled.
      *
-     * @param object the selected object
+     * @return {@code true} if the save was successful, otherwise {@code false}
      */
     @Override
-    public void setSelected(Act object) {
-        super.setSelected(object);
-        getWindow().setEvent(getBrowser().getEvent());
+    public boolean save() {
+        return true;
     }
 
     /**
-     * Returns the CRUD window.
+     * Returns the component.
      *
-     * @return the window
+     * @return the component
      */
-    @Override
-    public VisitCRUDWindow getWindow() {
-        return (VisitCRUDWindow) super.getWindow();
+    public Component getComponent() {
+        Component result;
+        CRUDWindow<T> window = getWindow();
+        if (window instanceof AbstractViewCRUDWindow) {
+            result = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
+                                             "PatientRecordWorkspace.Layout",
+                                             getBrowser().getComponent(),
+                                             window.getComponent());
+        } else {
+            ContentPane pane = new ContentPane(); // add the browser to a pane to get scroll bars
+            pane.add(getBrowser().getComponent());
+            result = pane;
+        }
+        return result;
     }
 
-    /**
-     * Returns the browser.
-     *
-     * @return the browser
-     */
-    @Override
-    public PatientHistoryBrowser getBrowser() {
-        return (PatientHistoryBrowser) super.getBrowser();
-    }
-
-    /**
-     * Creates a new window.
-     *
-     * @param context the context
-     * @return a new window
-     */
-    protected VisitCRUDWindow createWindow(Context context) {
-        return new VisitCRUDWindow(context, help);
-    }
-
-    /**
-     * Selects the current object. If the object is "double clicked", edits it.
-     *
-     * @param object the selected object
-     */
-    @Override
-    protected void onSelected(Act object) {
-        PatientHistoryBrowser browser = getBrowser();
-        VisitCRUDWindow window = getWindow();
-        window.setEvent(browser.getEvent(object));
-        super.onSelected(object);
-    }
 }

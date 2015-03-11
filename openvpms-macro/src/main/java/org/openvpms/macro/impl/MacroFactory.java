@@ -11,17 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro.impl;
 
-import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.macro.MacroException;
+import org.openvpms.report.ReportFactory;
 
 
 /**
@@ -37,26 +36,19 @@ class MacroFactory {
     private final IArchetypeService service;
 
     /**
-     * The lookup service.
+     * The report factory.
      */
-    private final ILookupService lookups;
-
-    /**
-     * The document handlers.
-     */
-    private final DocumentHandlers handlers;
+    private final ReportFactory factory;
 
     /**
      * Constructs a {@link MacroFactory}.
      *
-     * @param service  the archetype service
-     * @param lookups  the lookup service
-     * @param handlers the document handlers
+     * @param service the archetype service
+     * @param factory the report factory
      */
-    public MacroFactory(IArchetypeService service, ILookupService lookups, DocumentHandlers handlers) {
+    public MacroFactory(IArchetypeService service, ReportFactory factory) {
         this.service = service;
-        this.lookups = lookups;
-        this.handlers = handlers;
+        this.factory = factory;
     }
 
     /**
@@ -88,7 +80,7 @@ class MacroFactory {
         if (macro instanceof ExpressionMacro) {
             return new ExpressionMacroRunner(context);
         } else if (macro instanceof ReportMacro) {
-            return new ReportMacroRunner(context, service, lookups, handlers);
+            return new ReportMacroRunner(context, factory);
         }
         throw new IllegalArgumentException("Unsupported macro type: " + macro.getClass().getName());
     }

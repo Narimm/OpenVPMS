@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.cache.IMObjectCache;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditorFactory;
@@ -32,7 +33,6 @@ import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectCache;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
@@ -281,7 +281,9 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
 
             if (simple.size() == 1 && complex.isEmpty()) {
                 ComponentSet set = createComponentSet(object, simple, context);
-                container.add(set.getComponents().get(0).getComponent());
+                ComponentState state = set.getComponents().get(0);
+                setFocusTraversal(state);
+                container.add(state.getComponent());
             } else {
                 doSimpleLayout(object, parent, simple, container, context);
                 doComplexLayout(object, parent, complex, container, context);

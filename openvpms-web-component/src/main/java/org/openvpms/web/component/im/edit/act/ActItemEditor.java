@@ -16,10 +16,12 @@
 
 package org.openvpms.web.component.im.edit.act;
 
+import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -62,6 +64,11 @@ public abstract class ActItemEditor extends AbstractActEditor {
      */
     private ProductListener listener;
 
+    /**
+     * The pricing location.
+     */
+    private final Lookup pricingLocation;
+
 
     /**
      * Constructs an {@link ActItemEditor}.
@@ -78,6 +85,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
             // default the act start time to that of the parent
             act.setActivityStartTime(parent.getActivityStartTime());
         }
+        pricingLocation = getPricingGroup(parent, context);
     }
 
     /**
@@ -232,8 +240,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return the product quantity
      */
     public BigDecimal getQuantity() {
-        BigDecimal value = (BigDecimal) getProperty("quantity").getValue();
-        return (value != null) ? value : BigDecimal.ZERO;
+        return getProperty("quantity").getBigDecimal(BigDecimal.ZERO);
     }
 
     /**
@@ -283,6 +290,15 @@ public abstract class ActItemEditor extends AbstractActEditor {
     }
 
     /**
+     * Returns the pricing location.
+     *
+     * @return the pricing location. May be {@code null}
+     */
+    public Lookup getPricingLocation() {
+        return pricingLocation;
+    }
+
+    /**
      * Invoked when the participation product is changed.
      * <p/>
      * This delegates to {@link #productModified(Product)}.
@@ -323,7 +339,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return the corresponding product price, or {@code null} if none exists
      */
     protected ProductPrice getProductPrice(String shortName, Product product) {
-        return rules.getProductPrice(product, shortName, getStartTime());
+        return rules.getProductPrice(product, shortName, getStartTime(), pricingLocation);
     }
 
     /**
@@ -334,7 +350,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @param product   the product
      */
     protected ProductPrice getProductPrice(String shortName, BigDecimal price, Product product) {
-        return rules.getProductPrice(product, price, shortName, getStartTime());
+        return rules.getProductPrice(product, price, shortName, getStartTime(), pricingLocation);
     }
 
     /**
@@ -483,6 +499,35 @@ public abstract class ActItemEditor extends AbstractActEditor {
                 }
             });
         }
+    }
+
+    /**
+     * Determines the pricing group.
+     * <p/>
+     * This uses the location of the parent act, if it defines a {@code location} node, otherwise it uses the
+     * location from the context.
+     *
+     * @param parent  the parent act. May be {@code null}
+     * @param context the layout context
+     * @return the pricing group. May be {@code null}
+     */
+    private Lookup getPricingGroup(Act parent, LayoutContext context) {
+        Lookup result = null;
+        Party location = null;
+        if (parent != null) {
+            ActBean bean = new ActBean(parent);
+            if (bean.hasNode("location")) {
+                location = (Party) getObject(bean.getNodeParticipantRef("location"));
+            }
+        }
+        if (location == null) {
+            location = context.getContext().getLocation();
+        }
+        if (location != null) {
+            LocationRules locationRules = ServiceHelper.getBean(LocationRules.class);
+            result = locationRules.getPricingGroup(location);
+        }
+        return result;
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -21,6 +21,9 @@ import java.util.EventListener;
 
 /**
  * Listener for {@link Modifiable} error events.
+ * <p/>
+ * ErrorListeners aren't invoked directly by an {@link Modifiable}, but are invoked during validation by
+ * {@link DefaultValidator}.
  *
  * @author Tim Anderson
  */
@@ -30,6 +33,14 @@ public interface ErrorListener extends EventListener {
      * Invoked when an error occurs.
      *
      * @param modifiable the source
+     * @param error      the error
      */
-    void error(Modifiable modifiable, String message);
+    void error(Modifiable modifiable, ValidatorError error);
+
+    /**
+     * Resets the listener.
+     * <p/>
+     * The {@link Validator} invokes this during each validation pass.
+     */
+    void clear();
 }

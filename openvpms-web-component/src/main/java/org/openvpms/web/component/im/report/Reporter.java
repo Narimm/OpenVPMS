@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.report;
@@ -27,15 +27,13 @@ import org.openvpms.report.ReportException;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
 
 /**
- * Generates {@link Document}s from one or more objects, using a
- * {@link IMReport}.
+ * Generates {@link Document}s from one or more objects, using a {@link IMReport}.
  *
  * @author Tim Anderson
  */
@@ -139,7 +137,9 @@ public abstract class Reporter<T> {
             type = report.getDefaultMimeType();
         }
         Map<String, Object> map = new HashMap<String, Object>(getParameters(email));
-        return report.generate(getObjects().iterator(), map, fields, type);
+        Document document = report.generate(getObjects(), map, fields, type);
+        setName(document);
+        return document;
     }
 
     /**
@@ -148,7 +148,7 @@ public abstract class Reporter<T> {
      * @param objects    the objects to print
      * @param properties the print properties
      */
-    public void print(Iterator<T> objects, PrintProperties properties) {
+    public void print(Iterable<T> objects, PrintProperties properties) {
         getReport().print(objects, getParameters(false), fields, properties);
     }
 
@@ -227,6 +227,19 @@ public abstract class Reporter<T> {
             result = parameters;
         }
         return result;
+    }
+
+    /**
+     * Updates the document name.
+     * <p/>
+     * This can be used to update the document name from its default value, prior to returning it to the caller.
+     * <p/>
+     * This implementation is a no-op.
+     *
+     * @param document the document to update
+     */
+    protected void setName(Document document) {
+        // no-op
     }
 
 }

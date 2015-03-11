@@ -11,14 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -31,16 +33,22 @@ import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+
+import static org.openvpms.component.system.common.query.Constraints.and;
+import static org.openvpms.component.system.common.query.Constraints.gte;
+import static org.openvpms.component.system.common.query.Constraints.isNull;
+import static org.openvpms.component.system.common.query.Constraints.lte;
+import static org.openvpms.component.system.common.query.Constraints.or;
 
 
 /**
  * Query helper.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class QueryHelper {
 
@@ -48,7 +56,7 @@ public class QueryHelper {
      * Determines if a node is a participation node.
      *
      * @param descriptor the node descriptor
-     * @return <tt>true</tt> if the node is a participation node
+     * @return {@code true} if the node is a participation node
      */
     public static boolean isParticipationNode(NodeDescriptor descriptor) {
         return descriptor.isCollection() && "/participations".equals(descriptor.getPath());
@@ -59,7 +67,7 @@ public class QueryHelper {
      *
      * @param archetypes the archetype constraint
      * @param node       the node name
-     * @return the corresponding descriptor or <tt>null</tt>
+     * @return the corresponding descriptor or {@code null}
      */
     public static NodeDescriptor getDescriptor(ShortNameConstraint archetypes,
                                                String node) {
@@ -78,9 +86,9 @@ public class QueryHelper {
      * Adds a sort constraint on a participation node.
      *
      * @param acts       the act short names constraint. Must specify an alias
-     * @param query      the query. Must reference <tt>acts</tt>
+     * @param query      the query. Must reference {@code acts}
      * @param descriptor the participation node descriptor
-     * @param ascending  if <tt>true</tt> sort ascending
+     * @param ascending  if {@code true} sort ascending
      */
     public static void addSortOnParticipation(ShortNameConstraint acts,
                                               ArchetypeQuery query,
@@ -99,7 +107,7 @@ public class QueryHelper {
      *
      * @param set       the query
      * @param reference the object reference to check
-     * @return <tt>true</tt> if the query selects the reference; otherwise <tt>false</tt>
+     * @return {@code true} if the query selects the reference; otherwise {@code false}
      */
     public static <T extends IMObject> boolean selects(ResultSet<T> set, IMObjectReference reference) {
         boolean result = false;
@@ -120,12 +128,39 @@ public class QueryHelper {
      * @return the matching objects
      */
     public static <T extends IMObject> List<T> query(ArchetypeQuery query) {
-        Iterator<T> iterator = new IMObjectQueryIterator<T>(query);
         List<T> matches = new ArrayList<T>();
-        while (iterator.hasNext()) {
-            matches.add(iterator.next());
+        CollectionUtils.addAll(matches, new IMObjectQueryIterator<T>(query));
+        return matches;
+    }
+
+    /**
+     * Returns all objects matching the specified query in a list.
+     *
+     * @param query the query
+     * @return the matching objects
+     */
+    public static <T extends IMObject> List<T> query(Query<T> query) {
+        List<T> matches = new ArrayList<T>();
+        ResultSet<T> set = query.query();
+        if (set != null) {
+            CollectionUtils.addAll(matches, new ResultSetIterator<T>(set));
         }
         return matches;
+    }
+
+    /**
+     * Returns all objects matching the specified short names, sorted on the specified nodes.
+     *
+     * @param shortNames the archetype short names
+     * @param sortNodes  the sort nodes
+     * @return the matching objects
+     */
+    public static <T extends IMObject> List<T> query(String[] shortNames, String... sortNodes) {
+        ArchetypeQuery query = new ArchetypeQuery(shortNames, false, true);
+        for (String sort : sortNodes) {
+            query.add(Constraints.sort(sort));
+        }
+        return query(query);
     }
 
     /**
@@ -135,8 +170,19 @@ public class QueryHelper {
      * @return a new constraint
      */
     public static IConstraint createDateRangeConstraint(Date date) {
-        return Constraints.and(Constraints.lte("startTime", date),
-                               Constraints.or(Constraints.gte("endTime", date), Constraints.isNull("endTime")));
+        return createDateRangeConstraint(date, "startTime", "endTime");
+    }
+
+    /**
+     * Helper to create a date range constraint on two nodes, where the end time may be null.
+     *
+     * @param date the date
+     * @param from the from node name
+     * @param to   the to node name
+     * @return a new constraint
+     */
+    public static IConstraint createDateRangeConstraint(Date date, String from, String to) {
+        return and(lte(from, date), or(gte(to, date), isNull(to)));
     }
 
     /**
@@ -150,9 +196,9 @@ public class QueryHelper {
     public static IConstraint createDateRangeConstraint(Date from, Date to) {
         IConstraint result;
         if (to != null) {
-            result = Constraints.or(createDateRangeConstraint(from), createDateRangeConstraint(to));
+            result = or(createDateRangeConstraint(from), createDateRangeConstraint(to));
         } else {
-            result = Constraints.or(Constraints.gte("startTime", from), createDateRangeConstraint(from));
+            result = or(gte("startTime", from), createDateRangeConstraint(from));
         }
         return result;
     }
@@ -183,18 +229,78 @@ public class QueryHelper {
             result = null;
         } else if (from != null && to == null) {
             from = DateRules.getDate(from);
-            result = Constraints.gte(node, from);
+            result = gte(node, from);
         } else if (from == null) {
             to = DateRules.getNextDate(to);
             result = Constraints.lt(node, to);
         } else {
             from = DateRules.getDate(from);
             to = DateRules.getNextDate(to);
-            result = Constraints.and(Constraints.gte(node, from), Constraints.lt(node, to));
+            result = and(gte(node, from), Constraints.lt(node, to));
         }
         return result;
     }
 
+    /**
+     * Determines if a node is an entityLink node.
+     *
+     * @param descriptor the node descriptor
+     * @return {@code true} if the node is a participation node
+     */
+    public static boolean isEntityLinkNode(NodeDescriptor descriptor) {
+        return descriptor.isCollection() && "/entityLinks".equals(descriptor.getPath());
+    }
+
+    /**
+     * Adds a sort constraint on an entityLink node.
+     *
+     * @param acts       the act short names constraint. Must specify an alias
+     * @param query      the query. Must reference {@code acts}
+     * @param descriptor the participation node descriptor
+     * @param ascending  if {@code true} sort ascending
+     */
+    public static void addSortOnEntityLink(ShortNameConstraint acts, ArchetypeQuery query, NodeDescriptor descriptor,
+                                           boolean ascending) {
+        JoinConstraint linkJoin = Constraints.leftJoin(descriptor.getName(), getAlias(descriptor.getName(), query));
+        JoinConstraint targetJoin = Constraints.leftJoin("target", getAlias("target", query));
+        linkJoin.add(targetJoin);
+        acts.add(linkJoin);
+        query.add(Constraints.sort(targetJoin.getAlias(), "name", ascending));
+    }
+
+    /**
+     * Returns the page that an object would fall on.
+     *
+     * @param object     the object to locate
+     * @param query      the query. Note that this is modified
+     * @param pageSize   the page size
+     * @param node       the object node to compare
+     * @param ascending  if {@code true} sort on {@code node} in ascending order, else use descending order
+     * @param comparator the comparator to compare the key and node values
+     * @return the page that an object would fall on, if present
+     */
+    public static <T extends Comparable> int getPage(IMObject object, ArchetypeQuery query, int pageSize,
+                                                     final String node, boolean ascending,
+                                                     final Comparator<T> comparator) {
+        PageLocator locator = new PageLocator(object, query, pageSize);
+        locator.addKey(node, ascending, comparator);
+        return locator.getPage();
+    }
+
+    /**
+     * Helper to create and add a participant constraint to the supplied constraints, if {@code entity} is non-null.
+     *
+     * @param constraints the constraints to add to
+     * @param name        rhe participation node name
+     * @param shortName   the participation archetype short name
+     * @param object      the entity. May be {@code null}
+     */
+    public static void addParticipantConstraint(List<ParticipantConstraint> constraints, String name,
+                                                String shortName, Entity object) {
+        if (object != null) {
+            constraints.add(new ParticipantConstraint(name, shortName, object));
+        }
+    }
 
     /**
      * Returns a unique alias for an entity constraint.

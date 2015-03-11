@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -19,16 +19,20 @@ package org.openvpms.web.component.im.product;
 import echopointng.DropDown;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
+import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.RowFactory;
@@ -63,8 +67,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     private Date date;
 
     /**
-     * The wrapper component, containing either the text field or the prices
-     * dropdown.
+     * The wrapper component, containing either the text field or the prices dropdown.
      */
     private Component container;
 
@@ -94,23 +97,34 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     private ProductPrice price;
 
     /**
+     * The pricing group.
+     */
+    private final PricingGroup pricingGroup;
+
+    /**
      * The layout context.
      */
     private final LayoutContext context;
 
     /**
-     * Creates a new {@code FixedPriceEditor}.
+     * Constructs a {@link FixedPriceEditor}.
      *
-     * @param property the fixed price property
-     * @param context  the layout context
+     * @param property     the fixed price property
+     * @param pricingGroup the pricing group. May be {@code null}
+     * @param context      the layout context
      */
-    public FixedPriceEditor(Property property, LayoutContext context) {
+    public FixedPriceEditor(Property property, Lookup pricingGroup, LayoutContext context) {
         super(property);
+        this.pricingGroup = new PricingGroup(pricingGroup);
         this.context = context;
 
         date = new Date();
 
         field = BoundTextComponentFactory.createNumeric(property, 10);
+        if (property.isReadOnly()) {
+            // can select prices from the dropdown, but not edit the price directly
+            field.setEnabled(false);
+        }
         focus = new FocusGroup(property.getDisplayName());
         focus.add(field);
         container = RowFactory.create(field);
@@ -207,7 +221,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
             if (rules == null) {
                 rules = ServiceHelper.getBean(ProductPriceRules.class);
             }
-            List<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, date);
+            List<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, date, pricingGroup);
             if (!prices.isEmpty()) {
                 table = createPriceTable(prices);
             }
@@ -236,7 +250,9 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     private PagedIMTable<ProductPrice> createPriceTable(List<ProductPrice> prices) {
         ResultSet<ProductPrice> set = new IMObjectListResultSet<ProductPrice>(
                 new ArrayList<ProductPrice>(prices), 20);
-        final PagedIMTable<ProductPrice> table = new PagedIMTable<ProductPrice>(new PriceTableModel(context), set);
+        LayoutContext tableContext = new DefaultLayoutContext(context);
+        tableContext.setComponentFactory(new TableComponentFactory(tableContext));
+        final PagedIMTable<ProductPrice> table = new PagedIMTable<ProductPrice>(new PriceTableModel(tableContext), set);
         table.getTable().addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 onSelected(table.getTable().getSelected());

@@ -18,14 +18,14 @@ package org.openvpms.web.workspace.product.stock;
 
 import org.openvpms.archetype.rules.stock.io.StockData;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.TableBrowser;
+import org.openvpms.web.component.im.query.AbstractQueryBrowser;
 
 /**
  * Stock export browser.
  *
  * @author Tim Anderson
  */
-public class StockExportBrowser extends TableBrowser<StockData> {
+public class StockExportBrowser extends AbstractQueryBrowser<StockData> {
 
     /**
      * Constructs a {@link StockExportBrowser}.

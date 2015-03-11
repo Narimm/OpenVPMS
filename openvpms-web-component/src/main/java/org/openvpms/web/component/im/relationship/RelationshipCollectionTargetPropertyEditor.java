@@ -36,6 +36,7 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.util.ErrorHelper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -71,6 +72,11 @@ public abstract class RelationshipCollectionTargetPropertyEditor
      * The set of removed objects.
      */
     private final Set<IMObject> removed = new HashSet<IMObject>();
+
+    /**
+     * The set of removed editors.
+     */
+    private final Map<IMObject, IMObjectEditor> removedEditors = new HashMap<IMObject, IMObjectEditor>();
 
     /**
      * The logger.
@@ -203,16 +209,13 @@ public abstract class RelationshipCollectionTargetPropertyEditor
             boolean deleted;
             RemoveHandler handler = getRemoveHandler();
             for (IMObject object : toRemove) {
-                IMObjectEditor editor = getEditor(object);
+                IMObjectEditor editor = removedEditors.get(object);
                 if (editor != null) {
                     if (handler != null) {
                         handler.remove(editor);
                         deleted = true;
                     } else {
                         deleted = editor.delete();
-                        if (deleted) {
-                            setEditor(object, null);
-                        }
                     }
                 } else {
                     if (handler != null) {
@@ -224,6 +227,7 @@ public abstract class RelationshipCollectionTargetPropertyEditor
                 }
                 if (deleted) {
                     removed.remove(object);
+                    removedEditors.remove(object);
                 } else {
                     saved = false;
                     break;
@@ -246,8 +250,7 @@ public abstract class RelationshipCollectionTargetPropertyEditor
      */
     protected Map<IMObject, IMObjectRelationship> getTargets() {
         if (targets == null) {
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
+            IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
             List<IMObject> relationships = super.getObjects();
             targets = new LinkedHashMap<IMObject, IMObjectRelationship>();
             for (IMObject object : relationships) {
@@ -272,10 +275,24 @@ public abstract class RelationshipCollectionTargetPropertyEditor
      * @return {@code true} if the object was removed
      */
     protected boolean queueRemove(IMObject object) {
-        if (!object.isNew()) {
-            removed.add(object);
-        }
+        removed.add(object);
         return removeEdited(object);
     }
 
+    /**
+     * Removes an object from the the set of objects to save.
+     * This removes any associated editor.
+     *
+     * @param object the object to remove
+     * @return {@code true} if the the object was being edited
+     */
+    @Override
+    protected boolean removeEdited(IMObject object) {
+        IMObjectEditor editor = getEditor(object);
+        if (editor != null) {
+            // use the editor to delete the object on save
+            removedEditors.put(object, editor);
+        }
+        return super.removeEdited(object);
+    }
 }

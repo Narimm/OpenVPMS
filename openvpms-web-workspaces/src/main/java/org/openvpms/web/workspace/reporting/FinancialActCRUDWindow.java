@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting;
@@ -22,7 +22,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
-import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectViewer;
@@ -52,7 +51,7 @@ public class FinancialActCRUDWindow
      * @param help       the help context
      */
     public FinancialActCRUDWindow(Archetypes<FinancialAct> archetypes, Context context, HelpContext help) {
-        super(archetypes, DefaultActActions.<FinancialAct>getInstance(), context, help);
+        super(archetypes, ActActions.<FinancialAct>edit(), context, help);
     }
 
     /**

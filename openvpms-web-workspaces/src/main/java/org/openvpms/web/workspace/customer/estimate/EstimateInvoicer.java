@@ -11,26 +11,24 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
 
 import org.openvpms.archetype.rules.act.EstimateActStatus;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectCreator;
+import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditor;
+import org.openvpms.web.workspace.customer.charge.AbstractInvoicer;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
+import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
 
 
 /**
@@ -44,7 +42,7 @@ import org.springframework.transaction.support.TransactionCallback;
  *
  * @author Tim Anderson
  */
-class EstimateInvoicer {
+public class EstimateInvoicer extends AbstractInvoicer {
 
     /**
      * Creates an invoice for an estimate.
@@ -63,81 +61,59 @@ class EstimateInvoicer {
         ActBean estimateBean = new ActBean(estimate);
 
         if (invoice == null) {
-            invoice = (FinancialAct) IMObjectCreator.create(CustomerAccountArchetypes.INVOICE);
-            if (invoice == null) {
-                throw new IllegalStateException("Failed to create invoice");
-            }
-            ActBean invoiceBean = new ActBean(invoice);
-            invoiceBean.addNodeParticipation("customer", estimateBean.getNodeParticipantRef("customer"));
+            invoice = createInvoice(estimateBean.getNodeParticipantRef("customer"));
         }
 
         CustomerChargeActEditor editor = createChargeEditor(invoice, context);
 
         // NOTE: need to display the dialog as the process of populating medications and reminders can display
         // popups which would parent themselves on the wrong window otherwise.
-        EditDialog dialog = new EditDialog(editor, estimate, context.getContext());
+        ChargeDialog dialog = new ChargeDialog(editor, estimate, context.getContext());
         dialog.show();
-        EstimateInvoicerHelper.invoice(estimate, editor);
+        invoice(estimate, editor);
         return dialog;
     }
 
     /**
-     * Creates a new {@code ChargeEditor}.
+     * Invoices an estimate.
      *
-     * @param invoice the invoice
-     * @param context the layout context
-     * @return a new charge editor
+     * @param estimate the estimate to invoice
+     * @param editor   the editor to add invoice items to
      */
-    protected CustomerChargeActEditor createChargeEditor(FinancialAct invoice, LayoutContext context) {
-        return new CustomerChargeActEditor(invoice, null, context, false);
-    }
+    public void invoice(Act estimate, AbstractCustomerChargeActEditor editor) {
+        ActBean bean = new ActBean(estimate);
+        ActRelationshipCollectionEditor items = editor.getItems();
 
-    private static class EditDialog extends CustomerChargeActEditDialog {
+        for (Act estimationItem : bean.getNodeActs("items")) {
+            ActBean itemBean = new ActBean(estimationItem);
+            CustomerChargeActItemEditor itemEditor = getItemEditor(editor);
+            itemEditor.setPatientRef(itemBean.getNodeParticipantRef("patient"));
+            itemEditor.setQuantity(itemBean.getBigDecimal("highQty"));
 
-        /**
-         * The estimate.
-         */
-        private final Act estimate;
+            // NOTE: setting the product can trigger popups - want the popups to get the correct
+            // property values from above
+            itemEditor.setProductRef(itemBean.getNodeParticipantRef("product"));
 
-        /**
-         * Determines if the estimation has been saved.
-         */
-        private boolean estimateSaved = false;
-
-        /**
-         * Constructs an {@code EditDialog}.
-         *
-         * @param editor   the invoice editor
-         * @param estimate the estimate
-         * @param context  the context
-         */
-        public EditDialog(CustomerChargeActEditor editor, Act estimate, Context context) {
-            super(editor, context);
-            this.estimate = estimate;
+            itemEditor.setFixedPrice(itemBean.getBigDecimal("fixedPrice"));
+            itemEditor.setUnitPrice(itemBean.getBigDecimal("highUnitPrice"));
+            itemEditor.setDiscount(itemBean.getBigDecimal("highDiscount"));
         }
-
-        /**
-         * Saves the editor in a transaction.
-         *
-         * @param editor the editor
-         * @return {@code true} if the save was successful
-         */
-        @Override
-        protected boolean save(final IMObjectEditor editor) {
-            boolean result;
-
-            if (!estimateSaved) {
-                TransactionCallback<Boolean> callback = new TransactionCallback<Boolean>() {
-                    public Boolean doInTransaction(TransactionStatus status) {
-                        return SaveHelper.save(estimate) && SaveHelper.save(editor);
-                    }
-                };
-                result = SaveHelper.save(editor.getDisplayName(), callback);
-                estimateSaved = result;
-            } else {
-                result = super.save(editor);
+        items.refresh();
+        ActRelationshipCollectionEditor customerNotes = editor.getCustomerNotes();
+        if (customerNotes != null) {
+            for (Act note : bean.getNodeActs("customerNotes")) {
+                IMObjectEditor noteEditor = customerNotes.getEditor(note);
+                noteEditor.getComponent();
+                customerNotes.addEdited(noteEditor);
             }
-            return result;
+        }
+        ActRelationshipCollectionEditor documents = editor.getDocuments();
+        if (documents != null) {
+            for (Act document : bean.getNodeActs("documents")) {
+                IMObjectEditor documentsEditor = documents.getEditor(document);
+                documentsEditor.getComponent();
+                documents.addEdited(documentsEditor);
+            }
         }
     }
 

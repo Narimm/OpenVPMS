@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workflow;
@@ -34,6 +34,7 @@ import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -298,7 +299,7 @@ public class EditIMObjectTask extends AbstractTask {
      */
     protected IMObjectEditor createEditor(IMObject object, TaskContext context) {
         LayoutContext layout = new DefaultLayoutContext(true, context, context.getHelpContext());
-        return IMObjectEditorFactory.create(object, layout);
+        return ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, layout);
     }
 
     /**

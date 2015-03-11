@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.query;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -39,10 +40,9 @@ import java.util.List;
 
 
 /**
- * Result set for <tt>IMObject</tt> instances.
+ * Result set for {@link IMObject} instances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractIMObjectResultSet<T> extends AbstractArchetypeServiceResultSet<T> {
 
@@ -52,7 +52,7 @@ public abstract class AbstractIMObjectResultSet<T> extends AbstractArchetypeServ
     private final ShortNameConstraint archetypes;
 
     /**
-     * The value to search on. May be <tt>null</tt>.
+     * The value to search on. May be {@code null}.
      */
     private String value;
 
@@ -73,14 +73,14 @@ public abstract class AbstractIMObjectResultSet<T> extends AbstractArchetypeServ
 
 
     /**
-     * Construct a new <tt>AbstractIMObjectResultSet</tt>.
+     * Constructs an {@link AbstractIMObjectResultSet}.
      *
      * @param archetypes  the archetypes to query
-     * @param value       the value to query on. May be <tt>null</tt>
-     * @param constraints additional query constraints. May be <tt>null</tt>
-     * @param sort        the sort criteria. May be <tt>null</tt>
+     * @param value       the value to query on. May be {@code null}
+     * @param constraints additional query constraints. May be {@code null}
+     * @param sort        the sort criteria. May be {@code null}
      * @param rows        the maximum no. of rows per page
-     * @param distinct    if <tt>true</tt> filter duplicate rows
+     * @param distinct    if {@code true} filter duplicate rows
      * @param executor    the query executor
      */
     public AbstractIMObjectResultSet(ShortNameConstraint archetypes, String value, IConstraint constraints,
@@ -96,7 +96,7 @@ public abstract class AbstractIMObjectResultSet<T> extends AbstractArchetypeServ
      * </p/>
      * This resets the iterator.
      *
-     * @param value the value to search for. May be <tt>null</tt>
+     * @param value the value to search for. May be {@code null}
      * @param nodes the nodes to search
      */
     public void setSearch(String value, String... nodes) {
@@ -112,9 +112,18 @@ public abstract class AbstractIMObjectResultSet<T> extends AbstractArchetypeServ
     }
 
     /**
+     * Returns the nodes to search on.
+     *
+     * @return the nodes
+     */
+    public List<String> getSearch() {
+        return nodes;
+    }
+
+    /**
      * Returns the value being searched on.
      *
-     * @return the search value. May be <tt>null</tt>
+     * @return the search value. May be {@code null}
      */
     public String getValue() {
         return value;
@@ -135,19 +144,22 @@ public abstract class AbstractIMObjectResultSet<T> extends AbstractArchetypeServ
      * @return a new archetype query
      */
     protected ArchetypeQuery createQuery() {
-        ArchetypeQuery query = new ArchetypeQuery(archetypes);
+        ArchetypeQuery query = new ArchetypeQuery(getArchetypes());
+        addValueConstraints(query);
+        return query;
+    }
+
+    /**
+     * Adds constraints to query nodes on a value.
+     * <p/>
+     * This creates the constraints with {@link #createValueConstraints(String, List)}. If multiple constraints
+     * are returned, an or constraint is used to add them to the query.
+     *
+     * @param query the query to add the constraints to
+     */
+    protected void addValueConstraints(ArchetypeQuery query) {
         if (!StringUtils.isEmpty(value) && !nodes.isEmpty()) {
-            List<IConstraint> constraints = new ArrayList<IConstraint>();
-            for (String node : nodes) {
-                if (ID.equals(node)) {
-                    Long id = getId(value);
-                    if (id != null) {
-                        constraints.add(Constraints.eq(ID, id));
-                    }
-                } else {
-                    constraints.add(Constraints.eq(node, value));
-                }
-            }
+            List<IConstraint> constraints = createValueConstraints(value, nodes);
             if (constraints.size() > 1) {
                 OrConstraint or = new OrConstraint();
                 for (IConstraint constraint : constraints) {
@@ -158,7 +170,31 @@ public abstract class AbstractIMObjectResultSet<T> extends AbstractArchetypeServ
                 query.add(constraints.get(0));
             }
         }
-        return query;
+    }
+
+    /**
+     * Creates constraints to query nodes on a value.
+     *
+     * @param value the value to query
+     * @param nodes the nodes to query
+     * @return the constraints
+     */
+    protected List<IConstraint> createValueConstraints(String value, List<String> nodes) {
+        String alias = getArchetypes().getAlias();
+        List<IConstraint> constraints = new ArrayList<IConstraint>();
+        for (String node : nodes) {
+            if (ID.equals(node)) {
+                Long id = getId(value);
+                if (id != null) {
+                    String name = alias != null ? alias + "." + ID : ID;
+                    constraints.add(Constraints.eq(name, id));
+                }
+            } else {
+                String name = alias != null ? alias + "." + node : node;
+                constraints.add(Constraints.eq(name, value));
+            }
+        }
+        return constraints;
     }
 
     /**
@@ -214,7 +250,7 @@ public abstract class AbstractIMObjectResultSet<T> extends AbstractArchetypeServ
      *
      * @param archetypes the archetypes
      * @param node       the node to search for
-     * @return <tt>true</tt> if the archetypes all have the node
+     * @return {@code true} if the archetypes all have the node
      */
     protected boolean hasNode(List<ArchetypeDescriptor> archetypes, String node) {
         for (ArchetypeDescriptor archetype : archetypes) {

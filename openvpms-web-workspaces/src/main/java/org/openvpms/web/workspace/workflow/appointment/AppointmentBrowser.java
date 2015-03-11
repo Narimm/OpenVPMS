@@ -16,30 +16,42 @@
 
 package org.openvpms.web.workspace.workflow.appointment;
 
+import echopointng.TabbedPane;
 import echopointng.TableEx;
 import nextapp.echo2.app.Alignment;
+import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
+import nextapp.echo2.app.Table;
+import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.ColumnLayoutData;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
+import org.openvpms.archetype.rules.workflow.Slot;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.util.PropertySet;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.AbstractBrowserListener;
+import org.openvpms.web.component.im.query.TabbedBrowserListener;
+import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
+import org.openvpms.web.echo.factory.TabbedPaneFactory;
+import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.tabpane.TabPaneModel;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.scheduling.IntersectComparator;
+import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,14 +60,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.openvpms.web.echo.style.Styles.BOLD;
+import static org.openvpms.web.echo.style.Styles.INSET;
+import static org.openvpms.web.echo.style.Styles.WIDE_CELL_SPACING;
+
 
 /**
- * Appointment browser. Renders blocks of appointments in different hours a
+ * Appointment browser.
+ * <p/>
+ * This provides two tabs:
+ * <ol><li>Appointments<br/>
+ * Provides a query to select appointments, and renders blocks of appointments in different hours a
  * different colour.
+ * </li>
+ * <li>Free Appointment Slots<br/>
+ * Provides a query to find free appointment slots
+ * </li>
+ * </ol>
+ * The Appointments tab is the primary tab; all {@link ScheduleBrowser} methods will be directed to this.
  *
  * @author Tim Anderson
  */
 public class AppointmentBrowser extends ScheduleBrowser {
+
+    /**
+     * The layout context.
+     */
+    private final LayoutContext context;
 
     /**
      * Displays the selected schedule view, schedule and date above the
@@ -73,16 +104,71 @@ public class AppointmentBrowser extends ScheduleBrowser {
      */
     private AppointmentRules rules;
 
+    /**
+     * The tab pane model.
+     */
+    private TabPaneModel model;
 
     /**
-     * Constructs an {@code AppointmentBrowser}.
+     * The tabbed pane.
+     */
+    private TabbedPane tab;
+
+    /**
+     * The free slot query.
+     */
+    private FreeAppointmentSlotQuery freeSlotQuery;
+
+    /**
+     * The free slot browser.
+     */
+    private FreeAppointmentSlotBrowser freeSlotBrowser;
+
+    /**
+     * The tab listener.
+     */
+    private TabbedBrowserListener listener;
+
+    /**
+     * The appointments tab index.
+     */
+    private int appointmentsTab;
+
+    /**
+     * The free slots tab index.
+     */
+    private int freeSlotsTab;
+
+
+    /**
+     * Constructs an {@link AppointmentBrowser}.
      *
      * @param location the practice location. May be {@code null}
      * @param context  the context
      */
-    public AppointmentBrowser(Party location, Context context) {
-        super(new AppointmentQuery(location), context);
+    public AppointmentBrowser(Party location, LayoutContext context) {
+        this(new AppointmentQuery(location), context);
+    }
+
+    /**
+     * Constructs an {@link AppointmentBrowser}.
+     *
+     * @param query   the query
+     * @param context the context
+     */
+    public AppointmentBrowser(AppointmentQuery query, LayoutContext context) {
+        super(query, context.getContext());
+        this.context = context;
         rules = ServiceHelper.getBean(AppointmentRules.class);
+    }
+
+    /**
+     * Sets the tab listener.
+     *
+     * @param listener the listener. May be {@code null}
+     */
+    public void setListener(TabbedBrowserListener listener) {
+        this.listener = listener;
     }
 
     /**
@@ -97,6 +183,31 @@ public class AppointmentBrowser extends ScheduleBrowser {
         lastTimeRange = timeRange;
         doQuery(reselect);
         updateTitle();
+    }
+
+    /**
+     * Returns if the appointments tab is selected.
+     *
+     * @return {@code true} if the appointments tab is selected, {@code false} if the free slot tab is selected
+     */
+    public boolean isAppointmentsSelected() {
+        return tab.getSelectedIndex() == appointmentsTab;
+    }
+
+    /**
+     * Selects the cell for the specified schedule and slot start time.
+     *
+     * @param schedule  the schedule
+     * @param startTime the slot start time
+     */
+    public void setSelected(Entity schedule, Date startTime) {
+        AppointmentGrid grid = (AppointmentGrid) getModel().getGrid();
+        int slot = grid.getSlot(startTime);
+        for (Schedule s : grid.getSchedules()) {
+            if (s.getSchedule().getId() == schedule.getId()) {
+                setSelectedCell(getModel().getColumn(schedule.getObjectReference()), slot);
+            }
+        }
     }
 
     /**
@@ -166,22 +277,34 @@ public class AppointmentBrowser extends ScheduleBrowser {
      */
     @Override
     protected Component doLayout() {
-        title = LabelFactory.create(null, "bold");
+        Component tabContainer = new Column();
+        model = new TabPaneModel(tabContainer);
+        tab = TabbedPaneFactory.create(model);
+        title = LabelFactory.create(null, BOLD);
         ColumnLayoutData layout = new ColumnLayoutData();
         layout.setAlignment(Alignment.ALIGN_CENTER);
         title.setLayoutData(layout);
 
-        Row row = RowFactory.create("CellSpacing");
-        layoutQueryRow(row);
+        Component column = ColumnFactory.create(INSET, ColumnFactory.create(WIDE_CELL_SPACING, title, layoutQuery()));
 
-        Component column = ColumnFactory.create("WideCellSpacing", title, row);
-        TableEx table = getTable();
-        SplitPane component = SplitPaneFactory.create(
-                SplitPane.ORIENTATION_VERTICAL,
-                "AppointmentBrowser", column);
+        appointmentsTab = addTab(Messages.get("workflow.scheduling.appointment.title"), column);
+        freeSlotsTab = addTab(Messages.get("workflow.scheduling.appointment.find.title"),
+                              ColumnFactory.create(Styles.INSET));
+        tab.setSelectedIndex(appointmentsTab);
+
+        Table table = getTable();
+        tabContainer.add(tab);
+        SplitPane component = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, "AppointmentBrowser",
+                                                      tabContainer);
         if (getScheduleView() != null && table != null) {
             addTable(table, component);
         }
+        tab.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                onBrowserChanged();
+            }
+        });
+
         return component;
     }
 
@@ -198,12 +321,9 @@ public class AppointmentBrowser extends ScheduleBrowser {
 
         String text;
         if (viewName != null && schedName != null) {
-            text = Messages.format(
-                    "workflow.scheduling.appointment.viewscheduledate",
-                    viewName, schedName, date);
+            text = Messages.format("workflow.scheduling.appointment.viewscheduledate", viewName, schedName, date);
         } else if (viewName != null) {
-            text = Messages.format(
-                    "workflow.scheduling.appointment.viewdate", viewName, date);
+            text = Messages.format("workflow.scheduling.appointment.viewdate", viewName, date);
         } else {
             text = Messages.format("workflow.scheduling.appointment.date", date);
         }
@@ -217,9 +337,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
      * @param timeRange the time range to view
      * @return view a new grid view, based on the time range
      */
-    private AppointmentGrid createGridView(
-            AppointmentGrid grid,
-            AppointmentQuery.TimeRange timeRange) {
+    private AppointmentGrid createGridView(AppointmentGrid grid, AppointmentQuery.TimeRange timeRange) {
         int startMins = timeRange.getStartMins();
         int endMins = timeRange.getEndMins();
         if (startMins < grid.getStartMins()) {
@@ -242,7 +360,8 @@ public class AppointmentBrowser extends ScheduleBrowser {
      * @return {@code true} if one or more events have overlapping times
      */
     private boolean hasOverlappingEvents(List<PropertySet> events, Party schedule) {
-        int slotSize = AbstractAppointmentGrid.getSlotSize(schedule, new AppointmentRules());
+        AppointmentRules rules = ServiceHelper.getBean(AppointmentRules.class);
+        int slotSize = AbstractAppointmentGrid.getSlotSize(schedule, rules);
         IntersectComparator comparator = new IntersectComparator(slotSize);
         List<PropertySet> list = new ArrayList<PropertySet>();
 
@@ -253,6 +372,102 @@ public class AppointmentBrowser extends ScheduleBrowser {
             list.add(event);
         }
         return false;
+    }
+
+    /**
+     * Removes the existing browser, if required.
+     */
+    private void removeBrowser() {
+        Component parent = getComponent();
+        if (parent.getComponentCount() == 2) {
+            parent.remove(parent.getComponents()[1]);
+        }
+    }
+
+    /**
+     * Invoked when a browser tab is selected.
+     */
+    private void onBrowserChanged() {
+        int index = tab.getSelectedIndex();
+        if (index == appointmentsTab) {
+            onAppointmentsSelected();
+        } else {
+            onFreeSlotsSelected();
+        }
+        if (listener != null) {
+            listener.onBrowserChanged();
+        }
+    }
+
+    /**
+     * Invoked when the appointments tab is selected.
+     */
+    private void onAppointmentsSelected() {
+        Component parent = getComponent();
+        removeBrowser();
+
+        Table table = getTable();
+        if (getScheduleView() != null && table != null) {
+            addTable(table, parent);
+        }
+    }
+
+    /**
+     * Invoked when the free slots tab is selected.
+     */
+    private void onFreeSlotsSelected() {
+        if (freeSlotQuery == null) {
+            Party location = getContext().getLocation();
+            freeSlotQuery = new FreeAppointmentSlotQuery(location, getScheduleView(), getSelectedSchedule(),
+                                                         getQuery().getDate());
+            freeSlotBrowser = new FreeAppointmentSlotBrowser(freeSlotQuery, context);
+            freeSlotBrowser.addBrowserListener(new AbstractBrowserListener<Slot>() {
+                @Override
+                public void selected(Slot slot) {
+                    onFreeSlotSelected(slot);
+                }
+            });
+            Component query = layoutQuery(freeSlotQuery, new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    freeSlotBrowser.query();
+                }
+            });
+            model.getTabContentAt(freeSlotsTab).add(query);
+        }
+        Component parent = getComponent();
+        removeBrowser();
+        parent.add(freeSlotBrowser.getComponent());
+    }
+
+    private void onFreeSlotSelected(Slot slot) {
+        Entity scheduleView = freeSlotBrowser.getScheduleView();
+        Entity schedule = freeSlotBrowser.getSchedule(slot);
+        if (scheduleView != null && schedule != null) {
+            setScheduleView(scheduleView);
+            Date startTime = slot.getStartTime();
+            setDate(startTime);
+            getQuery().setTimeRange(AppointmentQuery.TimeRange.getRange(startTime));
+            query();
+            setSelected(schedule, startTime);
+            tab.setSelectedIndex(appointmentsTab);
+        }
+    }
+
+    /**
+     * Adds a browser tab.
+     *
+     * @param displayName the tab name
+     * @param component   the component
+     * @return the tab index
+     */
+    private int addTab(String displayName, Component component) {
+        int result = model.size();
+        int shortcut = result + 1;
+        String text = "&" + shortcut + " " + displayName;
+        component = ColumnFactory.create(Styles.INSET, component);
+        model.addTab(text, component);
+        return result;
     }
 
 }

@@ -11,8 +11,9 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.reporting.statement;
 
 import nextapp.echo2.app.ApplicationInstance;
@@ -74,7 +75,10 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         ApplicationInstance.setActive(app);
         app.doInit();
 
-        TemplateHelper helper = new TemplateHelper();
+        Party practice = getPractice();
+        practice.addContact(TestHelper.createEmailContact("foo@bar.com"));
+
+        TemplateHelper helper = new TemplateHelper(getArchetypeService());
         Entity entity = helper.getTemplateForArchetype(CustomerAccountArchetypes.OPENING_BALANCE);
         if (entity == null) {
             entity = (Entity) create(DocumentArchetypes.DOCUMENT_TEMPLATE);
@@ -124,7 +128,7 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
 
         final List<Statement> statements = new ArrayList<Statement>();
         StatementProcessor processor = new StatementProcessor(statementDate, practice, getArchetypeService(),
-                                                              ServiceHelper.getLookupService(),
+                                                              getLookupService(),
                                                               ServiceHelper.getBean(CustomerAccountRules.class));
         processor.addListener(new ProcessorListener<Statement>() {
             public void process(Statement statement) {
@@ -133,9 +137,8 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         });
         processor.process(customer);
         assertEquals(1, statements.size());
-        StatementEmailProcessor emailprocessor =
-                new StatementEmailProcessor(sender, "Foo", "foo@bar.com", getPractice(), new LocalContext());
-        emailprocessor.process(statements.get(0));
+        StatementEmailProcessor emailProcessor = new StatementEmailProcessor(sender, practice, new LocalContext());
+        emailProcessor.process(statements.get(0));
         Mockito.verify(sender, times(1)).send(mimeMessage);
     }
 

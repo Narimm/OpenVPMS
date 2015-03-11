@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -28,21 +28,28 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.hl7.patient.PatientContext;
+import org.openvpms.hl7.patient.PatientContextFactory;
+import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.EntityQuery;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
+import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.LocalTask;
 import org.openvpms.web.component.workflow.ReloadTask;
 import org.openvpms.web.component.workflow.SelectIMObjectTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.TaskContext;
+import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.TaskProperties;
 import org.openvpms.web.component.workflow.UpdateIMObjectTask;
 import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.EditVisitTask;
 import org.openvpms.web.workspace.workflow.GetClinicalEventTask;
 import org.openvpms.web.workspace.workflow.GetInvoiceTask;
@@ -129,11 +136,12 @@ public class CheckInWorkflow extends WorkflowImpl {
         Party patient = (Party) bean.getParticipant("participation.patient");
         User clinician = (User) bean.getParticipant("participation.clinician");
 
-        String reason = ArchetypeServiceFunctions.lookup(appointment, "reason", "Appointment");
+        ArchetypeServiceFunctions functions = ServiceHelper.getBean(ArchetypeServiceFunctions.class);
+        String reason = functions.lookup(appointment, "reason", "Appointment");
         String notes = bean.getString("description", "");
         String description = Messages.format("workflow.checkin.task.description", reason, notes);
 
-        initialise(appointment, customer, patient, clinician, description, reason, context);
+        initialise(appointment, customer, patient, clinician, description, appointment.getReason(), context);
     }
 
     /**
@@ -144,7 +152,7 @@ public class CheckInWorkflow extends WorkflowImpl {
      * @param patient         the patient
      * @param clinician       the clinician. May be {@code null}
      * @param taskDescription the description to assign to the <em>act.customerTask</em>. May be {@code null}
-     * @param reason          the description to assign to the <em>act.patientClinicalEvent</em>. May be {@code null}
+     * @param reason          the visit reason code. May be {@code null}
      * @param context         the external context to access and update
      */
     private void initialise(Act appointment, Party customer, Party patient, User clinician, String taskDescription,
@@ -206,8 +214,22 @@ public class CheckInWorkflow extends WorkflowImpl {
         addTask(new GetInvoiceTask());
         addTask(new ConditionalCreateTask(CustomerAccountArchetypes.INVOICE));
 
+        // need to generate any admission messages prior to invoice editing
+        addTask(new AdmissionTask());
+
         // edit the act.patientClinicalEvent in a local context, propagating the patient and customer on completion
-        addTask(new LocalTask(createEditVisitTask(), Context.PATIENT_SHORTNAME, Context.CUSTOMER_SHORTNAME));
+        // If the task is cancelled, generate HL7 cancel admission messages
+        EditVisitTask editVisitTask = createEditVisitTask();
+        editVisitTask.addTaskListener(new DefaultTaskListener() {
+            @Override
+            public void taskEvent(TaskEvent event) {
+                if (event.getType() == TaskEvent.Type.CANCELLED) {
+                    CancelAdmissionTask task = new CancelAdmissionTask();
+                    task.execute(getContext());
+                }
+            }
+        });
+        addTask(new LocalTask(editVisitTask, Context.PATIENT_SHORTNAME, Context.CUSTOMER_SHORTNAME));
 
         // Reload the task to refresh the context with any edits made
         addTask(new ReloadTask(PatientArchetypes.CLINICAL_EVENT));
@@ -245,6 +267,15 @@ public class CheckInWorkflow extends WorkflowImpl {
     }
 
     /**
+     * Returns the initial context.
+     *
+     * @return the initial context
+     */
+    protected Context getInitialContext() {
+        return initial;
+    }
+
+    /**
      * Creates a new {@link SelectIMObjectTask} to select a patient.
      *
      * @param context       the context
@@ -265,7 +296,7 @@ public class CheckInWorkflow extends WorkflowImpl {
     protected SelectIMObjectTask<Entity> createSelectWorkListTask(TaskContext context) {
         HelpContext help = context.getHelpContext().topic("worklist");
         ScheduleWorkListQuery query = new ScheduleWorkListQuery(context.getSchedule(), context.getLocation());
-        return new SelectIMObjectTask<Entity>(new EntityQuery(query, context), help);
+        return new SelectIMObjectTask<Entity>(new EntityQuery<Entity>(query, context), help);
     }
 
     /**
@@ -366,6 +397,42 @@ public class CheckInWorkflow extends WorkflowImpl {
             if (act != null) {
                 bean.addRelationship("actRelationship.customerAppointmentTask", act);
             }
+        }
+    }
+
+    private class AdmissionTask extends SynchronousTask {
+
+        /**
+         * Executes the task.
+         *
+         * @throws OpenVPMSException for any error
+         */
+        @Override
+        public void execute(TaskContext context) {
+            PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
+            Act visit = (Act) context.getObject(PatientArchetypes.CLINICAL_EVENT);
+            PatientContext pc = factory.createContext(context.getPatient(), context.getCustomer(), visit,
+                                                      context.getLocation(), context.getClinician());
+            PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
+            service.admitted(pc, context.getUser());
+        }
+    }
+
+    private class CancelAdmissionTask extends SynchronousTask {
+
+        /**
+         * Executes the task.
+         *
+         * @throws OpenVPMSException for any error
+         */
+        @Override
+        public void execute(TaskContext context) {
+            PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
+            Act visit = (Act) context.getObject(PatientArchetypes.CLINICAL_EVENT);
+            PatientContext pc = factory.createContext(context.getPatient(), context.getCustomer(), visit,
+                                                      context.getLocation(), context.getClinician());
+            PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
+            service.admissionCancelled(pc, context.getUser());
         }
     }
 }

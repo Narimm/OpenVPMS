@@ -1,28 +1,27 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
-import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
-import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -40,6 +39,8 @@ import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.reporting.ReportingException;
+import org.openvpms.web.workspace.reporting.email.EmailAddress;
+import org.openvpms.web.workspace.reporting.email.PracticeEmailAddresses;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -68,19 +69,14 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
     private final JavaMailSender sender;
 
     /**
-     * The email address.
-     */
-    private final String emailAddress;
-
-    /**
-     * The email name.
-     */
-    private final String emailName;
-
-    /**
      * The document handlers.
      */
     private final DocumentHandlers handlers;
+
+    /**
+     * The practice email addresses.
+     */
+    private final PracticeEmailAddresses addresses;
 
     /**
      * Fields to pass to the report.
@@ -89,7 +85,7 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
 
 
     /**
-     * Constructs a {@code ReminderEmailProcessor}.
+     * Constructs a {@link ReminderEmailProcessor}.
      *
      * @param sender        the mail sender
      * @param practice      the practice
@@ -99,23 +95,10 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
     public ReminderEmailProcessor(JavaMailSender sender, Party practice, DocumentTemplate groupTemplate,
                                   Context context) {
         super(groupTemplate, context);
-        ReminderRules rules = new ReminderRules(ServiceHelper.getArchetypeService(),
-                                                new PatientRules(ServiceHelper.getArchetypeService(),
-                                                                 ServiceHelper.getLookupService()));
-        Contact email = rules.getEmailContact(practice.getContacts());
-        if (email == null) {
-            throw new ReportingException(ReportingException.ErrorCode.NoReminderContact, practice.getName());
-        }
-        IMObjectBean bean = new IMObjectBean(email);
-        emailAddress = bean.getString("emailAddress");
-        if (StringUtils.isEmpty(emailAddress)) {
-            throw new ReportingException(ReportingException.ErrorCode.InvalidEmailAddress, emailAddress,
-                                         practice.getName());
-        }
-
-        emailName = practice.getName();
         this.sender = sender;
         handlers = ServiceHelper.getDocumentHandlers();
+
+        addresses = new PracticeEmailAddresses(practice, "REMINDER");
         fields = ReportContextFactory.create(getContext());
     }
 
@@ -136,12 +119,14 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
         }
 
         try {
+            EmailAddress from = addresses.getAddress(event.getCustomer());
+            IMObjectBean bean = new IMObjectBean(contact);
+            String to = bean.getString("emailAddress");
+
             MimeMessage message = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setValidateAddresses(true);
-            IMObjectBean bean = new IMObjectBean(contact);
-            String to = bean.getString("emailAddress");
-            helper.setFrom(emailAddress, emailName);
+            helper.setFrom(from.getAddress(), from.getName());
             helper.setTo(to);
 
             String subject = documentTemplate.getEmailSubject();

@@ -1,54 +1,39 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 /**
- * Validates an {@link Modifiable} heirarchy.
+ * Validates an {@link Modifiable} hierarchy.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class Validator {
-
-    /**
-     * Modifiable instances with their corresponding errors.
-     */
-    private Map<Modifiable, List<ValidatorError>> errors
-        = new HashMap<Modifiable, List<ValidatorError>>();
-
+public interface Validator {
 
     /**
      * Validates an object.
      *
      * @param modifiable the object to validate
-     * @return <tt>true</tt> if the object is valid; otherwise <tt>false</tt>
+     * @return {@code true} if the object is valid; otherwise {@code false}
      */
-    public boolean validate(Modifiable modifiable) {
-        return modifiable.validate(this);
-    }
+    boolean validate(Modifiable modifiable);
 
     /**
      * Adds a validation error for an object. This replaces any existing
@@ -57,10 +42,7 @@ public class Validator {
      * @param modifiable the object
      * @param error      the validation error
      */
-    public void add(Modifiable modifiable, ValidatorError error) {
-        List<ValidatorError> errors = Arrays.asList(error);
-        add(modifiable, errors);
-    }
+    void add(Modifiable modifiable, ValidatorError error);
 
     /**
      * Adds validation errors for an object. This replaces any existing
@@ -69,30 +51,21 @@ public class Validator {
      * @param modifiable the object
      * @param errors     the validation errors
      */
-    public void add(Modifiable modifiable, List<ValidatorError> errors) {
-        if (!errors.isEmpty()) {
-            this.errors.put(modifiable, errors);
-        }
-    }
+    void add(Modifiable modifiable, List<ValidatorError> errors);
 
     /**
      * Returns all invalid objects.
      *
      * @return all invalid objects
      */
-    public Collection<Modifiable> getInvalid() {
-        return errors.keySet();
-    }
+    Collection<Modifiable> getInvalid();
 
     /**
      * Returns any errors for an object.
      *
      * @param modifiable the object
-     * @return errors associated with <tt>modifiable</tt>, or <tt>null</tt>
-     *         if there are no errors
+     * @return errors associated with {@code modifiable}, or {@code null} if there are no errors
      */
-    public List<ValidatorError> getErrors(Modifiable modifiable) {
-        return errors.get(modifiable);
-    }
+    List<ValidatorError> getErrors(Modifiable modifiable);
 
 }

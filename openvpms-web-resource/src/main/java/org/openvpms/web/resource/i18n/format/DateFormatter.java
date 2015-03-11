@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.resource.i18n.format;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.text.DateFormat;
@@ -50,6 +51,11 @@ public class DateFormatter {
      * Full date pattern.
      */
     private static final String FULL_DATE_PATTERN;
+
+    /**
+     * Day/month date pattern.
+     */
+    private static final String DAY_MONTH_DATE_PATTERN;
 
     /**
      * Time edit pattern.
@@ -121,6 +127,24 @@ public class DateFormatter {
             return new SimpleDateFormat(FULL_DATE_PATTERN, locale);
         }
         return DateFormat.getDateInstance(DateFormat.FULL, locale);
+    }
+
+    /**
+     * Returns the day/month date format for the current locale.
+     * <p/>
+     * This can be overridden by specifying the <em>date.format.dayMonth</em>
+     * property in {@code messages.properties}.
+     * <p/>
+     * If unspecified, returns {@link #getFullDateFormat()}.
+     *
+     * @return the day/month date format
+     */
+    public static DateFormat getDayMonthDateFormat() {
+        Locale locale = Messages.getLocale();
+        if (DAY_MONTH_DATE_PATTERN != null) {
+            return new SimpleDateFormat(DAY_MONTH_DATE_PATTERN, locale);
+        }
+        return getFullDateFormat();
     }
 
     /**
@@ -202,6 +226,22 @@ public class DateFormatter {
      */
     public static String formatDateTime(Date dateTime, boolean edit) {
         return getDateTimeFormat(edit).format(dateTime);
+    }
+
+    /**
+     * Formats a date-time, abbreviating it to just the time if the date is today.
+     *
+     * @param dateTime the date-time to format
+     * @return the formatted date-time
+     */
+    public static String formatDateTimeAbbrev(Date dateTime) {
+        String result;
+        if (DateRules.compareDateToToday(dateTime) == 0) {
+            result = DateFormatter.formatTime(dateTime, false);
+        } else {
+            result = DateFormatter.formatDateTime(dateTime, false);
+        }
+        return result;
     }
 
     /**
@@ -360,6 +400,9 @@ public class DateFormatter {
 
         String fullDate = Messages.get("date.format.full", true);
         FULL_DATE_PATTERN = (!StringUtils.isEmpty(fullDate)) ? fullDate : null;
+
+        String dayMonth = Messages.get("date.format.dayMonth", true);
+        DAY_MONTH_DATE_PATTERN = (!StringUtils.isEmpty(dayMonth)) ? dayMonth : null;
 
         String timeEdit = Messages.get("time.format.edit", true);
         TIME_EDIT_PATTERN = (!StringUtils.isEmpty(timeEdit)) ? timeEdit : null;

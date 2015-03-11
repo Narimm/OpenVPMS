@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -32,7 +32,7 @@ import org.openvpms.web.component.im.view.TableComponentFactory;
  * @author Tim Anderson
  */
 public abstract class IMObjectTableBrowser<T extends IMObject>
-        extends TableBrowser<T> {
+        extends AbstractQueryBrowser<T> {
 
     /**
      * Constructs an {@code IMObjectTableBrowser} that queries IMObjects using the specified query.
@@ -83,6 +83,8 @@ public abstract class IMObjectTableBrowser<T extends IMObject>
 
     /**
      * Creates a new table model.
+     * <p/>
+     * This implementation registers an {@link TableComponentFactory} with the context, if one isn't already registered.
      *
      * @param context the layout context
      * @return a new table model
@@ -90,8 +92,10 @@ public abstract class IMObjectTableBrowser<T extends IMObject>
     @Override
     protected IMTableModel<T> createTableModel(LayoutContext context) {
         context = new DefaultLayoutContext(context);
-        IMObjectComponentFactory factory = new TableComponentFactory(context);
-        context.setComponentFactory(factory);
+        if (!(context.getComponentFactory() instanceof TableComponentFactory)) {
+            IMObjectComponentFactory factory = new TableComponentFactory(context);
+            context.setComponentFactory(factory);
+        }
         Query<T> query = getQuery();
         String[] shortNames = query.getShortNames();
         if (query instanceof AbstractArchetypeQuery) {

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier;
@@ -96,7 +96,8 @@ public abstract class SupplierActItemEditor extends ActItemEditor {
             if (product != null && practice != null) {
                 BigDecimal amount = quantity.multiply(unitPrice);
                 BigDecimal previousTax = act.getTaxAmount();
-                TaxRules rules = new TaxRules(practice);
+                TaxRules rules = new TaxRules(practice, ServiceHelper.getArchetypeService(),
+                                              ServiceHelper.getLookupService());
                 BigDecimal tax = rules.calculateTax(amount, product, false);
                 if (tax.compareTo(previousTax) != 0) {
                     Property property = getProperty("tax");

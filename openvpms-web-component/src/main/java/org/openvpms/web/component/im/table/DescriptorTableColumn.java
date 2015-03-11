@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -39,8 +37,7 @@ import java.util.Map;
 /**
  * Table column associated with one or more {@link NodeDescriptor}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  * @see DescriptorTableModel
  */
 public class DescriptorTableColumn extends TableColumn {
@@ -54,7 +51,7 @@ public class DescriptorTableColumn extends TableColumn {
      * Node descriptors, keyed on short name.
      */
     private final Map<String, NodeDescriptor> descriptors
-        = new HashMap<String, NodeDescriptor>();
+            = new HashMap<String, NodeDescriptor>();
 
 
     /**
@@ -176,7 +173,7 @@ public class DescriptorTableColumn extends TableColumn {
      * Creates a new sort constraint for this column.
      *
      * @param ascending whether to sort in ascending or descending order
-     * @return a new sort cosntraint
+     * @return a new sort constraint
      */
     public SortConstraint createSortConstraint(boolean ascending) {
         return new NodeSortConstraint(name, ascending);

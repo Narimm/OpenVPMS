@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.user;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
@@ -30,8 +31,8 @@ import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -47,16 +48,22 @@ public class UserEditor extends AbstractIMObjectEditor {
      */
     private final Property confirm;
 
+    /**
+     * The user rules.
+     */
+    private final UserRules rules;
+
 
     /**
-     * Construct a new <code>UserEditor</code>.
+     * Constructs an {@link UserEditor}.
      *
      * @param object  the object to edit
-     * @param parent  the parent object. May be <code>null</code>
-     * @param context the layout context. May be <code>null</code>.
+     * @param parent  the parent object. May be {@code null}
+     * @param context the layout context. May be {@code null}.
      */
     public UserEditor(User object, IMObject parent, LayoutContext context) {
         super(object, parent, context);
+        rules = ServiceHelper.getBean(UserRules.class);
         Property property = getPassword();
         String value = (String) property.getValue();
         confirm = new SimpleProperty("confirm", value, String.class);
@@ -98,18 +105,54 @@ public class UserEditor extends AbstractIMObjectEditor {
      */
     @Override
     protected boolean doValidation(Validator validator) {
+        return super.doValidation(validator) && validateUniqueUserName(validator) && validatePassword(validator);
+    }
+
+    /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        return new LayoutStrategy();
+    }
+
+    /**
+     * Validates that the username is unique.
+     *
+     * @param validator the validator
+     * @return {@code true} if the username is unique
+     */
+    private boolean validateUniqueUserName(Validator validator) {
+        boolean valid = true;
+        Property username = getProperty("username");
+        String name = username.getString();
+        if (name != null && rules.exists(name, (User) getObject())) {
+            String message = Messages.format("admin.user.duplicate", name);
+            ValidatorError error = new ValidatorError(getObject().getArchetypeId().getShortName(),
+                                                      username.getName(), message);
+            validator.add(username, error);
+            valid = false;
+        }
+        return valid;
+    }
+
+    /**
+     * Verifies that the passwords are the same.
+     *
+     * @param validator the validator
+     * @return {@code true} if the passwords are the same
+     */
+    private boolean validatePassword(Validator validator) {
         boolean valid = false;
-        if (super.doValidation(validator)) {
-            Property password = getPassword();
-            if (ObjectUtils.equals(password.getValue(), confirm.getValue())) {
-                valid = true;
-            } else {
-                ValidatorError error = new ValidatorError(
-                        getObject().getArchetypeId().getShortName(),
-                        password.getName(),
-                        Messages.get("admin.user.password.mismatch"));
-                validator.add(password, Arrays.asList(error));
-            }
+        Property password = getPassword();
+        if (ObjectUtils.equals(password.getValue(), confirm.getValue())) {
+            valid = true;
+        } else {
+            ValidatorError error = new ValidatorError(getObject().getArchetypeId().getShortName(), password.getName(),
+                                                      Messages.get("admin.user.password.mismatch"));
+            validator.add(password, error);
         }
         return valid;
     }
@@ -121,16 +164,6 @@ public class UserEditor extends AbstractIMObjectEditor {
      */
     private Property getPassword() {
         return getProperty("password");
-    }
-
-    /**
-     * Creates the layout strategy.
-     *
-     * @return a new layout strategy
-     */
-    @Override
-    protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new LayoutStrategy();
     }
 
     /**

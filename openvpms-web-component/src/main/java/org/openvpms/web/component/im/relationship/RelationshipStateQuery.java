@@ -23,8 +23,10 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IdConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
@@ -209,18 +211,21 @@ public class RelationshipStateQuery {
         if (!relsById.isEmpty()) {
             // query the the database for matching relationship states, and
             // create RelationshipState instances for each returned ObjectSet
-            ArchetypeQuery query = createQuery();
+            IArchetypeQuery query = createQuery();
+            query.setMaxResults(1000);
             Iterator<ObjectSet> iter = new ObjectSetQueryIterator(query);
             while (iter.hasNext()) {
                 ObjectSet set = iter.next();
-                long relId = set.getLong("rel.id");
+                long relId = set.getLong("relationship.id");
                 long id = set.getLong(secondaryIdNode);
                 String name = set.getString(secondaryNameNode);
                 String description = set.getString(secondaryDescNode);
                 boolean active = set.getBoolean(secondaryActiveNode);
 
                 IMObjectRelationship r = relsById.remove(relId);
-                if (r != null) {
+                if (r == null) {
+                    // no corresponding IMObjectRelationship, so discard it
+                } else {
                     long sourceId;
                     String sourceName;
                     String sourceDesc;
@@ -243,12 +248,9 @@ public class RelationshipStateQuery {
                         targetName = parent.getName();
                         targetDesc = parent.getDescription();
                     }
-                    RelationshipState state = factory.create(
-                            r, sourceId, sourceName, sourceDesc, targetId,
-                            targetName, targetDesc, active);
+                    RelationshipState state = factory.create(parent, r, sourceId, sourceName, sourceDesc, targetId,
+                                                             targetName, targetDesc, active, set);
                     result.put(r, state);
-                } else {
-                    // no corresponding IMObjectRelationship, so discard it
                 }
             }
 
@@ -279,8 +281,9 @@ public class RelationshipStateQuery {
      *
      * @return a new archetype query
      */
-    protected ArchetypeQuery createQuery() {
-        ShortNameConstraint relationships = new ShortNameConstraint("rel", relationshipShortNames, false, false);
+    protected IArchetypeQuery createQuery() {
+        ShortNameConstraint relationships = new ShortNameConstraint("relationship", relationshipShortNames, false,
+                                                                    false);
         ObjectRefConstraint primary = new ObjectRefConstraint(primaryNode, parent.getObjectReference());
         ShortNameConstraint secondary = new ShortNameConstraint(secondaryNode, shortNames, false, false);
 
@@ -288,13 +291,14 @@ public class RelationshipStateQuery {
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
         query.add(primary);
         query.add(secondary);
-        query.add(new IdConstraint("rel.source", "source"));
-        query.add(new IdConstraint("rel.target", "target"));
-        query.add(new NodeSelectConstraint("rel.id"));
+        query.add(new IdConstraint("relationship.source", "source"));
+        query.add(new IdConstraint("relationship.target", "target"));
+        query.add(new NodeSelectConstraint("relationship.id"));
         query.add(new NodeSelectConstraint(secondaryIdNode));
         query.add(new NodeSelectConstraint(secondaryNameNode));
         query.add(new NodeSelectConstraint(secondaryDescNode));
         query.add(new NodeSelectConstraint(secondaryActiveNode));
+        query.add(new NodeSortConstraint("relationship", "id"));
         return query;
     }
 
@@ -315,6 +319,15 @@ public class RelationshipStateQuery {
      */
     protected String getSecondaryAlias() {
         return secondaryNode;
+    }
+
+    /**
+     * Returns the relationship short names.
+     *
+     * @return the relationship short names
+     */
+    protected String[] getRelationshipShortNames() {
+        return relationshipShortNames;
     }
 
 }

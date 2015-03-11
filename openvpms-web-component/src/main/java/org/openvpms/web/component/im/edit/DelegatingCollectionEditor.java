@@ -30,17 +30,16 @@ import java.util.Collection;
 
 
 /**
- * An {@link IMObjectCollectionEditor} that delegates to another.
+ * An {@link EditableIMObjectCollectionEditor} that delegates to another.
  *
  * @author Tim Anderson
  */
-public abstract class DelegatingCollectionEditor
-        implements IMObjectCollectionEditor {
+public abstract class DelegatingCollectionEditor implements EditableIMObjectCollectionEditor {
 
     /**
      * The editor to delegate to.
      */
-    private AbstractIMObjectCollectionEditor editor;
+    private AbstractEditableIMObjectCollectionEditor editor;
 
 
     /**
@@ -54,7 +53,7 @@ public abstract class DelegatingCollectionEditor
      *
      * @param editor the editor to delegate to
      */
-    public DelegatingCollectionEditor(AbstractIMObjectCollectionEditor editor) {
+    public DelegatingCollectionEditor(AbstractEditableIMObjectCollectionEditor editor) {
         setEditor(editor);
     }
 
@@ -101,6 +100,16 @@ public abstract class DelegatingCollectionEditor
      */
     public void setCreationListener(IMObjectCreationListener listener) {
         editor.setCreationListener(listener);
+    }
+
+    /**
+     * Returns the listener to be notified when an object is created.
+     *
+     * @return the listener, or {@code null} if none is registered
+     */
+    @Override
+    public IMObjectCreationListener getCreationListener() {
+        return editor.getCreationListener();
     }
 
     /**
@@ -206,23 +215,23 @@ public abstract class DelegatingCollectionEditor
     }
 
     /**
-     * Adds a listener to be notified of errors.
+     * Sets a listener to be notified of errors.
      *
-     * @param listener the listener to add
+     * @param listener the listener to register. May be {@code null}
      */
     @Override
-    public void addErrorListener(ErrorListener listener) {
-        editor.addErrorListener(listener);
+    public void setErrorListener(ErrorListener listener) {
+        editor.setErrorListener(listener);
     }
 
     /**
-     * Removes a listener.
+     * Returns the listener to be notified of errors.
      *
-     * @param listener the listener to remove
+     * @return the listener. May be {@code null}
      */
     @Override
-    public void removeErrorListener(ErrorListener listener) {
-        editor.removeErrorListener(listener);
+    public ErrorListener getErrorListener() {
+        return editor.getErrorListener();
     }
 
     /**
@@ -330,11 +339,23 @@ public abstract class DelegatingCollectionEditor
     }
 
     /**
+     * Returns the objects in the collection.
+     * <p/>
+     * This includes the object of the current editor, which may be uncommitted.
+     *
+     * @return the objects
+     */
+    @Override
+    public Collection<IMObject> getCurrentObjects() {
+        return editor.getCurrentObjects();
+    }
+
+    /**
      * Registers the editor to delegate to.
      *
      * @param editor the editor to delegate to
      */
-    protected void setEditor(AbstractIMObjectCollectionEditor editor) {
+    protected void setEditor(AbstractEditableIMObjectCollectionEditor editor) {
         this.editor = editor;
     }
 

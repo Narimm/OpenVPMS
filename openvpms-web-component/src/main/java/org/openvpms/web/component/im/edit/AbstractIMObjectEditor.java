@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -36,6 +36,7 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.lookup.LookupField;
+import org.openvpms.web.component.im.lookup.LookupPropertyEditor;
 import org.openvpms.web.component.im.view.AbstractIMObjectView;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.IMObjectView;
@@ -44,8 +45,8 @@ import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ErrorListener;
-import org.openvpms.web.component.property.ErrorListeners;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
@@ -104,11 +105,6 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     private ModifiableListeners listeners = new ModifiableListeners();
 
     /**
-     * The error listeners.
-     */
-    private ErrorListeners errorListeners = new ErrorListeners();
-
-    /**
      * The child editors.
      */
     private Editors editors;
@@ -155,7 +151,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
 
     /**
-     * Constructs an {@code AbstractIMObjectEditor}.
+     * Constructs an {@link AbstractIMObjectEditor}.
      *
      * @param object        the object to edit
      * @param parent        the parent object. May be {@code null}
@@ -171,7 +167,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
         archetype = context.getArchetypeDescriptor(object);
         properties = new PropertySet(object, archetype, context.getVariables());
-        editors = new Editors(properties, listeners, errorListeners);
+        editors = new Editors(properties, listeners);
 
         IMObjectLayoutStrategyFactory strategyFactory = context.getLayoutStrategyFactory();
         if (strategyFactory == null || strategyFactory instanceof ViewLayoutStrategyFactory) {
@@ -269,7 +265,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
             return false;
         }
         boolean result = false;
-        Validator validator = new Validator();
+        Validator validator = createValidator();
         if (validator.validate(this)) {
             boolean isNew = object.isNew();
             if (!isNew && !isModified()) {
@@ -282,7 +278,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
                 }
             }
         } else {
-            ValidationHelper.showError(validator);
+            showErrors(validator);
         }
         return result;
     }
@@ -364,23 +360,23 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     }
 
     /**
-     * Adds a listener to be notified of errors.
+     * Sets a listener to be notified of errors.
      *
-     * @param listener the listener to add
+     * @param listener the listener to register. May be {@code null}
      */
     @Override
-    public void addErrorListener(ErrorListener listener) {
-        editors.addErrorListener(listener);
+    public void setErrorListener(ErrorListener listener) {
+        editors.setErrorListener(listener);
     }
 
     /**
-     * Removes a listener.
+     * Returns the listener to be notified of errors.
      *
-     * @param listener the listener to remove
+     * @return the listener. May be {@code null}
      */
     @Override
-    public void removeErrorListener(ErrorListener listener) {
-        editors.removeErrorListener(listener);
+    public ErrorListener getErrorListener() {
+        return editors.getErrorListener();
     }
 
     /**
@@ -501,6 +497,25 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     public CollectionProperty getCollectionProperty(String name) {
         return (CollectionProperty) properties.get(name);
     }
+
+    /**
+     * Creates a validator to perform validation on save.
+     *
+     * @return a new validator
+     */
+    protected Validator createValidator() {
+        return new DefaultValidator();
+    }
+
+    /**
+     * Displays validation errors.
+     *
+     * @param validator the validator
+     */
+    protected void showErrors(Validator validator) {
+        ValidationHelper.showError(validator);
+    }
+
 
     /**
      * Resets the cached validity state of the object.
@@ -805,11 +820,10 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * @param source the source lookup
      */
     protected void refreshLookups(LookupField source) {
-        boolean refreshed = false;
         for (PropertyEditor editor : lookups.keySet()) {
             LookupField lookup = (LookupField) editor.getComponent();
             if (source != lookup) {
-                refreshed |= lookup.refresh();
+                lookup.refresh();
             }
         }
         // need to reset focus, otherwise focus traversal is non-deterministic. Note that this has implications
@@ -914,16 +928,19 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
          * @return a component to edit the property
          */
         @Override
-        protected Editor createLookupEditor(Property property, IMObject context) {
-            Editor editor = super.createLookupEditor(property, context);
-            final LookupField lookup = (LookupField) editor.getComponent();
-            ModifiableListener listener = new ModifiableListener() {
-                public void modified(Modifiable modifiable) {
-                    refreshLookups(lookup);
-                }
-            };
-            property.addModifiableListener(listener);
-            lookups.put((PropertyEditor) editor, listener);
+        protected LookupPropertyEditor createLookupEditor(Property property, IMObject context) {
+            LookupPropertyEditor editor = super.createLookupEditor(property, context);
+            Component component = editor.getComponent();
+            if (component instanceof LookupField) {
+                final LookupField lookup = (LookupField) editor.getComponent();
+                ModifiableListener listener = new ModifiableListener() {
+                    public void modified(Modifiable modifiable) {
+                        refreshLookups(lookup);
+                    }
+                };
+                property.addModifiableListener(listener);
+                lookups.put(editor, listener);
+            }
             return editor;
         }
     }

@@ -24,6 +24,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ReloadingContext;
 import org.openvpms.web.component.macro.MacroDialog;
 import org.openvpms.web.component.macro.MacroVariables;
+import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -117,7 +118,7 @@ public class SMSDialog extends PopupDialog {
     private boolean send() {
         boolean result = false;
         try {
-            Validator validator = new Validator();
+            Validator validator = new DefaultValidator();
             if (editor.validate(validator)) {
                 editor.send();
                 result = true;

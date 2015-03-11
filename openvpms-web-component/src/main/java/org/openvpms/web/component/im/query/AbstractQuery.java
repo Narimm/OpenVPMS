@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -25,7 +23,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.IConstraint;
-import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
@@ -37,15 +34,9 @@ import java.util.List;
 /**
  * Abstract implementation of the {@link Query} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractQuery<T> implements Query<T> {
-
-    /**
-     * The archetypes to query.
-     */
-    private final ShortNameConstraint archetypes;
 
     /**
      * The type that this query returns.
@@ -83,7 +74,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     private int maxResults = 20;
 
     /**
-     * The default sort constraints. May be <tt>null</tt>
+     * The default sort constraints. May be {@code null}
      */
     private SortConstraint[] sort;
 
@@ -93,7 +84,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     private List<QueryListener> listeners = new ArrayList<QueryListener>();
 
     /**
-     * Additional constraints to associate with the query. May be <tt>null</tt>.
+     * Additional constraints to associate with the query. May be {@code null}.
      */
     private IConstraint constraints;
 
@@ -104,7 +95,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
 
 
     /**
-     * Construct a new <tt>AbstractQuery</tt> that queries objects with
+     * Construct a new {@code AbstractQuery} that queries objects with
      * the specified primary short names.
      *
      * @param shortNames the archetype short names
@@ -117,47 +108,40 @@ public abstract class AbstractQuery<T> implements Query<T> {
     }
 
     /**
-     * Construct a new <tt>AbstractQuery</tt> that queries objects with
+     * Construct a new {@code AbstractQuery} that queries objects with
      * the specified short names.
      *
      * @param shortNames  the archetype short names
-     * @param primaryOnly if <tt>true</tt> only include primary archetypes
+     * @param primaryOnly if {@code true} only include primary archetypes
      * @param type        the type that this query returns
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
     @SuppressWarnings("unchecked")
     public AbstractQuery(String[] shortNames, boolean primaryOnly, Class type) {
-        this.shortNames = DescriptorHelper.getShortNames(shortNames,
-                                                         primaryOnly);
+        this.shortNames = DescriptorHelper.getShortNames(shortNames, primaryOnly);
         this.type = type;
         if (IMObject.class.isAssignableFrom(type)) {
-            // verify that the specified type matches what the query actually
-            // returns
+            // verify that the specified type matches what the query actually // returns
             Class actual = IMObjectHelper.getType(this.shortNames);
             if (!type.isAssignableFrom(actual)) {
-                throw new QueryException(QueryException.ErrorCode.InvalidType,
-                                         type, actual);
+                throw new QueryException(QueryException.ErrorCode.InvalidType, type, actual);
 
             }
         }
-        archetypes = new ShortNameConstraint(shortNames, primaryOnly, true);
     }
 
     /**
-     * Construct a new <tt>AbstractQuery</tt> that queries objects with
+     * Construct a new {@code AbstractQuery} that queries objects with
      * the specified short names.
      *
      * @param shortNames  the archetype short names
-     * @param primaryOnly if <tt>true</tt> only include primary archetypes
+     * @param primaryOnly if {@code true} only include primary archetypes
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
     public AbstractQuery(String[] shortNames, boolean primaryOnly) {
-        this.shortNames = DescriptorHelper.getShortNames(shortNames,
-                                                         primaryOnly);
+        this.shortNames = DescriptorHelper.getShortNames(shortNames, primaryOnly);
         type = IMObjectHelper.getType(this.shortNames);
-        archetypes = new ShortNameConstraint(shortNames, primaryOnly, true);
     }
 
     /**
@@ -190,7 +174,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Sets the default sort constraint.
      *
-     * @param sort the default sort cosntraint. May be <tt>null</tt>
+     * @param sort the default sort cosntraint. May be {@code null}
      */
     public void setDefaultSortConstraint(SortConstraint[] sort) {
         this.sort = sort;
@@ -199,7 +183,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Returns the default sort constraint
      *
-     * @return the default sort constraint. May be <tt>null</tt>
+     * @return the default sort constraint. May be {@code null}
      */
     public SortConstraint[] getDefaultSortConstraint() {
         return sort;
@@ -208,7 +192,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Performs the query using the default sort constraint (if any).
      *
-     * @return the query result set. May be <tt>null</tt>
+     * @return the query result set. May be {@code null}
      * @throws ArchetypeServiceException for any error
      */
     public ResultSet<T> query() {
@@ -221,7 +205,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
      * This implementation performs a linear search.
      *
      * @param object the object to check
-     * @return <tt>true</tt> if the object is selected by the query
+     * @return {@code true} if the object is selected by the query
      */
     public boolean selects(T object) {
         long start = System.currentTimeMillis();
@@ -245,7 +229,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
      * Performs the query using the default sort constraint, and adapts the
      * results to an iterator.
      *
-     * @param sort the sort constraint. May be <tt>null</tt>
+     * @param sort the sort constraint. May be {@code null}
      * @return an iterator over the results.
      * @throws ArchetypeServiceException if the query fails
      */
@@ -281,7 +265,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Sets the value to query on.
      *
-     * @param value the value. May contain wildcards, or be <tt>null</tt>
+     * @param value the value. May contain wildcards, or be {@code null}
      */
     public void setValue(String value) {
         this.name = value;
@@ -290,7 +274,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Returns the name being queried on.
      *
-     * @return the name. May contain wildcards, or be <tt>null</tt>
+     * @return the name. May contain wildcards, or be {@code null}
      */
     public String getValue() {
         return name;
@@ -317,7 +301,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Determines if the query should be run automatically.
      *
-     * @param auto if <tt>true</tt> the query should be run automatically
+     * @param auto if {@code true} the query should be run automatically
      */
     public void setAuto(boolean auto) {
         this.auto = auto;
@@ -326,8 +310,8 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Determines if the query should be run automatically.
      *
-     * @return <tt>true</tt> if the query should be run automatically;
-     *         otherwise <tt>false</tt>
+     * @return {@code true} if the query should be run automatically;
+     *         otherwise {@code false}
      */
     public boolean isAuto() {
         return auto;
@@ -345,8 +329,8 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Determines if duplicate rows should be filtered.
      *
-     * @return <tt>true</tt> if duplicate rows should be removed;
-     *         otherwise <tt>false</tt>
+     * @return {@code true} if duplicate rows should be removed;
+     *         otherwise {@code false}
      */
     public boolean isDistinct() {
         return distinct;
@@ -374,7 +358,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Set query constraints.
      *
-     * @param constraints the constraints. May be <tt>null</tt>
+     * @param constraints the constraints. May be {@code null}
      */
     public void setConstraints(IConstraint constraints) {
         this.constraints = constraints;
@@ -383,7 +367,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Returns query contraints.
      *
-     * @return the constraints. May be <tt>null</tt>
+     * @return the constraints. May be {@code null}
      */
     public IConstraint getConstraints() {
         return constraints;
@@ -392,9 +376,9 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Returns the query state.
      * <p/>
-     * This implementation returns <tt>null</tt>.
+     * This implementation returns {@code null}.
      *
-     * @return <tt>null</tt>
+     * @return {@code null}
      */
     public QueryState getQueryState() {
         return null;
@@ -406,15 +390,6 @@ public abstract class AbstractQuery<T> implements Query<T> {
      * @param state the query state
      */
     public void setQueryState(QueryState state) {
-    }
-
-    /**
-     * Returns the archetypes to select from.
-     *
-     * @return the archetypes to select from
-     */
-    public ShortNameConstraint getArchetypes() {
-        return archetypes;
     }
 
     /**

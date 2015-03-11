@@ -13,6 +13,7 @@
  *
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.workflow.investigation;
 
 import nextapp.echo2.app.Component;
@@ -21,7 +22,6 @@ import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -146,7 +146,7 @@ class InvestigationsTableModel extends DescriptorTableModel<Act> {
     protected TableColumnModel createColumnModel(String[] shortNames, LayoutContext context) {
         DefaultTableColumnModel model = (DefaultTableColumnModel) super.createColumnModel(shortNames, context);
 
-        startTimeIndex = getColumnModelIndex(model, "startTime");
+        startTimeIndex = getModelIndex(model, "startTime");
         customerIndex = getNextModelIndex(model);
         TableColumn customerColumn = createTableColumn(customerIndex, "investigationstablemodel.customer");
         model.addColumn(customerColumn);
@@ -162,7 +162,7 @@ class InvestigationsTableModel extends DescriptorTableModel<Act> {
         documentColumn.setHeaderValue(displayName);
         model.addColumn(documentColumn);
 
-        locationIndex = getColumnModelIndex(model, "location");
+        locationIndex = getModelIndex(model, "location");
         return model;
     }
 
@@ -245,11 +245,7 @@ class InvestigationsTableModel extends DescriptorTableModel<Act> {
         String result;
         Date startTime = act.getActivityStartTime();
         if (startTime != null) {
-            if (DateRules.compareDateToToday(startTime) == 0) {
-                result = DateFormatter.formatTime(startTime, false);
-            } else {
-                result = DateFormatter.formatDateTime(startTime, false);
-            }
+            result = DateFormatter.formatDateTimeAbbrev(startTime);
         } else {
             result = null;
         }

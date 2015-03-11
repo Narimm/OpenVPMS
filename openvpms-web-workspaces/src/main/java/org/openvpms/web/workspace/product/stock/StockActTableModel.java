@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.stock;
@@ -66,11 +66,12 @@ public class StockActTableModel extends AbstractActTableModel {
     /**
      * Returns the index to insert the archetype column.
      *
+     * @param showId determines if the Id column is being displayed
      * @return the index to insert the archetype column
      */
     @Override
-    protected int getArchetypeColumnIndex() {
-        return 1;
+    protected int getArchetypeColumnIndex(boolean showId) {
+        return showId ? 2 : 1;
     }
 
     /**
@@ -90,10 +91,10 @@ public class StockActTableModel extends AbstractActTableModel {
                 DescriptorTableColumn col = (DescriptorTableColumn) column;
                 if (col.getName().equals("stockLocation")) {
                     col.setHeaderValue(
-                        Messages.get("stockacttable.stockLocation"));
+                            Messages.get("stockacttable.stockLocation"));
                 } else if (col.getName().equals("to")) {
                     col.setHeaderValue(
-                        Messages.get("stockacttable.toStockLocation"));
+                            Messages.get("stockacttable.toStockLocation"));
                 }
             }
         }

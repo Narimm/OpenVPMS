@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -47,6 +47,7 @@ import org.openvpms.web.component.im.edit.IMObjectCollectionEditorFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.ClinicianParticipationEditor;
+import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.edit.reminder.ReminderEditor;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -54,6 +55,7 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.patient.PatientActEditor;
 import org.openvpms.web.component.im.patient.PatientParticipationEditor;
+import org.openvpms.web.component.im.product.BatchParticipationEditor;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.util.IMObjectSorter;
@@ -71,6 +73,7 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.focus.FocusHelper;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
@@ -132,9 +135,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private final ModifiableListener quantityListener;
 
     /**
-     * Listener for changes to the medication quantity.
+     * Listener for changes to the medication act.
      */
-    private final ModifiableListener medicationQuantityListener;
+    private final ModifiableListener dispensingListener;
 
     /**
      * Listener for changes to the start time.
@@ -150,6 +153,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Listener for changes to the total, so the tax amount can be recalculated.
      */
     private final ModifiableListener totalListener;
+
+    /**
+     * Listener for changes to the batch.
+     */
+    private final ModifiableListener batchListener;
 
     /**
      * Stock rules.
@@ -202,6 +210,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private static final String REMINDERS = "reminders";
 
     /**
+     * Pharmacy order nodes.
+     */
+    private static final String[] ORDER_NODES = {"receivedQuantity", "returnedQuantity"};
+
+    /**
      * Investigations node name.
      */
     private static final String INVESTIGATIONS = "investigations";
@@ -211,7 +224,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     private static final ArchetypeNodes TEMPLATE_NODES = new ArchetypeNodes().exclude(
             "quantity", "fixedPrice", "unitPrice", "discount", "clinician", "total", DISPENSING, INVESTIGATIONS,
-            REMINDERS);
+            REMINDERS, "batch");
 
 
     /**
@@ -243,13 +256,14 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 updateMedicationQuantity();
             }
         };
-        medicationQuantityListener = new ModifiableListener() {
+        dispensingListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updateQuantity();
+                updateBatch();
             }
         };
         if (dispensing != null) {
-            dispensing.addModifiableListener(medicationQuantityListener);
+            dispensing.addModifiableListener(dispensingListener);
         }
 
         sellingUnits = LabelFactory.create();
@@ -290,6 +304,67 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             }
         };
         getProperty("startTime").addModifiableListener(startTimeListener);
+
+        batchListener = new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                updateMedicationBatch(getStockLocationRef());
+            }
+        };
+    }
+
+    /**
+     * Determines if an order has been placed for the item.
+     *
+     * @return {@code true} if an order has been placed
+     */
+    public boolean isOrdered() {
+        Property ordered = getProperty("ordered");
+        return ordered != null && ordered.getBoolean();
+    }
+
+    /**
+     * Returns the received quantity.
+     *
+     * @return the received quantity
+     */
+    public BigDecimal getReceivedQuantity() {
+        Property property = getProperty("receivedQuantity");
+        return property != null ? property.getBigDecimal(BigDecimal.ZERO) : BigDecimal.ZERO;
+    }
+
+    /**
+     * Sets the received quantity.
+     *
+     * @param quantity the received quantity
+     */
+    public void setReceivedQuantity(BigDecimal quantity) {
+        Property property = getProperty("receivedQuantity");
+        if (property != null) {
+            property.setValue(quantity);
+        }
+    }
+
+    /**
+     * Returns the returned quantity.
+     *
+     * @return the returned quantity
+     */
+    public BigDecimal getReturnedQuantity() {
+        Property property = getProperty("returnedQuantity");
+        return property != null ? property.getBigDecimal(BigDecimal.ZERO) : BigDecimal.ZERO;
+    }
+
+    /**
+     * Sets the returned quantity.
+     *
+     * @param quantity the returned quantity
+     */
+    public void setReturnedQuantity(BigDecimal quantity) {
+        Property property = getProperty("returnedQuantity");
+        if (property != null) {
+            property.setValue(quantity);
+        }
     }
 
     /**
@@ -301,18 +376,48 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     public void dispose() {
         super.dispose();
         if (dispensing != null) {
-            dispensing.removeModifiableListener(medicationQuantityListener);
+            dispensing.removeModifiableListener(dispensingListener);
         }
 
         getProperty("total").removeModifiableListener(totalListener);
-
-        // add a listener to update the discount amount when the quantity,
-        // fixed or unit price changes.
         getProperty("fixedPrice").removeModifiableListener(discountListener);
         getProperty("quantity").removeModifiableListener(discountListener);
         getProperty("unitPrice").removeModifiableListener(discountListener);
         getProperty("quantity").removeModifiableListener(quantityListener);
         getProperty("startTime").removeModifiableListener(startTimeListener);
+    }
+
+    /**
+     * Updates the discount and checks that it isn't less than the total cost.
+     * <p/>
+     * If so, gives the user the opportunity to remove the discount.
+     */
+    @Override
+    protected void updateDiscount() {
+        super.updateDiscount();
+        BigDecimal discount = getProperty("discount").getBigDecimal(BigDecimal.ZERO);
+        if (discount.compareTo(BigDecimal.ZERO) != 0) {
+            BigDecimal quantity = getQuantity();
+            BigDecimal fixedCost = getFixedCost();
+            BigDecimal fixedPrice = getFixedPrice();
+            BigDecimal unitCost = getUnitCost();
+            BigDecimal unitPrice = getUnitPrice();
+            BigDecimal costPrice = fixedCost.add(unitCost.multiply(quantity));
+            BigDecimal salePrice = fixedPrice.add(unitPrice.multiply(quantity));
+            if (costPrice.compareTo(salePrice.subtract(discount)) > 0) {
+                ConfirmationDialog dialog = new ConfirmationDialog(Messages.get("customer.charge.discount.title"),
+                                                                   Messages.get("customer.charge.discount.message"),
+                                                                   ConfirmationDialog.YES_NO);
+                dialog.addWindowPaneListener(new PopupDialogListener() {
+                    @Override
+                    public void onYes() {
+                        getProperty("discount").setValue(BigDecimal.ZERO);
+                        super.onYes();
+                    }
+                });
+                editorQueue.queue(dialog);
+            }
+        }
     }
 
     /**
@@ -393,6 +498,15 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Returns a reference to the stock location.
+     *
+     * @return the stock location reference, or {@code null} if there is none
+     */
+    public IMObjectReference getStockLocationRef() {
+        return getParticipantRef("stockLocation");
+    }
+
+    /**
      * Sets the charge context.
      *
      * @param context the charge context
@@ -409,6 +523,16 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         if (reminders != null) {
             reminders.getEditor().setRemoveHandler(context);
         }
+    }
+
+    /**
+     * Notifies the editor that the product has been ordered via a pharmacy.
+     * <p/>
+     * This refreshes the display to make the patient and product read-only, and display the received and returned
+     * nodes.
+     */
+    public void ordered() {
+        updateLayout(getProduct());
     }
 
     /**
@@ -513,6 +637,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 }
             });
         }
+        updateBatch(getProduct(), getStockLocationRef());
     }
 
     /**
@@ -522,14 +647,17 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     @Override
     protected void productModified(Product product) {
+        getProperty("fixedPrice").removeModifiableListener(discountListener);
+        getProperty("quantity").removeModifiableListener(discountListener);
+        getProperty("unitPrice").removeModifiableListener(discountListener);
         super.productModified(product);
+
+        // update the layout if nodes require filtering
+        updateLayout(product);
 
         updatePatientMedication(product);
         updateInvestigations(product);
         updateReminders(product);
-
-        // update the layout if nodes require filtering
-        updateLayout(product);
 
         Property discount = getProperty("discount");
         discount.setValue(BigDecimal.ZERO);
@@ -571,11 +699,15 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 unitPrice.setValue(BigDecimal.ZERO);
                 unitCost.setValue(BigDecimal.ZERO);
             }
-            updateStockLocation(product);
+            IMObjectReference stockLocation = updateStockLocation(product);
             updateSellingUnits(product);
+            updateBatch(product, stockLocation);
             updateDiscount();
         }
         notifyProductListener(product);
+        getProperty("fixedPrice").addModifiableListener(discountListener);
+        getProperty("quantity").addModifiableListener(discountListener);
+        getProperty("unitPrice").addModifiableListener(discountListener);
     }
 
     /**
@@ -891,6 +1023,26 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Updates the batch.
+     *
+     * @param product       the product. May be {@code null}
+     * @param stockLocation the stock location. May be {@code null}
+     */
+    private void updateBatch(Product product, IMObjectReference stockLocation) {
+        BatchParticipationEditor batchEditor = getBatchEditor();
+        if (batchEditor != null) {
+            try {
+                batchEditor.removeModifiableListener(batchListener);
+                batchEditor.setStockLocation(stockLocation);
+                batchEditor.setProduct(product);
+                updateMedicationBatch(stockLocation);
+            } finally {
+                batchEditor.addModifiableListener(batchListener);
+            }
+        }
+    }
+
+    /**
      * Helper to return the investigation types for a product.
      * <p/>
      * If there are multiple investigation types, these will be sorted on name.
@@ -966,7 +1118,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private void updateMedicationQuantity() {
         BigDecimal quantity = (BigDecimal) getProperty("quantity").getValue();
         if (dispensing != null && quantity != null) {
-            dispensing.removeModifiableListener(medicationQuantityListener);
+            dispensing.removeModifiableListener(dispensingListener);
             try {
                 PatientMedicationActEditor editor = (PatientMedicationActEditor) dispensing.getCurrentEditor();
                 if (editor == null) {
@@ -980,7 +1132,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                     dispensing.refresh();
                 }
             } finally {
-                dispensing.addModifiableListener(medicationQuantityListener);
+                dispensing.addModifiableListener(dispensingListener);
             }
         }
     }
@@ -1015,6 +1167,46 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Updates the medication batch from the invoice.
+     *
+     * @param stockLocation the stock location. May be {@code null}
+     */
+    private void updateMedicationBatch(IMObjectReference stockLocation) {
+        BatchParticipationEditor batchEditor = getBatchEditor();
+        if (batchEditor != null && dispensing != null) {
+            dispensing.removeModifiableListener(dispensingListener);
+            try {
+                for (PatientMedicationActEditor editor : getMedicationActEditors()) {
+                    editor.setBatch(batchEditor.getEntity());
+                    editor.setStockLocation(stockLocation);
+                }
+                dispensing.refresh();
+            } finally {
+                dispensing.addModifiableListener(dispensingListener);
+            }
+        }
+    }
+
+    /**
+     * Updates the batch if the medication batch changes.
+     */
+    private void updateBatch() {
+        Property batch = getProperty("batch");
+        if (batch != null) {
+            batch.removeModifiableListener(batchListener);
+            try {
+                Entity selected = null;
+                for (PatientMedicationActEditor editor : getMedicationActEditors()) {
+                    selected = editor.getBatch();
+                }
+                getBatchEditor().setEntity(selected);
+            } finally {
+                batch.addModifiableListener(batchListener);
+            }
+        }
+    }
+
+    /**
      * Updates any child patient acts with the patient.
      */
     private void updatePatientActsPatient() {
@@ -1041,9 +1233,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         if (prescription != null) {
             if (promptForPrescription) {
                 Product product = getProduct();
-                ConfirmationDialog dialog = new ConfirmationDialog(Messages.get("customer.charge.prescription.title"),
-                                                                   Messages.format("customer.charge.prescription.message",
-                                                                                   product.getName()));
+                String title = Messages.get("customer.charge.prescription.title");
+                String message = Messages.format("customer.charge.prescription.message", product.getName());
+                ConfirmationDialog dialog = new ConfirmationDialog(title, message);
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
                     public void onOK() {
@@ -1143,8 +1335,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Updates the stock location associated with the product.
      *
      * @param product the new product
+     * @return the stock location. May be {@code null}
      */
-    private void updateStockLocation(Product product) {
+    private IMObjectReference updateStockLocation(Product product) {
         Party stockLocation = null;
         if (TypeHelper.isA(product, MEDICATION, MERCHANDISE)) {
             Act parent = (Act) getParent();
@@ -1162,6 +1355,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         } else {
             bean.removeParticipation(STOCK_LOCATION_PARTICIPATION);
         }
+        return stockLocation != null ? stockLocation.getObjectReference() : null;
     }
 
     /**
@@ -1224,6 +1418,12 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             if (!filter.isEmpty()) {
                 result = new ArchetypeNodes().exclude(filter);
             }
+            if (isOrdered()) {
+                if (result == null) {
+                    result = new ArchetypeNodes();
+                }
+                result.simple(ORDER_NODES);
+            }
         }
         return result;
     }
@@ -1264,6 +1464,27 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         return editor;
     }
 
+    /**
+     * Returns the product batch participation editor.
+     *
+     * @return the product batch participation, or {@code null}  if none exists
+     */
+    protected BatchParticipationEditor getBatchEditor() {
+        return getBatchEditor(true);
+    }
+
+    /**
+     * Returns the product batch participation editor.
+     *
+     * @param create if {@code true} force creation of the edit components if it hasn't already been done
+     * @return the product batch participation, or {@code null} if none exists
+     */
+    protected BatchParticipationEditor getBatchEditor(boolean create) {
+        ParticipationEditor<Entity> editor = getParticipationEditor("batch", create);
+        return (BatchParticipationEditor) editor;
+    }
+
+
     protected class CustomerChargeItemLayoutStrategy extends PriceItemLayoutStrategy {
 
         public CustomerChargeItemLayoutStrategy(FixedPriceEditor fixedPrice) {
@@ -1281,10 +1502,17 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
         @Override
         protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
-            ComponentState state = super.createComponent(property, parent, context);
-            if ("quantity".equals(property.getName())) {
-                Component component = RowFactory.create("CellSpacing", state.getComponent(), sellingUnits);
+            ComponentState state;
+            String name = property.getName();
+            if ("quantity".equals(name)) {
+                state = super.createComponent(property, parent, context);
+                Component component = RowFactory.create(Styles.CELL_SPACING, state.getComponent(), sellingUnits);
                 state = new ComponentState(component, property);
+            } else if (("patient".equals(name) || "product".equals(name)) && isOrdered()) {
+                // the item has been ordered via an HL7 pharmacy. The patient and product cannot be changed
+                state = super.createComponent(createReadOnly(property), parent, context);
+            } else {
+                state = super.createComponent(property, parent, context);
             }
             return state;
         }

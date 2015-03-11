@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.servlet;
@@ -29,6 +29,8 @@ import org.openvpms.web.echo.service.LaunchService;
 import org.openvpms.web.echo.service.WindowService;
 import org.openvpms.web.echo.spring.SpringApplicationInstance;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.ServletException;
@@ -56,8 +58,7 @@ import java.util.Locale;
  * An alternative approach would be to use URL rewriting. This is not supported
  * by echo2, as it does not encode the JSESSIONID in URLs.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class SpringWebContainerServlet extends WebContainerServlet {
 
@@ -132,15 +133,16 @@ public class SpringWebContainerServlet extends WebContainerServlet {
      * @return a new {@code ApplicationInstance}
      */
     public ApplicationInstance newApplicationInstance() {
-        SpringApplicationInstance result;
         ApplicationContext context = getContext();
-        result = (SpringApplicationInstance) context.getBean(name);
-        result.setApplicationContext(context);
+        SpringApplicationInstance app = (SpringApplicationInstance) context.getBean(name);
+        app.setApplicationContext(context);
+        SessionMonitor monitor = getSessionMonitor();
+        monitor.newApplication(app, WebRenderServlet.getActiveConnection().getRequest().getSession());
         Locale current = locale.get();
         if (current != null) {
-            result.setLocale(current);
+            app.setLocale(current);
         }
-        return result;
+        return app;
     }
 
     /**
@@ -157,42 +159,48 @@ public class SpringWebContainerServlet extends WebContainerServlet {
         String serviceId = request.getParameter(SERVICE_ID_PARAMETER);
         if (!AsyncMonitorService.SERVICE_ID.equals(serviceId)) {
             // flag the session as active, if the request isn't associated with echo2 asynchronous tasks
-            getSessionMonitor().active(session);
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            getSessionMonitor().active(request, authentication);
         }
 
-        // get next instance-counter
-        Integer nextInstance = (Integer) session.getAttribute(NEXT_INSTANCE);
-        if (nextInstance == null) {
-            nextInstance = 1;
-        }
+        if (supportsMultipleInstances(request)) {
+            // get next instance-counter
+            Integer nextInstance = (Integer) session.getAttribute(NEXT_INSTANCE);
+            if (nextInstance == null) {
+                nextInstance = 1;
+            }
 
-        ServletInstance instance = new ServletInstance(request);
+            ServletInstance instance = new ServletInstance(request);
 
-        if (instance.getId() != -1 && instance.getId() < nextInstance) {
-            servletName.set(instance.getServletName());
-            locale.set(request.getLocale());
-            super.process(request, response);
-        } else {
-            // increase instance-counter
-            synchronized (session) {
-                nextInstance = (Integer) session.getAttribute(NEXT_INSTANCE);
-                if (nextInstance == null) {
-                    nextInstance = 1;
+            if (instance.getId() != -1 && instance.getId() < nextInstance) {
+                servletName.set(instance.getServletName());
+                locale.set(request.getLocale());
+                super.process(request, response);
+            } else {
+                // increase instance-counter
+                synchronized (session) {
+                    nextInstance = (Integer) session.getAttribute(NEXT_INSTANCE);
+                    if (nextInstance == null) {
+                        nextInstance = 1;
+                    }
+                    instance.setId(nextInstance);
+                    nextInstance += 1;
+                    session.setAttribute(NEXT_INSTANCE, nextInstance);
                 }
-                instance.setId(nextInstance);
-                nextInstance += 1;
-                session.setAttribute(NEXT_INSTANCE, nextInstance);
-            }
 
-            servletName.set(instance.getServletName());
+                servletName.set(instance.getServletName());
 
-            // redirect to new servlet-path including request parameters
-            String url = instance.getURI();
-            String queryString = request.getQueryString();
-            if (queryString != null) {
-                url += "?" + queryString;
+                // redirect to new servlet-path including request parameters
+                String url = instance.getURI();
+                String queryString = request.getQueryString();
+                if (queryString != null) {
+                    url += "?" + queryString;
+                }
+                response.sendRedirect(response.encodeRedirectURL(url));
             }
-            response.sendRedirect(response.encodeRedirectURL(url));
+        } else {
+            servletName.set(request.getServletPath());
+            super.process(request, response);
         }
     }
 
@@ -203,6 +211,18 @@ public class SpringWebContainerServlet extends WebContainerServlet {
      */
     public String getServletName() {
         return servletName.get();
+    }
+
+    /**
+     * Determines if the application identified by the request supports multiple instances.
+     * <p/>
+     * This implementation returns {@code true}
+     *
+     * @param request the request
+     * @return {@code true}
+     */
+    protected boolean supportsMultipleInstances(HttpServletRequest request) {
+        return true;
     }
 
     /**

@@ -11,13 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.PagedIMObjectTableModel;
 
@@ -31,8 +31,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class PagedActHierarchyTableModel<T extends Act>
-        extends PagedIMObjectTableModel<T> {
+public class PagedActHierarchyTableModel<T extends Act> extends PagedIMObjectTableModel<T> {
 
     /**
      * The archetype short names of the child acts to display.
@@ -45,35 +44,31 @@ public class PagedActHierarchyTableModel<T extends Act>
     private int maxDepth;
 
     /**
-     * The context.
+     * Determines if items are being sorted ascending or descending.
      */
-    private final Context context;
+    private boolean sortAscending = true;
 
     /**
-     * Constructs a {@code PagedActHierarchyTableModel}.
+     * Constructs a {@link PagedActHierarchyTableModel}.
      *
      * @param model      the underlying table model
-     * @param context    the context
      * @param shortNames the archetype short names of the child acts to display
      */
-    public PagedActHierarchyTableModel(IMObjectTableModel<T> model, Context context, String... shortNames) {
-        this(model, -1, context, shortNames);
+    public PagedActHierarchyTableModel(IMObjectTableModel<T> model, String... shortNames) {
+        this(model, -1, shortNames);
     }
 
     /**
-     * Construct a new {@code PagedActHierarchyTableModel}.
+     * Constructs a {@link PagedActHierarchyTableModel}.
      *
      * @param model      the underlying table model
      * @param maxDepth   the maximum depth in the hierarchy to display. Use {@code -1} to specify unlimited depth
-     * @param context    the context
      * @param shortNames the archetype short names of the child acts to display
      */
-    public PagedActHierarchyTableModel(IMObjectTableModel<T> model, int maxDepth, Context context,
-                                       String... shortNames) {
+    public PagedActHierarchyTableModel(IMObjectTableModel<T> model, int maxDepth, String... shortNames) {
         super(model);
         this.shortNames = shortNames;
         this.maxDepth = maxDepth;
-        this.context = context;
     }
 
     /**
@@ -86,30 +81,77 @@ public class PagedActHierarchyTableModel<T extends Act>
     }
 
     /**
+     * Returns the archetype short names of the child acts to display.
+     *
+     * @return the archetype short names
+     */
+    public String[] getShortNames() {
+        return shortNames;
+    }
+
+    /**
+     * Determines if the visit items are being sorted ascending or descending.
+     *
+     * @param ascending if {@code true} visit items are to be sorted ascending; {@code false} if descending
+     */
+    public void setSortAscending(boolean ascending) {
+        sortAscending = ascending;
+    }
+
+    /**
+     * Determines if the visit items are being sorted ascending or descending.
+     *
+     * @return {@code true} if visit items are to be sorted ascending; {@code false} if descending
+     */
+    public boolean isSortAscending() {
+        return sortAscending;
+    }
+
+    /**
+     * Returns the maximum depth in the hierarchy to display.
+     *
+     * @return the maximum depth in the hierarchy to display or {@code -1} to indicate unlimited depth
+     */
+    public int getMaxDepth() {
+        return maxDepth;
+    }
+
+    /**
      * Sets the objects for the current page.
      *
      * @param objects the objects to set
      */
     @Override
     protected void setPage(List<T> objects) {
-        Iterable<T> iterable = createFlattener(objects, shortNames, context);
-        List<T> acts = new ArrayList<T>();
-        for (T act : iterable) {
-            acts.add(act);
-        }
+        List<T> acts = flattenHierarchy(objects, shortNames);
         getModel().setObjects(acts);
     }
 
     /**
-     * Creates a new {@link ActHierarchyIterator}.
+     * Flattens an act hierarchy, only including those acts matching the supplied short names.
      *
      * @param objects    the acts
      * @param shortNames the child archetype short names
-     * @param context    the context
-     * @return an iterator to flatten the act hierarchy
+     * @return the acts
      */
-    protected ActHierarchyIterator<T> createFlattener(List<T> objects, String[] shortNames, Context context) {
-        return new ActHierarchyIterator<T>(objects, shortNames, maxDepth);
+    protected List<T> flattenHierarchy(List<T> objects, String[] shortNames) {
+        List<T> list = new ArrayList<T>();
+        CollectionUtils.addAll(list, createIterator(objects, shortNames));
+        return list;
     }
+
+    /**
+     * Creates an iterator over the act hierarchy.
+     *
+     * @param objects    the objects to iterate over
+     * @param shortNames the child archetype short names to include in the iteration
+     * @return a new iterator
+     */
+    protected ActHierarchyIterator<T> createIterator(List<T> objects, String[] shortNames) {
+        ActHierarchyFilter<T> filter = new ActHierarchyFilter<T>(shortNames, true);
+        filter.setSortItemsAscending(sortAscending);
+        return new ActHierarchyIterator<T>(objects, filter, maxDepth);
+    }
+
 
 }

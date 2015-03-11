@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
@@ -55,7 +55,7 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
      * @param help    the help context
      */
     public TaskCRUDWindow(Context context, HelpContext help) {
-        super(Archetypes.create("act.customerTask", Act.class), context, help);
+        super(Archetypes.create("act.customerTask", Act.class), TaskActions.INSTANCE, context, help);
     }
 
     /**
@@ -100,7 +100,7 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
         super.enableButtons(buttons, enable);
         if (enable) {
             Act act = getObject();
-            enable = canCheckoutOrConsult(act);
+            enable = getActions().canCheckoutOrConsult(act);
         }
         buttons.setEnabled(CONSULT_ID, enable);
         buttons.setEnabled(CHECKOUT_ID, enable);
@@ -121,19 +121,6 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
     }
 
     /**
-     * Determines if a consulation or checkout can be performed on an act.
-     *
-     * @param act the act
-     * @return {@code true} if consultation can be performed
-     */
-    protected boolean canCheckoutOrConsult(Act act) {
-        String status = act.getStatus();
-        return (TaskStatus.PENDING.equals(status)
-                || TaskStatus.IN_PROGRESS.equals(status)
-                || TaskStatus.BILLED.equals(status));
-    }
-
-    /**
      * Transfers the selected task to a different worklist.
      */
     private void onTransfer() {
@@ -148,6 +135,25 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
                 }
             });
             transfer.start();
+        }
+    }
+
+    protected static class TaskActions extends ScheduleActions {
+
+        public static final TaskActions INSTANCE = new TaskActions();
+
+        /**
+         * Determines if a consultation or checkout can be performed on an act.
+         *
+         * @param act the act
+         * @return {@code true} if consultation can be performed
+         */
+        @Override
+        public boolean canCheckoutOrConsult(Act act) {
+            String status = act.getStatus();
+            return (TaskStatus.PENDING.equals(status)
+                    || TaskStatus.IN_PROGRESS.equals(status)
+                    || TaskStatus.BILLED.equals(status));
         }
     }
 

@@ -34,6 +34,7 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -200,7 +201,7 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
         HelpContext context = getHelpContext().subtopic("finalise");
         DeliveryEditor editor = new DeliveryEditor(getObject(), null, createLayoutContext(context));
         editor.setStatus(ActStatus.POSTED);
-        Validator validator = new Validator();
+        Validator validator = new DefaultValidator();
         if (!editor.validate(validator)) {
             // pop up an editor for the delivery and display the errors
             edit(editor);

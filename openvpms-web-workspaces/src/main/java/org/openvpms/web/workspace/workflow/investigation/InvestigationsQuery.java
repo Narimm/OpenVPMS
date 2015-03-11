@@ -22,25 +22,19 @@ import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
-import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.user.UserArchetypes;
-import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.clinician.ClinicianSelectField;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
-import org.openvpms.web.component.im.list.IMObjectListModel;
+import org.openvpms.web.component.im.location.LocationSelectField;
 import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
@@ -48,21 +42,17 @@ import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.select.AbstractIMObjectSelectorListener;
 import org.openvpms.web.component.im.select.IMObjectSelector;
-import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import static org.openvpms.archetype.rules.patient.InvestigationArchetypes.INVESTIGATION_TYPE;
 import static org.openvpms.archetype.rules.patient.InvestigationArchetypes.PATIENT_INVESTIGATION;
+import static org.openvpms.web.component.im.query.QueryHelper.addParticipantConstraint;
 
 
 /**
@@ -78,14 +68,9 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     public static final String[] SHORT_NAMES = new String[]{InvestigationArchetypes.PATIENT_INVESTIGATION};
 
     /**
-     * The locations available to the user.
-     */
-    private final List<Party> locations;
-
-    /**
      * The location selector.
      */
-    private final SelectField locationSelector;
+    private final LocationSelectField locationSelector;
 
     /**
      * The clinician selector.
@@ -134,8 +119,7 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         setStatus(INCOMPLETE_STATUS.getCode());
         // TODO - shouldn't need this as its returned by StatusLookupQuery, but addStatusSelector() ignores it
 
-        locations = getLocations(context.getContext());
-        locationSelector = createLocationSelector(locations, context);
+        locationSelector = createLocationSelector(context.getContext());
         clinician = createClinicianSelector();
         investigationType = createInvestigationTypeSelector(context);
     }
@@ -177,8 +161,6 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         addLocation(container);
         addClinician(container);
         addInvestigationType(container);
-        container.add(container);
-        container.add(container);
     }
 
     /**
@@ -210,8 +192,9 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         ParticipantConstraint[] participants = list.toArray(new ParticipantConstraint[list.size()]);
 
         Party location = (Party) locationSelector.getSelectedItem();
-        return new InvestigationResultSet(getArchetypeConstraint(), getValue(), participants, location, locations,
-                                          getFrom(), getTo(), getStatuses(), getMaxResults(), sort);
+        return new InvestigationResultSet(getArchetypeConstraint(), getValue(), participants, location,
+                                          locationSelector.getLocations(), getFrom(), getTo(), getStatuses(),
+                                          getMaxResults(), sort);
     }
 
     /**
@@ -265,21 +248,6 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     }
 
     /**
-     * Helper to create and add a participant constraint to the supplied constraints, if {@code entity} is non-null.
-     *
-     * @param constraints the constraints to add to
-     * @param name        rhe participation node name
-     * @param shortName   the participation archetype short name
-     * @param object      the entity. May be {@code null}
-     */
-    private void addParticipantConstraint(List<ParticipantConstraint> constraints, String name,
-                                          String shortName, Entity object) {
-        if (object != null) {
-            constraints.add(new ParticipantConstraint(name, shortName, object));
-        }
-    }
-
-    /**
      * Adds the clinician selector to a container.
      *
      * @param container the container
@@ -308,15 +276,12 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     /**
      * Creates a field to select the location.
      *
-     * @param locations the locations available to the user
-     * @param context   the layout context
+     * @param context the context
      * @return a new selector
      */
-    private SelectField createLocationSelector(List<Party> locations, LayoutContext context) {
-        IMObjectListModel model = new IMObjectListModel(locations, true, false);
-        SelectField result = SelectFieldFactory.create(model);
-        result.setSelectedItem(context.getContext().getLocation());
-        result.setCellRenderer(IMObjectListCellRenderer.NAME);
+    private LocationSelectField createLocationSelector(Context context) {
+        LocationSelectField result = new LocationSelectField(context.getUser(), context.getPractice(), true);
+        result.setSelectedItem(context.getLocation());
         result.addActionListener(new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
@@ -327,55 +292,17 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     }
 
     /**
-     * Returns the locations for the current user.
-     *
-     * @return the locations
-     */
-    private List<Party> getLocations(Context context) {
-        List<Party> locations = Collections.emptyList();
-        User user = context.getUser();
-        if (user != null) {
-            UserRules rules = new UserRules();
-            locations = rules.getLocations(user);
-            if (locations.isEmpty()) {
-                Party practice = context.getPractice();
-                if (practice != null) {
-                    locations = ServiceHelper.getBean(PracticeRules.class).getLocations(practice);
-                }
-            }
-            IMObjectSorter.sort(locations, "name");
-        }
-        return locations;
-    }
-
-    /**
      * Creates a new dropdown to select clinicians.
      *
      * @return a new clinician selector
      */
     private SelectField createClinicianSelector() {
-        UserRules rules = ServiceHelper.getBean(UserRules.class);
-        List<IMObject> clinicians = new ArrayList<IMObject>();
-        ArchetypeQuery query = new ArchetypeQuery(UserArchetypes.USER, true, true);
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        Iterator<User> iter = new IMObjectQueryIterator<User>(query);
-        while (iter.hasNext()) {
-            User user = iter.next();
-            if (rules.isClinician(user)) {
-                clinicians.add(user);
-            }
-        }
-        IMObjectListModel model
-                = new IMObjectListModel(clinicians, true, false);
-        SelectField result = SelectFieldFactory.create(model);
-        result.setCellRenderer(IMObjectListCellRenderer.NAME);
-
+        SelectField result = new ClinicianSelectField();
         result.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 onQuery();
             }
         });
-
         return result;
     }
 

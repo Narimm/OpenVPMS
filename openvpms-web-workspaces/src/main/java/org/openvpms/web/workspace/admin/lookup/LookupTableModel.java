@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.admin.lookup;
 
@@ -48,7 +48,7 @@ public class LookupTableModel extends DescriptorTableModel<Lookup> {
     }
 
     /**
-     * Constructs a {@code LookupTableModel}.
+     * Constructs a {@link LookupTableModel}.
      * <p/>
      * This displays the archetype column if the short names reference multiple archetypes.
      *
@@ -90,6 +90,9 @@ public class LookupTableModel extends DescriptorTableModel<Lookup> {
             result.addAll(names); // add any remaining node names
         } else {
             result = names;
+            if (!active) {
+                names.remove("active");
+            }
         }
         return result;
     }

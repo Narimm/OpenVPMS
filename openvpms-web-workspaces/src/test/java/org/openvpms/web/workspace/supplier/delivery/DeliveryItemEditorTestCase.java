@@ -32,6 +32,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
@@ -89,7 +90,8 @@ public class DeliveryItemEditorTestCase extends AbstractAppTest {
         Act delivery = (Act) create(SupplierArchetypes.DELIVERY);
         Party supplier = TestHelper.createSupplier();
         Product product = TestHelper.createProduct();
-        ProductSupplier productSupplier = new ProductRules().createProductSupplier(product, supplier);
+        ProductRules productRules = ServiceHelper.getBean(ProductRules.class);
+        ProductSupplier productSupplier = productRules.createProductSupplier(product, supplier);
         productSupplier.setReorderCode("A1");
         productSupplier.setPackageSize(2);
         productSupplier.setPackageUnits(box.getCode());
@@ -135,7 +137,8 @@ public class DeliveryItemEditorTestCase extends AbstractAppTest {
         Act delivery = (Act) create(SupplierArchetypes.DELIVERY);
         Party supplier = TestHelper.createSupplier();
         Product product = TestHelper.createProduct();
-        ProductSupplier productSupplier = new ProductRules().createProductSupplier(product, supplier);
+        ProductRules productRules = ServiceHelper.getBean(ProductRules.class);
+        ProductSupplier productSupplier = productRules.createProductSupplier(product, supplier);
         productSupplier.setReorderCode("A1");
         productSupplier.setPackageSize(2);
         productSupplier.setPackageUnits(box.getCode());

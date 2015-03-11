@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -21,6 +21,8 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
+import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 
 
@@ -32,6 +34,11 @@ import org.openvpms.component.system.common.query.SortConstraint;
 public class BasicQuery<T extends IMObject> extends NonRenderingQuery<T> {
 
     /**
+     * The archetypes.
+     */
+    private ShortNameConstraint archetypes;
+
+    /**
      * Construct a new {@code BasicQuery} that queries objects with the specified primary short names.
      *
      * @param shortNames the archetype short names
@@ -40,6 +47,7 @@ public class BasicQuery<T extends IMObject> extends NonRenderingQuery<T> {
      */
     public BasicQuery(String[] shortNames, Class type) {
         super(shortNames, type);
+        archetypes = Constraints.shortName(getShortNames());
     }
 
     /**
@@ -50,7 +58,7 @@ public class BasicQuery<T extends IMObject> extends NonRenderingQuery<T> {
      * @throws ArchetypeServiceException if the query fails
      */
     public ResultSet<T> query(SortConstraint[] sort) {
-        return new DefaultResultSet<T>(getArchetypes(), getValue(),
+        return new DefaultResultSet<T>(archetypes, getValue(),
                                        getConstraints(), sort, getMaxResults(),
                                        isDistinct());
     }
@@ -74,6 +82,6 @@ public class BasicQuery<T extends IMObject> extends NonRenderingQuery<T> {
      */
     @Override
     public BaseArchetypeConstraint.State getActive() {
-        return getArchetypes().getState();
+        return archetypes.getState();
     }
 }

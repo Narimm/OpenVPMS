@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -26,6 +26,8 @@ import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.relationship.RelationshipCollectionTargetPropertyEditor;
 import org.openvpms.web.component.property.CollectionProperty;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 
@@ -47,12 +49,31 @@ public class ActRelationshipCollectionPropertyEditor extends RelationshipCollect
     }
 
     /**
+     * Returns the relationship for a target.
+     *
+     * @param target the target of the relationship
+     * @return the relationship, or {@code null}, if none is found
+     */
+    public ActRelationship getRelationship(Act target) {
+        return (ActRelationship) getTargets().get(target);
+    }
+
+    /**
+     * Returns the relationships.
+     *
+     * @return the relationships
+     */
+    public List<ActRelationship> getRelationships() {
+        return new ArrayList<ActRelationship>(getActs().values());
+    }
+
+    /**
      * Returns the child acts.
      *
      * @return the child acts
      */
     @SuppressWarnings("unchecked")
-    protected Map<Act, ActRelationship> getActs() {
+    public Map<Act, ActRelationship> getActs() {
         Map relationships = super.getTargets();
         return (Map<Act, ActRelationship>) relationships;
     }

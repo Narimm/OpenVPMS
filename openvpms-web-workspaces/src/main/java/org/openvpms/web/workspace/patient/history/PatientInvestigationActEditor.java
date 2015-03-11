@@ -13,6 +13,7 @@
  *
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient.history;
 
 import org.apache.commons.lang.ObjectUtils;
@@ -252,7 +253,7 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
          */
         @Override
         protected Query<Product> createQuery(String name) {
-            ProductQuery query = new ProductQuery(getProperty().getArchetypeRange()) {
+            ProductQuery query = new ProductQuery(getProperty().getArchetypeRange(), getLayoutContext().getContext()) {
                 @Override
                 protected ResultSet<Product> createResultSet(SortConstraint[] sort) {
                     return new ProductInvestigationTypeResultSet(getArchetypeConstraint(), getValue(),

@@ -18,38 +18,30 @@ package org.openvpms.web.workspace.patient.history;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.archetype.rules.act.ActStatus;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.hl7.patient.PatientContext;
+import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
-import org.openvpms.web.component.im.edit.act.AbstractActEditor;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
-import org.openvpms.web.component.im.relationship.RelationshipHelper;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
-import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.retry.Retryer;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.workspace.AbstractCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
-import org.openvpms.web.echo.dialog.ConfirmationDialog;
-import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.PatientMedicalRecordLinker;
-import org.openvpms.web.workspace.patient.PatientRecordCRUDWindow;
-
-import java.util.Arrays;
+import org.openvpms.web.workspace.patient.info.PatientContextHelper;
 
 
 /**
@@ -57,12 +49,7 @@ import java.util.Arrays;
  *
  * @author Tim Anderson
  */
-public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements PatientRecordCRUDWindow {
-
-    /**
-     * The current act.patientClinicalEvent.
-     */
-    private Act event;
+public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
 
     /**
      * The current query.
@@ -71,7 +58,7 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
 
 
     /**
-     * Constructs a {@code PatientHistoryCRUDWindow}.
+     * Constructs a {@link PatientHistoryCRUDWindow}.
      *
      * @param context the context
      * @param help    the help context
@@ -82,7 +69,7 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
     }
 
     /**
-     * Constructs a {@code PatientHistoryCRUDWindow}.
+     * Constructs a {@link PatientHistoryCRUDWindow}.
      *
      * @param archetypes the archetypes
      * @param context    the context
@@ -93,22 +80,28 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
     }
 
     /**
-     * Sets the current patient clinical event.
+     * Constructs a {@link PatientHistoryCRUDWindow}.
      *
-     * @param event the current event
+     * @param context the context
+     * @param actions the history actions
+     * @param help    the help context
      */
-    public void setEvent(Act event) {
-        getContext().setObject(PatientArchetypes.CLINICAL_EVENT, event);
-        this.event = event;
+    protected PatientHistoryCRUDWindow(Context context, PatientHistoryActions actions, HelpContext help) {
+        super(Archetypes.create(PatientArchetypes.CLINICAL_EVENT, Act.class, Messages.get("patient.record.createtype")),
+              actions, context, help);
     }
 
     /**
-     * Returns the current patient clinical event.
+     * Sets the current patient clinical event.
+     * <p/>
+     * This updates the context.
      *
-     * @return the current event. May be {@code null}
+     * @param event the current event
      */
-    public Act getEvent() {
-        return event;
+    @Override
+    public void setEvent(Act event) {
+        super.setEvent(event);
+        getContext().setObject(PatientArchetypes.CLINICAL_EVENT, event);
     }
 
     /**
@@ -162,29 +155,6 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
     }
 
     /**
-     * Invoked when a new object has been created.
-     *
-     * @param object the new object
-     */
-    @Override
-    protected void onCreated(final Act object) {
-        if (TypeHelper.isA(object, PatientArchetypes.PATIENT_MEDICATION)) {
-            ConfirmationDialog dialog = new ConfirmationDialog(Messages.get("patient.record.create.medication.title"),
-                                                               Messages.get("patient.record.create.medication.message"),
-                                                               getHelpContext().subtopic("newMedication"));
-            dialog.addWindowPaneListener(new PopupDialogListener() {
-                @Override
-                public void onOK() {
-                    PatientHistoryCRUDWindow.super.onCreated(object);
-                }
-            });
-            dialog.show();
-        } else {
-            super.onCreated(object);
-        }
-    }
-
-    /**
      * Invoked when the object has been saved.
      *
      * @param act   the object
@@ -198,13 +168,15 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
             }
             // link the item to its parent event, if required. As there might be multiple user's accessing the event,
             // use a Retryer to retry if the linking fails initially
-            PatientMedicalRecordLinker recordAction = new PatientMedicalRecordLinker(getEvent(), act);
-            Retryer.run(recordAction);
-            super.onSaved(act, isNew);
+            PatientMedicalRecordLinker linker = createMedicalRecordLinker(getEvent(), act);
+            Retryer.run(linker);
+            if (TypeHelper.isA(act, PatientArchetypes.PATIENT_WEIGHT)) {
+                onWeightChanged(act);
+            }
         } else {
             setEvent(act);
-            PatientHistoryCRUDWindow.super.onSaved(act, isNew);
         }
+        super.onSaved(act, isNew);
     }
 
     /**
@@ -218,6 +190,9 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
             setEvent(null);
         }
         super.onDeleted(object);
+        if (TypeHelper.isA(object, PatientArchetypes.PATIENT_WEIGHT)) {
+            onWeightChanged(object);
+        }
     }
 
     /**
@@ -257,23 +232,21 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
     }
 
     /**
-     * Creates a new event, making it the current event.
+     * Invoked when the patient weight changes or a weight record is deleted.
+     * <p/>
+     * If the act is for the current visit, registered listeners will be notified via
+     * the {@link PatientInformationService}.
+     *
+     * @param act the weight act
      */
-    private void createEvent() {
-        Act event = (Act) IMObjectCreator.create(PatientArchetypes.CLINICAL_EVENT);
-        if (event == null) {
-            throw new IllegalStateException("Failed to create " + PatientArchetypes.CLINICAL_EVENT);
+    protected void onWeightChanged(Act act) {
+        Act event = getEvent();
+        PatientContext context = PatientContextHelper.getPatientContext(act, getContext());
+        if (context != null && ObjectUtils.equals(event, context.getVisit())) {
+            PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
+            service.updated(context, getContext().getUser());
         }
-        LayoutContext layoutContext = createLayoutContext(getHelpContext());
-        IMObjectEditor editor = IMObjectEditorFactory.create(event, layoutContext);
-        editor.getComponent();
-        if (editor instanceof AbstractActEditor) {
-            ((AbstractActEditor) editor).setStatus(ActStatus.COMPLETED);
-        }
-        editor.save();
-        setEvent(event);
     }
-
 
     /**
      * Creates a button to add a new <em>act.patientClinicalNote</em>.
@@ -286,20 +259,6 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
                 onAddNote();
             }
         });
-    }
-
-    /**
-     * Helper to concatenate the short names for the target of a relationship with those supplied.
-     *
-     * @param relationship the relationship archetype short name
-     * @param shortNames   the short names to add
-     * @return the archetype shortnames
-     */
-    private String[] getShortNames(String relationship, String... shortNames) {
-        String[] targets = RelationshipHelper.getTargetShortNames(relationship);
-        String[] result = Arrays.copyOf(targets, targets.length + shortNames.length);
-        System.arraycopy(shortNames, 0, result, targets.length, shortNames.length);
-        return result;
     }
 
 }

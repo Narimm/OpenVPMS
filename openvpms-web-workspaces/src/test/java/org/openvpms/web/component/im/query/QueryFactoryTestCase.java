@@ -1,24 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
 
 import org.junit.Test;
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -29,6 +28,7 @@ import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.doc.DocumentTemplateQuery;
 import org.openvpms.web.component.im.product.ProductQuery;
 import org.openvpms.web.test.AbstractAppTest;
+import org.openvpms.web.workspace.supplier.vet.VetQuery;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -78,7 +78,7 @@ public class QueryFactoryTestCase extends AbstractAppTest {
     public void testOrganisationQuery() {
         checkCreate("party.organisationOTC", CustomerQuery.class, Party.class);
         String[] shortNames
-            = DescriptorHelper.getShortNames("party.organisationOTC");
+                = DescriptorHelper.getShortNames("party.organisationOTC");
         for (String shortName : shortNames) {
             if (shortName.equals("party.organisationOTC")) {
                 checkCreate(shortName, CustomerQuery.class, Party.class);
@@ -100,11 +100,18 @@ public class QueryFactoryTestCase extends AbstractAppTest {
 
     /**
      * Verifies that a {@link EntityQuery} is returned for
-     * <em>party.supplier*</em> short names.
+     * <em>party.supplier*</em> short names, except <em>party.supplierVeterinarian</em> which returns {@link VetQuery}.
      */
     @Test
     public void testSupplierEntityQuery() {
-        checkCreate("party.supplier*", EntityQuery.class, Party.class);
+        String[] shortNames = DescriptorHelper.getShortNames("party.supplier*");
+        for (String shortName : shortNames) {
+            if (shortName.equals(SupplierArchetypes.SUPPLIER_VET)) {
+                checkCreate(shortName, VetQuery.class, Party.class);
+            } else {
+                checkCreate(shortName, EntityQuery.class, Party.class);
+            }
+        }
     }
 
     /**

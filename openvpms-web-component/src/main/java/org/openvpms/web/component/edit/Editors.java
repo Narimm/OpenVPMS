@@ -18,7 +18,6 @@ package org.openvpms.web.component.edit;
 
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ErrorListener;
-import org.openvpms.web.component.property.ErrorListeners;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
@@ -52,11 +51,6 @@ public class Editors extends AbstractModifiable {
     private ModifiableListeners listeners;
 
     /**
-     * The error listeners.
-     */
-    private ErrorListeners errorListeners;
-
-    /**
      * The listener for property and editor modifications.
      */
     private ModifiableListener listener;
@@ -85,23 +79,15 @@ public class Editors extends AbstractModifiable {
     /**
      * Constructs an {@link Editors}.
      *
-     * @param properties     the properties being edited
-     * @param listeners      the listeners
-     * @param errorListeners the error listeners
+     * @param properties the properties being edited
+     * @param listeners  the listeners
      */
-    public Editors(PropertySet properties, ModifiableListeners listeners, ErrorListeners errorListeners) {
+    public Editors(PropertySet properties, ModifiableListeners listeners) {
         this.properties = properties;
         this.listeners = listeners;
-        this.errorListeners = errorListeners;
         listener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 onModified(modifiable);
-            }
-        };
-        errorListener = new ErrorListener() {
-            @Override
-            public void error(Modifiable modifiable, String message) {
-                Editors.this.errorListeners.notifyListeners(modifiable, message);
             }
         };
 
@@ -109,7 +95,7 @@ public class Editors extends AbstractModifiable {
             // initially register the listener with each property. If an editor for a property is registered,
             // the listener will be moved to the editor, to avoid redundant notifications.
             property.addModifiableListener(listener);
-            property.addErrorListener(errorListener);
+            property.setErrorListener(errorListener);
         }
     }
 
@@ -156,7 +142,7 @@ public class Editors extends AbstractModifiable {
     public void remove(Editor editor) {
         resetValid(false);
         editor.removeModifiableListener(listener);
-        editor.removeErrorListener(errorListener);
+        editor.getErrorListener();
         if (editor instanceof PropertyEditor) {
             PropertyEditor p = (PropertyEditor) editor;
             String name = p.getProperty().getName();
@@ -164,7 +150,7 @@ public class Editors extends AbstractModifiable {
             if (property != null) {
                 // if the property is registered, move the listener to property
                 property.addModifiableListener(listener);
-                property.addErrorListener(errorListener);
+                property.setErrorListener(errorListener);
             }
             propertyEditors.remove(name);
         }
@@ -283,23 +269,23 @@ public class Editors extends AbstractModifiable {
     }
 
     /**
-     * Adds a listener to be notified of errors.
+     * Sets a listener to be notified of errors.
      *
-     * @param listener the listener to add
+     * @param listener the listener to register. May be {@code null}
      */
     @Override
-    public void addErrorListener(ErrorListener listener) {
-        errorListeners.addListener(listener);
+    public void setErrorListener(ErrorListener listener) {
+        this.errorListener = listener;
     }
 
     /**
-     * Removes a listener.
+     * Returns the listener to be notified of errors.
      *
-     * @param listener the listener to remove
+     * @return the listener. May be {@code null}
      */
     @Override
-    public void removeErrorListener(ErrorListener listener) {
-        errorListeners.removeListener(listener);
+    public ErrorListener getErrorListener() {
+        return errorListener;
     }
 
     /**

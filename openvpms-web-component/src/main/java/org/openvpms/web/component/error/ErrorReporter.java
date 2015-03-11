@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.error;
 
@@ -22,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.echo.dialog.ErrorDialog;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -126,12 +125,12 @@ public class ErrorReporter {
             sender.send(message);
         } catch (Throwable exception) {
             log.error(exception, exception);
-            ErrorDialog.show(exception);
+            ErrorDialog.show(Messages.get("errorreportdialog.senderror"));
         }
     }
 
     /**
-     * Determines if an exception sbould be reported.
+     * Determines if an exception should be reported.
      *
      * @param exception the exception
      * @return <tt>true</tt> if the exception is reportable

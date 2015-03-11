@@ -11,8 +11,9 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient.history;
 
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
@@ -44,7 +45,7 @@ import java.util.Set;
  *
  * @author Tim Anderson
  */
-class PatientHistoryFilter extends ActHierarchyFilter<Act> {
+public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
 
     /**
      * The short names of the child acts to return.
@@ -59,31 +60,67 @@ class PatientHistoryFilter extends ActHierarchyFilter<Act> {
 
     /**
      * Constructs a {@link PatientHistoryFilter}.
+     * <p/>
+     * Items are sorted on ascending timestamp.
      *
      * @param shortNames the history item short names to include
      */
     public PatientHistoryFilter(String[] shortNames) {
+        this(shortNames, true);
+    }
+
+    /**
+     * Constructs a {@link PatientHistoryFilter}.
+     *
+     * @param shortNames    the history item short names to include
+     * @param sortAscending if {@code true} sort items on ascending timestamp; otherwise sort on descending timestamp
+     */
+    public PatientHistoryFilter(String[] shortNames, boolean sortAscending) {
         super();
         this.shortNames = new ArrayList<String>(Arrays.asList(shortNames));
         invoice = this.shortNames.remove(CustomerAccountArchetypes.INVOICE_ITEM);
+        setSortItemsAscending(sortAscending);
     }
 
     /**
      * Filters child acts.
      *
-     * @param event    the <em>act.patientClinicalEvent</em>
-     * @param children the event item
+     * @param parent   the parent act
+     * @param children the child acts
      * @return the filtered acts
      */
     @Override
-    protected List<Act> filter(Act event, List<Act> children) {
+    protected List<Act> filter(Act parent, List<Act> children) {
         List<Act> result;
-        if (invoice) {
-            result = filterInvoiceItems(event, children);
+        if (invoice && TypeHelper.isA(parent, PatientArchetypes.CLINICAL_EVENT)) {
+            result = filterInvoiceItems(parent, children);
         } else {
             result = children;
         }
         return result;
+    }
+
+    /**
+     * Determines if a child act should be included.
+     * <p/>
+     * This implementation excludes children of <em>act.patientClinicalProblem</em> acts that are linked to an event
+     * different to the root.
+     *
+     * @param child  the child act
+     * @param parent the parent act
+     * @param root   the root act
+     * @return {@code true} if the child act should be included
+     */
+    @Override
+    protected boolean include(Act child, Act parent, Act root) {
+        if (TypeHelper.isA(parent, PatientArchetypes.CLINICAL_PROBLEM)) {
+            ActBean bean = new ActBean(child);
+            IMObjectReference event = bean.getNodeSourceObjectRef("event");
+            if (event != null && event.getId() != root.getId()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -116,17 +153,20 @@ class PatientHistoryFilter extends ActHierarchyFilter<Act> {
                 chargeItemRefs.add(target);
             }
         }
-        for (Act act : children) {
-            if (TypeHelper.isA(act, PatientArchetypes.PATIENT_MEDICATION)) {
-                ActBean medication = new ActBean(act);
-                List<IMObjectReference> chargeItem = medication.getNodeSourceObjectRefs("invoiceItem");
-                if (!chargeItem.isEmpty()) {
-                    chargeItemRefs.remove(chargeItem.get(0));
+        if (!chargeItemRefs.isEmpty()) {
+            for (int i = 0; i < children.size() && !chargeItemRefs.isEmpty(); ++i) {
+                Act act = children.get(i);
+                if (TypeHelper.isA(act, PatientArchetypes.PATIENT_MEDICATION)) {
+                    ActBean medication = new ActBean(act);
+                    List<IMObjectReference> chargeItem = medication.getNodeSourceObjectRefs("invoiceItem");
+                    if (!chargeItem.isEmpty()) {
+                        chargeItemRefs.remove(chargeItem.get(0));
+                    }
                 }
             }
+            List<Act> chargeItems = ActHelper.getActs(chargeItemRefs);
+            result.addAll(chargeItems);
         }
-        List<Act> chargeItems = ActHelper.getActs(chargeItemRefs);
-        result.addAll(chargeItems);
         return result;
     }
 

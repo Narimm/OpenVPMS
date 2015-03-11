@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.io;
@@ -22,6 +22,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.list.ListCellRenderer;
+import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -29,6 +30,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
@@ -114,10 +116,12 @@ public class ProductExportQuery extends ProductQuery {
     /**
      * Constructs a {@link ProductExportQuery}.
      *
+     * @param context the layout context
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
-    public ProductExportQuery() {
-        super(SHORT_NAMES);
+    public ProductExportQuery(LayoutContext context) {
+        super(SHORT_NAMES, context.getContext());
+        setPricingGroup(PricingGroup.ALL); // don't use the practice location pricing group
     }
 
     /**
@@ -201,6 +205,7 @@ public class ProductExportQuery extends ProductQuery {
         addPriceSelector(container);
         addDateRange(container);
         addLinkedPrices(container);
+        addPricingGroupSelector(container, true);
     }
 
     /**
@@ -337,14 +342,10 @@ public class ProductExportQuery extends ProductQuery {
      * @param container the container to add the range to
      */
     private void addDateRange(final Component container) {
-        range = new DateRange(getFocusGroup(), false) {
-            @Override
-            protected Component getContainer() {
-                return container;
-            }
-        };
-        range.getComponent();
+        range = new DateRange(false);
+        range.setContainer(container);
         range.setEnabled(prices == Prices.RANGE);
+        getFocusGroup().add(range.getFocusGroup());
     }
 
     /**
@@ -359,4 +360,5 @@ public class ProductExportQuery extends ProductQuery {
         container.add(includeLinkedPrices);
         getFocusGroup().add(includeLinkedPrices);
     }
+
 }

@@ -11,13 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
 
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
+import org.openvpms.web.component.im.edit.AbstractEditableIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.DelegatingCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -39,7 +39,7 @@ public class EntityRelationshipCollectionEditor extends DelegatingCollectionEdit
     public EntityRelationshipCollectionEditor(CollectionProperty property, Entity object, LayoutContext context) {
         String[] shortNames = property.getArchetypeRange();
         int max = property.getMaxCardinality();
-        AbstractIMObjectCollectionEditor editor;
+        AbstractEditableIMObjectCollectionEditor editor;
         if (max == 1 && shortNames.length == 1) {
             editor = new SingleEntityRelationshipCollectionEditor(property, object, context);
         } else {

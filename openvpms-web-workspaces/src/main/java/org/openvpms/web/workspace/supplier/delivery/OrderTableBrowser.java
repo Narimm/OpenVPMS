@@ -118,9 +118,8 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
         return new AbstractFilteredResultSet<FinancialAct>(set) {
             private Filter filter = new Filter();
 
-            protected void filter(FinancialAct act,
-                                  List<FinancialAct> results) {
-                List<FinancialAct> acts = filter.filter(act);
+            protected void filter(FinancialAct act, List<FinancialAct> results) {
+                List<FinancialAct> acts = filter.filter(act, act);
                 if (!acts.isEmpty()) {
                     results.add(act);
                     results.addAll(acts);
@@ -389,9 +388,10 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
          *
          * @param child  the child act
          * @param parent the parent act
+         * @param root   the root act
          */
         @Override
-        protected boolean include(FinancialAct child, FinancialAct parent) {
+        protected boolean include(FinancialAct child, FinancialAct parent, FinancialAct root) {
             DeliveryStatus status = rules.getDeliveryStatus(child);
             return (delivery)
                    ? status != DeliveryStatus.FULL

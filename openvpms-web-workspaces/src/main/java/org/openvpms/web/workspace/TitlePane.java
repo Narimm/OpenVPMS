@@ -11,13 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace;
 
 import nextapp.echo2.app.Alignment;
-import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
@@ -36,6 +35,7 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
+import org.openvpms.web.echo.pane.ContentPane;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.Collections;
@@ -53,6 +53,11 @@ public class TitlePane extends ContentPane {
      * The practice rules.
      */
     private final PracticeRules practiceRules;
+
+    /**
+     * The user rules.
+     */
+    private final UserRules userRules;
 
     /**
      * The context.
@@ -74,10 +79,12 @@ public class TitlePane extends ContentPane {
      * Construct a new {@code TitlePane}.
      *
      * @param practiceRules the practice rules
+     * @param userRules     the user rules
      * @param context       the context
      */
-    public TitlePane(PracticeRules practiceRules, Context context) {
+    public TitlePane(PracticeRules practiceRules, UserRules userRules, Context context) {
         this.practiceRules = practiceRules;
+        this.userRules = userRules;
         this.context = context;
         doLayout();
     }
@@ -154,8 +161,7 @@ public class TitlePane extends ContentPane {
         List<Party> locations = Collections.emptyList();
         User user = context.getUser();
         if (user != null) {
-            UserRules rules = new UserRules();
-            locations = rules.getLocations(user);
+            locations = userRules.getLocations(user);
             if (locations.isEmpty()) {
                 Party practice = context.getPractice();
                 if (practice != null) {
@@ -176,8 +182,7 @@ public class TitlePane extends ContentPane {
         Party location = null;
         User user = context.getUser();
         if (user != null) {
-            UserRules rules = new UserRules();
-            location = rules.getDefaultLocation(user);
+            location = userRules.getDefaultLocation(user);
             if (location == null) {
                 Party practice = context.getPractice();
                 if (practice != null) {

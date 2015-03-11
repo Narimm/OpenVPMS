@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workflow;
@@ -35,6 +35,15 @@ import org.openvpms.web.echo.help.HelpContext;
 public class PrintIMObjectTask extends AbstractTask {
 
     /**
+     * The print mode for documents.
+     */
+    public enum PrintMode {
+        INTERACTIVE, // print interactively
+        BACKGROUND,  // print in the background, unless user intervention is required
+        DEFAULT      // use the settings from the template
+    }
+
+    /**
      * The object to print.
      */
     private IMObject object;
@@ -50,11 +59,9 @@ public class PrintIMObjectTask extends AbstractTask {
     private final MailContext mailContext;
 
     /**
-     * Determines if objects should be printed interactively.
-     * If {@code false}, indicates to try and print in the background unless
-     * printing requires user intervention.
+     * Determines how objects should be printed.
      */
-    private final boolean interactive;
+    private final PrintMode printMode;
 
     /**
      * Determines if the skip button should be displayed if
@@ -66,24 +73,14 @@ public class PrintIMObjectTask extends AbstractTask {
     /**
      * Constructs a {@link PrintIMObjectTask}.
      *
-     * @param object  the object to print
-     * @param context the mail context. May be {@code null}
+     * @param object    the object to print
+     * @param context   the mail context. May be {@code null}
+     * @param printMode the print mode
      */
-    public PrintIMObjectTask(IMObject object, MailContext context) {
-        this(object, context, true);
-    }
-
-    /**
-     * Constructs a {@link PrintIMObjectTask}.
-     *
-     * @param object      the object to print
-     * @param context     the mail context. May be {@code null}
-     * @param interactive if {@code true} print interactively, otherwise attempt to print in the background
-     */
-    public PrintIMObjectTask(IMObject object, MailContext context, boolean interactive) {
+    public PrintIMObjectTask(IMObject object, MailContext context, PrintMode printMode) {
         this.object = object;
         this.mailContext = context;
-        this.interactive = interactive;
+        this.printMode = printMode;
     }
 
     /**
@@ -104,9 +101,20 @@ public class PrintIMObjectTask extends AbstractTask {
      * @param interactive if {@code true} print interactively, otherwise attempt to print in the background
      */
     public PrintIMObjectTask(String shortName, MailContext context, boolean interactive) {
+        this(shortName, context, interactive ? PrintMode.INTERACTIVE : PrintMode.BACKGROUND);
+    }
+
+    /**
+     * Constructs a {@link PrintIMObjectTask}.
+     *
+     * @param shortName the short name of the object to print
+     * @param context   the mail context. May be {@code null}
+     * @param printMode the print mode
+     */
+    public PrintIMObjectTask(String shortName, MailContext context, PrintMode printMode) {
         this.shortName = shortName;
         this.mailContext = context;
-        this.interactive = interactive;
+        this.printMode = printMode;
     }
 
     /**
@@ -151,7 +159,11 @@ public class PrintIMObjectTask extends AbstractTask {
             boolean skip = !isRequired() && enableSkip;
             HelpContext help = context.getHelpContext().topic(object, "print");
             InteractiveIMPrinter<IMObject> iPrinter = createPrinter(printer, skip, context, help);
-            iPrinter.setInteractive(interactive);
+            if (printMode == PrintMode.INTERACTIVE) {
+                iPrinter.setInteractive(true);
+            } else if (printMode == PrintMode.BACKGROUND) {
+                iPrinter.setInteractive(false);
+            }
             iPrinter.setMailContext(mailContext);
 
             iPrinter.setListener(new PrinterListener() {

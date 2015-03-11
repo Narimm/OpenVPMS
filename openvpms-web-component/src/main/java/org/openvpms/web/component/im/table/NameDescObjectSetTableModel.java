@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -66,27 +66,27 @@ public class NameDescObjectSetTableModel extends AbstractIMTableModel<ObjectSet>
     /**
      * The ID column index.
      */
-    private static final int ID_INDEX = 0;
+    protected static final int ID_INDEX = 0;
 
     /**
      * The archetype column index.
      */
-    private static final int ARCHETYPE_INDEX = 1;
+    protected static final int ARCHETYPE_INDEX = 1;
 
     /**
      * The name index.
      */
-    private static final int NAME_INDEX = 2;
+    protected static final int NAME_INDEX = 2;
 
     /**
      * The description index.
      */
-    private static final int DESCRIPTION_INDEX = 3;
+    protected static final int DESCRIPTION_INDEX = 3;
 
     /**
      * The active index.
      */
-    private static final int ACTIVE_INDEX = 4;
+    protected static final int ACTIVE_INDEX = 4;
 
 
     /**
@@ -203,7 +203,7 @@ public class NameDescObjectSetTableModel extends AbstractIMTableModel<ObjectSet>
      * @param showArchetype if {@code true} show the archetype
      * @return a new column model
      */
-    private static TableColumnModel createTableColumnModel(boolean showArchetype, boolean showActive) {
+    protected TableColumnModel createTableColumnModel(boolean showArchetype, boolean showActive) {
         DefaultTableColumnModel model = new DefaultTableColumnModel();
         model.addColumn(createTableColumn(ID_INDEX, ID));
         if (showArchetype) {

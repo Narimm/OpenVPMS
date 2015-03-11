@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product;
@@ -24,11 +24,16 @@ import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
-import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.product.ProductQuery;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
@@ -60,24 +65,55 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
      */
     private ProductPriceRules rules;
 
+    /**
+     * The pricing location. May be {@code null}
+     */
+    private Lookup pricingGroup;
+
 
     /**
      * Constructs a {@link ProductTableModel}.
+     *
+     * @param context the layout context
      */
-    public ProductTableModel() {
-        this(null);
+    public ProductTableModel(LayoutContext context) {
+        this(null, context);
     }
 
     /**
      * Constructs a {@link ProductTableModel}.
      *
-     * @param query the query. May be {@code null}
+     * @param query   the query. May be {@code null}
+     * @param context the layout context
      */
-    public ProductTableModel(Query<Product> query) {
+    public ProductTableModel(ProductQuery query, LayoutContext context) {
         super(null);
         rules = ServiceHelper.getBean(ProductPriceRules.class);
         boolean active = (query == null) || query.getActive() == BaseArchetypeConstraint.State.BOTH;
         setTableColumnModel(createTableColumnModel(active));
+        if (query != null) {
+            pricingGroup = query.getPricingGroup().getGroup();
+        } else {
+            Party location = context.getContext().getLocation();
+            if (location != null) {
+                LocationRules locationRules = ServiceHelper.getBean(LocationRules.class);
+                pricingGroup = locationRules.getPricingGroup(location);
+            }
+        }
+    }
+
+    /**
+     * Sets the pricing group.
+     * <p/>
+     * This determines the fixed and unit prices displayed.
+     *
+     * @param pricingGroup the pricing group. May be {@code null}
+     */
+    public void setPricingGroup(Lookup pricingGroup) {
+        if (!ObjectUtils.equals(this.pricingGroup, pricingGroup)) {
+            this.pricingGroup = pricingGroup;
+            fireTableDataChanged();
+        }
     }
 
     /**
@@ -131,7 +167,7 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
      */
     private Component getPrice(String shortName, Product product) {
         Component result = null;
-        ProductPrice price = rules.getProductPrice(product, shortName, new Date());
+        ProductPrice price = rules.getProductPrice(product, shortName, new Date(), pricingGroup);
         if (price != null) {
             BigDecimal value = price.getPrice();
             if (value != null) {

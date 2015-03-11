@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.print;
@@ -26,8 +26,6 @@ import org.openvpms.report.PrintProperties;
 import org.openvpms.report.openoffice.OpenOfficeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.servlet.DownloadServlet;
-
-import javax.print.attribute.standard.MediaTray;
 
 
 /**
@@ -119,7 +117,11 @@ public abstract class AbstractPrinter implements Printer {
         if (template != null) {
             properties.setMediaSize(template.getMediaSize());
             properties.setOrientation(template.getOrientationRequested());
-            properties.setMediaTray(getMediaTray(template, printer, context));
+            DocumentTemplatePrinter relationship = getDocumentTemplatePrinter(template, printer, context);
+            if (relationship != null) {
+                properties.setMediaTray(relationship.getMediaTray());
+                properties.setSides(relationship.getSides());
+            }
         }
         return properties;
     }
@@ -134,7 +136,7 @@ public abstract class AbstractPrinter implements Printer {
     protected void print(Document document, String printer) {
         String mimeType = document.getMimeType();
         if (DocFormats.ODT_TYPE.equals(mimeType) || DocFormats.DOC_TYPE.equals(mimeType)) {
-            OpenOfficeHelper.getPrintService().print(document, printer, getCopies());
+            OpenOfficeHelper.getPrintService().print(document, getProperties(printer));
         } else {
             DownloadServlet.startDownload(document);
         }
@@ -179,19 +181,6 @@ public abstract class AbstractPrinter implements Printer {
             }
         }
         return null;
-    }
-
-    /**
-     * Helper to return the media tray for a document template for a particular printer for the current practice.
-     *
-     * @param template the template
-     * @param printer  the printer name
-     * @param context  the context
-     * @return the media tray for the template, or {@code null} if none is defined
-     */
-    protected MediaTray getMediaTray(DocumentTemplate template, String printer, Context context) {
-        DocumentTemplatePrinter relationship = getDocumentTemplatePrinter(template, printer, context);
-        return relationship != null ? relationship.getMediaTray() : null;
     }
 
     /**

@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.report;
@@ -33,6 +31,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 
 import static org.junit.Assert.assertEquals;
@@ -286,7 +285,7 @@ public class ContextDocumentTemplateLocatorTestCase extends AbstractAppTest {
     private EntityRelationship addRelationship(Party organisation, Entity template) {
         EntityBean bean = new EntityBean(template);
         EntityRelationship relationship =
-            bean.addRelationship("entityRelationship.documentTemplatePrinter", organisation);
+                bean.addRelationship("entityRelationship.documentTemplatePrinter", organisation);
         IMObjectBean relBean = new IMObjectBean(relationship);
         relBean.setValue("printerName", "test");
         return relationship;
@@ -313,7 +312,7 @@ public class ContextDocumentTemplateLocatorTestCase extends AbstractAppTest {
      * @return the default template, or <tt>null</tt> if none is found
      */
     private DocumentTemplate getDefaultTemplate(String shortName) {
-        TemplateHelper helper = new TemplateHelper();
+        TemplateHelper helper = new TemplateHelper(ServiceHelper.getArchetypeService());
         return helper.getDocumentTemplate(shortName);
     }
 

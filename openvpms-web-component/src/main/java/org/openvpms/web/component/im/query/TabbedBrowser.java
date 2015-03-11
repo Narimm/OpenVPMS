@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.query;
 
@@ -142,13 +142,16 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
     /**
      * Select an object.
      *
-     * @param object the object to select
+     * @param object the object to select. May be {@code null} to deselect the current selection
+     * @return {@code true} if the object was selected, {@code false} if it doesn't exist in the current view
      */
-    public void setSelected(T object) {
+    public boolean setSelected(T object) {
+        boolean result = false;
         Browser<T> browser = getSelectedBrowser();
         if (browser != null) {
-            browser.setSelected(object);
+            result = browser.setSelected(object);
         }
+        return result;
     }
 
     /**

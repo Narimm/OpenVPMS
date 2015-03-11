@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -47,8 +47,29 @@ public class ActResultSet<T extends Act> extends AbstractActResultSet<T> {
                         Date from, Date to,
                         String[] statuses, int pageSize,
                         SortConstraint[] sort) {
-        super(archetypes, participant, from, to, statuses, false, null,
-              pageSize, sort, new DefaultQueryExecutor<T>());
+        this(archetypes, null, participant, from, to, statuses, pageSize, sort);
+    }
+
+    /**
+     * Constructs an {@link ActResultSet}.
+     *
+     * @param archetypes  the act archetype constraint
+     * @param value       the value to query on. May be {@code null}
+     * @param participant the participant constraint
+     * @param from        the act start-from date. May be {@code null}
+     * @param to          the act start-to date. May be {@code null}
+     * @param statuses    the act statuses. If empty, indicates all acts
+     * @param pageSize    the maximum no. of results per page
+     * @param sort        the sort criteria. May be {@code null}
+     */
+    public ActResultSet(ShortNameConstraint archetypes,
+                        String value,
+                        ParticipantConstraint participant,
+                        Date from, Date to,
+                        String[] statuses, int pageSize,
+                        SortConstraint[] sort) {
+        super(archetypes, value, participant, from, to, statuses, false, null, pageSize, sort,
+              new DefaultQueryExecutor<T>());
     }
 
     /**
@@ -76,7 +97,33 @@ public class ActResultSet<T extends Act> extends AbstractActResultSet<T> {
     }
 
     /**
-     * Constructs a new {@code ActResultSet}.
+     * Constructs an {@link ActResultSet}.
+     *
+     * @param archetypes  the act archetype constraint
+     * @param value       the value to query on. May be {@code null}
+     * @param participant the participant constraint. May be {@code null}
+     * @param from        the act start-from date. May be {@code null}
+     * @param to          the act start-to date. May be {@code null}
+     * @param statuses    the act statuses. If empty, indicates all acts
+     * @param exclude     if {@code true} exclude acts with status in
+     *                    {@code statuses}; otherwise include them.
+     * @param constraints additional query constraints. May be {@code null}
+     * @param pageSize    the maximum no. of results per page
+     * @param sort        the sort criteria. May be {@code null}
+     */
+    public ActResultSet(ShortNameConstraint archetypes,
+                        String value,
+                        ParticipantConstraint participant,
+                        Date from, Date to,
+                        String[] statuses, boolean exclude,
+                        IConstraint constraints, int pageSize,
+                        SortConstraint[] sort) {
+        super(archetypes, value, participant, from, to, statuses, exclude, constraints,
+              pageSize, sort, new DefaultQueryExecutor<T>());
+    }
+
+    /**
+     * Constructs a {@link ActResultSet}.
      *
      * @param archetypes   the act archetype constraint
      * @param participants the participant constraints. May be {@code null}
@@ -95,12 +142,36 @@ public class ActResultSet<T extends Act> extends AbstractActResultSet<T> {
                         String[] statuses, boolean exclude,
                         IConstraint constraints, int pageSize,
                         SortConstraint[] sort) {
-        super(archetypes, participants, from, to, statuses, exclude,
+        this(archetypes, null, participants, from, to, statuses, exclude, constraints, pageSize, sort);
+    }
+
+    /**
+     * Constructs a {@link ActResultSet}.
+     *
+     * @param archetypes   the act archetype constraint
+     * @param participants the participant constraints. May be {@code null}
+     * @param from         the act start-from date. May be {@code null}
+     * @param to           the act start-to date. May be {@code null}
+     * @param statuses     the act statuses. If empty, indicates all acts
+     * @param exclude      if {@code true} exclude acts with status in
+     *                     {@code statuses}; otherwise include them.
+     * @param constraints  additional query constraints. May be {@code null}
+     * @param pageSize     the maximum no. of results per page
+     * @param sort         the sort criteria. May be {@code null}
+     */
+    public ActResultSet(ShortNameConstraint archetypes,
+                        String value,
+                        ParticipantConstraint[] participants,
+                        Date from, Date to,
+                        String[] statuses, boolean exclude,
+                        IConstraint constraints, int pageSize,
+                        SortConstraint[] sort) {
+        super(archetypes, value, participants, from, to, statuses, exclude,
               constraints, pageSize, sort, new DefaultQueryExecutor<T>());
     }
 
     /**
-     * Constructs a new {@code ActResultSet}.
+     * Constructs a {@link ActResultSet}.
      *
      * @param archetypes   the act archetype constraint
      * @param participants the participant constraints. May be {@code null}
@@ -117,7 +188,30 @@ public class ActResultSet<T extends Act> extends AbstractActResultSet<T> {
                         IConstraint times, String[] statuses, boolean exclude,
                         IConstraint constraints, int pageSize,
                         SortConstraint[] sort) {
-        super(archetypes, participants, times, statuses, exclude, constraints,
+        this(archetypes, null, participants, times, statuses, exclude, constraints, pageSize, sort);
+    }
+
+    /**
+     * Constructs a {@link ActResultSet}.
+     *
+     * @param archetypes   the act archetype constraint
+     * @param value        the value to query on. May be {@code null}
+     * @param participants the participant constraints. May be {@code null}
+     * @param times        the time constraints. May be {@code null}
+     * @param statuses     the act statuses. If empty, indicates all acts
+     * @param exclude      if {@code true} exclude acts with status in
+     *                     {@code statuses}; otherwise include them.
+     * @param constraints  additional query constraints. May be {@code null}
+     * @param pageSize     the maximum no. of results per page
+     * @param sort         the sort criteria. May be {@code null}
+     */
+    public ActResultSet(ShortNameConstraint archetypes,
+                        String value,
+                        ParticipantConstraint[] participants,
+                        IConstraint times, String[] statuses, boolean exclude,
+                        IConstraint constraints, int pageSize,
+                        SortConstraint[] sort) {
+        super(archetypes, value, participants, times, statuses, exclude, constraints,
               pageSize, sort, new DefaultQueryExecutor<T>());
     }
 

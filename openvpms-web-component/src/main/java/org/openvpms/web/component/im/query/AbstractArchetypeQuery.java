@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
@@ -45,6 +46,8 @@ import org.openvpms.web.echo.text.TextComponent;
 import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 
+import static org.openvpms.component.system.common.query.Constraints.sort;
+
 
 /**
  * Abstract implementation of the {@link Query} interface that queries objects
@@ -53,6 +56,17 @@ import org.openvpms.web.resource.i18n.Messages;
  * @author Tim Anderson
  */
 public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
+
+
+    /**
+     * Default sort constraint on name and id nodes.
+     */
+    protected static final SortConstraint[] NAME_SORT_CONSTRAINT = new SortConstraint[]{sort("name"), sort("id")};
+
+    /**
+     * The archetypes to query.
+     */
+    private final ShortNameConstraint archetypes;
 
     /**
      * The search field. If the text is {@code null} or empty, indicates
@@ -139,6 +153,7 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
      */
     public AbstractArchetypeQuery(String[] shortNames, boolean primaryOnly, Class type) {
         super(shortNames, primaryOnly, type);
+        archetypes = new ShortNameConstraint(getShortNames(), primaryOnly, true);
     }
 
     /**
@@ -151,6 +166,7 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
      */
     public AbstractArchetypeQuery(String[] shortNames, boolean primaryOnly) {
         super(shortNames, primaryOnly);
+        archetypes = new ShortNameConstraint(getShortNames(), primaryOnly, true);
     }
 
     /**
@@ -296,6 +312,15 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
     }
 
     /**
+     * Returns the archetypes to select from.
+     *
+     * @return the archetypes to select from
+     */
+    public ShortNameConstraint getArchetypes() {
+        return archetypes;
+    }
+
+    /**
      * Creates the result set.
      *
      * @param sort the sort criteria. May be {@code null}
@@ -379,6 +404,7 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
                     int index = shortNameSelector.getSelectedIndex();
                     String shortName = model.getShortName(index);
                     setShortName(shortName);
+                    onShortNameChanged();
                 }
             });
             shortNameSelector.setCellRenderer(new ShortNameListCellRenderer());
@@ -446,8 +472,12 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
      */
     protected void addActive(Component container) {
         container.add(LabelFactory.create(ACTIVE_ID));
-        container.add(getActiveSelector());
-        focusGroup.add(activeSelector);
+        Component component = getActiveSelector();
+        focusGroup.add(component);
+        if (container instanceof Grid) {
+            component = RowFactory.create(component);  // force minimum width display
+        }
+        container.add(component);
     }
 
     /**
@@ -455,6 +485,14 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
      */
     protected void onSearchFieldChanged() {
         onQuery();
+    }
+
+    /**
+     * Invoked when the short name is selected.
+     * <p/>
+     * This implementation is a no-op.
+     */
+    protected void onShortNameChanged() {
     }
 
     /**

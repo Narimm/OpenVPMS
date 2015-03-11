@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -22,7 +22,8 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
+import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.component.im.edit.IMObjectActions;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
@@ -52,28 +53,30 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
     /**
      * Consult button identifier.
      */
-    protected static final String CONSULT_ID = "consult";
+    protected static final String CONSULT_ID = "button.consult";
 
     /**
      * Check-out button identifier.
      */
-    protected static final String CHECKOUT_ID = "checkout";
+    protected static final String CHECKOUT_ID = "button.checkout";
 
     /**
      * Over-the-counter button identifier.
      */
-    protected static final String OVER_THE_COUNTER_ID = "OTC";
+    protected static final String OVER_THE_COUNTER_ID = "button.OTC";
 
 
     /**
-     * Constructs a {@code ScheduleCRUDWindow}.
+     * Constructs a {@link ScheduleCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param actions    determines the operations that may be performed on the selected object. If {@code null},
+     *                   actions should be registered via {@link #setActions(IMObjectActions)}
      * @param context    the context
      * @param help       the help context
      */
-    public ScheduleCRUDWindow(Archetypes<Act> archetypes, Context context, HelpContext help) {
-        super(archetypes, DefaultIMObjectActions.<Act>getInstance(), context, help);
+    public ScheduleCRUDWindow(Archetypes<Act> archetypes, ScheduleActions actions, Context context, HelpContext help) {
+        super(archetypes, actions, context, help);
     }
 
     /**
@@ -82,10 +85,10 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
     @Override
     public void delete() {
         Act act = getObject();
-        if (!ActStatus.COMPLETED.equals(act.getStatus())) {
+        if (getActions().canDelete(act)) {
             super.delete();
         } else {
-            String name = getArchetypeDescriptor().getDisplayName();
+            String name = getArchetypes().getDisplayName();
             String status = act.getStatus();
             String title = Messages.format("act.nodelete.title", name);
             String message = Messages.format("act.nodelete.message", name, status);
@@ -119,6 +122,16 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
             context = super.getMailContext();
         }
         return context;
+    }
+
+    /**
+     * Determines the actions that may be performed on the selected object.
+     *
+     * @return the actions
+     */
+    @Override
+    protected ScheduleActions getActions() {
+        return (ScheduleActions) super.getActions();
     }
 
     /**
@@ -190,21 +203,13 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
     }
 
     /**
-     * Determines if a consulation or checkout can be performed on an act.
-     *
-     * @param act the act
-     * @return {@code true} if consultation can be performed
-     */
-    protected abstract boolean canCheckoutOrConsult(Act act);
-
-    /**
      * Invoked when the 'consult' button is pressed.
      */
     private void onConsult() {
         Act act = IMObjectHelper.reload(getObject());
         // make sure the act is still available and has a valid status prior to
         // beginning workflow
-        if (act != null && canCheckoutOrConsult(act)) {
+        if (act != null && getActions().canCheckoutOrConsult(act)) {
             WorkflowFactory factory = ServiceHelper.getBean(WorkflowFactory.class);
             Workflow workflow = factory.createConsultWorkflow(act, getContext(), getHelpContext());
             workflow.addTaskListener(new DefaultTaskListener() {
@@ -225,7 +230,7 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
         Act act = IMObjectHelper.reload(getObject());
         // make sure the act is still available and has a valid status prior
         // to beginning workflow
-        if (act != null && canCheckoutOrConsult(act)) {
+        if (act != null && getActions().canCheckoutOrConsult(act)) {
             WorkflowFactory factory = ServiceHelper.getBean(WorkflowFactory.class);
             Workflow workflow = factory.createCheckOutWorkflow(act, getContext(), getHelpContext());
             workflow.addTaskListener(new DefaultTaskListener() {
@@ -245,6 +250,34 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
     private void onOverTheCounter() {
         Workflow workflow = new OverTheCounterWorkflow(getContext(), getHelpContext());
         workflow.start();
+    }
+
+    protected static abstract class ScheduleActions extends ActActions<Act> {
+
+        /**
+         * Default constructor.
+         */
+        protected ScheduleActions() {
+        }
+
+        /**
+         * Determines if an act can be deleted.
+         *
+         * @param act the act to check
+         * @return {@code true} if the act status isn't {@code POSTED} nor {@code COMPLETED}
+         */
+        @Override
+        public boolean canDelete(Act act) {
+            return super.canDelete(act) && !ActStatus.COMPLETED.equals(act.getStatus());
+        }
+
+        /**
+         * Determines if a consultation or checkout can be performed on an act.
+         *
+         * @param act the act
+         * @return {@code true} if consultation can be performed
+         */
+        public abstract boolean canCheckoutOrConsult(Act act);
     }
 
 }

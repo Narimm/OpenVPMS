@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.lookup;
@@ -28,8 +26,8 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHandler;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.web.component.im.util.DefaultIMObjectCache;
-import org.openvpms.web.component.im.util.IMObjectCache;
+import org.openvpms.component.system.common.cache.IMObjectCache;
+import org.openvpms.component.system.common.cache.MapIMObjectCache;
 import org.openvpms.web.system.ServiceHelper;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -109,7 +107,7 @@ class LookupReplaceHelper {
      * @return <tt>true</tt> if lookups were copied
      */
     private boolean mergeRelationships(Lookup source, Lookup target, boolean moveSourceRelationships) {
-        IMObjectCache cache = new DefaultIMObjectCache();
+        IMObjectCache cache = new MapIMObjectCache(ServiceHelper.getArchetypeService());
         cache.add(source);
         cache.add(target);
         boolean result = false;
