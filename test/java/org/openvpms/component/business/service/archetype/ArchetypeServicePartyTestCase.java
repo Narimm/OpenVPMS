@@ -1,42 +1,48 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.lookup.LookupUtil;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Arrays;
 import java.util.Collection;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 
 /**
- * Test that ability to create and query on parties.
+ * Test that ability to create and query parties.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 @ContextConfiguration("archetype-service-appcontext.xml")
 public class ArchetypeServicePartyTestCase extends AbstractArchetypeServiceTest {
@@ -104,10 +110,14 @@ public class ArchetypeServicePartyTestCase extends AbstractArchetypeServiceTest 
         save(staff2);
 
         Party person = createPerson("MR", "Jim", "Alateras");
+        assertEquals(0, person.getClassifications().size());
+
         person.addClassification(staff1);
+        assertTrue(person.getClassifications().contains(staff1));
         save(person);
 
         person.removeClassification(staff1);
+        assertFalse(person.getClassifications().contains(staff1));
         person.addClassification(staff2);
         save(person);
 
@@ -189,6 +199,39 @@ public class ArchetypeServicePartyTestCase extends AbstractArchetypeServiceTest 
     }
 
     /**
+     * Verifies that the target of an {@link EntityLink} cannot be removed, and that removal of the source
+     * of an {@link EntityLink} doesn't cascade to the target.
+     */
+    @Test
+    public void testAddRemoveEntityLinks() {
+        Party person = createPerson("MR", "Tim", "Anderson");
+        Party location = createLocation();
+        EntityBean bean = new EntityBean(person);
+        bean.addNodeTarget("location", location);
+        save(person, location);
+
+        // verify that the location cannot be removed as it linked from the person
+        try {
+            remove(location);
+            fail("Expected removal of EntityLink target to fail");
+        } catch (ArchetypeServiceException expected) {
+            assertEquals("Failed to delete object with reference " + location.getObjectReference(),
+                         expected.getMessage());
+        }
+
+        // now remove the source
+        remove(person);
+        assertNull(get(person));
+
+        // verify it hasn't cascaded
+        assertNotNull(get(location));
+
+        // now remove the target
+        remove(location);
+        assertNull(get(location));
+    }
+
+    /**
      * Create a person with the specified title, firstName and lastName.
      *
      * @param title     the title
@@ -197,12 +240,24 @@ public class ArchetypeServicePartyTestCase extends AbstractArchetypeServiceTest 
      * @return a new person
      */
     private Party createPerson(String title, String firstName, String lastName) {
-        Party person = (Party) create("party.person");
+        Party person = (Party) create("party.customerperson");
+        person.getClassifications().clear();
         person.getDetails().put("lastName", lastName);
         person.getDetails().put("firstName", firstName);
         person.getDetails().put("title", title);
 
         return person;
+    }
+
+    /**
+     * Creates a new party.organisationLocation.
+     *
+     * @return a new location
+     */
+    private Party createLocation() {
+        Party location = (Party) create("party.organisationLocation");
+        location.setName("ZLocation");
+        return location;
     }
 
     /**

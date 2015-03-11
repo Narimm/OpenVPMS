@@ -1,3 +1,19 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <mapping>
     <class
             name="org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor"
@@ -129,6 +145,10 @@
         <field name="type" type="string" required="true" direct="false"
                transient="false" get-method="getType" set-method="setType">
             <bind-xml name="type" node="attribute" reference="false"/>
+        </field>
+        <field name="description" type="string" required="false"
+               direct="false" transient="false" get-method="getDescription" set-method="setDescription">
+            <bind-xml name="description" node="attribute" reference="false"/>
         </field>
         <field name="baseName" type="string" required="false" direct="false"
                transient="false" get-method="getBaseName" set-method="setBaseName">

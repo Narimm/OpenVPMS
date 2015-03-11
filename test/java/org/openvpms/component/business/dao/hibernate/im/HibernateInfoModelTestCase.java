@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -22,29 +20,12 @@ package org.openvpms.component.business.dao.hibernate.im;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
 import org.junit.After;
-import org.junit.Before;
-import org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl;
-import org.openvpms.component.business.dao.hibernate.im.act.ActRelationshipDOImpl;
-import org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl;
-import org.openvpms.component.business.dao.hibernate.im.archetype.ActionTypeDescriptorDOImpl;
-import org.openvpms.component.business.dao.hibernate.im.archetype.ArchetypeDescriptorDOImpl;
-import org.openvpms.component.business.dao.hibernate.im.archetype.AssertionDescriptorDOImpl;
-import org.openvpms.component.business.dao.hibernate.im.archetype.AssertionTypeDescriptorDOImpl;
-import org.openvpms.component.business.dao.hibernate.im.archetype.NodeDescriptorDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
-import org.openvpms.component.business.dao.hibernate.im.document.DocumentDOImpl;
-import org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl;
-import org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityDOImpl;
-import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.entity.ReflectingObjectLoader;
-import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl;
-import org.openvpms.component.business.dao.hibernate.im.lookup.LookupRelationshipDOImpl;
-import org.openvpms.component.business.dao.hibernate.im.party.ContactDOImpl;
-import org.openvpms.component.business.dao.hibernate.im.product.ProductPriceDOImpl;
-import org.openvpms.component.business.dao.hibernate.im.security.ArchetypeAuthorityDOImpl;
-import org.openvpms.component.business.dao.hibernate.im.security.SecurityRoleDOImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,14 +34,16 @@ import java.util.Map;
 /**
  * This is the base class for all hibernate persistence test cases.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
-public abstract class HibernateInfoModelTestCase {
+@ContextConfiguration("/datasource-context.xml")
+public abstract class HibernateInfoModelTestCase extends AbstractJUnit4SpringContextTests {
 
     /**
      * The hibernate session factory.
      */
+    @Autowired
     private SessionFactory sessionFactory;
 
     /**
@@ -96,34 +79,6 @@ public abstract class HibernateInfoModelTestCase {
     }
 
     /**
-     * Sets up the test case.
-     */
-    @Before
-    public void setUp() {
-        // create the hibernate session factory
-        Configuration config = new Configuration();
-        config.addClass(ContactDOImpl.class);
-        config.addClass(EntityDOImpl.class);
-        config.addClass(ActDOImpl.class);
-        config.addClass(ActRelationshipDOImpl.class);
-        config.addClass(ParticipationDOImpl.class);
-        config.addClass(EntityRelationshipDOImpl.class);
-        config.addClass(EntityIdentityDOImpl.class);
-        config.addClass(LookupDOImpl.class);
-        config.addClass(LookupRelationshipDOImpl.class);
-        config.addClass(ArchetypeDescriptorDOImpl.class);
-        config.addClass(NodeDescriptorDOImpl.class);
-        config.addClass(AssertionDescriptorDOImpl.class);
-        config.addClass(AssertionTypeDescriptorDOImpl.class);
-        config.addClass(ActionTypeDescriptorDOImpl.class);
-        config.addClass(ProductPriceDOImpl.class);
-        config.addClass(SecurityRoleDOImpl.class);
-        config.addClass(ArchetypeAuthorityDOImpl.class);
-        config.addClass(DocumentDOImpl.class);
-        sessionFactory = config.buildSessionFactory();
-    }
-
-    /**
      * Cleans up after a test.
      */
     @After
@@ -131,7 +86,6 @@ public abstract class HibernateInfoModelTestCase {
         if (session != null) {
             session.close();
         }
-        sessionFactory.close();
     }
 
     /**

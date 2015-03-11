@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.tools.data.loader;
@@ -160,8 +160,6 @@ public class DataLoaderTestCase extends AbstractArchetypeServiceTest {
 
         assertEquals(1, user.getRoles().size());
         assertTrue(user.getRoles().contains(role));
-        assertEquals(1, role.getUsers().size());
-        assertTrue(role.getUsers().contains(user));
 
         ArchetypeAwareGrantedAuthority auth1 = (ArchetypeAwareGrantedAuthority)
                 checkReference(cache, "AUTH1", "security.archetypeAuthority");
@@ -385,6 +383,7 @@ public class DataLoaderTestCase extends AbstractArchetypeServiceTest {
     private void deleteParties(String shortName) {
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, false);
         query.add(new CollectionNodeConstraint("classifications", "lookup.staff", false, false));
+        query.setDistinct(true);
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
         for (IMObject object : get(query)) {
             remove(object);

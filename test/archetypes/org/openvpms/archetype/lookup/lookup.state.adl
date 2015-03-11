@@ -29,6 +29,6 @@
         </node>
         <node name="source" path="/sourceLookupRelationships"
               type="java.util.HashSet" baseName="sourceLookupRelationship"
-              minCardinality="0" maxCardinality="*"/>
+              minCardinality="0" maxCardinality="*" filter="lookupRelationship.stateSuburb"/>
     </archetype>
 </archetypes>

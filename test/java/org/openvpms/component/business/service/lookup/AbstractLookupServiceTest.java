@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.lookup;
@@ -199,6 +199,69 @@ public abstract class AbstractLookupServiceTest extends AbstractArchetypeService
     }
 
     /**
+     * Verifies that lookups can be retrieved via wildcards, and that changes a reflected.
+     */
+    @Test
+    public void testWildcards() {
+        removeLookups("lookup.diagnosis");
+        removeLookups("lookup.diagnosisVeNom");
+
+        Lookup diagnosis1 = createLookup("lookup.diagnosis", "FIBROMA");
+        Lookup diagnosis2 = createLookup("lookup.diagnosisVeNom", "VENOM");
+        diagnosis2.getDetails().put("dataDictionaryId", "1234");
+        save(diagnosis1, diagnosis2);
+
+        Collection<Lookup> wildcardLookups = lookupService.getLookups("lookup.diagnosis*");
+        Collection<Lookup> diagnosisLookups = lookupService.getLookups("lookup.diagnosis");
+        Collection<Lookup> veNomLookups = lookupService.getLookups("lookup.diagnosisVeNom");
+
+        assertEquals(2, wildcardLookups.size());
+        assertTrue(wildcardLookups.contains(diagnosis1));
+        assertTrue(wildcardLookups.contains(diagnosis2));
+
+        assertEquals(1, diagnosisLookups.size());
+        assertTrue(diagnosisLookups.contains(diagnosis1));
+
+        assertEquals(1, veNomLookups.size());
+        assertTrue(veNomLookups.contains(diagnosis2));
+
+        // save new lookup, and verify it is reflected in wildcardLookups and diagnosisLookups
+        Lookup diagnosis3 = createLookup("lookup.diagnosis", "HEART_MURMUR");
+        save(diagnosis3);
+        wildcardLookups = lookupService.getLookups("lookup.diagnosis*");
+        diagnosisLookups = lookupService.getLookups("lookup.diagnosis");
+        veNomLookups = lookupService.getLookups("lookup.diagnosisVeNom");
+        assertEquals(3, wildcardLookups.size());
+        assertTrue(wildcardLookups.contains(diagnosis1));
+        assertTrue(wildcardLookups.contains(diagnosis2));
+        assertTrue(wildcardLookups.contains(diagnosis3));
+
+        assertEquals(2, diagnosisLookups.size());
+        assertTrue(diagnosisLookups.contains(diagnosis1));
+        assertTrue(diagnosisLookups.contains(diagnosis3));
+
+        assertEquals(1, veNomLookups.size());
+        assertTrue(veNomLookups.contains(diagnosis2));
+
+        // now remove the VeNom lookup, and verify it is reflected in wildcardLookups and veNom lookups
+        remove(diagnosis2);
+
+        wildcardLookups = lookupService.getLookups("lookup.diagnosis*");
+        diagnosisLookups = lookupService.getLookups("lookup.diagnosis");
+        veNomLookups = lookupService.getLookups("lookup.diagnosisVeNom");
+        assertEquals(2, wildcardLookups.size());
+        assertTrue(wildcardLookups.contains(diagnosis1));
+        assertFalse(wildcardLookups.contains(diagnosis2));
+        assertTrue(wildcardLookups.contains(diagnosis3));
+
+        assertEquals(2, diagnosisLookups.size());
+        assertTrue(diagnosisLookups.contains(diagnosis1));
+        assertTrue(diagnosisLookups.contains(diagnosis3));
+
+        assertEquals(0, veNomLookups.size());
+    }
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
@@ -209,12 +272,12 @@ public abstract class AbstractLookupServiceTest extends AbstractArchetypeService
     /**
      * Helper to create and save a lookup.
      *
-     * @param code the lookup code
-     * @param name the lookup name
+     * @param shortName the lookup archetype short name
+     * @param code      the lookup code
      * @return a new lookup
      */
-    protected Lookup createLookup(String code, String name) {
-        return LookupUtil.createLookup(getArchetypeService(), code, name);
+    protected Lookup createLookup(String shortName, String code) {
+        return LookupUtil.createLookup(getArchetypeService(), shortName, code);
     }
 
     /**

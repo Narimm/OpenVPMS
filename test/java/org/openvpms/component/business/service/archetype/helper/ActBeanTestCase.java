@@ -1,24 +1,21 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
@@ -31,12 +28,18 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 
 /**
  * Tests the {@link ActBean} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 @ContextConfiguration("../archetype-service-appcontext.xml")
 public class ActBeanTestCase extends AbstractArchetypeServiceTest {
@@ -245,6 +248,29 @@ public class ActBeanTestCase extends AbstractArchetypeServiceTest {
                      bean.getNodeParticipantRef("customer"));
 
         assertEquals(customer, bean.getNodeParticipant("customer"));
+    }
+
+    /**
+     * Tests the {@link ActBean#setNodeParticipant(String, Entity)} method.
+     */
+    @Test
+    public void testSetNodeParticipant() {
+        ActBean bean = createActBean("act.customerEstimation");
+        Party customer = createCustomer();
+        Participation participation1 = bean.setNodeParticipant("customer", customer);
+        assertNotNull(participation1);
+        assertEquals(bean.getReference(), participation1.getAct());
+        assertEquals(customer.getObjectReference(), participation1.getEntity());
+
+        Participation participation2 = bean.setNodeParticipant("customer", (Entity) null);
+        assertEquals(participation1, participation2);  // updates the existing participation
+        assertEquals(bean.getReference(), participation2.getAct());
+        assertNull(participation2.getEntity());
+
+        Participation participation3 = bean.setNodeParticipant("customer", customer.getObjectReference());
+        assertEquals(participation1, participation3);  // updates the existing participation
+        assertEquals(bean.getReference(), participation3.getAct());
+        assertEquals(customer.getObjectReference(), participation3.getEntity());
     }
 
     /**

@@ -1,18 +1,19 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.component.business.dao.hibernate.im.security;
 
 import org.hibernate.Session;
@@ -20,10 +21,14 @@ import org.hibernate.Transaction;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
+import org.openvpms.component.business.dao.hibernate.im.party.ContactDO;
+import org.openvpms.component.business.dao.hibernate.im.party.ContactDOImpl;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.security.User;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -43,6 +48,16 @@ public class UserDAOHibernateTestCase extends HibernateInfoModelTestCase {
      * ESCI user archetype id.
      */
     private static final ArchetypeId ESCI_USER_ID = new ArchetypeId("user.esci.1.0");
+
+    /**
+     * Location archetype id.
+     */
+    private static final ArchetypeId LOCATION_ID = new ArchetypeId("contact.location.1.0");
+
+    /**
+     * Phone archetype id.
+     */
+    private static final ArchetypeId PHONE_ID = new ArchetypeId("contact.phoneNumber.1.0");
 
     /**
      * The user DAO.
@@ -121,11 +136,39 @@ public class UserDAOHibernateTestCase extends HibernateInfoModelTestCase {
     }
 
     /**
+     * Verifies contacts are saved and loaded with users.
+     */
+    @Test
+    public void testContacts() {
+        String name1 = "u1" + System.currentTimeMillis();
+        UserDO user = createUser(name1, "foo", USER_ID);
+
+        ContactDO contact1 = new ContactDOImpl();
+        contact1.setArchetypeId(LOCATION_ID);
+
+        ContactDO contact2 = new ContactDOImpl();
+        contact2.setArchetypeId(PHONE_ID);
+
+        user.addContact(contact1);
+        user.addContact(contact2);
+
+        Session session = getSession();
+        Transaction tx = session.beginTransaction();
+        session.save(user);
+        tx.commit();
+
+        List<User> list = dao.getByUserName(name1);
+        assertEquals(1, list.size());
+        User retrieved = list.get(0);
+        Set<Contact> contacts = retrieved.getContacts();
+        assertEquals(2, contacts.size());
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
-        super.setUp();
         dao = new UserDAOHibernate();
         dao.setSessionFactory(getSessionFactory());
     }

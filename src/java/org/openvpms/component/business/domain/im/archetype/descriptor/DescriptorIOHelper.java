@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.archetype.descriptor;
@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 
 import static org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException.ErrorCode.MappingError;
 import static org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException.ErrorCode.ReadError;
@@ -139,7 +140,7 @@ class DescriptorIOHelper {
         Object result;
         try {
             Unmarshaller unmarshaller = new Unmarshaller(mapping);
-            result = unmarshaller.unmarshal(new InputStreamReader(stream));
+            result = unmarshaller.unmarshal(new InputStreamReader(stream, Charset.forName("UTF-8")));
         } catch (Exception exception) {
             throw new DescriptorException(ReadError, exception, mappingPath, exception.getMessage());
         }
@@ -159,7 +160,7 @@ class DescriptorIOHelper {
      */
     private static void write(Object object, OutputStream stream, Mapping mapping, String mappingPath,
                               boolean fragment, boolean prettyPrint) {
-        OutputStreamWriter writer = new OutputStreamWriter(stream);
+        OutputStreamWriter writer = new OutputStreamWriter(stream, Charset.forName("UTF-8"));
         try {
             Marshaller marshaller = new Marshaller(writer);
             marshaller.setMapping(mapping);

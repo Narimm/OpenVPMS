@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.system.common.jxpath;
@@ -64,7 +64,7 @@ public class JXPathHelper {
      * Each property has a key, which is the namespace and the value, which is
      * the function class or function object.
      *
-     * @param properties the class function libraries to include
+     * @param properties the function libraries to include
      */
     public JXPathHelper(Map<String, Object> properties) {
         // add the extension functions
@@ -77,8 +77,22 @@ public class JXPathHelper {
                 } else {
                     addFunctions(value, namespace);
                 }
-
             }
+        }
+    }
+
+    /**
+     * Constructs a {@link JXPathHelper}.
+     * <p/>
+     * This initialises the <em>global</em> functions with those supplied.
+     *
+     * @param functions the functions
+     */
+    public JXPathHelper(Functions functions) {
+        if (functions instanceof FunctionLibrary) {
+            JXPathHelper.functions = (FunctionLibrary) functions;
+        } else {
+            JXPathHelper.functions.addFunctions(functions);
         }
     }
 
@@ -89,6 +103,17 @@ public class JXPathHelper {
      * @return JXPathContext the context object
      */
     public static JXPathContext newContext(Object object) {
+        return newContext(object, functions);
+    }
+
+    /**
+     * Create a new context for the specified object that has access to the supplied functions.
+     *
+     * @param object    the context bean
+     * @param functions the functions
+     * @return JXPathContext the context object
+     */
+    public static JXPathContext newContext(Object object, Functions functions) {
         JXPathContext context = JXPathContext.newContext(object);
         FunctionLibrary lib = new FunctionLibrary();
         lib.addFunctions(context.getFunctions());

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.lookup;
@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -36,6 +37,9 @@ import java.util.Set;
 
 /**
  * Implementation of {@link ILookupService} that caches objects.
+ * <p/>
+ * Note that race conditions can occur if a lookup is updated while a collection of the same lookups are
+ * being loaded - TODO.
  *
  * @author Tim Anderson
  */
@@ -208,12 +212,16 @@ public class CachingLookupService extends AbstractLookupService {
      */
     @SuppressWarnings("unchecked")
     private void addToCollection(IMObjectReference reference) {
-        Key collectionKey = new Key(reference.getArchetypeId().getShortName());
-        Element element = cache.get(collectionKey);
-        if (element != null) {
-            synchronized (element) {
-                Set<IMObjectReference> lookups = (Set<IMObjectReference>) element.getObjectValue();
-                lookups.add(reference);
+        String shortName = reference.getArchetypeId().getShortName();
+        for (Object key : cache.getKeys()) {
+            if (key instanceof Key && ((Key) key).matches(shortName)) {
+                Element element = cache.get(key);
+                if (element != null) {
+                    synchronized (element) {
+                        Set<IMObjectReference> lookups = (Set<IMObjectReference>) element.getObjectValue();
+                        lookups.add(reference);
+                    }
+                }
             }
         }
     }
@@ -240,26 +248,45 @@ public class CachingLookupService extends AbstractLookupService {
      */
     @SuppressWarnings("unchecked")
     private void removeFromCollection(IMObjectReference reference) {
-        Key collectionKey = new Key(reference.getArchetypeId().getShortName());
-        Element element = cache.get(collectionKey);
-        if (element != null) {
-            synchronized (element) {
-                Set<IMObjectReference> lookups = (Set<IMObjectReference>) element.getObjectValue();
-                lookups.remove(reference);
+        String shortName = reference.getArchetypeId().getShortName();
+        for (Object key : cache.getKeys()) {
+            if (key instanceof Key && ((Key) key).matches(shortName)) {
+                Element element = cache.get(key);
+                if (element != null) {
+                    synchronized (element) {
+                        Set<IMObjectReference> lookups = (Set<IMObjectReference>) element.getObjectValue();
+                        lookups.remove(reference);
+                    }
+                }
             }
         }
     }
 
     private static class Key implements Serializable {
 
+        /**
+         * Non-null if a short name or shortName + code is being used as the identifier.
+         */
         private String key;
 
+        /**
+         * Non-null if a reference is being used as the identifier.
+         */
         private IMObjectReference ref;
 
+        /**
+         * Determines if the key is a short name only.
+         */
+        private boolean isShortName = false;
+
+        /**
+         * Key hash code.
+         */
         private int hashCode;
 
         public Key(String shortName) {
             key = shortName;
+            isShortName = true;
             hashCode = key.hashCode();
         }
 
@@ -283,6 +310,16 @@ public class CachingLookupService extends AbstractLookupService {
         public boolean equals(Object obj) {
             Key other = (Key) obj;
             return (ObjectUtils.equals(key, other.key) || ObjectUtils.equals(ref, other.ref));
+        }
+
+        /**
+         * Determines if the specified short name matches the key.
+         *
+         * @param shortName the short name
+         * @return {@code true} if they match, otherwise {@code alse}
+         */
+        public boolean matches(String shortName) {
+            return (isShortName) && TypeHelper.matches(shortName, key);
         }
 
         /**

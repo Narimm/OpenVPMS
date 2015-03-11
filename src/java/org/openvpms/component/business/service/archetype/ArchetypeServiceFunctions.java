@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -32,7 +32,6 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertion;
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertionFactory;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.component.system.common.util.PropertyState;
@@ -52,16 +51,37 @@ import java.util.List;
 public class ArchetypeServiceFunctions {
 
     /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
+
+    /**
+     * Constructs an {@link ArchetypeServiceFunctions}.
+     *
+     * @param service the archetype service
+     * @param lookups the lookup service
+     */
+    public ArchetypeServiceFunctions(IArchetypeService service, ILookupService lookups) {
+        this.service = service;
+        this.lookups = lookups;
+    }
+
+    /**
      * This will take a list of {@link IMObjectReference} instances and return
      * a list of the corresponding {@link IMObject} instances.
      *
      * @param references a list of references
      * @return List<IMObject>
      */
-    public static List<IMObject> resolveRefs(List<IMObjectReference> references) {
+    public List<IMObject> resolveRefs(List<IMObjectReference> references) {
         List<IMObject> objects = new ArrayList<IMObject>();
         for (IMObjectReference ref : references) {
-            objects.add(ArchetypeServiceHelper.getArchetypeService().get(ref));
+            objects.add(service.get(ref));
         }
 
         return objects;
@@ -73,8 +93,8 @@ public class ArchetypeServiceFunctions {
      * @param reference the reference
      * @return IMObject
      */
-    public static IMObject resolve(IMObjectReference reference) {
-        return ArchetypeServiceHelper.getArchetypeService().get(reference);
+    public IMObject resolve(IMObjectReference reference) {
+        return service.get(reference);
     }
 
     /**
@@ -86,7 +106,7 @@ public class ArchetypeServiceFunctions {
      * @throws PropertyResolverException if the name is invalid
      * @see NodeResolver
      */
-    public static Object get(Object object, String name) {
+    public Object get(Object object, String name) {
         Object result;
         object = unwrap(object);
         if (object == null) {
@@ -110,7 +130,7 @@ public class ArchetypeServiceFunctions {
      *         not exist
      * @see NodeResolver
      */
-    public static Object get(Object object, String name, Object defaultValue) {
+    public Object get(Object object, String name, Object defaultValue) {
         Object result;
         object = unwrap(object);
         if (object == null) {
@@ -131,8 +151,8 @@ public class ArchetypeServiceFunctions {
      * @param value  the value to set
      * @throws OpenVPMSException if the node cannot be updated or the object cannot be saved
      */
-    public static void set(IMObject object, String node, Object value) {
-        IMObjectBean bean = new IMObjectBean(object, ArchetypeServiceHelper.getArchetypeService());
+    public void set(IMObject object, String node, Object value) {
+        IMObjectBean bean = new IMObjectBean(object, service);
         bean.setValue(node, value);
         bean.save();
     }
@@ -147,12 +167,11 @@ public class ArchetypeServiceFunctions {
      * @throws OpenVPMSException         if the call cannot complete
      * @see NodeResolver
      */
-    public static String lookup(IMObject object, String node) {
+    public String lookup(IMObject object, String node) {
         if (object == null) {
             return null;
         }
-        return LookupHelper.getName(ArchetypeServiceHelper.getArchetypeService(),
-                                    LookupServiceHelper.getLookupService(), object, node);
+        return LookupHelper.getName(service, lookups, object, node);
     }
 
     /**
@@ -166,7 +185,7 @@ public class ArchetypeServiceFunctions {
      * @throws OpenVPMSException if the call cannot complete
      * @see NodeResolver
      */
-    public static String lookup(IMObject object, String node, String defaultValue) {
+    public String lookup(IMObject object, String node, String defaultValue) {
         String result;
         if (object != null) {
             try {
@@ -188,17 +207,15 @@ public class ArchetypeServiceFunctions {
      * @return the default lookup, or {@code null} if there is no default lookup
      * @throws OpenVPMSException if the call cannot complete
      */
-    public static Object defaultLookup(IMObject object, String node) {
+    public Object defaultLookup(IMObject object, String node) {
         Lookup lookup = null;
         if (object != null) {
-            IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
             NodeResolver resolver = new NodeResolver(object, service);
             PropertyState state = resolver.resolve(node);
             NodeDescriptor descriptor = state.getNode();
             if (descriptor == null) {
                 throw new PropertyResolverException(PropertyResolverException.ErrorCode.InvalidProperty, node);
             }
-            ILookupService lookups = LookupServiceHelper.getLookupService();
             if (descriptor.isLookup()) {
                 LookupAssertion assertion = LookupAssertionFactory.create(descriptor, service, lookups);
                 lookup = assertion.getDefault();
@@ -227,8 +244,8 @@ public class ArchetypeServiceFunctions {
      * @throws PropertyResolverException if the name is invalid
      * @see NodeResolver
      */
-    private static Object getNode(IMObject object, String node) {
-        NodeResolver resolver = new NodeResolver(object, ArchetypeServiceHelper.getArchetypeService());
+    private Object getNode(IMObject object, String node) {
+        NodeResolver resolver = new NodeResolver(object, service);
         return resolver.getObject(node);
     }
 
@@ -242,7 +259,7 @@ public class ArchetypeServiceFunctions {
      * @return the value at the specified node or defaultValue or {@code node} if does not exist
      * @see NodeResolver
      */
-    private static Object getNode(IMObject object, String node, Object defaultValue) {
+    private Object getNode(IMObject object, String node, Object defaultValue) {
         try {
             return getNode(object, node);
         } catch (PropertyResolverException exception) {
@@ -259,8 +276,8 @@ public class ArchetypeServiceFunctions {
      * @throws PropertyResolverException if the name is invalid
      * @see NodeResolver
      */
-    private static Object getProperty(PropertySet set, String property) {
-        PropertyResolver resolver = new PropertySetResolver(set, ArchetypeServiceHelper.getArchetypeService());
+    private Object getProperty(PropertySet set, String property) {
+        PropertyResolver resolver = new PropertySetResolver(set, service);
         return resolver.getObject(property);
     }
 
@@ -274,7 +291,7 @@ public class ArchetypeServiceFunctions {
      * @return the value at the specified node or defaultValue if node does not exist
      * @see NodeResolver
      */
-    private static Object getProperty(PropertySet set, String property, Object defaultValue) {
+    private Object getProperty(PropertySet set, String property, Object defaultValue) {
         try {
             return getProperty(set, property);
         } catch (PropertyResolverException exception) {
@@ -294,7 +311,7 @@ public class ArchetypeServiceFunctions {
      * @param object the object to unwrap
      * @return the unwrapped object. May be {@code null}
      */
-    private static Object unwrap(Object object) {
+    private Object unwrap(Object object) {
         if (object instanceof List) {
             List values = (List) object;
             object = !values.isEmpty() ? values.get(0) : null;

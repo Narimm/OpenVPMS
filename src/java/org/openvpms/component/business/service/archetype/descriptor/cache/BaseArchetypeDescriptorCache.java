@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -39,38 +37,33 @@ import java.util.Map;
 /**
  * This is an abstract class which is used by some cache implementations.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
-public abstract class BaseArchetypeDescriptorCache
-        implements IArchetypeDescriptorCache {
+public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescriptorCache {
 
     /**
-     * In memory cache of the archetype definitions keyed on the short name.
+     * Archetype definitions keyed on the short name.
      */
-   protected Map<String, ArchetypeDescriptor> archetypesByShortName
-            = Collections.synchronizedMap(
-            new HashMap<String, ArchetypeDescriptor>());
+    private Map<String, ArchetypeDescriptor> archetypesByShortName
+            = Collections.synchronizedMap(new HashMap<String, ArchetypeDescriptor>());
 
     /**
-     * In memory cache of the archetype definitions keyed on archetype id.
+     * Archetype definitions keyed on archetype id.
      */
-    protected Map<String, ArchetypeDescriptor> archetypesById
-            = Collections.synchronizedMap(
-            new HashMap<String, ArchetypeDescriptor>());
+    private Map<String, ArchetypeDescriptor> archetypesById
+            = Collections.synchronizedMap(new HashMap<String, ArchetypeDescriptor>());
 
     /**
      * Caches the assertion types.
      */
     private Map<String, AssertionTypeDescriptor> assertionTypes
-            = Collections.synchronizedMap(
-            new HashMap<String, AssertionTypeDescriptor>());
+            = Collections.synchronizedMap(new HashMap<String, AssertionTypeDescriptor>());
 
     /**
      * The logger.
      */
-    private static final Log log = LogFactory.getLog(
-            BaseArchetypeDescriptorCache.class);
+    private static final Log log = LogFactory.getLog(BaseArchetypeDescriptorCache.class);
 
 
     /**
@@ -79,16 +72,29 @@ public abstract class BaseArchetypeDescriptorCache
     public BaseArchetypeDescriptorCache() {
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeDescriptor(java.lang.String)
+    /**
+     * Retrieve the {@link ArchetypeDescriptor} with the specified short name.
+     * <p/>
+     * If there are multiple archetype descriptors with the same name then it will retrieve the first descriptor marked
+     * with latest=true.
+     *
+     * @param name the short name
+     * @return ArchetypeDescriptor the matching archetype descriptor or {@code null} if none is found
      */
+    @Override
     public ArchetypeDescriptor getArchetypeDescriptor(String name) {
         return archetypesByShortName.get(name);
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeDescriptor(org.openvpms.component.business.domain.archetype.ArchetypeId)
+    /**
+     * Retrieve the {@link ArchetypeDescriptor} with the specified {@link ArchetypeId}.
+     * <p/>
+     * If the archetype version isn't specified, it will retrieve the first descriptor marked with latest=true.
+     *
+     * @param id the archetype id
+     * @return ArchetypeDescriptor the matching archetype descriptor or {@code null} if none is found
      */
+    @Override
     public ArchetypeDescriptor getArchetypeDescriptor(ArchetypeId id) {
         ArchetypeDescriptor result = archetypesById.get(id.getQualifiedName());
         if (result == null && id.getVersion() == null) {
@@ -97,16 +103,23 @@ public abstract class BaseArchetypeDescriptorCache
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeDescriptors()
+    /**
+     * Return all the {@link ArchetypeDescriptor} instances managed by this cache.
+     *
+     * @return the descriptors
      */
+    @Override
     public List<ArchetypeDescriptor> getArchetypeDescriptors() {
         return new ArrayList<ArchetypeDescriptor>(archetypesById.values());
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeDescriptors(java.lang.String)
+    /**
+     * Return all the {@link ArchetypeDescriptor} instances that match the specified shortName.
+     *
+     * @param shortName the short name, which may contain wildcards
+     * @return the matching descriptors
      */
+    @Override
     public List<ArchetypeDescriptor> getArchetypeDescriptors(String shortName) {
         List<ArchetypeDescriptor> descriptors = new ArrayList<ArchetypeDescriptor>();
 
@@ -119,60 +132,49 @@ public abstract class BaseArchetypeDescriptorCache
         return descriptors;
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeDescriptorsByRmName(java.lang.String)
+    /**
+     * Return the {@link AssertionTypeDescriptor} with the specified name.
+     *
+     * @param name the name of the assertion type
+     * @return the matching assertion type descriptor, or {@code null} if none is found
      */
-    @Deprecated
-    public List<ArchetypeDescriptor> getArchetypeDescriptorsByRmName(
-            String rmName) {
-        return Collections.emptyList();
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getAssertionTypeDescriptor(java.lang.String)
-     */
+    @Override
     public AssertionTypeDescriptor getAssertionTypeDescriptor(String name) {
         return assertionTypes.get(name);
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getAssertionTypeDescriptors()
+    /**
+     * Return all the {@link AssertionTypeDescriptor} instances supported by this cache.
+     *
+     * @return the cached assertion type descriptors
      */
+    @Override
     public List<AssertionTypeDescriptor> getAssertionTypeDescriptors() {
         return new ArrayList<AssertionTypeDescriptor>(assertionTypes.values());
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeShortNames(java.lang.String, java.lang.String, java.lang.String, boolean)
-     */
-    @Deprecated
-    public List<String> getArchetypeShortNames(String rmName,
-                                               String entityName,
-                                               String conceptName,
-                                               boolean primaryOnly) {
-        return getArchetypeShortNames(entityName, conceptName, primaryOnly);
-    }
 
-    /* (non-Javadoc)
-    * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeShortNames(java.lang.String, java.lang.String, boolean)
-    */
-    public List<String> getArchetypeShortNames(String entityName,
-                                               String conceptName,
-                                               boolean primaryOnly) {
+    /**
+     * Return a list of archetype short names given the nominated criteria.
+     *
+     * @param entityName  the entity name. May contain wildcards
+     * @param conceptName the concept name. May contain wildcards
+     * @param primaryOnly indicates whether to return primary objects only
+     */
+    @Override
+    public List<String> getArchetypeShortNames(String entityName, String conceptName, boolean primaryOnly) {
         List<String> shortNames = new ArrayList<String>();
 
         for (ArchetypeDescriptor desc : archetypesByShortName.values()) {
             ArchetypeId archId = desc.getType();
 
             // do the check on entity name
-            if (!StringUtils.isEmpty(entityName) && !StringUtilities.matches(
-                    archId.getEntityName(), entityName)) {
+            if (!StringUtils.isEmpty(entityName) && !StringUtilities.matches(archId.getEntityName(), entityName)) {
                 continue;
             }
 
             // do the check on concept name
-            if (!StringUtils.isEmpty(conceptName) && !StringUtilities.matches(
-                    archId.getConcept(), conceptName)) {
+            if (!StringUtils.isEmpty(conceptName) && !StringUtilities.matches(archId.getConcept(), conceptName)) {
                 continue;
             }
 
@@ -187,11 +189,15 @@ public abstract class BaseArchetypeDescriptorCache
         return shortNames;
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeShortNames(java.lang.String, boolean)
+    /**
+     * Return all the archetypes which match the specified short name
+     *
+     * @param shortName   the short name, which may contain wildcards
+     * @param primaryOnly return only the primary archetypes
+     * @return the matching archetype short names
      */
-    public List<String> getArchetypeShortNames(String shortName,
-                                               boolean primaryOnly) {
+    @Override
+    public List<String> getArchetypeShortNames(String shortName, boolean primaryOnly) {
         List<String> shortNames = new ArrayList<String>();
 
         for (String archshortName : archetypesByShortName.keySet()) {
@@ -209,101 +215,63 @@ public abstract class BaseArchetypeDescriptorCache
         return shortNames;
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeShortNames()
+    /**
+     * Add an archetype descriptor to the cache.
+     *
+     * @param descriptor the archetype descriptor to add
      */
+    public void addArchetypeDescriptor(ArchetypeDescriptor descriptor) {
+        ArchetypeId archId = descriptor.getType();
+        if (descriptor.isLatest() || !archetypesByShortName.containsKey(archId.getShortName())) {
+            archetypesByShortName.put(archId.getShortName(), descriptor);
+        }
+        archetypesById.put(archId.getQualifiedName(), descriptor);
+    }
+
+    /**
+     * Adds an assertion type descriptor to the cache.
+     *
+     * @param descriptor the assertion type descriptor to add
+     */
+    public void addAssertionTypeDescriptor(AssertionTypeDescriptor descriptor) {
+        assertionTypes.put(descriptor.getName(), descriptor);
+    }
+
+    /**
+     * Return all the archetype short names.
+     *
+     * @return the archetype short names
+     */
+    @Override
     public List<String> getArchetypeShortNames() {
         return new ArrayList<String>(archetypesByShortName.keySet());
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache#addArchetypeDescriptor(org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor, boolean)
-     */
-    public void addArchetypeDescriptor(ArchetypeDescriptor adesc,
-                                       boolean replace) {
-        ArchetypeDescriptor temp = archetypesById.get(
-                adesc.getType().getQualifiedName());
-
-        if (temp == null || replace) {
-            addArchetypeById(adesc);
-            addArchetypeByShortName(adesc);
-        }
-    }
-
     /**
-     * Adds the specified assertion type descriptor to the cache. If the
-     * replace flag is specified, and the descriptor exists, then replace the
-     * existing descriptor with the new one.
-     *
-     * @param descriptor the assertion type descriptor to add
-     * @param replace    indicates whether it should replace and existing version
-     */
-    public void addAssertionTypeDescriptor(AssertionTypeDescriptor descriptor,
-                                           boolean replace) {
-        AssertionTypeDescriptor existing
-                = assertionTypes.get(descriptor.getName());
-
-        if (existing == null || replace) {
-            assertionTypes.put(descriptor.getName(), descriptor);
-        }
-    }
-
-    /**
-     * Process all the assertions defined for a specified node. This is a
-     * re-entrant method.
+     * Process all the assertions defined for a specified node. This is a re-entrant method.
      *
      * @param nodes the nodes to process
      * @throws ArchetypeDescriptorCacheException
-     *          runtime exception that is raised when the
+     *          if an invalid assertion is specified
      */
     protected void checkAssertionsInNode(Map<String, NodeDescriptor> nodes) {
         for (NodeDescriptor node : nodes.values()) {
-            for (AssertionDescriptor assertion
-                    : node.getAssertionDescriptorsAsArray()) {
-                AssertionTypeDescriptor atDesc = assertionTypes.get(
-                        assertion.getName());
-                if (atDesc == null) {
-                    log.warn("Attempting to find [" + assertion.getName()
-                            + " in [" + assertionTypes + "]");
+            for (AssertionDescriptor assertion : node.getAssertionDescriptorsAsArray()) {
+                AssertionTypeDescriptor descriptor = assertionTypes.get(assertion.getName());
+                if (descriptor == null) {
+                    log.warn("Attempting to find [" + assertion.getName() + " in [" + assertionTypes + "]");
                     throw new ArchetypeDescriptorCacheException(
                             ArchetypeDescriptorCacheException.ErrorCode.InvalidAssertionSpecified,
                             new Object[]{assertion.getName()});
-                }  else {
-                    assertion.setDescriptor(atDesc);
+                } else {
+                    assertion.setDescriptor(descriptor);
                 }
             }
 
-            if (node.getNodeDescriptors().size() > 0) {
+            if (!node.getNodeDescriptors().isEmpty()) {
                 checkAssertionsInNode(node.getNodeDescriptors());
             }
         }
     }
 
-    /**
-     * Add the descriptor to the short name cache.
-     *
-     * @param adesc the archetype descriptor
-     */
-    protected void addArchetypeByShortName(ArchetypeDescriptor adesc) {
-        ArchetypeId archId = adesc.getType();
-
-        // only store one copy of the archetype by short name
-        if (!archetypesByShortName.containsKey(archId.getShortName())
-                || adesc.isLatest()) {
-            archetypesByShortName.put(archId.getShortName(), adesc);
-            if (log.isDebugEnabled()) {
-                log.debug("Loading  [" + archId.getShortName()
-                        + "] in shortNameCache");
-            }
-        }
-    }
-
-    /**
-     * Add the descriptor to the id cache.
-     *
-     * @param adesc the archetype descriptor
-     */
-    protected void addArchetypeById(ArchetypeDescriptor adesc) {
-        archetypesById.put(adesc.getType().getQualifiedName(), adesc);
-    }
 }
