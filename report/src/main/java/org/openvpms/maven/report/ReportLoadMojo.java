@@ -1,29 +1,28 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.maven.report;
 
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.maven.archetype.AbstractHibernateMojo;
 import org.openvpms.report.tools.TemplateLoader;
-import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.springframework.context.ApplicationContext;
 
 import java.io.File;
@@ -33,7 +32,6 @@ import java.io.File;
  * Loads report templates using the {@link TemplateLoader}.
  *
  * @goal load
- * @requiresDependencyResolution test
  */
 public class ReportLoadMojo extends AbstractHibernateMojo {
 
@@ -46,12 +44,49 @@ public class ReportLoadMojo extends AbstractHibernateMojo {
     private File file;
 
     /**
-     * The hibernate property file.
+     * TODO - the JDBC properties are repeated from AbstractHibernateMojo as the maven plugin API cannot pick up
+     * parameters otherwise.
+     */
+
+    /**
+     * The Hibernate dialect;
      *
      * @parameter
      * @required
      */
-    private File propertyfile;
+    private String dialect;
+
+    /**
+     * The JDBC driver class name.
+     *
+     * @parameter
+     * @required
+     */
+    private String driver;
+
+    /**
+     * The JDBC URL.
+     *
+     * @parameter
+     * @required
+     */
+    private String url;
+
+    /**
+     * The JDBC user name.
+     *
+     * @parameter
+     * @required
+     */
+    private String username;
+
+    /**
+     * The JDBC password.
+     *
+     * @parameter
+     * @required
+     */
+    private String password;
 
     /**
      * The maven project to interact with.
@@ -77,24 +112,6 @@ public class ReportLoadMojo extends AbstractHibernateMojo {
      */
     public File getFile() {
         return file;
-    }
-
-    /**
-     * Sets the file containing the hibernate properties.
-     *
-     * @param propertyfile the hibernate property file
-     */
-    public void setPropertyfile(File propertyfile) {
-        this.propertyfile = propertyfile;
-    }
-
-    /**
-     * Returns the hibernate property file.
-     *
-     * @return the hibernate property file
-     */
-    public File getPropertyfile() {
-        return propertyfile;
     }
 
     /**
