@@ -1,0 +1,653 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="Bank Deposit" pageWidth="612" pageHeight="792" columnWidth="552" leftMargin="30" rightMargin="30"
+              topMargin="20" bottomMargin="20" uuid="99a2d09d-4d5c-4abc-92b7-ac8c857d02fa">
+    <property name="ireport.scriptlethandling" value="0"/>
+    <property name="ireport.encoding" value="UTF-8"/>
+    <property name="ireport.zoom" value="3.0"/>
+    <property name="ireport.x" value="391"/>
+    <property name="ireport.y" value="284"/>
+    <import value="net.sf.jasperreports.engine.*"/>
+    <import value="java.util.*"/>
+    <import value="net.sf.jasperreports.engine.data.*"/>
+    <parameter name="dataSource" class="org.openvpms.report.jasper.ObjectSetDataSource" isForPrompting="false"/>
+    <queryString>
+        <![CDATA[]]>
+    </queryString>
+    <field name="bankDeposit.depositAccount.entity.name" class="java.lang.String"/>
+    <field name="bankDeposit.depositAccount.entity.description" class="java.lang.String"/>
+    <field name="bankDeposit.status" class="java.lang.String"/>
+    <field name="bankDeposit.startTime" class="java.util.Date"/>
+    <field name="bankDeposit.endTime" class="java.util.Date"/>
+    <field name="act.displayName" class="java.lang.String"/>
+    <field name="act.customer.entity.name" class="java.lang.String"/>
+    <field name="act.credit" class="java.lang.Boolean"/>
+    <field name="item.description" class="java.lang.String"/>
+    <field name="act.description" class="java.lang.String"/>
+    <field name="amount" class="java.math.BigDecimal"/>
+    <field name="item.displayName" class="java.lang.String"/>
+    <field name="act.shortName" class="java.lang.String"/>
+    <field name="act.startTime" class="java.util.Date"/>
+    <field name="bankDeposit.depositAccount.entity.accountName" class="java.lang.String"/>
+    <field name="bankDeposit.depositAccount.entity.accountNumber" class="java.lang.String"/>
+    <field name="item.shortName" class="java.lang.String"/>
+    <field name="item.drawer" class="java.lang.String"/>
+    <field name="item.bsb" class="java.lang.String"/>
+    <field name="item.bank" class="java.lang.String"/>
+    <field name="item.creditCard" class="java.lang.String"/>
+    <field name="item.roundedAmount" class="java.math.BigDecimal"/>
+    <field name="act.customer.entity.id" class="java.lang.Long"/>
+    <sortField name="SORT" type="Variable"/>
+    <sortField name="act.customer.entity.name"/>
+    <variable name="SHORTNAME" class="java.lang.String" resetType="None">
+        <variableExpression><![CDATA[$F{item.shortName}.replaceFirst(".*Payment|.*Refund", "")]]></variableExpression>
+    </variable>
+    <variable name="IS_CHEQUE" class="java.lang.Boolean" resetType="None">
+        <variableExpression><![CDATA[new Boolean($V{SHORTNAME}.equalsIgnoreCase("Cheque"))]]></variableExpression>
+    </variable>
+    <variable name="IS_EFT" class="java.lang.Boolean" resetType="None">
+        <variableExpression><![CDATA[new Boolean($V{SHORTNAME}.equalsIgnoreCase("EFT"))]]></variableExpression>
+    </variable>
+    <variable name="IS_CASH" class="java.lang.Boolean" resetType="None">
+        <variableExpression><![CDATA[new Boolean($V{SHORTNAME}.equalsIgnoreCase("Cash"))]]></variableExpression>
+    </variable>
+    <variable name="IS_NOT_CASH" class="java.lang.Boolean" resetType="None">
+        <variableExpression><![CDATA[new Boolean(!$V{IS_CASH}.booleanValue())]]></variableExpression>
+    </variable>
+    <variable name="IS_NOT_CHEQUE" class="java.lang.Boolean" resetType="None">
+        <variableExpression><![CDATA[new Boolean(!$V{IS_CHEQUE}.booleanValue())]]></variableExpression>
+    </variable>
+    <variable name="IS_CREDIT" class="java.lang.Boolean" resetType="None">
+        <variableExpression><![CDATA[new Boolean($V{SHORTNAME}.equalsIgnoreCase("Credit"))]]></variableExpression>
+    </variable>
+    <variable name="TOTAL_CHEQUE" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression>
+            <![CDATA[($V{IS_CHEQUE}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+    </variable>
+    <variable name="TOTAL_CREDIT" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression>
+            <![CDATA[($V{IS_CREDIT}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+    </variable>
+    <variable name="TOTAL_EFT" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression>
+            <![CDATA[($V{IS_EFT}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+    </variable>
+    <variable name="COUNT_CHEQUE" class="java.lang.Integer" calculation="Count">
+        <variableExpression><![CDATA[($V{IS_CHEQUE}.booleanValue())? "" : null]]></variableExpression>
+    </variable>
+    <variable name="COUNT_CREDIT" class="java.lang.Integer" calculation="Count">
+        <variableExpression><![CDATA[($V{IS_CREDIT}.booleanValue())? "" : null]]></variableExpression>
+    </variable>
+    <variable name="COUNT_EFT" class="java.lang.Integer" calculation="Count">
+        <variableExpression><![CDATA[($V{IS_EFT}.booleanValue())? "" : null]]></variableExpression>
+    </variable>
+    <variable name="TOTAL_CASH" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression>
+            <![CDATA[$V{IS_CASH}.booleanValue()?($F{act.credit}.booleanValue()?$F{item.roundedAmount} : $F{item.roundedAmount}.negate()): new BigDecimal("0.00")]]></variableExpression>
+    </variable>
+    <variable name="IS_OTHER" class="java.lang.Boolean">
+        <variableExpression><![CDATA[new Boolean($V{SHORTNAME}.equalsIgnoreCase("Other"))]]></variableExpression>
+    </variable>
+    <variable name="COUNT_OTHER" class="java.lang.Integer" calculation="Count">
+        <variableExpression><![CDATA[($V{IS_OTHER}.booleanValue())? "" : null]]></variableExpression>
+    </variable>
+    <variable name="TOTAL_OTHER" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression>
+            <![CDATA[($V{IS_OTHER}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+    </variable>
+    <variable name="SORT" class="java.lang.String">
+        <variableExpression>
+            <![CDATA[$V{IS_CHEQUE}.booleanValue()?"A":$V{IS_CREDIT}.booleanValue()?"B":$V{IS_EFT}.booleanValue()?"C":$V{IS_OTHER}.booleanValue()?"D":"E"]]></variableExpression>
+    </variable>
+    <variable name="TYPE_TOTAL" class="java.math.BigDecimal" resetType="Group" resetGroup="depositType"
+              calculation="Sum">
+        <variableExpression><![CDATA[$F{amount}]]></variableExpression>
+    </variable>
+    <group name="depositType" isReprintHeaderOnEachPage="true">
+        <groupExpression><![CDATA[$V{SHORTNAME}]]></groupExpression>
+        <groupHeader>
+            <band height="21" splitType="Stretch">
+                <printWhenExpression><![CDATA[$V{IS_NOT_CASH}]]></printWhenExpression>
+                <textField isBlankWhenNull="false">
+                    <reportElement uuid="0bc4d118-d27e-41cd-81b4-02abf69801e9" key="textField" x="1" y="0" width="292"
+                                   height="18"/>
+                    <box>
+                        <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    </box>
+                    <textElement>
+                        <font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
+                    <textFieldExpression>
+                        <![CDATA[($V{IS_CHEQUE}.booleanValue()?"Cheques":$V{IS_CREDIT}.booleanValue()?"Credit Card Payments":$V{IS_EFT}.booleanValue()?"EFT Payments":$V{IS_OTHER}.booleanValue()?"Other Payments":"Other Payments")]]></textFieldExpression>
+                </textField>
+            </band>
+        </groupHeader>
+        <groupFooter>
+            <band height="20" splitType="Stretch">
+                <printWhenExpression><![CDATA[$V{IS_NOT_CASH}]]></printWhenExpression>
+                <line>
+                    <reportElement uuid="cb4d67b1-d0c9-47a3-8f19-56c3006f1d0a" key="line-3" x="0" y="2" width="552"
+                                   height="1"/>
+                </line>
+                <textField pattern="¤ #,##0.00">
+                    <reportElement uuid="e7c8532e-65ba-4423-8144-96fa10df98b8" x="465" y="2" width="66" height="16"/>
+                    <textElement textAlignment="Right" verticalAlignment="Middle">
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA[$V{TYPE_TOTAL}]]></textFieldExpression>
+                </textField>
+            </band>
+        </groupFooter>
+    </group>
+    <group name="dateGroup">
+        <groupExpression><![CDATA[$F{act.startTime}]]></groupExpression>
+        <groupHeader>
+            <band height="16">
+                <printWhenExpression><![CDATA[$V{IS_NOT_CASH}]]></printWhenExpression>
+                <textField pattern="dd/MM/yyyy">
+                    <reportElement uuid="daddea13-125b-4fe4-b7ca-50871814e443" x="0" y="0" width="71" height="16"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA[$F{act.startTime}]]></textFieldExpression>
+                </textField>
+            </band>
+        </groupHeader>
+    </group>
+    <background>
+        <band splitType="Stretch"/>
+    </background>
+    <title>
+        <band splitType="Stretch"/>
+    </title>
+    <pageHeader>
+        <band height="75" splitType="Stretch">
+            <staticText>
+                <reportElement uuid="db3f8fec-abcb-4da5-830c-48a552da97f3" key="staticText-9" x="149" y="3" width="236"
+                               height="29"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement textAlignment="Center">
+                    <font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[Bank Deposit]]></text>
+            </staticText>
+            <staticText>
+                <reportElement uuid="580dfdcf-2228-499d-a11f-5ec6e8b0136f" key="staticText-15" x="13" y="35" width="62"
+                               height="16"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[Bank:]]></text>
+            </staticText>
+            <textField isBlankWhenNull="false">
+                <reportElement uuid="986c86a3-77f4-4640-a776-4f96aa3abcd5" key="textField" x="74" y="34" width="240"
+                               height="18"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{bankDeposit.depositAccount.entity.accountName}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="false">
+                <reportElement uuid="35accc1e-683d-4985-bec1-7ecf9966a324" key="textField" x="74" y="53" width="100"
+                               height="18"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression>
+                    <![CDATA[$F{bankDeposit.depositAccount.entity.accountNumber}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="false">
+                <reportElement uuid="f0cf2cb2-81d2-4fcd-aa65-ff6a234e68bf" key="textField" x="398" y="52" width="71"
+                               height="18"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement textAlignment="Left">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+            </textField>
+            <textField evaluationTime="Report" isBlankWhenNull="false">
+                <reportElement uuid="eea2fffc-fd7f-4f02-a575-0528b4335a73" key="textField" x="454" y="52" width="36"
+                               height="18"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+            </textField>
+            <textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+                <reportElement uuid="65d8e173-fdb7-4074-9d55-bfa0bd5113d3" key="textField" x="398" y="32" width="100"
+                               height="18"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{bankDeposit.startTime}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageHeader>
+    <columnHeader>
+        <band height="34" splitType="Stretch">
+            <line>
+                <reportElement uuid="6991a964-a2fa-4323-8d83-47189731d551" key="line-1" x="0" y="28" width="552"
+                               height="1"/>
+            </line>
+            <staticText>
+                <reportElement uuid="3beda007-6ff8-48d1-a655-452365e2fb95" key="staticText-21" x="0" y="10" width="117"
+                               height="13"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[Date/Customer
+]]></text>
+            </staticText>
+            <staticText>
+                <reportElement uuid="1d087f3f-ceb6-4ce6-bf08-c626ccbdd47b" key="staticText-22" x="227" y="10"
+                               width="117" height="13"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[Details]]></text>
+            </staticText>
+            <staticText>
+                <reportElement uuid="2d7268b2-595a-472a-9b86-16d3ca31665d" key="staticText-23" x="465" y="10" width="66"
+                               height="13"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[Amount]]></text>
+            </staticText>
+            <staticText>
+                <reportElement uuid="ffbe687b-5967-4bfc-a930-202ff141eae9" key="staticText-21" x="174" y="10" width="36"
+                               height="13"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[Id]]></text>
+            </staticText>
+        </band>
+    </columnHeader>
+    <detail>
+        <band height="20" splitType="Stretch">
+            <printWhenExpression><![CDATA[$V{IS_NOT_CASH}]]></printWhenExpression>
+            <textField isBlankWhenNull="true">
+                <reportElement uuid="8acbe019-641b-44f0-b05d-4b6afcb00d73" key="textField" x="227" y="1" width="227"
+                               height="18" isRemoveLineWhenBlank="true">
+                    <printWhenExpression><![CDATA[$V{IS_CHEQUE}]]></printWhenExpression>
+                </reportElement>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression>
+                    <![CDATA[(($F{item.bank}== null)? "(bank?)":$F{item.bank}) + ":" + (($F{item.bsb}== null)? "(branch?)":$F{item.bsb}) + "~" + (($F{item.drawer}== null)? "(drawer?)":$F{item.drawer})]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="false">
+                <reportElement uuid="9e09e4bd-ad51-46a5-9a09-a2680a0cf2fc" key="textField" x="11" y="1" width="159"
+                               height="18" isRemoveLineWhenBlank="true"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{act.customer.entity.name}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement uuid="8ec40b62-8903-491f-ab34-646fd9a53567" key="textField" x="227" y="1" width="227"
+                               height="18" isRemoveLineWhenBlank="true">
+                    <printWhenExpression><![CDATA[$V{IS_CREDIT}]]></printWhenExpression>
+                </reportElement>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{item.creditCard}]]></textFieldExpression>
+            </textField>
+            <textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+                <reportElement uuid="2be7a871-37da-4637-aca1-ca28cf014430" key="textField" x="465" y="0" width="66"
+                               height="18" isRemoveLineWhenBlank="true"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{amount}]]></textFieldExpression>
+            </textField>
+            <textField pattern="###0">
+                <reportElement uuid="9fe43418-3893-47c7-b466-e31134043cfd" x="174" y="1" width="36" height="18"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{act.customer.entity.id}]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+    <columnFooter>
+        <band splitType="Stretch"/>
+    </columnFooter>
+    <pageFooter>
+        <band splitType="Stretch"/>
+    </pageFooter>
+    <summary>
+        <band height="237" splitType="Stretch">
+            <staticText>
+                <reportElement uuid="d1c2d723-9caf-45c4-8fc8-b1340797f061" key="staticText-20" x="148" y="2" width="236"
+                               height="29"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement textAlignment="Center">
+                    <font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[Deposit Summary]]></text>
+            </staticText>
+            <textField isBlankWhenNull="false">
+                <reportElement uuid="46bb29aa-8839-4dd5-afa6-1ecfd396bcf2" key="textField" x="318" y="65" width="50"
+                               height="18"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$V{COUNT_CHEQUE}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="false">
+                <reportElement uuid="099f2092-0e76-4006-947f-3e50246e1428" key="textField" x="318" y="89" width="50"
+                               height="18"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$V{COUNT_CREDIT}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="false">
+                <reportElement uuid="1f94b670-16ef-4c15-9209-7eeb2f6241fc" key="textField" x="318" y="113" width="50"
+                               height="18"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$V{COUNT_EFT}]]></textFieldExpression>
+            </textField>
+            <textField pattern="¤ #,##0.00" isBlankWhenNull="true">
+                <reportElement uuid="094e258c-fe64-44a3-b32e-308bb7333208" key="textField" x="190" y="65" width="100"
+                               height="18"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$V{TOTAL_CHEQUE}]]></textFieldExpression>
+            </textField>
+            <textField pattern="¤ #,##0.00" isBlankWhenNull="true">
+                <reportElement uuid="01e217b6-018f-4c84-9409-c4500a8519ae" key="textField" x="190" y="89" width="100"
+                               height="18"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$V{TOTAL_CREDIT}]]></textFieldExpression>
+            </textField>
+            <textField pattern="¤ #,##0.00" isBlankWhenNull="true">
+                <reportElement uuid="3da13773-f373-47f9-9943-a6567fad4557" key="textField" x="190" y="113" width="100"
+                               height="18"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$V{TOTAL_EFT}]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement uuid="129a705f-b370-4bbf-97b2-e168e02a2e6c" key="staticText-24" x="32" y="65" width="117"
+                               height="18"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement>
+                    <font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[Cheques :]]></text>
+            </staticText>
+            <staticText>
+                <reportElement uuid="9cbe2303-21c4-49c2-b315-dd4154123c95" key="staticText-25" x="32" y="91" width="117"
+                               height="16"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement>
+                    <font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[Credit Cards :]]></text>
+            </staticText>
+            <staticText>
+                <reportElement uuid="d5f37fac-5000-416e-b674-9237ecbb98be" key="staticText-26" x="32" y="113"
+                               width="117" height="18"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement>
+                    <font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[EFT :]]></text>
+            </staticText>
+            <staticText>
+                <reportElement uuid="eb6939e6-71b5-4bf4-ba56-d0be6b2ae608" key="staticText-27" x="32" y="165"
+                               width="117" height="18"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement>
+                    <font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[Cash:]]></text>
+            </staticText>
+            <textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+                <reportElement uuid="6b710217-6090-4a37-ae37-3e149ece5f8a" key="textField" x="191" y="165" width="100"
+                               height="18"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$V{TOTAL_CASH}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="false">
+                <reportElement uuid="26f9e57a-561d-4f5e-b0a6-8c32de3a64f7" key="textField" x="319" y="139" width="50"
+                               height="18"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$V{COUNT_OTHER}]]></textFieldExpression>
+            </textField>
+            <textField pattern="¤ #,##0.00" isBlankWhenNull="true">
+                <reportElement uuid="27b71960-148f-4418-a113-88ba011783e7" key="textField" x="191" y="139" width="100"
+                               height="18"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$V{TOTAL_OTHER}]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement uuid="c6384862-c263-4e2d-95a0-f83fd90ae3cb" key="staticText-26" x="33" y="139"
+                               width="117" height="18"/>
+                <box>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+                <textElement>
+                    <font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[Other :]]></text>
+            </staticText>
+        </band>
+    </summary>
+</jasperReport>

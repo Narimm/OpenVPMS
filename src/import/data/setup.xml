@@ -1,83 +1,99 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <archetype>
-	<data id="OP1" archetype="party.organisationPractice" name="OpenVPMS Practice" currency="AUD">
-		<data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="99999999" />
-	</data>	
-	<data id="OL1" archetype="party.organisationLocation" name="Main Clinic">
-		<data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="9999999" />
-	</data>
-	<data archetype="entityRelationship.practiceLocation" source="id:OP1" target="id:OL1" />
-	<data id="OTC1" archetype="party.organisationOTC" name="OTC"/>
-	<data archetype="entityRelationship.locationOTC" source="id:OL1" target="id:OTC1" />
-	<data id="OD1" archetype="party.organisationDeposit" name="OpenVPMS Account" accountName="OpenVPMS Pty Ltd"
-		bank="Bendigo" branch="Boronia" accountNumber="123-456-789" />
-	<data archetype="entityRelationship.locationDeposit" source="id:OL1" target="id:OD1" />
-	<data id="OT1" archetype="party.organisationTill" name="Main Reception Till" tillFloat="200.00" />
-	<data archetype="entityRelationship.locationTill" source="id:OL1" target="id:OT1" />
-	<data id="OS1" archetype="party.organisationSchedule" name="Main Appointment Schedule" slotSize="15" 
-		slotUnits="MINUTES" allowDoubleBooking="true" />
-	<data id="OS2" archetype="party.organisationSchedule" name="Main Surgery Schedule" slotSize="30" 
-		slotUnits="MINUTES" allowDoubleBooking="false" />
-	<data id="OW1" archetype="party.organisationWorkList" name="Main Waiting List" maxSlots="100" />
-	<data id="OW2" archetype="party.organisationWorkList" name="Main Hospital List" maxSlots="50" />
-	<data id="AT1" archetype="entity.appointmentType" name="Standard Consult" description="Standard Consultation"/>
-	<data id="AT2" archetype="entity.appointmentType" name="Long Consult" description="Long Consultation"/>
-	<data id="AT3" archetype="entity.appointmentType" name="New Patient" description="New Patient"/>
-	<data id="AT4" archetype="entity.appointmentType" name="Short Consult" description="Short Consult"/>
-	<data archetype="entityRelationship.scheduleAppointmentType" source="id:OS1" target="id:AT1" noSlots="1"/>		
-	<data archetype="entityRelationship.scheduleAppointmentType" source="id:OS1" target="id:AT2" noSlots="2"/>		
-	<data archetype="entityRelationship.scheduleAppointmentType" source="id:OS1" target="id:AT3" noSlots="2"/>		
-	<data archetype="entityRelationship.scheduleAppointmentType" source="id:OS1" target="id:AT4" noSlots="1"/>		
-	<data archetype="entityRelationship.scheduleAppointmentType" source="id:OS2" target="id:AT1" noSlots="1"/>		
-	<data archetype="entityRelationship.scheduleAppointmentType" source="id:OS2" target="id:AT2" noSlots="2"/>		
-	<data archetype="entityRelationship.scheduleAppointmentType" source="id:OS2" target="id:AT3" noSlots="2"/>		
-	<data archetype="entityRelationship.scheduleAppointmentType" source="id:OS2" target="id:AT4" noSlots="1"/>		
-	<data id="TT1" archetype="entity.taskType" name="Consultation" description="Consultation"/>
-	<data id="TT2" archetype="entity.taskType" name="Surgery" description="Surgery"/>
-	<data id="TT3" archetype="entity.taskType" name="Day Procedure" description="New Patient"/>
-	<data archetype="entityRelationship.worklistTaskType" source="id:OW1" target="id:TT1" noSlots="1"/>		
-	<data archetype="entityRelationship.worklistTaskType" source="id:OW2" target="id:TT2" noSlots="1"/>		
-	<data archetype="entityRelationship.worklistTaskType" source="id:OW2" target="id:TT3" noSlots="1"/>		
-	<data archetype="lookup.uom" code="UNIT" unitCode="EA" defaultLookup="true"/>
+    <data id="OP1" archetype="party.organisationPractice" name="OpenVPMS Practice" currency="AUD">
+        <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="99999999"/>
+    </data>
+    <data id="OL1" archetype="party.organisationLocation" name="Main Clinic">
+        <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="9999999"/>
+    </data>
+    <data archetype="entityRelationship.practiceLocation" source="id:OP1" target="id:OL1"/>
+    <data id="OTC1" archetype="party.organisationOTC" name="OTC"/>
+    <data archetype="entityRelationship.locationOTC" source="id:OL1" target="id:OTC1"/>
+    <data id="OD1" archetype="party.organisationDeposit" name="OpenVPMS Account" accountName="OpenVPMS Pty Ltd"
+          bank="Bendigo" branch="Boronia" accountNumber="123-456-789"/>
+    <data archetype="entityRelationship.locationDeposit" source="id:OL1" target="id:OD1"/>
+    <data id="OT1" archetype="party.organisationTill" name="Main Reception Till" tillFloat="200.00"/>
+    <data archetype="entityRelationship.locationTill" source="id:OL1" target="id:OT1"/>
+    <data id="OS1" archetype="party.organisationSchedule" name="Main Appointment Schedule" slotSize="15"
+          slotUnits="MINUTES" allowDoubleBooking="true"/>
+    <data id="OS2" archetype="party.organisationSchedule" name="Main Surgery Schedule" slotSize="30"
+          slotUnits="MINUTES" allowDoubleBooking="false"/>
+    <data id="OW1" archetype="party.organisationWorkList" name="Main Waiting List" maxSlots="100"/>
+    <data id="OW2" archetype="party.organisationWorkList" name="Main Hospital List" maxSlots="50"/>
+    <data id="AT1" archetype="entity.appointmentType" name="Standard Consult" description="Standard Consultation"/>
+    <data id="AT2" archetype="entity.appointmentType" name="Long Consult" description="Long Consultation"/>
+    <data id="AT3" archetype="entity.appointmentType" name="New Patient" description="New Patient"/>
+    <data id="AT4" archetype="entity.appointmentType" name="Short Consult" description="Short Consult"/>
+    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS1" target="id:AT1" noSlots="1"/>
+    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS1" target="id:AT2" noSlots="2"/>
+    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS1" target="id:AT3" noSlots="2"/>
+    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS1" target="id:AT4" noSlots="1"/>
+    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS2" target="id:AT1" noSlots="1"/>
+    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS2" target="id:AT2" noSlots="2"/>
+    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS2" target="id:AT3" noSlots="2"/>
+    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS2" target="id:AT4" noSlots="1"/>
+    <data id="TT1" archetype="entity.taskType" name="Consultation" description="Consultation"/>
+    <data id="TT2" archetype="entity.taskType" name="Surgery" description="Surgery"/>
+    <data id="TT3" archetype="entity.taskType" name="Day Procedure" description="New Patient"/>
+    <data archetype="entityRelationship.worklistTaskType" source="id:OW1" target="id:TT1" noSlots="1"/>
+    <data archetype="entityRelationship.worklistTaskType" source="id:OW2" target="id:TT2" noSlots="1"/>
+    <data archetype="entityRelationship.worklistTaskType" source="id:OW2" target="id:TT3" noSlots="1"/>
+    <data archetype="lookup.uom" code="UNIT" unitCode="EA" defaultLookup="true"/>
     <data archetype="lookup.uom" code="BOTTLE" unitCode="BO"/>
-	<data archetype="lookup.uom" code="SYRINGE" />
+    <data archetype="lookup.uom" code="SYRINGE"/>
     <data archetype="lookup.uom" code="TABLET" unitCode="U2"/>
     <data archetype="lookup.uom" code="PACKET" unitCode="PA"/>
     <data archetype="lookup.uom" code="VIAL" unitCode="VI"/>
     <data archetype="lookup.uom" code="BOX" unitCode="BX"/>
     <data archetype="lookup.uom" code="GRAMS" unitCode="GRM"/>
-    <data archetype="lookup.uom" code="LITRES" unitCode="LTR" />
+    <data archetype="lookup.uom" code="LITRES" unitCode="LTR"/>
     <data archetype="lookup.uom" code="AMPOULE" unitCode="AM"/>
     <data archetype="lookup.uom" code="MLS" unitCode="MLT"/>
     <data archetype="lookup.uom" code="TUBE" unitCode="TU"/>
-    <data archetype="lookup.customerType" code="SMALL_ANIMAL" />
-    <data archetype="lookup.customerType" code="LARGE_ANIMAL" />
-    <data archetype="lookup.customerType" code="STUD" />
-    <data archetype="lookup.customerType" code="FARM" />
-    <data archetype="lookup.supplierType" code="WHOLESALER" />
-    <data archetype="lookup.supplierType" code="MANUFACTURER" />
-    <data archetype="lookup.supplierType" code="RETAIL" />
-    <data archetype="lookup.supplierType" code="OTHER" />
-    <data archetype="lookup.reminderGroup" code="VACCINATIONS" />
-    <data archetype="lookup.reminderGroup" code="DESEXING" />
-    <data archetype="lookup.reminderGroup" code="WORMING" />
-    <data archetype="lookup.reminderGroup" code="OTHER" />
-    <data archetype="lookup.bank" code="NAB" name="National" />
-	<data archetype="lookup.bank" code="CBA" name="Commonwealth" />
-	<data archetype="lookup.bank" code="ANZ"/>
-	<data archetype="lookup.bank" code="WBA" name="Westpac" />
-	<data archetype="lookup.bank" code="SGB" name="St George" />
-	<data archetype="lookup.bank" code="BANK_WEST" />
-	<data archetype="lookup.bank" code="STATE_SA" />
-	<data archetype="lookup.bank" code="BEN" name="Bendigo" />
-	<data archetype="lookup.creditcard" code="VISA" floorLimit="500.00" />
-	<data archetype="lookup.creditcard" code="MASTERCARD"  floorLimit="500.00" />
-	<data archetype="lookup.creditcard" code="AMEX" name="American Express" floorLimit="500.00" />
-	<data archetype="lookup.creditcard" code="DINERS" floorLimit="500.00" />
-	<data archetype="lookup.personTitle" code="MR" defaultLookup="true"/>
-	<data archetype="lookup.personTitle" code="MRS" />
-	<data archetype="lookup.personTitle" code="MS" />
-	<data archetype="lookup.personTitle" code="DR" />
-	<data archetype="lookup.personTitle" code="LADY" />
+    <data archetype="lookup.customerType" code="SMALL_ANIMAL"/>
+    <data archetype="lookup.customerType" code="LARGE_ANIMAL"/>
+    <data archetype="lookup.customerType" code="STUD"/>
+    <data archetype="lookup.customerType" code="FARM"/>
+    <data archetype="lookup.supplierType" code="WHOLESALER"/>
+    <data archetype="lookup.supplierType" code="MANUFACTURER"/>
+    <data archetype="lookup.supplierType" code="RETAIL"/>
+    <data archetype="lookup.supplierType" code="OTHER"/>
+    <data archetype="lookup.reminderGroup" code="VACCINATIONS"/>
+    <data archetype="lookup.reminderGroup" code="DESEXING"/>
+    <data archetype="lookup.reminderGroup" code="WORMING"/>
+    <data archetype="lookup.reminderGroup" code="OTHER"/>
+    <data archetype="lookup.bank" code="NAB" name="National"/>
+    <data archetype="lookup.bank" code="CBA" name="Commonwealth"/>
+    <data archetype="lookup.bank" code="ANZ"/>
+    <data archetype="lookup.bank" code="WBA" name="Westpac"/>
+    <data archetype="lookup.bank" code="SGB" name="St George"/>
+    <data archetype="lookup.bank" code="BANK_WEST"/>
+    <data archetype="lookup.bank" code="STATE_SA"/>
+    <data archetype="lookup.bank" code="BEN" name="Bendigo"/>
+    <data archetype="lookup.creditcard" code="VISA" floorLimit="500.00"/>
+    <data archetype="lookup.creditcard" code="MASTERCARD" floorLimit="500.00"/>
+    <data archetype="lookup.creditcard" code="AMEX" name="American Express" floorLimit="500.00"/>
+    <data archetype="lookup.creditcard" code="DINERS" floorLimit="500.00"/>
+    <data archetype="lookup.personTitle" code="MR" defaultLookup="true"/>
+    <data archetype="lookup.personTitle" code="MRS"/>
+    <data archetype="lookup.personTitle" code="MS"/>
+    <data archetype="lookup.personTitle" code="DR"/>
+    <data archetype="lookup.personTitle" code="LADY"/>
     <data id="Canine" archetype="lookup.species" code="CANINE"/>
     <data id="Feline" archetype="lookup.species" code="FELINE"/>
     <data id="Equine" archetype="lookup.species" code="EQUINE"/>
@@ -730,4 +746,38 @@
     <data id="B199" archetype="lookup.breed" code="YORKSHIRE_TERRIER"/>
     <data archetype="lookupRelationship.speciesBreed" source="id:Canine"
           target="id:B199"/>
+
+    <data archetype="lookup.fileNameFormat" code="DOC_NAME_DOC_DATE"
+          name="Document name - document date"
+          description="Valid for customer, patient, and supplier documents only"
+          expression="concat($file, ' - ', date:format(openvpms:get(.,'startTime'), 'd MMM yyyy'))"/>
+    <data archetype="lookup.fileNameFormat" code="DOC_NAME_TODAYS_DATE"
+          name="Document name - today's date"
+          description="Valid for all documents"
+          expression="concat($file, ' - ', date:format(java.util.Date.new(), 'd MMM yyyy'))"/>
+    <data archetype="lookup.fileNameFormat" code="DOC_NAME_PATIENT_FULL_NAME_DOC_DATE"
+          name="Document name - patient full name - document date"
+          description="Valid for patient documents only"
+          expression="concat($file, ' - ', $patient.name, ' ', $customer.lastName, ' - ', date:format(openvpms:get(.,'startTime'), 'd MMM yyyy'))"/>
+    <data archetype="lookup.fileNameFormat" code="DOC_NAME_PATIENT_FULL_NAME_TODAYS_DATE"
+          name="Document name - patient full name - today's date"
+          description="Valid for patient documents only"
+          expression="concat($file, ' - ', $patient.name, ' ', $customer.lastName, ' - ', date:format(java.util.Date.new(), 'd MMM yyyy'))"/>
+    <data archetype="lookup.fileNameFormat" code="DOC_NAME_CUSTOMER_FULL_NAME_DOC_DATE"
+          name="Document name - customer full name - document date"
+          description="Valid for customer documents only"
+          expression="concat($file, ' - ', party:getPartyFullName($customer), ' - ', date:format(openvpms:get(.,'startTime'), 'd MMM yyyy'))"/>
+    <data archetype="lookup.fileNameFormat" code="DOC_NAME_CUSTOMER_FULL_NAME_TODAYS_DATE"
+          name="Document name - customer full name - today's date"
+          description="Valid for customer documents only"
+          expression="concat($file, ' - ', party:getPartyFullName($customer), ' - ', date:format(java.util.Date.new(), 'd MMM yyyy'))"/>
+    <data archetype="lookup.fileNameFormat" code="DOC_NAME_SUPPLIER_FULL_NAME_DOC_DATE"
+          name="Document name - supplier full name - document date"
+          description="Valid for supplier documents only"
+          expression="concat($file, ' - ', party:getPartyFullName($supplier), ' - ', date:format(openvpms:get(.,'startTime'), 'd MMM yyyy'))"/>
+    <data archetype="lookup.fileNameFormat" code="DOC_NAME_SUPPLIER_FULL_NAME_TODAYS_DATE"
+          name="Document name - supplier full name - today's date"
+          description="Valid for supplier documents only"
+          expression="concat($file, ' - ', party:getPartyFullName($supplier), ' - ', date:format(java.util.Date.new(), 'd MMM yyyy'))"/>
+
 </archetype>
