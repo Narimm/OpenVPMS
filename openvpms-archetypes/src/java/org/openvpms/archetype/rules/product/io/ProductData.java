@@ -18,11 +18,13 @@ package org.openvpms.archetype.rules.product.io;
 
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -199,12 +201,13 @@ public class ProductData {
      * @param from         the price start date
      * @param to           the price end date. May be {@code null}
      * @param defaultPrice {@code true} if the price is the default
+     * @param groups       the pricing groups
      * @param line         the line the price was read from
      */
     public void addFixedPrice(long id, BigDecimal price, BigDecimal cost, BigDecimal maxDiscount, Date from, Date to,
-                              boolean defaultPrice, int line) {
+                              boolean defaultPrice, Set<Lookup> groups, int line) {
         fixedPrices.add(new PriceData(id, ProductArchetypes.FIXED_PRICE, price, cost, maxDiscount, from, to,
-                                      defaultPrice, line));
+                                      defaultPrice, groups, line));
     }
 
     /**
@@ -216,11 +219,13 @@ public class ProductData {
      * @param maxDiscount the maximum discount
      * @param from        the price start date
      * @param to          the price end date. May be {@code null}
+     * @param groups      the pricing groups
      * @param line        the line the price was read from
      */
     public void addUnitPrice(long id, BigDecimal price, BigDecimal cost, BigDecimal maxDiscount, Date from, Date to,
-                             int line) {
-        unitPrices.add(new PriceData(id, ProductArchetypes.UNIT_PRICE, price, cost, maxDiscount, from, to, line));
+                             Set<Lookup> groups, int line) {
+        unitPrices.add(new PriceData(id, ProductArchetypes.UNIT_PRICE, price, cost, maxDiscount, from, to, groups,
+                                     line));
     }
 
     /**

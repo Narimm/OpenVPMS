@@ -1,26 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
 
 import org.openvpms.archetype.rules.stock.StockArchetypes;
-import static org.openvpms.archetype.test.TestHelper.create;
-import static org.openvpms.archetype.test.TestHelper.save;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -30,6 +26,9 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.openvpms.archetype.test.TestHelper.create;
+import static org.openvpms.archetype.test.TestHelper.save;
 
 
 /**
@@ -73,7 +72,7 @@ public class SupplierTestHelper {
         FinancialAct act = (FinancialAct) create(SupplierArchetypes.ORDER);
         act.setStatus(OrderStatus.POSTED);
         FinancialAct item = createItem(SupplierArchetypes.ORDER_ITEM, product, BigDecimal.ONE,
-                1, PACKAGE_UNITS, amount, amount);
+                                       1, PACKAGE_UNITS, amount, amount);
         ActBean bean = new ActBean(act);
         bean.addNodeParticipation("supplier", supplier);
         bean.addNodeParticipation("stockLocation", stockLocation);

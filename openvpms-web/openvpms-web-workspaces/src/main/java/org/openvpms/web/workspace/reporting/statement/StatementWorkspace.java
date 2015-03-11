@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
@@ -193,9 +194,12 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
                     Party customer = (Party) IMObjectHelper.getObject(ref, getContext());
                     if (customer != null) {
                         HelpContext help = getHelpContext().subtopic("print");
-                        MailContext mailContext = new CustomerMailContext(getContext(), help);
+                        Context context = LocalContext.copy(getContext());
+                        context.setPatient(null);
+                        context.setCustomer(customer);
+                        MailContext mailContext = new CustomerMailContext(context, help);
                         StatementGenerator generator = new StatementGenerator(
-                                ref, query.getDate(), true, getContext(), mailContext, help);
+                                ref, query.getDate(), true, context, mailContext, help);
                         generator.setReprint(true);
                         generateStatements(generator, false);
                     }

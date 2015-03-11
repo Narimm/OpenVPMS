@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.util;
@@ -59,11 +57,11 @@ public class EntityRelationshipHelper {
      * Returns the target from the default entity relationship from the
      * specified relationship node.
      *
-     * @param entity  the parent entity
-     * @param node    the relationship node
+     * @param entity        the parent entity
+     * @param node          the relationship node
      * @param useNonDefault if <tt>true</tt> use a non-default relationship if
      *                      no default can be found
-     * @param service the archetype service
+     * @param service       the archetype service
      * @return the default target, or the the first target if there is no
      *         default, or <tt>null</tt> if none is found
      * @throws ArchetypeServiceException for any archetype service error
@@ -176,9 +174,6 @@ public class EntityRelationshipHelper {
      * from the supplied relationship list.
      *
      * @param relationships a list of relationship objects
-     * @return the default target, or the the first target if there is no
-     *         default and <tt>useNonDefault</tt> is <tt>true</tt>,
-     *         or <tt>null</tt> if none is found
      * @param service       the archetype service
      * @return the default target, or the the first target if there is no
      *         default, or <tt>null</tt> if none is found

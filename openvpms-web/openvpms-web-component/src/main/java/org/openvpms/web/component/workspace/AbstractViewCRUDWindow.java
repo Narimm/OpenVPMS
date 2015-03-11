@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -45,22 +45,22 @@ public abstract class AbstractViewCRUDWindow<T extends IMObject>
     private Component objectContainer;
 
     /**
-     * The style name.
-     */
-    private static final String STYLE = "CRUDWindow";
-
-    /**
      * The object viewer.
      */
     private IMObjectViewer viewer;
 
+    /**
+     * The style name.
+     */
+    protected static final String STYLE = "CRUDWindow";
 
     /**
      * Constructs an {@link AbstractViewCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create. If {@code null}
      *                   the subclass must override {@link #getArchetypes}
-     * @param actions    determines the operations that may be performed on the selected object
+     * @param actions    determines the operations that may be performed on the selected object. If {@code null},
+     *                   actions should be registered via {@link #setActions(IMObjectActions)}
      * @param context    the context
      * @param help       the help context
      */

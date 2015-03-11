@@ -11,15 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -34,14 +36,22 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.hl7.patient.PatientContextFactory;
+import org.openvpms.hl7.patient.PatientInformationService;
+import org.openvpms.hl7.pharmacy.Pharmacies;
+import org.openvpms.hl7.pharmacy.PharmacyOrderService;
 import org.openvpms.web.component.im.act.ActHelper;
+import org.openvpms.web.component.im.edit.IMObjectCollectionEditorFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.FinancialActEditor;
 import org.openvpms.web.component.im.edit.act.TemplateProductListener;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
@@ -67,7 +77,20 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
      */
     private boolean addDefaultItem;
 
-    private PatientHistoryChanges changes;
+    /**
+     * The customer notes editor.
+     */
+    private ActRelationshipCollectionEditor customerNotes;
+
+    /**
+     * The documents editor.
+     */
+    private ActRelationshipCollectionEditor documents;
+
+    /**
+     * The pharmacy order placer, used to place orders when invoicing.
+     */
+    private PharmacyOrderPlacer orderPlacer;
 
     /**
      * Constructs an {@link AbstractCustomerChargeActEditor}.
@@ -91,8 +114,10 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     public AbstractCustomerChargeActEditor(FinancialAct act, IMObject parent,
                                            LayoutContext context, boolean addDefaultItem) {
         super(act, parent, context);
-        initParticipant("customer", context.getContext().getCustomer());
-        initParticipant("location", context.getContext().getLocation());
+        Party customer = context.getContext().getCustomer();
+        Party location = context.getContext().getLocation();
+        initParticipant("customer", customer);
+        initParticipant("location", location);
         this.addDefaultItem = addDefaultItem;
         if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE)) {
             getItems().setTemplateProductListener(new TemplateProductListener() {
@@ -100,6 +125,9 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                     templateProductExpanded(product);
                 }
             });
+
+            orderPlacer = createPharmacyOrderPlacer(customer, location, context.getContext().getUser());
+            orderPlacer.initialise(getItems().getActs());
         }
     }
 
@@ -145,21 +173,13 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
         }
         for (Act item : items.getActs()) {
             ActBean bean = new ActBean(item);
-            for (ActRelationship rel : bean.getValues("documents", ActRelationship.class)) {
-                IMObjectReference target = rel.getTarget();
-                if (target != null && !excludeRefs.contains(target)) {
-                    Act document = (Act) getObject(target);
-                    if (document != null) {
-                        ActBean documentBean = new ActBean(document);
-                        if (!documentBean.getBoolean("printed") && documentBean.hasNode("documentTemplate")) {
-                            Entity entity = (Entity) getObject(documentBean.getNodeParticipantRef("documentTemplate"));
-                            if (entity != null) {
-                                DocumentTemplate template = new DocumentTemplate(entity,
-                                                                                 ServiceHelper.getArchetypeService());
-                                if (template.getPrintMode() == DocumentTemplate.PrintMode.IMMEDIATE) {
-                                    result.add(document);
-                                }
-                            }
+            if (bean.hasNode("documents")) {
+                for (ActRelationship rel : bean.getValues("documents", ActRelationship.class)) {
+                    IMObjectReference target = rel.getTarget();
+                    if (target != null && !excludeRefs.contains(target)) {
+                        Act document = (Act) getObject(target);
+                        if (document != null && isPrintImmediate(document)) {
+                            result.add(document);
                         }
                     }
                 }
@@ -176,6 +196,38 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     @Override
     public ActRelationshipCollectionEditor getItems() {
         return super.getItems();
+    }
+
+    /**
+     * Returns the customer notes collection editor.
+     *
+     * @return the customer notes collection editor. May be {@code null}
+     */
+    public ActRelationshipCollectionEditor getCustomerNotes() {
+        if (customerNotes == null) {
+            CollectionProperty notes = (CollectionProperty) getProperty("customerNotes");
+            if (notes != null && !notes.isHidden()) {
+                customerNotes = createCustomerNotesEditor((Act) getObject(), notes);
+                getEditors().add(customerNotes);
+            }
+        }
+        return customerNotes;
+    }
+
+    /**
+     * Returns the document collection editor.
+     *
+     * @return the document collection editor. May be {@code null}
+     */
+    public ActRelationshipCollectionEditor getDocuments() {
+        if (documents == null) {
+            CollectionProperty notes = (CollectionProperty) getProperty("documents");
+            if (notes != null && !notes.isHidden()) {
+                documents = createDocumentsEditor((Act) getObject(), notes);
+                getEditors().add(documents);
+            }
+        }
+        return documents;
     }
 
     /**
@@ -224,6 +276,31 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
+     * Flags an invoice item as being ordered via a pharmacy.
+     * <p/>
+     * This suppresses it from being ordered again when the invoice is saved.
+     *
+     * @param item the invoice item
+     */
+    public void setOrdered(Act item) {
+        if (orderPlacer != null) {
+            orderPlacer.initialise(item);
+        }
+    }
+
+    /**
+     * Queues a popup dialog to display after any other dialog queued by the editor.
+     *
+     * @param dialog the dialog to display
+     */
+    public void queue(PopupDialog dialog) {
+        if (getItems() instanceof ChargeItemRelationshipCollectionEditor) {
+            ChargeItemRelationshipCollectionEditor items = (ChargeItemRelationshipCollectionEditor) getItems();
+            items.getEditorQueue().queue(dialog);
+        }
+    }
+
+    /**
      * Save any edits.
      * <p/>
      * For invoices, this links items to their corresponding clinical events, creating events as required, and marks
@@ -237,6 +314,8 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
         ChargeContext chargeContext = null;
         boolean saved;
         try {
+            PatientHistoryChanges changes = null;
+
             if (getItems() instanceof ChargeItemRelationshipCollectionEditor) {
                 changes = new PatientHistoryChanges(getLayoutContext().getContext().getUser(),
                                                     getLayoutContext().getContext().getLocation(),
@@ -261,6 +340,25 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                 if (chargeContext != null) {
                     chargeContext.save();
                 }
+
+                if (TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE)) {
+                    List<Act> updated = orderPlacer.order(getItems().getActs(), changes);
+                    if (!updated.isEmpty()) {
+                        // need to save the items again. This time do it skipping rules
+                        ServiceHelper.getArchetypeService(false).save(updated);
+
+                        // notify the editors that orders have been placed
+                        for (Act item : updated) {
+                            IMObjectEditor editor = getItems().getEditor(item);
+                            if (editor instanceof CustomerChargeActItemEditor) {
+                                ((CustomerChargeActItemEditor) editor).ordered();
+                            }
+                        }
+                    }
+                    if (FinancialActStatus.POSTED.equals(getStatus())) {
+                        orderPlacer.discontinue();
+                    }
+                }
             }
         } finally {
             if (chargeContext != null) {
@@ -268,6 +366,24 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
             }
         }
         return saved;
+    }
+
+    /**
+     * Deletes the object.
+     * <p/>
+     * This uses {@link #deleteChildren()} to delete the children prior to
+     * invoking {@link #deleteObject()}.
+     *
+     * @return {@code true} if the delete was successful
+     * @throws IllegalStateException if the act is POSTED
+     */
+    @Override
+    protected boolean doDelete() {
+        boolean deleted = super.doDelete();
+        if (deleted && orderPlacer != null) {
+            orderPlacer.cancel();
+        }
+        return deleted;
     }
 
     /**
@@ -282,6 +398,34 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
             items.add((FinancialAct) act);
         }
         linker.prepare(items, changes);
+    }
+
+    /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        IMObjectLayoutStrategy strategy = super.createLayoutStrategy();
+        initLayoutStrategy(strategy);
+        return strategy;
+    }
+
+    /**
+     * Initialises a layout strategy with the customerNotes and documents collections, if they are present.
+     *
+     * @param strategy the layout strategy to initialise
+     */
+    protected void initLayoutStrategy(IMObjectLayoutStrategy strategy) {
+        ActRelationshipCollectionEditor notes = getCustomerNotes();
+        ActRelationshipCollectionEditor documents = getDocuments();
+        if (notes != null) {
+            strategy.addComponent(new ComponentState(notes));
+        }
+        if (documents != null) {
+            strategy.addComponent(new ComponentState(documents));
+        }
     }
 
     /**
@@ -305,13 +449,53 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
+     * Creates a collection editor for the customer notes collection.
+     *
+     * @param act   the act
+     * @param notes the customer notes collection
+     * @return a new collection editor
+     */
+    protected ActRelationshipCollectionEditor createCustomerNotesEditor(Act act, CollectionProperty notes) {
+        return (ActRelationshipCollectionEditor) IMObjectCollectionEditorFactory.create(notes, act, getLayoutContext());
+    }
+
+    /**
+     * Creates a collection editor for the documents collection.
+     *
+     * @param act       the act
+     * @param documents the documents collection
+     * @return a new collection editor
+     */
+    protected ActRelationshipCollectionEditor createDocumentsEditor(Act act, CollectionProperty documents) {
+        return (ActRelationshipCollectionEditor) IMObjectCollectionEditorFactory.create(documents, act,
+                                                                                        getLayoutContext());
+    }
+
+    /**
+     * Creates a new {@link PharmacyOrderPlacer}.
+     *
+     * @param customer the customer
+     * @param location the practice location
+     * @param user     the user responsible for the orders
+     * @return a new pharmacy order placer
+     */
+    protected PharmacyOrderPlacer createPharmacyOrderPlacer(Party customer, Party location, User user) {
+        return new PharmacyOrderPlacer(customer, location, user, getLayoutContext().getCache(),
+                                       ServiceHelper.getBean(PharmacyOrderService.class),
+                                       ServiceHelper.getBean(Pharmacies.class),
+                                       ServiceHelper.getBean(PatientContextFactory.class),
+                                       ServiceHelper.getBean(PatientInformationService.class),
+                                       ServiceHelper.getBean(MedicalRecordRules.class));
+    }
+
+    /**
      * Adds a default invoice item if there are no items present and {@link #addDefaultItem} is {@code true}.
      */
     private void initItems() {
         if (addDefaultItem) {
             ActRelationshipCollectionEditor items = getItems();
             CollectionProperty property = items.getCollection();
-            if (property.getValues().size() == 0) {
+            if (property.getValues().isEmpty()) {
                 // no invoice items, so add one
                 addItem();
             }
@@ -394,6 +578,25 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                 property.setValue(value);
             }
         }
+    }
+
+    /**
+     * Determines if a document should be printed immediately.
+     *
+     * @param document the document
+     * @return {@code true} if the document should be printed immediately
+     */
+    private boolean isPrintImmediate(Act document) {
+        ActBean documentBean = new ActBean(document);
+        if (!documentBean.getBoolean("printed") && documentBean.hasNode("documentTemplate")) {
+            Entity entity = (Entity) getObject(documentBean.getNodeParticipantRef("documentTemplate"));
+            if (entity != null) {
+                DocumentTemplate template = new DocumentTemplate(entity,
+                                                                 ServiceHelper.getArchetypeService());
+                return (template.getPrintMode() == DocumentTemplate.PrintMode.IMMEDIATE);
+            }
+        }
+        return false;
     }
 
 }

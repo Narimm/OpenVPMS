@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
 
-import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.JRRewindableDataSource;
+import org.apache.commons.jxpath.Functions;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -25,7 +26,6 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.util.PropertySet;
 
-import java.util.Iterator;
 import java.util.Map;
 
 
@@ -39,14 +39,15 @@ public class TemplatedJasperObjectSetReport extends AbstractTemplatedJasperIMRep
     /**
      * Constructs an {@link AbstractTemplatedJasperIMReport}.
      *
-     * @param template the document template
-     * @param service  the archetype service
-     * @param lookups  the lookup service
-     * @param handlers the document handlers  @throws ReportException if the report cannot be created
+     * @param template  the document template
+     * @param service   the archetype service
+     * @param lookups   the lookup service
+     * @param handlers  the document handlers  @throws ReportException if the report cannot be created
+     * @param functions the JXPath extension functions
      */
     public TemplatedJasperObjectSetReport(Document template, IArchetypeService service, ILookupService lookups,
-                                          DocumentHandlers handlers) {
-        super(template, service, lookups, handlers);
+                                          DocumentHandlers handlers, Functions functions) {
+        super(template, service, lookups, handlers, functions);
     }
 
     /**
@@ -57,9 +58,9 @@ public class TemplatedJasperObjectSetReport extends AbstractTemplatedJasperIMRep
      * @return a new data source
      */
     @Override
-    protected JRDataSource createDataSource(Iterator<ObjectSet> objects, Map<String, Object> fields) {
+    protected JRRewindableDataSource createDataSource(Iterable<ObjectSet> objects, Map<String, Object> fields) {
         PropertySet f = (fields != null) ? new ResolvingPropertySet(fields, getArchetypeService()) : null;
-        return new ObjectSetDataSource(objects, f, getArchetypeService(), getLookupService());
+        return new ObjectSetDataSource(objects, f, getArchetypeService(), getLookupService(), getFunctions());
     }
 
 }

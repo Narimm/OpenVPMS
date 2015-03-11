@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -36,7 +36,12 @@ public class IMObjectEditorFactory {
     /**
      * Editor implementations.
      */
-    private static ShortNamePairArchetypeHandlers editors;
+    private ShortNamePairArchetypeHandlers editors;
+
+    /**
+     * The resource path.
+     */
+    private final String path;
 
     /**
      * The logger.
@@ -44,9 +49,24 @@ public class IMObjectEditorFactory {
     private static final Log log = LogFactory.getLog(IMObjectEditorFactory.class);
 
     /**
-     * Prevent construction.
+     * The default resource path.
      */
-    private IMObjectEditorFactory() {
+    private static final String DEFAULT_PATH = "IMObjectEditorFactory.properties";
+
+    /**
+     * Constructs an {@link IMObjectEditorFactory}.
+     */
+    public IMObjectEditorFactory() {
+        this(DEFAULT_PATH);
+    }
+
+    /**
+     * Constructs an {@link IMObjectEditorFactory}.
+     *
+     * @param path the resource name
+     */
+    public IMObjectEditorFactory(String path) {
+        this.path = path;
     }
 
     /**
@@ -56,7 +76,7 @@ public class IMObjectEditorFactory {
      * @param context the layout context. May be {@code null}
      * @return an editor for {@code object}
      */
-    public static IMObjectEditor create(IMObject object, LayoutContext context) {
+    public IMObjectEditor create(IMObject object, LayoutContext context) {
         return create(object, null, context);
     }
 
@@ -68,7 +88,7 @@ public class IMObjectEditorFactory {
      * @param context the layout context
      * @return an editor for {@code object}
      */
-    public static IMObjectEditor create(IMObject object, IMObject parent, LayoutContext context) {
+    public IMObjectEditor create(IMObject object, IMObject parent, LayoutContext context) {
         IMObjectEditor result = null;
 
         ArchetypeHandler handler;
@@ -105,9 +125,9 @@ public class IMObjectEditorFactory {
      *
      * @return the editors
      */
-    private static synchronized ShortNamePairArchetypeHandlers getEditors() {
+    private synchronized ShortNamePairArchetypeHandlers getEditors() {
         if (editors == null) {
-            editors = new ShortNamePairArchetypeHandlers("IMObjectEditorFactory.properties", IMObjectEditor.class);
+            editors = new ShortNamePairArchetypeHandlers(path, IMObjectEditor.class);
         }
         return editors;
     }
@@ -121,7 +141,7 @@ public class IMObjectEditorFactory {
      * @param context the layout context. May be {@code null}
      * @return a constructor to construct the editor, or {@code null} if none can be found
      */
-    private static Constructor getConstructor(Class type, IMObject object, IMObject parent, LayoutContext context) {
+    private Constructor getConstructor(Class type, IMObject object, IMObject parent, LayoutContext context) {
         Constructor[] ctors = type.getConstructors();
 
         for (Constructor ctor : ctors) {

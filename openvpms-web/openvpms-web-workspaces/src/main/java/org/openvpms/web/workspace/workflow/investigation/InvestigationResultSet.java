@@ -47,11 +47,6 @@ import static org.openvpms.component.system.common.query.Constraints.subQuery;
 public class InvestigationResultSet extends ActResultSet<Act> {
 
     /**
-     * The value being searched on. May be {@code null}
-     */
-    private final String value;
-
-    /**
      * The selected location.
      */
     private final Party location;
@@ -77,8 +72,7 @@ public class InvestigationResultSet extends ActResultSet<Act> {
     public InvestigationResultSet(ShortNameConstraint archetypes, String value, ParticipantConstraint[] participants,
                                   Party location, List<Party> locations, Date from, Date to, String[] statuses,
                                   int pageSize, SortConstraint[] sort) {
-        super(archetypes, participants, from, to, statuses, false, null, pageSize, sort);
-        this.value = value;
+        super(archetypes, value, participants, from, to, statuses, false, null, pageSize, sort);
         this.location = location;
         this.locations = locations;
         setDistinct(true);
@@ -92,14 +86,9 @@ public class InvestigationResultSet extends ActResultSet<Act> {
     @Override
     protected ArchetypeQuery createQuery() {
         ArchetypeQuery query = super.createQuery();
-        query.getArchetypeConstraint().setAlias("i1");
-        if (!StringUtils.isEmpty(value)) {
-            Long id = getId(value);
-            if (id != null) {
-                query.add(eq("id", id));
-            } else {
-                query.add(join("patient").add(join("entity").add(eq("name", value))));
-            }
+        String value = getValue();
+        if (!StringUtils.isEmpty(value) && getId(value) == null) {
+            query.add(join("patient").add(join("entity").add(eq("name", value))));
         }
         if (location != null || locations.size() == 1) {
             Party l = (location != null) ? location : locations.get(0);
@@ -108,7 +97,8 @@ public class InvestigationResultSet extends ActResultSet<Act> {
             OrConstraint or = new OrConstraint();
             or.add(getLocations());
             or.add(notExists(subQuery(InvestigationArchetypes.PATIENT_INVESTIGATION, "i2").add(
-                    join("location").add(join("entity").add(idEq("i1", "i2"))))));
+                    join("location").add(join("entity").add(idEq("act", "i2"))))));
+            // NB: "act" alias comes from ActQuery. TODO - brittle
             query.add(or);
         }
         return query;

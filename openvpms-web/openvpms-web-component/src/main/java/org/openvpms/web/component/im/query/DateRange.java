@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -86,25 +86,21 @@ public class DateRange {
      */
     private Component component;
 
-
     /**
      * Constructs a {@link DateRange}.
-     *
-     * @param focus the focus group
      */
-    public DateRange(FocusGroup focus) {
-        this(focus, true);
+    public DateRange() {
+        this(true);
     }
 
     /**
      * Constructs a {@link DateRange}.
      *
-     * @param focus   the focus group
      * @param showAll determines if an 'all' checkbox should be displayed to select all dates
      */
-    public DateRange(FocusGroup focus, boolean showAll) {
-        this.focus = focus;
+    public DateRange(boolean showAll) {
         this.showAll = showAll;
+        focus = new FocusGroup("DateRange");
         if (showAll) {
             all.addModifiableListener(new ModifiableListener() {
                 @Override
@@ -209,17 +205,36 @@ public class DateRange {
      */
     public Component getComponent() {
         if (component == null) {
-            component = doLayout();
+            component = doLayout(getContainer());
         }
         return component;
     }
 
     /**
+     * Lays out the component in the specified container
+     *
+     * @param container the container
+     */
+    public void setContainer(Component container) {
+        component = doLayout(container);
+    }
+
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group.
+     */
+    public FocusGroup getFocusGroup() {
+        return focus;
+    }
+
+    /**
      * Lays out the component.
      *
+     * @param container the container
      * @return the component
      */
-    protected Component doLayout() {
+    protected Component doLayout(Component container) {
         fromDate = createFromDate(from);
         toDate = createToDate(to);
         if (showAll) {
@@ -227,7 +242,6 @@ public class DateRange {
         } else {
             allDates = null;
         }
-        Component container = getContainer();
         if (allDates != null) {
             container.add(allDates.getLabel());
             container.add(allDates.getComponent());

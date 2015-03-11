@@ -61,15 +61,6 @@ public class CustomerTaxRules extends TaxRules {
     /**
      * Constructs a {@link CustomerTaxRules}.
      *
-     * @param practice the practice, for default tax classifications
-     */
-    public CustomerTaxRules(Party practice) {
-        super(practice);
-    }
-
-    /**
-     * Constructs a {@link CustomerTaxRules}.
-     *
      * @param practice the practice, for default tax classifications.
      * @param service  the archetype service
      * @param lookups  the lookup service

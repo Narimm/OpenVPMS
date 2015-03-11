@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -24,9 +24,9 @@
     <!-- ================================================================== -->
 
     <bean id="macros" class="org.openvpms.macro.impl.LookupMacros">
-        <constructor-arg index="0" ref="lookupService"/>
-        <constructor-arg index="1" ref="archetypeRuleService"/>
-        <constructor-arg index="2" ref="documentHandlers"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="reportFactory"/>
     </bean>
 
     <!-- ================================================================== -->
@@ -52,6 +52,9 @@
             <bean class="org.openvpms.web.workspace.DefaultWorkspacesFactory"/>
         </constructor-arg>
         <constructor-arg ref="practiceRules"/>
+        <constructor-arg ref="locationRules"/>
+        <constructor-arg ref="userRules"/>
+        <constructor-arg ref="sessionMonitor"/>
         <property name="styleSheets" ref="userStyleSheets"/>
     </bean>
 
@@ -102,5 +105,10 @@
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="practiceRules"/>
     </bean>
+
+    <!-- ================================================================== -->
+    <!--                        FACTORIES                                   -->
+    <!-- ================================================================== -->
+    <bean id="editorFactory" class="org.openvpms.web.component.im.edit.IMObjectEditorFactory"/>
 
 </beans>

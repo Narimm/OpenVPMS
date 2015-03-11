@@ -17,17 +17,26 @@
 package org.openvpms.web.workspace.product.io;
 
 import nextapp.echo2.app.Alignment;
+import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
+import org.openvpms.web.component.im.util.IMObjectSorter;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Table model for product price import and export.
@@ -77,29 +86,44 @@ abstract class ProductImportExportTableModel<T> extends AbstractIMTableModel<T> 
     protected static final int FIXED_END_DATE = 7;
 
     /**
+     * The fixed price pricing locations column.
+     */
+    protected static final int FIXED_PRICING_GROUPS = 8;
+
+    /**
      * The unit price column.
      */
-    protected static final int UNIT_PRICE = 8;
+    protected static final int UNIT_PRICE = 9;
 
     /**
      * The unit cost column.
      */
-    protected static final int UNIT_COST = 9;
+    protected static final int UNIT_COST = 10;
 
     /**
      * The unit price max discount column.
      */
-    protected static final int UNIT_MAX_DISCOUNT = 10;
+    protected static final int UNIT_MAX_DISCOUNT = 11;
 
     /**
      * The unit price start date column.
      */
-    protected static final int UNIT_START_DATE = 11;
+    protected static final int UNIT_START_DATE = 12;
 
     /**
      * The unit price end date column.
      */
-    protected static final int UNIT_END_DATE = 12;
+    protected static final int UNIT_END_DATE = 13;
+
+    /**
+     * The unit price pricing locations column.
+     */
+    protected static final int UNIT_PRICING_GROUPS = 14;
+
+    /**
+     * Top-right alignment.
+     */
+    private static final Alignment TOP_RIGHT = new Alignment(Alignment.RIGHT, Alignment.TOP);
 
     /**
      * Constructs a {@link ProductImportExportTableModel}.
@@ -114,11 +138,13 @@ abstract class ProductImportExportTableModel<T> extends AbstractIMTableModel<T> 
         model.addColumn(createTableColumn(FIXED_MAX_DISCOUNT, "product.import.fixedPriceMaxDiscount"));
         model.addColumn(createTableColumn(FIXED_START_DATE, "product.import.fixedPriceStartDate"));
         model.addColumn(createTableColumn(FIXED_END_DATE, "product.import.fixedPriceEndDate"));
+        model.addColumn(createTableColumn(FIXED_PRICING_GROUPS, "product.import.fixedPricingGroups"));
         model.addColumn(createTableColumn(UNIT_PRICE, "product.import.unitPrice"));
         model.addColumn(createTableColumn(UNIT_COST, "product.import.unitCost"));
         model.addColumn(createTableColumn(UNIT_MAX_DISCOUNT, "product.import.unitPriceMaxDiscount"));
         model.addColumn(createTableColumn(UNIT_START_DATE, "product.import.unitPriceStartDate"));
         model.addColumn(createTableColumn(UNIT_END_DATE, "product.import.unitPriceEndDate"));
+        model.addColumn(createTableColumn(UNIT_PRICING_GROUPS, "product.import.unitPricingGroups"));
         setTableColumnModel(model);
     }
 
@@ -181,10 +207,40 @@ abstract class ProductImportExportTableModel<T> extends AbstractIMTableModel<T> 
             result = LabelFactory.create();
             result.setText(value.toString());
             TableLayoutData layoutData = new TableLayoutData();
-            layoutData.setAlignment(Alignment.ALIGN_RIGHT);
+            layoutData.setAlignment(TOP_RIGHT);
             result.setLayoutData(layoutData);
         }
         return result;
+    }
+
+    /**
+     * Formats pricing groups in a column, sorted on name. This changes the order of the supplied list.
+     *
+     * @param groups    the groups
+     * @param styleName the label style
+     * @return a column of the pricing groups
+     */
+    protected Column getPricingGroups(List<Lookup> groups, String styleName) {
+        Collections.sort(groups, IMObjectSorter.getNameComparator(true));
+        Column column = ColumnFactory.create(Styles.CELL_SPACING);
+        for (Lookup group : groups) {
+            Label label = LabelFactory.create(null, styleName);
+            label.setText(group.getName());
+            column.add(label);
+        }
+        return column;
+    }
+
+    /**
+     * Formats pricing groups in a column, sorted on name.
+     *
+     * @param groups    the groups
+     * @param styleName the label style
+     * @return a column of the pricing groups
+     */
+    protected Column getPricingGroups(Set<Lookup> groups, String styleName) {
+        List<Lookup> list = new ArrayList<Lookup>(groups);
+        return getPricingGroups(list, styleName);
     }
 
 }

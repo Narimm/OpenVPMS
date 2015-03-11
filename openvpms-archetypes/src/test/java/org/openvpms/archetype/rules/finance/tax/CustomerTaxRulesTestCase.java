@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.tax;
@@ -157,7 +157,9 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
 
         // add a 10% tax to practice
         practice.addClassification(taxType);
-        rules = new CustomerTaxRules(practice); // need to refresh cache
+
+        // need to refresh cache
+        rules = new CustomerTaxRules(practice, getArchetypeService(), getLookupService());
 
         // product is now charged at 10% tax rate
         checkEquals(BigDecimal.TEN, rules.getTaxRate(product, customer));
@@ -174,7 +176,7 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
     public void setUp() {
         taxType = TestHelper.createTaxType(BigDecimal.TEN);
         practice = (Party) create("party.organisationPractice");
-        rules = new CustomerTaxRules(practice);
+        rules = new CustomerTaxRules(practice, getArchetypeService(), getLookupService());
     }
 
     /**

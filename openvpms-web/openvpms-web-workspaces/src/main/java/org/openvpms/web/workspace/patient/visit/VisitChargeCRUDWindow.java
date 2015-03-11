@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -19,24 +19,31 @@ package org.openvpms.web.workspace.patient.visit;
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.finance.order.OrderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.DefaultActActions;
+import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.IMObjectViewer;
+import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.workspace.AbstractCRUDWindow;
+import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.customer.charge.OrderChargeManager;
+import org.openvpms.web.workspace.customer.order.OrderCharger;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 
 
 /**
@@ -44,7 +51,22 @@ import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
  *
  * @author Tim Anderson
  */
-public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
+public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> implements VisitEditorTab {
+
+    /**
+     * Completed button identifier.
+     */
+    public static final String COMPLETED_ID = "button.completed";
+
+    /**
+     * In Progress button identifier.
+     */
+    public static final String IN_PROGRESS_ID = "button.inprogress";
+
+    /**
+     * Invoice orders button identifier.
+     */
+    public static final String INVOICE_ORDERS_ID = "button.invoiceOrders";
 
     /**
      * The event.
@@ -57,6 +79,11 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
     private VisitChargeEditor editor;
 
     /**
+     * The order charge manager.
+     */
+    private final OrderChargeManager manager;
+
+    /**
      * Determines if the charge is posted.
      */
     private boolean posted;
@@ -67,27 +94,51 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
     private Component container = ColumnFactory.create();
 
     /**
-     * Completed button identifier.
+     * The tab identifier.
      */
-    public static final String COMPLETED_ID = "button.completed";
+    private int id;
 
     /**
-     * In Progress button identifier.
+     * Determines if orders should be automatically charged.
      */
-    public static final String IN_PROGRESS_ID = "button.inprogress";
+    private boolean autoChargeOrders = true;
 
 
     /**
-     * Constructs a {@code VisitChargeCRUDWindow}.
+     * Constructs a {@link VisitChargeCRUDWindow}.
      *
      * @param event   the event
      * @param context the context
      * @param help    the help context
      */
     public VisitChargeCRUDWindow(Act event, Context context, HelpContext help) {
-        super(Archetypes.create(CustomerAccountArchetypes.INVOICE, FinancialAct.class),
-              DefaultActActions.<FinancialAct>getInstance(), context, help);
+        super(Archetypes.create(CustomerAccountArchetypes.INVOICE, FinancialAct.class), ActActions.<FinancialAct>edit(),
+              context, help);
         this.event = event;
+        OrderRules rules = ServiceHelper.getBean(OrderRules.class);
+        OrderCharger charger = new OrderCharger(context.getCustomer(), context.getPatient(), rules, context,
+                                                help.subtopic("order"));
+        manager = new OrderChargeManager(charger, container);
+    }
+
+    /**
+     * Returns the identifier of this tab.
+     *
+     * @return the tab identifier
+     */
+    @Override
+    public int getId() {
+        return id;
+    }
+
+    /**
+     * Sets the identifier of this tab.
+     *
+     * @param id the tab identifier
+     */
+    @Override
+    public void setId(int id) {
+        this.id = id;
     }
 
     /**
@@ -108,6 +159,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
             } else {
                 HelpContext edit = createEditTopic(object);
                 editor = createVisitChargeEditor(object, event, createLayoutContext(edit));
+                manager.clear();
                 container.add(editor.getComponent());
             }
         } else {
@@ -138,6 +190,21 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
     }
 
     /**
+     * Invoked when the tab is displayed.
+     */
+    @Override
+    public void show() {
+        if (editor != null) {
+            if (autoChargeOrders) {
+                manager.charge(editor);
+            } else {
+                manager.check();
+            }
+            editor.getFocusGroup().setFocus();
+        }
+    }
+
+    /**
      * Saves the invoice.
      *
      * @return {@code true} if the invoice was saved
@@ -145,9 +212,17 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
     public boolean save() {
         boolean result;
         if (editor != null && !posted) {
-            Validator validator = new Validator();
+            Validator validator = new DefaultValidator();
             if (editor.validate(validator)) {
-                result = SaveHelper.save(editor);
+                result = SaveHelper.save(editor, new TransactionCallback<Boolean>() {
+                    @Override
+                    public Boolean doInTransaction(TransactionStatus status) {
+                        return manager.save();
+                    }
+                });
+                if (result) {
+                    manager.clear();
+                }
                 posted = ActStatus.POSTED.equals(getObject().getStatus());
             } else {
                 result = false;
@@ -156,7 +231,18 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
         } else {
             result = true;
         }
+        manager.check();
         return result;
+    }
+
+    /**
+     * Returns the CRUD window for the tab.
+     *
+     * @return the CRUD window for the tab, or {@code null} if the tab doesn't provide one
+     */
+    @Override
+    public CRUDWindow<? extends Act> getWindow() {
+        return this;
     }
 
     /**
@@ -185,6 +271,33 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
             result = save();
         }
         return result;
+    }
+
+    /**
+     * Charges orders.
+     */
+    public void chargeOrders() {
+        if (!posted) {
+            manager.chargeSelected(editor);
+        }
+    }
+
+    /**
+     * Determines if customer orders should automatically be charged when the window is displayed.
+     *
+     * @param charge if {@code true}, automatically charge customer orders
+     */
+    public void setAutoChargeOrders(boolean charge) {
+        autoChargeOrders = charge;
+    }
+
+    /**
+     * Determines if customer orders should automatically be charged when the window is displayed.
+     *
+     * @return {@code true} if customer orders will be automatically charged
+     */
+    public boolean isAutoChargeOrders() {
+        return autoChargeOrders;
     }
 
     /**
@@ -234,6 +347,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
             }
             buttons.setEnabled(IN_PROGRESS_ID, enable);
             buttons.setEnabled(COMPLETED_ID, enable);
+            buttons.setEnabled(INVOICE_ORDERS_ID, enable);
         }
     }
 

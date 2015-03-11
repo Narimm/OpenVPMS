@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -31,9 +31,11 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.contact.ContactHelper;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.sms.SMSDialog;
 import org.openvpms.web.component.im.sms.SMSHelper;
@@ -75,6 +77,7 @@ public class CustomerSummary extends PartySummary {
      */
     private CustomerAccountRules accountRules;
 
+
     /**
      * Constructs a {@code CustomerSummary}.
      *
@@ -100,51 +103,58 @@ public class CustomerSummary extends PartySummary {
         IMObjectReferenceViewer customerName = new IMObjectReferenceViewer(party.getObjectReference(),
                                                                            party.getName(), true, getContext());
         customerName.setStyleName("hyperlink-bold");
-        column.add(RowFactory.create("Inset.Small",
-                                     customerName.getComponent()));
+        column.add(RowFactory.create("Inset.Small", customerName.getComponent()));
+        Label customerId = createLabel("customer.id", party.getId());
+        column.add(RowFactory.create("Inset.Small", customerId));
         Label phone = LabelFactory.create();
-        phone.setText(partyRules.getTelephone(party));
+        phone.setText(partyRules.getTelephone(party, true));
         column.add(RowFactory.create("Inset.Small", phone));
 
         Contact email = ContactHelper.getPreferredEmail(party);
         if (email != null) {
             column.add(RowFactory.create("Inset.Small", getEmail(email)));
         }
+        final Context context = getContext();
+        Party practice = context.getPractice();
+        boolean accountSummary = true;
+        if (practice != null) {
+            IMObjectBean bean = new IMObjectBean(practice);
+            accountSummary = bean.getBoolean("showCustomerAccountSummary");
+        }
+        if (accountSummary) {
+            Label balanceTitle = create("customer.account.balance");
+            BigDecimal balance = accountRules.getBalance(party);
+            Label balanceValue = create(balance);
 
-        Label balanceTitle = create("customer.account.balance");
-        BigDecimal balance = accountRules.getBalance(party);
-        Label balanceValue = create(balance);
+            Label overdueTitle = create("customer.account.overdue");
+            BigDecimal overdue = accountRules.getOverdueBalance(party, new Date());
+            Label overdueValue = create(overdue);
 
-        Label overdueTitle = create("customer.account.overdue");
-        BigDecimal overdue = accountRules.getOverdueBalance(party, new Date());
-        Label overdueValue = create(overdue);
+            Label currentTitle = create("customer.account.current");
+            BigDecimal current = balance.subtract(overdue);
+            Label currentValue = create(current);
 
-        Label currentTitle = create("customer.account.current");
-        BigDecimal current = balance.subtract(overdue);
-        Label currentValue = create(current);
+            Label unbilledTitle = create("customer.account.unbilled");
+            BigDecimal unbilled = accountRules.getUnbilledAmount(party);
+            Label unbilledValue = create(unbilled);
 
-        Label creditTitle = create("customer.account.credit");
-        BigDecimal credit = accountRules.getCreditBalance(party);
-        Label creditValue = create(credit);
+            Label effectiveTitle = create("customer.account.effective");
+            BigDecimal effective = balance.add(unbilled);
+            Label effectiveValue = create(effective);
 
-        Label unbilledTitle = create("customer.account.unbilled");
-        BigDecimal unbilled = accountRules.getUnbilledAmount(party);
-        Label unbilledValue = create(unbilled);
-
-        Grid grid = GridFactory.create(2, balanceTitle, balanceValue,
-                                       overdueTitle, overdueValue,
-                                       currentTitle, currentValue,
-                                       creditTitle, creditValue,
-                                       unbilledTitle, unbilledValue);
-        column.add(grid);
+            Grid grid = GridFactory.create(2, balanceTitle, balanceValue,
+                                           overdueTitle, overdueValue,
+                                           currentTitle, currentValue,
+                                           unbilledTitle, unbilledValue,
+                                           effectiveTitle, effectiveValue);
+            column.add(grid);
+        }
         AlertSummary alerts = getAlertSummary(party);
         if (alerts != null) {
-            grid.add(create("alerts.title"));
             column.add(ColumnFactory.create("Inset.Small", alerts.getComponent()));
         }
         Column result = ColumnFactory.create("PartySummary", column);
-        final Context context = getContext();
-        if (SMSHelper.isSMSEnabled(context.getPractice())) {
+        if (SMSHelper.isSMSEnabled(practice)) {
             final List<Contact> contacts = ContactHelper.getSMSContacts(party);
             if (!contacts.isEmpty()) {
                 Context local = new LocalContext(context);
@@ -204,9 +214,9 @@ public class CustomerSummary extends PartySummary {
         Button mail = ButtonFactory.create(null, "hyperlink", new ActionListener() {
             public void onAction(ActionEvent event) {
                 Context context = getContext();
-                HelpContext mail = getHelpContext().topic("customer/email");
-                MailContext mailContext = new CustomerMailContext(context, mail);
-                MailDialog dialog = new MailDialog(mailContext, email, context, mail);
+                HelpContext help = getHelpContext().topic("customer/email");
+                MailContext mailContext = new CustomerMailContext(context, help);
+                MailDialog dialog = new MailDialog(mailContext, email, new DefaultLayoutContext(context, help));
                 dialog.show();
             }
         });

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -33,14 +33,9 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 public class AppointmentService extends AbstractScheduleService {
 
     /**
-     * Listener for appointment reason changes.
+     * Listener for visit reason changes.
      */
     private final IArchetypeServiceListener listener;
-
-    /**
-     * Appointment reason archetype short name.
-     */
-    private static final String APPOINTMENT_REASON_SHORT_NAME = "lookup.appointmentReason";
 
 
     /**
@@ -64,7 +59,7 @@ public class AppointmentService extends AbstractScheduleService {
                 onReasonRemoved((Lookup) object);
             }
         };
-        service.addListener(APPOINTMENT_REASON_SHORT_NAME, listener);
+        service.addListener(ScheduleArchetypes.VISIT_REASON, listener);
     }
 
     /**
@@ -76,7 +71,7 @@ public class AppointmentService extends AbstractScheduleService {
      */
     @Override
     public void destroy() throws Exception {
-        getService().removeListener(APPOINTMENT_REASON_SHORT_NAME, listener);
+        getService().removeListener(ScheduleArchetypes.VISIT_REASON, listener);
         super.destroy();
     }
 
@@ -91,7 +86,7 @@ public class AppointmentService extends AbstractScheduleService {
     }
 
     /**
-     * Invoked when an appointment reason is saved. Updates the name cache and clears the appointment cache.
+     * Invoked when a visit reason is saved. Updates the name cache and clears the appointment cache.
      *
      * @param reason the reason lookup
      */
@@ -103,7 +98,7 @@ public class AppointmentService extends AbstractScheduleService {
     }
 
     /**
-     * Invoked when an appointment reason is removed. Updates the name cache.
+     * Invoked when a visit reason is removed. Updates the name cache.
      * If the name is cached, then the appointment cache will be cleared.
      * <p/>
      * Strictly speaking, no lookup will be removed by the archetype service if it is use.

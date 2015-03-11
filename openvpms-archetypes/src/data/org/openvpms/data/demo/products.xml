@@ -1,3 +1,19 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <archetype>
     <data id="MERCH" archetype="lookup.productGroup" code="MERCHANDISE"/>
     <data id="DRUGS" archetype="lookup.productGroup" code="DRUGS"/>
@@ -24,191 +40,242 @@
     <data id="Other" archetype="entity.productType" name="Other"/>
     <data id="P1" archetype="product.merchandise" name="Troy 7-Dust 100g" printedName="" sellingUnits="BOTTLE">
         <data collection="identities" archetype="entityIdentity.code" code="7DUST1"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:MERCH"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P1" source="id:Merchandise"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P1" quantity="10"/>
+
     <data id="P2" archetype="product.merchandise" name="Troy 7-Dust 200g" printedName="" sellingUnits="BOTTLE">
         <data collection="identities" archetype="entityIdentity.code" code="7DUST2"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:MERCH"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P2" source="id:Merchandise"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P2" quantity="10"/>
+
     <data id="P3" archetype="product.medication" name="Acepromazine 10mg Tablets" printedName="" drugSchedule="S4"
           activeIngredients="10mg" sellingUnits="TABLET">
         <data collection="identities" archetype="entityIdentity.code" code="ACEP10"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P3" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P3" quantity="10"/>
     <data id="P4" archetype="product.medication" name="Acepromazine 10mg Injection" printedName="" drugSchedule="S4"
           activeIngredients="10mg/ml" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="ACEP10IN"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.00"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.20" price="0.50"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P4" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P4" quantity="10"/>
+
     <data id="P5" archetype="product.medication" name="Acepromazine 25mg Tablets"
           printedName="Acepromazine 25mg Tablets" drugSchedule="S4" activeIngredients="25mg" sellingUnits="TABLET">
         <data collection="identities" archetype="entityIdentity.code" code="ACEP25"/>
         <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P5" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P5" quantity="10"/>
+
     <data id="P6" archetype="product.medication" name="Acepromazine 2mg Injection" printedName="" drugSchedule="S4"
           activeIngredients="2mg/ml" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="ACEP2IN"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P6" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P6" quantity="10"/>
+
     <data id="P7" archetype="product.medication" name="A.c.t.h. Corticotrophin Inj" printedName="" drugSchedule="S4"
           activeIngredients="40 Usp Units/ml" sellingUnits="UNIT">
         <data collection="identities" archetype="entityIdentity.code" code="ACTHIN"/>
         <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="35.30"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="17.65" price="35.30"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P7" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P7" quantity="10"/>
+
     <data id="P8" archetype="product.medication" name="Adenolin Injection" printedName="" drugSchedule="S4"
           activeIngredients="" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="ADENIN"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
+
     <data archetype="entityRelationship.productTypeProduct" target="id:P8" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P8" quantity="10"/>
     <data id="P9" archetype="product.merchandise" name="Administration Set" printedName="" sellingUnits="UNIT">
         <data collection="identities" archetype="entityIdentity.code" code="ADMISE"/>
         <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="4.40"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="2.20" price="4.40"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:MISC"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P9" source="id:Merchandise"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P9" quantity="10"/>
+
     <data id="P10" archetype="product.medication" name="Adrenaline Injection" printedName="" drugSchedule="S4"
           activeIngredients="" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="ADREIN"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="3.20"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="1.60" price="3.20"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P10" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P10" quantity="10"/>
+
     <data id="P11" archetype="product.medication" name="Alamycin 10 Injection" printedName="" drugSchedule="S4"
           activeIngredients="100mg/ml" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="ALAM10"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P11" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P11" quantity="10"/>
+
     <data id="P12" archetype="product.medication" name="Alamycin Aerosol Spray 200g" printedName="" drugSchedule="S4"
           activeIngredients="" sellingUnits="UNIT">
         <data collection="identities" archetype="entityIdentity.code" code="ALAMSP"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P12" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P12" quantity="10"/>
+
     <data id="P13" archetype="product.medication" name="Amino-Lite Injection" printedName="" drugSchedule="S4"
           activeIngredients="" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="AMININ"/>
         <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.04"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.02" price="0.04"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P13" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P13" quantity="10"/>
+
     <data id="P14" archetype="product.medication" name="Amoxil Tablets 200mg" printedName="" drugSchedule="S4"
           activeIngredients="200mg" sellingUnits="TABLET">
         <data collection="identities" archetype="entityIdentity.code" code="AMOX200"/>
         <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.30"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.15" price="0.30"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P14" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P14" quantity="10"/>
+
     <data id="P15" archetype="product.medication" name="Amoxil Tablets 50mg" printedName="" drugSchedule="S4"
           activeIngredients="50mg" sellingUnits="TABLET">
         <data collection="identities" archetype="entityIdentity.code" code="AMOX50"/>
         <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.20"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.10" price="0.20"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P15" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P15" quantity="10"/>
+
     <data id="P16" archetype="product.medication" name="Amoxil Aqueous Drops" printedName="" drugSchedule="S4"
           activeIngredients="50mg" sellingUnits="BOTTLE">
         <data collection="identities" archetype="entityIdentity.code" code="AMOXDR"/>
-        <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"/>
+        <data collection="prices" archetype="productPrice.fixedPrice" cost="1.50" price="3.00"/>
         <data collection="prices" archetype="productPrice.unitPrice" price="8.90"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P16" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P16" quantity="10"/>
+
     <data id="P17" archetype="product.medication" name="Amoxil 10 Injection" printedName="" drugSchedule="S4"
           activeIngredients="100 Mg/ml" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="AMOXIN"/>
         <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.50"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.25" price="0.50"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P17" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P17" quantity="10"/>
+
     <data id="P18" archetype="product.medication" name="Bimoxil Long/acting Injection" printedName="" drugSchedule="S4"
           activeIngredients="200mg/ml" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="AMOXLA"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P18" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P18" quantity="10"/>
+
     <data id="P19" archetype="product.medication" name="Amoxil Rtu Injection" printedName="" drugSchedule="S4"
           activeIngredients="" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="AMOXRT"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P19" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P19" quantity="10"/>
+
     <data id="P20" archetype="product.medication" name="Amoxil Syrup 25mg/ml" printedName="" drugSchedule="S4"
           activeIngredients="25mg/ml" sellingUnits="BOTTLE">
         <data collection="identities" archetype="entityIdentity.code" code="AMOXSY"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P20" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P20" quantity="10"/>
+
     <data id="P21" archetype="product.medication" name="Amoxil Syrup Forte 50mg/ml" printedName="" drugSchedule="S4"
           activeIngredients="50mg/ml" sellingUnits="BOTTLE">
         <data collection="identities" archetype="entityIdentity.code" code="AMOXSYF"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P21" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P21" quantity="10"/>
+
     <data id="P22" archetype="product.medication" name="Amp 5" printedName="" drugSchedule="S4" activeIngredients=""
           sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="AMP5"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P22" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P22" quantity="10"/>
+
     <data id="P23" archetype="product.medication" name="Ampiclox Intramammary Dc" printedName="Ampiclox I/m Dry Cow"
           drugSchedule="S4" activeIngredients="" sellingUnits="SYRINGE">
         <data collection="identities" archetype="entityIdentity.code" code="AMPIDC"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P23" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P23" quantity="10"/>
+
     <data id="P24" archetype="product.medication" name="Ampiclox Intramammary Lc"
           printedName="Ampiclox I/m Lactating Cow" drugSchedule="S4" activeIngredients="" sellingUnits="SYRINGE">
         <data collection="identities" archetype="entityIdentity.code" code="AMPILC"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P24" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P24" quantity="10"/>
+
     <data id="P25" archetype="product.medication" name="Anadiol Depot" printedName="" drugSchedule="S4"
           activeIngredients="75mg/ml" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="ANADDE"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P25" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P25" quantity="10"/>
+
     <data id="P26" archetype="product.medication" name="Anadocalin Injection" printedName="" drugSchedule="S4"
           activeIngredients="" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="ANADIN"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P26" source="id:Medications"/>
+    <data archetype="entityRelationship.productStockLocation" target="id:OSL1" source="id:P26" quantity="10"/>
+
     <data id="P27" archetype="product.service" name="General Anaesthetic - Cat" printedName="">
         <data collection="identities" archetype="entityIdentity.code" code="ANAECA"/>
         <data collection="prices" archetype="productPrice.unitPrice" price="40.00"/>
@@ -5876,4 +5943,164 @@
         <data collection="classifications" archetype="lookup.productGroup" childId="id:ANAESTHETIC"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P864" source="id:Medications"/>
+
+    <data id="P865" archetype="product.priceTemplate" name="Standard Surgery Fee">
+        <data collection="prices" archetype="productPrice.fixedPrice" name="Long Operation" price="300"/>
+        <data collection="prices" archetype="productPrice.fixedPrice" name="Medium Operation" price="150"/>
+        <data collection="prices" archetype="productPrice.fixedPrice" name="Short Operation" price="75"/>
+    </data>
+
+    <data id="P866" archetype="product.service" name="Desex - Dog &lt; 20kg"/>
+    <data id="P867" archetype="product.service" name="Desex - Dog &gt;= 20kg"/>
+    <data id="P868" archetype="product.medication" name="Carprofen Injection"/>
+    <data id="P869" archetype="product.medication" name="Carprofen Tablets 20mg"/>
+    <data id="P870" archetype="product.medication" name="Carprofen Tablets 50mg"/>
+    <data id="P871" archetype="product.merchandise" name="Elizabethan Collar 15cm"/>
+    <data id="P872" archetype="product.medication" name="Ketamine 100mg"/>
+    <data id="P873" archetype="product.medication" name="Methadone 10mg/ml"/>
+    <data id="P880" archetype="product.template" name="Desex - Dog">
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P866"
+              minWeight="0" maxWeight="20" sequence="0"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P868"
+              minWeight="0" maxWeight="20" sequence="1"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P869"
+              minWeight="0" maxWeight="20" lowQuantity="3" highQuantity="3" sequence="2"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P867"
+              minWeight="20" maxWeight="999" sequence="3"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P868"
+              minWeight="20" maxWeight="999" lowQuantity="1.6" highQuantity="1.6" sequence="4"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P870"
+              minWeight="20" maxWeight="999" lowQuantity="6" highQuantity="6" sequence="5"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P6"
+              sequence="6"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P871"
+              sequence="7"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P872"
+              sequence="8"/>
+        <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P873"
+              sequence="9"/>
+    </data>
+
+
+    <data id="P900" archetype="product.medication" name="Fel-O-Vax 3">
+        <data collection="prices" archetype="productPrice.unitPrice" cost="09.00" price="15.40"/>
+    </data>
+    <data id="P901" archetype="product.medication" name="Fel-O-Vax 4">
+        <data collection="prices" archetype="productPrice.unitPrice" cost="10.00" price="16.90"/>
+    </data>
+    <data id="P902" archetype="product.medication" name="Fel-O-Vax 5">
+        <data collection="prices" archetype="productPrice.unitPrice" cost="12.00" price="23.85"/>
+    </data>
+    <data id="P903" archetype="product.medication" name="Fel-O-Vax FIV">
+
+    </data>
+    <data id="P904" archetype="product.medication" name="Fel-O-Vax LvK">
+
+    </data>
+    <data id="P905" archetype="product.medication" name="Ingelvac CircoFLEX">
+
+    </data>
+    <data id="P906" archetype="product.medication" name="Sputolysin">
+
+    </data>
+
+    <data id="MAN1" archetype="party.supplierManufacturer" name="Boehringer Ingelheim"
+          description="Boehringer Ingelheim Pty Ltd">
+        <data collection="contacts" archetype="contact.location" address="8 Waterloo Roard" suburb="NORTH_RYDE_2113"
+              state="NSW" postcode="2113" preferred="true"/>
+        <data collection="contacts" archetype="contact.phoneNumber" areaCode="02" telephoneNumber="88758800"
+              preferred="true"/>
+    </data>
+    <data id="BATCH1" archetype="entity.productBatch" name="1234567890">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="23/01/2015" source="id:BATCH1"
+              target="id:P900"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH1" target="id:MAN1"/>
+    </data>
+    <data id="BATCH2" archetype="entity.productBatch" name="1234567891">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="12/02/2015" source="id:BATCH2"
+              target="id:P900"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH2" target="id:MAN1"/>
+    </data>
+    <data id="BATCH3" archetype="entity.productBatch" name="1234567892">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="04/03/2015" source="id:BATCH3"
+              target="id:P900"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH3" target="id:MAN1"/>
+    </data>
+    <data id="BATCH4" archetype="entity.productBatch" name="1234567893">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="17/04/2015" source="id:BATCH4"
+              target="id:P900"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH4" target="id:MAN1"/>
+    </data>
+    <data id="BATCH5" archetype="entity.productBatch" name="1234567894">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="13/05/2015" source="id:BATCH5"
+              target="id:P900"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH5" target="id:MAN1"/>
+    </data>
+    <data id="BATCH6" archetype="entity.productBatch" name="1234567895">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="14/06/2015" source="id:BATCH6"
+              target="id:P900"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH6" target="id:MAN1"/>
+    </data>
+    <data id="BATCH7" archetype="entity.productBatch" name="1234567896">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="16/07/2015" source="id:BATCH7"
+              target="id:P901"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH7" target="id:MAN1"/>
+    </data>
+    <data id="BATCH8" archetype="entity.productBatch" name="1234567897">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="03/08/2015" source="id:BATCH8"
+              target="id:P901"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH8" target="id:MAN1"/>
+    </data>
+    <data id="BATCH9" archetype="entity.productBatch" name="2234567890">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="23/01/2015" source="id:BATCH9"
+              target="id:P902"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH9" target="id:MAN1"/>
+    </data>
+    <data id="BATCH10" archetype="entity.productBatch" name="2234567891">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="12/02/2015" source="id:BATCH10"
+              target="id:P902"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH10" target="id:MAN1"/>
+    </data>
+    <data id="BATCH11" archetype="entity.productBatch" name="2234567892">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="04/03/2015" source="id:BATCH11"
+              target="id:P903"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH11" target="id:MAN1"/>
+    </data>
+    <data id="BATCH12" archetype="entity.productBatch" name="2234567893">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="17/04/2015" source="id:BATCH12"
+              target="id:P903"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH12" target="id:MAN1"/>
+    </data>
+    <data id="BATCH13" archetype="entity.productBatch" name="2234567894">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="13/05/2015" source="id:BATCH13"
+              target="id:P904"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH13" target="id:MAN1"/>
+    </data>
+    <data id="BATCH14" archetype="entity.productBatch" name="2234567895">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="14/06/2015" source="id:BATCH14"
+              target="id:P905"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH14" target="id:MAN1"/>
+    </data>
+    <data id="BATCH15" archetype="entity.productBatch" name="2234567896">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="16/07/2015" source="id:BATCH15"
+              target="id:P905"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH15" target="id:MAN1"/>
+    </data>
+    <data id="BATCH16" archetype="entity.productBatch" name="2234567897">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="03/08/2015" source="id:BATCH16"
+              target="id:P905"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH16" target="id:MAN1"/>
+    </data>
+    <data id="BATCH17" archetype="entity.productBatch" name="2234567898">
+        <data collection="product" archetype="entityLink.batchProduct" activeEndTime="03/08/2015" source="id:BATCH17"
+              target="id:P906"/>
+        <data collection="manufacturer" archetype="entityLink.batchManufacturer" source="id:BATCH17" target="id:MAN1"/>
+    </data>
+
+    <data id="INVEST1" archetype="entity.investigationType" name="Histopath Test"/>
+    <data id="INVEST2" archetype="entity.investigationType" name="Lab Test (In House)"/>
+    <data id="INVEST3" archetype="entity.investigationType" name="Radiology (In House)"/>
+    <data id="INVEST4" archetype="entity.investigationType" name="Ultrasound (In House)"/>
+    <data id="INVEST5" archetype="entity.investigationType" name="Rabies Test"/>
+
 </archetype>

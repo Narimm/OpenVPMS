@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -76,15 +76,16 @@ public class PrescriptionLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
      *
-     * @param object the object to display
+     * @param object  the object to display
+     * @param context the layout context
      * @return the archetype nodes
      */
     @Override
-    protected ArchetypeNodes getArchetypeNodes(IMObject object) {
+    protected ArchetypeNodes getArchetypeNodes(IMObject object, LayoutContext context) {
         IMObjectBean bean = new IMObjectBean(object);
         if (bean.getValues("dispensing").isEmpty()) {
             return EXCLUDE_DISPENSING;
         }
-        return super.getArchetypeNodes(object);
+        return super.getArchetypeNodes(object, context);
     }
 }

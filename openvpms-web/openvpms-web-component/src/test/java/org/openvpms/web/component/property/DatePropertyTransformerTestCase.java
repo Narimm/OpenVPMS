@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -34,8 +32,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the {@link DatePropertyTransformer} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class DatePropertyTransformerTestCase {
 
@@ -102,13 +99,15 @@ public class DatePropertyTransformerTestCase {
         assertFalse(property.setValue(TestHelper.getDate("2003-07-31")));
         assertTrue(property.setValue(min));
         assertFalse(property.setValue(TestHelper.getDate("2003-09-02")));
-        assertTrue(property.setValue(max));
+        assertFalse(property.setValue(max));
+        assertTrue(property.setValue(TestHelper.getDate("2003-08-31")));
 
         // test population using strings
         assertFalse(property.setValue("31/07/2003"));
         assertTrue(property.setValue("01/08/2003"));
         assertFalse(property.setValue("02/09/2003"));
-        assertTrue(property.setValue("01/09/2003"));
+        assertTrue(property.setValue("31/8/2003"));
+        assertFalse(property.setValue("01/09/2003"));
     }
 
     /**

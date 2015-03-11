@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -40,7 +40,6 @@ import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.table.SortableTableModel;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 
@@ -225,7 +224,7 @@ public abstract class IMTableCollectionViewer<T>
      * @return the objects to display
      */
     protected List<IMObject> getObjects() {
-        Collection values = property.getValues();
+        List values = property.getValues();
         List<IMObject> objects = new ArrayList<IMObject>();
         for (Object value : values) {
             objects.add((IMObject) value);

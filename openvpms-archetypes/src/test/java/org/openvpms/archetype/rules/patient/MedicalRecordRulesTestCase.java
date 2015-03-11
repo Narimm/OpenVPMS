@@ -28,11 +28,12 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -79,14 +80,10 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         Act problem = createProblem();
         Act note = createNote();
         ActBean eventBean = new ActBean(event);
-        eventBean.addRelationship("actRelationship.patientClinicalEventItem",
-                                  problem);
-        eventBean.addRelationship("actRelationship.patientClinicalEventItem",
-                                  note);
+        eventBean.addNodeRelationship("items", problem);
+        eventBean.addNodeRelationship("items", note);
         ActBean problemBean = new ActBean(problem);
-        problemBean.addRelationship(
-                "actRelationship.patientClinicalProblemItem",
-                note);
+        problemBean.addNodeRelationship("items", note);
         save(event, problem, note);
 
         // make sure each of the objects can be retrieved
@@ -358,9 +355,11 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
 
         ActBean eventBean = new ActBean(event);
         assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, note));
+        assertEquals(1, event.getActRelationships().size());
 
         // verify that it can be called again with no ill effect
         rules.linkMedicalRecords(event, note);
+        assertEquals(1, event.getActRelationships().size());
     }
 
     /**
@@ -370,8 +369,8 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     @Test
     public void testLinkMedicalRecordsWithInvoiceItem() {
         Act event = createEvent();
-        Act invoiceItem = FinancialTestHelper.createItem(CustomerAccountArchetypes.INVOICE_ITEM,
-                                                         Money.ONE, patient, TestHelper.createProduct());
+        Act invoiceItem = FinancialTestHelper.createChargeItem(CustomerAccountArchetypes.INVOICE_ITEM,
+                                                               patient, TestHelper.createProduct(), BigDecimal.ONE);
         save(invoiceItem);
         rules.linkMedicalRecords(event, invoiceItem);
 
@@ -380,9 +379,11 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
 
         ActBean eventBean = new ActBean(event);
         assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM, invoiceItem));
+        assertEquals(1, event.getActRelationships().size());
 
         // verify that it can be called again with no ill effect
         rules.linkMedicalRecords(event, invoiceItem);
+        assertEquals(1, event.getActRelationships().size());
     }
 
     /**
@@ -408,9 +409,13 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         ActBean eventBean = new ActBean(event);
         assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, note));
         assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, problem));
+        assertEquals(2, event.getActRelationships().size());
+        assertEquals(2, problem.getActRelationships().size());
 
         // verify that it can be called again with no ill effect
         rules.linkMedicalRecords(event, problem);
+        assertEquals(2, event.getActRelationships().size());
+        assertEquals(2, problem.getActRelationships().size());
     }
 
     /**
@@ -628,6 +633,20 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link MedicalRecordRules#isAllergy(Act)} method.
+     */
+    @Test
+    public void testIsAllergy() {
+        Act act = (Act) create(PatientArchetypes.ALERT);
+        assertFalse(rules.isAllergy(act));
+        ActBean bean = new ActBean(act);
+        bean.setValue("alertType", "ALLERGY");
+        assertTrue(rules.isAllergy(act));
+        bean.setValue("alertType", "AGGRESSION");
+        assertFalse(rules.isAllergy(act));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -688,6 +707,8 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      */
     protected Act createProblem() {
         Act act = createAct("act.patientClinicalProblem");
+        Lookup diagnosis = TestHelper.getLookup("lookup.diagnosis", "HEART_MURMUR");
+        act.setReason(diagnosis.getCode());
         ActBean bean = new ActBean(act);
         bean.addParticipation("participation.patient", patient);
         bean.addParticipation("participation.clinician", clinician);

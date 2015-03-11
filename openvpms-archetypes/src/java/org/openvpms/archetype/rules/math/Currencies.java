@@ -1,43 +1,39 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.math;
 
 import org.apache.commons.lang.StringUtils;
-import static org.openvpms.archetype.rules.math.CurrencyException.ErrorCode.InvalidCurrencyCode;
-import static org.openvpms.archetype.rules.math.CurrencyException.ErrorCode.NoLookupForCode;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.openvpms.archetype.rules.math.CurrencyException.ErrorCode.InvalidCurrencyCode;
+import static org.openvpms.archetype.rules.math.CurrencyException.ErrorCode.NoLookupForCode;
 
 
 /**
  * Maintains a cache of {@link Currency} instances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class Currencies {
 
@@ -64,22 +60,12 @@ public class Currencies {
 
 
     /**
-     * Constructs a new <tt>Currencies</tt>, using the default archetype service
-     * and lookup service.
-     */
-    public Currencies() {
-        this(ArchetypeServiceHelper.getArchetypeService(),
-             LookupServiceHelper.getLookupService());
-    }
-
-    /**
-     * Constructs a new <tt>Currencies</tt>.
+     * Constructs a {@link Currencies}.
      *
      * @param service       the archetype service
      * @param lookupService the lookup service
      */
-    public Currencies(IArchetypeService service,
-                      ILookupService lookupService) {
+    public Currencies(IArchetypeService service, ILookupService lookupService) {
         this.service = service;
         this.lookupService = lookupService;
         service.addListener(LOOKUP_CURRENCY, new AbstractArchetypeServiceListener() {

@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient;
 
 import nextapp.echo2.app.Component;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -32,25 +33,35 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.SimpleProperty;
+import org.openvpms.web.resource.i18n.Messages;
 
-import java.util.Collection;
 import java.util.List;
 
 
 /**
  * Layout strategy for <em>party.patientpet</em>.
  * <p/>
- * Renders the <em>customField</em> node inline if there is an
- * <em>entity.customPatient*</em> associated with it.
+ * Renders the <em>customField</em> node inline if there is an <em>entity.customPatient*</em> associated with it.
  *
  * @author Tim Anderson
  */
 public class PatientLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
+     * The nodes, excluding custom fields.
+     */
+    private static final ArchetypeNodes NO_CUSTOM_NODES = new ArchetypeNodes().exclude("customFields");
+
+    /**
      * The customField node editor, if the object is being edited.
      */
     private final RelationshipCollectionTargetEditor customFieldEditor;
+
+    /**
+     * The breed editor, if the object is being edited.
+     */
+    private final BreedEditor breedEditor;
 
     /**
      * The tab model containing the customFields node.
@@ -78,20 +89,22 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
     private ArchetypeNodes nodes;
 
     /**
-     * Constructs a <em>PatientLayoutStrategy</em> to view a patient.
+     * Constructs a {@link PatientLayoutStrategy} to view a patient.
      */
     public PatientLayoutStrategy() {
-        this(null);
+        this(null, null);
     }
 
     /**
-     * Creates a new <em>PatientLayoutStrategy</em> to edit a patient.
+     * Constructs a {@link PatientLayoutStrategy} to edit a patient.
      *
+     * @param breedEditor       the breed editor
      * @param customFieldEditor the customField node editor
      */
-    public PatientLayoutStrategy(RelationshipCollectionTargetEditor customFieldEditor) {
+    public PatientLayoutStrategy(BreedEditor breedEditor, RelationshipCollectionTargetEditor customFieldEditor) {
         super(true);
         this.customFieldEditor = customFieldEditor;
+        this.breedEditor = breedEditor;
     }
 
     /**
@@ -134,10 +147,31 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         customFieldsTab = -1;
-        if (hideCustomFields || !hasCustomFields(object)) {
-            nodes = new ArchetypeNodes().exclude("customFields");
+        Property breed = properties.get("breed");
+        Property newBreed = properties.get("newBreed");
+        boolean show;
+        if (breedEditor != null) {
+            addComponent(new ComponentState(breedEditor));
+            show = breedEditor.isNewBreed();
         } else {
-            nodes = DEFAULT_NODES;
+            show = StringUtils.isEmpty(breed.getString()) && !StringUtils.isEmpty(newBreed.getString());
+        }
+        if (show) {
+            if (!context.isEdit()) {
+                Property copy = new SimpleProperty(breed);
+                copy.setValue(Messages.get("patient.newbreed"));
+                addComponent(createComponent(copy, object, context));
+            } else {
+                addComponent(createComponent(newBreed, object, context));
+            }
+        }
+        if (hideCustomFields || !hasCustomFields(object)) {
+            nodes = new ArchetypeNodes(NO_CUSTOM_NODES);
+        } else {
+            nodes = new ArchetypeNodes(DEFAULT_NODES);
+        }
+        if (!show) {
+            nodes.exclude("newBreed");
         }
         return super.apply(object, properties, parent, context);
     }
@@ -194,6 +228,16 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
     }
 
     /**
+     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
+     *
+     * @return the archetype nodes
+     */
+    @Override
+    protected ArchetypeNodes getArchetypeNodes() {
+        return nodes;
+    }
+
+    /**
      * Creates a component to view the custom fields node.
      *
      * @param property the property
@@ -205,9 +249,9 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
     private ComponentState createCustomViewComponent(Property property, IMObject parent, LayoutContext context) {
         ComponentState result = super.createComponent(property, parent, context);
         CollectionProperty collection = (CollectionProperty) property;
-        Collection values = collection.getValues();
+        List values = collection.getValues();
         if (!values.isEmpty()) {
-            EntityRelationship relationship = (EntityRelationship) values.toArray(new Object[values.size()])[0];
+            EntityRelationship relationship = (EntityRelationship) values.get(0);
             IMObjectReference ref = relationship.getTarget();
             if (ref != null) {
                 String displayName = DescriptorHelper.getDisplayName(
@@ -217,17 +261,6 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
         }
         return result;
     }
-
-    /**
-     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-     *
-     * @return the archetype nodes
-     */
-    @Override
-    protected ArchetypeNodes getArchetypeNodes() {
-        return nodes;
-    }
-
 
     /**
      * Creates a component to edit the custom fields node.
@@ -247,12 +280,10 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
     }
 
     /**
-     * Determines if the object has an <em>entity.customPatient*</em> associated
-     * with it.
+     * Determines if the object has an <em>entity.customPatient*</em> associated with it.
      *
      * @param object the object. Must be an {@link Entity}.
-     * @return {@code true</em> if there is any <em>entity.customPatient*</em>
-     *         associated with the object
+     * @return {@code true} if there is any <em>entity.customPatient*</em> associated with the object
      */
     private boolean hasCustomFields(IMObject object) {
         EntityBean bean = new EntityBean((Entity) object);

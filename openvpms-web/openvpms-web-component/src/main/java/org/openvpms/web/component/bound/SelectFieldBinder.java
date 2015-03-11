@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
@@ -26,7 +26,7 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.event.ActionListener;
 
-import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -87,9 +87,9 @@ public class SelectFieldBinder extends Binder {
         if (!property.isCollection()) {
             setFieldValue(property.getValue());
         } else {
-            Collection values = ((CollectionProperty) property).getValues();
+            List values = ((CollectionProperty) property).getValues();
             if (!values.isEmpty()) {
-                setFieldValue(values.iterator().next());
+                setFieldValue(values.get(0));
             }
         }
     }
@@ -108,7 +108,7 @@ public class SelectFieldBinder extends Binder {
         } else {
             // if its a collection property add the selected value to the collection, replacing any existing values
             CollectionProperty collection = (CollectionProperty) property;
-            Collection values = collection.getValues();
+            List values = collection.getValues();
             if (component.getSelectedIndex() == -1) {
                 // nothing selected, so remove any existing value
                 if (!values.isEmpty()) {

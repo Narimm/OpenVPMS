@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.estimate;
@@ -49,14 +49,14 @@ public class EstimateRulesTestCase extends ArchetypeServiceTest {
     /**
      * The rules.
      */
-    private EstimateRules rules;
+    protected EstimateRules rules;
 
     /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
-        rules = new EstimateRules(getArchetypeService());
+        rules = createRules();
     }
 
     /**
@@ -183,13 +183,22 @@ public class EstimateRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Creates a new {@link EstimateRules}.
+     *
+     * @return the new rules
+     */
+    protected EstimateRules createRules() {
+        return new EstimateRules(getArchetypeService());
+    }
+
+    /**
      * Verifies a participant node references the expected entity.
      *
      * @param expected the expected object
      * @param bean     wraps the act
      * @param node     the participant node
      */
-    private void checkParticipantRef(Entity expected, ActBean bean, String node) {
+    protected void checkParticipantRef(Entity expected, ActBean bean, String node) {
         Entity entity = bean.getNodeParticipant(node);
         assertNotNull(entity);
         assertEquals(expected.getId(), entity.getId());

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -27,21 +27,26 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
+import org.openvpms.hl7.util.HL7Archetypes;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
@@ -59,7 +64,7 @@ public class CustomerChargeTestHelper {
      * @param editor   the editor
      * @param patient  the patient
      * @param product  the product
-     * @param quantity the quantity
+     * @param quantity the quantity. If {@code null}, indicates the quantity won't be changed
      * @param mgr      the popup editor manager
      * @return the editor for the new item
      */
@@ -82,7 +87,7 @@ public class CustomerChargeTestHelper {
      * @param itemEditor the charge item editor
      * @param patient    the patient
      * @param product    the product
-     * @param quantity   the quantity
+     * @param quantity   the quantity. If {@code null}, indicates the quantity won't be changed
      * @param mgr        the popup editor manager
      */
     public static void setItem(AbstractCustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
@@ -91,7 +96,9 @@ public class CustomerChargeTestHelper {
             itemEditor.setPatient(patient);
         }
         itemEditor.setProduct(product);
-        itemEditor.setQuantity(quantity);
+        if (quantity != null) {
+            itemEditor.setQuantity(quantity);
+        }
         if (TypeHelper.isA(editor.getObject(), CustomerAccountArchetypes.INVOICE)) {
             if (!TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
                 checkSavePopups(editor, itemEditor, product, mgr);
@@ -103,7 +110,7 @@ public class CustomerChargeTestHelper {
                 }
             }
         }
-        Validator validator = new Validator();
+        Validator validator = new DefaultValidator();
         boolean valid = itemEditor.validate(validator);
         if (!valid) {
             ValidationHelper.showError(validator);
@@ -249,4 +256,45 @@ public class CustomerChargeTestHelper {
         return createPrice(product, ProductArchetypes.UNIT_PRICE, cost, price, practice);
     }
 
+    /**
+     * Creates a new <em>entity.HL7ServicePharmacy</em>.
+     *
+     * @param location the practice location
+     * @return a new pharmacy
+     */
+    public static Entity createPharmacy(Party location) {
+        Entity pharmacy = (Entity) TestHelper.create(HL7Archetypes.PHARMACY);
+        pharmacy.setName("ZPharmacy");
+        EntityBean bean = new EntityBean(pharmacy);
+        bean.addNodeTarget("location", location);
+        bean.addNodeTarget("user", TestHelper.createUser());
+        TestHelper.save(pharmacy);
+        return pharmacy;
+    }
+
+    /**
+     * Verifies an order matches that expected.
+     *
+     * @param order             the order
+     * @param type              the expected type
+     * @param patient           the expected patient
+     * @param product           the expected product
+     * @param quantity          the expected quantity
+     * @param placerOrderNumber the expected placer order number
+     * @param date              the expected date
+     * @param clinician         the expected clinician
+     * @param pharmacy          the expected pharmacy
+     */
+    public static void checkOrder(TestPharmacyOrderService.Order order, TestPharmacyOrderService.Order.Type type,
+                                  Party patient, Product product, BigDecimal quantity,
+                                  long placerOrderNumber, Date date, User clinician, Entity pharmacy) {
+        assertEquals(type, order.getType());
+        assertEquals(patient, order.getPatient());
+        assertEquals(product, order.getProduct());
+        assertTrue(quantity.compareTo(order.getQuantity()) == 0);
+        assertEquals(placerOrderNumber, order.getPlacerOrderNumber());
+        assertEquals(date, order.getDate());
+        assertEquals(clinician, order.getClinician());
+        assertEquals(pharmacy, order.getPharmacy());
+    }
 }

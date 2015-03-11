@@ -13,7 +13,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <stylesheet>
@@ -158,6 +158,14 @@
         </properties>
     </style>
 
+    <style name="login.error" type="nextapp.echo2.app.Label" base-name="default">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/error-red.gif"/>
+            </property>
+        </properties>
+    </style>
+
     <style name="CustomerSummary.AlertDialog" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
         <properties>
@@ -184,6 +192,14 @@
     </style>
 
     <style name="PatientSummary.ReminderDialog" base-name="PopupWindow"
+           type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${dialog.medium.width}"/>
+            <property name="height" value="${dialog.medium.height}"/>
+        </properties>
+    </style>
+
+    <style name="PatientSummary.ReferralDialog" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="width" value="${dialog.medium.width}"/>
@@ -393,6 +409,43 @@
         </properties>
     </style>
 
+    <style name="ProblemSummary.act.patientClinicalProblem" type="nextapp.echo2.app.Component">
+        <properties>
+            <!--property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="${history.problem.colour}"/>
+                    </properties>
+                </layout-data>
+            </property-->
+        </properties>
+    </style>
+
+    <style name="ProblemSummary.act.patientClinicalNote" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="${history.note.colour}"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="ProblemSummary.act.patientMedication"
+           type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="${history.medication.colour}"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
     <style name="PatientClinicalNote.note" type="org.openvpms.web.echo.text.TextArea" base-name="default">
         <properties>
             <property name="width" value="100%"/>
@@ -409,6 +462,7 @@
     <style name="VisitEditor.TabbedPane" type="echopointng.TabbedPane">
         <properties>
             <property name="height" value="${VisitEditor.TabbedPane.height}"/>
+            <property name="scrollBarPolicy" value="AUTO"/>
         </properties>
     </style>
 
@@ -452,6 +506,22 @@
         <properties>
             <property name="background" value="#C0C0C0"/>
             <!-- silver -->
+        </properties>
+    </style>
+
+    <style name="EstimatesViewer" base-name="PopupWindow"
+           type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${dialog.large.width}"/>
+            <property name="height" value="${dialog.large.height}"/>
+        </properties>
+    </style>
+
+    <style name="EstimatesTableViewer" base-name="default" type="org.openvpms.web.echo.table.KeyTable">
+        <properties>
+            <!-- make the blur background the same as the selection background to avoid white-foreground text
+                 becoming hard to read -->
+            <property name="selectionBlurBackground" value="${theme.selection.colour}"/>
         </properties>
     </style>
 
@@ -717,6 +787,14 @@
         <properties>
             <property name="width" value="${MailDialog.width}"/>
             <property name="height" value="${MailDialog.height}"/>
+        </properties>
+    </style>
+
+    <style name="AddressBook" base-name="PopupWindow"
+           type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${dialog.medium.width}"/>
+            <property name="height" value="${dialog.medium.height}"/>
         </properties>
     </style>
 
@@ -1091,12 +1169,6 @@
         </properties>
     </style>
 
-    <style name="Inset.SmallXLargeY" type="nextapp.echo2.app.Column">
-        <properties>
-            <property name="insets" value="${padding.small} ${padding.large}"/>
-        </properties>
-    </style>
-
     <style name="Workspace.Heading" type="nextapp.echo2.app.Label">
         <properties>
             <property name="foreground" value="#0000ff"/>
@@ -1134,6 +1206,14 @@
            type="nextapp.echo2.app.WindowPane">
     </style>
 
+    <style name="InformationDialog.Compact" base-name="InformationDialog"
+           type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${InformationDialog.Compact.width}"/>
+            <property name="height" value="${InformationDialog.Compact.height}"/>
+        </properties>
+    </style>
+
     <style name="ConfirmationDialog" base-name="MessageDialog"
            type="nextapp.echo2.app.WindowPane">
     </style>
@@ -1150,6 +1230,20 @@
            type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="titleBackground" value="#ff0000"/>
+        </properties>
+    </style>
+
+    <style name="LockScreenDialog" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${LockScreenDialog.width}"/>
+            <property name="height" value="${LockScreenDialog.height}"/>
+        </properties>
+    </style>
+
+    <style name="MediumDialog" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${dialog.medium.width}"/>
+            <property name="height" value="${dialog.medium.height}"/>
         </properties>
     </style>
 
@@ -1511,6 +1605,17 @@
         <properties>
             <property name="icon" type="nextapp.echo2.app.ResourceImageReference">
                 <resource-image-reference resource="/org/openvpms/web/resource/image/buttons/reminder-red.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <!-- =================================================================== -->
+    <!--  Estimate Buttons                                                   -->
+    <!-- =================================================================== -->
+    <style name="estimate.available" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/estimate.png"/>
             </property>
         </properties>
     </style>
@@ -2220,6 +2325,35 @@
     </style>
 
     <!-- =================================================================== -->
+    <!-- Inline messages                                                     -->
+    <!-- =================================================================== -->
+    <style name="InformationMessage" base-name="bold" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/info.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="InformationMessage.row" type="nextapp.echo2.app.Row">
+        <properties>
+            <property name="border">
+                <border size="1px" style="solid" color="#ffff99"/>
+            </property>
+            <property name="insets" value="${padding.medium}"/>
+        </properties>
+    </style>
+
+    <style name="Message.close" type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/${dialog.closeicon}"/>
+            </property>
+            <property name="insets" value="0px"/>
+        </properties>
+    </style>
+
+    <!-- =================================================================== -->
     <!--  Button defaults                                                    -->
     <!-- =================================================================== -->
 
@@ -2263,6 +2397,16 @@
                 </fill-image>
             </property-->
             <property name="insets" value="${padding.large} ${padding.smaller}"/>
+        </properties>
+    </style>
+
+    <style name="default" type="nextapp.echo2.app.RadioButton">
+        <properties>
+            <property name="font">
+                <font size="${font.size}">
+                    <typeface name="${font.typeface}"/>
+                </font>
+            </property>
         </properties>
     </style>
 
@@ -2354,6 +2498,36 @@
     <style name="edit" base-name="default" type="nextapp.echo2.app.text.TextComponent">
         <properties>
             <property name="disabledBackground" value="#e1e1e1"/>
+        </properties>
+    </style>
+
+    <style name="monospace" base-name="default" type="org.openvpms.web.echo.text.TextArea">
+        <properties>
+            <property name="font">
+                <font size="${font.size}">
+                    <typeface name="Lucida Console, monospace"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
+    <!-- =================================================================== -->
+    <!--  Dropdown component defaults                                        -->
+    <!-- =================================================================== -->
+    <style name="default" type="echopointng.DropDown">
+        <properties>
+            <property name="popUpBorder">
+                <border size="2px" style="groove" color="#cfdfff"/>
+            </property>
+        </properties>
+    </style>
+
+    <!-- =================================================================== -->
+    <!--  BalloonHelp                                                        -->
+    <!-- =================================================================== -->
+    <style name="default" type="echopointng.BalloonHelp">
+        <properties>
+            <!--property name="popUpAlwaysOnTop" value="true"/-->
         </properties>
     </style>
 

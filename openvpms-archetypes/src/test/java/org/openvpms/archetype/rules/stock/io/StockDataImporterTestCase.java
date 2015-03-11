@@ -208,7 +208,7 @@ public class StockDataImporterTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Verifies an error is raised if quantities are the same, but products are different..
+     * Verifies an error is raised if quantities are the same, but products are different.
      */
     @Test
     public void testMissingProductForSameQuantities() {

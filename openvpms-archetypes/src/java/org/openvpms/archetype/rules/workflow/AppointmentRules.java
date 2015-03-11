@@ -32,7 +32,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.SequenceComparator;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -74,14 +73,7 @@ public class AppointmentRules {
 
 
     /**
-     * Creates a new <tt>AppointmentRules</tt>.
-     */
-    public AppointmentRules() {
-        this(ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Creates a new <tt>AppointmentRules</tt>.
+     * Constructs an {@link AppointmentRules}.
      *
      * @param service the archetype service
      */
@@ -139,8 +131,7 @@ public class AppointmentRules {
      */
     public Party getLocation(Entity schedule) {
         ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.LOCATION);
-        query.add(join("scheduleViews").add(join("target").add(join("schedules").add(
-                eq("target", schedule.getObjectReference())))));
+        query.add(join("scheduleViews").add(join("target").add(join("schedules").add(eq("target", schedule)))));
         query.setMaxResults(1);
         IMObjectQueryIterator<Party> iterator = new IMObjectQueryIterator<Party>(service, query);
         return iterator.hasNext() ? iterator.next() : null;

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.lookup;
@@ -26,9 +26,10 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertion;
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertionFactory;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Collections;
 import java.util.List;
@@ -75,6 +76,16 @@ public class NodeLookupQuery extends AbstractLookupQuery {
     }
 
     /**
+     * Constructs a {@link NodeLookupQuery for an object and property.
+     *
+     * @param object   the object
+     * @param property the property
+     */
+    public NodeLookupQuery(IMObject object, Property property) {
+        this(object, property.getDescriptor());
+    }
+
+    /**
      * Constructs a {@link NodeLookupQuery} for an object and node descriptor.
      *
      * @param object     the object
@@ -93,8 +104,8 @@ public class NodeLookupQuery extends AbstractLookupQuery {
     public List<Lookup> getLookups() {
         List<Lookup> result = Collections.emptyList();
         try {
-            IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
-            ILookupService lookupService = LookupServiceHelper.getLookupService();
+            IArchetypeService service = ServiceHelper.getArchetypeService();
+            ILookupService lookupService = ServiceHelper.getLookupService();
             NodeDescriptor node = getDescriptor();
             if (node != null) {
                 LookupAssertion assertion = LookupAssertionFactory.create(node, service, lookupService);

@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -40,5 +40,7 @@
                 </propertyList>
             </assertion>
         </node>
+        <node name="problem" path="/targetActRelationships" type="java.util.HashSet" baseName="TargetActRelationship"
+              minCardinality="0" maxCardinality="1" hidden="true" filter="actRelationship.patientClinicalProblemItem"/>
     </archetype>
 </archetypes>

@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -21,7 +21,7 @@
     <parent>
         <artifactId>openvpms-web</artifactId>
         <groupId>org.openvpms</groupId>
-        <version>1.7.1</version>
+        <version>1.8-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -99,7 +99,7 @@
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/localisation</outputDirectory>
-                                    <includes>**/messages.properties</includes>
+                                    <includes>**/messages*.properties</includes>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
@@ -212,7 +212,10 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-web-workspaces</artifactId>
-            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-web-jobs</artifactId>
         </dependency>
     </dependencies>
 

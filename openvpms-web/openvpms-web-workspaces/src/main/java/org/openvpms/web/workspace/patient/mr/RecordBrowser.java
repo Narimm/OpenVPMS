@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -21,10 +21,13 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -38,20 +41,26 @@ import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryCRUDWindow;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
+import org.openvpms.web.workspace.patient.problem.ProblemBrowser;
+import org.openvpms.web.workspace.patient.problem.ProblemQuery;
+import org.openvpms.web.workspace.patient.problem.ProblemRecordCRUDWindow;
+import org.openvpms.web.workspace.patient.visit.VisitEditor;
 
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_PARTICIPATION;
 
 
 /**
  * Patient record browser.
+ * <p/>
+ * TODO - refactor along the lines of {@link VisitEditor}.
  *
  * @author Tim Anderson
  */
 public class RecordBrowser extends TabbedBrowser<Act> {
-
 
     /**
      * The document archetypes.
@@ -64,14 +73,19 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     private final Archetypes<Act> prescriptionArchetypes;
 
     /**
-     * The patient.
-     */
-    private Party patient;
-
-    /**
      * The history browser.
      */
-    private PatientHistoryBrowser history;
+    private final PatientHistoryBrowser history;
+
+    /**
+     * The problem browser.
+     */
+    private final ProblemBrowser problems;
+
+    /**
+     * History browser tab index.
+     */
+    private final int historyIndex;
 
     /**
      * Problem browser tab index.
@@ -127,7 +141,6 @@ public class RecordBrowser extends TabbedBrowser<Act> {
         PROBLEM_STATUSES.setDefault((String) null);
     }
 
-
     /**
      * Constructs a {@link RecordBrowser}.
      *
@@ -136,22 +149,45 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      * @param help    the help context
      */
     public RecordBrowser(Party patient, PatientHistoryQuery query, Context context, HelpContext help) {
-        this.patient = patient;
         docArchetypes = Archetypes.create(PatientDocumentQuery.DOCUMENT_SHORT_NAMES, DocumentAct.class,
                                           Messages.get("patient.document.createtype"));
         prescriptionArchetypes = Archetypes.create(PatientArchetypes.PRESCRIPTION, Act.class);
 
         LayoutContext layout = new DefaultLayoutContext(context, help);
+        layout.setContextSwitchListener(new ContextSwitchListener() {
+            @Override
+            public void switchTo(IMObject object) {
+                followHyperlink(object);
+            }
+
+            @Override
+            public void switchTo(String shortName) {
+            }
+        });
 
         history = createHistoryBrowser(query, layout);
-        addBrowser(Messages.get("button.summary"), history);
-
-        problemIndex = addBrowser(Messages.get("button.problem"), createProblemBrowser(patient, layout));
+        historyIndex = addBrowser(Messages.get("button.summary"), history);
+        problems = createProblemBrowser(patient, layout);
+        problemIndex = addBrowser(Messages.get("button.problem"), problems);
         remindersIndex = addBrowser(Messages.get("button.reminder"), createReminderAlertBrowser(patient, layout));
         documentsIndex = addBrowser(Messages.get("button.document"), createDocumentBrowser(patient, layout));
         chargesIndex = addBrowser(Messages.get("button.charges"), createChargeBrowser(patient, layout));
         prescriptionIndex = addBrowser(Messages.get("button.prescriptions"),
                                        createPrescriptionBrowser(patient, layout));
+    }
+
+    /**
+     * Displays the history tab.
+     */
+    public void showHistory() {
+        setSelectedBrowser(historyIndex);
+    }
+
+    /**
+     * Displays the problems tab.
+     */
+    public void showProblems() {
+        setSelectedBrowser(problemIndex);
     }
 
     /**
@@ -181,16 +217,48 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     }
 
     /**
-     * Returns the event associated with the current selected history act.
+     * Returns the event associated with the current selected browser act.
+     * <p/>
+     * Only applies if the history or problem browser is visible.
      *
      * @param act the current selected act. May be {@code null}
      * @return the event associated with the current selected act, or {@code null} if none is found
      */
     public Act getEvent(Act act) {
-        if (act == null) {
-            act = history.getSelected();
+        int index = getSelectedBrowserIndex();
+        AbstractPatientHistoryBrowser browser;
+        if (index == historyIndex) {
+            browser = history;
+        } else if (index == problemIndex) {
+            browser = problems;
+        } else {
+            browser = null;
         }
-        return history.getEvent(act);
+        if (browser != null) {
+            if (act == null) {
+                act = browser.getSelected();
+            }
+            return browser.getEvent(act);
+        }
+        return null;
+    }
+
+    /**
+     * Returns the history browser.
+     *
+     * @return the history browser
+     */
+    public PatientHistoryBrowser getHistory() {
+        return history;
+    }
+
+    /**
+     * Returns the problems browser.
+     *
+     * @return te problems browser
+     */
+    public ProblemBrowser getProblems() {
+        return problems;
     }
 
     /**
@@ -213,7 +281,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      */
     protected CRUDWindow<Act> createHistoryCRUDWindow(Context context, HelpContext help) {
         PatientHistoryCRUDWindow result = new PatientHistoryCRUDWindow(context, help);
-        result.setQuery((PatientHistoryQuery) history.getQuery());
+        result.setQuery(history.getQuery());
         result.setEvent(getEvent(null));
         return result;
     }
@@ -225,13 +293,9 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      * @param layout  the layout context
      * @return a new {@link CRUDWindow}
      */
-    protected Browser<Act> createProblemBrowser(Party patient, LayoutContext layout) {
-        String[] shortNames = {PatientArchetypes.CLINICAL_PROBLEM};
-        DefaultActQuery<Act> query = new DefaultActQuery<Act>(patient, "patient", PATIENT_PARTICIPATION, shortNames,
-                                                              PROBLEM_STATUSES);
-        query.setStatus(null);
-        query.setDefaultSortConstraint(DEFAULT_SORT);
-        return BrowserFactory.create(query, layout);
+    protected ProblemBrowser createProblemBrowser(Party patient, LayoutContext layout) {
+        ProblemQuery query = PatientQueryFactory.createProblemQuery(patient, layout.getContext().getPractice());
+        return new ProblemBrowser(query, layout);
     }
 
     /**
@@ -244,6 +308,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     protected CRUDWindow<Act> createProblemRecordCRUDWindow(Context context, HelpContext help) {
         ProblemRecordCRUDWindow result = new ProblemRecordCRUDWindow(context, help);
         result.setEvent(getEvent(null));
+        result.setQuery(problems.getQuery());
         return result;
     }
 
@@ -274,7 +339,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      * @return a new {@link CRUDWindow}
      */
     protected CRUDWindow<Act> createReminderAlertCRUDWindow(Context context, HelpContext help) {
-        return new ReminderCRUDWindow(patient, context, help);
+        return new ReminderCRUDWindow(context, help);
     }
 
     /**
@@ -348,6 +413,45 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      */
     protected CRUDWindow<Act> createPrescriptionCRUDWindow(Context context, HelpContext help) {
         return new PatientPrescriptionCRUDWindow(prescriptionArchetypes, context, help.subtopic("prescription"));
+    }
+
+    /**
+     * Follow a hyperlink.
+     * <p/>
+     * If the object is a:
+     * <ul>
+     * <li>problem, the Problems tab will be shown, and the problem selected</li>
+     * <li>event, the Summary tab will be shown, and the event selected</li>
+     * </ul>
+     *
+     * @param object the object to display
+     */
+    protected void followHyperlink(IMObject object) {
+        if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_PROBLEM)) {
+            showProblem((Act) object);
+        } else if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_EVENT)) {
+            showEvent((Act) object);
+        }
+    }
+
+    /**
+     * Switches to the history browser, selecting an event.
+     *
+     * @param object the event
+     */
+    private void showEvent(Act object) {
+        showHistory();
+        history.setSelected(object, true);
+    }
+
+    /**
+     * Switches to the problem browser, selecting a problem.
+     *
+     * @param object the problem
+     */
+    private void showProblem(Act object) {
+        showProblems();
+        problems.setSelected(object, true);
     }
 
 }

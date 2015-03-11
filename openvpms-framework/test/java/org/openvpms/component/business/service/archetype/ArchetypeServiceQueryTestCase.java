@@ -1,24 +1,21 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -52,12 +49,19 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.openvpms.component.system.common.query.Constraints.eq;
+import static org.openvpms.component.system.common.query.Constraints.join;
+
 
 /**
- * Test that ability to create and query on acts.
+ * Tests the {@link IArchetypeService} query facility.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 @ContextConfiguration("archetype-service-appcontext.xml")
 public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest {
@@ -157,17 +161,17 @@ public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest 
         bothProduct.addClassification(feline);
         save(bothProduct);
 
-        Product genericProduct = createProduct(); // a product foro all pets
+        Product genericProduct = createProduct(); // a product for all pets
         save(genericProduct);
 
         ArchetypeQuery query = new ArchetypeQuery("product.product", false, false)
                 .setMaxResults(ArchetypeQuery.ALL_RESULTS)
                 .add(new CollectionNodeConstraint("classifications")
-                        .setJoinType(JoinConstraint.JoinType.LeftOuterJoin)
-                        .add(new ArchetypeNodeConstraint(RelationalOp.EQ, "lookup.species")))
+                             .setJoinType(JoinConstraint.JoinType.LeftOuterJoin)
+                             .add(new ArchetypeNodeConstraint(RelationalOp.EQ, "lookup.species")))
                 .add(new OrConstraint()
-                        .add(new NodeConstraint("classifications.code", RelationalOp.EQ, canine.getCode()))
-                        .add(new NodeConstraint("classifications.code", RelationalOp.IS_NULL)));
+                             .add(new NodeConstraint("classifications.code", RelationalOp.EQ, canine.getCode()))
+                             .add(new NodeConstraint("classifications.code", RelationalOp.IS_NULL)));
 
         List<IMObject> objects = get(query);
         assertTrue(objects.contains(canineProduct));
@@ -193,11 +197,11 @@ public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest 
         person3.addIdentity(createIdentity("IDENT12"));
         save(person3);
 
-        ArchetypeQuery query = new ArchetypeQuery("party.person", false, false)
+        ArchetypeQuery query = new ArchetypeQuery("party.customerperson", false, false)
                 .setMaxResults(ArchetypeQuery.ALL_RESULTS)
                 .add(Constraints.leftJoin("identities", Constraints.shortName("entityIdentity.personAlias"))
-                        .add(Constraints.eq("identity", "IDENT1*")))
-                .add(Constraints.or(Constraints.eq("id", person1.getId()),
+                             .add(eq("identity", "IDENT1*")))
+                .add(Constraints.or(eq("id", person1.getId()),
                                     Constraints.notNull("identities.identity")));
         List<IMObject> objects = get(query);
         assertTrue(objects.contains(person1));
@@ -357,7 +361,7 @@ public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest 
         query.add(new ObjectSelectConstraint("customer"));
         ShortNameConstraint relationship = new ShortNameConstraint("rel", "entityRelationship.patient*");
         ShortNameConstraint patient = new ShortNameConstraint("patient", "party.patientpet");
-        query.add(Constraints.join("patients", relationship));
+        query.add(join("patients", relationship));
         query.add(patient);
         query.add(new IdConstraint("rel.source", "customer"));
         query.add(new IdConstraint("rel.target", "patient"));
@@ -366,20 +370,20 @@ public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest 
     }
 
     /**
-     * Verfies that relationships between entities can be queried.
+     * Verifies that relationships between entities can be queried.
      */
     @Test
     public void testOBF178() {
         Party person = createPerson();
         Party pet = createPet();
         EntityBean bean = new EntityBean(person);
-        bean.addRelationship("entityRelationship.animalOwner", pet);
+        bean.addNodeTarget("owns", pet);
 
         save(person, pet);
 
-        ShortNameConstraint partyPerson = new ShortNameConstraint("person", "party.person");
-        ShortNameConstraint animalPet = new ShortNameConstraint("pet", "party.animalpet");
-        ShortNameConstraint relationship = new ShortNameConstraint("rel", "entityRelationship.animalOwner*");
+        ShortNameConstraint partyPerson = new ShortNameConstraint("person", "party.customerperson");
+        ShortNameConstraint animalPet = new ShortNameConstraint("pet", "party.patientpet");
+        ShortNameConstraint relationship = new ShortNameConstraint("rel", "entityRelationship.patientOwner");
 
         ArchetypeQuery sourceQuery = new ArchetypeQuery(partyPerson);
         sourceQuery.add(new CollectionNodeConstraint("patients", relationship));
@@ -403,12 +407,45 @@ public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest 
     }
 
     /**
-     * Helper to create a party of type <em>party.person</em>.
+     * V
+     */
+    @Test
+    public void testQueryEntityLinks() {
+        Party person1 = createPerson();
+        Party person2 = createPerson();
+        Party person3 = createPerson();
+        Party location1 = createLocation();
+        Party location2 = createLocation();
+        save(person1, person2, person3, location1, location2);
+
+        addLocation(person1, location1);
+        addLocation(person2, location2);
+        addLocation(person3, location2);
+
+        // query all customers for location1
+        ArchetypeQuery query1 = new ArchetypeQuery("party.customerperson");
+        query1.add(join("location").add(eq("target", location1.getObjectReference())));
+        List<IMObject> customers1 = get(query1);
+        assertEquals(1, customers1.size());
+        assertEquals(person1, customers1.get(0));
+
+        // query all customers for location2
+        ArchetypeQuery query2 = new ArchetypeQuery("party.customerperson");
+        query2.add(join("location").add(eq("target", location2.getObjectReference())));
+        List<IMObject> customers2 = get(query2);
+        assertEquals(2, customers2.size());
+        assertFalse(customers2.contains(person1));
+        assertTrue(customers2.contains(person2));
+        assertTrue(customers2.contains(person3));
+    }
+
+    /**
+     * Helper to create a party of type <em>party.customerperson</em>.
      *
      * @return a new party
      */
     private Party createPerson() {
-        Party person = (Party) create("party.person");
+        Party person = (Party) create("party.customerperson");
         IMObjectBean bean = new IMObjectBean(person);
         bean.setValue("firstName", "Tim");
         bean.setValue("lastName", "Anderson");
@@ -417,12 +454,12 @@ public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest 
     }
 
     /**
-     * Helper to create a party of type <em>party.animalpet</em>.
+     * Helper to create a party of type <em>party.patientpet</em>.
      *
      * @return a new party
      */
     private Party createPet() {
-        Party pet = (Party) create("party.animalpet");
+        Party pet = (Party) create("party.patientpet");
         IMObjectBean petBean = new IMObjectBean(pet);
         String petName = "Mutt-" + System.currentTimeMillis();
         petBean.setValue("name", petName);
@@ -440,6 +477,29 @@ public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest 
         Product product = (Product) create("product.product");
         product.setName("XProduct-" + System.currentTimeMillis());
         return product;
+    }
+
+    /**
+     * Helper to create a new <em>party.organisationLocation</em>.
+     *
+     * @return a new location
+     */
+    private Party createLocation() {
+        Party location = (Party) create("party.organisationLocation");
+        location.setName("ZLocation-" + System.currentTimeMillis());
+        return location;
+    }
+
+    /**
+     * Adds a customer-location relationship.
+     *
+     * @param person   the person
+     * @param location the location
+     */
+    private void addLocation(Party person, Party location) {
+        EntityBean bean = new EntityBean(person);
+        bean.addNodeTarget("location", location);
+        bean.save();
     }
 
 }

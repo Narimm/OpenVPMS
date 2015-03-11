@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -22,7 +20,6 @@ package org.openvpms.component.business.service.archetype.descriptor;
 import org.apache.commons.lang.StringUtils;
 import org.exolab.castor.mapping.Mapping;
 import org.exolab.castor.xml.Unmarshaller;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -37,11 +34,17 @@ import org.xml.sax.InputSource;
 import java.io.InputStreamReader;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Tests the {@link NodeDescriptor} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 public class NodeDescriptorTestCase {
 
@@ -299,6 +302,16 @@ public class NodeDescriptorTestCase {
         assertEquals(classification, value);
     }
 
+    /**
+     * Verifies that the description is correctly populated.
+     */
+    @Test
+    public void testDescription() {
+        ArchetypeDescriptor archetype = getArchetype("party.person");
+        archetype.getNodeDescriptor("firstName");
+        assertEquals("The customer's first name", archetype.getNodeDescriptor("firstName").getDescription());
+        assertEquals("The customer's surname", archetype.getNodeDescriptor("lastName").getDescription());
+    }
 
     /**
      * Sets up the test case.

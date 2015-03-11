@@ -33,7 +33,6 @@ import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.edit.Editors;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ErrorListener;
-import org.openvpms.web.component.property.ErrorListeners;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
@@ -153,7 +152,7 @@ public class SMSEditor extends AbstractModifiable {
         focus.setDefault(message);
 
         PropertySet properties = new PropertySet(phoneProperty, messageProperty);
-        editors = new Editors(properties, new ModifiableListeners(), new ErrorListeners());
+        editors = new Editors(properties, new ModifiableListeners());
         editors.addModifiableListener(new ModifiableListener() {
             @Override
             public void modified(Modifiable modifiable) {
@@ -269,23 +268,23 @@ public class SMSEditor extends AbstractModifiable {
     }
 
     /**
-     * Adds a listener to be notified of errors.
+     * Sets a listener to be notified of errors.
      *
-     * @param listener the listener to add
+     * @param listener the listener to register. May be {@code null}
      */
     @Override
-    public void addErrorListener(ErrorListener listener) {
-        editors.addErrorListener(listener);
+    public void setErrorListener(ErrorListener listener) {
+        editors.setErrorListener(listener);
     }
 
     /**
-     * Removes a listener.
+     * Returns the listener to be notified of errors.
      *
-     * @param listener the listener to remove
+     * @return the listener. May be {@code null}
      */
     @Override
-    public void removeErrorListener(ErrorListener listener) {
-        editors.removeErrorListener(listener);
+    public ErrorListener getErrorListener() {
+        return editors.getErrorListener();
     }
 
     /**
@@ -341,7 +340,7 @@ public class SMSEditor extends AbstractModifiable {
     }
 
     /**
-     * Formats a mobile phone number.
+     * Formats a mobile phone number. Adds the name afterward if it is not the default value.
      *
      * @param contact the phone contact
      * @return a formatted number, including an area code, if specified
@@ -354,6 +353,10 @@ public class SMSEditor extends AbstractModifiable {
             phone = Messages.format("phone.withAreaCode", areaCode, phone);
         } else {
             phone = Messages.format("phone.noAreaCode", phone);
+        }
+        String name = contact.getName();
+        if (!StringUtils.isEmpty(name) && bean.hasNode("name") && !bean.isDefaultValue("name")) {
+            phone += " (" + name + ")";
         }
         return phone;
     }

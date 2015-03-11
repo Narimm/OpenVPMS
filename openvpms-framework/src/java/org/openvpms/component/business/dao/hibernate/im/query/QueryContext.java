@@ -609,14 +609,13 @@ public class QueryContext {
                         .append(getOperator(op, null))
                         .append(" (");
 
-                for (int i = 0; i < parameters.length; ++i) {
-                    if (i > 0) {
-                        clause.append(", ");
-                    }
-                    varName = paramNames.getName(property);
-                    clause.append(":").append(varName);
-                    params.put(varName, getValue(op, parameters[i]));
+                List<Object> values = new ArrayList<Object>();
+                for (Object parameter : parameters) {
+                    values.add(getValue(op, parameter));
                 }
+                varName = paramNames.getName(property);
+                clause.append(":").append(varName);
+                params.put(varName, values);
                 clause.append(")");
                 break;
             default:

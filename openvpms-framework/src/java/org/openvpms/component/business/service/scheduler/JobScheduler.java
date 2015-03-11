@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.scheduler;
@@ -31,12 +31,12 @@ import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.StatefulJob;
 import org.quartz.Trigger;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -98,7 +98,7 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      * @param applicationContext the ApplicationContext object to be used by this object
      */
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(ApplicationContext applicationContext) {
         context = applicationContext;
     }
 
@@ -122,10 +122,17 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      * @throws SchedulerException for any error
      */
     public void schedule(IMObject configuration) {
+        if (log.isInfoEnabled()) {
+            log.info("Scheduling " + configuration.getName() + " (" + configuration.getId() + ")");
+        }
         JobDetail job = createJobDetail(configuration);
         Trigger trigger = createTrigger(configuration, job);
         try {
-            scheduler.scheduleJob(job, trigger);
+            Date date = scheduler.scheduleJob(job, trigger);
+            if (log.isInfoEnabled()) {
+                log.info("Job " + configuration.getName() + " (" + configuration.getId() + ") set to trigger at "
+                         + date);
+            }
         } catch (OpenVPMSException exception) {
             throw exception;
         } catch (Throwable exception) {
@@ -204,6 +211,9 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
     private void unschedule(IMObject configuration) {
         IMObject existing = pending.get(configuration.getId());
         String name = (existing != null) ? existing.getName() : configuration.getName();
+        if (log.isInfoEnabled()) {
+            log.info("Unscheduling " + name + " (" + configuration.getId() + ")");
+        }
         try {
             scheduler.unscheduleJob(name, null);
         } catch (org.quartz.SchedulerException exception) {

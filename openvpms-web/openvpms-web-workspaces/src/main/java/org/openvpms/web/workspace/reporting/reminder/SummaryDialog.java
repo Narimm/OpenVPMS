@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -24,6 +24,7 @@ import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.EnumSet;
@@ -32,8 +33,7 @@ import java.util.EnumSet;
 /**
  * Displays reminder generation summary statistics in a popup window.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-04-11 04:09:07Z $
+ * @author Tim Anderson
  */
 class SummaryDialog extends PopupDialog {
 
@@ -58,6 +58,7 @@ class SummaryDialog extends PopupDialog {
 
         add(grid, ReminderEvent.Action.EMAIL, stats);
         add(grid, ReminderEvent.Action.PRINT, stats);
+        add(grid, ReminderEvent.Action.SMS, stats);
 
         // phone and list actions are merged
         int phone = stats.getCount(ReminderEvent.Action.PHONE);
@@ -68,7 +69,7 @@ class SummaryDialog extends PopupDialog {
         String errors = Messages.get("reporting.reminder.summary.errors");
         add(grid, errors, stats.getErrors());
 
-        getLayout().add(ColumnFactory.create("Inset", grid));
+        getLayout().add(ColumnFactory.create(Styles.INSET, grid));
     }
 
     /**

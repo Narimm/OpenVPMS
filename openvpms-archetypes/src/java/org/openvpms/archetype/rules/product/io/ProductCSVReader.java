@@ -16,8 +16,12 @@
 
 package org.openvpms.archetype.rules.product.io;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.math.BigDecimal;
 import java.text.DateFormat;
@@ -59,6 +63,11 @@ public class ProductCSVReader extends AbstractCSVReader implements ProductReader
     public static final SimpleDateFormat[] MONTH_DAY_YEAR_FORMATS = {
             new SimpleDateFormat("MM/dd/yy"), new SimpleDateFormat("MM-dd-yy")
     };
+
+    /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
 
     /**
      * Formats to parse dates with.
@@ -116,39 +125,49 @@ public class ProductCSVReader extends AbstractCSVReader implements ProductReader
     private static final int DEFAULT_FIXED_PRICE = 9;
 
     /**
+     * The fixed price groups column.
+     */
+    private static final int FIXED_PRICE_GROUPS = 10;
+
+    /**
      * The product unit price id column.
      */
-    private static final int UNIT_PRICE_ID = 10;
+    private static final int UNIT_PRICE_ID = 11;
 
     /**
      * The product unit price column.
      */
-    private static final int UNIT_PRICE = 11;
+    private static final int UNIT_PRICE = 12;
 
     /**
      * The product unit cost column.
      */
-    private static final int UNIT_COST = 12;
+    private static final int UNIT_COST = 13;
 
     /**
      * The unit price max discount column.
      */
-    private static final int UNIT_PRICE_MAX_DISCOUNT = 13;
+    private static final int UNIT_PRICE_MAX_DISCOUNT = 14;
 
     /**
      * The product unit price start date column.
      */
-    private static final int UNIT_PRICE_START_DATE = 14;
+    private static final int UNIT_PRICE_START_DATE = 15;
 
     /**
      * The product unit price end date column.
      */
-    private static final int UNIT_PRICE_END_DATE = 15;
+    private static final int UNIT_PRICE_END_DATE = 16;
+
+    /**
+     * The unit price groups column.
+     */
+    private static final int UNIT_PRICE_GROUPS = 17;
 
     /**
      * The product tax rate column.
      */
-    private static final int TAX_RATE = 16;
+    private static final int TAX_RATE = 18;
 
     static {
         for (DateFormat format : DAY_MONTH_YEAR_FORMATS) {
@@ -166,9 +185,11 @@ public class ProductCSVReader extends AbstractCSVReader implements ProductReader
      * Constructs a {@link ProductCSVReader}.
      *
      * @param handlers the document handlers
+     * @param lookups  the lookups service
      */
-    public ProductCSVReader(DocumentHandlers handlers) {
+    public ProductCSVReader(DocumentHandlers handlers, ILookupService lookups) {
         super(handlers, ProductCSVWriter.HEADER, ProductCSVWriter.SEPARATOR);
+        this.lookups = lookups;
     }
 
     /**
@@ -278,18 +299,21 @@ public class ProductCSVReader extends AbstractCSVReader implements ProductReader
             Date fixedStartDate = getDate(line, FIXED_PRICE_START_DATE, lineNo, fixedPrice != null);
             Date fixedEndDate = getDate(line, FIXED_PRICE_END_DATE, lineNo, false);
             boolean defaultFixedPrice = getBoolean(line, DEFAULT_FIXED_PRICE, lineNo);
+            Set<Lookup> fixedPriceGroups = getPricingGroups(line, FIXED_PRICE_GROUPS, lineNo);
             long unitId = getLong(line, UNIT_PRICE_ID, lineNo, false);
             BigDecimal unitPrice = getDecimal(line, UNIT_PRICE, lineNo, false);
             BigDecimal unitCost = getDecimal(line, UNIT_COST, lineNo, unitPrice != null);
             BigDecimal unitMaxDiscount = getDecimal(line, UNIT_PRICE_MAX_DISCOUNT, lineNo, unitPrice != null);
             Date unitStartDate = getDate(line, UNIT_PRICE_START_DATE, lineNo, unitPrice != null);
             Date unitEndDate = getDate(line, UNIT_PRICE_END_DATE, lineNo, false);
+            Set<Lookup> unitPriceGroups = getPricingGroups(line, UNIT_PRICE_GROUPS, lineNo);
             if (fixedPrice != null) {
                 current.addFixedPrice(fixedId, fixedPrice, fixedCost, fixedMaxDiscount, fixedStartDate, fixedEndDate,
-                                      defaultFixedPrice, lineNo);
+                                      defaultFixedPrice, fixedPriceGroups, lineNo);
             }
             if (unitPrice != null) {
-                current.addUnitPrice(unitId, unitPrice, unitCost, unitMaxDiscount, unitStartDate, unitEndDate, lineNo);
+                current.addUnitPrice(unitId, unitPrice, unitCost, unitMaxDiscount, unitStartDate, unitEndDate,
+                                     unitPriceGroups, lineNo);
             }
         } catch (ProductIOException exception) {
             current.setError(exception.getMessage(), exception.getLine());
@@ -376,6 +400,34 @@ public class ProductCSVReader extends AbstractCSVReader implements ProductReader
                 reportInvalid(ProductCSVWriter.HEADER[index], value, lineNo);
             }
         }
+        return result;
+    }
+
+    /**
+     * Parsers the pricing groups from the specified line.
+     *
+     * @param line   the line
+     * @param index  the value index
+     * @param lineNo the line number
+     * @return the pricing groups
+     * @throws ProductIOException if a pricing group code is invalid
+     */
+    private Set<Lookup> getPricingGroups(String[] line, int index, int lineNo) {
+        Set<Lookup> result = new HashSet<Lookup>();
+        String[] codes = {};
+        String value = StringUtils.trimToNull(line[index]);
+        if (value != null) {
+            codes = value.split(" ");
+        }
+        for (String code : codes) {
+            Lookup lookup = lookups.getLookup(ProductArchetypes.PRICING_GROUP, code);
+            if (lookup == null) {
+                reportInvalid(ProductCSVWriter.HEADER[index], code, lineNo);
+            } else {
+                result.add(lookup);
+            }
+        }
+
         return result;
     }
 

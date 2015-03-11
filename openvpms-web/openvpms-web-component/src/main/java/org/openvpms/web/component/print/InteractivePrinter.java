@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.print;
@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
 import org.openvpms.web.component.mail.MailEditor;
@@ -449,7 +450,8 @@ public class InteractivePrinter implements Printer {
     protected void doMail(final PrintDialog parent) {
         try {
             Document document = getDocument(DocFormats.PDF_TYPE, true);
-            final MailDialog dialog = new MailDialog(mailContext, context, help.subtopic("email"));
+            final MailDialog dialog = new MailDialog(mailContext,
+                                                     new DefaultLayoutContext(context, help.subtopic("email")));
             MailEditor editor = dialog.getMailEditor();
             editor.setSubject(getDisplayName());
             editor.addAttachment(document);

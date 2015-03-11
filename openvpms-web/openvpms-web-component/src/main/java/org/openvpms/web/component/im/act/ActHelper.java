@@ -11,35 +11,29 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
 
 import org.openvpms.archetype.rules.act.ActCalculator;
-import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
-import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.ShortNameConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.query.ActResultSet;
-import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -49,72 +43,6 @@ import java.util.Set;
  * @author Tim Anderson
  */
 public class ActHelper {
-
-    /**
-     * Returns an account balance for a supplier.
-     *
-     * @param supplier the supplier
-     * @return the account balance for {@code supplier}
-     */
-    public static BigDecimal getSupplierAccountBalance(Party supplier) {
-        String[] shortNames = {"act.supplierAccountCharges*",
-                               "act.supplierAccountPayment"};
-        return getAccountBalance(supplier.getObjectReference(), "supplier",
-                                 "participation.supplier", shortNames,
-                                 "act.supplierAccountOpeningBalance",
-                                 "act.supplierAccountClosingBalance");
-    }
-
-    /**
-     * Returns an account balance for any entity.
-     *
-     * @param entity             the entity
-     * @param participant        the participant node name
-     * @param participation      the participation short name
-     * @param shortNames         the act short names
-     * @param openingBalanceName the opening blance shortname
-     */
-    public static BigDecimal getAccountBalance(IMObjectReference entity,
-                                               String participant,
-                                               String participation,
-                                               String[] shortNames,
-                                               String openingBalanceName,
-                                               String closingBalanceName) {
-        String[] statuses = {FinancialActStatus.POSTED};
-        ShortNameConstraint archetypes = new ShortNameConstraint(
-                shortNames, true, true);
-        ParticipantConstraint constraint = new ParticipantConstraint(
-                participant, participation, entity);
-        SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
-        ActResultSet<Act> set = new ActResultSet<Act>(archetypes, constraint,
-                                                      null, null, statuses, 50,
-                                                      sort);
-        set.setNodes(new String[]{"amount"});
-        BigDecimal balance = BigDecimal.ZERO;
-        // Add up amounts until find first opening balance ignoring first closing balances.
-        boolean finished = false;
-        while (set.hasNext()) {
-            IPage<Act> acts = set.next();
-            for (Act act : acts.getResults()) {
-                //Ignore first closing balance
-                if (act.getArchetypeId().getShortName().equalsIgnoreCase(
-                        closingBalanceName)) {
-                    continue;
-                }
-                BigDecimal amount = getAmount(act, "amount");
-                balance = balance.add(amount);
-                if (act.getArchetypeId().getShortName().equalsIgnoreCase(
-                        openingBalanceName)) {
-                    finished = true;
-                    break;
-                }
-            }
-            if (finished) {
-                break;
-            }
-        }
-        return balance;
-    }
 
     /**
      * Sums a node in a list of act items, negating the result if the act
@@ -202,6 +130,22 @@ public class ActHelper {
             for (IMObject match : ServiceHelper.getArchetypeService().get(query).getResults()) {
                 result.add((Act) match);
             }
+        }
+        return result;
+    }
+
+    /**
+     * Returns acts given their references in a map.
+     * <p/>
+     * This uses a single archetype query, to improve performance.
+     *
+     * @param references the act references
+     * @return the associated acts
+     */
+    public static Map<IMObjectReference, Act> getActMap(Collection<IMObjectReference> references) {
+        Map<IMObjectReference, Act> result = new HashMap<IMObjectReference, Act>();
+        for (Act act : getActs(references)) {
+            result.put(act.getObjectReference(), act);
         }
         return result;
     }

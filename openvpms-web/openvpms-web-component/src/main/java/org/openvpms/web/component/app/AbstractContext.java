@@ -1,24 +1,26 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.app;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -60,10 +62,10 @@ public abstract class AbstractContext implements Context {
      * Set of recognised short names.
      */
     private static final String[] SHORT_NAMES = {
-        CUSTOMER_SHORTNAME, PATIENT_SHORTNAME, SUPPLIER_SHORTNAME,
-        PRODUCT_SHORTNAME, TILL_SHORTNAME, CLINICIAN_SHORTNAME,
-        SCHEDULE_VIEW_SHORTNAME, SCHEDULE_SHORTNAME, WORKLIST_SHORTNAME,
-        LOCATION_SHORTNAME, STOCK_LOCATION_SHORTNAME, DEPOSIT_SHORTNAME};
+            APPOINTMENT_SHORTNAME, CLINICIAN_SHORTNAME, CUSTOMER_SHORTNAME, DEPOSIT_SHORTNAME, LOCATION_SHORTNAME,
+            PATIENT_SHORTNAME, PRACTICE_SHORTNAME, PRODUCT_SHORTNAME, SCHEDULE_SHORTNAME, SCHEDULE_VIEW_SHORTNAME,
+            STOCK_LOCATION_SHORTNAME, SUPPLIER_SHORTNAME, TASK_SHORTNAME, TILL_SHORTNAME, WORKLIST_SHORTNAME,
+            WORKLIST_VIEW_SHORTNAME};
 
     /**
      * The current schedule date.
@@ -163,8 +165,7 @@ public abstract class AbstractContext implements Context {
     /**
      * Returns the current stock location.
      *
-     * @return the current stock location, or <tt>null</tt> if there is no
-     *         current location
+     * @return the current stock location, or {@code null} if there is no current location
      */
     public Party getStockLocation() {
         return (Party) getObject(STOCK_LOCATION_SHORTNAME);
@@ -306,7 +307,7 @@ public abstract class AbstractContext implements Context {
     /**
      * Sets the current schedule view.
      *
-     * @param view the current schedule view. May be <tt>null</tt>
+     * @param view the current schedule view. May be {@code null}
      */
     public void setScheduleView(Entity view) {
         setObject(SCHEDULE_VIEW_SHORTNAME, view);
@@ -315,7 +316,7 @@ public abstract class AbstractContext implements Context {
     /**
      * Returns the current schedule view.
      *
-     * @return the current schedule view. May be <tt>null</tt>
+     * @return the current schedule view. May be {@code null}
      */
     public Entity getScheduleView() {
         return (Entity) getObject(SCHEDULE_VIEW_SHORTNAME);
@@ -358,9 +359,29 @@ public abstract class AbstractContext implements Context {
     }
 
     /**
+     * Sets the current appointment.
+     *
+     * @param appointment the current appointment
+     */
+    @Override
+    public void setAppointment(Act appointment) {
+        setObject(ScheduleArchetypes.APPOINTMENT, appointment);
+    }
+
+    /**
+     * Returns the current appointment.
+     *
+     * @return the current appointment
+     */
+    @Override
+    public Act getAppointment() {
+        return (Act) getObject(ScheduleArchetypes.APPOINTMENT);
+    }
+
+    /**
      * Sets the current work list view.
      *
-     * @param view the current work list view. May be <tt>null</tt>
+     * @param view the current work list view. May be {@code null}
      */
     public void setWorkListView(Entity view) {
         setObject(WORKLIST_VIEW_SHORTNAME, view);
@@ -369,7 +390,7 @@ public abstract class AbstractContext implements Context {
     /**
      * Returns the current work list view.
      *
-     * @return the current work list view. May be <tt>null</tt>
+     * @return the current work list view. May be {@code null}
      */
     public Entity getWorkListView() {
         return (Entity) getObject(WORKLIST_VIEW_SHORTNAME);
@@ -409,6 +430,26 @@ public abstract class AbstractContext implements Context {
      */
     public Date getWorkListDate() {
         return workListDate;
+    }
+
+    /**
+     * Sets the current task.
+     *
+     * @param task the current task
+     */
+    @Override
+    public void setTask(Act task) {
+        setObject(ScheduleArchetypes.TASK, task);
+    }
+
+    /**
+     * Returns the current task.
+     *
+     * @return the current task
+     */
+    @Override
+    public Act getTask() {
+        return (Act) getObject(ScheduleArchetypes.TASK);
     }
 
     /**
@@ -531,8 +572,12 @@ public abstract class AbstractContext implements Context {
     public IMObject[] getObjects() {
         Set<IMObject> result = new HashSet<IMObject>();
         result.addAll(objects.values());
-        result.add(current);
-        result.add(user);
+        if (current != null) {
+            result.add(current);
+        }
+        if (user != null) {
+            result.add(user);
+        }
         return result.toArray(new IMObject[result.size()]);
     }
 

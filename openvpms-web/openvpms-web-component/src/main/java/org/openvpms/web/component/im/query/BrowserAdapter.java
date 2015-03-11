@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -44,7 +42,7 @@ public abstract class BrowserAdapter<A, T> implements Browser<T> {
      * The listeners.
      */
     private Map<BrowserListener<T>, BrowserListener<A>> listeners
-        = new HashMap<BrowserListener<T>, BrowserListener<A>>();
+            = new HashMap<BrowserListener<T>, BrowserListener<A>>();
 
 
     /**
@@ -87,20 +85,23 @@ public abstract class BrowserAdapter<A, T> implements Browser<T> {
     /**
      * Select an object.
      *
-     * @param object the object to select
+     * @param object the object to select. May be {@code null} to deselect the current selection
+     * @return {@code true} if the object was selected, {@code false} if it doesn't exist in the current view
      */
-    public void setSelected(T object) {
+    public boolean setSelected(T object) {
+        boolean result = false;
         if (object == null) {
             browser.setSelected(null);
         } else {
             for (A target : browser.getObjects()) {
                 T converted = convert(target);
                 if (converted != null && converted.equals(object)) {
-                    browser.setSelected(target);
+                    result = browser.setSelected(target);
                     break;
                 }
             }
         }
+        return result;
     }
 
     /**

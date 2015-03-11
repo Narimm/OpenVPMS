@@ -21,12 +21,10 @@ import org.openvpms.archetype.rules.patient.prescription.PrescriptionRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.AltModelActRelationshipCollectionEditor;
+import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -43,7 +41,7 @@ import java.util.Date;
  *
  * @author Tim Anderson
  */
-public class ChargeItemRelationshipCollectionEditor extends AltModelActRelationshipCollectionEditor {
+public class ChargeItemRelationshipCollectionEditor extends ActRelationshipCollectionEditor {
 
     /**
      * Last Selected Item Date.
@@ -74,7 +72,19 @@ public class ChargeItemRelationshipCollectionEditor extends AltModelActRelations
      * @param context  the layout context
      */
     public ChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context) {
-        super(property, act, context);
+        this(property, act, context, ChargeItemCollectionResultSetFactory.INSTANCE);
+    }
+
+    /**
+     * Constructs a {@link ChargeItemRelationshipCollectionEditor}.
+     *
+     * @param property the collection property
+     * @param act      the parent act
+     * @param context  the layout context
+     */
+    public ChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context,
+                                                  CollectionResultSetFactory factory) {
+        super(property, act, context, factory);
         editorQueue = new DefaultEditorQueue(context.getContext());
         if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE)) {
             prescriptions = new Prescriptions(getCurrentActs(), ServiceHelper.getBean(PrescriptionRules.class));
@@ -163,18 +173,6 @@ public class ChargeItemRelationshipCollectionEditor extends AltModelActRelations
             }
         };
         editor.getProperty("startTime").addModifiableListener(startTimeListener);
-    }
-
-    /**
-     * Creates a new result set for display.
-     *
-     * @return a new result set
-     */
-    @Override
-    protected ResultSet<IMObject> createResultSet() {
-        ResultSet<IMObject> set = super.createResultSet();
-        set.sort(new SortConstraint[]{new NodeSortConstraint("startTime", false)});
-        return set;
     }
 
     /**

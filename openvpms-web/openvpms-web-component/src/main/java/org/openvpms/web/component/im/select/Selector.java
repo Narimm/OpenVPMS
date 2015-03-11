@@ -20,7 +20,6 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.apache.commons.lang.ClassUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -120,7 +119,7 @@ public abstract class Selector<T extends IMObject> {
 
 
     /**
-     * Constructs a <tt>Selector</tt>.
+     * Constructs a {@link Selector}.
      * <p/>
      * Displays button(s) to the left of the object display.
      */
@@ -129,7 +128,7 @@ public abstract class Selector<T extends IMObject> {
     }
 
     /**
-     * Constructs a <tt>Selector</tt>.
+     * Constructs a {@link Selector}.
      * <p/>
      * Displays button(s) to the left of the object display.
      *
@@ -140,7 +139,7 @@ public abstract class Selector<T extends IMObject> {
     }
 
     /**
-     * Constructs a <tt>Selector</tt>.
+     * Constructs a {@link Selector}.
      *
      * @param style    determines the layout of the button(s)
      * @param editable determines if the selector is editable
@@ -150,7 +149,7 @@ public abstract class Selector<T extends IMObject> {
     }
 
     /**
-     * Construct a new <tt>Selector</tt>.
+     * Constructs a {@link Selector}.
      *
      * @param buttonId the button identifier
      * @param style    determines the layout of the button(s)
@@ -200,8 +199,7 @@ public abstract class Selector<T extends IMObject> {
     /**
      * Returns the editable text field.
      *
-     * @return the editable text field, or <tt>null</tt> if this is not an
-     *         editable selector
+     * @return the editable text field, or {@code null} if this is not an editable selector
      */
     public TextField getTextField() {
         getObjectComponent();
@@ -211,7 +209,7 @@ public abstract class Selector<T extends IMObject> {
     /**
      * Returns the text from the editable text field.
      *
-     * @return the text, or <tt>null</tt> if there is no text, or this is not an editable selector.
+     * @return the text, or {@code null} if there is no text, or this is not an editable selector.
      */
     public String getText() {
         TextField field = getTextField();
@@ -221,12 +219,11 @@ public abstract class Selector<T extends IMObject> {
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     public void setObject(T object) {
         if (object != null) {
-            setObject(object.getName(), object.getDescription(),
-                      object.isActive());
+            setObject(object.getName(), object.getDescription(), object.isActive());
         } else {
             setObject(null, null, true);
         }
@@ -244,22 +241,27 @@ public abstract class Selector<T extends IMObject> {
     /**
      * Determines if the selector should expand to the parent container's width.
      * <p/>
-     * Default is <tt>false</tt>.
+     * Default is {@code false}.
      *
-     * @param fillWidth if <tt>true</tt> expand to the parent container's width
+     * @param fillWidth if {@code true} expand to the parent container's width
      */
     public void setFillWidth(boolean fillWidth) {
         this.fillWidth = fillWidth;
         if (objectText != null) {
             objectText.setWidth(new Extent(100, Extent.PERCENT));
         }
+
+        if (component != null) {
+            component.removeAll();
+            doLayout(component);
+        }
     }
 
     /**
      * Sets the current object details.
      *
-     * @param name        the object name. May be <tt>null</tt>
-     * @param description the object description. May be <tt>null</tt>
+     * @param name        the object name. May be {@code null}
+     * @param description the object description. May be {@code null}
      * @param active      determines if the object is active
      */
     protected void setObject(String name, String description, boolean active) {
@@ -297,20 +299,27 @@ public abstract class Selector<T extends IMObject> {
      * Lays out the component
      */
     protected void doLayout() {
-        component = new Row();
+        component = RowFactory.create(Styles.CELL_SPACING);
+        doLayout(component);
+    }
+
+    /**
+     * Lays out the component.
+     *
+     * @param container the container
+     */
+    private void doLayout(Component container) {
+        child = null;
         Component objectComponent = getObjectComponent();
         if (buttonStyle == ButtonStyle.RIGHT && fillWidth) {
-            // button on the right. The 'child' forces the summary+deactivated
-            // labels to take up as much space as possible, ensuring that the
-            // button is displayed hard on the right.
-            // Seems more successful than using alignments
-            child = RowFactory.create(Styles.CELL_SPACING, objectComponent);
+            // set the objectComponent to fill the available width to force the buttons to the right
             RowLayoutData layout = new RowLayoutData();
-            layout.setWidth(new Extent(100, Extent.PERCENT));
-            child.setLayoutData(layout);
-            child = RowFactory.create(child, getButtons(component));
-            child.setLayoutData(layout);
-        } else if (buttonStyle == ButtonStyle.RIGHT && !fillWidth) {
+            layout.setWidth(Styles.FULL_WIDTH);
+            container.add(objectComponent);
+            objectComponent.setLayoutData(layout);
+            child = RowFactory.create(getButtons(component));
+            container.add(objectComponent);
+        } else if (buttonStyle == ButtonStyle.RIGHT) {
             child = RowFactory.create(Styles.CELL_SPACING, RowFactory.create(objectComponent, getButtons(component)));
         } else if (buttonStyle == ButtonStyle.LEFT) {
             // display button(s) on the left
@@ -318,8 +327,7 @@ public abstract class Selector<T extends IMObject> {
             child.add(getButtons(component), 0);
         } else {
             // no buttons
-            component = objectComponent;
-            child = null;
+            container.add(objectComponent);
         }
         if (objectText != null) {
             if (buttonStyle == ButtonStyle.RIGHT) {
@@ -329,7 +337,7 @@ public abstract class Selector<T extends IMObject> {
             }
         }
         if (child != null) {
-            component.add(child);
+            container.add(child);
         }
     }
 
@@ -345,7 +353,7 @@ public abstract class Selector<T extends IMObject> {
                 objectText = TextComponentFactory.create();
                 objectText.setStyleName("Selector");
                 if (fillWidth) {
-                    objectText.setWidth(new Extent(100, Extent.PERCENT));
+                    objectText.setWidth(Styles.FULL_WIDTH);
                 }
             }
             component = objectText;

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -108,23 +108,23 @@ public class AppointmentEditDialog extends EditDialog {
         if (editor.isValid()) {
             Act act = (Act) object;
             ActBean appointment = new ActBean(act);
-            AppointmentRules rules = new AppointmentRules();
+            AppointmentRules rules = ServiceHelper.getBean(AppointmentRules.class);
             overlap = rules.hasOverlappingAppointments(
-                act, ServiceHelper.getAppointmentService());
+                    act, ServiceHelper.getAppointmentService());
             if (overlap) {
                 if (!allowDoubleBooking(appointment)) {
                     String title = Messages.get(
-                        "workflow.scheduling.nodoubleschedule.title");
+                            "workflow.scheduling.nodoubleschedule.title");
                     String message = Messages.get(
-                        "workflow.scheduling.nodoubleschedule.message");
+                            "workflow.scheduling.nodoubleschedule.message");
                     ErrorDialog.show(title, message);
                 } else {
                     String title = Messages.get(
-                        "workflow.scheduling.doubleschedule.title");
+                            "workflow.scheduling.doubleschedule.title");
                     String message = Messages.get(
-                        "workflow.scheduling.doubleschedule.message");
+                            "workflow.scheduling.doubleschedule.message");
                     final ConfirmationDialog dialog = new ConfirmationDialog(
-                        title, message);
+                            title, message);
                     dialog.addWindowPaneListener(new PopupDialogListener() {
                         @Override
                         public void onOK() {
@@ -154,7 +154,7 @@ public class AppointmentEditDialog extends EditDialog {
     private boolean allowDoubleBooking(ActBean appointment) {
         boolean result;
         IMObject schedule = appointment.getParticipant(
-            "participation.schedule");
+                "participation.schedule");
         if (schedule != null) {
             IMObjectBean bean = new IMObjectBean(schedule);
             result = bean.getBoolean("allowDoubleBooking");

@@ -11,15 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient.history;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.act.PagedActHierarchyTableModel;
-import org.openvpms.web.component.im.table.IMObjectTableModel;
 
 import java.util.List;
 
@@ -31,45 +30,23 @@ import java.util.List;
 public class PagedPatientHistoryTableModel extends PagedActHierarchyTableModel<Act> {
 
     /**
-     * Determines if the visit items are being sorted ascending or descending.
-     */
-    private boolean sortAscending = true;
-
-
-    /**
-     * Constructs a {@code PagedPatientHistoryTableModel}.
+     * Constructs a {@link PagedPatientHistoryTableModel}.
      *
      * @param model      the underlying table model
-     * @param context    the context
      * @param shortNames the archetype short names of the child acts to display
      */
-    public PagedPatientHistoryTableModel(IMObjectTableModel<Act> model, Context context, String... shortNames) {
-        super(model, context, shortNames);
+    public PagedPatientHistoryTableModel(AbstractPatientHistoryTableModel model, String... shortNames) {
+        super(model, shortNames);
     }
 
     /**
-     * Determines if the visit items are being sorted ascending or descending.
+     * Sets the objects for the current page.
      *
-     * @param ascending if {@code true} visit items are to be sorted ascending; {@code false} if descending
-     */
-    public void setSortAscending(boolean ascending) {
-        sortAscending = ascending;
-    }
-
-    /**
-     * Creates a new {@link ActHierarchyIterator}.
-     *
-     * @param objects    the acts
-     * @param shortNames the child archetype short names
-     * @param context    the context
-     * @return an iterator to flatten the act hierarchy
+     * @param objects the objects to set
      */
     @Override
-    protected ActHierarchyIterator<Act> createFlattener(List<Act> objects, String[] shortNames, Context context) {
-        PatientHistoryFilter filter = new PatientHistoryFilter(shortNames);
-        filter.setSortItemsAscending(sortAscending);
-        // maxDepth = 2 - display the events, and their immediate children
-        return new ActHierarchyIterator<Act>(objects, filter, 2);
+    protected ActHierarchyIterator<Act> createIterator(List<Act> objects, String[] shortNames) {
+        return new PatientHistoryIterator(objects, shortNames, isSortAscending());
     }
 
 }

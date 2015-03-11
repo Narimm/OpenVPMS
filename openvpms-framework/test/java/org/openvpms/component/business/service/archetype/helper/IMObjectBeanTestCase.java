@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -716,5 +716,64 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         checkEquals(patients3, patient3, patient2);
     }
 
+    /**
+     * Tests the {@link IMObjectBean#getNodeSourceObjectRef(String)}
+     * and {@link IMObjectBean#getNodeTargetObjectRef(String)} methods.
+     */
+    @Test
+    public void testGetNodeSourceTargetObjectRef() {
+        Party customer = createCustomer();
+        Party patient1 = createPatient();
+        save(customer, patient1);
+
+        IMObjectBean custBean = new IMObjectBean(customer);
+        assertNull(custBean.getNodeTargetObjectRef("patients"));
+
+        IMObjectBean patBean = new IMObjectBean(patient1);
+        assertNull(patBean.getNodeSourceObjectRef("customers"));
+
+        EntityRelationship rel1 = addOwnerRelationship(customer, patient1);
+        assertEquals(patient1.getObjectReference(), custBean.getNodeTargetObjectRef("patients"));
+        assertEquals(customer.getObjectReference(), patBean.getNodeSourceObjectRef("customers"));
+
+        Date now = new Date();
+        Date start1 = new Date(now.getTime() - 60 * 1000);
+        Date end1 = new Date(now.getTime() - 50 * 1000);
+
+        // set the relationship times to the past verify it is filtered out
+        rel1.setActiveStartTime(start1);
+        rel1.setActiveEndTime(end1);
+
+        assertNull(custBean.getNodeTargetObjectRef("patients"));
+        assertNull(patBean.getNodeSourceObjectRef("customers"));
+    }
+
+    /**
+     * Tests the {@link IMObjectBean#getDefaultValue(String)} method.
+     */
+    @Test
+    public void testGetDefaultValue() {
+        Party patient = createPatient();
+        IMObjectBean bean = new IMObjectBean(patient);
+        assertEquals(true, bean.getDefaultValue("Active"));
+        assertEquals(false, bean.getDefaultValue("deceased"));
+        assertNull(bean.getDefaultValue("name"));
+    }
+
+    /**
+     * Tests the {@link IMObjectBean#isDefaultValue(String)}} method.
+     */
+    @Test
+    public void testIsDefaultValue() {
+        Party patient = createPatient();
+        IMObjectBean bean = new IMObjectBean(patient);
+        assertTrue(bean.isDefaultValue("Active"));
+        assertTrue(bean.isDefaultValue("deceased"));
+
+        bean.setValue("Active", false);
+        assertFalse(bean.isDefaultValue("Active"));
+
+        assertFalse(bean.isDefaultValue("name")); // no default value
+    }
 }
 

@@ -24,9 +24,6 @@ import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.act.ActHelper;
@@ -246,14 +243,7 @@ public class ActAmountTableModel<T extends Act> extends BaseIMObjectTableModel<T
      * @return the display version of an act's status, or the status if it can't be determined
      */
     protected String getStatus(Act act) {
-        String result = null;
-        ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(act);
-        if (archetype != null) {
-            NodeDescriptor status = archetype.getNodeDescriptor("status");
-            if (status != null) {
-                result = LookupNameHelper.getLookupName(status, act);
-            }
-        }
+        String result = LookupNameHelper.getName(act, "status");
         if (result == null) {
             result = act.getStatus();
         }

@@ -11,8 +11,9 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.admin.archetype;
 
 import nextapp.echo2.app.event.ActionEvent;
@@ -26,16 +27,19 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditResultSetDialog;
+import org.openvpms.web.component.im.edit.IMObjectActions;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.layout.AbstractLayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Arrays;
 
@@ -59,12 +63,13 @@ public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor
      * @param title   the window title
      * @param first   the first object to edit
      * @param set     the set of results to edit
+     * @param actions determines if individual archetypes may be edited
      * @param context the context
      * @param help    the help context
      */
     public ArchetypeEditDialog(String title, ArchetypeDescriptor first, ResultSet<ArchetypeDescriptor> set,
-                               Context context, HelpContext help) {
-        super(title, first, set, context, help);
+                               IMObjectActions<ArchetypeDescriptor> actions, Context context, HelpContext help) {
+        super(title, first, set, actions, context, help);
         factory = new ObjectFactory();
         addButton("test", new ActionListener() {
             public void onAction(ActionEvent e) {
@@ -104,13 +109,13 @@ public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor
      */
     private void onTest() {
         try {
-            Validator validator = new Validator();
+            Validator validator = new DefaultValidator();
             if (getEditor().validate(validator)) {
                 ArchetypeDescriptor descriptor = (ArchetypeDescriptor) getEditor().getObject();
                 String shortName = descriptor.getShortName();
                 IMObject object = factory.create(shortName);
                 TestLayoutContext context = new TestLayoutContext(new LocalContext(), getHelpContext());
-                IMObjectEditor editor = IMObjectEditorFactory.create(object, context);
+                IMObjectEditor editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, context);
                 EditDialog dialog = new TestEditDialog(editor, context.getContext());
                 dialog.show();
             } else {
@@ -209,7 +214,7 @@ public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor
          * Validates the object.
          */
         private void onCheck() {
-            Validator validator = new Validator();
+            Validator validator = new DefaultValidator();
             if (!getEditor().validate(validator)) {
                 ValidationHelper.showError(validator);
             }

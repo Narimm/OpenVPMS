@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -20,15 +20,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.component.business.service.lookup.ILookupService;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -42,12 +43,6 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
  * @author Tim Anderson
  */
 public class ProductImporterTestCase extends AbstractProductIOTest {
-
-    /**
-     * The lookup service.
-     */
-    @Autowired
-    private ILookupService lookups;
 
     /**
      * The first test product.
@@ -99,7 +94,7 @@ public class ProductImporterTestCase extends AbstractProductIOTest {
      */
     @Before
     public void setUp() {
-        rules = new ProductPriceRules(getArchetypeService(), lookups);
+        rules = new ProductPriceRules(getArchetypeService(), getLookupService());
         importer = new ProductImporter(rules, getArchetypeService());
         practice = (Party) create(PracticeArchetypes.PRACTICE);
         product1 = createProduct("Product 1", "P1");
@@ -189,9 +184,10 @@ public class ProductImporterTestCase extends AbstractProductIOTest {
         BigDecimal unitPrice = new BigDecimal("1.0");
         BigDecimal unitDiscount = new BigDecimal("25");
         BigDecimal unitCost = new BigDecimal("0.5");
+        Set<Lookup> groups = Collections.emptySet();
 
-        data.addFixedPrice(-1, fixedPrice, fixedCost, fixedDiscount, getDate("2013-06-02"), null, true, 1);
-        data.addUnitPrice(-1, unitPrice, unitCost, unitDiscount, getDate("2013-06-03"), null, 1);
+        data.addFixedPrice(-1, fixedPrice, fixedCost, fixedDiscount, getDate("2013-06-02"), null, true, groups, 1);
+        data.addUnitPrice(-1, unitPrice, unitCost, unitDiscount, getDate("2013-06-03"), null, groups, 1);
 
         importProducts(data);
 
@@ -222,9 +218,11 @@ public class ProductImporterTestCase extends AbstractProductIOTest {
         BigDecimal unitPrice = new BigDecimal("1.0");
         BigDecimal unitCost = new BigDecimal("0.5");
         BigDecimal unitDiscount = new BigDecimal("15");
+        Set<Lookup> groups = Collections.emptySet();
         data.addFixedPrice(-1, fixedPrice, fixedCost, fixedDiscount, getDate("2014-01-01"), getDate("2014-06-01"), true,
-                           1);
-        data.addUnitPrice(-1, unitPrice, unitCost, unitDiscount, getDate("2014-01-01"), getDate("2014-06-01"), 1);
+                           groups, 1);
+        data.addUnitPrice(-1, unitPrice, unitCost, unitDiscount, getDate("2014-01-01"), getDate("2014-06-01"),
+                          groups, 1);
 
         List<ProductData> input = Arrays.asList(data);
         ProductDataFilter filter = new ProductDataFilter(rules, getArchetypeService());

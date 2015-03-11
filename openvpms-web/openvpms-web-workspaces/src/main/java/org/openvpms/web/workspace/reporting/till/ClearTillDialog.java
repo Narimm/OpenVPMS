@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.till;
@@ -116,12 +116,13 @@ public class ClearTillDialog extends AbstractClearTillDialog {
             IMObject account = IMObjectHelper.getObject(relationship.getTarget(), context);
             if (account.isActive()) {
                 accounts.add(account);
-                IMObjectBean defBean = new IMObjectBean(relationship);
-                if (defBean.getBoolean("default")) {
+                if (selected == null) {
                     selected = account;
-                    break;
-                } else if (selected == null) {
-                    selected = account;
+                } else {
+                    IMObjectBean defBean = new IMObjectBean(relationship);
+                    if (defBean.getBoolean("default")) {
+                        selected = account;
+                    }
                 }
             }
         }

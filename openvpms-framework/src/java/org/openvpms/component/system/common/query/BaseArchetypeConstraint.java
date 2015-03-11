@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -19,6 +19,7 @@ package org.openvpms.component.system.common.query;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
 
 /**
@@ -176,7 +177,7 @@ public abstract class BaseArchetypeConstraint extends ConstraintContainer {
      */
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .appendSuper(super.toString())
                 .append("alias", alias)
                 .append("state", state)

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.app;
@@ -71,7 +71,7 @@ public abstract class AbstractMailContext implements MailContext {
      * @return the 'from' address formatter
      */
     public AddressFormatter getFromAddressFormatter() {
-        return FromAddressFormatter.INSTANCE;
+        return new FromAddressFormatter();
     }
 
     /**
@@ -80,6 +80,6 @@ public abstract class AbstractMailContext implements MailContext {
      * @return the 'to' address formatter
      */
     public AddressFormatter getToAddressFormatter() {
-        return ToAddressFormatter.INSTANCE;
+        return new ToAddressFormatter();
     }
 }

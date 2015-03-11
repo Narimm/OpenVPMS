@@ -1,30 +1,33 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.test.AbstractAppTest;
+
+import java.util.Date;
 
 import static org.junit.Assert.assertTrue;
 
@@ -32,15 +35,14 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the {@link org.openvpms.web.workspace.patient.PatientMedicalRecordLinker} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientMedicalRecordLinkerTestCase extends AbstractAppTest {
 
     /**
      * The test patient.
      */
-    private Party patient;
+    protected Party patient;
 
     /**
      * Tests linking a note to an event.
@@ -50,8 +52,7 @@ public class PatientMedicalRecordLinkerTestCase extends AbstractAppTest {
         Act event = createEvent();
         Act note = createNote();
 
-        PatientMedicalRecordLinker linker = new PatientMedicalRecordLinker(event, note);
-        linker.run();
+        link(event, note);
 
         event = get(event);
         note = get(note);
@@ -74,8 +75,7 @@ public class PatientMedicalRecordLinkerTestCase extends AbstractAppTest {
         ActBean bean = new ActBean(problem);
         bean.addNodeRelationship("items", note);
         save(problem, note);
-        PatientMedicalRecordLinker linker = new PatientMedicalRecordLinker(event, problem);
-        linker.run();
+        link(event, problem);
 
         event = get(event);
         problem = get(problem);
@@ -93,6 +93,7 @@ public class PatientMedicalRecordLinkerTestCase extends AbstractAppTest {
      */
     @Before
     public void setUp() {
+        super.setUp();
         patient = TestHelper.createPatient(true);
     }
 
@@ -102,13 +103,10 @@ public class PatientMedicalRecordLinkerTestCase extends AbstractAppTest {
      * @return a new act
      */
     protected Act createEvent() {
-        Act act = (Act) create(PatientArchetypes.CLINICAL_EVENT);
-        ActBean bean = new ActBean(act);
-        bean.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
-        bean.save();
-        return act;
+        Act event = PatientTestHelper.createEvent(patient, null);
+        save(event);
+        return event;
     }
-
 
     /**
      * Helper to create an <em>act.patientClinicalProblem</em>.
@@ -116,11 +114,7 @@ public class PatientMedicalRecordLinkerTestCase extends AbstractAppTest {
      * @return a new act
      */
     protected Act createProblem() {
-        Act act = (Act) create(PatientArchetypes.CLINICAL_PROBLEM);
-        ActBean bean = new ActBean(act);
-        bean.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
-        bean.save();
-        return act;
+        return PatientTestHelper.createProblem(new Date(), patient, (User) null);
     }
 
     /**
@@ -129,11 +123,20 @@ public class PatientMedicalRecordLinkerTestCase extends AbstractAppTest {
      * @return a new act
      */
     protected Act createNote() {
-        Act act = (Act) create(PatientArchetypes.CLINICAL_NOTE);
-        ActBean bean = new ActBean(act);
-        bean.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
-        bean.save();
-        return act;
+        Act note = PatientTestHelper.createNote(new Date(), patient);
+        save(note);
+        return note;
+    }
+
+    /**
+     * Runs the linker to link an event and item.
+     *
+     * @param event the event
+     * @param item  the item
+     */
+    protected void link(Act event, Act item) {
+        PatientMedicalRecordLinker linker = new PatientMedicalRecordLinker(event, item);
+        linker.run();
     }
 
 }

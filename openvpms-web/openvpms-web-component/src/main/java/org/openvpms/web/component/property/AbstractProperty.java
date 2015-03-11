@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -47,9 +47,9 @@ public abstract class AbstractProperty extends AbstractModifiable implements Pro
     private ModifiableListeners listeners;
 
     /**
-     * The error listeners.
+     * The error listener.
      */
-    private ErrorListeners errorListeners;
+    private ErrorListener errorListener;
 
     /**
      * The property handler.
@@ -321,28 +321,23 @@ public abstract class AbstractProperty extends AbstractModifiable implements Pro
     }
 
     /**
-     * Adds a listener to be notified of errors.
+     * Sets a listener to be notified of errors.
      *
-     * @param listener the listener to add
+     * @param listener the listener to register. May be {@code null}
      */
     @Override
-    public void addErrorListener(ErrorListener listener) {
-        if (errorListeners == null) {
-            errorListeners = new ErrorListeners();
-        }
-        errorListeners.addListener(listener);
+    public void setErrorListener(ErrorListener listener) {
+        this.errorListener = listener;
     }
 
     /**
-     * Removes a listener.
+     * Returns the listener to be notified of errors.
      *
-     * @param listener the listener to remove
+     * @return the listener. May be {@code null}
      */
     @Override
-    public void removeErrorListener(ErrorListener listener) {
-        if (errorListeners != null) {
-            errorListeners.removeListener(listener);
-        }
+    public ErrorListener getErrorListener() {
+        return errorListener;
     }
 
     /**
@@ -407,17 +402,6 @@ public abstract class AbstractProperty extends AbstractModifiable implements Pro
     protected void checkModifiable() {
         if (isDerived()) {
             throw new UnsupportedOperationException("Attempt to modify derived property: " + getDisplayName());
-        }
-    }
-
-    /**
-     * Notify listeners of an error.
-     *
-     * @param message the error message
-     */
-    protected void onError(String message) {
-        if (errorListeners != null) {
-            errorListeners.notifyListeners(this, message);
         }
     }
 

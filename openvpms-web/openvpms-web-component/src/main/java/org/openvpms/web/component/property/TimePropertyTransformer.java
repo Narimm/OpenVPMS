@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -66,11 +66,11 @@ public class TimePropertyTransformer extends AbstractDateTimePropertyTransformer
     }
 
     /**
-     * Constructs a {@code AbstractDateTimePropertyTransformer}.
+     * Constructs a {@link TimePropertyTransformer}.
      *
      * @param property the property
-     * @param min      the minimum value for the date. If {@code null}, the date has no minimum
-     * @param max      the maximum value for the date. If {@code null}, the date has no maximum
+     * @param min      the minimum value for the date, inclusive. If {@code null}, the date has no minimum
+     * @param max      the maximum value for the date, exclusive. If {@code null}, the date has no maximum
      */
     public TimePropertyTransformer(Property property, Date min, Date max) {
         super(property, min, max, Format.DATE_TIME);
@@ -143,6 +143,7 @@ public class TimePropertyTransformer extends AbstractDateTimePropertyTransformer
      * @param min  the minimum date, or {@code null} if there is no minimum
      * @param max  the maximum date, or {@code null} if there is no maximum
      */
+    @Override
     protected void checkDateRange(Date date, Date min, Date max) {
         if (min != null && date.getTime() < min.getTime()) {
             String formatDate = DateFormatter.formatTimeDiff(MIN_DATE, date);
@@ -150,7 +151,7 @@ public class TimePropertyTransformer extends AbstractDateTimePropertyTransformer
             String msg = Messages.format("property.error.minTime", formatDate, formatMin);
             throw new PropertyException(getProperty(), msg);
         }
-        if (max != null && date.getTime() > max.getTime()) {
+        if (max != null && date.getTime() >= max.getTime()) {
             String formatDate = DateFormatter.formatTimeDiff(MIN_DATE, date);
             String formatMax = DateFormatter.formatTimeDiff(MIN_DATE, max);
             String msg = Messages.format("property.error.maxTime", formatDate, formatMax);

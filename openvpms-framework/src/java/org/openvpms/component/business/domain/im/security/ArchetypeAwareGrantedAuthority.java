@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -30,19 +28,19 @@ import java.util.StringTokenizer;
  * <p/>
  * The precise format of an authority is
  * <p/>
- * archetype:archetypService.save:person.party
+ * archetype:archetypeService.save:person.party
  * archetype:archetypeService.*:*.*
  * archetype:archetypeService.create:party.*
  * archetype:archetypeService.create:act.invoice
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 public class ArchetypeAwareGrantedAuthority extends IMObject
         implements GrantedAuthority {
 
     /**
-     * Defualt SUID
+     * Default SUID.
      */
     private static final long serialVersionUID = 1L;
 
@@ -71,14 +69,9 @@ public class ArchetypeAwareGrantedAuthority extends IMObject
      */
     private String archetypeShortName;
 
-    /**
-     * The role that this authhority belongs too
-     */
-    private SecurityRole role;
-
 
     /**
-     * Default constructor
+     * Default constructor.
      */
     public ArchetypeAwareGrantedAuthority() {
         // no op
@@ -128,7 +121,7 @@ public class ArchetypeAwareGrantedAuthority extends IMObject
      */
     public String getAuthority() {
         if (authority == null) {
-            StringBuffer buf = new StringBuffer(prefix);
+            StringBuilder buf = new StringBuilder(prefix);
             buf.append(":");
             buf.append(serviceName);
             buf.append(".");
@@ -193,20 +186,6 @@ public class ArchetypeAwareGrantedAuthority extends IMObject
         this.authority = authority;
     }
 
-    /**
-     * @return Returns the role.
-     */
-    public SecurityRole getRole() {
-        return role;
-    }
-
-    /**
-     * @param role The role to set.
-     */
-    public void setRole(SecurityRole role) {
-        this.role = role;
-    }
-
     /* (non-Javadoc)
      * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
      */
@@ -217,7 +196,6 @@ public class ArchetypeAwareGrantedAuthority extends IMObject
         copy.authority = this.authority;
         copy.method = this.method;
         copy.prefix = this.prefix;
-        copy.role = this.role;
         copy.serviceName = this.serviceName;
 
         return copy;

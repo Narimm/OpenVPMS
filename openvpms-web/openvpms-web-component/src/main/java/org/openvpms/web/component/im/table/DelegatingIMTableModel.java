@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -29,13 +27,11 @@ import java.util.List;
 
 
 /**
- * An <tt>IMTableModel</tt> that delegates to another.
+ * An {@code IMTableModel} that delegates to another.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class DelegatingIMTableModel<T, K> extends AbstractTableModel
-    implements IMTableModel<T> {
+public class DelegatingIMTableModel<T, K> extends AbstractTableModel implements IMTableModel<T> {
 
     /**
      * The model to delegate to.
@@ -43,14 +39,14 @@ public class DelegatingIMTableModel<T, K> extends AbstractTableModel
     private IMTableModel<K> model;
 
     /**
-     * Constructs a new <tt>DelegatingIMTableModel</tt>.
+     * Constructs a {@link DelegatingIMTableModel}.
      */
     public DelegatingIMTableModel() {
         this(null);
     }
 
     /**
-     * Constructs a new <tt>DelegatingIMTableModel</tt>.
+     * Constructs a {@link DelegatingIMTableModel}.
      *
      * @param model the model
      */
@@ -157,10 +153,8 @@ public class DelegatingIMTableModel<T, K> extends AbstractTableModel
      * Returns the sort criteria.
      *
      * @param column    the primary sort column
-     * @param ascending if <tt>true</tt> sort in ascending order; otherwise
-     *                  sort in <tt>descending</tt> order
-     * @return the sort criteria, or <tt>null</tt> if the column isn't
-     *         sortable
+     * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
+     * @return the sort criteria, or {@code null} if the column isn't sortable
      */
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
         return model.getSortConstraints(column, ascending);
@@ -169,8 +163,7 @@ public class DelegatingIMTableModel<T, K> extends AbstractTableModel
     /**
      * Determines if selection should be enabled.
      *
-     * @return <tt>true</tt> if selection should be enabled; otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if selection should be enabled; otherwise {@code false}
      */
     public boolean getEnableSelection() {
         return model.getEnableSelection();
@@ -179,15 +172,14 @@ public class DelegatingIMTableModel<T, K> extends AbstractTableModel
     /**
      * Determines if selection should be enabled.
      *
-     * @param enable if <tt>true</tt> selection should be enabled; otherwise
-     *               it should be disabled
+     * @param enable if {@code true} selection should be enabled; otherwise it should be disabled
      */
     public void setEnableSelection(boolean enable) {
         model.setEnableSelection(enable);
     }
 
     /**
-     * Notfies the table to refresh.
+     * Notifies the table to refresh.
      * <p/>
      * This can be used to refresh the table if properties of objects held by the model have changed.
      */
@@ -202,6 +194,22 @@ public class DelegatingIMTableModel<T, K> extends AbstractTableModel
      */
     public IMTableModel<K> getModel() {
         return model;
+    }
+
+    /**
+     * Invoked prior to the table being rendered.
+     */
+    @Override
+    public void preRender() {
+        model.preRender();
+    }
+
+    /**
+     * Invoked after the table has been rendered.
+     */
+    @Override
+    public void postRender() {
+        model.postRender();
     }
 
     /**

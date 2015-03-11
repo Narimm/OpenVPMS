@@ -1,62 +1,61 @@
-<!-- 
- *  Version: 1.0
- *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
- *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
- *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $$Id$$
--->
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
 <archetypes>
-	<archetype name="act.bankDeposit.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Bank Deposit" >
-		<node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" type="java.lang.String" path="/name"
-			hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat('Bank Deposit', '')" />
-		<node name="description" type="java.lang.String"
-			path="/description" hidden="true" derived="true"
-			derivedValue="' '" />
-		<node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
-		<node name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="0" />
-        <node name="amount" path="/total" 
-                    type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
-                    defaultValue="'0.0'" readOnly="true"/>
-		<node name="credit" path="/credit" type="java.lang.Boolean"
-			defaultValue="true()" readOnly="true" hidden="true" />
-		<node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />
-		<node name="status" path="/status" type="java.lang.String" defaultValue="'UNDEPOSITED'"
-			minCardinality="1">
-			<assertion name="lookup.local">
-				<propertyList name="entries">
-					<property name="UNDEPOSITED" value="Undeposited" />
-					<property name="DEPOSITED" value="Deposited" />
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
+    <archetype name="act.bankDeposit.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Bank Deposit">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name"
+              hidden="true" minCardinality="1" derived="true"
+              derivedValue="concat('Bank Deposit', '')"/>
+        <node name="description" type="java.lang.String"
+              path="/description" hidden="true" derived="true"
+              derivedValue="' '"/>
+        <node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"
+              defaultValue="java.util.Date.new()"/>
+        <node name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="0"/>
+        <node name="amount" path="/total"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+              defaultValue="'0.0'" readOnly="true"/>
+        <node name="credit" path="/credit" type="java.lang.Boolean"
+              defaultValue="true()" readOnly="true" hidden="true"/>
+        <node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="status" path="/status" type="java.lang.String" defaultValue="'UNDEPOSITED'"
+              minCardinality="1">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="UNDEPOSITED" value="Undeposited"/>
+                    <property name="DEPOSITED" value="Deposited"/>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
         <node name="depositAccount" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
               filter="participation.deposit" hidden="true"/>
         <node displayName="Till Balances" name="items" path="/sourceActRelationships"
-			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="actRelationship.bankDepositItem" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
-	</archetype>
+              type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="actRelationship.bankDepositItem"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+    </archetype>
 </archetypes>

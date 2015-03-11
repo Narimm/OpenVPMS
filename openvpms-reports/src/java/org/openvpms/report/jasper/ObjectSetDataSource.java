@@ -1,24 +1,25 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
 
-import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
+import net.sf.jasperreports.engine.JRRewindableDataSource;
+import org.apache.commons.jxpath.Functions;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -33,7 +34,7 @@ import java.util.Iterator;
  *
  * @author Tim Anderson
  */
-public class ObjectSetDataSource implements JRDataSource {
+class ObjectSetDataSource implements JRRewindableDataSource {
 
     /**
      * The current object.
@@ -41,9 +42,14 @@ public class ObjectSetDataSource implements JRDataSource {
     private ObjectSetExpressionEvaluator current;
 
     /**
-     * The iterator.
+     * The collection.
      */
-    private final Iterator<ObjectSet> iterator;
+    private final Iterable<ObjectSet> collection;
+
+    /**
+     * The collection iterator.
+     */
+    private Iterator<ObjectSet> iterator;
 
     /**
      * Additional fields. May be {@code null}
@@ -60,21 +66,29 @@ public class ObjectSetDataSource implements JRDataSource {
      */
     private final ILookupService lookups;
 
+    /**
+     * The JXPath extension functions.
+     */
+    private final Functions functions;
+
 
     /**
      * Constructs a {@link ObjectSetDataSource}.
      *
-     * @param iterator the iterator
-     * @param fields   additional report fields. These override any in the report. May be {@code null}
-     * @param service  the archetype service
-     * @param lookups  the lookup service
+     * @param collection the iterator
+     * @param fields     additional report fields. These override any in the report. May be {@code null}
+     * @param service    the archetype service
+     * @param lookups    the lookup service
+     * @param functions  the JXPath extension functions
      */
-    public ObjectSetDataSource(Iterator<ObjectSet> iterator, PropertySet fields, IArchetypeService service,
-                               ILookupService lookups) {
-        this.iterator = iterator;
+    public ObjectSetDataSource(Iterable<ObjectSet> collection, PropertySet fields, IArchetypeService service,
+                               ILookupService lookups, Functions functions) {
+        this.collection = collection;
+        this.iterator = collection.iterator();
         this.fields = fields;
         this.service = service;
         this.lookups = lookups;
+        this.functions = functions;
     }
 
     /**
@@ -86,7 +100,7 @@ public class ObjectSetDataSource implements JRDataSource {
     public boolean next() throws JRException {
         try {
             if (iterator.hasNext()) {
-                current = new ObjectSetExpressionEvaluator(iterator.next(), fields, service, lookups);
+                current = new ObjectSetExpressionEvaluator(iterator.next(), fields, service, lookups, functions);
                 return true;
             }
             return false;
@@ -102,5 +116,13 @@ public class ObjectSetDataSource implements JRDataSource {
      */
     public Object getFieldValue(JRField field) throws JRException {
         return current.getValue(field.getName());
+    }
+
+    /**
+     * Moves back to the first element in the data source.
+     */
+    @Override
+    public void moveFirst() {
+        iterator = collection.iterator();
     }
 }

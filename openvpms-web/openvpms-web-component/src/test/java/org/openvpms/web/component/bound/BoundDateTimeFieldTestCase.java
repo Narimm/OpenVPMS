@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.bound;
 
@@ -37,8 +35,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the {@link BoundDateTimeField} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class BoundDateTimeFieldTestCase extends AbstractBoundFieldTest<BoundDateTimeField, Date> {
 
@@ -50,10 +47,10 @@ public class BoundDateTimeFieldTestCase extends AbstractBoundFieldTest<BoundDate
     /**
      * The second test value.
      */
-    private static final Date value2 = new Date(Timestamp.valueOf("2010-12-31 23:59:00").getTime());
+    private static final Date value2 = new Date(Timestamp.valueOf("2011-01-01 00:00:00").getTime());
 
     /**
-     * Constructs a <tt>BoundDateField</tt>.
+     * Constructs a {@link BoundDateTimeFieldTestCase}.
      */
     public BoundDateTimeFieldTestCase() {
         super(value1, value2);
@@ -108,6 +105,7 @@ public class BoundDateTimeFieldTestCase extends AbstractBoundFieldTest<BoundDate
         assertNotNull(minDate);
         assertNotNull(maxDate);
         Date belowMinDate = DateRules.getDate(minDate, -1, DateUnits.DAYS);
+        Date belowMaxDate = DateRules.getDate(maxDate, -1, DateUnits.DAYS);
         Date aboveMaxDate = DateRules.getDate(maxDate, 1, DateUnits.DAYS);
 
         field.setDate(belowMinDate);
@@ -118,16 +116,20 @@ public class BoundDateTimeFieldTestCase extends AbstractBoundFieldTest<BoundDate
         assertEquals(minDate, property.getValue());
         assertTrue(property.isValid());
 
-        field.setDatetime(maxDate);
-        assertEquals(maxDate, property.getValue());
+        field.setDatetime(belowMaxDate);
+        assertEquals(belowMaxDate, property.getValue());
         assertTrue(property.isValid());
 
-        field.setDate(aboveMaxDate);
-        assertEquals(maxDate, property.getValue()); // will have previous value, but marked invalid
+        field.setDatetime(maxDate);
+        assertEquals(belowMaxDate, property.getValue()); // will have previous value, but marked invalid
         assertFalse(property.isValid());
 
-        field.setDate(maxDate);                     // set the value back to a valid date
-        assertEquals(maxDate, property.getValue());
+        field.setDate(aboveMaxDate);
+        assertEquals(belowMaxDate, property.getValue()); // will have previous value, but marked invalid
+        assertFalse(property.isValid());
+
+        field.setDate(belowMaxDate);                     // set the value back to a valid date
+        assertEquals(belowMaxDate, property.getValue());
         assertTrue(property.isValid());
     }
 

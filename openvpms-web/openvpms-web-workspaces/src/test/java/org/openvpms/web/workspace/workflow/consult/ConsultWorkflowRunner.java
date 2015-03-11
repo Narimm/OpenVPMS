@@ -67,7 +67,7 @@ class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunne
 
         // get the editor and add an item
         VisitEditor visitEditor = dialog.getEditor();
-        TestVisitCRUDWindow window = (TestVisitCRUDWindow) visitEditor.getHistory();
+        TestVisitCRUDWindow window = (TestVisitCRUDWindow) visitEditor.getHistoryWindow();
         assertNotNull(window);
         window.addNote();
     }
@@ -83,7 +83,7 @@ class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunne
 
         // get the editor
         VisitEditor visitEditor = dialog.getEditor();
-        TestVisitCRUDWindow window = (TestVisitCRUDWindow) visitEditor.getHistory();
+        TestVisitCRUDWindow window = (TestVisitCRUDWindow) visitEditor.getHistoryWindow();
         assertNotNull(window);
         Act note = window.addVisitAndNote();
         return get(note);  // need to reload as the Retryer loads it before linking it to the event

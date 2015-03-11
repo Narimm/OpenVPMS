@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -45,14 +46,19 @@ public abstract class AbstractMailer implements Mailer {
     private String from;
 
     /**
-     * The from name.
+     * The to addresses.
      */
-    private String fromName;
+    private String[] to;
 
     /**
-     * The to-address.
+     * The Cc addresses.
      */
-    private String to;
+    private String[] cc;
+
+    /**
+     * The Bcc addresses.
+     */
+    private String[] bcc;
 
     /**
      * The email subject.
@@ -81,7 +87,7 @@ public abstract class AbstractMailer implements Mailer {
 
 
     /**
-     * Constructs an <tt>AbstractMailer</tt>.
+     * Constructs an {@link AbstractMailer}.
      *
      * @param sender   the mail sender
      * @param handlers the document handlers
@@ -110,39 +116,63 @@ public abstract class AbstractMailer implements Mailer {
     }
 
     /**
-     * The from name.
-     *
-     * @param name the from name
-     */
-    public void setFromName(String name) {
-        fromName = name;
-    }
-
-    /**
-     * Returns the from name.
-     *
-     * @return the from name
-     */
-    public String getFromName() {
-        return fromName;
-    }
-
-    /**
      * Sets the to address.
      *
-     * @param to the to address
+     * @param to the to addresses. May be {@code null}
      */
-    public void setTo(String to) {
+    @Override
+    public void setTo(String[] to) {
         this.to = to;
     }
 
     /**
-     * Returns the to address.
+     * Returns the to addresses.
      *
-     * @return the to address
+     * @return the to addresses. May be {@code null}
      */
-    public String getTo() {
+    @Override
+    public String[] getTo() {
         return to;
+    }
+
+    /**
+     * Sets the CC addresses.
+     *
+     * @param cc the CC addresses. May be {@code null}
+     */
+    @Override
+    public void setCc(String[] cc) {
+        this.cc = cc;
+    }
+
+    /**
+     * Returns the CC addresses.
+     *
+     * @return the CC addresses. May be {@code null}
+     */
+    @Override
+    public String[] getCc() {
+        return cc;
+    }
+
+    /**
+     * Sets the BCC addresses.
+     *
+     * @param bcc the BCC addresses. May be {@code null}
+     */
+    @Override
+    public void setBcc(String[] bcc) {
+        this.bcc = bcc;
+    }
+
+    /**
+     * Returns the BCC addresses.
+     *
+     * @return the BCC addresses. May be {@code null}
+     */
+    @Override
+    public String[] getBcc() {
+        return bcc;
     }
 
     /**
@@ -196,40 +226,41 @@ public abstract class AbstractMailer implements Mailer {
      * @throws OpenVPMSException for any error
      */
     public void send() {
-        send(to);
-    }
-
-    /**
-     * Sends the object to the specified email address.
-     *
-     * @param address the address to send to
-     * @throws OpenVPMSException for any error
-     */
-    public void send(String address) {
         MimeMessage message = sender.createMimeMessage();
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            populateMessage(helper, address);
+            populateMessage(helper);
             sender.send(message);
         } catch (OpenVPMSException exception) {
             throw exception;
         } catch (Throwable exception) {
-            throw new MailException(MailException.ErrorCode.FailedToSend, getTo(), exception.getMessage());
+            String address = (to != null) ? StringUtils.join(to, ", ") : null;
+            throw new MailException(MailException.ErrorCode.FailedToSend, address, exception.getMessage());
         }
     }
 
     /**
      * Populates the mail message.
      *
-     * @param helper  the message helper
-     * @param address the to address
+     * @param helper the message helper
      * @throws MessagingException           for any messaging error
      * @throws UnsupportedEncodingException if the character encoding is not supported
      */
-    protected void populateMessage(MimeMessageHelper helper, String address)
+    protected void populateMessage(MimeMessageHelper helper)
             throws MessagingException, UnsupportedEncodingException {
-        helper.setFrom(getFrom(), getFromName());
-        helper.setTo(address);
+        helper.setFrom(getFrom());
+        String[] to = getTo();
+        if (to != null && to.length != 0) {
+            helper.setTo(to);
+        }
+        String[] cc = getCc();
+        if (cc != null && cc.length != 0) {
+            helper.setCc(cc);
+        }
+        String[] bcc = getBcc();
+        if (bcc != null && bcc.length != 0) {
+            helper.setBcc(bcc);
+        }
         helper.setSubject(getSubject());
         if (body != null) {
             helper.setText(body);

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -34,8 +34,7 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
 /**
  * Tests the {@link RefreshablePatientAgeFormatter} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class RefreshablePatientAgeFormatterTestCase extends PatientAgeFormatterTestCase {
 
@@ -83,6 +82,6 @@ public class RefreshablePatientAgeFormatterTestCase extends PatientAgeFormatterT
     @Override
     protected PatientAgeFormatter createFormatter() {
         IArchetypeService service = getArchetypeService();
-        return new RefreshablePatientAgeFormatter(lookupService, new PracticeRules(service), service, factory);
+        return new RefreshablePatientAgeFormatter(getLookupService(), new PracticeRules(service), service, factory);
     }
 }

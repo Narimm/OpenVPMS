@@ -1,23 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.maven.data;
 
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.maven.archetype.AbstractHibernateMojo;
@@ -32,8 +32,7 @@ import java.io.FileNotFoundException;
 /**
  * Base class for the OpenVPMS data plugin.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class AbstractDataMojo extends AbstractHibernateMojo {
 
@@ -46,20 +45,57 @@ public abstract class AbstractDataMojo extends AbstractHibernateMojo {
     private File dir;
 
     /**
+     * TODO - the JDBC properties are repeated from AbstractHibernateMojo as the maven plugin API cannot pick up
+     * parameters otherwise.
+     */
+
+    /**
+     * The Hibernate dialect;
+     *
+     * @parameter
+     * @required
+     */
+    private String dialect;
+
+    /**
+     * The JDBC driver class name.
+     *
+     * @parameter
+     * @required
+     */
+    private String driver;
+
+    /**
+     * The JDBC URL.
+     *
+     * @parameter
+     * @required
+     */
+    private String url;
+
+    /**
+     * The JDBC user name.
+     *
+     * @parameter
+     * @required
+     */
+    private String username;
+
+    /**
+     * The JDBC password.
+     *
+     * @parameter
+     * @required
+     */
+    private String password;
+
+    /**
      * Determines if verbose logging is enabled.
      *
      * @parameter=true
      * @optional
      */
     private boolean verbose = true;
-
-    /**
-     * The hibernate property file.
-     *
-     * @parameter
-     * @required
-     */
-    private File propertyfile;
 
     /**
      * The maven project to interact with.
@@ -106,21 +142,29 @@ public abstract class AbstractDataMojo extends AbstractHibernateMojo {
     }
 
     /**
-     * Sets the file containing the hibernate properties.
+     * If {@code true}, skips execution.
      *
-     * @param propertyfile the hibernate property file
+     * @parameter expression="false"
+     * @optional
      */
-    public void setPropertyfile(File propertyfile) {
-        this.propertyfile = propertyfile;
+    private boolean skip;
+
+    /**
+     * Determines if execution should be skipped.
+     *
+     * @param skip if {@code true}, skip execution
+     */
+    public void setSkip(boolean skip) {
+        this.skip = skip;
     }
 
     /**
-     * Returns the hibernate property file.
+     * Determines if execution is skipped.
      *
-     * @return the hibernate property file
+     * @return {@code true} if execution is skipped
      */
-    public File getPropertyfile() {
-        return propertyfile;
+    public boolean isSkip() {
+        return skip;
     }
 
     /**
@@ -139,6 +183,21 @@ public abstract class AbstractDataMojo extends AbstractHibernateMojo {
      */
     public MavenProject getProject() {
         return project;
+    }
+
+    /**
+     * Executes the plugin unless execution is skipped.
+     *
+     * @throws MojoExecutionException if an unexpected problem occurs
+     * @throws MojoFailureException   if an expected problem (such as a compilation failure) occurs
+     */
+    @Override
+    public void execute() throws MojoExecutionException, MojoFailureException {
+        if (!skip) {
+            super.execute();
+        } else {
+            getLog().info("Plugin is skipped");
+        }
     }
 
     /**

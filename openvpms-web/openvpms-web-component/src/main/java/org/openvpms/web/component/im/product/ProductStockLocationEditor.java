@@ -88,7 +88,7 @@ public class ProductStockLocationEditor extends EntityRelationshipEditor {
     /**
      * Returns the stock location.
      *
-     * @return the stock lcoation. May be {@code null}
+     * @return the stock location. May be {@code null}
      */
     public Party getStockLocation() {
         IMObject parent = getParent();

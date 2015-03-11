@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.app;
@@ -50,8 +50,7 @@ import java.util.Map;
  *
  * @author Tim Anderson
  */
-public abstract class ContextApplicationInstance
-        extends SpringApplicationInstance {
+public abstract class ContextApplicationInstance extends SpringApplicationInstance {
 
     /**
      * The context.
@@ -71,18 +70,32 @@ public abstract class ContextApplicationInstance
     /**
      * The practice rules.
      */
-    private final PracticeRules rules;
-
+    private final PracticeRules practiceRules;
 
     /**
-     * Constructs a {@code ContextApplicationInstance}.
-     *
-     * @param context the context
-     * @param rules   the practice rules
+     * The location rules.
      */
-    public ContextApplicationInstance(GlobalContext context, PracticeRules rules) {
+    private final LocationRules locationRules;
+
+    /**
+     * The user rules.
+     */
+    private final UserRules userRules;
+
+    /**
+     * Constructs a {@link ContextApplicationInstance}.
+     *
+     * @param context       the context
+     * @param practiceRules the practice rules
+     * @param locationRules the location rules
+     * @param userRules     the user rules
+     */
+    public ContextApplicationInstance(GlobalContext context, PracticeRules practiceRules, LocationRules locationRules,
+                                      UserRules userRules) {
         this.context = context;
-        this.rules = rules;
+        this.practiceRules = practiceRules;
+        this.locationRules = locationRules;
+        this.userRules = userRules;
         initUser();
         initPractice();
         initLocation();
@@ -126,15 +139,6 @@ public abstract class ContextApplicationInstance
      * @param shortName the archetype short name
      */
     public abstract void switchTo(String shortName);
-
-    /**
-     * Clears the current context.
-     */
-    protected void clearContext() {
-        for (IMObject object : context.getObjects()) {
-            context.removeObject(object);
-        }
-    }
 
     /**
      * Returns the client's screen resolution.
@@ -205,6 +209,15 @@ public abstract class ContextApplicationInstance
     }
 
     /**
+     * Clears the current context.
+     */
+    protected void clearContext() {
+        for (IMObject object : context.getObjects()) {
+            context.removeObject(object);
+        }
+    }
+
+    /**
      * Returns an integer property value from one of the query parameters, container context, or a default value.
      *
      * @param context         the container context
@@ -248,11 +261,10 @@ public abstract class ContextApplicationInstance
     private void initUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
-            UserRules rules = new UserRules();
-            User user = rules.getUser(auth.getName());
+            User user = userRules.getUser(auth.getName());
             if (user != null) {
                 context.setUser(user);
-                if (rules.isClinician(user)) {
+                if (userRules.isClinician(user)) {
                     context.setClinician(user);
                 }
             }
@@ -265,7 +277,7 @@ public abstract class ContextApplicationInstance
      * @throws ArchetypeServiceException for any archetype service error
      */
     private void initPractice() {
-        context.setPractice(rules.getPractice());
+        context.setPractice(practiceRules.getPractice());
     }
 
     /**
@@ -285,7 +297,6 @@ public abstract class ContextApplicationInstance
             return;
         }
 
-        UserRules userRules = new UserRules();
         // Now get the default location for the user or the first location if
         // no default.
         Party location = userRules.getDefaultLocation(user);
@@ -293,7 +304,7 @@ public abstract class ContextApplicationInstance
         // If no locations defined for user find default location for Practice
         // or the first location if no default.
         if (location == null) {
-            location = rules.getDefaultLocation(practice);
+            location = practiceRules.getDefaultLocation(practice);
         }
 
         context.setLocation(location);
@@ -314,12 +325,11 @@ public abstract class ContextApplicationInstance
 
         if (location != null) {
             // initialise the defaults for the location
-            LocationRules rules = new LocationRules();
-            deposit = rules.getDefaultDepositAccount(location);
-            till = rules.getDefaultTill(location);
-            scheduleView = rules.getDefaultScheduleView(location);
-            workListView = rules.getDefaultWorkListView(location);
-            stockLocation = getStockLocation(rules, location);
+            deposit = locationRules.getDefaultDepositAccount(location);
+            till = locationRules.getDefaultTill(location);
+            scheduleView = locationRules.getDefaultScheduleView(location);
+            workListView = locationRules.getDefaultWorkListView(location);
+            stockLocation = getStockLocation(locationRules, location);
         }
         context.setDeposit(deposit);
         context.setTill(till);

@@ -11,14 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
 
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.resource.i18n.Messages;
 
 /**
@@ -31,15 +29,10 @@ import org.openvpms.web.resource.i18n.Messages;
 public class ToAddressFormatter extends AbstractAddressFormatter {
 
     /**
-     * The singleton instance.
-     */
-    public static final AddressFormatter INSTANCE = new ToAddressFormatter();
-
-    /**
      * Default constructor.
      */
-    protected ToAddressFormatter() {
-
+    public ToAddressFormatter() {
+        super();
     }
 
     /**
@@ -50,14 +43,14 @@ public class ToAddressFormatter extends AbstractAddressFormatter {
      */
     public String format(Contact contact) {
         String result;
-        String address = getAddress(contact);
-        Party party = contact.getParty();
-        if (party != null) {
-            String type = DescriptorHelper.getDisplayName(party);
-            result = Messages.format("mail.contact.to", party.getName(), address, type);
+        String nameAddress = getQualifiedNameAddress(contact);
+        String type = getType(contact);
+        if (type != null) {
+            result = Messages.format("mail.contact.to", nameAddress, type);
         } else {
-            result = address;
+            result = nameAddress;
         }
         return result;
     }
+
 }

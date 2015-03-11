@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -23,12 +23,11 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.echo.dialog.HelpDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.help.HelpListener;
-import org.openvpms.web.echo.style.Style;
-import org.openvpms.web.echo.style.UserStyleSheets;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.beans.PropertyChangeListener;
@@ -241,12 +240,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
         if (help == null) {
             help = new HelpContext(getHelpTopic(), new HelpListener() {
                 public void show(HelpContext help) {
-                    String features = null;
-                    UserStyleSheets styleSheets = ServiceHelper.getBean(UserStyleSheets.class);
-                    Style style = styleSheets.getStyle();
-                    if (style != null) {
-                        features = style.getProperty("HelpBrowser.features");
-                    }
+                    String features = StyleSheetHelper.getProperty("HelpBrowser.features");
                     HelpDialog.show(help, ServiceHelper.getArchetypeService(), features);
                 }
             });

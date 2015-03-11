@@ -1,24 +1,21 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
-import org.openvpms.component.business.dao.hibernate.im.common.PeriodRelationshipDO;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 
 
@@ -26,10 +23,9 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
  * Data object interface corresponding to the {@link EntityRelationship}
  * class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public interface EntityRelationshipDO extends PeriodRelationshipDO {
+public interface EntityRelationshipDO extends SequencedRelationshipDO {
 
     /**
      * Returns the entity identity.
@@ -45,21 +41,4 @@ public interface EntityRelationshipDO extends PeriodRelationshipDO {
      */
     void setIdentity(EntityIdentityDO identity);
 
-    /**
-     * Returns the relationship sequence.
-     * <p/>
-     * This may be used to help order relationships.
-     *
-     * @return the relationship sequence
-     */
-    int getSequence();
-
-    /**
-     * Sets the relationship sequence.
-     * <p/>
-     * This may be used to help order relationships.
-     *
-     * @param sequence the relationship sequence
-     */
-    void setSequence(int sequence);
 }

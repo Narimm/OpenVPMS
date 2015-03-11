@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -19,6 +19,8 @@ package org.openvpms.archetype.rules.party;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -51,23 +53,36 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
 
 
     /**
-     * Tests the {@link PartyRules#getFullName(Party)} method.
+     * Tests the {@link PartyRules#getFullName(Party)} and {@link PartyRules#getFullName(Party, boolean)} method.
      */
     @Test
     public void testGetFullName() {
         Party customer = (Party) create(CustomerArchetypes.PERSON);
-        IMObjectBean bean = new IMObjectBean(customer);
+        IMObjectBean bean1 = new IMObjectBean(customer);
         Lookup mr = TestHelper.getLookup("lookup.personTitle", "MR");
-        bean.setValue("title", mr.getCode());
-        bean.setValue("firstName", "Foo");
-        bean.setValue("lastName", "Bar");
+        bean1.setValue("title", mr.getCode());
+        bean1.setValue("firstName", "Foo");
+        bean1.setValue("lastName", "Bar");
         assertEquals("Mr Foo Bar", rules.getFullName(customer));
+        assertEquals("Foo Bar", rules.getFullName(customer, false));
+        assertEquals("Mr Foo Bar", rules.getFullName(customer, true));
+
+        Party vet = (Party) create(SupplierArchetypes.SUPPLIER_VET);
+        Lookup ms = TestHelper.getLookup("lookup.personTitle", "MS");
+        IMObjectBean bean2 = new IMObjectBean(vet);
+        bean2.setValue("title", ms.getCode());
+        bean2.setValue("firstName", "Jenny");
+        bean2.setValue("lastName", "Smith");
+        assertEquals("Ms Jenny Smith", rules.getFullName(vet));
+        assertEquals("Jenny Smith", rules.getFullName(vet, false));
+        assertEquals("Ms Jenny Smith", rules.getFullName(vet, true));
 
         // verify no special formatting for other party types
-        Party pet = (Party) create("party.patientpet");
+        Party pet = (Party) create(PatientArchetypes.PATIENT);
         pet.setName("T Rex");
         assertEquals("T Rex", rules.getFullName(pet));
-
+        assertEquals("T Rex", rules.getFullName(pet, false));
+        assertEquals("T Rex", rules.getFullName(pet, true));
     }
 
     /**
@@ -385,12 +400,12 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
 
         assertEquals("", rules.getFaxNumber(party));
 
-        Contact fax1 = createFax("03", "12345");
+        Contact fax1 = createPhone("03", "12345", false, "FAX");
         party.addContact(fax1);
         assertEquals("(03) 12345", rules.getFaxNumber(party));
 
         party.removeContact(fax1);
-        Contact fax2 = createFax(null, "12345");
+        Contact fax2 = createPhone(null, "12345", false, "FAX");
         party.addContact(fax2);
         assertEquals("12345", rules.getFaxNumber(party));
     }
@@ -422,7 +437,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link PartyRules#getContact(Party, String, String)} method.
+     * Tests the {@link PartyRules#getContact(Party, String, String)}.
      */
     @Test
     public void testGetContact() {
@@ -457,11 +472,65 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies that a phone contact with FAX classifications are never returned by the {@code get*Telephone()}
+     * methods.
+     */
+    @Test
+    public void getPhoneExcludesFaxContacts() {
+        Party customer = (Party) create(CustomerArchetypes.PERSON);
+        IMObjectBean bean = new IMObjectBean(customer);
+        bean.setValue("firstName", "Foo");
+        bean.setValue("lastName", "Bar");
+
+        Contact fax = (Contact) create(ContactArchetypes.PHONE);
+        populatePhone(fax, "7777 1234", true, "FAX");
+        customer.addContact(fax);
+        save(customer);
+
+        // add the phone contact afterwards, to ensure it gets a higher id. Contacts are sorted by id in the rules
+        // to ensure deterministic behaviour
+        Contact phone = (Contact) create(ContactArchetypes.PHONE);
+        populatePhone(phone, "9999 6789", false, null);
+        customer.addContact(phone);
+
+        save(customer);
+        assertEquals("(03) 9999 6789", rules.getTelephone(customer));
+        assertEquals("(03) 9999 6789", rules.getHomeTelephone(customer));
+        assertEquals("", rules.getWorkTelephone(customer));
+        assertEquals("", rules.getMobileTelephone(customer));
+
+        Contact work = (Contact) create(ContactArchetypes.PHONE);
+        populatePhone(work, "8888 1234", false, "WORK");
+        customer.addContact(work);
+        save(customer);
+        assertEquals("(03) 9999 6789", rules.getTelephone(customer));
+        assertEquals("(03) 9999 6789", rules.getHomeTelephone(customer));
+        assertEquals("(03) 8888 1234", rules.getWorkTelephone(customer));
+        assertEquals("", rules.getMobileTelephone(customer));
+
+        Contact mobile = (Contact) create(ContactArchetypes.PHONE);
+        populatePhone(mobile, "6666 5432", false, "MOBILE");
+        customer.addContact(mobile);
+        save(customer);
+        assertEquals("(03) 9999 6789", rules.getTelephone(customer));
+        assertEquals("(03) 9999 6789", rules.getHomeTelephone(customer));
+        assertEquals("(03) 8888 1234", rules.getWorkTelephone(customer));
+        assertEquals("(03) 6666 5432", rules.getMobileTelephone(customer));
+
+        // add a FAX classification to the work contact. The work contact should no longer be returned
+        work.addClassification(getContactPurpose("FAX"));
+        assertEquals("(03) 9999 6789", rules.getTelephone(customer));
+        assertEquals("(03) 9999 6789", rules.getHomeTelephone(customer));
+        assertEquals("", rules.getWorkTelephone(customer));
+        assertEquals("(03) 6666 5432", rules.getMobileTelephone(customer));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
-        rules = new PartyRules(getArchetypeService());
+        rules = new PartyRules(getArchetypeService(), getLookupService());
 
         Lookup state = TestHelper.getLookup("lookup.state", "VIC", "Victoria", true);
         state.setDefaultLookup(true);
@@ -515,7 +584,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      * @return the lookup
      */
     private Lookup getContactPurpose(String purpose) {
-        return TestHelper.getLookup("lookup.contactPurpose", purpose);
+        return TestHelper.getLookup(ContactArchetypes.PURPOSE, purpose);
     }
 
     /**
@@ -587,21 +656,6 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     private void enableSMS(Contact contact) {
         IMObjectBean bean = new IMObjectBean(contact);
         bean.setValue("sms", true);
-    }
-
-    /**
-     * Creates a new <em>contact.faxNumber</em>.
-     *
-     * @param areaCode the area code. May be {@code null}
-     * @param number   the fax number
-     * @return a new fax contact
-     */
-    private Contact createFax(String areaCode, String number) {
-        Contact contact = (Contact) create(ContactArchetypes.FAX);
-        IMObjectBean bean = new IMObjectBean(contact);
-        bean.setValue("areaCode", areaCode);
-        bean.setValue("faxNumber", number);
-        return contact;
     }
 
     /**

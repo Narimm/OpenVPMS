@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -21,6 +21,7 @@ import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
@@ -34,7 +35,10 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.sms.Connection;
+import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.processor.BatchProcessorTask;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
@@ -106,7 +110,12 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     private final HelpContext help;
 
     /**
-     * Constructs a {@code ReminderGenerator} to process a single reminder.
+     * Determines if reminders can be sent via SMS.
+     */
+    private final boolean sms;
+
+    /**
+     * Constructs a {@link ReminderGenerator} to process a single reminder.
      *
      * @param event       the reminder event
      * @param context     the context
@@ -130,6 +139,13 @@ public class ReminderGenerator extends AbstractBatchProcessor {
             case EXPORT:
                 processors.add(createExportProcessor(reminders));
                 break;
+            case SMS:
+                if (sms) {
+                    processors.add(createSMSProcessor(reminders));
+                } else {
+                    processors.add(createListProcessor(reminders));
+                }
+                break;
             case LIST:
             case PHONE:
                 processors.add(createListProcessor(reminders));
@@ -141,8 +157,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     }
 
     /**
-     * Constructs a new {@code ReminderGenerator} for reminders returned by a
-     * query.
+     * Constructs a {@link ReminderGenerator} for reminders returned by a query.
      *
      * @param query       the query
      * @param context     the context
@@ -161,7 +176,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     }
 
     /**
-     * Creates a new {@code ReminderGenerator}.
+     * Constructs a {@link ReminderGenerator}.
      *
      * @param reminders   the reminders to process
      * @param from        only process reminder if its next due date &gt;= from
@@ -177,15 +192,15 @@ public class ReminderGenerator extends AbstractBatchProcessor {
                              HelpContext help) {
         this(context, help);
 
-        ReminderProcessor processor = new ReminderProcessor(from, to, new Date(), ServiceHelper.getArchetypeService(),
-                                                            new PatientRules(ServiceHelper.getArchetypeService(),
-                                                                             ServiceHelper.getLookupService()));
-
+        ReminderProcessor processor = new ReminderProcessor(from, to, new Date(), !sms,
+                                                            ServiceHelper.getArchetypeService(),
+                                                            ServiceHelper.getBean(PatientRules.class));
         ReminderCollector cancelCollector = new ReminderCollector();
         ReminderCollector listCollector = new ReminderCollector();
         ReminderCollector emailCollector = new ReminderCollector();
         ReminderCollector printCollector = new ReminderCollector();
         ReminderCollector exportCollector = new ReminderCollector();
+        ReminderCollector smsCollector = new ReminderCollector();
 
         processor.addListener(ReminderEvent.Action.CANCEL, cancelCollector);
         processor.addListener(ReminderEvent.Action.EMAIL, emailCollector);
@@ -194,6 +209,12 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         processor.addListener(ReminderEvent.Action.LIST, listCollector);
         processor.addListener(ReminderEvent.Action.EXPORT, exportCollector);
         // phone and list reminders get sent to the same report
+
+        if (sms) {
+            processor.addListener(ReminderEvent.Action.SMS, smsCollector);
+        } else {
+            processor.addListener(ReminderEvent.Action.SMS, listCollector);
+        }
 
         while (reminders.hasNext()) {
             processor.process(reminders.next());
@@ -204,6 +225,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         List<List<ReminderEvent>> listReminders = listCollector.getReminders();
         List<List<ReminderEvent>> printReminders = printCollector.getReminders();
         List<List<ReminderEvent>> exportReminders = exportCollector.getReminders();
+        List<List<ReminderEvent>> smsReminders = smsCollector.getReminders();
 
         if (!cancelReminders.isEmpty()) {
             processors.add(createCancelProcessor(cancelReminders));
@@ -218,13 +240,16 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         if (!emailReminders.isEmpty()) {
             processors.add(createEmailProcessor(emailReminders));
         }
+        if (!smsReminders.isEmpty()) {
+            processors.add(createSMSProcessor(smsReminders));
+        }
         if (!exportReminders.isEmpty()) {
             processors.add(createExportProcessor(exportReminders));
         }
     }
 
     /**
-     * Creates a new {@code ReminderGenerator}.
+     * Constructs a {@link ReminderGenerator}.
      *
      * @param context the context
      * @param help    the help context
@@ -236,11 +261,12 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         }
         this.context = context;
         this.help = help;
-        TemplateHelper helper = new TemplateHelper();
+        TemplateHelper helper = new TemplateHelper(ServiceHelper.getArchetypeService());
         groupTemplate = helper.getDocumentTemplate("GROUPED_REMINDERS");
         if (groupTemplate == null) {
             throw new ReportingException(ReportingException.ErrorCode.NoGroupedReminderTemplate);
         }
+        sms = !StringUtils.isEmpty(groupTemplate.getSMS()) && SMSHelper.isSMSEnabled(context.getPractice());
     }
 
     /**
@@ -362,6 +388,18 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         result.setInteractiveAlways(interactive);
         result.setMailContext(mailContext);
         return result;
+    }
+
+    /**
+     * Creates a new SMS processor.
+     *
+     * @param reminders the reminders to SMS
+     * @return a new processor
+     */
+    private ReminderBatchProcessor createSMSProcessor(List<List<ReminderEvent>> reminders) {
+        ConnectionFactory factory = ServiceHelper.getSMSConnectionFactory();
+        Connection connection = factory.createConnection();
+        return new ReminderSMSProgressBarProcessor(reminders, connection, groupTemplate, statistics, context);
     }
 
     /**

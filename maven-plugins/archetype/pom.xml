@@ -1,3 +1,19 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -5,7 +21,7 @@
     <parent>
         <groupId>org.openvpms</groupId>
         <artifactId>maven-plugins</artifactId>
-        <version>1.7.1</version>
+        <version>1.8-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -16,6 +32,15 @@
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <testSourceDirectory>src/test/java</testSourceDirectory>
+        <testResources>
+            <testResource>
+                <directory>${basedir}/src/test/resources</directory>
+                <includes>
+                    <include>*.xml</include>
+                </includes>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -28,17 +53,14 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-project</artifactId>
-            <version>2.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
-            <version>2.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-framework</artifactId>
-            <version>${pom.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -64,13 +86,11 @@
             <groupId>org.apache.maven.plugin-testing</groupId>
             <artifactId>maven-plugin-testing-harness</artifactId>
             <scope>test</scope>
-            <version>1.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.plugin-testing</groupId>
             <artifactId>maven-plugin-testing-tools</artifactId>
             <scope>test</scope>
-            <version>1.2</version>
         </dependency>
     </dependencies>
 </project>

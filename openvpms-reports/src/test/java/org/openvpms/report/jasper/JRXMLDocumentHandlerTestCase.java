@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -88,7 +88,7 @@ public class JRXMLDocumentHandlerTestCase extends AbstractReportTest {
         } catch (JRXMLDocumentException expected) {
             assertEquals(JRXMLDocumentException.ErrorCode.ReadError, expected.getErrorCode());
             assertEquals("Failed to read /reports/invalid.jrxml. Please ensure it is saved to be compatible with "
-                         + "JasperReports 3.7.6", expected.getMessage());
+                         + "JasperReports 5.6.1", expected.getMessage());
         }
     }
 }

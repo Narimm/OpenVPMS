@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.messaging;
@@ -26,6 +26,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 
@@ -90,7 +91,7 @@ public class UserMessageEditDialog extends EditDialog {
 
     private boolean send() {
         boolean result = false;
-        Validator validator = new Validator();
+        Validator validator = new DefaultValidator();
         if (getEditor().validate(validator)) {
             result = doSend();
         } else {

@@ -11,13 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.party.Contacts;
+import org.openvpms.archetype.rules.party.PurposeMatcher;
+import org.openvpms.archetype.rules.party.SMSMatcher;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -35,7 +38,6 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -85,7 +87,12 @@ public class ReminderRules {
     }
 
     /**
-     * Constructs a {@code ReminderRules}.
+     * The reminder contact classification code.
+     */
+    private static final String REMINDER = "REMINDER";
+
+    /**
+     * Constructs a {@link ReminderRules}.
      *
      * @param service      the archetype service
      * @param patientRules the patient rules
@@ -95,9 +102,9 @@ public class ReminderRules {
     }
 
     /**
-     * Creates a new {@code ReminderRules}.
-     * A reminder type cache can be specified to cache reminders. By default,
-     * no cache is used.
+     * Constructs a {@link ReminderRules}.
+     * <p/>
+     * A reminder type cache can be specified to cache reminders. By default, no cache is used.
      *
      * @param service       the archetype service
      * @param reminderTypes a cache for reminder types. If {@code null}, no caching is used
@@ -110,17 +117,17 @@ public class ReminderRules {
     }
 
     /**
-     * Sets any 'in progress' reminders that have the same patient and matching reminder group and/or type as that in
-     * the supplied reminders to 'completed'.
+     * Sets any IN_PROGRESS reminders that have the same patient and matching reminder group and/or type as that in
+     * the supplied reminders to COMPLETED.
      * <p/>
-     * This only has effect if the reminders have 'in progress' status.
+     * This only has effect if the reminders have IN_PROGRESS status.
      * <p/>
      * This method should be used in preference to {@link #markMatchingRemindersCompleted(Act)} if multiple reminders
      * are being saved which may contain duplicates. The former won't mark duplicates completed if they are all saved
      * within the same transaction.
      * <p/>
      * Reminders are processed in the order they appear in the list. If later reminders match earlier ones, the later
-     * ones will be marked 'completed'.
+     * ones will be marked COMPLETED.
      *
      * @param reminders the reminders
      * @throws ArchetypeServiceException for any archetype service exception
@@ -146,17 +153,17 @@ public class ReminderRules {
                         }
                     }
                     // now mark any persistent matching reminders completed
-                    doMarkMatchingRemindersCompleted(reminder);
+                    doMarkMatchingRemindersCompleted(reminder, type, patient);
                 }
             }
         }
     }
 
     /**
-     * Sets any 'in progress' reminders that have the same patient and matching reminder group and/or type as that in
-     * the supplied reminder to 'completed'.
+     * Sets any IN_PROGRESS reminders that have the same patient and matching reminder group and/or type as that in
+     * the supplied reminder to COMPLETED.
      * <p/>
-     * This only has effect if the reminder is new and has 'in progress' status.
+     * This only has effect if the reminder is new and has IN_PROGRESS status.
      * <p/>
      * This method is intended to be invoked just prior to a new reminder being saved.
      *
@@ -216,10 +223,10 @@ public class ReminderRules {
     }
 
     /**
-     * Returns a count of 'in progress' reminders for a patient.
+     * Returns a count of IN_PROGRESS reminders for a patient.
      *
      * @param patient the patient
-     * @return the no. of 'in progress' reminders for {@code patient}
+     * @return the no. of IN_PROGRESS reminders for {@code patient}
      * @throws ArchetypeServiceException for any error
      */
     public int countReminders(Party patient) {
@@ -230,12 +237,12 @@ public class ReminderRules {
     }
 
     /**
-     * Returns a count of 'in progress' alerts whose endTime is greater than
+     * Returns a count of IN_PROGRESS alerts whose endTime is greater than
      * the specified date/time.
      *
      * @param patient the patient
      * @param date    the date/time
-     * @return the no. of 'in progress' alerts for {@code patient}
+     * @return the no. of IN_PROGRESS alerts for {@code patient}
      * @throws ArchetypeServiceException for any error
      */
     public int countAlerts(Party patient, Date date) {
@@ -421,10 +428,16 @@ public class ReminderRules {
     }
 
     /**
-     * Returns the first contact with classification 'REMINDER', or; the
-     * preferred contact.location if no contact has this classification,
-     * or; the first contact.location if none is preferred, or; the first
-     * location if there are no contact.locations.
+     * Returns a contact for reminders.
+     * <p/>
+     * This returns:
+     * <ol>
+     * <li>the first location contact with classification 'REMINDER'; or </li>
+     * <li>any contact with classification 'REMINDER'; or</li>
+     * <li>the preferred location contact if no contact has a REMINDER classification; or</li>
+     * <li>any preferred contact if there is no preferred location contact; or</li>
+     * <li>the first available contact if there is no preferred contact.</li>
+     * </ol>
      *
      * @param contacts the contacts
      * @return a contact, or {@code null} if none is found
@@ -444,6 +457,19 @@ public class ReminderRules {
      */
     public Contact getPhoneContact(Set<Contact> contacts) {
         return getContact(contacts, false, ContactArchetypes.PHONE);
+    }
+
+    /**
+     * Returns the first SMS phone contact with classification 'REMINDER' or the preferred phone contact if no contact
+     * has this classification.
+     *
+     * @param contacts the contacts
+     * @return a contact, or {@code null} if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Contact getSMSContact(Set<Contact> contacts) {
+        List<Contact> list = Contacts.sort(contacts); // sort to make it deterministic
+        return Contacts.find(list, new SMSMatcher(REMINDER, false, service));
     }
 
     /**
@@ -683,10 +709,12 @@ public class ReminderRules {
     }
 
     /**
-     * Sets any 'in progress' reminders that have the same patient and matching reminder group and/or type as that in
-     * the supplied reminder to 'completed'.
+     * Sets any IN_PROGRESS reminders that have the same patient and matching reminder group and/or type as that in
+     * the supplied reminder to COMPLETED.
      * <p/>
-     * This only has effect if the reminder has 'in progress' status.
+     * This only has effect if the reminder has IN_PROGRESS status.
+     * <p/>
+     * If the reminder is set to expire, it is also marked COMPLETED.
      *
      * @param reminder the reminder
      * @throws ArchetypeServiceException for any archetype service exception
@@ -697,21 +725,42 @@ public class ReminderRules {
             ReminderType reminderType = getReminderType(bean);
             IMObjectReference patient = bean.getNodeParticipantRef("patient");
             if (reminderType != null && patient != null) {
-                ArchetypeQuery query = new ArchetypeQuery(ReminderArchetypes.REMINDER, false, true);
-                query.add(Constraints.eq("status", ReminderStatus.IN_PROGRESS));
-                query.add(Constraints.join("patient").add(Constraints.eq("entity", patient)));
-                if (!reminder.isNew()) {
-                    query.add(Constraints.ne("id", reminder.getId()));
-                }
-                query.setMaxResults(ArchetypeQuery.ALL_RESULTS); // must query all, otherwise the iteration would change
-                IMObjectQueryIterator<Act> reminders = new IMObjectQueryIterator<Act>(service, query);
-                while (reminders.hasNext()) {
-                    Act act = reminders.next();
-                    if (hasMatchingTypeOrGroup(act, reminderType)) {
-                        markCompleted(act);
-                    }
-                }
+                doMarkMatchingRemindersCompleted(reminder, reminderType, patient);
             }
+        }
+    }
+
+    /**
+     * Sets any IN_PROGRESS reminders that have the same patient and matching reminder group and/or type as that in
+     * the supplied reminder to COMPLETED.
+     * <p/>
+     * This only has effect if the reminder has IN_PROGRESS status.
+     * <p/>
+     * If the reminder is set to expire, it is also marked COMPLETED.
+     *
+     * @param reminder     the reminder
+     * @param reminderType the reminder type
+     * @param patient      the patient reference
+     * @throws ArchetypeServiceException for any archetype service exception
+     */
+    private void doMarkMatchingRemindersCompleted(Act reminder, ReminderType reminderType, IMObjectReference patient) {
+        ArchetypeQuery query = new ArchetypeQuery(ReminderArchetypes.REMINDER, false, true);
+        query.add(Constraints.eq("status", ReminderStatus.IN_PROGRESS));
+        query.add(Constraints.join("patient").add(Constraints.eq("entity", patient)));
+        if (!reminder.isNew()) {
+            query.add(Constraints.ne("id", reminder.getId()));
+        }
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS); // must query all, otherwise the iteration would change
+        IMObjectQueryIterator<Act> reminders = new IMObjectQueryIterator<Act>(service, query);
+        while (reminders.hasNext()) {
+            Act act = reminders.next();
+            if (hasMatchingTypeOrGroup(act, reminderType)) {
+                markCompleted(act);
+            }
+        }
+        // if the reminder is set to expire immediately, mark it COMPLETED
+        if (reminderType.shouldCancel(reminder.getActivityEndTime(), new Date())) {
+            markCompleted(reminder);
         }
     }
 
@@ -733,66 +782,28 @@ public class ReminderRules {
     }
 
     /**
-     * Returns the first contact with classification 'REMINDER' or the
-     * preferred contact with the specified short name if no contact has this
-     * classification.
+     * Returns the first contact with classification 'REMINDER' or the preferred contact with the specified short name
+     * if no contact has this classification.
      *
      * @param contacts   the contacts
-     * @param anyContact if {@code true} any contact with a 'REMINDER'
-     *                   classification will be returned. If there is
-     *                   no 'REMINDER' contact, the first preferred contact
-     *                   with the short name will be returned. If there is
-     *                   no preferred contact then the first contact matching
-     *                   the short name will be returned. If there is no
-     *                   contact matching the short name, the first preferred
-     *                   contact will be returned.
-     *                   If {@code false} only those contacts of type
-     *                   <em>shortName</em> will be returned
-     * @param shortNames the archetype shortname of the preferred contact
+     * @param anyContact if {@code true} any contact with a 'REMINDER classification will be returned.
+     * @param shortName  the archetype shortname of the preferred contact
      * @return a contact, or {@code null} if none is found
      */
-    private Contact getContact(Set<Contact> contacts, boolean anyContact, String... shortNames) {
-        Contact reminder = null;
-        Contact preferred = null;
-        Contact fallback = null;
-        for (Contact contact : contacts) {
-            IMObjectBean bean = new IMObjectBean(contact, service);
-            if (bean.isA(shortNames) || anyContact) {
-                if (reminder == null || !TypeHelper.isA(reminder, shortNames)) {
-                    List<Lookup> purposes = bean.getValues("purposes", Lookup.class);
-                    for (Lookup purpose : purposes) {
-                        if ("REMINDER".equals(purpose.getCode())) {
-                            reminder = contact;
-                            break;
-                        }
-                    }
-                }
-
-                if (preferred == null || !TypeHelper.isA(preferred, shortNames)) {
-                    if (bean.hasNode("preferred") && bean.getBoolean("preferred")) {
-                        preferred = contact;
-                    }
-                }
-                if (fallback == null || !TypeHelper.isA(fallback, shortNames)) {
-                    fallback = contact;
+    private Contact getContact(Set<Contact> contacts, boolean anyContact, String shortName) {
+        List<Contact> list = Contacts.sort(contacts); // sort to make it deterministic
+        Contact result = Contacts.find(list, new PurposeMatcher(shortName, REMINDER, service));
+        if (result == null && anyContact) {
+            result = Contacts.find(list, new PurposeMatcher("contact.*", REMINDER, service));
+            if (result == null) {
+                // no contact found with reminder purpose, so use the preferred contact with the specified short name.
+                result = Contacts.find(list, new PurposeMatcher(shortName, null, false, service));
+                if (result == null) {
+                    // no contact found with the short name, so use the first available preferred contact, or
+                    // if none preferred, the first available
+                    result = Contacts.find(list, new PurposeMatcher("contact.*", null, false, service));
                 }
             }
-        }
-        Contact result;
-        if (reminder != null) {
-            result = reminder;
-        } else if (preferred != null && fallback != null) {
-            if (TypeHelper.isA(preferred, shortNames)) {
-                result = preferred;
-            } else if (TypeHelper.isA(fallback, shortNames)) {
-                result = fallback;
-            } else {
-                result = preferred;
-            }
-        } else if (preferred != null) {
-            result = preferred;
-        } else {
-            result = fallback;
         }
         return result;
     }

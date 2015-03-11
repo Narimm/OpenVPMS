@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.openoffice;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.jxpath.Functions;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -80,6 +81,11 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
     private final DocumentHandlers handlers;
 
     /**
+     * The JXPath extension functions.
+     */
+    private final Functions functions;
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(OpenOfficeIMReport.class);
@@ -95,17 +101,19 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
     /**
      * Constructs an {@link OpenOfficeIMReport}.
      *
-     * @param template the document template
-     * @param service  the archetype service
-     * @param lookups  the lookup service
-     * @param handlers the document handlers
+     * @param template  the document template
+     * @param service   the archetype service
+     * @param lookups   the lookup service
+     * @param handlers  the document handlers
+     * @param functions the factory for JXPath extension functions
      */
     public OpenOfficeIMReport(Document template, IArchetypeService service, ILookupService lookups,
-                              DocumentHandlers handlers) {
+                              DocumentHandlers handlers, Functions functions) {
         this.template = template;
         this.service = service;
         this.lookups = lookups;
         this.handlers = handlers;
+        this.functions = functions;
     }
 
     /**
@@ -182,7 +190,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Document generate(Iterator<T> objects) {
+    public Document generate(Iterable<T> objects) {
         return generate(objects, getDefaultMimeType());
     }
 
@@ -196,7 +204,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    public Document generate(Iterator<T> objects, String mimeType) {
+    public Document generate(Iterable<T> objects, String mimeType) {
         Map<String, Object> empty = Collections.emptyMap();
         return generate(objects, empty, null, mimeType);
     }
@@ -214,7 +222,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    public Document generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields) {
+    public Document generate(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields) {
         return generate(objects, parameters, fields, getDefaultMimeType());
     }
 
@@ -229,7 +237,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    public Document generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
+    public Document generate(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
                              String mimeType) {
         OpenOfficeDocument doc = null;
         OOConnection connection = null;
@@ -255,7 +263,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    public void generate(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
+    public void generate(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
                          String mimeType, OutputStream stream) {
         OpenOfficeDocument doc = null;
         OOConnection connection = null;
@@ -291,7 +299,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public void print(Iterator<T> objects, PrintProperties properties) {
+    public void print(Iterable<T> objects, PrintProperties properties) {
         print(objects, Collections.<String, Object>emptyMap(), null, properties);
     }
 
@@ -306,7 +314,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    public void print(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
+    public void print(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
                       PrintProperties properties) {
         OpenOfficeDocument doc = null;
         OOConnection connection = null;
@@ -314,7 +322,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
             PrintService service = OpenOfficeHelper.getPrintService();
             connection = OpenOfficeHelper.getConnectionPool().getConnection();
             doc = create(objects, parameters, fields, connection);
-            service.print(doc, properties.getPrinterName(), properties.getCopies(), true);
+            service.print(doc, properties, true);
         } catch (OpenOfficeException exception) {
             throw new ReportException(exception, FailedToPrintReport, exception.getMessage());
         } finally {
@@ -333,14 +341,15 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected OpenOfficeDocument create(Iterator<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
+    protected OpenOfficeDocument create(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
                                         OOConnection connection) {
         OpenOfficeDocument doc = null;
+        Iterator<T> iter = objects.iterator();
         T object = null;
-        if (objects.hasNext()) {
-            object = objects.next();
+        if (iter.hasNext()) {
+            object = iter.next();
         }
-        if (object == null || objects.hasNext()) {
+        if (object == null || iter.hasNext()) {
             throw new ReportException(FailedToGenerateReport, "Can only report on single objects");
         }
 
@@ -417,7 +426,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      */
     protected void populateUserFields(OpenOfficeDocument document, T object, Map<String, Object> parameters,
                                       Map<String, Object> fields) {
-        ExpressionEvaluator eval = ExpressionEvaluatorFactory.create(object, fields, service, lookups);
+        ExpressionEvaluator eval = ExpressionEvaluatorFactory.create(object, fields, service, lookups, functions);
         List<String> userFields = document.getUserFieldNames();
         for (String name : userFields) {
             String value = getParameter(name, parameters);

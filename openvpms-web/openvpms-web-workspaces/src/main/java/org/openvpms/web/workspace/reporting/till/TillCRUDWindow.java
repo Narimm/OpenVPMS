@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.till;
@@ -51,6 +51,7 @@ import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
+import org.openvpms.web.component.im.till.CashDrawer;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectViewer;
@@ -98,30 +99,39 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     private FinancialAct childAct;
 
     /**
+     * The till rules.
+     */
+    private final TillRules rules;
+
+    /**
      * Start clear button identifier.
      */
-    private static final String START_CLEAR_ID = "startClear";
+    private static final String START_CLEAR_ID = "button.startClear";
 
     /**
      * Clear button identifier.
      */
-    private static final String CLEAR_ID = "clear";
+    private static final String CLEAR_ID = "button.clear";
 
     /**
      * Adjust button identifier.
      */
-    private static final String ADJUST_ID = "adjust";
+    private static final String ADJUST_ID = "button.adjust";
 
     /**
      * Transfer button identifier.
      */
-    private static final String TRANSFER_ID = "transfer";
+    private static final String TRANSFER_ID = "button.transfer";
+
+    /**
+     * Open drawer button identifier.
+     */
+    private static final String OPEN_DRAWER_ID = "button.openDrawer";
 
     /**
      * Till balance short name.
      */
     private static final String TILL_BALANCE = "act.tillBalance";
-    private final TillRules rules;
 
 
     /**
@@ -192,12 +202,19 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
                 onTransfer();
             }
         });
+        Button open = ButtonFactory.create(OPEN_DRAWER_ID, new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                onOpenDrawer();
+            }
+        });
         buttons.add(startClear);
         buttons.add(clear);
         buttons.add(createPrintButton());
         buttons.add(adjust);
         buttons.add(createEditButton());
         buttons.add(transfer);
+        buttons.add(open);
     }
 
     /**
@@ -232,6 +249,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         buttons.setEnabled(ADJUST_ID, uncleared || inProgress);
         buttons.setEnabled(EDIT_ID, enableEdit);
         buttons.setEnabled(TRANSFER_ID, enableTransfer);
+        buttons.setEnabled(OPEN_DRAWER_ID, canOpenDrawer());
     }
 
     /**
@@ -257,8 +275,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
                 });
                 dialog.show();
             } else {
-                ErrorDialog.show(Messages.get("till.clear.title"),
-                                 Messages.get("till.clear.error.clearInProgress"));
+                ErrorDialog.show(Messages.get("till.clear.title"), Messages.get("till.clear.error.clearInProgress"));
             }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception.getMessage(), exception);
@@ -377,21 +394,23 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
             }
         });
         dialog.show();
-
     }
 
     /**
-     * Returns all tills except that supplied.
-     *
-     * @param till the till to exclude
-     * @return the list of available tills
+     * Invoked when the 'open drawer' button is pressed.
      */
-    private List<IMObject> getTillsExcluding(Party till) {
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        ArchetypeQuery query = new ArchetypeQuery(TillArchetypes.TILL, true).setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        List<IMObject> tills = service.get(query).getResults();
-        tills.remove(till);
-        return tills;
+    protected void onOpenDrawer() {
+        Entity till = getContext().getTill();
+        if (till != null) {
+            CashDrawer drawer = new CashDrawer(till);
+            try {
+                if (drawer.canOpen()) {
+                    drawer.open();
+                }
+            } catch (Throwable exception) {
+                ErrorHelper.show(exception);
+            }
+        }
     }
 
     /**
@@ -426,7 +445,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         // pass in the parent balance, if it isn't CLEARED
         FinancialAct balance = getObject();
         if (balance != null && !TillBalanceStatus.CLEARED.equals(balance.getStatus())) {
-            return IMObjectEditorFactory.create(object, balance, context);
+            return ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, balance, context);
         } else {
             return super.createEditor(object, context);
         }
@@ -482,6 +501,35 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
             ErrorHelper.show(exception.getMessage(), exception);
         }
         onRefresh(getObject());
+    }
+
+    /**
+     * Returns all tills except that supplied.
+     *
+     * @param till the till to exclude
+     * @return the list of available tills
+     */
+    private List<IMObject> getTillsExcluding(Party till) {
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        ArchetypeQuery query = new ArchetypeQuery(TillArchetypes.TILL, true).setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        List<IMObject> tills = service.get(query).getResults();
+        tills.remove(till);
+        return tills;
+    }
+
+    /**
+     * Determines if the cash drawer can be opened for the current till.
+     *
+     * @return {@code true} if the cash drawer can be opened
+     */
+    private boolean canOpenDrawer() {
+        boolean result = false;
+        Entity till = getContext().getTill();
+        if (till != null) {
+            CashDrawer drawer = new CashDrawer(till);
+            result = drawer.canOpen();
+        }
+        return result;
     }
 
     /**

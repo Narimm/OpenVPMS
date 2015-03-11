@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -27,7 +27,7 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.customer.estimate.EstimateCRUDWindow;
-import org.openvpms.web.workspace.customer.estimate.EstimateInvoicerHelper;
+import org.openvpms.web.workspace.customer.estimate.EstimateInvoicer;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
 import org.openvpms.web.workspace.patient.estimate.VisitEstimateEditor;
 
@@ -125,11 +125,32 @@ public class VisitEstimateCRUDWindow extends EstimateCRUDWindow {
      */
     @Override
     protected void invoice(Act estimate) {
+        // disable automatic charging of orders when invoicing estimates
+        VisitChargeCRUDWindow window = visitEditor.getCharge();
+        boolean autoChargeOrders = window.isAutoChargeOrders();
+        window.setAutoChargeOrders(false);
+
+        // show the charge window
         visitEditor.selectCharges();
+
+        // invoice the estimate
         VisitChargeEditor editor = visitEditor.getChargeEditor();
-        EstimateInvoicerHelper.invoice(estimate, editor);
+        EstimateInvoicer invoicer = createEstimateInvoicer();
+        invoicer.invoice(estimate, editor);
         estimate.setStatus(EstimateActStatus.INVOICED);
         SaveHelper.save(estimate);
         onRefresh(estimate);
+
+        // reset auto-charging
+        window.setAutoChargeOrders(autoChargeOrders);
+    }
+
+    /**
+     * Creates a new {@link EstimateInvoicer}.
+     *
+     * @return a new estimate invoicer
+     */
+    protected EstimateInvoicer createEstimateInvoicer() {
+        return new EstimateInvoicer();
     }
 }

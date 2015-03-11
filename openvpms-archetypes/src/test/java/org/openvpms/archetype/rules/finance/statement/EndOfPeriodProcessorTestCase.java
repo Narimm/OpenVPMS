@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.statement;
@@ -27,7 +27,9 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
@@ -56,6 +58,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
     @Test
     public void testStatementDate() {
         Date now = new Date();
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
 
         try {
             new EndOfPeriodProcessor(now, true, getPractice(), service, lookups, accountRules);
@@ -88,6 +92,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      */
     @Test
     public void testEndOfPeriod() {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         StatementRules rules = new StatementRules(getPractice(), service, lookups, accountRules);
         Party customer = getCustomer();
 
@@ -151,6 +157,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      */
     @Test
     public void testPostCompleted() {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         Party customer = getCustomer();
 
         // 60 days account fee days i.e 60 days before overdue fees are
@@ -200,6 +208,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      */
     @Test
     public void testNoPostCompleted() {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         Party customer = getCustomer();
 
         final Money amount = new Money(100);
@@ -239,6 +249,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      */
     @Test
     public void testEndOfPeriodWithFixedAccountFees() {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("25.00");
 
@@ -296,6 +308,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      */
     @Test
     public void testEndOfPeriodWithPercentageAccountFees() {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         Party customer = getCustomer();
         BigDecimal feePercent = new BigDecimal("1.25");
 
@@ -354,6 +368,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      */
     @Test
     public void testEndOfPeriodForNoActivity() {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         Party customer = getCustomer();
         Date statementDate = getDate("2007-05-02");
         EndOfPeriodProcessor processor
@@ -382,6 +398,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      */
     @Test
     public void testEndOfPeriodForZeroBalance() {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         Party customer = getCustomer();
 
         Money amount = new Money(100);
@@ -424,6 +442,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      */
     @Test
     public void testEndOfPeriodForCreditBalance() {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         Party customer = getCustomer();
 
         // 30 days account fee days i.e 30 days before overdue fees are
@@ -481,6 +501,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      */
     @Test
     public void testBackdatedEOP() {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("25.00");
 
@@ -565,6 +587,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      */
     @Test
     public void testLatePaymentForInvoiceInPriorStatementPeriod() {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("10.00");
 
@@ -637,6 +661,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      */
     @Test
     public void testNoFeeForOverdueLessThanFeeBalance() {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("10.00");
         BigDecimal feeBalance = new BigDecimal("10.00");
@@ -711,6 +737,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      */
     @Test
     public void testFeeForOverdueEqualFeeBalance() {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("10.00");
         BigDecimal feeBalance = new BigDecimal("10.00");
@@ -790,6 +818,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      */
     @Test
     public void testDifferentOverdueDateAndFeeDate() {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("10.00");
         BigDecimal feeBalance = new BigDecimal("10.00");

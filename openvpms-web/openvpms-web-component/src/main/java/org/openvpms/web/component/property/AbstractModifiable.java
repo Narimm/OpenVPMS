@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -35,7 +35,7 @@ public abstract class AbstractModifiable implements Modifiable {
      * @return {@code true} if the object is valid; otherwise {@code false}
      */
     public boolean isValid() {
-        return new Validator().validate(this);
+        return new DefaultValidator().validate(this);
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -23,14 +23,14 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.rules.product.PricingGroup.ALL;
 
 /**
  * Product I/O helper methods.
@@ -77,24 +77,20 @@ public class AbstractProductIOTest extends ArchetypeServiceTest {
      * @return the corresponding product data
      */
     protected ProductData createProduct(Product product, BigDecimal taxRate, boolean copyPrices) {
-        ProductPriceRules rules = new ProductPriceRules(ArchetypeServiceHelper.getArchetypeService(),
-                                                        LookupServiceHelper.getLookupService());
+        IArchetypeService service = getArchetypeService();
+        ProductPriceRules rules = new ProductPriceRules(service, getLookupService());
         IMObjectBean bean = new IMObjectBean(product);
         ProductData result = new ProductData(product.getId(), product.getName(), bean.getString("printedName"), taxRate,
                                              1);
         result.setReference(product.getObjectReference());
         if (copyPrices) {
-            for (ProductPrice price : rules.getProductPrices(product, ProductArchetypes.FIXED_PRICE)) {
-                IMObjectBean priceBean = new IMObjectBean(price);
-                result.addFixedPrice(price.getId(), price.getPrice(), priceBean.getBigDecimal("cost"),
-                                     priceBean.getBigDecimal("maxDiscount"), price.getFromDate(), price.getToDate(),
-                                     priceBean.getBoolean("default"), 1);
+            for (ProductPrice price : rules.getProductPrices(product, ProductArchetypes.FIXED_PRICE, ALL)) {
+                PriceData priceDate = new PriceData(price, service);
+                result.addPrice(priceDate);
             }
-            for (ProductPrice price : rules.getProductPrices(product, ProductArchetypes.UNIT_PRICE)) {
-                IMObjectBean priceBean = new IMObjectBean(price);
-                result.addUnitPrice(price.getId(), price.getPrice(), priceBean.getBigDecimal("cost"),
-                                    priceBean.getBigDecimal("maxDiscount"),
-                                    price.getFromDate(), price.getToDate(), 1);
+            for (ProductPrice price : rules.getProductPrices(product, ProductArchetypes.UNIT_PRICE, ALL)) {
+                PriceData priceDate = new PriceData(price, service);
+                result.addPrice(priceDate);
             }
         }
         return result;

@@ -13,6 +13,7 @@
  *
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.esci.adapter.map.invoice;
 
 import org.apache.commons.lang.StringUtils;

@@ -18,8 +18,6 @@
 
 package org.openvpms.sms.i18n;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.i18n.Message;
@@ -27,6 +25,9 @@ import org.openvpms.component.system.common.i18n.Message;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 /**

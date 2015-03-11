@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeConstraint;
@@ -51,6 +50,8 @@ import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.SelectConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.InvalidObjectReferenceConstraint;
@@ -522,9 +523,9 @@ public class QueryBuilder {
     private void process(CollectionNodeConstraint constraint, QueryContext context) {
         TypeSet types = context.peekTypeSet();
         final String nodeName = constraint.getUnqualifiedName();
-        NodeDescriptor ndesc = getMatchingNodeDescriptor(types.getDescriptors(), nodeName);
+        List<NodeDescriptor> nodes = getMatchingNodeDescriptors(types.getDescriptors(), nodeName);
 
-        if (ndesc == null) {
+        if (nodes.isEmpty()) {
             throw new QueryBuilderException(NoNodeDescriptorForName, nodeName);
         }
 
@@ -533,13 +534,13 @@ public class QueryBuilder {
         State state = State.BOTH;
         if (archetypeConstraint instanceof ArchetypeConstraint) {
             state = archetypeConstraint.getState();
-            types = TypeSet.create((ArchetypeConstraint) archetypeConstraint, ndesc, cache, assembler);
+            types = TypeSet.create((ArchetypeConstraint) archetypeConstraint, nodes, cache, assembler);
         } else {
             types = getTypeSet(archetypeConstraint);
         }
         types.setAlias(constraint.getAlias());
 
-        context.pushTypeSet(types, getProperty(ndesc), constraint.getJoinType());
+        context.pushTypeSet(types, getProperty(nodes.get(0)), constraint.getJoinType());
 
         boolean and = false;
 
@@ -633,40 +634,50 @@ public class QueryBuilder {
      * a typical {@link NodeDescriptor}. The only requirement is that the path
      * and the type are same for every archetype descriptor
      *
-     * @param adescs   the set of archetype descriptors
-     * @param nodeName the node to search for
+     * @param descriptors the set of archetype descriptors
+     * @param nodeName    the node to search for
      * @return a typical node descriptor
-     * @throws ArchetypeServiceException
+     * @throws QueryBuilderException if there is no match, or nodes have different paths or types
      */
-    private NodeDescriptor getMatchingNodeDescriptor(Set<ArchetypeDescriptor> adescs, String nodeName) {
+    private NodeDescriptor getMatchingNodeDescriptor(Set<ArchetypeDescriptor> descriptors, String nodeName) {
+        List<NodeDescriptor> matches = getMatchingNodeDescriptors(descriptors, nodeName);
+        return (!matches.isEmpty()) ? matches.get(0) : null;
+    }
+
+    /**
+     * Iterate through all the {@link ArchetypeDescriptor} instances and return each {@link NodeDescriptor}.
+     * <p/>
+     * The only requirement is that the path and the type are same for every archetype descriptor
+     *
+     * @param descriptors the set of archetype descriptors
+     * @param nodeName    the node to search for. May be {@code null}
+     * @return the matching node descriptors
+     * @throws QueryBuilderException if there is no match, or nodes have different paths or types
+     */
+    private List<NodeDescriptor> getMatchingNodeDescriptors(Set<ArchetypeDescriptor> descriptors, String nodeName) {
+        List<NodeDescriptor> result = new ArrayList<NodeDescriptor>();
         NodeDescriptor matching = null;
 
-        if (StringUtils.isEmpty(nodeName)) {
-            return null;
-        }
+        if (!StringUtils.isEmpty(nodeName)) {
+            // ensure the property is defined in all archetypes
+            NodeDescriptor node;
 
-        // ensure the property is defined in all archetypes
-        NodeDescriptor ndesc;
+            for (ArchetypeDescriptor descriptor : descriptors) {
+                node = descriptor.getNodeDescriptor(nodeName);
+                if (node == null) {
+                    throw new QueryBuilderException(NoNodeDescWithName, descriptor.getName(), nodeName);
+                }
 
-        for (ArchetypeDescriptor adesc : adescs) {
-            ndesc = adesc.getNodeDescriptor(nodeName);
-            if (ndesc == null) {
-                throw new QueryBuilderException(NoNodeDescWithName, adesc.getName(), nodeName);
-            }
-
-            // now check against the matching node descriptor
-            if (matching == null) {
-                matching = ndesc;
-            } else {
-                if (ndesc.getPath().equals(matching.getPath()) && ndesc.getType().equals(matching.getType())) {
-                    // this descriptor matches the node descriptor
-                } else {
+                // now check against the matching node descriptor
+                if (matching == null) {
+                    matching = node;
+                } else if (!node.getPath().equals(matching.getPath()) || !node.getType().equals(matching.getType())) {
                     throw new QueryBuilderException(NodeDescriptorsDoNotMatch, nodeName);
                 }
+                result.add(node);
             }
         }
-
-        return matching;
+        return result;
     }
 
     /**
@@ -796,7 +807,8 @@ public class QueryBuilder {
         String result;
         TypeSet types = context.getTypeSet(alias);
         if (types == null) {
-            throw new QueryBuilderException(NoNodeDescriptorForName, nodeName);
+            String name = (alias != null) ? alias + "." + nodeName : nodeName;
+            throw new QueryBuilderException(NoNodeDescriptorForName, name);
         }
         NodeDescriptor desc = getMatchingNodeDescriptor(types.getDescriptors(), nodeName);
         if (desc == null) {

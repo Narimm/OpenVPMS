@@ -1,21 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
 
+import org.apache.commons.jxpath.Functions;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -45,27 +46,29 @@ public class ObjectSetExpressionEvaluator extends AbstractExpressionEvaluator<Ob
     /**
      * Constructs a {@link ObjectSetExpressionEvaluator}.
      *
-     * @param set     the object set
-     * @param fields  additional report fields. These override any in the report. May be {@code null}
-     * @param service the archetype service
-     * @param lookups the lookup service
+     * @param set       the object set
+     * @param fields    additional report fields. These override any in the report. May be {@code null}
+     * @param service   the archetype service
+     * @param lookups   the lookup service
+     * @param functions the JXPath extension functions
      */
     public ObjectSetExpressionEvaluator(ObjectSet set, Map<String, Object> fields, IArchetypeService service,
-                                        ILookupService lookups) {
-        this(set, fields != null ? new ResolvingPropertySet(fields, service) : null, service, lookups);
+                                        ILookupService lookups, Functions functions) {
+        this(set, fields != null ? new ResolvingPropertySet(fields, service) : null, service, lookups, functions);
     }
 
     /**
      * Constructs a {@link ObjectSetExpressionEvaluator}.
      *
-     * @param set     the object set
-     * @param fields  additional report fields. These override any in the report. May be {@code null}
-     * @param service the archetype service
-     * @param lookups the lookup service
+     * @param set       the object set
+     * @param fields    additional report fields. These override any in the report. May be {@code null}
+     * @param service   the archetype service
+     * @param lookups   the lookup service
+     * @param functions the JXPath extension functions
      */
     public ObjectSetExpressionEvaluator(ObjectSet set, PropertySet fields, IArchetypeService service,
-                                        ILookupService lookups) {
-        super(set, fields, service, lookups);
+                                        ILookupService lookups, Functions functions) {
+        super(set, fields, service, lookups, functions);
     }
 
     /**

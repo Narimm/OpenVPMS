@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -19,6 +19,7 @@ package org.openvpms.archetype.rules.supplier;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.ActStatusHelper;
 import org.openvpms.archetype.rules.math.Currencies;
@@ -29,9 +30,10 @@ import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -46,6 +48,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -69,9 +72,11 @@ import static org.openvpms.component.business.service.archetype.functor.IsActive
  * </ol>
  * If an order item changes status, the delivery status of the parent
  * order is then re-evaluated.
+ * <p/>
+ * For each delivery item with a <em>batchNumber</em> or <em>expiryDate</em>, determines if an
+ * <em>entity.productBatch</em> exists. If not, one will be created.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DeliveryProcessor {
 
@@ -123,16 +128,14 @@ public class DeliveryProcessor {
 
 
     /**
-     * Creates a new <tt>DeliveryProcessor</tt>.
+     * Constructs an {@link DeliveryProcessor}.
      *
      * @param act        the delivery/return act
      * @param service    the archetype service
      * @param currencies the currency cache
      * @param lookups    the lookup service
      */
-    public DeliveryProcessor(Act act, IArchetypeService service,
-                             Currencies currencies,
-                             ILookupService lookups) {
+    public DeliveryProcessor(Act act, IArchetypeService service, Currencies currencies, ILookupService lookups) {
         this.act = act;
         this.service = service;
         this.rules = new ProductRules(service);
@@ -146,8 +149,7 @@ public class DeliveryProcessor {
      * @throws DeliveryProcessorException if an item is missing a product
      */
     public void apply() {
-        if (ActStatus.POSTED.equals(act.getStatus())
-            && !ActStatusHelper.isPosted(act, service)) {
+        if (ActStatus.POSTED.equals(act.getStatus()) && !ActStatusHelper.isPosted(act, service)) {
             ActBean bean = new ActBean(act, service);
             supplier = (Party) bean.getNodeParticipant("supplier");
             stockLocation = (Party) bean.getNodeParticipant("stockLocation");
@@ -168,6 +170,22 @@ public class DeliveryProcessor {
     }
 
     /**
+     * Returns the delivery status of an <em>act.supplierOrderItem</em>.
+     *
+     * @param orderItem the order item
+     * @param service   the archetype service
+     * @return the delivery status of the order item
+     */
+    public static DeliveryStatus getDeliveryStatus(FinancialAct orderItem,
+                                                   IArchetypeService service) {
+        IMObjectBean bean = new IMObjectBean(orderItem, service);
+        BigDecimal quantity = bean.getBigDecimal("quantity", BigDecimal.ZERO);
+        BigDecimal received = bean.getBigDecimal("receivedQuantity", BigDecimal.ZERO);
+        BigDecimal cancelled = bean.getBigDecimal("cancelledQuantity", BigDecimal.ZERO);
+        return DeliveryStatus.getStatus(quantity, received, cancelled);
+    }
+
+    /**
      * Processes a delivery/return item.
      *
      * @param item the delivery/return item
@@ -185,46 +203,75 @@ public class DeliveryProcessor {
         Product product = (Product) itemBean.getNodeParticipant("product");
         if (product == null) {
             throw new DeliveryProcessorException(DeliveryProcessorException.ErrorCode.NoProduct,
-                                                 DescriptorHelper.getDisplayName(item, service),
-                                                 item.getId(),
-                                                 DescriptorHelper.getDisplayName(act, service),
-                                                 act.getId());
+                                                 DescriptorHelper.getDisplayName(item, service), item.getId(),
+                                                 DescriptorHelper.getDisplayName(act, service), act.getId());
         }
 
         // update the associated order's received quantity
         for (Act orderItem : itemBean.getNodeActs("order")) {
-            updateReceivedQuantity((FinancialAct) orderItem, receivedQuantity,
-                                   receivedPackSize);
+            updateReceivedQuantity((FinancialAct) orderItem, receivedQuantity, receivedPackSize);
         }
 
-        // if its a delivery, update the product-supplier relationship
-        if (delivery && supplier != null) {
-            updateProductSupplier(product, itemBean);
+        if (delivery) {
+            // update the product-supplier relationship
+            if (supplier != null) {
+                updateProductSupplier(product, itemBean);
+            }
+            String batchNumber = StringUtils.trimToNull(itemBean.getString("batchNumber"));
+            Date expiryDate = itemBean.getDate("expiryDate");
+            IMObjectReference manufacturer = itemBean.getNodeParticipantRef("manufacturer");
+            if (batchNumber != null || expiryDate != null) {
+                updateBatch(product, batchNumber, expiryDate, manufacturer);
+            }
         }
 
         // update the stock quantity for the product at the stock location
         if (stockLocation != null) {
-            updateStockQuantity(product, stockLocation, receivedQuantity,
-                                receivedPackSize);
+            updateStockQuantity(product, stockLocation, receivedQuantity, receivedPackSize);
         }
     }
 
     /**
-     * Returns the delivery status of an <em>act.supplierOrderItem</em>.
+     * Creates a batch if one doesn't exist, or updates an existing batch if required.
      *
-     * @param orderItem the order item
-     * @param service   the archetype service
-     * @return the delivery status of the order item
+     * @param product      the product
+     * @param batchNumber  the batch number. May be {@code null}
+     * @param expiryDate   the expiry date. May be {@code null}
+     * @param manufacturer the product manufacturer. May be {@code null}
      */
-    public static DeliveryStatus getDeliveryStatus(FinancialAct orderItem,
-                                                   IArchetypeService service) {
-        IMObjectBean bean = new IMObjectBean(orderItem, service);
-        BigDecimal quantity = bean.getBigDecimal("quantity", BigDecimal.ZERO);
-        BigDecimal received = bean.getBigDecimal("receivedQuantity",
-                                                 BigDecimal.ZERO);
-        BigDecimal cancelled = bean.getBigDecimal("cancelledQuantity",
-                                                  BigDecimal.ZERO);
-        return DeliveryStatus.getStatus(quantity, received, cancelled);
+    private void updateBatch(Product product, String batchNumber, Date expiryDate, IMObjectReference manufacturer) {
+        IMObjectReference productRef = product.getObjectReference();
+        List<Entity> batches = rules.getBatches(productRef, batchNumber, expiryDate, manufacturer);
+        if (batches.isEmpty()) {
+            if (batchNumber == null) {
+                batchNumber = product.getName();
+            }
+            if (!StringUtils.isEmpty(batchNumber)) {
+                Entity batch = rules.createBatch(productRef, batchNumber, expiryDate, manufacturer);
+                updateBatchLocation(batch);
+                toSave.add(batch);
+            }
+        } else {
+            Entity batch = batches.get(0);
+            if (updateBatchLocation(batch)) {
+                toSave.add(batch);
+            }
+        }
+    }
+
+    /**
+     * Updates a batch with the stock location, if required.
+     *
+     * @param batch the batch
+     * @return {@code true} if the location was added
+     */
+    private boolean updateBatchLocation(Entity batch) {
+        EntityBean bean = new EntityBean(batch, service);
+        if (!bean.getNodeTargetObjectRefs("stockLocations").contains(stockLocation.getObjectReference())) {
+            bean.addNodeTarget("stockLocations", stockLocation);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -244,12 +291,9 @@ public class DeliveryProcessor {
         EntityBean bean = new EntityBean(product, service);
         if (bean.hasNode("stockLocations")) {
             Predicate predicate = AndPredicate.getInstance(isActiveNow(), RefEquals.getTargetEquals(stockLocation));
-            EntityRelationship relationship = bean.getNodeRelationship(
-                    "stockLocations", predicate);
+            IMObjectRelationship relationship = bean.getNodeRelationship("stockLocations", predicate);
             if (relationship == null) {
-                relationship = bean.addRelationship(
-                        "entityRelationship.productStockLocation",
-                        stockLocation);
+                relationship = bean.addRelationship("entityRelationship.productStockLocation", stockLocation);
                 toSave.add(product);
                 toSave.add(stockLocation);
             } else {

@@ -17,6 +17,7 @@
 package org.openvpms.report.jasper;
 
 import net.sf.jasperreports.engine.JRField;
+import org.apache.commons.jxpath.Functions;
 import org.junit.Test;
 import org.openvpms.archetype.rules.doc.DocumentHelper;
 import org.openvpms.archetype.test.TestHelper;
@@ -24,8 +25,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ResolvingPropertySet;
-import org.openvpms.component.business.service.lookup.ILookupService;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,12 +43,6 @@ import static org.junit.Assert.assertTrue;
  * @author Tim Anderson
  */
 public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCase {
-
-    /**
-     * The lookup service.
-     */
-    @Autowired
-    private ILookupService lookups;
 
     /**
      * Tests basic data source functionality.
@@ -177,7 +170,9 @@ public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCa
      * @return a new data source
      */
     private IMObjectDataSource createDataSource(IMObject object, Map<String, Object> fields) {
-        return new IMObjectDataSource(object, fields, getArchetypeService(), lookups, handlers);
+        Functions functions = applicationContext.getBean(Functions.class);
+        return new IMObjectDataSource(object, fields, getArchetypeService(), getLookupService(), handlers,
+                                      functions);
     }
 
 }

@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -73,6 +74,10 @@ public class ProductPriceRules {
     private final ILookupService lookups;
 
 
+    private static final int PARTIAL_MATCH = 1;
+
+    private static final int EXACT_MATCH = 2;
+
     /**
      * Constructs a {@link ProductPriceRules}.
      *
@@ -85,30 +90,44 @@ public class ProductPriceRules {
     }
 
     /**
-     * Returns the first price with the specified short name, active at the specified date.
+     * Returns the first price with the specified short name and pricing group, active at the specified date.
+     * <p/>
+     * If {@code group} is:
+     * <ul>
+     * <li>non-null - it matches prices that have that pricing group, or no pricing group</li>
+     * <li>null - it matches prices that have no pricing group</li>
+     * </ul>
      *
      * @param product   the product
      * @param shortName the price short name
      * @param date      the date
+     * @param group     the pricing group. May be {@code null}
      * @return the first matching price, or {@code null} if none is found
      */
-    public ProductPrice getProductPrice(Product product, String shortName, Date date) {
-        Predicate predicate = new ShortNameDatePredicate(shortName, date);
+    public ProductPrice getProductPrice(Product product, String shortName, Date date, Lookup group) {
+        ProductPricePredicate predicate = new ShortNameDatePredicate(shortName, date, new PricingGroup(group));
         return getProductPrice(shortName, product, predicate, date);
     }
 
     /**
-     * Returns the first product price with the specified price, and short name,
-     * active at the specified date.
+     * Returns the first product price with the specified price, short name, and group, active at the specified date.
+     * <p/>
+     * If {@code group} is:
+     * <ul>
+     * <li>non-null - it matches prices that have that pricing group, or no pricing group</li>
+     * <li>null - it matches prices that have no pricing group</li>
+     * </ul>
      *
      * @param product   the product
      * @param price     the price
      * @param shortName the price short name
      * @param date      the date
+     * @param group     the pricing group. May be {@code null}
      * @return the first matching price, or {@code null} if none is found
      */
-    public ProductPrice getProductPrice(Product product, BigDecimal price, String shortName, Date date) {
-        Predicate predicate = new PricePredicate(price, shortName, date);
+    public ProductPrice getProductPrice(Product product, BigDecimal price, String shortName, Date date,
+                                        Lookup group) {
+        PricePredicate predicate = new PricePredicate(price, shortName, date, new PricingGroup(group));
         return getProductPrice(shortName, product, predicate, date);
     }
 
@@ -119,10 +138,11 @@ public class ProductPriceRules {
      *
      * @param product   the product
      * @param shortName the price short name
+     * @param group     the pricing group. May be {@code null}
      * @return the matching prices, sorted on descending time
      */
-    public List<ProductPrice> getProductPrices(Product product, String shortName) {
-        return getProductPrices(product, shortName, true);
+    public List<ProductPrice> getProductPrices(Product product, String shortName, PricingGroup group) {
+        return getProductPrices(product, shortName, true, group);
     }
 
     /**
@@ -132,11 +152,13 @@ public class ProductPriceRules {
      * @param shortName     the price short name
      * @param includeLinked if {@code true} and the requested prices are <em>productPrice.fixedPrice</em>, linked
      *                      products will be searched
+     * @param group         the pricing group
      * @return the matching prices, sorted on descending time
      */
-    public List<ProductPrice> getProductPrices(Product product, String shortName, boolean includeLinked) {
+    public List<ProductPrice> getProductPrices(Product product, String shortName, boolean includeLinked,
+                                               PricingGroup group) {
         List<ProductPrice> result = new ArrayList<ProductPrice>();
-        ShortNamePredicate predicate = new ShortNamePredicate(shortName);
+        ProductPricePredicate predicate = new ProductPricePredicate(shortName, group);
         List<ProductPrice> prices = findPrices(product, predicate);
         result.addAll(prices);
         if (includeLinked && FIXED_PRICE.equals(shortName)) {
@@ -150,29 +172,44 @@ public class ProductPriceRules {
      * Returns all prices matching the specified short name, active at the specified date.
      * <p/>
      * This will examine linked products if {@code shortName} is <em>productPrice.fixedPrice</em>.
+     * <p/>
+     * If {@code group} is:
+     * <ul>
+     * <li>non-null - it matches prices that have that pricing group, or no pricing group</li>
+     * <li>null - it matches prices that have no pricing group</li>
+     * </ul>
      *
      * @param product   the product
      * @param shortName the price short name
      * @param date      the date
+     * @param group     the pricing group
      * @return all prices matching the criteria
      */
-    public List<ProductPrice> getProductPrices(Product product, String shortName, Date date) {
-        return getProductPrices(product, shortName, date, true);
+    public List<ProductPrice> getProductPrices(Product product, String shortName, Date date, PricingGroup group) {
+        return getProductPrices(product, shortName, date, true, group);
     }
 
     /**
      * Returns all prices matching the specified short name, active at the specified date.
+     * <p/>
+     * If {@code group} is:
+     * <ul>
+     * <li>non-null - it matches prices that have that pricing group, or no pricing group</li>
+     * <li>null - it matches prices that have no pricing group</li>
+     * </ul>
      *
      * @param product       the product
      * @param shortName     the price short name
      * @param date          the date
      * @param includeLinked if {@code true} and the requested prices are <em>productPrice.fixedPrice</em>, linked
      *                      products will be searched
+     * @param group         the pricing group
      * @return all prices matching the criteria
      */
-    public List<ProductPrice> getProductPrices(Product product, String shortName, Date date, boolean includeLinked) {
+    public List<ProductPrice> getProductPrices(Product product, String shortName, Date date, boolean includeLinked,
+                                               PricingGroup group) {
         List<ProductPrice> result = new ArrayList<ProductPrice>();
-        ShortNameDatePredicate predicate = new ShortNameDatePredicate(shortName, date);
+        ShortNameDatePredicate predicate = new ShortNameDatePredicate(shortName, date, group);
         List<ProductPrice> prices = findPrices(product, predicate);
         result.addAll(prices);
         if (includeLinked && FIXED_PRICE.equals(shortName)) {
@@ -186,19 +223,33 @@ public class ProductPriceRules {
      * Returns all prices matching the specified short name, active between a date range.
      * <p/>
      * This will examine linked products if {@code shortName} is <em>productPrice.fixedPrice</em>.
+     * <p/>
+     * If {@code group} is:
+     * <ul>
+     * <li>non-null - it matches prices that have that pricing group, or no pricing group</li>
+     * <li>null - it matches prices that have no pricing group</li>
+     * </ul>
      *
      * @param product   the product
      * @param shortName the price short name
      * @param from      the start of the date range. May be {@code null}
      * @param to        the end of the date range. May be {@code null}
+     * @param group     the pricing group
      * @return the matching prices, sorted on descending time
      */
-    public List<ProductPrice> getProductPrices(Product product, String shortName, Date from, Date to) {
-        return getProductPrices(product, shortName, from, to, true);
+    public List<ProductPrice> getProductPrices(Product product, String shortName, Date from, Date to,
+                                               PricingGroup group) {
+        return getProductPrices(product, shortName, from, to, true, group);
     }
 
     /**
-     * Returns all prices matching the specified short name, active between a date range.
+     * Returns all prices matching the specified short name and pricing group active between a date range.
+     * <p/>
+     * If {@code group} is:
+     * <ul>
+     * <li>non-null - it matches prices that have that pricing group, or no pricing group</li>
+     * <li>null - it matches prices that have no pricing group</li>
+     * </ul>
      *
      * @param product       the product
      * @param shortName     the price short name
@@ -206,12 +257,13 @@ public class ProductPriceRules {
      * @param to            the end of the date range. May be {@code null}
      * @param includeLinked if {@code true} and the requested prices are <em>productPrice.fixedPrice</em>, linked
      *                      products will be searched
+     * @param group         the pricing group
      * @return the matching prices, sorted on descending time
      */
     public List<ProductPrice> getProductPrices(Product product, String shortName, Date from, Date to,
-                                               boolean includeLinked) {
+                                               boolean includeLinked, PricingGroup group) {
         List<ProductPrice> result = new ArrayList<ProductPrice>();
-        ShortNameDateRangePredicate predicate = new ShortNameDateRangePredicate(shortName, from, to);
+        ShortNameDateRangePredicate predicate = new ShortNameDateRangePredicate(shortName, from, to, group);
         List<ProductPrice> prices = findPrices(product, predicate);
         result.addAll(prices);
         if (includeLinked && FIXED_PRICE.equals(shortName)) {
@@ -348,6 +400,17 @@ public class ProductPriceRules {
     }
 
     /**
+     * Returns the pricing groups for a price.
+     *
+     * @param price the price
+     * @return the pricing groups
+     */
+    public List<Lookup> getPricingGroups(ProductPrice price) {
+        IMObjectBean bean = new IMObjectBean(price, service);
+        return bean.getValues("pricingGroups", Lookup.class);
+    }
+
+    /**
      * Returns the cost price for a product price.
      *
      * @param price the cost price
@@ -432,7 +495,8 @@ public class ProductPriceRules {
      * @param date      the date
      * @return a price matching the predicate, or {@code null} if none is found
      */
-    private ProductPrice getProductPrice(String shortName, Product product, Predicate predicate, Date date) {
+    private ProductPrice getProductPrice(String shortName, Product product, ProductPricePredicate predicate,
+                                         Date date) {
         boolean useDefault = FIXED_PRICE.equals(shortName);
         ProductPrice result = findPrice(product, predicate, useDefault);
         if (useDefault && (result == null || !isDefault(result))) {
@@ -464,20 +528,25 @@ public class ProductPriceRules {
      * @param useDefault if {@code true}, select prices that have a {@code true} default node
      * @return the price matching the criteria, or {@code null} if none is found
      */
-    private ProductPrice findPrice(Product product, Predicate predicate, boolean useDefault) {
+    private ProductPrice findPrice(Product product, ProductPricePredicate predicate, boolean useDefault) {
         ProductPrice result = null;
         ProductPrice fallback = null;
+        int fallbackMatch = 0;
         for (ProductPrice price : product.getProductPrices()) {
-            if (predicate.evaluate(price)) {
+            int match = predicate.matches(price);
+            if (match > 0) {
                 if (useDefault) {
-                    if (isDefault(price)) {
+                    if (isDefault(price) && match == EXACT_MATCH) {
                         result = price;
                         break;
-                    } else {
-                        fallback = price;
                     }
-                } else {
+                } else if (match == EXACT_MATCH) {
                     result = price;
+                    break;
+                }
+                if (match > fallbackMatch) {
+                    fallback = price;
+                    fallbackMatch = match;
                 }
             }
         }
@@ -491,7 +560,7 @@ public class ProductPriceRules {
      * @param predicate the predicate
      * @return the prices matching the predicate
      */
-    private List<ProductPrice> findPrices(Product product, Predicate predicate) {
+    private List<ProductPrice> findPrices(Product product, ProductPricePredicate predicate) {
         List<ProductPrice> result = null;
         for (ProductPrice price : product.getProductPrices()) {
             if (predicate.evaluate(price)) {
@@ -514,7 +583,7 @@ public class ProductPriceRules {
      * @param price   the predicate to select prices
      * @param active  the predicate to select active linked products
      */
-    private List<ProductPrice> findLinkedPrices(Product product, Predicate price, Predicate active) {
+    private List<ProductPrice> findLinkedPrices(Product product, ProductPricePredicate price, Predicate active) {
         List<ProductPrice> result = null;
         List<ProductPrice> prices;
         EntityBean bean = new EntityBean(product, service);
@@ -541,45 +610,80 @@ public class ProductPriceRules {
         return bean.getBoolean("default");
     }
 
-    private static class ShortNamePredicate implements Predicate {
+    private class ProductPricePredicate implements Predicate {
+
         /**
          * The price short name.
          */
         private final String shortName;
 
-        public ShortNamePredicate(String shortName) {
+        /**
+         * The pricing group.
+         */
+        private final PricingGroup group;
+
+
+        public ProductPricePredicate(String shortName, PricingGroup group) {
             this.shortName = shortName;
+            this.group = group;
         }
 
-        @Override
         public boolean evaluate(Object object) {
             ProductPrice price = (ProductPrice) object;
-            return TypeHelper.isA(price, shortName) && price.isActive();
+            return matches(price) > 0;
+        }
+
+        /**
+         * Determines if the predicate matches the price
+         *
+         * @param price the price
+         * @return {@code 0} if it doesn't match, {@link #PARTIAL_MATCH} if it is a partial match on group,
+         *         {@link #EXACT_MATCH} if it is an exact match on group
+         */
+        public int matches(ProductPrice price) {
+            int result = 0;
+            if (TypeHelper.isA(price, shortName) && price.isActive()) {
+                if (group.isAll()) {
+                    result = EXACT_MATCH;
+                } else {
+                    IMObjectBean bean = new IMObjectBean(price, service);
+                    List<Lookup> groups = bean.getValues("pricingGroups", Lookup.class);
+                    Lookup lookup = group.getGroup();
+                    if ((lookup == null && groups.isEmpty()) || (lookup != null && groups.contains(lookup))) {
+                        result = EXACT_MATCH;
+                    } else if (lookup != null && groups.isEmpty() && group.useFallback()) {
+                        result = PARTIAL_MATCH;
+                    }
+                }
+            }
+            return result;
         }
     }
 
     /**
      * Predicate to determine if a price matches a short name and date.
      */
-    private static class ShortNameDatePredicate extends ShortNamePredicate {
+    private class ShortNameDatePredicate extends ProductPricePredicate {
 
         /**
          * The date.
          */
         private final Date date;
 
-        public ShortNameDatePredicate(String shortName, Date date) {
-            super(shortName);
+        public ShortNameDatePredicate(String shortName, Date date, PricingGroup group) {
+            super(shortName, group);
             this.date = date;
         }
 
-        public boolean evaluate(Object object) {
-            boolean result = super.evaluate(object);
-            if (result) {
-                ProductPrice price = (ProductPrice) object;
+        @Override
+        public int matches(ProductPrice price) {
+            int result = super.matches(price);
+            if (result > 0) {
                 Date from = price.getFromDate();
                 Date to = price.getToDate();
-                result = DateRules.betweenDates(date, from, to);
+                if (!DateRules.betweenDates(date, from, to)) {
+                    result = 0;
+                }
             }
             return result;
         }
@@ -588,7 +692,7 @@ public class ProductPriceRules {
     /**
      * Predicate to determine if a price matches a short name and date range.
      */
-    private static class ShortNameDateRangePredicate extends ShortNamePredicate {
+    private class ShortNameDateRangePredicate extends ProductPricePredicate {
 
         /**
          * The from date.
@@ -600,17 +704,19 @@ public class ProductPriceRules {
          */
         private final Date to;
 
-        public ShortNameDateRangePredicate(String shortName, Date from, Date to) {
-            super(shortName);
+        public ShortNameDateRangePredicate(String shortName, Date from, Date to, PricingGroup group) {
+            super(shortName, group);
             this.from = from;
             this.to = to;
         }
 
-        public boolean evaluate(Object object) {
-            boolean result = super.evaluate(object);
-            if (result) {
-                ProductPrice price = (ProductPrice) object;
-                result = DateRules.intersects(from, to, price.getFromDate(), price.getToDate());
+        @Override
+        public int matches(ProductPrice price) {
+            int result = super.matches(price);
+            if (result > 0) {
+                if (!DateRules.intersects(from, to, price.getFromDate(), price.getToDate())) {
+                    result = 0;
+                }
             }
             return result;
         }
@@ -620,21 +726,24 @@ public class ProductPriceRules {
      * Predicate to determine if a product price matches a price, short name
      * and date.
      */
-    private static class PricePredicate extends ShortNameDatePredicate {
+    private class PricePredicate extends ShortNameDatePredicate {
 
         /**
          * The price.
          */
         private final BigDecimal price;
 
-        public PricePredicate(BigDecimal price, String shortName, Date date) {
-            super(shortName, date);
+        public PricePredicate(BigDecimal price, String shortName, Date date, PricingGroup group) {
+            super(shortName, date, group);
             this.price = price;
         }
 
-        public boolean evaluate(Object object) {
-            ProductPrice other = (ProductPrice) object;
-            return other.getPrice().compareTo(price) == 0 && super.evaluate(other);
+        @Override
+        public int matches(ProductPrice other) {
+            if (other.getPrice().compareTo(price) == 0) {
+                return super.matches(other);
+            }
+            return 0;
         }
     }
 

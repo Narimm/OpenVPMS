@@ -19,7 +19,7 @@
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"
-              derivedValue="'EFT Refund'"/>
+              derivedValue="'EFT Payment'"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat(' Amount : ', /total)"/>

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -22,6 +22,8 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.party.PartyRules;
+import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -36,7 +38,6 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -44,9 +45,12 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.openvpms.archetype.rules.math.WeightUnits.KILOGRAMS;
 import static org.openvpms.archetype.test.TestHelper.getLookup;
 
 /**
@@ -78,10 +82,11 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
     public void setUp() {
         IArchetypeService service = getArchetypeService();
         practiceRules = new PracticeRules(service);
-        PartyRules partyRules = new PartyRules(service);
+        ILookupService lookups = getLookupService();
+        PartyRules partyRules = new PartyRules(service, lookups);
+        PatientRules patientRules = new PatientRules(service, lookups);
         handlers = new DocumentHandlers();
-        ILookupService lookups = LookupServiceHelper.getLookupService();
-        exporter = new ReminderCSVExporter(practiceRules, partyRules, service, lookups, handlers);
+        exporter = new ReminderCSVExporter(practiceRules, partyRules, patientRules, service, lookups, handlers);
     }
 
     /**
@@ -147,6 +152,8 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
         customer.addContact(mobile);
         customer.addContact(TestHelper.createEmailContact("foo@bar.com"));
         Party patient = createPatient(customer);
+        PatientTestHelper.createWeight(patient, TestHelper.getDate("2014-01-01"), ONE, KILOGRAMS);
+        PatientTestHelper.createWeight(patient, TestHelper.getDate("2015-01-01"), TEN, KILOGRAMS);
 
         Entity reminderType = ReminderTestHelper.createReminderType();
 
@@ -172,7 +179,8 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
                              "Sawtell", "New South Wales", "2452", "(03) 1234 5678", "5678 1234", "foo@bar.com",
                              getId(patient), patient.getName(), "Canine", "Kelpie", "Male", "Black", "2013-02-01",
                              getId(reminderType), reminderType.getName(),
-                             getDate(reminder.getActivityEndTime()), "0", "2013-06-05"};
+                             getDate(reminder.getActivityEndTime()), "0", "2013-06-05", "10", "KILOGRAMS",
+                             "2015-01-01"};
         assertArrayEquals(expected, lines.get(1));
     }
 

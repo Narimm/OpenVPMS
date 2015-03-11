@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -40,6 +40,14 @@ import java.util.Date;
  * @author Tim Anderson
  */
 public abstract class ActQuery<T> extends AbstractArchetypeQuery<T> {
+
+    /**
+     * The default sort constraint. Sorts on descending start time and ascending id.
+     */
+    public static final SortConstraint[] DESCENDING_START_TIME = {
+            new NodeSortConstraint("startTime", false),
+            new NodeSortConstraint("id")
+    };
 
     /**
      * The participant node name.
@@ -76,14 +84,6 @@ public abstract class ActQuery<T> extends AbstractArchetypeQuery<T> {
      */
     private LookupField statusSelector;
 
-    /**
-     * The default sort constraint.
-     */
-    private static final SortConstraint[] DEFAULT_SORT = {
-            new NodeSortConstraint("startTime", false),
-            new NodeSortConstraint("id")
-    };
-
 
     /**
      * Constructs an {@link ActQuery}.
@@ -100,8 +100,9 @@ public abstract class ActQuery<T> extends AbstractArchetypeQuery<T> {
         super(shortNames, type);
         setParticipantConstraint(entity, participant, participation);
         this.statusLookups = statuses;
-        this.statuses = new String[0];
-        setDefaultSortConstraint(DEFAULT_SORT);
+        String defaultStatus = (statusLookups != null) ? statusLookups.getDefaultCode() : null;
+        this.statuses = defaultStatus != null ? new String[]{defaultStatus} : new String[0];
+        setDefaultSortConstraint(DESCENDING_START_TIME);
     }
 
     /**
@@ -134,7 +135,7 @@ public abstract class ActQuery<T> extends AbstractArchetypeQuery<T> {
         setParticipantConstraint(entity, participant, participation);
         this.statuses = statuses;
         statusLookups = null;
-        setDefaultSortConstraint(DEFAULT_SORT);
+        setDefaultSortConstraint(DESCENDING_START_TIME);
     }
 
     /**
@@ -378,21 +379,14 @@ public abstract class ActQuery<T> extends AbstractArchetypeQuery<T> {
                     onStatusChanged();
                 }
             });
-            if (statuses != null) {
-                if (statuses.length == 0) {
-                    updateStatusSelector(null);
-                } else if (statuses.length == 1) {
-                    updateStatusSelector(statuses[0]);
-                }
+            if (statuses != null && statuses.length == 1) {
+                updateStatusSelector(statuses[0]);
             } else {
                 String defaultStatus = statusSelector.getSelectedCode();
                 if (defaultStatus != null) {
                     setStatus(defaultStatus);
                 }
             }
-        }
-
-        if (statusSelector != null) {
             container.add(LabelFactory.create("actquery.status"));
             container.add(statusSelector);
             getFocusGroup().add(statusSelector);

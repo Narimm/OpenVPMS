@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -20,6 +20,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
+import org.openvpms.archetype.rules.finance.discount.DiscountRules;
+import org.openvpms.archetype.rules.finance.discount.DiscountTestHelper;
 import org.openvpms.archetype.rules.party.AbstractPartyMergerTest;
 import org.openvpms.archetype.rules.party.MergeException;
 import org.openvpms.archetype.test.TestHelper;
@@ -32,7 +34,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -42,7 +43,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -262,12 +262,6 @@ public class PatientMergerTestCase extends AbstractPartyMergerTest {
      * @return a new discount
      */
     private Entity createDiscount() {
-        Entity discount = (Entity) create("entity.discountType");
-        IMObjectBean bean = new IMObjectBean(discount);
-        bean.setValue("name", "XDISCOUNT_PATIENT_MERGER_TESTCASE_" + Math.abs(new Random().nextInt()));
-        bean.setValue("rate", BigDecimal.TEN);
-        bean.setValue("discountFixed", true);
-        save(discount);
-        return discount;
+        return DiscountTestHelper.createDiscount(BigDecimal.TEN, true, DiscountRules.PERCENTAGE);
     }
 }

@@ -1,23 +1,25 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
 
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRRewindableDataSource;
+import org.apache.commons.jxpath.Functions;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -46,17 +48,25 @@ public abstract class AbstractIMObjectDataSource implements JRDataSource {
      */
     private final DocumentHandlers handlers;
 
+    /**
+     * The JXPath extension functions.
+     */
+    private final Functions functions;
+
 
     /**
      * Constructs an {@link AbstractIMObjectDataSource}.
      *
-     * @param service  the archetype service
-     * @param handlers the document handlers
+     * @param service   the archetype service
+     * @param handlers  the document handlers
+     * @param functions the JXPath extension functions
      */
-    public AbstractIMObjectDataSource(IArchetypeService service, ILookupService lookups, DocumentHandlers handlers) {
+    public AbstractIMObjectDataSource(IArchetypeService service, ILookupService lookups, DocumentHandlers handlers,
+                                      Functions functions) {
         this.service = service;
         this.lookups = lookups;
         this.handlers = handlers;
+        this.functions = functions;
     }
 
     /**
@@ -66,7 +76,7 @@ public abstract class AbstractIMObjectDataSource implements JRDataSource {
      * @return the data source
      * @throws JRException for any error
      */
-    public JRDataSource getDataSource(String name) throws JRException {
+    public JRRewindableDataSource getDataSource(String name) throws JRException {
         return getDataSource(name, new String[0]);
     }
 
@@ -77,7 +87,7 @@ public abstract class AbstractIMObjectDataSource implements JRDataSource {
      * @return the data source
      * @throws JRException for any error
      */
-    public abstract JRDataSource getExpressionDataSource(String expression) throws JRException;
+    public abstract JRRewindableDataSource getExpressionDataSource(String expression) throws JRException;
 
     /**
      * Returns a data source for a collection node.
@@ -87,8 +97,7 @@ public abstract class AbstractIMObjectDataSource implements JRDataSource {
      * @return the data source
      * @throws JRException for any error
      */
-    public abstract JRDataSource getDataSource(String name, String[] sortNodes)
-            throws JRException;
+    public abstract JRRewindableDataSource getDataSource(String name, String[] sortNodes) throws JRException;
 
     /**
      * Returns the archetype service.
@@ -115,6 +124,15 @@ public abstract class AbstractIMObjectDataSource implements JRDataSource {
      */
     protected DocumentHandlers getDocumentHandlers() {
         return handlers;
+    }
+
+    /**
+     * Returns the JXPath extension functions.
+     *
+     * @return the JXPath extension functions
+     */
+    protected Functions getFunctions() {
+        return functions;
     }
 
 }

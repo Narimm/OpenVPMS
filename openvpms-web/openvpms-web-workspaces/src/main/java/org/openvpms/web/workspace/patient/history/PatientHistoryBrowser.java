@@ -11,25 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
 
-import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import nextapp.echo2.app.table.TableCellRenderer;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.im.act.PagedActHierarchyTableModel;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
-import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
-import org.openvpms.web.echo.event.ActionListener;
-
-import java.util.List;
 
 
 /**
@@ -37,22 +31,37 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
+public class PatientHistoryBrowser extends AbstractPatientHistoryBrowser {
 
     /**
      * The table model that wraps the underlying model, to filter acts.
      */
-    private PagedPatientHistoryTableModel pagedModel;
-
+    private PagedActHierarchyTableModel<Act> pagedModel;
 
     /**
-     * Constructs a {@code Browser} that queries IMObjects using the specified query.
+     * The cell renderer.
+     */
+    private static final TableCellRenderer RENDERER = new PatientHistoryTableCellRenderer("MedicalRecordSummary");
+
+    /**
+     * Constructs a {@link PatientHistoryBrowser} that queries IMObjects using the specified query.
      *
      * @param query   the query
      * @param context the layout context
      */
     public PatientHistoryBrowser(PatientHistoryQuery query, LayoutContext context) {
-        super(query, newTableModel(context), context);
+        this(query, newTableModel(context), context);
+    }
+
+    /**
+     * Constructs a {@link PatientHistoryBrowser} that queries IMObjects using the specified query.
+     *
+     * @param query   the query
+     * @param model   the table model
+     * @param context the layout context
+     */
+    public PatientHistoryBrowser(PatientHistoryQuery query, PatientHistoryTableModel model, LayoutContext context) {
+        super(query, model, context);
     }
 
     /**
@@ -80,41 +89,14 @@ public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
     }
 
     /**
-     * Select an object.
-     *
-     * @param object the object to select
-     */
-    @Override
-    public void setSelected(Act object) {
-        super.setSelected(object);
-        onSelected();
-    }
-
-    /**
-     * Returns the <em>act.patientClinicalEvent</em> associated with the selected act.
-     *
-     * @return the event, or {@code null} if none is found
-     */
-    public Act getEvent() {
-        return getEvent(getSelected());
-    }
-
-    /**
-     * Returns the <em>act.patientClinicalEvent</em> associated with the supplied act.
+     * Returns the event associated with the supplied act.
      *
      * @param act the act. May be {@code null}
      * @return the event, or {@code null} if none is found
      */
+    @Override
     public Act getEvent(Act act) {
-        boolean found = false;
-        if (act != null) {
-            List<Act> acts = getObjects();
-            int index = acts.indexOf(act);
-            while (!(found = TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) && index > 0) {
-                act = acts.get(--index);
-            }
-        }
-        return (found) ? act : null;
+        return getTableModel().getParent(act);
     }
 
     /**
@@ -126,21 +108,43 @@ public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
     @Override
     protected PagedIMTable<Act> createTable(IMTableModel<Act> model) {
         PatientHistoryQuery query = getQuery();
-        pagedModel = new PagedPatientHistoryTableModel((IMObjectTableModel<Act>) model, getContext().getContext(),
-                                                       query.getActItemShortNames());
+        pagedModel = createPagedModel((IMObjectTableModel<Act>) model, query);
         pagedModel.setSortAscending(query.isSortAscending());
         PagedIMTable<Act> result = super.createTable(pagedModel);
-        IMTable<Act> table = result.getTable();
-        table.addActionListener(new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onSelected();
-            }
-        });
-        table.setDefaultRenderer(Object.class, new PatientHistoryTableCellRenderer());
-        table.setHeaderVisible(false);
-        table.setStyleName("MedicalRecordSummary");
-        // table.setRolloverEnabled(false); // TODO - ideally set this in style, but it gets overridden by the model
+        initTable(result);
         return result;
+    }
+
+    /**
+     * Creates a new paged history table model.
+     *
+     * @param model the underlying table model
+     * @param query the history query
+     * @return a new paged table model
+     */
+    protected PagedActHierarchyTableModel<Act> createPagedModel(IMObjectTableModel<Act> model, PatientHistoryQuery query) {
+        return new PagedPatientHistoryTableModel((PatientHistoryTableModel) model, query.getActItemShortNames());
+    }
+
+    /**
+     * Initialises a paged table.
+     *
+     * @param table the table
+     */
+    @Override
+    protected void initTable(PagedIMTable<Act> table) {
+        super.initTable(table);
+        table.getTable().setDefaultRenderer(Object.class, RENDERER);
+    }
+
+    /**
+     * Determines the page that an object appears on.
+     *
+     * @param object the object
+     * @return the page
+     */
+    protected int getPage(Act object) {
+        return getQuery().getPage(object);
     }
 
     /**
@@ -149,25 +153,9 @@ public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
      * @param context the layout context
      * @return a new table model
      */
-    private static IMObjectTableModel<Act> newTableModel(LayoutContext context) {
-        return IMObjectTableModelFactory.create(PatientHistoryTableModel.class, context);
+    private static PatientHistoryTableModel newTableModel(LayoutContext context) {
+        IMObjectTableModel model = IMObjectTableModelFactory.create(PatientHistoryTableModel.class, context);
+        return (PatientHistoryTableModel) model;
     }
 
-    /**
-     * Invoked when an act is selected. Highlights the associated visit.
-     */
-    private void onSelected() {
-        IMTable<Act> table = getTable().getTable();
-        int index = table.getSelectionModel().getMinSelectedIndex();
-        while (index >= 0) {
-            Act act = table.getObjects().get(index);
-            if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) {
-                break;
-            } else {
-                --index;
-            }
-        }
-        PatientHistoryTableModel model = (PatientHistoryTableModel) pagedModel.getModel();
-        model.setSelectedVisit(index);
-    }
 }

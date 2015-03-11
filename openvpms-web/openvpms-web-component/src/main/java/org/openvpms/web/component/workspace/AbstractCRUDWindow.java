@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -55,6 +55,7 @@ import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
 
@@ -248,15 +249,14 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     /**
      * Determines if the current object can be edited.
      *
-     * @return {@code true} if an object exists and the edit button is enabled
+     * @return {@code true} if an object exists and there is no edit button or it is enabled
      */
     public boolean canEdit() {
         boolean edit = false;
         if (actions.canEdit(object)) {
-            Button button = getButtons().getButton(EDIT_ID);
-            if (button != null && button.isEnabled()) {
-                edit = true;
-            }
+            ButtonSet buttons = getButtons();
+            Button button = (buttons != null) ? buttons.getButton(EDIT_ID) : null;
+            edit = (button == null || button.isEnabled());
         }
         return edit;
     }
@@ -638,7 +638,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @return a new editor
      */
     protected IMObjectEditor createEditor(T object, LayoutContext context) {
-        return IMObjectEditorFactory.create(object, context);
+        return ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, context);
     }
 
     /**

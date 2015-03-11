@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.query;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.util.IMObjectSorter;
@@ -47,7 +48,19 @@ public class ListQuery<T> extends NonRenderingQuery<T> {
      * @param type      the type that this query returns
      */
     public ListQuery(List<T> objects, String shortName, Class<T> type) {
-        this(objects, new String[]{shortName}, type);
+        this(objects, shortName, true, type);
+    }
+
+    /**
+     * Constructs a {@link ListQuery}.
+     *
+     * @param objects     the objects that the query returns
+     * @param shortName   the archetype short name(s) of the objects. May contain wildcards
+     * @param primaryOnly if {@code true} only include primary archetypes
+     * @param type        the type that this query returns
+     */
+    public ListQuery(List<T> objects, String shortName, boolean primaryOnly, Class<T> type) {
+        this(objects, new String[]{shortName}, primaryOnly, type);
     }
 
     /**
@@ -58,7 +71,19 @@ public class ListQuery<T> extends NonRenderingQuery<T> {
      * @param type       the type that this query returns
      */
     public ListQuery(List<T> objects, String[] shortNames, Class<T> type) {
-        super(shortNames, type);
+        this(objects, shortNames, false, type);
+    }
+
+    /**
+     * Constructs a {@link ListQuery} that queries objects with the specified short names.
+     *
+     * @param shortNames  the archetype short names
+     * @param primaryOnly if {@code true} only include primary archetypes
+     * @param type        the type that this query returns
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
+     */
+    public ListQuery(List<T> objects, String[] shortNames, boolean primaryOnly, Class type) {
+        super(shortNames, primaryOnly, type);
         this.objects = objects;
         setAuto(true);
     }

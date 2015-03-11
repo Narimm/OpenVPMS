@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -24,14 +24,18 @@ import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.util.PropertySet;
+import org.openvpms.hl7.patient.PatientContext;
+import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.TabbedBrowserListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
@@ -44,6 +48,7 @@ import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.patient.info.PatientContextHelper;
 import org.openvpms.web.workspace.workflow.LocalClinicianContext;
 import org.openvpms.web.workspace.workflow.WorkflowFactory;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleCRUDWindow;
@@ -70,23 +75,46 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     private final AppointmentRules rules;
 
     /**
+     * The original status of the appointment being edited.
+     */
+    private String oldStatus;
+
+    /**
      * Check-in button identifier.
      */
     private static final String CHECKIN_ID = "checkin";
 
 
     /**
-     * Constructs an {@code AppointmentCRUDWindow}.
+     * Constructs an {@link AppointmentCRUDWindow}.
      *
      * @param browser the browser
      * @param context the context
      * @param help    the help context
      */
     public AppointmentCRUDWindow(AppointmentBrowser browser, Context context, HelpContext help) {
+        this(browser, AppointmentActions.INSTANCE, context, help);
+    }
+
+    /**
+     * Constructs an {@link AppointmentCRUDWindow}.
+     *
+     * @param browser the browser
+     * @param context the context
+     * @param help    the help context
+     */
+    protected AppointmentCRUDWindow(AppointmentBrowser browser, AppointmentActions actions, Context context,
+                                    HelpContext help) {
         super(Archetypes.create("act.customerAppointment", Act.class, Messages.get("workflow.scheduling.createtype")),
-              context, help);
+              actions, context, help);
         this.browser = browser;
-        rules = new AppointmentRules();
+        browser.setListener(new TabbedBrowserListener() {
+            @Override
+            public void onBrowserChanged() {
+                enableButtons(getButtons(), getObject() != null);
+            }
+        });
+        rules = ServiceHelper.getBean(AppointmentRules.class);
     }
 
     /**
@@ -97,6 +125,28 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         if (canCreateAppointment()) {
             super.create();
         }
+    }
+
+    /**
+     * Determines the actions that may be performed on the selected object.
+     *
+     * @return the actions
+     */
+    @Override
+    protected AppointmentActions getActions() {
+        return (AppointmentActions) super.getActions();
+    }
+
+    /**
+     * Edits an object.
+     *
+     * @param object the object to edit
+     * @param path   the selection path. May be {@code null}
+     */
+    @Override
+    protected void edit(Act object, List<Selection> path) {
+        oldStatus = object.getStatus();
+        super.edit(object, path);
     }
 
     /**
@@ -113,6 +163,39 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
             ((AppointmentActEditor) editor).setStartTime(startTime);
         }
         return super.edit(editor, path);
+    }
+
+
+    /**
+     * Invoked when the object has been saved.
+     *
+     * @param object the object
+     * @param isNew  determines if the object is a new instance
+     */
+    @Override
+    protected void onSaved(Act object, boolean isNew) {
+        super.onSaved(object, isNew);
+        String newStatus = object.getStatus();
+        User user = getContext().getUser();
+        if (!AppointmentStatus.CANCELLED.equals(oldStatus) && AppointmentStatus.CANCELLED.equals(newStatus)) {
+            PatientContext context = getPatientContext(object);
+            if (context != null) {
+                PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
+                service.admissionCancelled(context, user);
+            }
+        } else if (!isAdmitted(oldStatus) && isAdmitted(newStatus)) {
+            PatientContext context = getPatientContext(object);
+            if (context != null) {
+                PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
+                service.admitted(context, user);
+            }
+        } else if (isAdmitted(oldStatus) && !isAdmitted(newStatus)) {
+            PatientContext context = getPatientContext(object);
+            if (context != null) {
+                PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
+                service.discharged(context, user);
+            }
+        }
     }
 
     /**
@@ -157,16 +240,17 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
+        enable = browser.isAppointmentsSelected() && enable;
         super.enableButtons(buttons, enable);
         boolean checkInEnabled = false;
         boolean checkoutConsultEnabled = false;
         if (enable) {
             Act act = getObject();
-            String status = act.getStatus();
-            if (AppointmentStatus.PENDING.equals(status)) {
+            AppointmentActions actions = getActions();
+            if (actions.canCheckIn(act)) {
                 checkInEnabled = true;
                 checkoutConsultEnabled = false;
-            } else if (canCheckoutOrConsult(act)) {
+            } else if (actions.canCheckoutOrConsult(act)) {
                 checkInEnabled = false;
                 checkoutConsultEnabled = true;
             }
@@ -175,6 +259,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         buttons.setEnabled(CHECKIN_ID, checkInEnabled);
         buttons.setEnabled(CONSULT_ID, checkoutConsultEnabled);
         buttons.setEnabled(CHECKOUT_ID, checkoutConsultEnabled);
+        buttons.setEnabled(OVER_THE_COUNTER_ID, browser.isAppointmentsSelected());
     }
 
     /**
@@ -201,25 +286,13 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     }
 
     /**
-     * Determines if a checkout or consult can be performed on an act.
-     *
-     * @param act the act
-     */
-    protected boolean canCheckoutOrConsult(Act act) {
-        String status = act.getStatus();
-        return AppointmentStatus.CHECKED_IN.equals(status)
-               || AppointmentStatus.IN_PROGRESS.equals(status)
-               || AppointmentStatus.COMPLETED.equals(status)
-               || AppointmentStatus.BILLED.equals(status);
-    }
-
-    /**
      * Determines if an appointment can be created.
      *
      * @return {@code true} if a schedule and slot has been selected
      */
     private boolean canCreateAppointment() {
-        return browser.getSelectedSchedule() != null && browser.getSelectedTime() != null;
+        return browser.isAppointmentsSelected() && browser.getSelectedSchedule() != null
+               && browser.getSelectedTime() != null;
     }
 
     /**
@@ -227,9 +300,8 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      */
     private void onCheckIn() {
         Act act = IMObjectHelper.reload(getObject());
-        // make sure the act is still available and PENDING prior to beginning
-        // workflow
-        if (act != null && AppointmentStatus.PENDING.equals(act.getStatus())) {
+        // make sure the act is still available and can be checked in prior to beginning workflow
+        if (act != null && getActions().canCheckIn(act)) {
             WorkflowFactory factory = ServiceHelper.getBean(WorkflowFactory.class);
             Workflow workflow = factory.createCheckInWorkflow(act, getContext(), getHelpContext());
             workflow.addTaskListener(new DefaultTaskListener() {
@@ -247,14 +319,16 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * Invoked to copy an appointment.
      */
     private void onCopy() {
-        browser.clearMarked();
-        PropertySet selected = browser.getSelected();
-        Act appointment = browser.getAct(selected);
-        if (appointment != null) {
-            browser.setMarked(selected, false);
-        } else {
-            InformationDialog.show(Messages.get("workflow.scheduling.appointment.copy.title"),
-                                   Messages.get("workflow.scheduling.appointment.copy.select"));
+        if (browser.isAppointmentsSelected()) {
+            browser.clearMarked();
+            PropertySet selected = browser.getSelected();
+            Act appointment = browser.getAct(selected);
+            if (appointment != null) {
+                browser.setMarked(selected, false);
+            } else {
+                InformationDialog.show(Messages.get("workflow.scheduling.appointment.copy.title"),
+                                       Messages.get("workflow.scheduling.appointment.copy.select"));
+            }
         }
     }
 
@@ -262,19 +336,21 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * Invoked to cut an appointment.
      */
     private void onCut() {
-        browser.clearMarked();
-        PropertySet selected = browser.getSelected();
-        Act appointment = browser.getAct(selected);
-        if (appointment != null) {
-            if (AppointmentStatus.PENDING.equals(appointment.getStatus())) {
-                browser.setMarked(selected, true);
+        if (browser.isAppointmentsSelected()) {
+            browser.clearMarked();
+            PropertySet selected = browser.getSelected();
+            Act appointment = browser.getAct(selected);
+            if (appointment != null) {
+                if (AppointmentStatus.PENDING.equals(appointment.getStatus())) {
+                    browser.setMarked(selected, true);
+                } else {
+                    InformationDialog.show(Messages.get("workflow.scheduling.appointment.cut.title"),
+                                           Messages.get("workflow.scheduling.appointment.cut.pending"));
+                }
             } else {
                 InformationDialog.show(Messages.get("workflow.scheduling.appointment.cut.title"),
-                                       Messages.get("workflow.scheduling.appointment.cut.pending"));
+                                       Messages.get("workflow.scheduling.appointment.cut.select"));
             }
-        } else {
-            InformationDialog.show(Messages.get("workflow.scheduling.appointment.cut.title"),
-                                   Messages.get("workflow.scheduling.appointment.cut.select"));
         }
     }
 
@@ -290,30 +366,32 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * </ul>
      */
     private void onPaste() {
-        if (browser.getMarked() == null) {
-            InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
-                                   Messages.get("workflow.scheduling.appointment.paste.select"));
-        } else {
-            Act appointment = browser.getAct(browser.getMarked());
-            Entity schedule = browser.getSelectedSchedule();
-            Date startTime = browser.getSelectedTime();
-            if (appointment == null) {
+        if (browser.isAppointmentsSelected()) {
+            if (browser.getMarked() == null) {
                 InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
-                                       Messages.get("workflow.scheduling.appointment.paste.noexist"));
-                onRefresh(appointment); // force redraw
-                browser.clearMarked();
-            } else if (browser.isCut() && !AppointmentStatus.PENDING.equals(appointment.getStatus())) {
-                InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
-                                       Messages.get("workflow.scheduling.appointment.paste.pending"));
-                onRefresh(appointment); // force redraw
-                browser.clearMarked();
-            } else if (schedule == null || startTime == null) {
-                InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
-                                       Messages.get("workflow.scheduling.appointment.paste.noslot"));
-            } else if (browser.isCut()) {
-                cut(appointment, schedule, startTime);
+                                       Messages.get("workflow.scheduling.appointment.paste.select"));
             } else {
-                copy(appointment, schedule, startTime);
+                Act appointment = browser.getAct(browser.getMarked());
+                Entity schedule = browser.getSelectedSchedule();
+                Date startTime = browser.getSelectedTime();
+                if (appointment == null) {
+                    InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
+                                           Messages.get("workflow.scheduling.appointment.paste.noexist"));
+                    onRefresh(appointment); // force redraw
+                    browser.clearMarked();
+                } else if (browser.isCut() && !AppointmentStatus.PENDING.equals(appointment.getStatus())) {
+                    InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
+                                           Messages.get("workflow.scheduling.appointment.paste.pending"));
+                    onRefresh(appointment); // force redraw
+                    browser.clearMarked();
+                } else if (schedule == null || startTime == null) {
+                    InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
+                                           Messages.get("workflow.scheduling.appointment.paste.noslot"));
+                } else if (browser.isCut()) {
+                    cut(appointment, schedule, startTime);
+                } else {
+                    copy(appointment, schedule, startTime);
+                }
             }
         }
     }
@@ -362,5 +440,56 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         editor.setStartTime(startTime); // will recalc end time
         dialog.save(true);              // checks for overlapping appointments
         browser.setSelected(browser.getEvent(appointment));
+    }
+
+    /**
+     * Returns the patient context for an appointment.
+     *
+     * @param appointment the appointment
+     * @return the patient context, or {@code null} if the patient can't be found, or has no current visit
+     */
+    private PatientContext getPatientContext(Act appointment) {
+        return PatientContextHelper.getAppointmentContext(appointment, getContext());
+    }
+
+    /**
+     * Determines if an appointment status indicates the patient has been admitted.
+     *
+     * @param status the appointment status
+     * @return {@code true} if the patient has been admitted
+     */
+    private boolean isAdmitted(String status) {
+        return AppointmentStatus.CHECKED_IN.equals(status) || AppointmentStatus.ADMITTED.equals(status)
+               || AppointmentStatus.IN_PROGRESS.equals(status) || AppointmentStatus.BILLED.equals(status);
+    }
+
+    protected static class AppointmentActions extends ScheduleActions {
+
+        public static AppointmentActions INSTANCE = new AppointmentActions();
+
+        /**
+         * Determines if an appointment can be checked in.
+         *
+         * @param act the appointment
+         * @return {@code true} if it can be checked in
+         */
+        public boolean canCheckIn(Act act) {
+            return AppointmentStatus.PENDING.equals(act.getStatus());
+        }
+
+        /**
+         * Determines if a consultation or checkout can be performed on an act.
+         *
+         * @param act the act
+         * @return {@code true} if consultation can be performed
+         */
+        @Override
+        public boolean canCheckoutOrConsult(Act act) {
+            String status = act.getStatus();
+            return AppointmentStatus.CHECKED_IN.equals(status)
+                   || AppointmentStatus.IN_PROGRESS.equals(status)
+                   || AppointmentStatus.COMPLETED.equals(status)
+                   || AppointmentStatus.BILLED.equals(status);
+        }
     }
 }

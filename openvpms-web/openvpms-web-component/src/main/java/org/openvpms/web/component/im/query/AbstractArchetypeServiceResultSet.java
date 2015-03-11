@@ -23,8 +23,10 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 
@@ -226,13 +228,24 @@ public abstract class AbstractArchetypeServiceResultSet<T>
 
     /**
      * Adds sort constraints.
-     * This implementation adds all those returned by
-     * {@link #getSortConstraints()}.
+     * This implementation adds all those returned by {@link #getSortConstraints()}.
      *
      * @param query the query to add the constraints to
      */
     protected void addSortConstraints(ArchetypeQuery query) {
+        String alias = query.getArchetypeConstraint().getAlias();
+
         for (SortConstraint sort : getSortConstraints()) {
+            if (alias != null && sort.getAlias() == null) {
+                // need to copy the constraint to set the alias
+                if (sort instanceof NodeSortConstraint) {
+                    NodeSortConstraint o = (NodeSortConstraint) sort;
+                    sort = new NodeSortConstraint(alias, o.getNodeName(), o.isAscending());
+                } else if (sort instanceof ArchetypeSortConstraint) {
+                    ArchetypeSortConstraint o = (ArchetypeSortConstraint) sort;
+                    sort = new ArchetypeSortConstraint(alias, o.isAscending());
+                }
+            }
             query.add(sort);
         }
     }
@@ -242,7 +255,7 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      *
      * @param firstResult the first result of the page to retrieve
      * @param maxResults  the maximum no. of results in the page
-     * @return the page, or {@code null}
+     * @return the page
      * @throws ArchetypeServiceException for any archetype service error
      */
     @Override

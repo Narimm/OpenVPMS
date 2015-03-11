@@ -11,33 +11,24 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.SelectField;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.bound.BoundPalette;
-import org.openvpms.web.component.bound.BoundSelectFieldFactory;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.edit.PropertyComponentEditor;
 import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.im.doc.DocumentEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
-import org.openvpms.web.component.im.list.IMObjectListModel;
-import org.openvpms.web.component.im.lookup.LookupFieldFactory;
+import org.openvpms.web.component.im.lookup.LookupPropertyEditor;
+import org.openvpms.web.component.im.lookup.LookupPropertyEditorFactory;
 import org.openvpms.web.component.im.util.IMObjectCreator;
-import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.component.im.view.AbstractIMObjectComponentFactory;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
@@ -45,8 +36,8 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.palette.Palette;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
 
@@ -61,11 +52,6 @@ public class AbstractEditableComponentFactory extends AbstractIMObjectComponentF
      * Component factory for read-only/derived properties.
      */
     private ReadOnlyComponentFactory readOnly;
-
-    /**
-     * Nodes to sort candidate objects on.
-     */
-    private final String[] IDENTIFIER_SORT_NODES = new String[]{"name", "id"};
 
 
     /**
@@ -154,7 +140,7 @@ public class AbstractEditableComponentFactory extends AbstractIMObjectComponentF
      * @return a new editor for {@code object}
      */
     protected IMObjectEditor getObjectEditor(IMObject object, IMObject parent, LayoutContext context) {
-        return IMObjectEditorFactory.create(object, parent, context);
+        return ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, parent, context);
     }
 
     /**
@@ -186,9 +172,8 @@ public class AbstractEditableComponentFactory extends AbstractIMObjectComponentF
      * @param context  the parent object
      * @return a new editor for {@code property}
      */
-    protected Editor createLookupEditor(Property property, IMObject context) {
-        Component component = LookupFieldFactory.create(property, context);
-        return createPropertyEditor(property, component);
+    protected LookupPropertyEditor createLookupEditor(Property property, IMObject context) {
+        return LookupPropertyEditorFactory.create(property, context, getLayoutContext());
     }
 
     /**
@@ -221,62 +206,25 @@ public class AbstractEditableComponentFactory extends AbstractIMObjectComponentF
      * @return a new editor for {@code property}
      */
     protected Editor createCollectionEditor(CollectionProperty property, IMObject object) {
-        Editor editor;
         if (property.isParentChild()) {
-            LayoutContext context = getLayoutContext();
-            HelpContext help = context.getHelpContext().subtopic(property.getName());
-            LayoutContext subContext = new DefaultLayoutContext(context, help);
-
             if (property.getMinCardinality() == 1 && property.getMaxCardinality() == 1) {
-                // handle the special case of a collection of one element.
-                // This can be edited inline
+                // handle the special case of a collection of one element. Pre-populate the value
                 String[] range = property.getArchetypeRange();
                 if (range.length == 1) {
-                    Object[] values = property.getValues().toArray();
-                    IMObject value;
-                    if (values.length > 0) {
-                        value = (IMObject) values[0];
-                    } else {
-                        value = IMObjectCreator.create(range[0]);
+                    List values = property.getValues();
+                    if (values.isEmpty()) {
+                        IMObject value = IMObjectCreator.create(range[0]);
                         if (value != null) {
                             property.add(value);
                         }
                     }
-//                    if (value != null) {
-//                        editor = getObjectEditor(value, object, subContext);
-//                        editors.add(editor, property);
-//                    }
                 }
             }
-            editor = IMObjectCollectionEditorFactory.create(property, object, subContext);
-        } else {
-            IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
-            List<IMObject> identifiers = ArchetypeQueryHelper.getCandidates(service, property.getDescriptor());
-            final String[] nodes = DescriptorHelper.getCommonNodeNames(
-                    property.getDescriptor().getArchetypeRange(), IDENTIFIER_SORT_NODES, service);
-
-            Component component;
-            if (property.getMaxCardinality() == 1) {
-                // render as a dropdown when at most one element can be selected
-                boolean allowNone = property.getMinCardinality() == 0;
-                IMObjectListModel model = new IMObjectListModel(identifiers, false, allowNone);
-                SelectField selectField = BoundSelectFieldFactory.create(property, model);
-                selectField.setCellRenderer(IMObjectListCellRenderer.NAME);
-                component = selectField;
-            } else {
-                // render as a palette when more than one object may be selected
-                Palette<IMObject> palette = new BoundPalette<IMObject>(identifiers, property) {
-                    @Override
-                    protected void sort(List<IMObject> values) {
-                        IMObjectSorter.sort(values, nodes);
-                    }
-                };
-                palette.setCellRenderer(IMObjectListCellRenderer.NAME);
-                component = palette;
-            }
-            editor = createPropertyEditor(property, component);
         }
-        return editor;
+        LayoutContext context = getLayoutContext();
+        HelpContext help = context.getHelpContext().subtopic(property.getName());
+        LayoutContext subContext = new DefaultLayoutContext(context, help);
+        return IMObjectCollectionEditorFactory.create(property, object, subContext);
     }
 
     /**

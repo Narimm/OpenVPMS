@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 
@@ -32,20 +30,25 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.RelationalOp;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 
 /**
  * A helper class, wrapping frequently used queries.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 public class ArchetypeQueryHelper {
 
@@ -385,7 +388,7 @@ public class ArchetypeQueryHelper {
         // check that the node is a collection and that the parentChild
         // attribute is set to false
         if (!(ndesc.isCollection()) ||
-                (ndesc.isParentChild())) {
+            (ndesc.isParentChild())) {
             return null;
         }
 
@@ -405,4 +408,27 @@ public class ArchetypeQueryHelper {
 
         return children;
     }
+
+    /**
+     * Returns the name of an object, given its reference.
+     *
+     * @param reference the object reference. May be {@code null}
+     * @return the name or {@code null} if none exists
+     */
+    public static String getName(IMObjectReference reference, IArchetypeService service) {
+        String result = null;
+        if (reference != null) {
+            ObjectRefConstraint constraint = new ObjectRefConstraint("o", reference);
+            ArchetypeQuery query = new ArchetypeQuery(constraint);
+            query.add(new NodeSelectConstraint("o.name"));
+            query.setMaxResults(1);
+            Iterator<ObjectSet> iter = new ObjectSetQueryIterator(service, query);
+            if (iter.hasNext()) {
+                ObjectSet set = iter.next();
+                result = set.getString("o.name");
+            }
+        }
+        return result;
+    }
+
 }

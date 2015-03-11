@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -24,7 +24,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
@@ -162,7 +161,7 @@ public class CustomerMailContext extends ContextMailContext {
      */
     @Override
     public AddressFormatter getToAddressFormatter() {
-        return ReferringAddressFormatter.INSTANCE;
+        return new ReferringAddressFormatter();
     }
 
     /**
@@ -202,24 +201,19 @@ public class CustomerMailContext extends ContextMailContext {
     private static class ReferringAddressFormatter extends ToAddressFormatter {
 
         /**
-         * The singleton instance.
-         */
-        public static final AddressFormatter INSTANCE = new ReferringAddressFormatter();
-
-        /**
-         * Formats an email address contact.
+         * Returns the type of a contact.
          *
-         * @param contact the email address contact
-         * @return the formatted contact
+         * @param contact the contact
+         * @return the type of the contact. May be {@code null}
          */
         @Override
-        public String format(Contact contact) {
-            Party party = contact.getParty();
-            if (TypeHelper.isA(party, SupplierArchetypes.SUPPLIER_VET, SupplierArchetypes.SUPPLIER_VET_PRACTICE)) {
-                String type = DescriptorHelper.getDisplayName(party);
-                return Messages.format("mail.contact.to.referring", party.getName(), getAddress(contact), type);
+        public String getType(Contact contact) {
+            String type = super.getType(contact);
+            if (TypeHelper.isA(contact.getParty(), SupplierArchetypes.SUPPLIER_VET,
+                               SupplierArchetypes.SUPPLIER_VET_PRACTICE)) {
+                type = Messages.format("mail.type.referring", type);
             }
-            return super.format(contact);
+            return type;
         }
     }
 

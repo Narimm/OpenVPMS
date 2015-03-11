@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.bound;
 
@@ -36,8 +34,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the {@link BoundDateField} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class BoundDateFieldTestCase extends AbstractBoundFieldTest<BoundDateField, Date> {
 
@@ -71,6 +68,7 @@ public class BoundDateFieldTestCase extends AbstractBoundFieldTest<BoundDateFiel
         assertNotNull(minDate);
         assertNotNull(maxDate);
         Date belowMinDate = DateRules.getDate(minDate, -1, DateUnits.DAYS);
+        Date belowMaxDate = DateRules.getDate(maxDate, -1, DateUnits.DAYS);
         Date aboveMaxDate = DateRules.getDate(maxDate, 1, DateUnits.DAYS);
 
         field.setDate(belowMinDate);
@@ -81,16 +79,20 @@ public class BoundDateFieldTestCase extends AbstractBoundFieldTest<BoundDateFiel
         assertEquals(minDate, property.getValue());
         assertTrue(property.isValid());
 
-        field.setDate(maxDate);
-        assertEquals(maxDate, property.getValue());
+        field.setDate(belowMaxDate);
+        assertEquals(belowMaxDate, property.getValue());
         assertTrue(property.isValid());
 
-        field.setDate(aboveMaxDate);
-        assertEquals(maxDate, property.getValue()); // will have previous value, but marked invalid
+        field.setDate(maxDate);
+        assertEquals(belowMaxDate, property.getValue()); // will have previous value, but marked invalid
         assertFalse(property.isValid());
 
-        field.setDate(maxDate);                     // set the value back to a valid date
-        assertEquals(maxDate, property.getValue());
+        field.setDate(aboveMaxDate);
+        assertEquals(belowMaxDate, property.getValue()); // will have previous value, but marked invalid
+        assertFalse(property.isValid());
+
+        field.setDate(belowMaxDate);                     // set the value back to a valid date
+        assertEquals(belowMaxDate, property.getValue());
         assertTrue(property.isValid());
     }
 

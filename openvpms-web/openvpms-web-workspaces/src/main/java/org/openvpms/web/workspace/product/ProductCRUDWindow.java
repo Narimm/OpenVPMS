@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product;
@@ -186,7 +186,7 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
      */
     private void copy(Product product) {
         try {
-            ProductRules rules = new ProductRules();
+            ProductRules rules = ServiceHelper.getBean(ProductRules.class);
             String name = Messages.format("product.copy.name", product.getName());
             Product copy = rules.copy(product, name);
 
@@ -238,7 +238,8 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
      * @param help     the help context
      */
     private void importDocument(Document document, HelpContext help) {
-        ProductCSVReader reader = new ProductCSVReader(ServiceHelper.getBean(DocumentHandlers.class));
+        ProductCSVReader reader = new ProductCSVReader(ServiceHelper.getBean(DocumentHandlers.class),
+                                                       ServiceHelper.getLookupService());
         List<SimpleDateFormat> formats = reader.getDateFormats(document);
         boolean ambiguousDates = false;
         if (formats.size() > 1) {

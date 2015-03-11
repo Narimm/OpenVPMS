@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.tax;
@@ -23,12 +23,10 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
@@ -72,16 +70,6 @@ public class TaxRules {
      */
     private static final String TAX_TYPE = "lookup.taxType";
 
-
-    /**
-     * Constructs a {@link TaxRules}.
-     *
-     * @param practice the practice, for default tax classifications
-     */
-    public TaxRules(Party practice) {
-        this(practice, ArchetypeServiceHelper.getArchetypeService(),
-             LookupServiceHelper.getLookupService());
-    }
 
     /**
      * Constructs a {@link TaxRules}.

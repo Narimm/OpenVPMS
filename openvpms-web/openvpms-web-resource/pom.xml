@@ -21,7 +21,7 @@
     <parent>
         <artifactId>openvpms-web</artifactId>
         <groupId>org.openvpms</groupId>
-        <version>1.7.1</version>
+        <version>1.8-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -58,20 +58,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
-                <version>1.0-beta-2</version>
-                <executions>
-                    <execution>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>create</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <doCheck>false</doCheck>
-                    <doUpdate>false</doUpdate>
-                    <revisionOnScmFailure>-1</revisionOnScmFailure>
-                </configuration>
             </plugin>
         </plugins>
     </build>

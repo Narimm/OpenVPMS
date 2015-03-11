@@ -40,6 +40,8 @@ import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.im.report.TemplatedReporter;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.reporting.email.EmailAddress;
+import org.openvpms.web.workspace.reporting.email.PracticeEmailAddresses;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -68,14 +70,9 @@ public class StatementEmailProcessor
     private final JavaMailSender sender;
 
     /**
-     * The email address.
+     * The practice email addresses.
      */
-    private final String emailAddress;
-
-    /**
-     * The email name.
-     */
-    private final String emailName;
+    private final PracticeEmailAddresses addresses;
 
     /**
      * The email subject.
@@ -106,22 +103,18 @@ public class StatementEmailProcessor
     /**
      * Constructs a {@link StatementEmailProcessor}.
      *
-     * @param sender       the mail sender
-     * @param emailAddress the email address
-     * @param emailName    the email name
-     * @param practice     the practice
-     * @param context      the context
+     * @param sender   the mail sender
+     * @param practice the practice
+     * @param context  the context
      * @throws ArchetypeServiceException   for any archetype service error
      * @throws StatementProcessorException for any statement processor error
      */
-    public StatementEmailProcessor(JavaMailSender sender, String emailAddress, String emailName, Party practice,
-                                   Context context) {
+    public StatementEmailProcessor(JavaMailSender sender, Party practice, Context context) {
         super(practice);
         this.sender = sender;
-        this.emailAddress = emailAddress;
-        this.emailName = emailName;
+        addresses = new PracticeEmailAddresses(practice, "BILLING");
         handlers = ServiceHelper.getDocumentHandlers();
-        TemplateHelper helper = new TemplateHelper();
+        TemplateHelper helper = new TemplateHelper(ServiceHelper.getArchetypeService());
         Entity entity = helper.getTemplateForArchetype(CustomerAccountArchetypes.OPENING_BALANCE);
         if (entity == null) {
             throw new StatementProcessorException(InvalidConfiguration, "No document template configured");
@@ -161,7 +154,8 @@ public class StatementEmailProcessor
                                                       statement.getCustomer());
             }
             String to = bean.getString("emailAddress");
-            helper.setFrom(emailAddress, emailName);
+            EmailAddress email = addresses.getAddress(statement.getCustomer());
+            helper.setFrom(email.getAddress(), email.getName());
             helper.setTo(to);
             helper.setSubject(emailSubject);
             helper.setText(emailText);

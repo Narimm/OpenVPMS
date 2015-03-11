@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
@@ -26,7 +26,6 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
@@ -38,12 +37,6 @@ import java.io.File;
  * @author Tim Anderson
  */
 public abstract class AbstractReportTest extends ArchetypeServiceTest {
-
-    /**
-     * The lookup service.
-     */
-    @Autowired
-    private ILookupService lookups;
 
     /**
      * The document handlers.
@@ -61,15 +54,6 @@ public abstract class AbstractReportTest extends ArchetypeServiceTest {
     protected Document getDocument(String path, String mimeType) {
         File file = new File(path);
         return DocumentHelper.create(file, mimeType, handlers);
-    }
-
-    /**
-     * Returns the lookup service.
-     *
-     * @return the lookup service
-     */
-    protected ILookupService getLookups() {
-        return lookups;
     }
 
     /**

@@ -346,6 +346,22 @@ public class DescriptorHelperTestCase extends AbstractArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link DescriptorHelper#getNode(String, String, IArchetypeService)} method.
+     */
+    @Test
+    public void testGetNode() {
+        NodeDescriptor node1 = DescriptorHelper.getNode("party.customerperson", "title", getArchetypeService());
+        assertNotNull(node1);
+        assertEquals("title", node1.getName());
+
+        NodeDescriptor node2 = DescriptorHelper.getNode("bad.archetype", "name", getArchetypeService());
+        assertNull(node2);
+
+        NodeDescriptor node3 = DescriptorHelper.getNode("party.customerperson", "badName", getArchetypeService());
+        assertNull(node3);
+    }
+
+    /**
      * Verifies that two lists of short names match.
      *
      * @param actualShortNames   the actual short names

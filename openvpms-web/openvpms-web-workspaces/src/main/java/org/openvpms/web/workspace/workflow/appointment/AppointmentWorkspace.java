@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
 
+import net.sf.jasperreports.engine.util.ObjectUtils;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
@@ -28,6 +29,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleCRUDWindow;
@@ -98,17 +100,19 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
             setObject((Entity) object);
         } else if (TypeHelper.isA(object, ScheduleArchetypes.APPOINTMENT)) {
             Act act = (Act) object;
-            ActBean bean = new ActBean(act);
-            Entity schedule = bean.getNodeParticipant("schedule");
-            Party location = getContext().getLocation();
-            if (schedule != null && location != null) {
-                AppointmentRules rules = ServiceHelper.getBean(AppointmentRules.class);
-                Entity view = rules.getScheduleView(location, schedule);
-                if (view != null) {
-                    setScheduleView(view, act.getActivityStartTime());
-                    ScheduleBrowser scheduleBrowser = getBrowser();
-                    scheduleBrowser.setSelected(scheduleBrowser.getEvent(act));
-                    getCRUDWindow().setObject(act);
+            if (!ObjectUtils.equals(getCRUDWindow().getObject(), act)) {
+                ActBean bean = new ActBean(act);
+                Entity schedule = bean.getNodeParticipant("schedule");
+                Party location = getContext().getLocation();
+                if (schedule != null && location != null) {
+                    AppointmentRules rules = ServiceHelper.getBean(AppointmentRules.class);
+                    Entity view = rules.getScheduleView(location, schedule);
+                    if (view != null) {
+                        setScheduleView(view, act.getActivityStartTime());
+                        ScheduleBrowser scheduleBrowser = getBrowser();
+                        scheduleBrowser.setSelected(scheduleBrowser.getEvent(act));
+                        getCRUDWindow().setObject(act);
+                    }
                 }
             }
         }
@@ -135,7 +139,7 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
      */
     protected ScheduleBrowser createBrowser() {
         Context context = getContext();
-        return new AppointmentBrowser(context.getLocation(), context);
+        return new AppointmentBrowser(context.getLocation(), new DefaultLayoutContext(getContext(), getHelpContext()));
     }
 
     /**
@@ -172,6 +176,7 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
         // update the context schedule
         updateContext();
         super.eventSelected(event);
+        getContext().setAppointment(getCRUDWindow().getObject());
     }
 
     /**
@@ -202,7 +207,7 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
      * @return the default schedule view, or {@code null} if there is no default
      */
     protected Entity getDefaultView(Party location) {
-        LocationRules locationRules = new LocationRules();
+        LocationRules locationRules = ServiceHelper.getBean(LocationRules.class);
         return locationRules.getDefaultScheduleView(location);
     }
 

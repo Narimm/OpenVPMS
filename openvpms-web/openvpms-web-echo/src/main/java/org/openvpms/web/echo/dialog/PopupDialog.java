@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.dialog;
@@ -97,6 +97,11 @@ public abstract class PopupDialog extends PopupWindow {
      * Helper to create a button row containing the OK, SKIP and CANCEL buttons.
      */
     public static final String[] OK_SKIP_CANCEL = {OK_ID, SKIP_ID, CANCEL_ID};
+
+    /**
+     * Helper to create a button row containing the OK and SKIP buttons.
+     */
+    public static final String[] OK_SKIP = {OK_ID, SKIP_ID};
 
     /**
      * Helper to create a button row containing the SKIP and CANCEL buttons.
@@ -256,7 +261,7 @@ public abstract class PopupDialog extends PopupWindow {
     @Override
     public void userClose() {
         if (action == null && defaultCloseAction != null) {
-            onButton(defaultCloseAction);
+            onButtonProtected(defaultCloseAction);
         } else {
             onClosing();
             super.userClose();
@@ -445,10 +450,23 @@ public abstract class PopupDialog extends PopupWindow {
     protected Button addButton(final String id, boolean disableShortcut) {
         ActionListener listener = new ActionListener() {
             public void onAction(ActionEvent event) {
-                onButton(id);
+                onButtonProtected(id);
             }
         };
         return addButton(id, disableShortcut, listener);
+    }
+
+    /**
+     * Invokes {@link #onButton(String)}, catching exceptions.
+     *
+     * @param id the button identifier
+     */
+    private void onButtonProtected(String id) {
+        try {
+            onButton(id);
+        } catch (Throwable exception) {
+            ErrorHandler.getInstance().error(exception);
+        }
     }
 
 }

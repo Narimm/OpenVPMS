@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.edit.act;
 
@@ -80,7 +80,7 @@ public class ActEditorInitAuthorTestCase extends AbstractAppTest {
 
                 // create an editor for the act
                 LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
-                IMObjectEditor editor = IMObjectEditorFactory.create(object, layout);
+                IMObjectEditor editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, layout);
                 ActBean bean = new ActBean((Act) editor.getObject(), service);
 
                 // verify the author node has been populated

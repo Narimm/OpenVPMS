@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -20,6 +20,8 @@ import org.apache.commons.collections.Predicate;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
+import org.openvpms.component.business.domain.im.common.SequencedRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
@@ -79,8 +81,7 @@ public class EntityBean extends IMObjectBean {
      */
     public EntityRelationship addRelationship(String shortName, Entity target) {
         Entity entity = getEntity();
-        EntityRelationship r
-                = (EntityRelationship) getArchetypeService().create(shortName);
+        EntityRelationship r = (EntityRelationship) getArchetypeService().create(shortName);
         if (r == null) {
             throw new IMObjectBeanException(ArchetypeNotFound, shortName);
         }
@@ -102,17 +103,53 @@ public class EntityBean extends IMObjectBean {
      *                                   {@code target}, or multiple relationships can support {@code target}
      */
     public EntityRelationship addNodeRelationship(String name, Entity target) {
-        String shortName = getRelationshipShortName(name, target, "target");
-        return addRelationship(shortName, target);
+        return (EntityRelationship) addNodeTarget(name, target);
     }
 
     /**
-     * Returns the first entity relationship with the specified entity as a
-     * target.
+     * Adds a new relationship between the current entity (the source), and the supplied target.
+     * <p/>
+     * If the relationship is an {@link EntityRelationship}, it will also be added to the target.
+     *
+     * @param name   the name
+     * @param target the target
+     * @return the new relationship
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObjectRelationship addNodeTarget(String name, Entity target) {
+        IMObjectRelationship result = addNodeTarget(name, target.getObjectReference());
+        if (result instanceof EntityRelationship) {
+            target.addEntityRelationship((EntityRelationship) result);
+        }
+        return result;
+    }
+
+    /**
+     * Adds a new relationship between the current entity (the source), and the supplied target.
+     *
+     * @param name   the name
+     * @param target the target
+     * @return the new relationship
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObjectRelationship addNodeTarget(String name, IMObjectReference target) {
+        String shortName = getRelationshipShortName(name, target, "target");
+        Entity entity = getEntity();
+        IMObjectRelationship r = (IMObjectRelationship) getArchetypeService().create(shortName);
+        if (r == null) {
+            throw new IMObjectBeanException(ArchetypeNotFound, shortName);
+        }
+        r.setSource(entity.getObjectReference());
+        r.setTarget(target);
+        addValue(name, r);
+        return r;
+    }
+
+    /**
+     * Returns the first entity relationship with the specified entity as a target.
      *
      * @param target the target entity
-     * @return the first entity relationship with {@code target} as its
-     *         target or {@code null} if none is found
+     * @return the first entity relationship with {@code target} as its target or {@code null} if none is found
      */
     public EntityRelationship getRelationship(Entity target) {
         return getRelationship(target.getObjectReference());
@@ -405,7 +442,7 @@ public class EntityBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<Entity> getNodeTargetEntities(String node) {
-        return getNodeTargetEntities(node, (Comparator<EntityRelationship>) null);
+        return getNodeTargetEntities(node, (Comparator<SequencedRelationship>) null);
     }
 
     /**
@@ -418,7 +455,7 @@ public class EntityBean extends IMObjectBean {
      * @return a list of active target entities
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public List<Entity> getNodeTargetEntities(String node, Comparator<EntityRelationship> comparator) {
+    public List<Entity> getNodeTargetEntities(String node, Comparator<SequencedRelationship> comparator) {
         return getNodeTargetObjects(node, Entity.class, comparator);
     }
 

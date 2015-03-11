@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -19,6 +19,9 @@ package org.openvpms.component.business.service.archetype.helper;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.PredicateUtils;
 import org.apache.commons.collections.functors.AndPredicate;
+import org.apache.commons.jxpath.JXPathContext;
+import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -34,6 +37,7 @@ import org.openvpms.component.business.service.archetype.functor.IsA;
 import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.functor.RelationshipRef;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.util.AbstractPropertySet;
 import org.openvpms.component.system.common.util.PropertySet;
 
@@ -998,6 +1002,33 @@ public class IMObjectBean {
     }
 
     /**
+     * Returns the source object reference from the first active {@link IMObjectRelationship} for the specified
+     * relationship node.
+     *
+     * @param node the relationship node name
+     * @return the source object reference, or {@code null} if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObjectReference getNodeSourceObjectRef(String node) {
+        return getNodeSourceObjectRef(node, true);
+    }
+
+    /**
+     * Returns the source object reference from the first {@link IMObjectRelationship} for the specified
+     * relationship node.
+     *
+     * @param node   the relationship node name
+     * @param active determines if the relationship must be active
+     * @return the source object reference, or {@code null} if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObjectReference getNodeSourceObjectRef(String node, boolean active) {
+        List<IMObjectRelationship> relationships = getValues(node, getDefaultPredicate(active),
+                                                             IMObjectRelationship.class);
+        return getRelatedRef(relationships, null, SOURCE);
+    }
+
+    /**
      * Returns the source object references from each active {@link IMObjectRelationship} for the specified node.
      *
      * @param node the relationship node
@@ -1039,6 +1070,31 @@ public class IMObjectBean {
      */
     public List<IMObjectReference> getNodeTargetObjectRefs(String node) {
         return getNodeTargetObjectRefs(node, IsActiveRelationship.isActiveNow());
+    }
+
+    /**
+     * Returns the target object reference from the first active {@link IMObjectRelationship} for the specified node.
+     *
+     * @param node the relationship node
+     * @return the target reference, or {@code null} if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObjectReference getNodeTargetObjectRef(String node) {
+        return getNodeTargetObjectRef(node, true);
+    }
+
+    /**
+     * Returns the target object reference from the first {@link IMObjectRelationship} for the specified node.
+     *
+     * @param node   the relationship node
+     * @param active determines if the relationship must be active
+     * @return the target reference, or {@code null} if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObjectReference getNodeTargetObjectRef(String node, boolean active) {
+        List<IMObjectRelationship> relationships = getValues(node, getDefaultPredicate(active),
+                                                             IMObjectRelationship.class);
+        return getRelatedRef(relationships, null, TARGET);
     }
 
     /**
@@ -1539,6 +1595,41 @@ public class IMObjectBean {
     }
 
     /**
+     * Evaluates the default value if a node, if it has one.
+     *
+     * @param name the node name
+     * @return the evaluation of {@link NodeDescriptor#getDefaultValue()} (which may evaluate {@code null}),
+     *         or {@code null} if the node doesn't have a default value
+     * @throws IMObjectBeanException if the descriptor doesn't exist
+     */
+    public Object getDefaultValue(String name) {
+        Object result = null;
+        NodeDescriptor node = getNode(name);
+        String expression = node.getDefaultValue();
+        if (!StringUtils.isEmpty(expression)) {
+            result = evaluate(expression);
+        }
+        return result;
+    }
+
+    /**
+     * Determines if a node is unchanged from its default value.
+     *
+     * @param name the node name
+     * @return {@code true} if the node is unchanged from its default value
+     */
+    public boolean isDefaultValue(String name) {
+        boolean result = false;
+        NodeDescriptor node = getNode(name);
+        String expression = node.getDefaultValue();
+        if (!StringUtils.isEmpty(expression)) {
+            Object value = evaluate(expression);
+            result = ObjectUtils.equals(getValue(name), value);
+        }
+        return result;
+    }
+
+    /**
      * Saves the object.
      * <p/>
      * Any derived nodes will have their values derived prior to the object
@@ -1886,14 +1977,14 @@ public class IMObjectBean {
      * Returns the first object reference from the supplied relationship that matches the specified criteria.
      *
      * @param relationships the relationships
-     * @param predicate     the criteria
+     * @param predicate     the criteria. May be {@code null}
      * @param accessor      the relationship reference accessor
      * @return the matching reference, or {@code null}
      */
     protected <R extends IMObjectRelationship> IMObjectReference getRelatedRef(
             Collection<R> relationships, Predicate predicate, RelationshipRef accessor) {
         for (R relationship : relationships) {
-            if (predicate.evaluate(relationship)) {
+            if (predicate == null || predicate.evaluate(relationship)) {
                 IMObjectReference reference = accessor.transform(relationship);
                 if (reference != null) {
                     return reference;
@@ -2013,10 +2104,22 @@ public class IMObjectBean {
         NodeDescriptor node = getArchetype().getNodeDescriptor(name);
         if (node == null) {
             String shortName = object.getArchetypeId().getShortName();
-            throw new IMObjectBeanException(NodeDescriptorNotFound, name,
-                                            shortName);
+            throw new IMObjectBeanException(NodeDescriptorNotFound, name, shortName);
         }
         return node;
+    }
+
+    /**
+     * Evaluates a JXPath expression.
+     *
+     * @param expression the expression
+     * @return the result of the expression
+     */
+    private Object evaluate(String expression) {
+        Object result;
+        JXPathContext context = JXPathHelper.newContext(object);
+        result = context.getValue(expression);
+        return result;
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -44,12 +44,7 @@ import static org.openvpms.component.system.common.query.ParticipationConstraint
  *
  * @author Tim Anderson
  */
-public abstract class AbstractActResultSet<T> extends AbstractArchetypeServiceResultSet<T> {
-
-    /**
-     * The act archetype criteria.
-     */
-    private final ShortNameConstraint archetypes;
+public abstract class AbstractActResultSet<T> extends AbstractIMObjectResultSet<T> {
 
     /**
      * The participant constraints.
@@ -99,7 +94,31 @@ public abstract class AbstractActResultSet<T> extends AbstractArchetypeServiceRe
                                 String[] statuses, int pageSize,
                                 SortConstraint[] sort,
                                 QueryExecutor<T> executor) {
-        this(archetypes, participant, from, to, statuses, false, null, pageSize,
+        this(archetypes, null, participant, from, to, statuses, pageSize, sort, executor);
+    }
+
+    /**
+     * Constructs a new {@code AbstractActResultSet}.
+     *
+     * @param archetypes  the act archetype constraint
+     * @param value       the value to query on. May be {@code null}
+     * @param participant the participant constraint. May be {@code null}
+     * @param from        the act from date. May be {@code null}
+     * @param to          the act to date, inclusive. May be {@code null}
+     * @param statuses    the act statuses. If empty, indicates all acts
+     * @param pageSize    the maximum no. of results per page
+     * @param sort        the sort criteria. May be {@code null}
+     * @param executor    the query executor
+     */
+    public AbstractActResultSet(ShortNameConstraint archetypes,
+                                String value,
+                                ParticipantConstraint participant,
+                                Date from,
+                                Date to,
+                                String[] statuses, int pageSize,
+                                SortConstraint[] sort,
+                                QueryExecutor<T> executor) {
+        this(archetypes, value, participant, from, to, statuses, false, null, pageSize,
              sort, executor);
     }
 
@@ -125,8 +144,35 @@ public abstract class AbstractActResultSet<T> extends AbstractArchetypeServiceRe
                                 IConstraint constraints, int pageSize,
                                 SortConstraint[] sort,
                                 QueryExecutor<T> executor) {
-        this(archetypes, (participant != null) ? new ParticipantConstraint[]{participant} : null,
-             from, to, statuses, exclude, constraints, pageSize, sort, executor);
+        this(archetypes, null, participant, from, to, statuses, exclude, constraints, pageSize, sort, executor);
+    }
+
+    /**
+     * Constructs a new {@code AbstractActResultSet}.
+     *
+     * @param archetypes  the act archetype constraint
+     * @param value       the value to query on. May be {@code null}
+     * @param participant the participant constraint. May be {@code null}
+     * @param from        the act from date. May be {@code null}
+     * @param to          the act to date, inclusive. May be {@code null}
+     * @param statuses    the act statuses. If {@code null} or empty, indicates all acts
+     * @param exclude     if {@code true} exclude acts with status in {@code statuses}; otherwise include them.
+     * @param constraints additional query constraints. May be {@code null}
+     * @param pageSize    the maximum no. of results per page
+     * @param sort        the sort criteria. May be {@code null}
+     * @param executor    the query executor
+     */
+    public AbstractActResultSet(ShortNameConstraint archetypes,
+                                String value,
+                                ParticipantConstraint participant,
+                                Date from,
+                                Date to,
+                                String[] statuses, boolean exclude,
+                                IConstraint constraints, int pageSize,
+                                SortConstraint[] sort,
+                                QueryExecutor<T> executor) {
+        this(archetypes, value, (participant != null) ? new ParticipantConstraint[]{participant} : null,
+             createDateConstraint(from, to), statuses, exclude, constraints, pageSize, sort, executor);
     }
 
     /**
@@ -151,7 +197,33 @@ public abstract class AbstractActResultSet<T> extends AbstractArchetypeServiceRe
                                 IConstraint constraints, int pageSize,
                                 SortConstraint[] sort,
                                 QueryExecutor<T> executor) {
-        this(archetypes, participants, createDateConstraint(from, to),
+        this(archetypes, null, participants, from, to, statuses, exclude, constraints, pageSize, sort, executor);
+    }
+
+    /**
+     * Constructs a new {@code AbstractActResultSet}.
+     *
+     * @param archetypes   the act archetype constraint
+     * @param participants the participant constraints. May be {@code null}
+     * @param from         the act from date. May be {@code null}
+     * @param to           the act to date, inclusive. May be {@code null}
+     * @param statuses     the act statuses. If {@code null} or empty, indicates all acts
+     * @param exclude      if {@code true} exclude acts with status in {@code statuses}; otherwise include them.
+     * @param constraints  additional query constraints. May be {@code null}
+     * @param pageSize     the maximum no. of results per page
+     * @param sort         the sort criteria. May be {@code null}
+     * @param executor     the query executor
+     */
+    public AbstractActResultSet(ShortNameConstraint archetypes,
+                                String value,
+                                ParticipantConstraint[] participants,
+                                Date from,
+                                Date to,
+                                String[] statuses, boolean exclude,
+                                IConstraint constraints, int pageSize,
+                                SortConstraint[] sort,
+                                QueryExecutor<T> executor) {
+        this(archetypes, value, participants, createDateConstraint(from, to),
              statuses, exclude, constraints, pageSize, sort, executor);
     }
 
@@ -159,6 +231,7 @@ public abstract class AbstractActResultSet<T> extends AbstractArchetypeServiceRe
      * Constructs a new {@code AbstractActResultSet}.
      *
      * @param archetypes   the act archetype constraint
+     * @param value        the value to query on. May be {@code null}
      * @param participants the participant constraints. May be {@code null}
      * @param times        the time constraints. May be {@code null}
      * @param statuses     the act statuses. If {@code null} or empty, indicates all acts
@@ -169,26 +242,16 @@ public abstract class AbstractActResultSet<T> extends AbstractArchetypeServiceRe
      * @param executor     the query executor
      */
     public AbstractActResultSet(ShortNameConstraint archetypes,
-                                ParticipantConstraint[] participants,
+                                String value, ParticipantConstraint[] participants,
                                 IConstraint times, String[] statuses,
                                 boolean exclude, IConstraint constraints,
                                 int pageSize, SortConstraint[] sort,
                                 QueryExecutor<T> executor) {
-        super(constraints, pageSize, sort, executor);
+        super(archetypes, value, constraints, sort, pageSize, false, executor);
         this.participants = participants;
-        this.archetypes = archetypes;
-
         this.statuses = createStatusConstraint(statuses, exclude);
         this.times = times;
-    }
-
-    /**
-     * Returns the archetypes.
-     *
-     * @return the archetypes
-     */
-    protected ShortNameConstraint getArchetypes() {
-        return archetypes;
+        setSearch(value, ID);
     }
 
     /**
@@ -196,8 +259,9 @@ public abstract class AbstractActResultSet<T> extends AbstractArchetypeServiceRe
      *
      * @return a new archetype query
      */
+    @Override
     protected ArchetypeQuery createQuery() {
-        ArchetypeQuery query = new ArchetypeQuery(archetypes);
+        ArchetypeQuery query = super.createQuery();
         if (statuses != null) {
             query.add(statuses);
         }
@@ -206,8 +270,9 @@ public abstract class AbstractActResultSet<T> extends AbstractArchetypeServiceRe
         }
 
         if (participants != null) {
-            String[] shortNames = DescriptorHelper.getShortNames(
-                    archetypes.getShortNames(), archetypes.isPrimaryOnly());
+            ShortNameConstraint archetypes = getArchetypes();
+            String[] shortNames = DescriptorHelper.getShortNames(archetypes.getShortNames(),
+                                                                 archetypes.isPrimaryOnly());
             try {
                 for (ParticipantConstraint participant : participants) {
                     ParticipantConstraint p = (ParticipantConstraint) participant.clone();
@@ -253,19 +318,14 @@ public abstract class AbstractActResultSet<T> extends AbstractArchetypeServiceRe
         if (getReferenceConstraint() != null) {
             addReferenceConstraint(query, getReferenceConstraint());
         }
+        ShortNameConstraint archetypes = getArchetypes();
         for (SortConstraint sort : getSortConstraints()) {
             if (sort instanceof NodeSortConstraint) {
                 NodeSortConstraint node = (NodeSortConstraint) sort;
-                NodeDescriptor descriptor
-                        = QueryHelper.getDescriptor(archetypes,
-                                                    node.getNodeName());
-                if (descriptor != null
-                    && QueryHelper.isParticipationNode(descriptor)) {
-                    ShortNameConstraint shortNames = (ShortNameConstraint)
-                            query.getArchetypeConstraint();
-                    QueryHelper.addSortOnParticipation(shortNames, query,
-                                                       descriptor,
-                                                       node.isAscending());
+                NodeDescriptor descriptor = QueryHelper.getDescriptor(archetypes, node.getNodeName());
+                if (descriptor != null && QueryHelper.isParticipationNode(descriptor)) {
+                    ShortNameConstraint shortNames = (ShortNameConstraint) query.getArchetypeConstraint();
+                    QueryHelper.addSortOnParticipation(shortNames, query, descriptor, node.isAscending());
                 } else {
                     query.add(sort);
                 }
@@ -284,7 +344,7 @@ public abstract class AbstractActResultSet<T> extends AbstractArchetypeServiceRe
      */
     @Override
     protected void addReferenceConstraint(ArchetypeQuery query, IMObjectReference reference) {
-        query.add(new ObjectRefConstraint(archetypes.getAlias(), reference));
+        query.add(new ObjectRefConstraint(getArchetypes().getAlias(), reference));
     }
 
     /**

@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.edit;
 
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ErrorListener;
+import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
@@ -35,6 +36,11 @@ public abstract class AbstractPropertyEditor extends AbstractModifiable implemen
      */
     private final Property property;
 
+    /**
+     * Listener to reset the validity status.
+     */
+    private final ModifiableListener listener;
+
 
     /**
      * Constructs an {@link AbstractPropertyEditor}.
@@ -43,6 +49,13 @@ public abstract class AbstractPropertyEditor extends AbstractModifiable implemen
      */
     public AbstractPropertyEditor(Property property) {
         this.property = property;
+        listener = new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                resetValid();
+            }
+        };
+        property.addModifiableListener(listener);
     }
 
     /**
@@ -99,23 +112,23 @@ public abstract class AbstractPropertyEditor extends AbstractModifiable implemen
     }
 
     /**
-     * Adds a listener to be notified of errors.
+     * Sets a listener to be notified of errors.
      *
-     * @param listener the listener to add
+     * @param listener the listener to register. May be {@code null}
      */
     @Override
-    public void addErrorListener(ErrorListener listener) {
-        getProperty().addErrorListener(listener);
+    public void setErrorListener(ErrorListener listener) {
+        getProperty().setErrorListener(listener);
     }
 
     /**
-     * Removes a listener.
+     * Returns the listener to be notified of errors.
      *
-     * @param listener the listener to remove
+     * @return the listener. May be {@code null}
      */
     @Override
-    public void removeErrorListener(ErrorListener listener) {
-        getProperty().removeErrorListener(listener);
+    public ErrorListener getErrorListener() {
+        return getProperty().getErrorListener();
     }
 
     /**
@@ -124,6 +137,7 @@ public abstract class AbstractPropertyEditor extends AbstractModifiable implemen
      * Once disposed, the behaviour of invoking any method is undefined.
      */
     public void dispose() {
+        getProperty().removeModifiableListener(listener);
     }
 
     /**

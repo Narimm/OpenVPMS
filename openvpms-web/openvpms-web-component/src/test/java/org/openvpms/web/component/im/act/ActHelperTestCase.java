@@ -23,6 +23,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 
@@ -48,7 +49,7 @@ public class ActHelperTestCase extends ArchetypeServiceTest {
         Party patient = TestHelper.createPatient();
         Act event = createAct(PatientArchetypes.CLINICAL_EVENT, patient);
         Act note = createAct(PatientArchetypes.CLINICAL_NOTE, patient);
-        Act problem = createAct(PatientArchetypes.CLINICAL_PROBLEM, patient);
+        Act problem = createProblem(patient);
         Act weight = createAct(PatientArchetypes.PATIENT_WEIGHT, patient);
 
         List<ActRelationship> relationships = new ArrayList<ActRelationship>();
@@ -72,7 +73,7 @@ public class ActHelperTestCase extends ArchetypeServiceTest {
     public void testGetActs() {
         Party patient = TestHelper.createPatient();
         Act note = createAct(PatientArchetypes.CLINICAL_NOTE, patient);
-        Act problem = createAct(PatientArchetypes.CLINICAL_PROBLEM, patient);
+        Act problem = createProblem(patient);
         Act weight = createAct(PatientArchetypes.PATIENT_WEIGHT, patient);
         save(note, problem, weight);
 
@@ -86,6 +87,19 @@ public class ActHelperTestCase extends ArchetypeServiceTest {
         assertTrue(acts.contains(note));
         assertTrue(acts.contains(problem));
         assertTrue(acts.contains(weight));
+    }
+
+    /**
+     * Helper to create a new <em>act.patientClinicalProblem</em>.
+     *
+     * @param patient the patient
+     * @return a new problem act
+     */
+    private Act createProblem(Party patient) {
+        Act act = createAct(PatientArchetypes.CLINICAL_PROBLEM, patient);
+        Lookup lookup = TestHelper.getLookup("lookup.diagnosis", "HEART_MURMUR");
+        act.setReason(lookup.getCode());
+        return act;
     }
 
     /**

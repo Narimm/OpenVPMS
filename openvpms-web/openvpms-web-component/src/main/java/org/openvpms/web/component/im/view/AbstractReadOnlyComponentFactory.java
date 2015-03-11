@@ -16,7 +16,6 @@
 
 package org.openvpms.web.component.im.view;
 
-import echopointng.RichTextArea;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -30,6 +29,11 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.TextComponentFactory;
+import org.openvpms.web.echo.text.TextComponent;
+import org.openvpms.web.resource.i18n.Messages;
+
+import java.util.List;
 
 
 /**
@@ -37,8 +41,7 @@ import org.openvpms.web.echo.factory.LabelFactory;
  *
  * @author Tim Anderson
  */
-public abstract class AbstractReadOnlyComponentFactory
-        extends AbstractIMObjectComponentFactory {
+public abstract class AbstractReadOnlyComponentFactory extends AbstractIMObjectComponentFactory {
 
     /**
      * The layout strategy factory.
@@ -84,7 +87,6 @@ public abstract class AbstractReadOnlyComponentFactory
      */
     public ComponentState create(Property property, IMObject context) {
         Component component = null;
-        boolean enable = false;
         if (!property.isLookup()) {
             component = create(property); // isString() returns true for lookups
         }
@@ -95,21 +97,15 @@ public abstract class AbstractReadOnlyComponentFactory
             } else if (property.isCollection()) {
                 component = getCollectionViewer((CollectionProperty) property, context);
                 // need to enable this otherwise table selection is disabled
-                enable = true;
             } else if (property.isObjectReference()) {
                 component = getObjectViewer(property, context);
                 // need to enable this for hyperlinks to work
-                enable = true;
             } else {
                 Label label = LabelFactory.create();
                 label.setText("No viewer for type " + property.getType());
                 component = label;
             }
         }
-        if (component instanceof RichTextArea) {
-            ((RichTextArea) component).setEditable(enable);
-        }
-        component.setEnabled(enable);
         component.setFocusTraversalParticipant(false);
         return new ComponentState(component, property);
     }
@@ -180,14 +176,13 @@ public abstract class AbstractReadOnlyComponentFactory
             // This can be viewed inline
             String[] shortNames = property.getArchetypeRange();
             if (shortNames.length == 1) {
-                Object[] values = property.getValues().toArray();
+                List values = property.getValues();
                 IMObject value;
-                if (values.length > 0) {
-                    value = (IMObject) values[0];
+                if (!values.isEmpty()) {
+                    value = (IMObject) values.get(0);
                     result = create(value, parent).getComponent();
                 } else {
-                    // nothing to display, so return an empty label
-                    result = LabelFactory.create();
+                    result = getEmptyCollectionViewer();
                 }
             }
         } else if (property.getMinCardinality() == 0 && property.getMaxCardinality() == 0) {
@@ -199,6 +194,20 @@ public abstract class AbstractReadOnlyComponentFactory
                                                                                      getLayoutContext());
             result = viewer.getComponent();
         }
+        return result;
+    }
+
+    /**
+     * Returns a component for an empty collection.
+     *
+     * @return the component
+     */
+    protected Component getEmptyCollectionViewer() {
+        Component result;// nothing to display
+        TextComponent component = TextComponentFactory.create(20);
+        component.setText(Messages.get("imobject.none"));
+        component.setEnabled(false);
+        result = component;
         return result;
     }
 

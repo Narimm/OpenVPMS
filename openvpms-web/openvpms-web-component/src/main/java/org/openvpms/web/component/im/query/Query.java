@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -65,7 +65,7 @@ public interface Query<T> extends Iterable<T> {
     /**
      * Sets the default sort constraint.
      *
-     * @param sort the default sort cosntraint. May be {@code null}
+     * @param sort the default sort constraint. May be {@code null}
      */
     void setDefaultSortConstraint(SortConstraint[] sort);
 

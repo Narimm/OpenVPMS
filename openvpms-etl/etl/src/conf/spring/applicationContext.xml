@@ -1,8 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <bean id="propertyPlaceholderConfigurer"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+
+        <!-- allow system properties to override any other property source -->
+        <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
+    </bean>
 
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
         <property name="driverClassName" value="${jdbc.driverClassName}"/>
@@ -61,9 +84,7 @@
     <!--  The IMObject DAO bean -->
     <bean id="imObjectDao"
           class="org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate">
-        <property name="sessionFactory">
-            <ref local="sessionFactory"/>
-        </property>
+        <constructor-arg ref="sessionFactory"/>
         <property name="transactionManager">
             <ref local="txnManager"/>
         </property>
@@ -124,35 +145,25 @@
     </bean>
 
     <bean id="customerAccountRules" class="org.openvpms.archetype.rules.finance.account.CustomerAccountRules">
+        <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="txnManager"/>
     </bean>
 
-    <!-- The JXPathHelper class, used to register extension functions -->
-    <bean id="jxpathHelper"
-          class="org.openvpms.component.system.common.jxpath.JXPathHelper">
+    <bean id="functionsFactory" class="org.openvpms.archetype.function.factory.DefaultArchetypeFunctionsFactory">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
         <constructor-arg>
-            <map>
-                <entry key="openvpms"
-                       value="org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions"/>
-                <entry key="date" value="org.openvpms.component.system.common.jxpath.DateFunctions"/>
-                <entry key="expr">
-                    <bean class="org.openvpms.archetype.function.expression.ExpressionFunctions">
-                        <constructor-arg value="expr"/>
-                    </bean>
-                </entry>
-                <entry key="lookup" value="org.openvpms.archetype.function.lookup.LookupFunctions"/>
-                <entry key="party">
-                    <bean class="org.openvpms.archetype.function.party.PartyFunctions">
-                        <constructor-arg index="0" ref="archetypeService"/>
-                        <constructor-arg index="1" ref="patientRules"/>
-                        <constructor-arg index="2" ref="customerAccountRules"/>
-                    </bean>
-                </entry>
-                <entry key="math">
-                    <bean class="org.openvpms.archetype.function.math.MathFunctions"/>
-                </entry>
-            </map>
+            <null/>
         </constructor-arg>
+    </bean>
+
+    <bean id="functions" class="org.apache.commons.jxpath.Functions" factory-bean="functionsFactory"
+          factory-method="create"/>
+
+    <!-- The JXPathHelper class, used to register extension functions -->
+    <bean id="jxpathHelper" class="org.openvpms.component.system.common.jxpath.JXPathHelper">
+        <constructor-arg ref="functions"/>
     </bean>
 
     <!-- ================================================================== -->

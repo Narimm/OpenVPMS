@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.report;
@@ -21,13 +19,12 @@ package org.openvpms.report;
 import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.MediaTray;
 import javax.print.attribute.standard.OrientationRequested;
-
+import javax.print.attribute.standard.Sides;
 
 /**
  * Print properties.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PrintProperties {
 
@@ -50,6 +47,11 @@ public class PrintProperties {
      * The media tray.
      */
     private MediaTray mediaTray;
+
+    /**
+     * The page sides to print on.
+     */
+    private Sides sides;
 
     /**
      * The no. of copies.
@@ -147,4 +149,23 @@ public class PrintProperties {
         return copies >= 1 ? copies : 1;
     }
 
+    /**
+     * Sets the paper sides to print on.
+     *
+     * @param sides the sides. May be {@code null}
+     */
+    public void setSides(Sides sides) {
+        this.sides = sides;
+    }
+
+    /**
+     * Returns the paper sides to print on.
+     *
+     * @return the sides. May be {@code null}
+     */
+    public Sides getSides() {
+        return sides;
+    }
+
 }
+

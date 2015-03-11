@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -94,7 +94,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param editor   the editor
      * @param patient  the patient
      * @param product  the product
-     * @param quantity the quantity
+     * @param quantity the quantity. If {@code null}, indicates the quantity won't be changed
      * @param mgr      the popup editor manager
      * @return the editor for the new item
      */
@@ -268,15 +268,15 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     }
 
     /**
-     * Finds a charge item in a list of items, by product.
+     * Finds an item in a list of items, by product.
      *
      * @param items   the items
      * @param product the product
      * @return the corresponding item
      */
-    private FinancialAct find(List<FinancialAct> items, Product product) {
-        FinancialAct result = null;
-        for (FinancialAct item : items) {
+    protected <T extends Act> T find(List<T> items, Product product) {
+        T result = null;
+        for (T item : items) {
             ActBean current = new ActBean(item);
             if (ObjectUtils.equals(current.getNodeParticipantRef("product"), product.getObjectReference())) {
                 result = item;
@@ -519,6 +519,36 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      */
     protected Product createProduct(String shortName, BigDecimal fixedPrice) {
         return CustomerChargeTestHelper.createProduct(shortName, fixedPrice, practice);
+    }
+
+    /**
+     * Helper to create a product.
+     *
+     * @param shortName  the product archetype short name
+     * @param fixedPrice the fixed price
+     * @param pharmacy   the pharmacy
+     * @return a new product
+     */
+    protected Product createProduct(String shortName, BigDecimal fixedPrice, Entity pharmacy) {
+        Product product = CustomerChargeTestHelper.createProduct(shortName, fixedPrice, practice);
+        EntityBean bean = new EntityBean(product);
+        bean.addNodeTarget("pharmacy", pharmacy);
+        bean.save();
+
+        return product;
+    }
+
+    /**
+     * Helper to create a product.
+     *
+     * @param shortName  the product archetype short name
+     * @param fixedPrice the fixed price
+     * @param unitPrice  the unit price
+     * @return a new product
+     */
+    protected Product createProduct(String shortName, BigDecimal fixedPrice, BigDecimal unitPrice) {
+        return CustomerChargeTestHelper.createProduct(shortName, BigDecimal.ZERO, fixedPrice, BigDecimal.ZERO,
+                                                      unitPrice, practice);
     }
 
     /**

@@ -1,44 +1,41 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
-
 
 package org.openvpms.component.system.common.query;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
 
 /**
- * The base class for all sort constraints. A sort constraint defines the
- * order of the returned records.
+ * The base class for all sort constraints. A sort constraint defines the order of the returned records.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 public abstract class SortConstraint implements IConstraint {
 
     /**
-     * The type alias. May be <code>null</code>.
+     * The type alias. May be {@code null}.
      */
     private String alias;
 
     /**
-     * Determines whether to sort in asending or descending order.
+     * Determines whether to sort in ascending or descending order.
      */
     private boolean ascending;
 
@@ -47,7 +44,7 @@ public abstract class SortConstraint implements IConstraint {
      * Construct an instance of this constraint indicating whether to sort
      * in ascending or descending order.
      *
-     * @param alias     the type alias. May be <code>null</code>
+     * @param alias     the type alias. May be {@code null}
      * @param ascending true if sorting in ascending order
      */
     protected SortConstraint(String alias, boolean ascending) {
@@ -58,7 +55,7 @@ public abstract class SortConstraint implements IConstraint {
     /**
      * Returns the type alias.
      *
-     * @return the type alias. May be <code>null</code>
+     * @return the type alias. May be {@code null}
      */
     public String getAlias() {
         return alias;
@@ -67,8 +64,7 @@ public abstract class SortConstraint implements IConstraint {
     /**
      * Determines if the sort is ascending.
      *
-     * @return <code>true</code> if the sort is ascending; <code>false</code>
-     *         if it is descending.
+     * @return {@code true} if the sort is ascending; {@code false} if it is descending.
      */
     public boolean isAscending() {
         return ascending;
@@ -77,8 +73,7 @@ public abstract class SortConstraint implements IConstraint {
     /**
      * Determines if the sort is ascending.
      *
-     * @param ascending if <code>true</code> the sort is ascending; if
-     *                  <code>false</code> it is descending.
+     * @param ascending if {@code true} the sort is ascending; if {@code false} it is descending.
      */
     public void setAscending(boolean ascending) {
         this.ascending = ascending;
@@ -109,7 +104,7 @@ public abstract class SortConstraint implements IConstraint {
      */
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("alias", alias)
                 .append("ascending", ascending)
                 .toString();

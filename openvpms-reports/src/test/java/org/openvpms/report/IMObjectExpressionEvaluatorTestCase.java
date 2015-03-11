@@ -1,27 +1,27 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
 
+import org.apache.commons.jxpath.Functions;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
 import java.math.BigDecimal;
 import java.text.DateFormat;
@@ -43,7 +43,7 @@ public class IMObjectExpressionEvaluatorTestCase extends AbstractReportTest {
     @Test
     public void testGetValue() {
         IArchetypeService service = getArchetypeService();
-        ILookupService lookups = LookupServiceHelper.getLookupService();
+        ILookupService lookups = getLookupService();
 
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
@@ -53,7 +53,8 @@ public class IMObjectExpressionEvaluatorTestCase extends AbstractReportTest {
         act.setValue("lowTotal", lowTotal);
         act.setParticipant("participation.customer", party);
 
-        ExpressionEvaluator eval = new IMObjectExpressionEvaluator(act.getAct(), null, service, lookups);
+        Functions functions = applicationContext.getBean(Functions.class);
+        ExpressionEvaluator eval = new IMObjectExpressionEvaluator(act.getAct(), null, service, lookups, functions);
         assertEquals(date, eval.getValue("startTime"));
         assertEquals(lowTotal, eval.getValue("lowTotal"));
         assertEquals("J", eval.getValue("customer.entity.firstName"));
@@ -76,7 +77,7 @@ public class IMObjectExpressionEvaluatorTestCase extends AbstractReportTest {
     @Test
     public void testGetFormattedValue() {
         IArchetypeService service = getArchetypeService();
-        ILookupService lookups = LookupServiceHelper.getLookupService();
+        ILookupService lookups = getLookupService();
 
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
@@ -86,7 +87,8 @@ public class IMObjectExpressionEvaluatorTestCase extends AbstractReportTest {
         act.setValue("lowTotal", lowTotal);
         act.setParticipant("participation.customer", party);
 
-        ExpressionEvaluator eval = new IMObjectExpressionEvaluator(act.getAct(), null, service, lookups);
+        Functions functions = applicationContext.getBean(Functions.class);
+        ExpressionEvaluator eval = new IMObjectExpressionEvaluator(act.getAct(), null, service, lookups, functions);
         String expectedDate = DateFormat.getDateInstance(DateFormat.MEDIUM).format(date);
         assertEquals(expectedDate, eval.getFormattedValue("startTime"));
         assertEquals("$100.00", eval.getFormattedValue("lowTotal"));

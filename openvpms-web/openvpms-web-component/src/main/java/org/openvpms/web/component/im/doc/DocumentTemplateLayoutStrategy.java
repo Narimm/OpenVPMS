@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -21,16 +21,22 @@ import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.bound.SpinBox;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.sms.BoundCountedTextArea;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.text.TextArea;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
 
@@ -79,8 +85,19 @@ public class DocumentTemplateLayoutStrategy extends AbstractLayoutStrategy {
     @Override
     public ComponentState apply(IMObject object, PropertySet properties,
                                 IMObject parent, LayoutContext context) {
+        Property sms = properties.get("sms");
+        TextArea textArea;
+        if (context.isEdit()) {
+            textArea = new BoundCountedTextArea(sms, 40, 8);
+            textArea.setStyleName(Styles.DEFAULT);
+        } else {
+            textArea = BoundTextComponentFactory.createTextArea(sms, 40, 8);
+            textArea.setEnabled(false);
+        }
+        addComponent(new ComponentState(RowFactory.create(textArea), sms));
+
         if (content == null) {
-            TemplateHelper helper = new TemplateHelper();
+            TemplateHelper helper = new TemplateHelper(ServiceHelper.getArchetypeService());
             Participation participation = helper.getDocumentParticipation((Entity) object);
             if (participation != null) {
                 content = context.getComponentFactory().create(participation, object);

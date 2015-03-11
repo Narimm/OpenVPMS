@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -45,9 +45,9 @@ import org.openvpms.web.component.im.view.DefaultIMObjectComponent;
 import org.openvpms.web.component.im.view.IMObjectComponent;
 import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
-import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
@@ -73,8 +73,7 @@ import java.beans.PropertyChangeListener;
  *
  * @author Tim Anderson
  */
-public abstract class IMTableCollectionEditor<T>
-        extends AbstractIMObjectCollectionEditor {
+public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjectCollectionEditor {
 
     /**
      * The container.
@@ -222,11 +221,11 @@ public abstract class IMTableCollectionEditor<T>
      */
     public IMObjectEditor add() {
         IMObjectEditor editor = null;
-        if (addCurrentEdits(new Validator()) && shortName != null) {
+        if (addCurrentEdits(new DefaultValidator()) && shortName != null) {
             IMObject object = create();
             if (object != null) {
                 editor = edit(object);
-                addCurrentEdits(new Validator()); // add the object to the table if it is valid
+                addCurrentEdits(new DefaultValidator()); // add the object to the table if it is valid
             }
         }
         return editor;
@@ -512,7 +511,7 @@ public abstract class IMTableCollectionEditor<T>
     protected void onEdit() {
         IMObject object = getSelected();
         if (object != null) {
-            if (addCurrentEdits(new Validator())) {
+            if (addCurrentEdits(new DefaultValidator())) {
                 // need to add any edits after getting the selected object
                 // as this may change the order within the table
                 setSelected(object);
@@ -561,7 +560,7 @@ public abstract class IMTableCollectionEditor<T>
      * Selects the previous object.
      */
     protected void onPrevious() {
-        if (addCurrentEdits(new Validator())) {
+        if (addCurrentEdits(new DefaultValidator())) {
             IMObject object = selectPrevious();
             if (object != null) {
                 edit(object);
@@ -575,7 +574,7 @@ public abstract class IMTableCollectionEditor<T>
      * Selects the next object.
      */
     protected void onNext() {
-        if (addCurrentEdits(new Validator())) {
+        if (addCurrentEdits(new DefaultValidator())) {
             IMObject object = selectNext();
             if (object != null) {
                 edit(object);
@@ -702,18 +701,34 @@ public abstract class IMTableCollectionEditor<T>
      * @param enable if {@code true} enable buttons (subject to criteria), otherwise disable them
      */
     protected void enableNavigation(boolean enable) {
+        enableNavigation(enable, enable);
+    }
+
+    /**
+     * Enable/disables the buttons.
+     * <p/>
+     * This allows the Add button to be enabled independently of the other buttons.
+     * <p/>
+     * Note that the delete button is enabled if {@link #getCurrentEditor()} or {@link #getSelected()} return non-null.
+     *
+     * @param enable    if {@code true}, enable buttons (subject to criteria), otherwise disable them
+     * @param enableAdd if {@code true}, enable the add button (subject to criteria), otherwise disable it
+     */
+    protected void enableNavigation(boolean enable, boolean enableAdd) {
         if (buttons != null) {
-            boolean add = enable;
+            boolean add = enableAdd;
             boolean delete = getCurrentEditor() != null || getSelected() != null;
             boolean previous = enable;
             boolean next = enable;
-            if (enable) {
+            if (enable || add) {
                 CollectionProperty property = getCollection();
                 int maxSize = property.getMaxCardinality();
                 add = (maxSize == -1 || property.size() < maxSize);
-                TableNavigator navigator = getTable().getNavigator();
-                previous = navigator.hasPreviousRow();
-                next = navigator.hasNextRow();
+                if (enable) {
+                    TableNavigator navigator = getTable().getNavigator();
+                    previous = navigator.hasPreviousRow();
+                    next = navigator.hasNextRow();
+                }
             }
             buttons.getButtons().setEnabled(ADD_ID, add);
             buttons.getButtons().setEnabled(DELETE_ID, delete);
@@ -743,8 +758,13 @@ public abstract class IMTableCollectionEditor<T>
             }
         }
         editorFocusGroup = editor.getFocusGroup();
-        focusGroup.add(index, editorFocusGroup);
-        editorFocusGroup.setFocus();
+        if (editorFocusGroup != null) {
+            focusGroup.add(index, editorFocusGroup);
+            editorFocusGroup.setFocus();
+        } else {
+            log.warn("Editor " + editor.getClass().getName() + " for " + editor.getDisplayName()
+                     + " has no focus");
+        }
     }
 
     /**

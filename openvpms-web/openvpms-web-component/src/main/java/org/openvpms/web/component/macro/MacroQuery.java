@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.macro;
@@ -20,8 +20,8 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.query.SubstringQuery;
 import org.openvpms.web.echo.focus.FocusHelper;
 
 
@@ -30,7 +30,7 @@ import org.openvpms.web.echo.focus.FocusHelper;
  *
  * @author Tim Anderson
  */
-public class MacroQuery extends AbstractIMObjectQuery<Lookup> {
+public class MacroQuery extends SubstringQuery<Lookup> {
 
     /**
      * Determines if the "Show Inactive" checkbox should be displayed.

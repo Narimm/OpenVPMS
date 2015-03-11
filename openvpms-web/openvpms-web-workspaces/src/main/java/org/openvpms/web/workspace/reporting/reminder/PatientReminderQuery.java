@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -34,14 +32,17 @@ import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
+import org.openvpms.web.component.im.location.LocationSelectField;
 import org.openvpms.web.component.im.query.AbstractArchetypeQuery;
 import org.openvpms.web.component.im.query.DateRange;
 import org.openvpms.web.component.im.query.ListResultSet;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -50,12 +51,13 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
+import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
+
 
 /**
  * Patient reminder query.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
 
@@ -69,12 +71,16 @@ public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
      */
     private DateRange dateRange;
 
+    /**
+     * The location filter.
+     */
+    private LocationSelectField locationSelector;
+
 
     /**
-     * Constructs a new <tt>ReminderQuery</tt>.
+     * Constructs a {@link PatientReminderQuery}.
      *
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
     public PatientReminderQuery() {
         super(new String[]{ReminderArchetypes.REMINDER}, Act.class);
@@ -91,11 +97,12 @@ public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
         Entity entity = (obj instanceof Entity) ? (Entity) obj : null;
         Date from = dateRange.getFrom();
         Date to = dateRange.getTo();
-        DueReminderQuery query = new DueReminderQuery();
+        DueReminderQuery query = new DueReminderQuery(ServiceHelper.getArchetypeService());
         query.setReminderType(entity);
         query.setFrom(from);
         query.setTo(to);
         query.setCancelDate(new Date());
+        query.setLocation(locationSelector.getSelected());
         return query;
     }
 
@@ -116,7 +123,7 @@ public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
 
         container.add(reminderTypeRow);
 
-        dateRange = new DateRange(getFocusGroup(), false);
+        dateRange = new DateRange(false);
         container.add(dateRange.getComponent());
 
         // default dueFrom to the 1st of next month
@@ -131,12 +138,17 @@ public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
         calendarTo.add(Calendar.MONTH, 2);
         calendarTo.add(Calendar.DAY_OF_MONTH, -1);
         dateRange.setTo(calendarTo.getTime());
+
+        locationSelector = new LocationSelectField();
+        Row locationRow = RowFactory.create(CELL_SPACING, LabelFactory.create("reporting.customer.location"),
+                                            locationSelector);
+        container.add(locationRow);
     }
 
     /**
      * Creates a new result set.
      *
-     * @param sort the sort constraint. May be <code>null</code>
+     * @param sort the sort constraint. May be {@code null}
      * @return a new result set
      */
     @Override
@@ -157,8 +169,8 @@ public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
      */
     private ListModel createReminderTypeModel() {
         ArchetypeQuery query = new ArchetypeQuery("entity.reminderType", true)
-            .add(Constraints.sort("name"))
-            .setMaxResults(ArchetypeQuery.ALL_RESULTS);
+                .add(Constraints.sort("name"))
+                .setMaxResults(ArchetypeQuery.ALL_RESULTS);
         return new IMObjectListModel(QueryHelper.query(query), true, false);
     }
 

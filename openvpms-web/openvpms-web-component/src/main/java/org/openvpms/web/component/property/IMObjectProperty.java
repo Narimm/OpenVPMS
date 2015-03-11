@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -318,7 +318,7 @@ public class IMObjectProperty extends AbstractProperty
      *
      * @return the collection
      */
-    public Collection getValues() {
+    public List getValues() {
         List<IMObject> values = null;
         try {
             values = descriptor.getChildren(object);
@@ -571,7 +571,6 @@ public class IMObjectProperty extends AbstractProperty
             validationErrors = new ArrayList<ValidatorError>();
         }
         validationErrors.add(error);
-        onError(error.getMessage());
     }
 
     /**

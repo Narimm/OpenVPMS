@@ -27,6 +27,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.IMObjectActions;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
@@ -70,10 +71,11 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
 
 
     /**
-     * Constructs an {@code ActCRUDWindow}.
+     * Constructs an {@link ActCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
-     * @param actions    determines the operations that may be performed on the selected object
+     * @param actions    determines the operations that may be performed on the selected object. If {@code null},
+     *                   actions should be registered via {@link #setActions(IMObjectActions)}
      * @param context    the context
      * @param help       the help context
      */
@@ -142,11 +144,7 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
             ErrorDialog.show(Messages.format("imobject.noexist", DescriptorHelper.getDisplayName(previous)));
         } else if (act != null && getActions().canPost(act)) {
             try {
-                HelpContext help = getHelpContext().subtopic("post");
-                String displayName = getArchetypes().getDisplayName();
-                String title = Messages.format("act.post.title", displayName);
-                String message = Messages.format("act.post.message", displayName);
-                final ConfirmationDialog dialog = new ConfirmationDialog(title, message, help);
+                final ConfirmationDialog dialog = createPostConfirmationDialog(act);
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
                     public void onOK() {
@@ -169,6 +167,20 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
                 ErrorHelper.show(exception);
             }
         }
+    }
+
+    /**
+     * Creates a dialog to confirm posting an act.
+     *
+     * @param act the act to be posted
+     * @return a new dialog
+     */
+    protected ConfirmationDialog createPostConfirmationDialog(Act act) {
+        HelpContext help = getHelpContext().subtopic("post");
+        String displayName = getArchetypes().getDisplayName();
+        String title = Messages.format("act.post.title", displayName);
+        String message = Messages.format("act.post.message", displayName);
+        return new ConfirmationDialog(title, message, help);
     }
 
     /**

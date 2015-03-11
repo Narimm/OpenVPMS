@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="party.organisationLocation.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party" displayName="Practice Location">
@@ -52,27 +53,18 @@
                         <property name="shortName" value="contact.phoneNumber"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName" value="contact.faxNumber"/>
-                    </propertyMap>
-                    <propertyMap name="archetype">
                         <property name="shortName" value="contact.email"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
+        </node>
+        <node name="pricingGroup" path="/classifications" parentChild="false"
+              type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="1"
+              filter="lookup.pricingGroup">
         </node>
         <node name="practice" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.practiceLocation">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.practiceLocation"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active practice location relationship</errorMessage>
             </assertion>
@@ -80,15 +72,6 @@
         <node name="tills" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.locationTill">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.locationTill"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active till relationship</errorMessage>
             </assertion>
@@ -96,15 +79,6 @@
         <node name="depositAccounts" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.locationDeposit">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.locationDeposit"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active deposit account relationship</errorMessage>
             </assertion>
@@ -112,15 +86,6 @@
         <node name="scheduleViews" path="/sourceEntityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.locationView">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.locationView"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active schedule view relationship</errorMessage>
             </assertion>
@@ -128,15 +93,6 @@
         <node name="workListViews" path="/sourceEntityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.locationWorkListView">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.locationWorkListView"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active location work list view relationship</errorMessage>
             </assertion>
@@ -144,42 +100,15 @@
         <node name="stockLocations" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="1"
               filter="entityRelationship.locationStockLocation">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.locationStockLocation"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active stock location relationship</errorMessage>
             </assertion>
         </node>
         <node name="OTC" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="1"
-              filter="entityRelationship.locationOTC">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.locationOTC"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
+              filter="entityRelationship.locationOTC"/>
         <node name="templates" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.documentTemplatePrinter">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="entityRelationship.documentTemplatePrinter"/>
-                    </propertyMap>
-                </propertyList>
-            </assertion>
-        </node>
+              filter="entityRelationship.documentTemplatePrinter"/>
     </archetype>
 </archetypes>

@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -37,13 +35,12 @@ import static org.openvpms.component.business.service.archetype.helper.IMObjectB
 /**
  * Helper to access an {@link Act}'s properties via their names.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ActBean extends IMObjectBean {
 
     /**
-     * Constructs a new <tt>ActBean</tt>.
+     * Constructs a {@link ActBean}.
      *
      * @param act the act
      */
@@ -52,7 +49,7 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
-     * Constructs a new <tt>ActBean</tt>.
+     * Constructs a {@link ActBean}.
      *
      * @param act     the act
      * @param service the archetype service
@@ -95,7 +92,7 @@ public class ActBean extends IMObjectBean {
      * @param target    the target act
      * @return the new relationship
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws IMObjectBeanException     if <tt>shortName</tt> is an invalid archetype
+     * @throws IMObjectBeanException     if {@code shortName} is an invalid archetype
      */
     public ActRelationship addRelationship(String shortName, Act target) {
         Act act = getAct();
@@ -114,8 +111,7 @@ public class ActBean extends IMObjectBean {
      * Returns the first act relationship with the specified act as a target.
      *
      * @param target the target act
-     * @return the first act relationship with <tt>target</tt> as its target
-     *         or {@code null}if none is found
+     * @return the first act relationship with {@code target} as its target or {@code null} if none is found
      */
     public ActRelationship getRelationship(Act target) {
         Act act = getAct();
@@ -134,8 +130,7 @@ public class ActBean extends IMObjectBean {
      *
      * @param shortName the relationship short name
      * @param target    the target act
-     * @return <tt>true</tt> if a relationship exists with the specified short
-     *         name and target
+     * @return {@code true} if a relationship exists with the specified short name and target
      */
     public boolean hasRelationship(String shortName, Act target) {
         return hasRelationship(shortName, target.getObjectReference());
@@ -147,8 +142,7 @@ public class ActBean extends IMObjectBean {
      *
      * @param shortName the relationship short name
      * @param target    the target act reference
-     * @return <tt>true</tt> if a relationship exists with the specified short
-     *         name and target
+     * @return {@code true} if a relationship exists with the specified short name and target
      */
     public boolean hasRelationship(String shortName, IMObjectReference target) {
         for (ActRelationship relationship : getRelationships(shortName)) {
@@ -206,8 +200,8 @@ public class ActBean extends IMObjectBean {
      * @param target the target act
      * @return the new relationship
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws IMObjectBeanException     if <tt>name</tt> is an invalid node, there is no relationship that supports
-     *                                   <tt>target</tt>, or multiple relationships can support <tt>target</tt>
+     * @throws IMObjectBeanException     if {@code name} is an invalid node, there is no relationship that supports
+     *                                   {@code target}, or multiple relationships can support {@code target}
      */
     public ActRelationship addNodeRelationship(String name, Act target) {
         String shortName = getRelationshipShortName(name, target, "target");
@@ -287,8 +281,7 @@ public class ActBean extends IMObjectBean {
      * @param name the node name
      * @param type the class type
      * @return a list of the child acts
-     * @throws IMObjectBeanException if the node does't exist or an element
-     *                               is of the wrong type
+     * @throws IMObjectBeanException if the node doesn't exist or an element is of the wrong type
      */
     @SuppressWarnings("unchecked")
     public <T extends Act> List<T> getNodeActs(String name, Class<T> type) {
@@ -307,7 +300,8 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
-     * Returns the first active act that matches the specified short name and links to this act.
+     * Returns the source act from the first active relationship matching the specified relationship short name and
+     * having an active source act.
      *
      * @param shortName the archetype short name to match on
      * @return the source act, or {@code null}if none is found
@@ -317,7 +311,8 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
-     * Returns the first active act that matches the specified short name and links to this act.
+     * Returns the source act from the first active relationship matching the specified relationship short names and
+     * having an active source act.
      *
      * @param shortNames the archetype short names to match on
      * @return the source act, or {@code null}if none is found
@@ -327,9 +322,9 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
-     * Returns the active acts that match the specified short name and link to this act.
+     * Returns the active source acts from each relationship that matches the specified short name.
      *
-     * @param shortName the archetype short name to match on
+     * @param shortName the relationship archetype short name to match on
      * @return the source acts
      */
     public List<Act> getSourceActs(String shortName) {
@@ -337,7 +332,7 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
-     * Returns the active acts that match the specified short names and link to this act.
+     * Returns the active source acts from each relationship that matches the specified short names.
      *
      * @param shortNames the archetype short names to match on
      * @return the source acts
@@ -347,7 +342,8 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
-     * Returns the first active act that matches the specified short name and this act links to.
+     * Returns the target act from the first active relationship matching the specified relationship short name and
+     * having an active target act.
      *
      * @param shortName the archetype short name to match on
      * @return the target act, or {@code null}if none is found
@@ -357,7 +353,8 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
-     * Returns the first active act that matches the specified short names and this act links to.
+     * Returns the target act from the first active relationship matching the specified relationship short names and
+     * having an active target act.
      *
      * @param shortNames the archetype short names to match on
      * @return the target act, or {@code null}if none is found
@@ -367,7 +364,7 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
-     * Returns the active acts that match the specified short name and this act links to.
+     * Returns the active target acts from each relationship that matches the specified short name.
      *
      * @param shortName the archetype short name to match on
      * @return the target acts
@@ -377,7 +374,7 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
-     * Returns the active acts that match the specified short name and this act links to.
+     * Returns the active target acts from each relationship that matches the specified short names.
      *
      * @param shortNames the archetype short names to match on
      * @return the target acts
@@ -529,14 +526,42 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
+     * Sets the participant for a node.
+     *
+     * @param name   the node name
+     * @param entity the entity. May be {@code null}
+     * @return the participation
+     */
+    public Participation setNodeParticipant(String name, Entity entity) {
+        return setNodeParticipant(name, (entity != null) ? entity.getObjectReference() : null);
+    }
+
+    /**
+     * Sets the participant for a node.
+     *
+     * @param name   the node name
+     * @param entity the entity reference. May be {@code null}
+     * @return the participation
+     */
+    public Participation setNodeParticipant(String name, IMObjectReference entity) {
+        Participation p = getNodeParticipation(name);
+        if (p == null) {
+            p = addNodeParticipation(name, entity);
+        } else {
+            p.setEntity(entity);
+        }
+        return p;
+    }
+
+    /**
      * Adds a new participation relationship between the act (the source), and the supplied target entity.
      *
      * @param name   the participation relationship node name, used to determine which relationship to create
      * @param target the target entity
      * @return the new relationship
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws IMObjectBeanException     if <tt>name</tt> is an invalid node, there is no relationship that supports
-     *                                   <tt>target</tt>, or multiple relationships can support <tt>target</tt>
+     * @throws IMObjectBeanException     if {@code name} is an invalid node, there is no relationship that supports
+     *                                   {@code target}, or multiple relationships can support {@code target}
      */
     public Participation addNodeParticipation(String name, Entity target) {
         return addNodeParticipation(name, target.getObjectReference());
@@ -549,12 +574,23 @@ public class ActBean extends IMObjectBean {
      * @param target the target entity reference
      * @return the new relationship
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws IMObjectBeanException     if <tt>name</tt> is an invalid node, there is no relationship that supports
-     *                                   <tt>target</tt>, or multiple relationships can support <tt>target</tt>
+     * @throws IMObjectBeanException     if {@code name} is an invalid node, there is no relationship that supports
+     *                                   {@code target}, or multiple relationships can support {@code target}
      */
     public Participation addNodeParticipation(String name, IMObjectReference target) {
         String shortName = getRelationshipShortName(name, target, "entity");
         return addParticipation(shortName, target);
+    }
+
+    /**
+     * Returns the first participation for the given node.
+     *
+     * @param name the node name
+     * @return the participation, or {@code null} if none is found
+     */
+    public Participation getNodeParticipation(String name) {
+        List<Participation> values = getValues(name, Participation.class);
+        return !values.isEmpty() ? values.get(0) : null;
     }
 
     /**
@@ -563,7 +599,7 @@ public class ActBean extends IMObjectBean {
      *
      * @param relationship the relationship
      * @param ref          the reference
-     * @return the source or target, or <tt>null</tt>
+     * @return the source or target, or {@code null}
      */
     private Act getSourceOrTarget(ActRelationship relationship, IMObjectReference ref) {
         IMObjectReference target = relationship.getTarget();
