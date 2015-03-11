@@ -417,7 +417,7 @@
             <!-- required by hibernate -->
             <groupId>javassist</groupId>
             <artifactId>javassist</artifactId>
-            <version>3.4.GA</version>
+            <version>${javassist.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
