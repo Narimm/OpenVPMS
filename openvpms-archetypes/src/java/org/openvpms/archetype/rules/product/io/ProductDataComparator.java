@@ -526,8 +526,8 @@ public class ProductDataComparator {
      */
     private boolean priceEquals(PriceData data, ProductPrice price) {
         IMObjectBean bean = new IMObjectBean(price, service);
-        BigDecimal cost = bean.getBigDecimal("cost");
-        BigDecimal maxDiscount = bean.getBigDecimal("maxDiscount");
+        BigDecimal cost = bean.getBigDecimal("cost", BigDecimal.ZERO);
+        BigDecimal maxDiscount = bean.getBigDecimal("maxDiscount", BigDecimal.ZERO);
         if (price.getPrice().compareTo(data.getPrice()) == 0 && cost.compareTo(data.getCost()) == 0
             && maxDiscount.compareTo(data.getMaxDiscount()) == 0
             && (!FIXED_PRICE.equals(data.getShortName()) || data.isDefault() == ProductIOHelper.isDefault(bean))) {
