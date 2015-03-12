@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -541,6 +542,22 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
                    getSet(groupB));
         checkPrice(unitPrice2, new BigDecimal("1.5"), unit2.getPrice(), BigDecimal.TEN, fromDate, toDate,
                    getSet(groupA));
+    }
+
+    /**
+     * Verifies that prices with no cost and maxDiscount can be compared for changes.
+     */
+    @Test
+    public void testMissingCostAndMaxDiscount() {
+        IMObjectBean bean = new IMObjectBean(fixed1);
+        bean.setValue("cost", null);
+        bean.setValue("maxDiscount", null);
+        ProductData data = createProduct(product);
+        PriceData price = getPrice(data.getFixedPrices(), fixed1.getId());
+        checkEquals(BigDecimal.ZERO, price.getCost());
+        checkEquals(BigDecimal.ZERO, price.getMaxDiscount());
+        ProductData changed = comparator.compare(product, data);
+        assertNull(changed);
     }
 
     /**

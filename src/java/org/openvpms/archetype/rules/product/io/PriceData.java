@@ -142,8 +142,8 @@ public class PriceData {
         this.shortName = source.getArchetypeId().getShortName();
         this.price = source.getPrice();
         IMObjectBean bean = new IMObjectBean(source, service);
-        this.cost = bean.getBigDecimal("cost");
-        this.maxDiscount = bean.getBigDecimal("maxDiscount");
+        this.cost = bean.getBigDecimal("cost", BigDecimal.ZERO);
+        this.maxDiscount = bean.getBigDecimal("maxDiscount", BigDecimal.ZERO);
         this.from = source.getFromDate();
         this.to = source.getToDate();
         this.defaultPrice = ProductIOHelper.isDefault(bean);
