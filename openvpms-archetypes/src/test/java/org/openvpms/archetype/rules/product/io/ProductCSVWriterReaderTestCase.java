@@ -432,8 +432,8 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
      */
     @Test
     public void testMissingFixedCost() throws IOException {
-        String[] data = {"1001", "Product A", "A", "-1", "1.08", "", "10", "02/04/12", "01/06/12", "true", "", "-1",
-                         "2.55", "1.5", "10", "03/04/12", "02/06/12", "", "5.0"};
+        String[][] data = {{"1001", "Product A", "A", "-1", "1.08", "", "10", "02/04/12", "01/06/12", "true", "", "-1",
+                            "2.55", "1.5", "10", "03/04/12", "02/06/12", "", "5.0"}};
         ProductDataSet products = createProductDataSet(data);
         assertEquals(1, products.getErrors().size());
         assertEquals("A value for Fixed Cost is required", products.getErrors().get(0).getError());
@@ -446,8 +446,8 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
      */
     @Test
     public void testMissingFixedMaxDiscount() throws IOException {
-        String[] data = {"1001", "Product A", "A", "-1", "1.08", "0.6", "", "02/04/12", "01/06/12", "true", "", "-1",
-                         "2.55", "1.5", "10", "03/04/12", "02/06/12", "", "5.0"};
+        String[][] data = {{"1001", "Product A", "A", "-1", "1.08", "0.6", "", "02/04/12", "01/06/12", "true", "", "-1",
+                            "2.55", "1.5", "10", "03/04/12", "02/06/12", "", "5.0"}};
         ProductDataSet products = createProductDataSet(data);
 
         assertEquals(1, products.getErrors().size());
@@ -461,8 +461,8 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
      */
     @Test
     public void testMissingUnitCost() throws IOException {
-        String[] data = {"1001", "Product A", "A", "-1", "1.08", "0.6", "10", "02/04/12", "01/06/12", "true", "", "-1",
-                         "2.55", "", "10", "03/04/12", "02/06/12", "", "5.0"};
+        String[][] data = {{"1001", "Product A", "A", "-1", "1.08", "0.6", "10", "02/04/12", "01/06/12", "true", "",
+                            "-1", "2.55", "", "10", "03/04/12", "02/06/12", "", "5.0"}};
         ProductDataSet products = createProductDataSet(data);
 
         assertEquals(1, products.getErrors().size());
@@ -476,12 +476,30 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
      */
     @Test
     public void testMissingUnitPriceMaxDiscount() throws IOException {
-        String[] data = {"1001", "Product A", "A", "-1", "1.08", "0.6", "10", "02/04/12", "01/06/12", "true", "", "-1",
-                         "2.55", "1.5", "", "03/04/12", "02/06/12", "", "5.0"};
+        String[][] data = {{"1001", "Product A", "A", "-1", "1.08", "0.6", "10", "02/04/12", "01/06/12", "true", "",
+                            "-1", "2.55", "1.5", "", "03/04/12", "02/06/12", "", "5.0"}};
         ProductDataSet products = createProductDataSet(data);
 
         assertEquals(1, products.getErrors().size());
         assertEquals("A value for Unit Price Max Discount is required", products.getErrors().get(0).getError());
+    }
+
+    /**
+     * Verifies that the line no. is reported if a line is invalid.
+     *
+     * @throws IOException for any I/O error
+     */
+    @Test
+    public void testInvalidLine() throws IOException {
+        String[][] data = {{"1001", "Product A", "A", "-1", "1.08", "0.6", "10", "02/04/12", "01/06/12", "true", "",
+                            "-1", "2.55", "1.5", "10", "03/04/12", "02/06/12", "", "5.0", ""},
+                           {"1002", "Product B", "B", "-1", "1.08", "0.6", "10", "02/04/12", "01/06/12", "true", "",
+                            "-1", "2.55", "1.5", "10", "03/04/12", "02/06/12", "", "5.0"},
+                           // one short - this is OK as Notes is optional
+                           {"1003", "Product C", "C", "-1", "1.08", "0.6", "10", "02/04/12", "01/06/12", "true", "",
+                            "-1", "2.55", "1.5", "10", "03/04/12", "02/06/12", ""}}; // two columns short
+        ProductDataSet products = createProductDataSet(data);
+        assertEquals("Line 4 contains 18 fields, but 20 are required", products.getErrors().get(0).getError());
     }
 
     /**
@@ -526,17 +544,19 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
     }
 
     /**
-     * Creates a CSV containing a single line from the supplied data, and reads it back into a {@link ProductDataSet}.
+     * Creates a CSV containing the supplied data, and reads it back into a {@link ProductDataSet}.
      *
      * @param data the data to write
      * @return the read data
      * @throws IOException for any I/O error
      */
-    private ProductDataSet createProductDataSet(String[] data) throws IOException {
+    private ProductDataSet createProductDataSet(String[][] data) throws IOException {
         StringWriter writer = new StringWriter();
         CSVWriter csv = new CSVWriter(writer, ProductCSVWriter.SEPARATOR);
         csv.writeNext(ProductCSVWriter.HEADER);
-        csv.writeNext(data);
+        for (String[] line : data) {
+            csv.writeNext(line);
+        }
         csv.close();
 
         DocumentHandler handler = handlers.get("Dummy.csv", ProductCSVReader.MIME_TYPE);

@@ -118,6 +118,7 @@ public class StockCSVReader extends AbstractCSVReader {
         BigDecimal newQuantity = BigDecimal.ZERO;
 
         try {
+            checkFields(line, lineNo);
             stockLocationId = getLong(line, LOCATION_ID, lineNo, true);
             stockLocationName = getString(line, LOCATION_NAME, lineNo, true);
             productId = getLong(line, PRODUCT_ID, lineNo, true);

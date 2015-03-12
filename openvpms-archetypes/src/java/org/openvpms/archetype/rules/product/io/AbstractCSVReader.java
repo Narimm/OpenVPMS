@@ -179,4 +179,18 @@ public abstract class AbstractCSVReader {
         throw new ProductIOException(ProductIOException.ErrorCode.InvalidValue, lineNo, name, value);
     }
 
+    /**
+     * Verifies the line has at least {@code header.length} fields.
+     *
+     * @param line   the line
+     * @param lineNo the line number
+     * @throws ProductIOException if the line has the incorrect no. of fields
+     */
+    protected void checkFields(String[] line, int lineNo) {
+        if (line.length < header.length) {
+            throw new ProductIOException(ProductIOException.ErrorCode.InvalidLine, lineNo, lineNo, header.length,
+                                         line.length);
+        }
+    }
+
 }
