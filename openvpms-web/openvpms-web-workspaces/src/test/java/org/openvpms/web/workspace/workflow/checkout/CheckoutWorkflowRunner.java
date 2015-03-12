@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.workflow.checkout;
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -169,6 +170,11 @@ class CheckoutWorkflowRunner extends FinancialWorkflowRunner<CheckoutWorkflowRun
         }
         act = get(act);
         if (statusUpdated) {
+            Act event = (Act) getWorkflow().getContext().getObject(PatientArchetypes.CLINICAL_EVENT);
+            assertNotNull(event);
+            assertEquals(ActStatus.COMPLETED, event.getStatus());
+            assertNotNull(event.getActivityEndTime());
+
             assertEquals(ActStatus.COMPLETED, act.getStatus());
             if (isTask) {
                 assertNotNull(act.getActivityEndTime());

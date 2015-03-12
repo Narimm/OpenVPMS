@@ -174,10 +174,15 @@ public class CheckOutWorkflow extends WorkflowImpl {
         // created
         addTask(new PrintTask(act, help.subtopic("print")));
 
-        // update the most recent act.patientClinicalEvent, setting it status to COMPLETED, if one is present.
-        // Use a retryable task to handle concurrent update conflicts
+        // update the most recent act.patientClinicalEvent, setting it status to COMPLETED and endTime to now, if one
+        // is present. Use a retryable task to handle concurrent update conflicts
         TaskProperties eventProperties = new TaskProperties();
         eventProperties.add("status", ActStatus.COMPLETED);
+        eventProperties.add(new Variable("endTime") {
+            public Object getValue(TaskContext context) {
+                return new Date();
+            }
+        });
         addTask(new ConditionalUpdateTask(CLINICAL_EVENT,
                                           new RetryableUpdateIMObjectTask(CLINICAL_EVENT, eventProperties)));
         addTask(new DischargeTask());
