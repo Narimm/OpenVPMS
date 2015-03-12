@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.workspace.workflow.checkout;
@@ -48,8 +46,7 @@ import static org.openvpms.web.workspace.workflow.WorkflowTestHelper.createTask;
 /**
  * Tests the {@link CheckOutWorkflow}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTest {
 
