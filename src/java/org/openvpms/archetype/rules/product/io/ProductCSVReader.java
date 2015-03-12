@@ -35,6 +35,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.openvpms.archetype.rules.product.io.ProductCSVWriter.HEADER;
+
 
 /**
  * Reads product data in the format written by {@link ProductCSVWriter}.
@@ -188,7 +190,7 @@ public class ProductCSVReader extends AbstractCSVReader implements ProductReader
      * @param lookups  the lookups service
      */
     public ProductCSVReader(DocumentHandlers handlers, ILookupService lookups) {
-        super(handlers, ProductCSVWriter.HEADER, ProductCSVWriter.SEPARATOR);
+        super(handlers, HEADER, ProductCSVWriter.SEPARATOR);
         this.lookups = lookups;
     }
 
@@ -217,9 +219,7 @@ public class ProductCSVReader extends AbstractCSVReader implements ProductReader
         for (int i = 0; i < lines.size(); ++i) {
             String[] line = lines.get(i);
             int lineNo = i + 2;
-            if (line.length < ProductCSVWriter.HEADER.length) {
-                throw new ProductIOException(ProductIOException.ErrorCode.InvalidLine, lineNo);
-            }
+            checkFields(line, lineNo);
             addDate(line, FIXED_PRICE_START_DATE, lineNo, dates);
             addDate(line, FIXED_PRICE_END_DATE, lineNo, dates);
             addDate(line, UNIT_PRICE_START_DATE, lineNo, dates);
@@ -260,6 +260,22 @@ public class ProductCSVReader extends AbstractCSVReader implements ProductReader
     }
 
     /**
+     * Verifies the line has at least {@code HEADER.length - 1} fields. This is because the last field (Notes) is not
+     * required, and may not be supplied by Excel if it is empty.
+     *
+     * @param line   the line
+     * @param lineNo the line number
+     * @throws ProductIOException if the line has the incorrect no. of fields
+     */
+    @Override
+    protected void checkFields(String[] line, int lineNo) {
+        if (line.length < HEADER.length - 1) {
+            throw new ProductIOException(ProductIOException.ErrorCode.InvalidLine, lineNo, lineNo, HEADER.length,
+                                         line.length);
+        }
+    }
+
+    /**
      * Parses a line.
      *
      * @param line    the line to parse
@@ -277,6 +293,7 @@ public class ProductCSVReader extends AbstractCSVReader implements ProductReader
         BigDecimal tax = null;
 
         try {
+            checkFields(line, lineNo);
             id = getLong(line, ID, lineNo, true);
             name = getName(line, lineNo);
             printedName = getString(line, PRINTED_NAME, lineNo, false);
@@ -397,7 +414,7 @@ public class ProductCSVReader extends AbstractCSVReader implements ProductReader
                 }
             }
             if (result == null) {
-                reportInvalid(ProductCSVWriter.HEADER[index], value, lineNo);
+                reportInvalid(HEADER[index], value, lineNo);
             }
         }
         return result;
@@ -422,7 +439,7 @@ public class ProductCSVReader extends AbstractCSVReader implements ProductReader
         for (String code : codes) {
             Lookup lookup = lookups.getLookup(ProductArchetypes.PRICING_GROUP, code);
             if (lookup == null) {
-                reportInvalid(ProductCSVWriter.HEADER[index], code, lineNo);
+                reportInvalid(HEADER[index], code, lineNo);
             } else {
                 result.add(lookup);
             }
