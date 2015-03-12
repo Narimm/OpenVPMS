@@ -19,6 +19,8 @@ package org.openvpms.archetype.rules.patient;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -65,6 +67,16 @@ public class PatientTestHelper {
         bean.addNodeParticipation("product", product);
         bean.save();
         return act;
+    }
+
+    /**
+     * Helper to create an <em>act.patientClinicalEvent</em>.
+     *
+     * @param patient the patient
+     * @return a new act
+     */
+    public static Act createEvent(Party patient) {
+        return createEvent(patient, null);
     }
 
     /**
@@ -266,4 +278,58 @@ public class PatientTestHelper {
         return act;
     }
 
+    /**
+     * Helper to create an <em>entity.investigationType</em>.
+     *
+     * @return a new investigation type
+     */
+    public static Entity createInvestigationType() {
+        Entity investigation = (Entity) create(InvestigationArchetypes.INVESTIGATION_TYPE);
+        investigation.setName("X-TestInvestigationType-" + investigation.hashCode());
+        save(investigation);
+        return investigation;
+    }
+
+    /**
+     * Creates an investigation.
+     *
+     * @param patient           the patient
+     * @param investigationType the investigation type
+     * @return a new investigation
+     */
+    public static Act createInvestigation(Party patient, Entity investigationType) {
+        Act act = (Act) create(InvestigationArchetypes.PATIENT_INVESTIGATION);
+        ActBean bean = new ActBean(act);
+        bean.addNodeParticipation("patient", patient);
+        bean.addNodeParticipation("investigationType", investigationType);
+        return act;
+    }
+
+    /**
+     * Creates an <em>act.patientDocumentForm</em>.
+     *
+     * @param patient the patient
+     * @return a new document form act
+     */
+    public static DocumentAct createDocumentForm(Party patient) {
+        return createDocumentForm(patient, null);
+    }
+
+    /**
+     * Creates a form document act.
+     *
+     * @param patient the patient
+     * @param product the product. May be {@code null}
+     * @return a new form document act
+     */
+    public static DocumentAct createDocumentForm(Party patient, Product product) {
+        DocumentAct act = (DocumentAct) create(PatientArchetypes.DOCUMENT_FORM);
+        ActBean bean = new ActBean(act);
+        bean.addNodeParticipation("patient", patient);
+        if (product != null) {
+            bean.addNodeParticipation("product", product);
+        }
+        save(act);
+        return act;
+    }
 }

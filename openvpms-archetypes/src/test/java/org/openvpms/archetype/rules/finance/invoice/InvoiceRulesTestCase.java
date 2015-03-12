@@ -22,8 +22,8 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.InvestigationActStatus;
-import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
@@ -371,7 +371,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         patient = TestHelper.createPatient();
         investigationTypes = new HashSet<Entity>();
         for (int i = 0; i < 4; ++i) {
-            investigationTypes.add(createInvestigationType());
+            investigationTypes.add(PatientTestHelper.createInvestigationType());
         }
         template = createDocumentTemplate();
     }
@@ -402,18 +402,6 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         bean.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
         bean.addParticipation(UserArchetypes.CLINICIAN_PARTICIPATION, clinician);
         return bean;
-    }
-
-    /**
-     * Helper to create an <em>entity.investigationType</em>.
-     *
-     * @return a new investigation type
-     */
-    private Entity createInvestigationType() {
-        Entity investigation = (Entity) create(InvestigationArchetypes.INVESTIGATION_TYPE);
-        investigation.setName("X-TestInvestigationType-" + investigation.hashCode());
-        save(investigation);
-        return investigation;
     }
 
     /**
@@ -469,10 +457,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     private List<Act> createInvestigationActs() {
         List<Act> result = new ArrayList<Act>();
         for (Entity investigationType : investigationTypes) {
-            Act act = (Act) create(InvestigationArchetypes.PATIENT_INVESTIGATION);
-            ActBean bean = new ActBean(act);
-            bean.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
-            bean.addParticipation(InvestigationArchetypes.INVESTIGATION_TYPE_PARTICIPATION, investigationType);
+            Act act = PatientTestHelper.createInvestigation(patient, investigationType);
             result.add(act);
         }
         return result;

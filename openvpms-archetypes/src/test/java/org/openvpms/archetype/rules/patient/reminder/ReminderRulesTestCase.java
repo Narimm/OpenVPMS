@@ -22,8 +22,8 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -405,10 +405,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     @Test
     public void testGetDocumentFormReminderForInvoiceItem() {
         Party patient = TestHelper.createPatient();
-        DocumentAct form = (DocumentAct) create(PatientArchetypes.DOCUMENT_FORM);
-        ActBean formBean = new ActBean(form);
-        formBean.addNodeParticipation("patient", patient);
-        save(form);
+        DocumentAct form = PatientTestHelper.createDocumentForm(patient);
 
         // verify a form not associated with any invoice item nor product returns null
         assertNull(rules.getDocumentFormReminder(form));
@@ -454,11 +451,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     public void testGetDocumentFormReminderForProduct() {
         Party patient = TestHelper.createPatient();
         Product product = TestHelper.createProduct();
-        DocumentAct form = (DocumentAct) create(PatientArchetypes.DOCUMENT_FORM);
-        ActBean formBean = new ActBean(form);
-        formBean.addNodeParticipation("patient", patient);
-        formBean.addNodeParticipation("product", product);
-        save(form);
+        DocumentAct form = PatientTestHelper.createDocumentForm(patient, product);
 
         // verify a form not associated with a product with reminders returns null
         assertNull(rules.getDocumentFormReminder(form));
@@ -503,11 +496,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         save(product, reminderType1);
 
         Party patient = TestHelper.createPatient();
-        DocumentAct form = (DocumentAct) create(PatientArchetypes.DOCUMENT_FORM);
-        ActBean formBean = new ActBean(form);
-        formBean.addNodeParticipation("patient", patient);
-        formBean.addNodeParticipation("product", product);
-        save(form);
+        DocumentAct form = PatientTestHelper.createDocumentForm(patient, product);
 
         Date dueDate1 = rules.calculateProductReminderDueDate(form.getActivityStartTime(), relationship);
         Act reminder1 = rules.getDocumentFormReminder(form);

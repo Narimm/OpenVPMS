@@ -54,7 +54,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.DEBITS;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.DISPENSING_ITEM_RELATIONSHIP;
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM;
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.CLINICAL_EVENT_ITEM;
 
@@ -534,22 +533,39 @@ public class CustomerAccountRules {
             for (ActRelationship relationship : itemBean.getRelationships(CLINICAL_EVENT_CHARGE_ITEM)) {
                 removeEventRelationship(events, itemBean, relationship);
             }
-            for (ActRelationship relationship : itemBean.getRelationships(DISPENSING_ITEM_RELATIONSHIP)) {
-                Act medication = (Act) service.get(relationship.getTarget());
-                if (medication != null) {
-                    boolean medicationChanged = false;
-                    ActBean medicationBean = new ActBean(medication, service);
-                    for (ActRelationship eventRelationship : medicationBean.getRelationships(CLINICAL_EVENT_ITEM)) {
-                        medicationChanged = true;
-                        removeEventRelationship(events, medicationBean, eventRelationship);
-                    }
-                    if (medicationChanged) {
-                        toSave.add(medication);
-                    }
+            for (Act medication : itemBean.getNodeActs("dispensing")) {
+                if (removeEventRelationship(events, medication)) {
+                    toSave.add(medication);
+                }
+            }
+            for (Act investigation : itemBean.getNodeActs("investigations")) {
+                if (removeEventRelationship(events, investigation)) {
+                    toSave.add(investigation);
+                }
+            }
+            for (Act document : itemBean.getNodeActs("documents")) {
+                if (removeEventRelationship(events, document)) {
+                    toSave.add(document);
                 }
             }
         }
         toSave.addAll(events.values());
+    }
+
+    /**
+     * Removes a relationship between an act and <em>act.patientClinicalEvent</em>.
+     *
+     * @param events the cache of events
+     * @param act    the act to remove the relationship from
+     */
+    private boolean removeEventRelationship(Map<IMObjectReference, Act> events, Act act) {
+        boolean changed = false;
+        ActBean bean = new ActBean(act, service);
+        for (ActRelationship eventRelationship : bean.getRelationships(CLINICAL_EVENT_ITEM)) {
+            changed = true;
+            removeEventRelationship(events, bean, eventRelationship);
+        }
+        return changed;
     }
 
     /**
