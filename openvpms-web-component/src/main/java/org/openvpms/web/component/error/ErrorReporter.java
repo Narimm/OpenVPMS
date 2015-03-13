@@ -16,6 +16,7 @@
 package org.openvpms.web.component.error;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.report.DocFormats;
@@ -101,9 +102,10 @@ public class ErrorReporter {
     /**
      * Reports an error.
      *
-     * @param report the error report
+     * @param report  the error report
+     * @param replyTo the reply-to email address. May be {@code null}
      */
-    public void report(final ErrorReport report) {
+    public void report(final ErrorReport report, String replyTo) {
         try {
             JavaMailSender sender = ServiceHelper.getMailSender();
             MimeMessage message = sender.createMimeMessage();
@@ -112,6 +114,9 @@ public class ErrorReporter {
             helper.setSubject(subject);
             helper.setFrom(from);
             helper.setTo(to);
+            if (!StringUtils.isEmpty(replyTo)) {
+                helper.setReplyTo(replyTo);
+            }
             String text = getText(report);
             if (text != null) {
                 helper.setText(text);
