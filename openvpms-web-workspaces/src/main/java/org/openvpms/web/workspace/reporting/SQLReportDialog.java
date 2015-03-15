@@ -18,7 +18,7 @@ package org.openvpms.web.workspace.reporting;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.macro.Variables;
+import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.im.doc.ReportParameters;
 import org.openvpms.web.component.print.PrintDialog;

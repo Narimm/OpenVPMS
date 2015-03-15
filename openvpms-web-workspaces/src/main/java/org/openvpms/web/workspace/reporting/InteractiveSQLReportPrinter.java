@@ -18,7 +18,7 @@ package org.openvpms.web.workspace.reporting;
 
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.macro.Variables;
+import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;

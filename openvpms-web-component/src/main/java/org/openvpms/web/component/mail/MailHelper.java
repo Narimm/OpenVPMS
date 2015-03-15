@@ -16,8 +16,8 @@
 
 package org.openvpms.web.component.mail;
 
+import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.macro.Macros;
-import org.openvpms.macro.Variables;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.resource.i18n.Messages;

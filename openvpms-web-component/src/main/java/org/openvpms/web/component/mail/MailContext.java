@@ -18,7 +18,7 @@ package org.openvpms.web.component.mail;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.macro.Variables;
+import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.web.component.im.query.Browser;
 
 import java.util.List;

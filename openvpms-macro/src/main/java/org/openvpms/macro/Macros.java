@@ -17,6 +17,8 @@
 package org.openvpms.macro;
 
 
+import org.openvpms.component.system.common.util.Variables;
+
 /**
  * Provides support for executing macros.
  *

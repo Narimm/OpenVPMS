@@ -24,11 +24,11 @@ import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.AbstractPropertyResolver;
+import org.openvpms.component.business.service.archetype.helper.IMObjectVariables;
 import org.openvpms.component.business.service.archetype.helper.PropertyResolver;
 import org.openvpms.component.business.service.archetype.helper.PropertyResolverException;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.util.PropertySet;
-import org.openvpms.macro.IMObjectVariables;
 import org.openvpms.web.component.app.Context;
 
 import java.util.HashMap;

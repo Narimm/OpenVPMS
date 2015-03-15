@@ -34,7 +34,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.macro.IMObjectVariables;
+import org.openvpms.component.business.service.archetype.helper.IMObjectVariables;
 import org.openvpms.report.ReportFactory;
 import org.openvpms.report.jasper.JRXMLDocumentHandler;
 import org.openvpms.report.openoffice.OOBootstrapConnectionPool;

@@ -19,7 +19,7 @@ package org.openvpms.web.component.im.doc;
 import echopointng.KeyStrokes;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.macro.Variables;
+import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.macro.MacroDialog;

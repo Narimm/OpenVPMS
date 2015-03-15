@@ -2,8 +2,8 @@ package org.openvpms.macro.impl;
 
 import org.apache.commons.jxpath.JXPathContext;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
+import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.macro.MacroException;
-import org.openvpms.macro.Variables;
 
 import java.util.HashMap;
 import java.util.Map;

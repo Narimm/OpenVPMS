@@ -22,7 +22,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.cache.IMObjectCache;
 import org.openvpms.component.system.common.cache.SoftRefIMObjectCache;
-import org.openvpms.macro.Variables;
+import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;

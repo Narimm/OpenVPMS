@@ -17,9 +17,9 @@
 package org.openvpms.web.component.property;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.macro.Macros;
 import org.openvpms.macro.Position;
-import org.openvpms.macro.Variables;
 import org.openvpms.web.echo.text.TextHelper;
 import org.openvpms.web.resource.i18n.Messages;
 
