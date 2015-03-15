@@ -115,6 +115,7 @@ public class IMObjectExpressionEvaluatorTestCase extends AbstractReportTest {
         Map<String, Object> fields = new HashMap<String, Object>();
         Party party = createCustomer();
         fields.put("OpenVPMS.customer", party);
+        fields.put("OpenVPMS.supplier", null);
 
         Functions functions = applicationContext.getBean(Functions.class);
         ExpressionEvaluator eval = new IMObjectExpressionEvaluator(party, fields, getArchetypeService(),
@@ -130,11 +131,14 @@ public class IMObjectExpressionEvaluatorTestCase extends AbstractReportTest {
         assertEquals("Zoo,J", eval.getValue("[$OpenVPMS.customer.name]"));
 
         assertEquals("Expression Error", eval.getValue("[$OpenVPMS.patient]")); // undefined variable
+        assertEquals("Expression Error", eval.getValue("[$OpenVPMS.supplier]")); // undefined variable
 
         // test conditional variable evaluation
         assertEquals("Zoo,J", eval.getValue("[expr:var('OpenVPMS.customer.name', 'No current customer')]"));
         assertEquals("No current patient", eval.getValue("[expr:var('OpenVPMS.patient', 'No current patient')]"));
         assertEquals("No current patient", eval.getValue("[expr:var('OpenVPMS.patient.name', 'No current patient')]"));
+        assertEquals("No current supplier", eval.getValue("[expr:var('OpenVPMS.supplier.name', " +
+                                                          "'No current supplier')]"));
     }
 
 }
