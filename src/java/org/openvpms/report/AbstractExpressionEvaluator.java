@@ -173,7 +173,10 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
             if (fields != null) {
                 IMObjectVariables variables = new IMObjectVariables(service, lookups);
                 for (String name : fields.getNames()) {
-                    variables.add(name, fields.get(name));
+                    Object value = fields.get(name);
+                    if (value != null) {
+                        variables.add(name, value);
+                    }
                 }
                 context.setVariables(variables);
             }

@@ -337,7 +337,8 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @param objects    the objects to generate the document from
      * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
      * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
-     * @param connection a connection to the OpenOffice service  @return a new openoffice document
+     * @param connection a connection to the OpenOffice service
+     * @return a new openoffice document
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
