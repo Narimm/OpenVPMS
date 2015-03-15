@@ -17,7 +17,7 @@
 package org.openvpms.web.component.app;
 
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.macro.Variables;
+import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.component.macro.MacroVariables;
 import org.openvpms.web.component.mail.MailContext;

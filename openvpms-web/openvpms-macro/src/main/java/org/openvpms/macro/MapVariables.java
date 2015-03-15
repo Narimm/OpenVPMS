@@ -16,6 +16,8 @@
 
 package org.openvpms.macro;
 
+import org.openvpms.component.system.common.util.Variables;
+
 import java.util.HashMap;
 import java.util.Map;
 

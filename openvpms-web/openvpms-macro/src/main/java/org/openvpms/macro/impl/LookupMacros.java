@@ -25,10 +25,10 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.macro.MacroException;
 import org.openvpms.macro.Macros;
 import org.openvpms.macro.Position;
-import org.openvpms.macro.Variables;
 import org.openvpms.report.ReportFactory;
 import org.springframework.beans.factory.DisposableBean;
 

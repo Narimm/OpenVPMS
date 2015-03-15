@@ -14,10 +14,10 @@
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.macro;
+package org.openvpms.component.system.common.util;
 
 /**
- * Variables to supply to a macro.
+ * Named variables.
  *
  * @author Tim Anderson
  */

@@ -26,6 +26,8 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -103,6 +105,36 @@ public class IMObjectExpressionEvaluatorTestCase extends AbstractReportTest {
 
         // test invalid nodes
         assertEquals("Invalid property name: act.customer.foo", eval.getValue("act.customer.foo"));
+    }
+
+    /**
+     * Verifies that fields are also declared as variables, to enable them to be used in jxpath functions.
+     */
+    @Test
+    public void testFieldsDeclaredAsVariables() {
+        Map<String, Object> fields = new HashMap<String, Object>();
+        Party party = createCustomer();
+        fields.put("OpenVPMS.customer", party);
+
+        Functions functions = applicationContext.getBean(Functions.class);
+        ExpressionEvaluator eval = new IMObjectExpressionEvaluator(party, fields, getArchetypeService(),
+                                                                   getLookupService(), functions);
+
+        assertEquals(party, eval.getValue("OpenVPMS.customer"));
+        assertEquals("Zoo,J", eval.getValue("OpenVPMS.customer.name"));
+
+        assertEquals("Invalid property name: OpenVPMS.patient", eval.getValue("OpenVPMS.patient"));
+
+        // test variable evaluation
+        assertEquals(party, eval.getValue("[$OpenVPMS.customer]"));
+        assertEquals("Zoo,J", eval.getValue("[$OpenVPMS.customer.name]"));
+
+        assertEquals("Expression Error", eval.getValue("[$OpenVPMS.patient]")); // undefined variable
+
+        // test conditional variable evaluation
+        assertEquals("Zoo,J", eval.getValue("[expr:var('OpenVPMS.customer.name', 'No current customer')]"));
+        assertEquals("No current patient", eval.getValue("[expr:var('OpenVPMS.patient', 'No current patient')]"));
+        assertEquals("No current patient", eval.getValue("[expr:var('OpenVPMS.patient.name', 'No current patient')]"));
     }
 
 }

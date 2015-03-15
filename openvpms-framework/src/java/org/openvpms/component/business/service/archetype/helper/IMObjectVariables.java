@@ -14,31 +14,30 @@
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.macro;
+package org.openvpms.component.business.service.archetype.helper;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.LookupHelper;
-import org.openvpms.component.business.service.archetype.helper.PropertyResolver;
-import org.openvpms.component.business.service.archetype.helper.PropertyResolverException;
-import org.openvpms.component.business.service.archetype.helper.PropertySetResolver;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.util.MapPropertySet;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.component.system.common.util.PropertyState;
+import org.openvpms.component.system.common.util.Variables;
 
 /**
  * An implementation of {@link Variables} that supports simple variable names,
  * and variable names of the form <tt>variable.node1.node2.nodeN</tt>.
  * <p/>
  * The latter form is used to resolve nodes in {@code IMObject} variables.
+ * <p/>
+ * This may also be used to declare variables for an {@code JXPathContext}.
  *
  * @author Tim Anderson
- * @see org.openvpms.component.business.service.archetype.helper.PropertyResolver
+ * @see PropertyResolver
  */
-public class IMObjectVariables implements Variables {
+public class IMObjectVariables implements Variables, org.apache.commons.jxpath.Variables {
 
     /**
      * The archetype service.
@@ -118,6 +117,56 @@ public class IMObjectVariables implements Variables {
             log.debug("Variable not found: " + name, exception);
         }
         return result;
+    }
+
+    /**
+     * Defines a new variable with the specified value or modifies
+     * the value of an existing variable.
+     *
+     * @param varName variable name
+     * @param value   to declare
+     */
+    @Override
+    public void declareVariable(String varName, Object value) {
+        add(varName, value);
+    }
+
+    /**
+     * Removes an existing variable.
+     *
+     * @param varName is a variable name without the "$" sign
+     * @throws UnsupportedOperationException
+     */
+    @Override
+    public void undeclareVariable(String varName) {
+        throw new UnsupportedOperationException("undeclareVariable() is not supported by IMObjectVariables");
+    }
+
+    /**
+     * Returns the value of the specified variable.
+     *
+     * @param varName variable name
+     * @return Object value
+     * @throws IllegalArgumentException if there is no such variable.
+     */
+    @Override
+    public Object getVariable(String varName) {
+        try {
+            return getResolver().getObject(varName);
+        } catch (PropertyResolverException exception) {
+            throw new IllegalArgumentException("Variable " + varName + " not found");
+        }
+    }
+
+    /**
+     * Returns true if the specified variable is declared.
+     *
+     * @param varName variable name
+     * @return boolean
+     */
+    @Override
+    public boolean isDeclaredVariable(String varName) {
+        return exists(varName);
     }
 
     /**

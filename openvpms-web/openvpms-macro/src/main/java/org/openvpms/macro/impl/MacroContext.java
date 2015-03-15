@@ -17,8 +17,8 @@
 package org.openvpms.macro.impl;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.macro.MacroException;
-import org.openvpms.macro.Variables;
 
 import java.util.ArrayDeque;
 import java.util.Deque;

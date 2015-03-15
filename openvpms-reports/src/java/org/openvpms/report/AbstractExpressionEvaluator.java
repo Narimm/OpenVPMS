@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectVariables;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.PropertyResolver;
 import org.openvpms.component.business.service.archetype.helper.PropertyResolverException;
@@ -170,9 +171,11 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
         if (context == null) {
             context = JXPathHelper.newContext(object, functions);
             if (fields != null) {
+                IMObjectVariables variables = new IMObjectVariables(service, lookups);
                 for (String name : fields.getNames()) {
-                    context.getVariables().declareVariable(name, fields.get(name));
+                    variables.add(name, fields.get(name));
                 }
+                context.setVariables(variables);
             }
         }
         return context.getValue(expression);

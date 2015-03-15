@@ -25,7 +25,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.macro.Variables;
+import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ReloadingContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;

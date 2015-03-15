@@ -80,8 +80,6 @@ class ErrorReport {
      */
     private Properties properties;
 
-    public StackTraceElement[] stackTrace;
-
 
     /**
      * Constructs an <tt>ErrorReport</tt>.
