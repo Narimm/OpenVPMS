@@ -33,7 +33,7 @@
         <node name="sourceInvoiceItem" path="/details/sourceInvoiceItem"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="0"
               hidden="true" readOnly="true">
-            <assertion name="archetypeRange" filter="entity.documentTemplate">
+            <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
                         <property name="shortName" value="act.customerAccountInvoiceItem"/>
