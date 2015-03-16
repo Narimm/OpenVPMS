@@ -1,8 +1,0 @@
-<archetype>
-    <data id="A1" archetype="act.customerEstimation" status="POSTED">
-        <data id="R1" collection="items" archetype="actRelationship.customerEstimationItem" source="id:A1" target="id:A2"/>
-    </data>
-    <data id="A2" archetype="act.customerEstimationItem">
-        <data id="PART1" collection="participants" archetype="participation.patient" entity="id:P1" act="id:A2"/>
-    </data>
-</archetype>
