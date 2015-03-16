@@ -110,5 +110,12 @@
         <node name="templates" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.documentTemplatePrinter"/>
+        <node name="serviceRatios" path="/entityLinks"
+              type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="*"
+              filter="entityLink.locationProductType">
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active service ratio relationship</errorMessage>
+            </assertion>
+        </node>
     </archetype>
 </archetypes>
