@@ -975,23 +975,30 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         EntityRelationship stock = initStockQuantity(new BigDecimal("10"));
 
         // create the invoice
-        List<FinancialAct> invoiceActs = createChargesInvoice(new BigDecimal(100));
-        FinancialAct invoice = invoiceActs.get(0);
+        List<FinancialAct> invoice1 = createChargesInvoice(new BigDecimal(100));
+        FinancialAct invoice = invoice1.get(0);
         invoice.setStatus(ActStatus.IN_PROGRESS);
-        Act item = invoiceActs.get(1);
+        Act item1 = invoice1.get(1);
         Act medication = PatientTestHelper.createMedication(patient, getProduct());
         Act investigation = PatientTestHelper.createInvestigation(patient, PatientTestHelper.createInvestigationType());
         Act document = PatientTestHelper.createDocumentForm(patient);
-        ActBean itemBean = new ActBean(item);
+        ActBean itemBean = new ActBean(item1);
         itemBean.addNodeRelationship("dispensing", medication);
         itemBean.addNodeRelationship("investigations", investigation);
         itemBean.addNodeRelationship("documents", document);
-        assertEquals(3, item.getSourceActRelationships().size());
+        assertEquals(3, item1.getSourceActRelationships().size());
+
+        // create another invoice
+        List<FinancialAct> invoice2 = createChargesInvoice(new BigDecimal(10), getCustomer(),
+                                                           TestHelper.createProduct());
+        Act item2 = invoice2.get(1);
+
         List<IMObject> toSave = new ArrayList<IMObject>();
-        toSave.addAll(invoiceActs);
+        toSave.addAll(invoice1);
         toSave.add(medication);
         toSave.add(investigation);
         toSave.add(document);
+        toSave.addAll(invoice2);
         save(toSave);
 
         checkStock(stock, new BigDecimal("9"));
@@ -1002,14 +1009,16 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         Act event = PatientTestHelper.createEvent(patient);
         ActBean eventBean = new ActBean(event);
 
-        // link the charge item, medication, investigation and document to the event
+        // link the charge items, medication, investigation and document to the event
         ChargeItemEventLinker linker = new ChargeItemEventLinker(getArchetypeService());
-        linker.link(event, invoiceActs.get(1), new PatientHistoryChanges(author, location, getArchetypeService()));
+        linker.link(event, item1, new PatientHistoryChanges(author, location, getArchetypeService()));
+        linker.link(event, item2, new PatientHistoryChanges(author, location, getArchetypeService()));
 
         // verify they are linked
         List<Act> charges = eventBean.getNodeActs("chargeItems");
-        assertEquals(1, charges.size());
-        assertEquals(item, charges.get(0));
+        assertEquals(2, charges.size());
+        assertTrue(charges.contains(item1));
+        assertTrue(charges.contains(item2));
 
         List<Act> items = eventBean.getNodeActs("items");
         assertEquals(3, items.size());
@@ -1046,21 +1055,22 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         eventBean = new ActBean(event);
 
         // ensure the item, medication and investigation still exist
-        item = get(item);
-        assertNotNull(item);
+        item1 = get(item1);
+        assertNotNull(item1);
         assertNotNull(get(medication));
         assertNotNull(get(investigation));
         assertNotNull(get(document));
 
-        // verify the item, medication, investigation and document are no longer linked to the event
+        // verify that item1, medication, investigation and document are no longer linked to the event
         charges = eventBean.getNodeActs("chargeItems");
-        assertEquals(0, charges.size());
+        assertEquals(1, charges.size());
+        assertEquals(item2, charges.get(0));
 
         items = eventBean.getNodeActs("items");
         assertEquals(0, items.size());
 
         // verify the item, medication, investigation and document are still linked to the invoice item
-        assertEquals(3, item.getSourceActRelationships().size());
+        assertEquals(3, item1.getSourceActRelationships().size());
 
         // verify the demographic update didn't get run again
         assertFalse(patientRules.isDesexed(get(patient)));
