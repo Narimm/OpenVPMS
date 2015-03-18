@@ -256,7 +256,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
         if (actions.canEdit(object)) {
             ButtonSet buttons = getButtons();
             Button button = (buttons != null) ? buttons.getButton(EDIT_ID) : null;
-            edit = (button == null || button.isEnabled());
+            edit = (button != null && button.isEnabled());
         }
         return edit;
     }
