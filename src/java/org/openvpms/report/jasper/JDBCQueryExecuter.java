@@ -62,6 +62,11 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
         this.fields = (fields != null) ? new ResolvingPropertySet(fields, service) : null;
     }
 
+    /**
+     * Creates a data source.
+     *
+     * @throws JRException for any error
+     */
     @Override
     public JRDataSource createDatasource() throws JRException {
         return new FieldDataSource(super.createDatasource());
@@ -73,18 +78,17 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
     private class FieldDataSource implements JRDataSource {
 
         /**
-         * The data source to delegate to.
+         * The data source to delegate to. May be {@code null} if the report has no SQL statement.
          */
         private JRDataSource dataSource;
 
         /**
          * Constructs an {@link FieldDataSource}.
          *
-         * @param dataSource the data source to wrap
+         * @param dataSource the data source to wrap. May be {@code null}
          */
         public FieldDataSource(JRDataSource dataSource) {
             this.dataSource = dataSource;
-
         }
 
         /**
@@ -95,7 +99,7 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
          */
         @Override
         public boolean next() throws JRException {
-            return dataSource.next();
+            return dataSource != null && dataSource.next();
         }
 
         /**
@@ -108,7 +112,7 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
             if (fields != null && fields.exists(field.getName())) {
                 return fields.resolve(field.getName()).getValue();
             }
-            return dataSource.getFieldValue(field);
+            return (dataSource != null) ? dataSource.getFieldValue(field) : null;
         }
     }
 
