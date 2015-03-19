@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -299,6 +300,23 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         checkEquals(new BigDecimal("33.3"), rules.calcMaxDiscount(BigDecimal.valueOf(50)));
         checkEquals(new BigDecimal(50), rules.calcMaxDiscount(BigDecimal.valueOf(100)));
         checkEquals(new BigDecimal("66.7"), rules.calcMaxDiscount(BigDecimal.valueOf(200)));
+    }
+
+    /**
+     * Tests the {@link ProductPriceRules#getServiceRatio(Product, Party)} method.
+     */
+    @Test
+    public void testGetServiceRatio() {
+        Product product = TestHelper.createProduct();
+        Party location = TestHelper.createLocation();
+        Entity productType = ProductTestHelper.createProductType();
+        checkEquals(BigDecimal.ONE, rules.getServiceRatio(product, location));
+
+        ProductTestHelper.addProductType(product, productType);
+        checkEquals(BigDecimal.ONE, rules.getServiceRatio(product, location));
+
+        ProductTestHelper.addServiceRatio(location, productType, BigDecimal.TEN);
+        checkEquals(BigDecimal.TEN, rules.getServiceRatio(product, location));
     }
 
     /**

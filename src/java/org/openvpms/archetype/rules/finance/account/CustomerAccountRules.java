@@ -48,6 +48,7 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -404,18 +405,20 @@ public class CustomerAccountRules {
             original.setValue("hide", hide);
         }
 
-        // This smells. The original act needs to be saved without using the rule based archetype service, to avoid
+        // This smells. The original acts needs to be saved without using the rule based archetype service, to avoid
         // triggering rules. The other acts need to be saved with rules enabled, in order to update the balance.
         // TODO
         TransactionTemplate template = new TransactionTemplate(transactionManager);
         template.execute(new TransactionCallbackWithoutResult() {
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
-                original.save();
+                List<IMObject> noRules = new ArrayList<IMObject>();
+                noRules.add(act);
 
                 if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE)) {
-                    removeInvoiceFromPatientHistory(act, objects);
+                    removeInvoiceFromPatientHistory(act, noRules);
                 }
+                service.save(noRules);
                 ruleService.save(objects);
             }
         });
@@ -512,15 +515,6 @@ public class CustomerAccountRules {
 
     /**
      * Removes charge items and medications acts linked to an invoice from the patient history.
-     * <p/>
-     * NOTE: this removes the charge item relationship from the event but not the item itself; this is left up to
-     * the archetype service. This is to avoid triggering the
-     * archetypeService.save.act.customerAccountInvoiceItem.before and
-     * archetypeService.save.act.customerAccountInvoiceItem.after rules that perform demographic updates and update
-     * stock.
-     * <br/>
-     * This can cause problems if the item is being modified elsewhere in the same transaction,
-     * but isn't likely for the purposes of invoice reversal.
      *
      * @param invoice the invoice
      * @param toSave  a list of objects to save
@@ -531,6 +525,7 @@ public class CustomerAccountRules {
         for (Act item : bean.getNodeActs("items")) {
             ActBean itemBean = new ActBean(item, service);
             for (ActRelationship relationship : itemBean.getRelationships(CLINICAL_EVENT_CHARGE_ITEM)) {
+                toSave.add(item); // only one relationship to event
                 removeEventRelationship(events, itemBean, relationship);
             }
             for (Act medication : itemBean.getNodeActs("dispensing")) {

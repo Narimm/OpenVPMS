@@ -179,8 +179,21 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      * @return a list containing the invoice act and its item
      */
     protected List<FinancialAct> createChargesInvoice(BigDecimal amount, Party customer) {
+        return createChargesInvoice(amount, customer, getProduct());
+    }
+
+    /**
+     * Helper to create a <em>POSTED</em>  <em>act.customerAccountChargesInvoice</em> with an associated
+     * <em>act.customerAccountInvoiceItem</em>.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param product  the product
+     * @return a list containing the invoice act and its item
+     */
+    protected List<FinancialAct> createChargesInvoice(BigDecimal amount, Party customer, Product product) {
         List<FinancialAct> result = FinancialTestHelper.createChargesInvoice(
-                amount, customer, getPatient(), getProduct(), ActStatus.POSTED);
+                amount, customer, getPatient(), product, ActStatus.POSTED);
         ActBean item = new ActBean(result.get(1));
         item.addNodeParticipation("stockLocation", getStockLocation());
         return result;

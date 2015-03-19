@@ -64,7 +64,7 @@
 
         <!-- node name="target" path="/targetLookupRelationships"
               type="java.util.HashSet" baseName="targetLookupRelationship" minCardinality="0" maxCardinality="*">
-              <assertion name="archetypeRange" filter="lookupRelationship.uomGroup" >
+              <assertion name="archetypeRange">
                   <propertyList name="archetypes">
                       <propertyMap name="archetype">
                           <property name="shortName"
