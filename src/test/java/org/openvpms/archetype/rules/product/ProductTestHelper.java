@@ -45,10 +45,20 @@ public class ProductTestHelper {
      */
     public static Product createProduct(Entity productType) {
         Product product = TestHelper.createProduct();
+        addProductType(product, productType);
+        return product;
+    }
+
+    /**
+     * Adds a product type to a product.
+     *
+     * @param product     the product
+     * @param productType the product type
+     */
+    public static void addProductType(Product product, Entity productType) {
         EntityBean bean = new EntityBean(productType);
         bean.addRelationship("entityRelationship.productTypeProduct", product);
         TestHelper.save(productType, product);
-        return product;
     }
 
     /**
@@ -62,6 +72,16 @@ public class ProductTestHelper {
         template.setName(name);
         TestHelper.save(template);
         return template;
+    }
+
+
+    /**
+     * Creates a new product type.
+     *
+     * @return a new product type
+     */
+    public static Entity createProductType() {
+        return createProductType("XPRODUCTTYPE_" + System.currentTimeMillis());
     }
 
     /**
@@ -202,6 +222,21 @@ public class ProductTestHelper {
         relBean.setValue("minWeight", minWeight);
         relBean.setValue("maxWeight", maxWeight);
         relBean.setValue("zeroPrice", zeroPrice);
+        bean.save();
+    }
+
+    /**
+     * Adds a service ratio between a practice location and product type.
+     *
+     * @param location    the practice location
+     * @param productType the product type
+     * @param ratio       the service ratio
+     */
+    public static void addServiceRatio(Party location, Entity productType, BigDecimal ratio) {
+        EntityBean bean = new EntityBean(location);
+        IMObjectRelationship relationship = bean.addNodeTarget("serviceRatios", productType);
+        IMObjectBean relBean = new IMObjectBean(relationship);
+        relBean.setValue("ratio", ratio);
         bean.save();
     }
 
