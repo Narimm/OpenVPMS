@@ -18,15 +18,12 @@ package org.openvpms.archetype.rules.product;
 
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.Predicate;
-import org.apache.commons.collections.functors.AndPredicate;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityLink;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -52,8 +49,6 @@ import static java.math.BigDecimal.ZERO;
 import static org.openvpms.archetype.rules.math.MathRules.ONE_HUNDRED;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
 import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActive;
-import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActiveNow;
-import static org.openvpms.component.business.service.archetype.functor.RefEquals.getTargetEquals;
 
 
 /**
@@ -425,33 +420,6 @@ public class ProductPriceRules {
     public BigDecimal getCostPrice(ProductPrice price) {
         IMObjectBean bean = new IMObjectBean(price, service);
         return bean.getBigDecimal("cost", BigDecimal.ZERO);
-    }
-
-    /**
-     * Returns the service ratio for a product.
-     * <p/>
-     * This is a factor that is applied to a product's prices when the product is charged at a particular practice
-     * location. It is determined by the <em>entityLink.locationProductType</em> relationship between the location and
-     * the product's type.
-     *
-     * @param product  the product
-     * @param location the practice location
-     * @return the service ratio. If there is no relationship, returns {@code 1.0}
-     */
-    public BigDecimal getServiceRatio(Product product, Party location) {
-        BigDecimal ratio = BigDecimal.ONE;
-        IMObjectBean bean = new IMObjectBean(product, service);
-        IMObjectReference productType = bean.getNodeSourceObjectRef("type");
-        if (productType != null) {
-            IMObjectBean locationBean = new IMObjectBean(location, service);
-            Predicate predicate = AndPredicate.getInstance(isActiveNow(), getTargetEquals(productType));
-            EntityLink link = (EntityLink) locationBean.getValue("serviceRatios", predicate);
-            if (link != null) {
-                IMObjectBean linkBean = new IMObjectBean(link, service);
-                ratio = linkBean.getBigDecimal("ratio", BigDecimal.ONE);
-            }
-        }
-        return ratio;
     }
 
     /**
