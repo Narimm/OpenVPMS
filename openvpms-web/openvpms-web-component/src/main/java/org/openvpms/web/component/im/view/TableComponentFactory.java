@@ -16,11 +16,8 @@
 
 package org.openvpms.web.component.im.view;
 
-import echopointng.layout.TableLayoutDataEx;
-import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.layout.TableLayoutData;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.LookupNameHelper;
@@ -29,6 +26,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.NumericPropertyFormatter;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.math.BigDecimal;
@@ -39,8 +37,7 @@ import java.util.Date;
  * An {@link IMObjectComponentFactory} that returns read-only components for
  * display in a table.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
 
@@ -88,13 +85,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
     @Override
     protected Component createNumeric(Property property) {
         String value = getNumericValue(property);
-        Label label = LabelFactory.create();
-        label.setText(value);
-        TableLayoutData layout = new TableLayoutDataEx();
-        Alignment right = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
-        layout.setAlignment(right);
-        label.setLayoutData(layout);
-        return label;
+        return TableHelper.rightAlign(value);
     }
 
     /**

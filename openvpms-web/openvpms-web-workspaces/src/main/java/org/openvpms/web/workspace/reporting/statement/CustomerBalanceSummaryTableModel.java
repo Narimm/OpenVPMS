@@ -16,11 +16,8 @@
 
 package org.openvpms.web.workspace.reporting.statement;
 
-import echopointng.layout.TableLayoutDataEx;
-import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
@@ -31,6 +28,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
@@ -45,7 +43,7 @@ import java.util.Date;
  * @author Tim Anderson
  */
 public class CustomerBalanceSummaryTableModel
-    extends AbstractIMTableModel<ObjectSet> {
+        extends AbstractIMTableModel<ObjectSet> {
 
     /**
      * The context.
@@ -97,22 +95,22 @@ public class CustomerBalanceSummaryTableModel
      * the corresponding column display name.
      */
     private String[][] columns = {
-        {CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE,
-            Messages.get("customerbalancetablemodel.customer")},
-        {CustomerBalanceSummaryQuery.BALANCE,
-            Messages.get("customerbalancetablemodel.balance")},
-        {CustomerBalanceSummaryQuery.OVERDUE_BALANCE,
-            Messages.get("customerbalancetablemodel.overdueBalance")},
-        {CustomerBalanceSummaryQuery.CREDIT_BALANCE, Messages.get(
-            "customerbalancetablemodel.creditBalance")},
-        {CustomerBalanceSummaryQuery.UNBILLED_AMOUNT, Messages.get(
-            "customerbalancetablemodel.unbilledAmount")},
-        {CustomerBalanceSummaryQuery.LAST_PAYMENT_DATE, Messages.get(
-            "customerbalancetablemodel.lastPaymentDate")},
-        {CustomerBalanceSummaryQuery.LAST_PAYMENT_AMOUNT, Messages.get(
-            "customerbalancetablemodel.lastPaymentAmount")},
-        {CustomerBalanceSummaryQuery.LAST_INVOICE_DATE, Messages.get(
-            "customerbalancetablemodel.lastInvoiceDate")}};
+            {CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE,
+             Messages.get("customerbalancetablemodel.customer")},
+            {CustomerBalanceSummaryQuery.BALANCE,
+             Messages.get("customerbalancetablemodel.balance")},
+            {CustomerBalanceSummaryQuery.OVERDUE_BALANCE,
+             Messages.get("customerbalancetablemodel.overdueBalance")},
+            {CustomerBalanceSummaryQuery.CREDIT_BALANCE, Messages.get(
+                    "customerbalancetablemodel.creditBalance")},
+            {CustomerBalanceSummaryQuery.UNBILLED_AMOUNT, Messages.get(
+                    "customerbalancetablemodel.unbilledAmount")},
+            {CustomerBalanceSummaryQuery.LAST_PAYMENT_DATE, Messages.get(
+                    "customerbalancetablemodel.lastPaymentDate")},
+            {CustomerBalanceSummaryQuery.LAST_PAYMENT_AMOUNT, Messages.get(
+                    "customerbalancetablemodel.lastPaymentAmount")},
+            {CustomerBalanceSummaryQuery.LAST_INVOICE_DATE, Messages.get(
+                    "customerbalancetablemodel.lastInvoiceDate")}};
 
 
     /**
@@ -144,8 +142,7 @@ public class CustomerBalanceSummaryTableModel
      * Returns the sort criteria.
      *
      * @param column    the primary sort column
-     * @param ascending if <code>true</code> sort in ascending order; otherwise
-     *                  sort in <code>descending</code> order
+     * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
      * @return {@code null}
      */
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
@@ -167,7 +164,7 @@ public class CustomerBalanceSummaryTableModel
         switch (index) {
             case CUSTOMER_INDEX:
                 String name = set.getString(
-                    CustomerBalanceSummaryQuery.CUSTOMER_NAME);
+                        CustomerBalanceSummaryQuery.CUSTOMER_NAME);
                 result = getViewer((IMObjectReference) value, name);
                 break;
             case BALANCE_INDEX:
@@ -210,7 +207,7 @@ public class CustomerBalanceSummaryTableModel
     /**
      * Helper to return a component to display a date.
      *
-     * @param date the date. May be <code>null</code>
+     * @param date the date. May be {@code null}
      * @return a component to display the date
      */
     private Component getDate(Date date) {
@@ -225,19 +222,15 @@ public class CustomerBalanceSummaryTableModel
      * Helper to return a component to display a right justified amount in
      * a table cell.
      *
-     * @param amount the amount. May be <code>null</code>
+     * @param amount the amount. May be {@code null}
      * @return a component to display the amount
      */
     private Component getAmount(BigDecimal amount) {
-        Label label = LabelFactory.create();
+        Label label;
         if (amount != null) {
-            String text = NumberFormatter.formatCurrency(amount);
-            label.setText(text);
-            TableLayoutData layout = new TableLayoutDataEx();
-            Alignment right = new Alignment(Alignment.RIGHT,
-                                            Alignment.DEFAULT);
-            layout.setAlignment(right);
-            label.setLayoutData(layout);
+            label = TableHelper.rightAlign(NumberFormatter.formatCurrency(amount));
+        } else {
+            label = LabelFactory.create();
         }
         return label;
     }

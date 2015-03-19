@@ -16,10 +16,6 @@
 
 package org.openvpms.web.component.im.doc;
 
-import echopointng.layout.TableLayoutDataEx;
-import nextapp.echo2.app.Alignment;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
@@ -28,7 +24,7 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
-import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.table.TableHelper;
 
 
 /**
@@ -55,7 +51,7 @@ public class DocumentActTableModel extends ActAmountTableModel<DocumentAct> {
 
 
     /**
-     * Constructs a {@code DocumentActTableModel}.
+     * Constructs a {@link DocumentActTableModel}.
      *
      * @param context the layout context
      */
@@ -114,13 +110,7 @@ public class DocumentActTableModel extends ActAmountTableModel<DocumentAct> {
         if (bean.hasNode(DocumentRules.VERSIONS)) {
             int versions = bean.getValues(DocumentRules.VERSIONS).size();
             if (versions > 0) {
-                Label label = LabelFactory.create();
-                label.setText(Integer.toString(versions));
-                TableLayoutData layout = new TableLayoutDataEx();
-                Alignment right = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
-                layout.setAlignment(right);
-                label.setLayoutData(layout);
-                result = versions;
+                result = TableHelper.rightAlign(Integer.toString(versions));
             } else {
                 result = null;
             }
@@ -143,8 +133,8 @@ public class DocumentActTableModel extends ActAmountTableModel<DocumentAct> {
     protected TableColumnModel createColumnModel(boolean showArchetype, boolean showStatus,
                                                  boolean showAmount) {
         DefaultTableColumnModel model
-            = (DefaultTableColumnModel) super.createColumnModel(showArchetype, showStatus,
-                                                                showAmount);
+                = (DefaultTableColumnModel) super.createColumnModel(showArchetype, showStatus,
+                                                                    showAmount);
         docIndex = getNextModelIndex(model);
         model.addColumn(createTableColumn(docIndex, "document.acttablemodel.doc"));
         if (showAmount) {

@@ -19,7 +19,6 @@ package org.openvpms.web.workspace.customer.estimate;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
-import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -32,6 +31,7 @@ import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
+import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
@@ -40,7 +40,6 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
-import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
 
 import java.math.BigDecimal;
@@ -55,11 +54,6 @@ import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
  * @author Tim Anderson
  */
 public class EstimateItemEditor extends PriceActItemEditor {
-
-    /**
-     * Tax rules.
-     */
-    private final CustomerTaxRules taxRules;
 
     /**
      * Low quantity selling units.
@@ -95,8 +89,6 @@ public class EstimateItemEditor extends PriceActItemEditor {
             // default the act start time to today
             act.setActivityStartTime(new Date());
         }
-        taxRules = new CustomerTaxRules(context.getContext().getPractice(), ServiceHelper.getArchetypeService(),
-                                        ServiceHelper.getLookupService());
 
         // add a listener to update the discount when the fixed, high unit price
         // or quantity, changes
@@ -244,6 +236,19 @@ public class EstimateItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Invoked when layout has completed.
+     */
+    @Override
+    protected void onLayoutCompleted() {
+        super.onLayoutCompleted();
+        ProductParticipationEditor product = getProductEditor();
+        if (product != null) {
+            // register the location in order to determine service ratios
+            product.setLocation(getLocation());
+        }
+    }
+
+    /**
      * Invoked when the product is changed, to update prices.
      *
      * @param product the product. May be {@code null}
@@ -343,19 +348,6 @@ public class EstimateItemEditor extends PriceActItemEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice) {
         return new EstimateItemLayoutStrategy(fixedPrice);
-    }
-
-    /**
-     * Returns the price of a product.
-     * <p/>
-     * This subtracts any tax exclusions the customer may have.
-     *
-     * @param price the price
-     * @return the price, minus any tax exclusions
-     */
-    private BigDecimal getPrice(Product product, ProductPrice price) {
-        BigDecimal amount = price.getPrice();
-        return taxRules.getTaxExAmount(amount, product, getCustomer());
     }
 
     /**
