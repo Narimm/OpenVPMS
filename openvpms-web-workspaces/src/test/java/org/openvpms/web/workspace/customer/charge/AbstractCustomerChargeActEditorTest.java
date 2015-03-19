@@ -613,6 +613,19 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     }
 
     /**
+     * Adds a tax exemption to a customer.
+     *
+     * @param customer the customer
+     */
+    protected void addTaxExemption(Party customer) {
+        IMObjectBean bean = new IMObjectBean(getPractice());
+        List<Lookup> taxes = bean.getValues("taxes", Lookup.class);
+        assertEquals(1, taxes.size());
+        customer.addClassification(taxes.get(0));
+        save(customer);
+    }
+
+    /**
      * Helper to create and save a new tax type classification.
      *
      * @return a new tax classification

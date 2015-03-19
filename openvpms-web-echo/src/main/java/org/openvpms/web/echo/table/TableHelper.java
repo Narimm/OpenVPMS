@@ -18,9 +18,11 @@ package org.openvpms.web.echo.table;
 
 import echopointng.layout.TableLayoutDataEx;
 import echopointng.xhtml.XhtmlFragment;
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
 import nextapp.echo2.app.LayoutData;
 import nextapp.echo2.app.Style;
 import nextapp.echo2.app.layout.TableLayoutData;
@@ -28,6 +30,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.web.echo.colour.ColourHelper;
+import org.openvpms.web.echo.factory.LabelFactory;
 
 import java.util.Iterator;
 
@@ -155,6 +158,22 @@ public class TableHelper {
                 mergeLayoutData(layout, (TableLayoutData) from, false);
             }
         }
+    }
+
+    /**
+     * Helper to create a right-aligned label.
+     *
+     * @param text the text
+     * @return a right aligned label containing the text
+     */
+    public static Label rightAlign(String text) {
+        Label label = LabelFactory.create();
+        label.setText(text);
+        TableLayoutData layout = new TableLayoutDataEx();
+        Alignment right = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
+        layout.setAlignment(right);
+        label.setLayoutData(layout);
+        return label;
     }
 
     /**

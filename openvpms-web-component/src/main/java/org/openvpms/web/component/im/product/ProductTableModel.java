@@ -14,18 +14,15 @@
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.product;
+package org.openvpms.web.component.im.product;
 
-import echopointng.layout.TableLayoutDataEx;
-import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -33,9 +30,8 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.product.ProductQuery;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
-import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -64,6 +60,11 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
      * The product price rules.
      */
     private ProductPriceRules rules;
+
+    /**
+     * The practice location, used to determine service ratios. May be {@code null}
+     */
+    private Party location;
 
     /**
      * The pricing location. May be {@code null}
@@ -117,6 +118,18 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
     }
 
     /**
+     * Sets the practice location.
+     * <p/>
+     * If non-null, this is used to determine service ratios that are applied to prices.
+     * If null, the prices are displayed unchanged.
+     *
+     * @param location the practice location. May be {@code null}
+     */
+    public void setLocation(Party location) {
+        this.location = location;
+    }
+
+    /**
      * Returns the value found at the given coordinate within the table.
      *
      * @param product the object
@@ -128,9 +141,9 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
     protected Object getValue(Product product, TableColumn column, int row) {
         int index = column.getModelIndex();
         if (index == fixedPriceIndex) {
-            return getPrice("productPrice.fixedPrice", product);
+            return getPrice(ProductArchetypes.FIXED_PRICE, product);
         } else if (index == unitPriceIndex) {
-            return getPrice("productPrice.unitPrice", product);
+            return getPrice(ProductArchetypes.UNIT_PRICE, product);
         }
         return super.getValue(product, column, row);
     }
@@ -168,18 +181,13 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
     private Component getPrice(String shortName, Product product) {
         Component result = null;
         ProductPrice price = rules.getProductPrice(product, shortName, new Date(), pricingGroup);
-        if (price != null) {
+        if (price != null && price.getPrice() != null) {
             BigDecimal value = price.getPrice();
-            if (value != null) {
-                Label label = LabelFactory.create();
-                String text = NumberFormatter.formatCurrency(value);
-                label.setText(text);
-                TableLayoutData layout = new TableLayoutDataEx();
-                Alignment right = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
-                layout.setAlignment(right);
-                label.setLayoutData(layout);
-                result = label;
+            if (location != null) {
+                BigDecimal ratio = rules.getServiceRatio(product, location);
+                value = ProductHelper.getPrice(price, ratio);
             }
+            result = TableHelper.rightAlign(NumberFormatter.formatCurrency(value));
         }
         return result;
     }

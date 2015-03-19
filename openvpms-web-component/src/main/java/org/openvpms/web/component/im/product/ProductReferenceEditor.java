@@ -38,6 +38,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.AbstractQueryBrowser;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.ListQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -103,8 +104,7 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
     @Override
     protected void onUpdated(Product product) {
         if (product != null && hasSuppliers(product)) {
-            List<EntityRelationship> relationships
-                    = getSupplierRelationships(product);
+            List<EntityRelationship> relationships = getSupplierRelationships(product);
             if (relationships.isEmpty()) {
                 setProductSupplier(null);
             } else if (relationships.size() == 1) {
@@ -132,6 +132,21 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
     }
 
     /**
+     * Creates a new browser.
+     *
+     * @param query the query
+     * @return a return a new browser
+     */
+    @Override
+    protected Browser<Product> createBrowser(Query<Product> query) {
+        ProductQuery q = (ProductQuery) query;
+        LayoutContext context = getLayoutContext();
+        ProductTableModel model = new ProductTableModel(q, context);
+        model.setLocation(editor.getLocation());
+        return new DefaultIMObjectTableBrowser<Product>(query, model, context);
+    }
+
+    /**
      * Constrains the query on species and stock location, if a patient and stock location is present.
      *
      * @param query the query
@@ -142,8 +157,7 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
             ProductQuery productQuery = ((ProductQuery) query);
             Party patient = editor.getPatient();
             if (patient != null) {
-                String species = (String) IMObjectHelper.getValue(
-                        patient, "species");
+                String species = (String) IMObjectHelper.getValue(patient, "species");
                 if (species != null) {
                     productQuery.setSpecies(species);
                 }

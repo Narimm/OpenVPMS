@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.product;
 
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.product.ProductTableModel;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.ResultSet;
 

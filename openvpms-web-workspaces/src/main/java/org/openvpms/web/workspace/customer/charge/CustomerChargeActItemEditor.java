@@ -21,7 +21,6 @@ import nextapp.echo2.app.Label;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemDocumentLinker;
-import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.finance.tax.TaxRuleException;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
@@ -190,11 +189,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private boolean cancelPrescription;
 
     /**
-     * Customer tax rules.
-     */
-    private CustomerTaxRules taxRules;
-
-    /**
      * The charge context.
      */
     private ChargeContext chargeContext;
@@ -249,8 +243,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
         rules = new StockRules();
         reminderRules = ServiceHelper.getBean(ReminderRules.class);
-        taxRules = new CustomerTaxRules(context.getContext().getPractice(), ServiceHelper.getArchetypeService(),
-                                        ServiceHelper.getLookupService());
         quantityListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updateMedicationQuantity();
@@ -618,6 +610,12 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     protected void onLayoutCompleted() {
         super.onLayoutCompleted();
 
+        ProductParticipationEditor product = getProductEditor();
+        if (product != null) {
+            // register the location in order to determine service ratios
+            product.setLocation(getLocation());
+        }
+
         PatientParticipationEditor patient = getPatientEditor();
         if (patient != null) {
             // add a listener to update the dispensing, investigation and reminder acts when the patient changes
@@ -721,7 +719,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         if (customer != null && getProductRef() != null) {
             FinancialAct act = (FinancialAct) getObject();
             BigDecimal previousTax = act.getTaxAmount();
-            BigDecimal tax = taxRules.calculateTax(act, customer);
+            BigDecimal tax = calculateTax(customer);
             if (tax.compareTo(previousTax) != 0) {
                 Property property = getProperty("tax");
                 property.refresh();
@@ -1359,19 +1357,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
-     * Returns the price of a product.
-     * <p/>
-     * This subtracts any tax exclusions the customer may have.
-     *
-     * @param price the price
-     * @return the price, minus any tax exclusions
-     */
-    private BigDecimal getPrice(Product product, ProductPrice price) {
-        BigDecimal amount = price.getPrice();
-        return taxRules.getTaxExAmount(amount, product, getCustomer());
-    }
-
-    /**
      * Returns the value of the cost node of a price.
      *
      * @param price the product price
@@ -1483,7 +1468,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         ParticipationEditor<Entity> editor = getParticipationEditor("batch", create);
         return (BatchParticipationEditor) editor;
     }
-
 
     protected class CustomerChargeItemLayoutStrategy extends PriceItemLayoutStrategy {
 
