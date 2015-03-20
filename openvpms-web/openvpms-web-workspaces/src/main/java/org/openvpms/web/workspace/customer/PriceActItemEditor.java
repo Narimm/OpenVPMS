@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
@@ -62,6 +63,11 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * The practice.
      */
     private final Party practice;
+
+    /**
+     * If {@code true}, disable discounts.
+     */
+    private boolean disableDiscounts;
 
     /**
      * The service ratio.
@@ -208,6 +214,24 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     }
 
     /**
+     * Determines if discounting should be disabled.
+     *
+     * @param disable if {@code true} disable discounts
+     */
+    protected void setDisableDiscounts(boolean disable) {
+        disableDiscounts = disable;
+    }
+
+    /**
+     * Determines if discounting has been disabled.
+     *
+     * @return {@code true} if discounts are disabled
+     */
+    protected boolean getDisableDiscounts() {
+        return disableDiscounts;
+    }
+
+    /**
      * Returns the maximum discount allowed on the fixed price.
      *
      * @return the maximum discount
@@ -243,13 +267,15 @@ public abstract class PriceActItemEditor extends ActItemEditor {
 
     /**
      * Calculates the discount amount, updating the 'discount' node.
+     * <p/>
+     * If discounts are disabled, any existing discount will be set to {@code 0}.
      */
     protected void updateDiscount() {
         try {
             BigDecimal amount = calculateDiscount();
             // If discount amount calculates to zero don't update any
             // existing value as may have been manually modified.
-            if (amount.compareTo(BigDecimal.ZERO) != 0) {
+            if (disableDiscounts || amount.compareTo(BigDecimal.ZERO) != 0) {
                 Property discount = getProperty("discount");
                 discount.setValue(amount);
             }
@@ -261,7 +287,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     /**
      * Calculates the discount.
      *
-     * @return the discount, or {@code BigDecimal.ZERO} if the discount can't be calculated
+     * @return the discount or {@code BigDecimal.ZERO} if the discount can't be calculated or discounts are disabled
      */
     protected BigDecimal calculateDiscount() {
         BigDecimal unitPrice = getUnitPrice();
@@ -274,28 +300,30 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      *
      * @param unitPrice the unit price
      * @param quantity  the quantity
-     * @return the discount, or {@code BigDecimal.ZERO} if the discount can't be calculated
+     * @return the discount or {@code BigDecimal.ZERO} if the discount can't be calculated or discounts are disabled
      */
     protected BigDecimal calculateDiscount(BigDecimal unitPrice, BigDecimal quantity) {
         BigDecimal amount = BigDecimal.ZERO;
-        Party customer = getCustomer();
-        Party patient = getPatient();
-        Product product = getProduct();
+        if (!disableDiscounts) {
+            Party customer = getCustomer();
+            Party patient = getPatient();
+            Product product = getProduct();
 
-        if (customer != null && product != null && !TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
-            BigDecimal fixedCost = getFixedCost();
-            BigDecimal unitCost = getUnitCost();
-            BigDecimal fixedPrice = getFixedPrice();
-            BigDecimal fixedPriceMaxDiscount = getFixedPriceMaxDiscount();
-            BigDecimal unitPriceMaxDiscount = getUnitPriceMaxDiscount();
-            Date startTime = getStartTime();
-            if (startTime == null) {
-                Act parent = (Act) getParent();
-                startTime = parent.getActivityStartTime();
+            if (customer != null && product != null && !TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
+                BigDecimal fixedCost = getFixedCost();
+                BigDecimal unitCost = getUnitCost();
+                BigDecimal fixedPrice = getFixedPrice();
+                BigDecimal fixedPriceMaxDiscount = getFixedPriceMaxDiscount();
+                BigDecimal unitPriceMaxDiscount = getUnitPriceMaxDiscount();
+                Date startTime = getStartTime();
+                if (startTime == null) {
+                    Act parent = (Act) getParent();
+                    startTime = parent.getActivityStartTime();
+                }
+                amount = discountRules.calculateDiscount(startTime, practice, customer, patient, product,
+                                                         fixedCost, unitCost, fixedPrice, unitPrice, quantity,
+                                                         fixedPriceMaxDiscount, unitPriceMaxDiscount);
             }
-            amount = discountRules.calculateDiscount(startTime, practice, customer, patient, product,
-                                                     fixedCost, unitCost, fixedPrice, unitPrice, quantity,
-                                                     fixedPriceMaxDiscount, unitPriceMaxDiscount);
         }
         return amount;
     }
@@ -414,6 +442,21 @@ public abstract class PriceActItemEditor extends ActItemEditor {
             } else {
                 result = getProductPrice(shortName, price, product);
             }
+        }
+        return result;
+    }
+
+    /**
+     * Determines if discounts are disabled for a practice location.
+     *
+     * @param location the practice location. May be {@code null}
+     * @return {@code true} if discounts are disabled
+     */
+    protected boolean getDisableDiscounts(Party location) {
+        boolean result = false;
+        if (location != null) {
+            IMObjectBean bean = new IMObjectBean(location);
+            result = bean.getBoolean("disableDiscounts");
         }
         return result;
     }

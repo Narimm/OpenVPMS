@@ -31,7 +31,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
@@ -126,15 +126,9 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         BigDecimal fixedCost = BigDecimal.valueOf(1);
         BigDecimal fixedPrice = BigDecimal.valueOf(2);
         Entity discount = DiscountTestHelper.createDiscount(BigDecimal.TEN, true, DiscountRules.PERCENTAGE);
-
-        EntityBean patientBean = new EntityBean(patient);
-        patientBean.addNodeRelationship("discounts", discount);
-        patientBean.save();
-
         Product product = createProduct(ProductArchetypes.MEDICATION, fixedCost, fixedPrice, unitCost, unitPrice);
-        EntityBean productBean = new EntityBean(product);
-        productBean.addNodeRelationship("discounts", discount);
-        productBean.save();
+        addDiscount(patient, discount);
+        addDiscount(product, discount);
 
         Act item = (Act) create(EstimateArchetypes.ESTIMATE_ITEM);
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
@@ -172,6 +166,54 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         BigDecimal highTotal2 = new BigDecimal("22.00");
         checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPrice, unitPrice, fixedPrice,
                   BigDecimal.ZERO, BigDecimal.ZERO, lowTotal2, highTotal2);
+    }
+
+    /**
+     * Tests a product with a 10% discount where discounts are disabled at the practice location.
+     * <p/>
+     * The calculated discount should be zero.
+     */
+    @Test
+    public void testDisableDiscounts() {
+        IMObjectBean bean = new IMObjectBean(layout.getContext().getLocation());
+        bean.setValue("disableDiscounts", true);
+
+        BigDecimal lowQuantity = BigDecimal.ONE;
+        BigDecimal highQuantity = BigDecimal.valueOf(2);
+        BigDecimal unitCost = BigDecimal.valueOf(5);
+        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal fixedCost = BigDecimal.valueOf(1);
+        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+        Entity discount = DiscountTestHelper.createDiscount(BigDecimal.TEN, true, DiscountRules.PERCENTAGE);
+        Product product = createProduct(ProductArchetypes.MEDICATION, fixedCost, fixedPrice, unitCost, unitPrice);
+        addDiscount(patient, discount);
+        addDiscount(product, discount);
+
+        Act item = (Act) create(EstimateArchetypes.ESTIMATE_ITEM);
+        Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
+
+        // create the editor
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
+        editor.getComponent();
+        assertFalse(editor.isValid());
+
+        editor.setPatient(patient);
+        editor.setProduct(product);
+        editor.setLowQuantity(lowQuantity);
+        editor.setHighQuantity(highQuantity);
+
+        // editor should now be valid
+        assertTrue(editor.isValid());
+
+        checkSave(estimate, editor);
+
+        item = get(item);
+        BigDecimal lowDiscount1 = BigDecimal.ZERO;
+        BigDecimal highDiscount1 = BigDecimal.ZERO;
+        BigDecimal lowTotal1 = new BigDecimal("12.00");
+        BigDecimal highTotal1 = new BigDecimal("22.00");
+        checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPrice, unitPrice, fixedPrice,
+                  lowDiscount1, highDiscount1, lowTotal1, highTotal1);
     }
 
     /**

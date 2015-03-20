@@ -122,6 +122,10 @@
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
+    <bean id="stockRules" class="org.openvpms.archetype.rules.stock.StockRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
     <bean id="userRules" class="org.openvpms.archetype.rules.user.UserRules">
         <constructor-arg ref="archetypeRuleService"/>
     </bean>

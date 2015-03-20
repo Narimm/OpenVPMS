@@ -5,8 +5,6 @@ import nextapp.echo2.webrender.Connection;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.openvpms.archetype.test.ArchetypeServiceTest;
-import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.echo.spring.SpringApplicationInstance;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,7 +24,7 @@ import static org.mockito.Mockito.when;
  *
  * @author Tim Anderson
  */
-public class SessionMonitorTestCase extends ArchetypeServiceTest {
+public class SessionMonitorTestCase {
 
     /**
      * The session.
@@ -59,7 +57,8 @@ public class SessionMonitorTestCase extends ArchetypeServiceTest {
         when(request.getSession()).thenReturn(session);
         final Connection connection = mock(Connection.class);
         when(connection.getRequest()).thenReturn(request);
-        final User admin = TestHelper.createUser("admin", false);
+        final User admin = new User();
+        admin.setName("admin");
         auth = new UsernamePasswordAuthenticationToken(admin, null);
 
         monitor = new SessionMonitor() {

@@ -244,6 +244,10 @@
         <constructor-arg ref="archetypeService"/>
     </bean>
 
+    <bean id="stockRules" class="org.openvpms.archetype.rules.stock.StockRules">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
     <!-- ================================================================== -->
     <!--                        APPLICATION                                 -->
     <!-- ================================================================== -->

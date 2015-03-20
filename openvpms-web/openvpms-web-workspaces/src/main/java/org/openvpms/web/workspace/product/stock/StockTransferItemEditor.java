@@ -32,6 +32,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -71,15 +72,15 @@ public class StockTransferItemEditor extends ActItemEditor {
 
 
     /**
-     * Creates a new <tt>StockTransferItemEditor</tt>.
+     * Constructs a {@link StockTransferItemEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent act
-     * @param context the layout context. May be <tt>null</tt>
+     * @param context the layout context
      */
     public StockTransferItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
-        rules = new StockRules();
+        rules = ServiceHelper.getBean(StockRules.class);
         fromQuantity = new SimpleProperty("fromQuantity", BigDecimal.class);
         fromQuantity.setDisplayName(Messages.get("product.stock.fromQuantity"));
         fromQuantity.setValue(BigDecimal.ZERO);
@@ -120,7 +121,7 @@ public class StockTransferItemEditor extends ActItemEditor {
     /**
      * Invoked when the product is changed.
      *
-     * @param product the product. May be <tt>null</tt>
+     * @param product the product. May be {@code null}
      */
     @Override
     protected void productModified(Product product) {
@@ -157,7 +158,7 @@ public class StockTransferItemEditor extends ActItemEditor {
     /**
      * Updates the transfer-from stock quantity.
      *
-     * @param product the product. May be <tt>null</tt>
+     * @param product the product. May be {@code null}
      */
     private void updateFromQuantity(Product product) {
         fromQuantity.setValue(getStock(product, transferFrom));
@@ -166,7 +167,7 @@ public class StockTransferItemEditor extends ActItemEditor {
     /**
      * Updates the transfer-to stock quantity.
      *
-     * @param product the product. May be <tt>null</tt>
+     * @param product the product. May be {@code null}
      */
     private void updateToQuantity(Product product) {
         toQuantity.setValue(getStock(product, transferTo));
