@@ -23,7 +23,7 @@
               derivedValue="'Service Ratio'"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
-              derivedValue="concat(/name, ' (', date:formatDate(/activeStartTime), ' - ', date:formatDate(/activeEndTime), ')')"/>
+              derivedValue="concat(/name, ': ', /details/ratio, ' (', date:formatDate(/activeStartTime), ' - ', date:formatDate(/activeEndTime), ')')"/>
         <node name="ratio" type="java.math.BigDecimal" path="/details/ratio" minCardinality="1" defaultValue="1.0"/>
         <node name="source" displayName="Batch" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference"

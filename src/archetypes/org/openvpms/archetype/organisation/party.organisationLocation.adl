@@ -62,6 +62,8 @@
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="1"
               filter="lookup.pricingGroup">
         </node>
+        <node name="disableDiscounts" path="/details/disableDiscounts" type="java.lang.Boolean"
+              minCardinality="0" maxCardinality="1" defaultValue="false()"/>
         <node name="practice" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.practiceLocation">
