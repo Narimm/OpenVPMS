@@ -626,6 +626,18 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     }
 
     /**
+     * Adds a discount to an entity.
+     *
+     * @param entity   the entity to add to
+     * @param discount the discount
+     */
+    protected void addDiscount(Entity entity, Entity discount) {
+        EntityBean patientBean = new EntityBean(entity);
+        patientBean.addNodeRelationship("discounts", discount);
+        patientBean.save();
+    }
+
+    /**
      * Helper to create and save a new tax type classification.
      *
      * @return a new tax classification

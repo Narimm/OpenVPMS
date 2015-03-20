@@ -22,6 +22,8 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
+import org.openvpms.archetype.rules.finance.discount.DiscountRules;
+import org.openvpms.archetype.rules.finance.discount.DiscountTestHelper;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
@@ -36,6 +38,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
@@ -409,6 +412,101 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
     }
 
     /**
+     * Tests a product with a 10% discount on an invoice item.
+     */
+    @Test
+    public void testInvoiceItemDiscounts() {
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(new BigDecimal(100), customer, null, null,
+                                                                           ActStatus.IN_PROGRESS);
+        FinancialAct invoice = acts.get(0);
+        FinancialAct item = acts.get(1);
+        checkDiscounts(invoice, item);
+    }
+
+    /**
+     * Tests a product with a 10% discount on a counter sale item.
+     */
+    @Test
+    public void testCounterSaleItemDiscounts() {
+        List<FinancialAct> acts = FinancialTestHelper.createChargesCounter(new BigDecimal(100), customer, null,
+                                                                           ActStatus.IN_PROGRESS);
+        FinancialAct counterSale = acts.get(0);
+        FinancialAct item = acts.get(1);
+        checkDiscounts(counterSale, item);
+    }
+
+
+    /**
+     * Tests a product with a 10% discount on a credit item.
+     */
+    @Test
+    public void testCreditItemDiscounts() {
+        List<FinancialAct> acts = FinancialTestHelper.createChargesCredit(new BigDecimal(100), customer, null, null,
+                                                                          ActStatus.IN_PROGRESS);
+        FinancialAct credit = acts.get(0);
+        FinancialAct item = acts.get(1);
+        checkDiscounts(credit, item);
+    }
+
+    /**
+     * Tests a product with a 10% discount where discounts are disabled at the practice location.
+     * <p/>
+     * The calculated discount should be zero.
+     */
+    @Test
+    public void testDisableDiscounts() {
+        IMObjectBean bean = new IMObjectBean(context.getLocation());
+        bean.setValue("disableDiscounts", true);
+
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(new BigDecimal(100), customer, null, null,
+                                                                           ActStatus.IN_PROGRESS);
+        FinancialAct charge = acts.get(0);
+        FinancialAct item = acts.get(1);
+
+        BigDecimal quantity = BigDecimal.valueOf(2);
+        BigDecimal unitCost = BigDecimal.valueOf(5);
+        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal fixedCost = BigDecimal.valueOf(1);
+        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+        User clinician = TestHelper.createClinician();
+        User author = TestHelper.createUser();
+        Entity discount = DiscountTestHelper.createDiscount(BigDecimal.TEN, true, DiscountRules.PERCENTAGE);
+        Product product = createProduct(ProductArchetypes.MEDICATION, fixedCost, fixedPrice, unitCost, unitPrice);
+        Party patient = TestHelper.createPatient();
+        addDiscount(customer, discount);
+        addDiscount(product, discount);
+
+        context.setUser(author);
+        context.setClinician(clinician);
+        LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
+
+        // create the editor
+        TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, layout);
+        editor.getComponent();
+        assertFalse(editor.isValid());
+
+        if (!TypeHelper.isA(item, CustomerAccountArchetypes.COUNTER_ITEM)) {
+            // counter sale items have no patient
+            editor.setPatient(patient);
+        }
+        editor.setProduct(product);
+        editor.setQuantity(quantity);
+
+        // editor should now be valid
+        assertTrue(editor.isValid());
+
+        checkSave(charge, editor);
+
+        item = get(item);
+        // should be no discount
+        BigDecimal discount1 = BigDecimal.ZERO;
+        BigDecimal tax1 = new BigDecimal("2.00");
+        BigDecimal total1 = new BigDecimal("22.00");
+        checkItem(item, patient, product, author, clinician, quantity, unitCost, unitPrice, fixedCost,
+                  fixedPrice, discount1, tax1, total1);
+    }
+
+    /**
      * Checks populating an invoice item with a product.
      *
      * @param productShortName the product archetype short name
@@ -689,6 +787,66 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
         // verify no errors were logged
         assertTrue(errors.isEmpty());
+    }
+
+    /**
+     * Tests charging a product with a 10% discount.
+     *
+     * @param charge the charge
+     * @param item   the charge item
+     */
+    private void checkDiscounts(FinancialAct charge, FinancialAct item) {
+        BigDecimal quantity = BigDecimal.valueOf(2);
+        BigDecimal unitCost = BigDecimal.valueOf(5);
+        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal fixedCost = BigDecimal.valueOf(1);
+        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+        User clinician = TestHelper.createClinician();
+        User author = TestHelper.createUser();
+        Entity discount = DiscountTestHelper.createDiscount(BigDecimal.TEN, true, DiscountRules.PERCENTAGE);
+        Product product = createProduct(ProductArchetypes.MEDICATION, fixedCost, fixedPrice, unitCost, unitPrice);
+        Party patient = TestHelper.createPatient();
+        addDiscount(customer, discount);
+        addDiscount(product, discount);
+
+        context.setUser(author);
+        context.setClinician(clinician);
+        LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
+
+        // create the editor
+        TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, layout);
+        editor.getComponent();
+        assertFalse(editor.isValid());
+
+        if (!TypeHelper.isA(item, CustomerAccountArchetypes.COUNTER_ITEM)) {
+            // counter sale items have no patient
+            editor.setPatient(patient);
+        }
+        editor.setProduct(product);
+        editor.setQuantity(quantity);
+
+        // editor should now be valid
+        assertTrue(editor.isValid());
+
+        checkSave(charge, editor);
+
+        item = get(item);
+        BigDecimal discount1 = new BigDecimal("2.20");
+        BigDecimal tax1 = new BigDecimal("1.80");
+        BigDecimal total1 = new BigDecimal("19.80");
+        checkItem(item, patient, product, author, clinician, quantity, unitCost, unitPrice, fixedCost,
+                  fixedPrice, discount1, tax1, total1);
+
+        // now remove the discounts
+        editor.setDiscount(BigDecimal.ZERO);
+        checkSave(charge, editor);
+
+        item = get(item);
+        BigDecimal discount2 = BigDecimal.ZERO;
+        BigDecimal tax2 = new BigDecimal("2.00");
+        BigDecimal total2 = new BigDecimal("22.00");
+        checkItem(item, patient, product, author, clinician, quantity, unitCost, unitPrice, fixedCost,
+                  fixedPrice, discount2, tax2, total2);
     }
 
     /**
