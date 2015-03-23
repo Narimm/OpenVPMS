@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 import org.openvpms.component.business.domain.im.party.Contact;
 
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -37,7 +38,6 @@ import static org.junit.Assert.assertNull;
  * Tests the {@link ArchetypeDescriptorDOImpl} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
  */
 public class ArchetypeDescriptorDOTestCase
         extends HibernateInfoModelTestCase {
@@ -346,7 +346,7 @@ public class ArchetypeDescriptorDOTestCase
      */
     private ArchetypeDescriptorDO createArchetypeDescriptor(String shortName) {
         ArchetypeDescriptorDO desc = new ArchetypeDescriptorDOImpl();
-        desc.setName(shortName + System.currentTimeMillis() + ".1.0");
+        desc.setName(shortName + UUID.randomUUID().toString() + ".1.0");
         desc.setLatest(true);
         desc.setClassName(this.getClass().getName());
 
