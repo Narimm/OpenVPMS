@@ -63,7 +63,7 @@ public class CustomerPatientSummary {
      * @param help    the help context
      */
     public CustomerPatientSummary(Context context, HelpContext help) {
-        rules = new PatientRules(ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService());
+        rules = ServiceHelper.getBean(PatientRules.class);
         this.context = context;
         this.help = help;
     }

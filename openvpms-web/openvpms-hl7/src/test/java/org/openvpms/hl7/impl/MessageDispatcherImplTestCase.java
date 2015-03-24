@@ -103,7 +103,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
             }
         };
 
-        PracticeRules rules = new PracticeRules(getArchetypeService()) {
+        PracticeRules rules = new PracticeRules(getArchetypeService(), null) {
             @Override
             public User getServiceUser(Party practice) {
                 return user;

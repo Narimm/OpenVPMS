@@ -18,6 +18,8 @@ package org.openvpms.web.workspace.customer;
 
 import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
+import org.openvpms.archetype.rules.math.Currency;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -65,6 +67,11 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     private final Party practice;
 
     /**
+     * The practice currency, used for rounding.
+     */
+    private final Currency currency;
+
+    /**
      * If {@code true}, disable discounts.
      */
     private boolean disableDiscounts;
@@ -104,6 +111,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
         taxRules = new CustomerTaxRules(practice, ServiceHelper.getArchetypeService(),
                                         ServiceHelper.getLookupService());
         discountRules = ServiceHelper.getBean(DiscountRules.class);
+        currency = ServiceHelper.getBean(PracticeRules.class).getCurrency(practice);
 
         Product product = getProduct();
         Party location = getLocation();
@@ -111,7 +119,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
 
         Property fixedPrice = getProperty("fixedPrice");
 
-        fixedEditor = new FixedPriceEditor(fixedPrice, getPricingGroup());
+        fixedEditor = new FixedPriceEditor(fixedPrice, getPricingGroup(), currency);
         fixedEditor.setProduct(product, serviceRatio);
     }
 
@@ -400,7 +408,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * @return the price, minus any tax exclusions
      */
     protected BigDecimal getPrice(Product product, ProductPrice price) {
-        BigDecimal amount = ProductHelper.getPrice(price, getServiceRatio());
+        BigDecimal amount = ProductHelper.getPrice(price, getServiceRatio(), currency);
         return taxRules.getTaxExAmount(amount, product, getCustomer());
     }
 

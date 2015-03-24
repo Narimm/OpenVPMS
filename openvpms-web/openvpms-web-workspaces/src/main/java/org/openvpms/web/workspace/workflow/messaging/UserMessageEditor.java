@@ -59,7 +59,12 @@ public class UserMessageEditor extends ActEditor {
     private final ToAddressEditor toAddressEditor;
 
     /**
-     * Constructs a {@code UserMessageActEditor}.
+     * The patient rules.
+     */
+    private final PatientRules rules;
+
+    /**
+     * Constructs an {@link UserMessageEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be {@code null}
@@ -67,6 +72,7 @@ public class UserMessageEditor extends ActEditor {
      */
     public UserMessageEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
+        rules = ServiceHelper.getBean(PatientRules.class);
 
         initParticipant("from", context.getContext().getUser());
         initParticipant("customer", context.getContext().getCustomer());
@@ -226,8 +232,6 @@ public class UserMessageEditor extends ActEditor {
         try {
             Party customer = getCustomerEditor().getEntity();
             Party patient = getPatientEditor().getEntity();
-            PatientRules rules = new PatientRules(ServiceHelper.getArchetypeService(),
-                                                  ServiceHelper.getLookupService());
             if (customer != null && patient != null) {
                 if (!rules.isOwner(customer, patient)) {
                     getPatientEditor().setEntity(null);

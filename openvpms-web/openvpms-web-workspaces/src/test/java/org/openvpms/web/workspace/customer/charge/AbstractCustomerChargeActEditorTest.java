@@ -22,7 +22,6 @@ import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
@@ -438,9 +437,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         Act reminder = getReminder(item, reminderType);
         EntityBean productBean = new EntityBean(product);
 
-        ReminderRules rules = new ReminderRules(getArchetypeService(),
-                                                new PatientRules(getArchetypeService(),
-                                                                 ServiceHelper.getLookupService()));
+        ReminderRules rules = ServiceHelper.getBean(ReminderRules.class);
         List<EntityRelationship> rels = productBean.getNodeRelationships("reminders");
         assertEquals(1, rels.size());
         ActBean bean = new ActBean(reminder);

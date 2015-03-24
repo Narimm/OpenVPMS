@@ -21,6 +21,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
+import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
@@ -108,6 +109,11 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     private final PricingGroup pricingGroup;
 
     /**
+     * The currency, used to round prices.
+     */
+    private final Currency currency;
+
+    /**
      * The service ratio.
      */
     private BigDecimal serviceRatio = ONE;
@@ -117,10 +123,12 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
      *
      * @param property     the fixed price property
      * @param pricingGroup the pricing group. May be {@code null}
+     * @param currency     the practice currency, used to round prices
      */
-    public FixedPriceEditor(Property property, Lookup pricingGroup) {
+    public FixedPriceEditor(Property property, Lookup pricingGroup, Currency currency) {
         super(property);
         this.pricingGroup = new PricingGroup(pricingGroup);
+        this.currency = currency;
 
         date = new Date();
 
@@ -272,7 +280,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
      * @return the
      */
     private BigDecimal getPrice(ProductPrice price) {
-        return ProductHelper.getPrice(price, serviceRatio);
+        return ProductHelper.getPrice(price, serviceRatio, currency);
     }
 
     /**

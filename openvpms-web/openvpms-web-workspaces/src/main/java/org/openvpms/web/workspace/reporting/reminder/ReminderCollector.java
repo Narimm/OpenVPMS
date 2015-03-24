@@ -51,8 +51,7 @@ class ReminderCollector extends AbstractReminderProcessorListener {
      * Constructs a {@code ReminderCollector}.
      */
     public ReminderCollector() {
-        super(ServiceHelper.getArchetypeService(), new PatientRules(ServiceHelper.getArchetypeService(),
-                                                                    ServiceHelper.getLookupService()));
+        super(ServiceHelper.getArchetypeService(), ServiceHelper.getBean(PatientRules.class));
     }
 
     /**

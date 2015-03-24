@@ -48,7 +48,12 @@ import org.openvpms.web.system.ServiceHelper;
 public class AbstractScheduleActEditor extends AbstractActEditor {
 
     /**
-     * Constructs a new <tt>AbstractScheduleActEditor</tt>.
+     * The patient rules.
+     */
+    private final PatientRules rules;
+
+    /**
+     * Constructs a {@link AbstractScheduleActEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be <tt>null</tt>
@@ -56,6 +61,7 @@ public class AbstractScheduleActEditor extends AbstractActEditor {
      */
     public AbstractScheduleActEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
+        rules = ServiceHelper.getBean(PatientRules.class);
     }
 
     /**
@@ -140,8 +146,6 @@ public class AbstractScheduleActEditor extends AbstractActEditor {
         try {
             Party customer = getCustomerEditor().getEntity();
             Party patient = getPatientEditor().getEntity();
-            PatientRules rules = new PatientRules(ServiceHelper.getArchetypeService(),
-                                                  ServiceHelper.getLookupService());
             if (customer != null && patient != null) {
                 if (!rules.isOwner(customer, patient)) {
                     getPatientEditor().setEntity(null);

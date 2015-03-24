@@ -74,6 +74,11 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
     private final Context context;
 
     /**
+     * The patient rules.
+     */
+    private final PatientRules rules;
+
+    /**
      * The query component.
      */
     private Component component;
@@ -106,6 +111,7 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
         super(SHORT_NAMES, CustomerPatient.class);
         setAuto(true);
         this.context = context;
+        rules = ServiceHelper.getBean(PatientRules.class);
         history = getHistory(customers, patients);
         filter = TextComponentFactory.create();
         filter.addActionListener(new ActionListener() {
@@ -195,7 +201,6 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
      */
     private List<CustomerPatient> getHistory(SelectionHistory customers, SelectionHistory patients) {
         List<CustomerPatient> result = new ArrayList<CustomerPatient>();
-        PatientRules rules = new PatientRules(ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService());
         Set<SelectionHistory.Selection> allCustomers
                 = new HashSet<SelectionHistory.Selection>(customers.getSelections());
         Set<SelectionHistory.Selection> allPatients

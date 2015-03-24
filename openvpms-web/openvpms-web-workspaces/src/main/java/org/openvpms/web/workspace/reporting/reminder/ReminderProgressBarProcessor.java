@@ -16,7 +16,6 @@
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -38,7 +37,7 @@ import java.util.Map;
  * @author Tim Anderson
  */
 abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<ReminderEvent>>
-    implements ReminderBatchProcessor {
+        implements ReminderBatchProcessor {
 
     /**
      * The reminder rules.
@@ -62,7 +61,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
 
 
     /**
-     * Creates a new <tt>ReminderProgressBarProcessor</tt>.
+     * Constructs a {@link ReminderProgressBarProcessor}.
      *
      * @param items      the reminder items
      * @param statistics the statistics
@@ -71,17 +70,15 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
     public ReminderProgressBarProcessor(List<List<ReminderEvent>> items, Statistics statistics, String title) {
         super(items, count(items), title);
         this.statistics = statistics;
-        rules = new ReminderRules(ServiceHelper.getArchetypeService(),
-                                  new PatientRules(ServiceHelper.getArchetypeService(),
-                                                   ServiceHelper.getLookupService()));
+        rules = ServiceHelper.getBean(ReminderRules.class);
     }
 
     /**
      * Determines if reminders should be updated on completion.
      * <p/>
-     * If set, the <tt>reminderCount</tt> is incremented the <tt>lastSent</tt> timestamp set on completed reminders.
+     * If set, the {@code reminderCount} is incremented the {@code lastSent} timestamp set on completed reminders.
      *
-     * @param update if <tt>true</tt> update reminders on completion
+     * @param update if {@code true} update reminders on completion
      */
     public void setUpdateOnCompletion(boolean update) {
         this.update = update;
@@ -143,7 +140,7 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
      * <p/>
      * This:
      * <ul>
-     * <li>updates the error node of each reminder if {@link #setUpdateOnCompletion(boolean)} is <tt>true</tt></li>
+     * <li>updates the error node of each reminder if {@link #setUpdateOnCompletion(boolean)} is {@code true}</li>
      * <li>updates statistics</li>
      * <li>notifies any listeners of the error</li>
      * <li>delegates to the parent {@link #processCompleted(Object)} to continue processing</li>

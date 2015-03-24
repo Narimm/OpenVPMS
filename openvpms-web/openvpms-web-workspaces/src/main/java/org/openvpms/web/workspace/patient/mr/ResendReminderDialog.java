@@ -150,7 +150,7 @@ class ResendReminderDialog extends PopupDialog {
         ResendReminderDialog result = null;
         IMObjectBean bean = new IMObjectBean(reminder);
         int reminderCount = bean.getInt("reminderCount");
-        PatientRules rules = new PatientRules(ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService());
+        PatientRules rules = ServiceHelper.getBean(PatientRules.class);
         boolean disableSMS = !SMSHelper.isSMSEnabled(context.getPractice());
 
         ReminderProcessor processor = new ReminderProcessor(reminder.getActivityStartTime(),
