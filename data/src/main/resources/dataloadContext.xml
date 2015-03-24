@@ -28,6 +28,11 @@
         </constructor-arg>
     </bean>
 
+    <bean id="currencies" class="org.openvpms.archetype.rules.math.Currencies">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+    </bean>
+
     <bean id="customerAccountRules" class="org.openvpms.archetype.rules.finance.account.CustomerAccountRules">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="archetypeRuleService"/>
@@ -37,6 +42,7 @@
     <bean id="functionsFactory" class="org.openvpms.archetype.function.factory.DefaultArchetypeFunctionsFactory">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="currencies"/>
         <constructor-arg>
             <null/>
         </constructor-arg>
