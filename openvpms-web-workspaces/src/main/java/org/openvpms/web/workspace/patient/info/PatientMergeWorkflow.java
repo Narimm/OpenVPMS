@@ -128,8 +128,7 @@ class PatientMergeWorkflow extends MergeWorkflow<Party> {
         TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
         template.execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus status) {
-                PatientRules rules = new PatientRules(ServiceHelper.getArchetypeService(),
-                                                      ServiceHelper.getLookupService());
+                PatientRules rules = ServiceHelper.getBean(PatientRules.class);
                 rules.mergePatients(from, getObject());
                 return true;
             }

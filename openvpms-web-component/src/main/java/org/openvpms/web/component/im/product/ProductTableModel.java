@@ -21,7 +21,9 @@ import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -71,6 +73,11 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
      */
     private Lookup pricingGroup;
 
+    /**
+     * The currency, used for rounding.
+     */
+    private final Currency currency;
+
 
     /**
      * Constructs a {@link ProductTableModel}.
@@ -90,6 +97,8 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
     public ProductTableModel(ProductQuery query, LayoutContext context) {
         super(null);
         rules = ServiceHelper.getBean(ProductPriceRules.class);
+        PracticeRules practiceRules = ServiceHelper.getBean(PracticeRules.class);
+        currency = practiceRules.getCurrency(context.getContext().getPractice());
         boolean active = (query == null) || query.getActive() == BaseArchetypeConstraint.State.BOTH;
         setTableColumnModel(createTableColumnModel(active));
         if (query != null) {
@@ -185,7 +194,7 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
             BigDecimal value = price.getPrice();
             if (location != null) {
                 BigDecimal ratio = rules.getServiceRatio(product, location);
-                value = ProductHelper.getPrice(price, ratio);
+                value = ProductHelper.getPrice(price, ratio, currency);
             }
             result = TableHelper.rightAlign(NumberFormatter.formatCurrency(value));
         }

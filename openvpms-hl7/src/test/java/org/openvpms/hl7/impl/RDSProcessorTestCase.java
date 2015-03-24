@@ -73,7 +73,7 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
     @Override
     public void setUp() {
         super.setUp();
-        rules = new PatientRules(getArchetypeService(), getLookupService());
+        rules = new PatientRules(null, getArchetypeService(), getLookupService());
         userRules = new UserRules(getArchetypeService());
         product = createProduct();
         try {

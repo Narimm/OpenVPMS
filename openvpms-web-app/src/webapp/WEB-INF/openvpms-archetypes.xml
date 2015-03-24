@@ -68,6 +68,7 @@
     </bean>
 
     <bean id="practiceRules" class="org.openvpms.archetype.rules.practice.PracticeRules">
+        <constructor-arg ref="currencies"/>
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
@@ -135,6 +136,7 @@
     </bean>
 
     <bean id="patientRules" class="org.openvpms.archetype.rules.patient.PatientRules">
+        <constructor-arg ref="practiceRules"/>
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="lookupService"/>
         <constructor-arg ref="patientAgeFormatter"/>
