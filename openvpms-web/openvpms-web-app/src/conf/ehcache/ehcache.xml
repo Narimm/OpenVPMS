@@ -14,7 +14,7 @@
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
-<ehcache>
+<ehcache updateCheck="false">
 
     <!-- Sets the path to the directory where cache .data files are created.
 
