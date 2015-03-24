@@ -23,6 +23,8 @@ import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
+import java.util.Random;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -31,7 +33,6 @@ import static org.junit.Assert.fail;
  * Tests the {@link UserDOImpl} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2005-12-06 12:05:11 +1100 (Tue, 06 Dec 2005) $
  */
 public class UserDOTestCase extends HibernateInfoModelTestCase {
 
@@ -247,10 +248,10 @@ public class UserDOTestCase extends HibernateInfoModelTestCase {
      * @return User
      */
     private UserDO createUser(String name, String password) {
-        UserDO user = new UserDOImpl(
-                new ArchetypeId("openvpms-security-security.user.1.0"));
-        user.setUsername(name + System.currentTimeMillis()); // ensure unique
+        UserDO user = new UserDOImpl(new ArchetypeId("openvpms-security-security.user.1.0"));
         user.setName(name);
+        int seed = new Random().nextInt();
+        user.setUsername(name + seed); // generate a unique name (hopefully...)
         user.setPassword(password);
         return user;
     }
