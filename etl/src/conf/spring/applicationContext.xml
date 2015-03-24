@@ -129,9 +129,14 @@
         </constructor-arg>
     </bean>
 
+    <bean id="currencies" class="org.openvpms.archetype.rules.math.Currencies">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+    </bean>
+
     <bean id="practiceRules" class="org.openvpms.archetype.rules.practice.PracticeRules">
         <constructor-arg ref="currencies"/>
-        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="archetypeService"/>
     </bean>
 
     <bean id="patientRules" class="org.openvpms.archetype.rules.patient.PatientRules">
