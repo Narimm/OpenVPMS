@@ -3,8 +3,9 @@ package org.openvpms.component.business.service.archetype.helper;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceTestCase;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.springframework.test.context.ContextConfiguration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -14,7 +15,8 @@ import static org.junit.Assert.assertNull;
  *
  * @author Tim Anderson
  */
-public class ArchetypeQueryHelperTestCase extends ArchetypeServiceTestCase {
+@ContextConfiguration("../archetype-service-appcontext.xml")
+public class ArchetypeQueryHelperTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Tests the {@link ArchetypeQueryHelper#getName(IMObjectReference, IArchetypeService)}.

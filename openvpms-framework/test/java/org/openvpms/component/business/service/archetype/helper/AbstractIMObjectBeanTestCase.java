@@ -20,8 +20,9 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceTestCase;
+import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.lookup.LookupUtil;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.List;
 
@@ -33,9 +34,9 @@ import static org.junit.Assert.assertTrue;
  * Abstract base class for {@link IMObjectBean} tests.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
  */
-public class AbstractIMObjectBeanTestCase extends ArchetypeServiceTestCase {
+@ContextConfiguration("../archetype-service-appcontext.xml")
+public abstract class AbstractIMObjectBeanTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Patient owner entity relationship.
