@@ -82,6 +82,7 @@ public class RefreshablePatientAgeFormatterTestCase extends PatientAgeFormatterT
     @Override
     protected PatientAgeFormatter createFormatter() {
         IArchetypeService service = getArchetypeService();
-        return new RefreshablePatientAgeFormatter(getLookupService(), new PracticeRules(service), service, factory);
+        PracticeRules rules = new PracticeRules(service, null);
+        return new RefreshablePatientAgeFormatter(getLookupService(), rules, service, factory);
     }
 }

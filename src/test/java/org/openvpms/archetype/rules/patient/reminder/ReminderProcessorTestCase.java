@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.component.processor.ProcessorListener;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -29,6 +30,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.util.ArrayList;
@@ -77,8 +79,9 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        rules = new PatientRules(getArchetypeService(), getLookupService());
-        reminderRules = new ReminderRules(getArchetypeService(), rules);
+        IArchetypeService service = getArchetypeService();
+        rules = new PatientRules(new PracticeRules(service, null), service, getLookupService());
+        reminderRules = new ReminderRules(service, rules);
         customer = TestHelper.createCustomer(false);
         customer.getContacts().clear();
         save(customer);

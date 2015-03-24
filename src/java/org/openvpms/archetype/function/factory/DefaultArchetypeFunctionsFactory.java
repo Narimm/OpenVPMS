@@ -16,6 +16,7 @@
 
 package org.openvpms.archetype.function.factory;
 
+import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.patient.PatientAgeFormatter;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
@@ -38,21 +39,28 @@ public class DefaultArchetypeFunctionsFactory extends ArchetypeFunctionsFactory 
     private final ILookupService lookups;
 
     /**
+     * The currencies.
+     */
+    private final Currencies currencies;
+
+    /**
      * The patient age formatter.
      */
     private final PatientAgeFormatter formatter;
 
     /**
-     * Constructs an {@link DefaultArchetypeFunctionsFactory}.
+     * Constructs a {@link DefaultArchetypeFunctionsFactory}.
      *
-     * @param service   the archetype service
-     * @param lookups   the lookup service
-     * @param formatter the patient age formatter. May be {@code null}
+     * @param service    the archetype service
+     * @param lookups    the lookup service
+     * @param currencies the currencies
+     * @param formatter  the patient age formatter. May be {@code null}
      */
-    public DefaultArchetypeFunctionsFactory(IArchetypeService service, ILookupService lookups,
+    public DefaultArchetypeFunctionsFactory(IArchetypeService service, ILookupService lookups, Currencies currencies,
                                             PatientAgeFormatter formatter) {
         this.service = service;
         this.lookups = lookups;
+        this.currencies = currencies;
         this.formatter = formatter;
     }
 
@@ -74,6 +82,16 @@ public class DefaultArchetypeFunctionsFactory extends ArchetypeFunctionsFactory 
     @Override
     protected ILookupService getLookupService() {
         return lookups;
+    }
+
+    /**
+     * Returns the currencies.
+     *
+     * @return the currencies
+     */
+    @Override
+    protected Currencies getCurrencies() {
+        return currencies;
     }
 
     /**

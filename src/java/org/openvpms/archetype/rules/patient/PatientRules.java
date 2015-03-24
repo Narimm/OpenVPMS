@@ -64,6 +64,11 @@ import static org.openvpms.component.system.common.query.ParticipationConstraint
 public class PatientRules {
 
     /**
+     * The practice rules.
+     */
+    private final PracticeRules rules;
+
+    /**
      * The archetype service.
      */
     private final IArchetypeService service;
@@ -90,23 +95,27 @@ public class PatientRules {
 
 
     /**
-     * Constructs a {@code PatientRules}.
+     * Constructs a {@link PatientRules}.
      *
+     * @param rules   the practice rules
      * @param service the archetype service
      * @param lookups the lookup service
      */
-    public PatientRules(IArchetypeService service, ILookupService lookups) {
-        this(service, lookups, null);
+    public PatientRules(PracticeRules rules, IArchetypeService service, ILookupService lookups) {
+        this(rules, service, lookups, null);
     }
 
     /**
-     * Constructs a {@code PatientRules}.
+     * Constructs a {@link PatientRules}.
      *
+     * @param rules     the practice rules
      * @param service   the archetype service
      * @param lookups   the lookup service
      * @param formatter the patient age formatter. May be {@code null}
      */
-    public PatientRules(IArchetypeService service, ILookupService lookups, PatientAgeFormatter formatter) {
+    public PatientRules(PracticeRules rules, IArchetypeService service, ILookupService lookups,
+                        PatientAgeFormatter formatter) {
+        this.rules = rules;
         this.service = service;
         this.lookups = lookups;
         this.formatter = formatter;
@@ -404,7 +413,7 @@ public class PatientRules {
             if (formatter == null) {
                 // TODO - this is a hack, but requires refactoring of rules into services to make better
                 // use of dependency injection
-                formatter = new PatientAgeFormatter(lookups, new PracticeRules(service), factory);
+                formatter = new PatientAgeFormatter(lookups, rules, factory);
             }
         }
         if (deceasedDate == null) {

@@ -524,7 +524,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         IArchetypeService service = getArchetypeService();
         ILookupService lookups = getLookupService();
         ArchetypeServiceFunctions functions = new ArchetypeServiceFunctions(service, lookups);
-        PartyFunctions partyFunctions = new PartyFunctions(service, lookups, new PatientRules(service, lookups));
+        PartyFunctions partyFunctions = new PartyFunctions(service, lookups, new PatientRules(null, service, lookups));
         FunctionLibrary library = new FunctionLibrary();
         library.addFunctions(new ObjectFunctions(functions, "openvpms"));
         library.addFunctions(new ObjectFunctions(partyFunctions, "party"));

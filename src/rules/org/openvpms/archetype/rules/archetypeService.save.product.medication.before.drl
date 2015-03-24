@@ -34,8 +34,13 @@
             <java:class>org.openvpms.component.business.service.lookup.ILookupService</java:class>
         </parameter>
         <java:consequence>
+            import org.openvpms.archetype.rules.product.ProductPriceRules;
             import org.openvpms.archetype.rules.product.ProductPriceUpdater;
-            ProductPriceUpdater updater = new ProductPriceUpdater(currencies, service, lookups);
+            import org.openvpms.archetype.rules.practice.PracticeRules;
+
+            ProductPriceRules priceRules = new ProductPriceRules(service, lookups);
+            PracticeRules practiceRules = new PracticeRules(service, currencies);
+            ProductPriceUpdater updater = new ProductPriceUpdater(priceRules, practiceRules, service);
             updater.update(product);
         </java:consequence>
     </rule>
