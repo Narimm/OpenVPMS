@@ -123,8 +123,8 @@ public abstract class AbstractOpenOfficeLoadTestCase extends AbstractOpenOfficeD
         public void test() {
             Document doc = getDocument("src/test/reports/act.customerEstimation.odt", DocFormats.ODT_TYPE);
 
-            ArchetypeFunctionsFactory factory = new DefaultArchetypeFunctionsFactory(practiceRules, getArchetypeService(),
-                                                                                     getLookupService(), null);
+            ArchetypeFunctionsFactory factory = new DefaultArchetypeFunctionsFactory(getArchetypeService(),
+                                                                                     getLookupService(), null, null);
             IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(doc, getArchetypeService(), getLookupService(),
                                                                          getHandlers(), factory.create());
 

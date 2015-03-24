@@ -63,7 +63,7 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
 
         IArchetypeService service = getArchetypeService();
         ILookupService lookups = getLookupService();
-        FunctionsFactory factory = new DefaultArchetypeFunctionsFactory(practiceRules, service, lookups, null);
+        FunctionsFactory factory = new DefaultArchetypeFunctionsFactory(service, lookups, null, null);
         IMReport<IMObject> report = new MsWordIMReport<IMObject>(doc, service, lookups, getHandlers(),
                                                                  factory.create());
 
@@ -97,7 +97,7 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
 
         IArchetypeService service = getArchetypeService();
         ILookupService lookups = getLookupService();
-        FunctionsFactory factory = new DefaultArchetypeFunctionsFactory(practiceRules, service, lookups, null);
+        FunctionsFactory factory = new DefaultArchetypeFunctionsFactory(service, lookups, null, null);
         IMReport<IMObject> report = new MsWordIMReport<IMObject>(doc, service, lookups, getHandlers(),
                                                                  factory.create());
 
