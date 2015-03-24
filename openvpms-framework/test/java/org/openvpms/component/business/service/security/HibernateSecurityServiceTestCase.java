@@ -25,6 +25,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.util.Random;
+
 
 /**
  * Exercises the security test cases using a hibernate user details service.
@@ -83,7 +85,9 @@ public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
     private User createUser(String name, String password) {
         User user = new User();
         user.setArchetypeIdAsString("security.user.1.0");
-        user.setUsername(name + System.nanoTime()); // ensure unique
+        int seed = new Random().nextInt();
+        name = name + seed;   // generate a unique name (hopefully...)
+        user.setUsername(name);
         user.setName(name);
         user.setPassword(password);
 
