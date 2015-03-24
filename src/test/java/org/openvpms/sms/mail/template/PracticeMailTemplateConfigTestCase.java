@@ -60,7 +60,7 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
             bean.removeRelationship(relationship);
         }
         save(practice);
-        config = new PracticeMailTemplateConfig(getArchetypeService(), new PracticeRules(getArchetypeService()));
+        config = new PracticeMailTemplateConfig(getArchetypeService(), new PracticeRules(getArchetypeService(), null));
     }
 
     /**
@@ -83,7 +83,7 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
     @Test
     public void testNoPractice() {
         remove(practice);
-        config = new PracticeMailTemplateConfig(getArchetypeService(), new PracticeRules(getArchetypeService()));
+        config = new PracticeMailTemplateConfig(getArchetypeService(), new PracticeRules(getArchetypeService(), null));
         try {
             config.getTemplate();
             fail("Expected getTemplate() to fail");
