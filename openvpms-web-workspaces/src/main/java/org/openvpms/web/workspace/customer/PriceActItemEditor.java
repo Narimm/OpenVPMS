@@ -245,13 +245,23 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * @return the maximum discount
      */
     protected BigDecimal getFixedPriceMaxDiscount() {
+        return getFixedPriceMaxDiscount(BigDecimal.ZERO);
+    }
+
+    /**
+     * Returns the maximum discount allowed on the fixed price.
+     *
+     * @param defaultValue the default value, if there is no fixed price
+     * @return the maximum discount, or {@code defaultValue} if there is no fixed price
+     */
+    protected BigDecimal getFixedPriceMaxDiscount(BigDecimal defaultValue) {
         Product product = getProduct();
         BigDecimal result;
         if (product != null) {
             ProductPrice price = getFixedProductPrice(product);
             result = getMaxDiscount(price);
         } else {
-            result = BigDecimal.ZERO;
+            result = defaultValue;
         }
         return result;
     }
@@ -262,13 +272,23 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * @return the maximum discount
      */
     protected BigDecimal getUnitPriceMaxDiscount() {
+        return getUnitPriceMaxDiscount(BigDecimal.ZERO);
+    }
+
+    /**
+     * Returns the maximum discount allowed on the unit price.
+     *
+     * @param defaultValue the default value, if there is no unit price
+     * @return the maximum discount, or {@code defaultValue} if there is no unit price
+     */
+    protected BigDecimal getUnitPriceMaxDiscount(BigDecimal defaultValue) {
         Product product = getProduct();
         BigDecimal result;
         if (product != null) {
             ProductPrice price = getUnitProductPrice(product);
             result = getMaxDiscount(price);
         } else {
-            result = BigDecimal.ZERO;
+            result = defaultValue;
         }
         return result;
     }
@@ -277,19 +297,23 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * Calculates the discount amount, updating the 'discount' node.
      * <p/>
      * If discounts are disabled, any existing discount will be set to {@code 0}.
+     *
+     * @return {@code true} if the discount was updated
      */
-    protected void updateDiscount() {
+    protected boolean updateDiscount() {
+        boolean result = false;
         try {
             BigDecimal amount = calculateDiscount();
-            // If discount amount calculates to zero don't update any
-            // existing value as may have been manually modified.
+            // If discount amount calculates to zero don't update any existing value as may have been manually modified
+            // unless discounts are disabled (in which case amount should be zero).
             if (disableDiscounts || amount.compareTo(BigDecimal.ZERO) != 0) {
                 Property discount = getProperty("discount");
-                discount.setValue(amount);
+                result = discount.setValue(amount);
             }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
+        return result;
     }
 
     /**
