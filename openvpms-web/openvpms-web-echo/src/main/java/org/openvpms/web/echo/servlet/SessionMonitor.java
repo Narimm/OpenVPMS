@@ -450,7 +450,7 @@ public class SessionMonitor implements DisposableBean {
                 log.debug("Monitor user=" + user + ", address=" + address + ", inactive=" + inactive + "ms, "
                           + "logout=" + logout + "ms, lock=" + lock + "ms");
             }
-            if (logout != 0 && inactive > logout) {
+            if (logout != 0 && inactive >= logout) {
                 // session is inactive, so kill it
                 invalidate();
             } else {
