@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemDocumentLinker;
 import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.finance.tax.TaxRuleException;
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.stock.StockRules;
@@ -92,6 +93,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static org.openvpms.archetype.rules.math.MathRules.ONE_HUNDRED;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.MEDICATION;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.MERCHANDISE;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.SERVICE;
@@ -391,33 +393,44 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Updates the discount and checks that it isn't less than the total cost.
      * <p/>
      * If so, gives the user the opportunity to remove the discount.
+     *
+     * @return {@code true} if the discount was updated
      */
     @Override
-    protected void updateDiscount() {
-        super.updateDiscount();
+    protected boolean updateDiscount() {
+        boolean updated = super.updateDiscount();
         BigDecimal discount = getProperty("discount").getBigDecimal(BigDecimal.ZERO);
-        if (discount.compareTo(BigDecimal.ZERO) != 0) {
-            BigDecimal quantity = getQuantity();
-            BigDecimal fixedCost = getFixedCost();
-            BigDecimal fixedPrice = getFixedPrice();
-            BigDecimal unitCost = getUnitCost();
-            BigDecimal unitPrice = getUnitPrice();
-            BigDecimal costPrice = fixedCost.add(unitCost.multiply(quantity));
-            BigDecimal salePrice = fixedPrice.add(unitPrice.multiply(quantity));
-            if (costPrice.compareTo(salePrice.subtract(discount)) > 0) {
-                ConfirmationDialog dialog = new ConfirmationDialog(Messages.get("customer.charge.discount.title"),
-                                                                   Messages.get("customer.charge.discount.message"),
-                                                                   ConfirmationDialog.YES_NO);
-                dialog.addWindowPaneListener(new PopupDialogListener() {
-                    @Override
-                    public void onYes() {
-                        getProperty("discount").setValue(BigDecimal.ZERO);
-                        super.onYes();
-                    }
-                });
-                editorQueue.queue(dialog);
+        if (updated && discount.compareTo(BigDecimal.ZERO) != 0) {
+            BigDecimal fixedPriceMaxDiscount = getFixedPriceMaxDiscount(null);
+            BigDecimal unitPriceMaxDiscount = getUnitPriceMaxDiscount(null);
+            if ((fixedPriceMaxDiscount != null && !MathRules.equals(fixedPriceMaxDiscount, ONE_HUNDRED))
+                || (unitPriceMaxDiscount != null && !MathRules.equals(unitPriceMaxDiscount, ONE_HUNDRED))) {
+                // if there is a fixed and/or unit price maximum discount present, and it is not 100%, check if the
+                // sale price is less than the cost price
+
+                BigDecimal quantity = getQuantity();
+                BigDecimal fixedCost = getFixedCost();
+                BigDecimal fixedPrice = getFixedPrice();
+                BigDecimal unitCost = getUnitCost();
+                BigDecimal unitPrice = getUnitPrice();
+                BigDecimal costPrice = fixedCost.add(unitCost.multiply(quantity));
+                BigDecimal salePrice = fixedPrice.add(unitPrice.multiply(quantity));
+                if (costPrice.compareTo(salePrice.subtract(discount)) > 0) {
+                    ConfirmationDialog dialog = new ConfirmationDialog(Messages.get("customer.charge.discount.title"),
+                                                                       Messages.get("customer.charge.discount.message"),
+                                                                       ConfirmationDialog.YES_NO);
+                    dialog.addWindowPaneListener(new PopupDialogListener() {
+                        @Override
+                        public void onYes() {
+                            getProperty("discount").setValue(BigDecimal.ZERO);
+                            super.onYes();
+                        }
+                    });
+                    editorQueue.queue(dialog);
+                }
             }
         }
+        return updated;
     }
 
     /**

@@ -327,11 +327,14 @@ public class EstimateItemEditor extends PriceActItemEditor {
 
     /**
      * Calculates the discount amounts.
+     *
+     * @return {@code true} if a discount was updated
      */
     @Override
-    protected void updateDiscount() {
-        updateLowDiscount();
-        updateHighDiscount();
+    protected boolean updateDiscount() {
+        boolean updated = updateLowDiscount();
+        updated |= updateHighDiscount();
+        return updated;
     }
 
     /**
@@ -378,8 +381,11 @@ public class EstimateItemEditor extends PriceActItemEditor {
 
     /**
      * Updates the low discount.
+     *
+     * @return {@code true} if the discount was updated
      */
-    private void updateLowDiscount() {
+    private boolean updateLowDiscount() {
+        boolean result = false;
         try {
             BigDecimal unitPrice = getLowUnitPrice();
             BigDecimal quantity = getLowQuantity();
@@ -387,17 +393,21 @@ public class EstimateItemEditor extends PriceActItemEditor {
             // If discount amount calculates to zero don't update any existing value as may have been manually modified.
             if (amount.compareTo(BigDecimal.ZERO) != 0) {
                 Property discount = getProperty("lowDiscount");
-                discount.setValue(amount);
+                result = discount.setValue(amount);
             }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
+        return result;
     }
 
     /**
      * Updates the high discount.
+     *
+     * @return {@code true} if the discount was updated
      */
-    private void updateHighDiscount() {
+    private boolean updateHighDiscount() {
+        boolean result = false;
         try {
             BigDecimal unitPrice = getHighUnitPrice();
             BigDecimal quantity = getHighQuantity();
@@ -410,6 +420,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
+        return result;
     }
 
     protected class EstimateItemLayoutStrategy extends PriceItemLayoutStrategy {

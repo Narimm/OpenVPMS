@@ -122,10 +122,10 @@ public class SessionMonitor implements DisposableBean {
      * Marks the current session as active.
      */
     public void active() {
-        Connection connection = WebRenderServlet.getActiveConnection();
+        Connection connection = getConnection();
         if (connection != null) {
             HttpServletRequest request = connection.getRequest();
-            active(request, SecurityContextHolder.getContext().getAuthentication());
+            active(request, getAuthentication());
         }
     }
 
@@ -140,6 +140,17 @@ public class SessionMonitor implements DisposableBean {
         if (monitor != null) {
             monitor.active(request, authentication);
         }
+    }
+
+    /**
+     * Determines if a session is locked.
+     *
+     * @param session the session
+     * @return {@code true} if the session is locked
+     */
+    public boolean isLocked(HttpSession session) {
+        Monitor monitor = monitors.get(session);
+        return monitor != null && monitor.locked;
     }
 
     /**
@@ -170,23 +181,14 @@ public class SessionMonitor implements DisposableBean {
      * @param time the timeout, in minutes. A value of {@code 0} indicates that sessions don't lock
      */
     public void setAutoLock(int time) {
-        long newTime = time * DateUtils.MILLIS_PER_MINUTE;
-        if (newTime != autoLock) {
-            autoLock = newTime;
-            if (newTime == 0) {
-                log.warn("Sessions configured to not auto-lock");
-            } else {
-                log.info("Using session auto-lock time=" + time + " minutes");
-            }
-            reschedule();
-        }
+        setAutoLockMS(time * DateUtils.MILLIS_PER_MINUTE);
     }
 
     /**
      * Unlocks the current session.
      */
     public void unlock() {
-        Connection connection = WebRenderServlet.getActiveConnection();
+        Connection connection = getConnection();
         if (connection != null) {
             Monitor monitor = monitors.get(connection.getRequest().getSession());
             if (monitor != null) {
@@ -201,17 +203,7 @@ public class SessionMonitor implements DisposableBean {
      * @param time the timeout, in minutes. A value of {@code 0} indicates that sessions don't expire
      */
     public void setAutoLogout(int time) {
-        long newTime = time * DateUtils.MILLIS_PER_MINUTE;
-        if (newTime != autoLogout) {
-            autoLogout = newTime;
-            if (newTime == 0) {
-                log.warn("Sessions configured to not auto-logout");
-            } else {
-                log.info("Using session auto-logout time=" + time + " minutes");
-            }
-
-            reschedule();
-        }
+        setAutoLogoutMS(time * DateUtils.MILLIS_PER_MINUTE);
     }
 
     /**
@@ -222,6 +214,59 @@ public class SessionMonitor implements DisposableBean {
         log.info("Shutting down SessionMonitor");
         executor.shutdown();
         monitors.clear();
+    }
+
+    /**
+     * Returns the active connection.
+     *
+     * @return the active connection, or {@code null} if there is none
+     */
+    protected Connection getConnection() {
+        return WebRenderServlet.getActiveConnection();
+    }
+
+    /**
+     * Returns the authenticated user.
+     *
+     * @return the authenticated user. May be {@code null}
+     */
+    protected Authentication getAuthentication() {
+        return SecurityContextHolder.getContext().getAuthentication();
+    }
+
+    /**
+     * Sets the time that sessions may remain idle before they are locked.
+     *
+     * @param time the timeout, in milliseconds. A value of {@code 0} indicates that sessions don't lock
+     */
+    protected void setAutoLockMS(long time) {
+        if (time != autoLock) {
+            autoLock = time;
+            if (time == 0) {
+                log.warn("Sessions configured to not auto-lock");
+            } else {
+                log.info("Using session auto-lock time=" + (time / DateUtils.MILLIS_PER_MINUTE) + " minutes");
+            }
+            reschedule();
+        }
+    }
+
+    /**
+     * Sets the time that sessions may remain idle before they are logged out.
+     *
+     * @param time the timeout, in milliseconds. A value of {@code 0} indicates that sessions don't expire
+     */
+    protected void setAutoLogoutMS(long time) {
+        if (time != autoLogout) {
+            autoLogout = time;
+            if (time == 0) {
+                log.warn("Sessions configured to not auto-logout");
+            } else {
+                log.info("Using session auto-logout time=" + (time / DateUtils.MILLIS_PER_MINUTE) + " minutes");
+            }
+
+            reschedule();
+        }
     }
 
     /**
@@ -315,37 +360,15 @@ public class SessionMonitor implements DisposableBean {
         }
 
         /**
-         * Invoked by the executor. This:
-         * <ul>
-         * <li>invalidates the session if {@link #autoLogout} is non-zero and it hasn't been accessed for
-         * {@link #autoLogout} milliseconds</li>
-         * <li>locks the session if {@link #autoLock} is non-zero, and the session hasn't been accessed for
-         * {@link #autoLock} milliseconds.</li>
-         * </ul>
-         * If it has been accessed, then it reschedules itself for another {@code autoLock} milliseconds.
+         * Invoked by the executor.
+         * Delegates to {@link #monitor}.
          */
         @Override
         public synchronized void run() {
-            long inactive = System.currentTimeMillis() - lastAccessedTime;
-            long logout = autoLogout;
-            long lock = autoLock;
-            if (logout != 0 && inactive > logout) {
-                // session is inactive, so kill it
-                invalidate();
-            } else {
-                long reschedule = (logout != 0) ? logout - inactive : 0;
-                if (lock != 0 && lock < logout) {
-                    if (inactive > lock) {
-                        if (!locked) {
-                            lock();
-                        }
-                    } else {
-                        reschedule = lock - inactive;
-                    }
-                }
-                if (reschedule != 0) {
-                    schedule(reschedule);
-                }
+            try {
+                monitor();
+            } catch (Throwable exception) {
+                log.error(exception, exception);
             }
         }
 
@@ -410,11 +433,52 @@ public class SessionMonitor implements DisposableBean {
         }
 
         /**
+         * Checks the session activity. This:
+         * <ul>
+         * <li>invalidates the session if {@link #autoLogout} is non-zero and it hasn't been accessed for
+         * {@link #autoLogout} milliseconds</li>
+         * <li>locks the session if {@link #autoLock} is non-zero, and the session hasn't been accessed for
+         * {@link #autoLock} milliseconds.</li>
+         * </ul>
+         * If it has been accessed, then it reschedules itself for another {@code autoLock} milliseconds.
+         */
+        private void monitor() {
+            long inactive = System.currentTimeMillis() - lastAccessedTime;
+            long logout = autoLogout;
+            long lock = autoLock;
+            if (log.isDebugEnabled()) {
+                log.debug("Monitor user=" + user + ", address=" + address + ", inactive=" + inactive + "ms, "
+                          + "logout=" + logout + "ms, lock=" + lock + "ms");
+            }
+            if (logout != 0 && inactive >= logout) {
+                // session is inactive, so kill it
+                invalidate();
+            } else {
+                long reschedule = (logout != 0) ? logout - inactive : 0;
+                if (lock != 0 && lock < logout) {
+                    if (inactive >= lock) {
+                        if (!locked) {
+                            lock();
+                        }
+                    } else {
+                        reschedule = lock - inactive;
+                    }
+                }
+                if (reschedule != 0) {
+                    schedule(reschedule);
+                }
+            }
+        }
+
+        /**
          * Schedules the monitor.
          *
          * @param delay the milliseconds to delay before invoking {@link #run}.
          */
         private void schedule(long delay) {
+            if (log.isDebugEnabled()) {
+                log.info("Scheduling monitor for " + delay + "ms,  user=" + user + ", address=" + address);
+            }
             future = executor.schedule(this, delay, TimeUnit.MILLISECONDS);
         }
 
