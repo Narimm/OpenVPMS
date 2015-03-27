@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -36,6 +37,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -584,8 +586,10 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        rules = new ReminderRules(getArchetypeService(), new PatientRules(getArchetypeService(), getLookupService(),
-                                                                          null));
+        IArchetypeService service = getArchetypeService();
+        PracticeRules practiceRules = new PracticeRules(service, null);
+        PatientRules patientRules = new PatientRules(practiceRules, service, getLookupService(), null);
+        rules = new ReminderRules(service, patientRules);
     }
 
     /**

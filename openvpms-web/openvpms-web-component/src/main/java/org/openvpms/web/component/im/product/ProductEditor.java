@@ -16,7 +16,9 @@
 
 package org.openvpms.web.component.im.product;
 
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.rules.product.ProductPriceUpdater;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -91,8 +93,9 @@ public class ProductEditor extends AbstractIMObjectEditor {
             };
             getEditors().add(stockLocations);
         }
-        updater = new ProductPriceUpdater(ServiceHelper.getCurrencies(), ServiceHelper.getArchetypeService(),
-                                          ServiceHelper.getLookupService());
+        updater = new ProductPriceUpdater(ServiceHelper.getBean(ProductPriceRules.class),
+                                          ServiceHelper.getBean(PracticeRules.class),
+                                          ServiceHelper.getArchetypeService());
     }
 
     /**

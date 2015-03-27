@@ -27,10 +27,12 @@ import org.openvpms.archetype.function.lookup.LookupFunctions;
 import org.openvpms.archetype.function.math.MathFunctions;
 import org.openvpms.archetype.function.party.PartyFunctions;
 import org.openvpms.archetype.function.reminder.ReminderFunctions;
+import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientAgeFormatter;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
@@ -70,7 +72,7 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
     }
 
     /**
-     * Creates a new {@code FunctionLibrary} containing functions that use the specified {@link IArchetypeService}.
+     * Creates a new {@code FunctionLibrary} containing functions that use specified {@link IArchetypeService}.
      *
      * @param service the archetype service
      * @return the functions
@@ -79,7 +81,8 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
         ILookupService lookups = getLookupService();
         PatientAgeFormatter formatter = getPatientAgeFormatter();
 
-        PatientRules patientRules = new PatientRules(service, lookups, formatter);
+        PracticeRules rules = new PracticeRules(service, getCurrencies());
+        PatientRules patientRules = new PatientRules(rules, service, lookups, formatter);
         CustomerRules customerRules = new CustomerRules(service, lookups);
         ReminderRules reminderRules = new ReminderRules(service, patientRules);
         FunctionLibrary library = new FunctionLibrary();
@@ -109,6 +112,13 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
      * @return the lookup service
      */
     protected abstract ILookupService getLookupService();
+
+    /**
+     * Returns the currencies.
+     *
+     * @return the currencies
+     */
+    protected abstract Currencies getCurrencies();
 
     /**
      * Returns the patient age formatter.

@@ -111,7 +111,7 @@ public class PatientAgeFormatterTestCase extends ArchetypeServiceTest {
      * @return a new formatter
      */
     protected PatientAgeFormatter createFormatter() {
-        PracticeRules rules = new PracticeRules(getArchetypeService());
+        PracticeRules rules = new PracticeRules(getArchetypeService(), null);
         return new PatientAgeFormatter(getLookupService(), rules, factory);
     }
 

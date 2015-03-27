@@ -102,7 +102,7 @@ public class PharmacyDispenseServiceImplTestCase extends AbstractRDSTest {
         };
         MessageDispatcher dispatcher = Mockito.mock(MessageDispatcher.class);
         Connectors connectors = Mockito.mock(Connectors.class);
-        PatientRules rules = new PatientRules(getArchetypeService(), getLookupService());
+        PatientRules rules = new PatientRules(null, getArchetypeService(), getLookupService());
         UserRules userRules = new UserRules(getArchetypeService());
         final Connector receiver = new MLLPReceiver(10001, "Cubex", "Cubex", "VPMS", "VPMS",
                                                     new IMObjectReference(HL7Archetypes.MLLP_RECEIVER, -1));
@@ -149,7 +149,7 @@ public class PharmacyDispenseServiceImplTestCase extends AbstractRDSTest {
         Pharmacies pharmacies = Mockito.mock(Pharmacies.class);
         MessageDispatcher dispatcher = Mockito.mock(MessageDispatcher.class);
         Connectors connectors = Mockito.mock(Connectors.class);
-        PatientRules rules = new PatientRules(getArchetypeService(), getLookupService());
+        PatientRules rules = new PatientRules(null, getArchetypeService(), getLookupService());
         UserRules userRules = new UserRules(getArchetypeService());
         PharmacyDispenseServiceImpl service = new PharmacyDispenseServiceImpl(pharmacies, dispatcher, connectors,
                                                                               getArchetypeService(), rules, userRules);

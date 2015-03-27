@@ -304,7 +304,7 @@ public class TestHelper {
      */
     public static Party createPatient(Party owner, boolean save) {
         Party patient = createPatient(save);
-        PatientRules rules = new PatientRules(ArchetypeServiceHelper.getArchetypeService(), null, null);
+        PatientRules rules = new PatientRules(null, ArchetypeServiceHelper.getArchetypeService(), null, null);
         rules.addPatientOwnerRelationship(owner, patient);
         if (save) {
             save(patient);

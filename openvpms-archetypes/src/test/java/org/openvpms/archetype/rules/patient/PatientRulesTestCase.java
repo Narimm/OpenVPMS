@@ -60,6 +60,11 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
      */
     private PatientRules rules;
 
+    /**
+     * The practice rules.
+     */
+    private PracticeRules practiceRules;
+
 
     /**
      * Tests the {@link PatientRules#getOwner}
@@ -287,9 +292,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         Date birthDate = getDate("2010-01-01");
         bean.setValue("dateOfBirth", birthDate);
         String age = rules.getPatientAge(patient);
-        PatientAgeFormatter formatter = new PatientAgeFormatter(getLookupService(),
-                                                                new PracticeRules(getArchetypeService()),
-                                                                factory);
+        PatientAgeFormatter formatter = new PatientAgeFormatter(getLookupService(), practiceRules, factory);
         String expected = formatter.format(birthDate);
         assertEquals(expected, age);
     }
@@ -306,9 +309,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         bean.setValue("dateOfBirth", birth);
         bean.setValue("deceasedDate", deceased);
         String age = rules.getPatientAge(patient);
-        PatientAgeFormatter formatter = new PatientAgeFormatter(getLookupService(),
-                                                                new PracticeRules(getArchetypeService()),
-                                                                factory);
+        PatientAgeFormatter formatter = new PatientAgeFormatter(getLookupService(), practiceRules, factory);
         String expected = formatter.format(birth, deceased);
         assertEquals(expected, age);
     }
@@ -318,7 +319,8 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        rules = new PatientRules(getArchetypeService(), getLookupService());
+        practiceRules = new PracticeRules(getArchetypeService(), null);
+        rules = new PatientRules(practiceRules, getArchetypeService(), getLookupService());
     }
 
     /**

@@ -963,7 +963,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     public void testReverseInvoiceRemovesEntriesFromHistory() {
         CustomerAccountRules rules = getRules();
 
-        PatientRules patientRules = new PatientRules(getArchetypeService(), getLookupService());
+        PatientRules patientRules = new PatientRules(null, getArchetypeService(), getLookupService());
         Party patient = getPatient();
         User author = TestHelper.createUser();
         Party location = TestHelper.createLocation();

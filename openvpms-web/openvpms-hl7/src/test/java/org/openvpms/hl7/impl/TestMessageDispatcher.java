@@ -95,7 +95,7 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
      * @param user    the user to initialise the security context in the dispatch thread
      */
     public TestMessageDispatcher(MessageService messageService, IArchetypeService service, final User user) {
-        this(messageService, Mockito.mock(ConnectorsImpl.class), new PracticeRules(service) {
+        this(messageService, Mockito.mock(ConnectorsImpl.class), new PracticeRules(service, null) {
             @Override
             public User getServiceUser(Party practice) {
                 return user;

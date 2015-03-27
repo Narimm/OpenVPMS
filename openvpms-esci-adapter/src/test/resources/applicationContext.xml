@@ -129,6 +129,7 @@
     </bean>
 
     <bean id="functionsFactory" class="org.openvpms.archetype.function.factory.DefaultArchetypeFunctionsFactory">
+        <constructor-arg ref="currencies"/>
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
         <constructor-arg>
@@ -205,7 +206,13 @@
         <constructor-arg ref="lookupService"/>
     </bean>
 
+    <bean id="practiceRules" class="org.openvpms.archetype.rules.practice.PracticeRules">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="currencies"/>
+    </bean>
+
     <bean id="patientRules" class="org.openvpms.archetype.rules.patient.PatientRules">
+        <constructor-arg ref="practiceRules"/>
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
         <constructor-arg>

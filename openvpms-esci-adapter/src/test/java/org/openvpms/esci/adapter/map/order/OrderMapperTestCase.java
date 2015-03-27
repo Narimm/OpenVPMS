@@ -336,12 +336,13 @@ public class OrderMapperTestCase extends AbstractESCITest {
         OrderMapperImpl mapper = new OrderMapperImpl();
         IArchetypeService service = getArchetypeService();
         ILookupService lookups = getLookupService();
-        mapper.setPracticeRules(new PracticeRules(service));
+        Currencies currencies = new Currencies(service, lookups);
+        mapper.setPracticeRules(new PracticeRules(service, currencies));
         mapper.setLocationRules(new LocationRules(service));
         mapper.setPartyRules(new PartyRules(service, lookups));
         mapper.setSupplierRules(new SupplierRules(service));
         mapper.setLookupService(lookups);
-        mapper.setCurrencies(new Currencies(service, lookups));
+        mapper.setCurrencies(currencies);
         mapper.setBeanFactory(new IMObjectBeanFactory(service));
         return mapper;
     }

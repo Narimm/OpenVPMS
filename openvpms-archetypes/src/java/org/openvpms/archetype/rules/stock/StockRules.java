@@ -24,7 +24,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -40,8 +39,7 @@ import static org.openvpms.component.business.service.archetype.functor.IsActive
 /**
  * Stock rules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class StockRules {
 
@@ -51,14 +49,7 @@ public class StockRules {
     private final IArchetypeService service;
 
     /**
-     * Creates a new <tt>StockRules</tt>.
-     */
-    public StockRules() {
-        this(ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Creates a new <tt>StockRules</tt>.
+     * Constructs a {@link StockRules}.
      *
      * @param service the archetype service
      */
@@ -69,26 +60,23 @@ public class StockRules {
     /**
      * Returns the stock location for a product at a practice location.
      * <p/>
-     * Looks for an <em>party.organisationStockLocation</em> associated with
-     * the supplied <em>party.organisationLocation</em>. If a stock location
-     * exists that has a relationship to the supplied product, this will
-     * be returned.
+     * Looks for an <em>party.organisationStockLocation</em> associated with the supplied
+     * <em>party.organisationLocation</em>. If a stock location exists that has a relationship to the supplied product,
+     * this will be returned.
      * <p/>
      * If there are stock locations, but none have a relationship to the
      * product, then an arbitrary one will be selected.
      *
      * @param product  the product
      * @param location the practice location
-     * @return the stock location, or <tt>null</tt> if none is found or
-     *         the <em>stockControl</em> flag of the practice location is
-     *         <tt>false</tt>
+     * @return the stock location, or {@code null} if none is found or the <em>stockControl</em> flag of the practice
+     *         location is {@code false}
      */
     public Party getStockLocation(Product product, Party location) {
         Party result = null;
         EntityBean locBean = new EntityBean(location, service);
         if (locBean.getBoolean("stockControl")) {
-            List<Entity> entities = locBean.getNodeTargetEntities(
-                    "stockLocations");
+            List<Entity> entities = locBean.getNodeTargetEntities("stockLocations");
             Party stockLocation = null;
             for (Entity stockLoc : entities) {
                 stockLocation = (Party) stockLoc;
@@ -114,8 +102,7 @@ public class StockRules {
      */
     public BigDecimal getStock(Product product, Party stockLocation) {
         BigDecimal result = BigDecimal.ZERO;
-        EntityRelationship relationship = getStockRelationship(product,
-                                                               stockLocation);
+        EntityRelationship relationship = getStockRelationship(product, stockLocation);
         if (relationship != null) {
             IMObjectBean bean = new IMObjectBean(relationship, service);
             result = bean.getBigDecimal("quantity", BigDecimal.ZERO);
@@ -132,8 +119,7 @@ public class StockRules {
      * @param quantity      the quantity to add/remove
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public void updateStock(Product product, Party stockLocation,
-                            BigDecimal quantity) {
+    public void updateStock(Product product, Party stockLocation, BigDecimal quantity) {
         List<IMObject> toSave = calcStock(product, stockLocation, quantity);
         service.save(toSave);
     }
@@ -147,9 +133,7 @@ public class StockRules {
      * @param quantity the quantity to transfer
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public void transferStock(Product product, Party from, Party to,
-                              BigDecimal quantity) {
-
+    public void transferStock(Product product, Party from, Party to, BigDecimal quantity) {
         List<IMObject> toSave = transfer(product, from, to, quantity);
         service.save(toSave);
     }
@@ -160,17 +144,14 @@ public class StockRules {
      *
      * @param product       the product
      * @param stockLocation the stock location
-     * @return the corresponding relationship, or <tt>null</tt> if none is found
+     * @return the corresponding relationship, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected EntityRelationship getStockRelationship(Product product,
-                                                      Party stockLocation) {
+    protected EntityRelationship getStockRelationship(Product product, Party stockLocation) {
         EntityRelationship result = null;
         EntityBean prodBean = new EntityBean(product, service);
         Predicate predicate = AndPredicate.getInstance(isActiveNow(), RefEquals.getTargetEquals(stockLocation));
-        List<EntityRelationship> relationships
-                = prodBean.getNodeRelationships("stockLocations",
-                                                predicate);
+        List<EntityRelationship> relationships = prodBean.getNodeRelationships("stockLocations", predicate);
         if (!relationships.isEmpty()) {
             result = relationships.get(0);
         }
@@ -184,11 +165,9 @@ public class StockRules {
      * @param from     the from location
      * @param to       the to location
      * @param quantity the quantity to transfer
-     * @return the list updated objects. These must be saved to complete the
-     *         transfer
+     * @return the list updated objects. These must be saved to complete the transfer
      */
-    protected List<IMObject> transfer(Product product, Party from, Party to,
-                                      BigDecimal quantity) {
+    protected List<IMObject> transfer(Product product, Party from, Party to, BigDecimal quantity) {
         List<IMObject> result = new ArrayList<IMObject>();
         result.addAll(calcStock(product, from, quantity.negate()));
         result.addAll(calcStock(product, to, quantity));
@@ -203,16 +182,12 @@ public class StockRules {
      * @param quantity      the quantity to add/remove
      * @return the list of updated objects
      */
-    protected List<IMObject> calcStock(Product product, Party stockLocation,
-                                       BigDecimal quantity) {
+    protected List<IMObject> calcStock(Product product, Party stockLocation, BigDecimal quantity) {
         EntityBean prodBean = new EntityBean(product, service);
-        EntityRelationship relationship
-                = getStockRelationship(product, stockLocation);
+        EntityRelationship relationship = getStockRelationship(product, stockLocation);
         List<IMObject> toSave = new ArrayList<IMObject>();
         if (relationship == null) {
-            relationship = prodBean.addRelationship(
-                    StockArchetypes.PRODUCT_STOCK_LOCATION_RELATIONSHIP,
-                    stockLocation);
+            relationship = prodBean.addRelationship(StockArchetypes.PRODUCT_STOCK_LOCATION_RELATIONSHIP, stockLocation);
             toSave.add(product);
             toSave.add(stockLocation);
         } else {
@@ -228,10 +203,8 @@ public class StockRules {
      * @param relationship the product-stock location relationship
      * @param quantity     the quantity to add/remove
      */
-    protected void calcStock(EntityRelationship relationship,
-                             BigDecimal quantity) {
-        IMObjectBean relBean = new IMObjectBean(relationship,
-                                                service);
+    protected void calcStock(EntityRelationship relationship, BigDecimal quantity) {
+        IMObjectBean relBean = new IMObjectBean(relationship, service);
         BigDecimal old = relBean.getBigDecimal("quantity");
         BigDecimal now = old.add(quantity);
         relBean.setValue("quantity", now);

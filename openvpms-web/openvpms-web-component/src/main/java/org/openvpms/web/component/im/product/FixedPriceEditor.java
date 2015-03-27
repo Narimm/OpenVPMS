@@ -19,25 +19,31 @@ package org.openvpms.web.component.im.product;
 import echopointng.DropDown;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.table.DefaultTableColumnModel;
+import nextapp.echo2.app.table.TableColumn;
+import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.product.PricingGroup;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.table.DescriptorTableModel;
+import org.openvpms.web.component.im.table.AbstractIMObjectTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
-import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.echo.text.TextField;
+import org.openvpms.web.resource.i18n.format.NumberFormatter;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
@@ -45,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static java.math.BigDecimal.ONE;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
 
 
@@ -102,21 +109,26 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     private final PricingGroup pricingGroup;
 
     /**
-     * The layout context.
+     * The currency, used to round prices.
      */
-    private final LayoutContext context;
+    private final Currency currency;
+
+    /**
+     * The service ratio.
+     */
+    private BigDecimal serviceRatio = ONE;
 
     /**
      * Constructs a {@link FixedPriceEditor}.
      *
      * @param property     the fixed price property
      * @param pricingGroup the pricing group. May be {@code null}
-     * @param context      the layout context
+     * @param currency     the practice currency, used to round prices
      */
-    public FixedPriceEditor(Property property, Lookup pricingGroup, LayoutContext context) {
+    public FixedPriceEditor(Property property, Lookup pricingGroup, Currency currency) {
         super(property);
         this.pricingGroup = new PricingGroup(pricingGroup);
-        this.context = context;
+        this.currency = currency;
 
         date = new Date();
 
@@ -133,10 +145,12 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     /**
      * Sets the product, used to select the fixed price.
      *
-     * @param product the product. MAy be {@code null}
+     * @param product      the product. May be {@code null}
+     * @param serviceRatio the service ratio
      */
-    public void setProduct(Product product) {
+    public void setProduct(Product product, BigDecimal serviceRatio) {
         this.product = product;
+        this.serviceRatio = serviceRatio;
         updatePrices();
     }
 
@@ -203,7 +217,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     private void onSelected(ProductPrice price) {
         this.price = price;
         if (price != null) {
-            getProperty().setValue(price.getPrice());
+            getProperty().setValue(getPrice(price));
         }
         priceDropDown.setExpanded(false);
     }
@@ -250,9 +264,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     private PagedIMTable<ProductPrice> createPriceTable(List<ProductPrice> prices) {
         ResultSet<ProductPrice> set = new IMObjectListResultSet<ProductPrice>(
                 new ArrayList<ProductPrice>(prices), 20);
-        LayoutContext tableContext = new DefaultLayoutContext(context);
-        tableContext.setComponentFactory(new TableComponentFactory(tableContext));
-        final PagedIMTable<ProductPrice> table = new PagedIMTable<ProductPrice>(new PriceTableModel(tableContext), set);
+        final PagedIMTable<ProductPrice> table = new PagedIMTable<ProductPrice>(new PriceTableModel(), set);
         table.getTable().addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 onSelected(table.getTable().getSelected());
@@ -262,35 +274,84 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     }
 
     /**
+     * Returns the price for a product price, multiplied by the service ratio if there is one.
+     *
+     * @param price the price
+     * @return the
+     */
+    private BigDecimal getPrice(ProductPrice price) {
+        return ProductHelper.getPrice(price, serviceRatio, currency);
+    }
+
+    /**
      * Table model that displays the name and price of an {@link ProductPrice}.
      */
-    private static class PriceTableModel
-            extends DescriptorTableModel<ProductPrice> {
+    private class PriceTableModel extends AbstractIMObjectTableModel<ProductPrice> {
 
         /**
-         * The nodes to display.
+         * Name column index.
          */
-        private static final String[] NODES = new String[]{"name", "price"};
+        private static final int NAME_INDEX = 0;
+
+        /**
+         * Price column index.
+         */
+        private static final int PRICE_INDEX = 1;
 
         /**
          * Constructs a {@code PriceTableModel}.
-         *
-         * @param context the layout context
          */
-        public PriceTableModel(LayoutContext context) {
-            super(new String[]{FIXED_PRICE}, context);
+        public PriceTableModel() {
+            DefaultTableColumnModel model = new DefaultTableColumnModel();
+            model.addColumn(createTableColumn(NAME_INDEX, NAME));
+            TableColumn price = new TableColumn(PRICE_INDEX);
+            price.setHeaderValue(DescriptorHelper.getDisplayName(ProductArchetypes.FIXED_PRICE, "price"));
+            model.addColumn(price);
+            setTableColumnModel(model);
         }
 
         /**
-         * Returns a list of node descriptor names to include in the table.
+         * Returns the sort criteria.
          *
-         * @return the list of node descriptor names to include in the table
+         * @param column    the primary sort column
+         * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
+         * @return the sort criteria, or {@code null} if the column isn't sortable
          */
         @Override
-        protected String[] getNodeNames() {
-            return NODES;
+        public SortConstraint[] getSortConstraints(int column, boolean ascending) {
+            SortConstraint[] result = null;
+            switch (column) {
+                case NAME_INDEX:
+                    result = new NodeSortConstraint[]{new NodeSortConstraint("name", ascending)};
+                    break;
+                case PRICE_INDEX:
+                    result = new NodeSortConstraint[]{new NodeSortConstraint("price", ascending)};
+                    break;
+            }
+            return result;
         }
 
+        /**
+         * Returns the value found at the given coordinate within the table.
+         *
+         * @param object the object
+         * @param column the column
+         * @param row    the row
+         * @return the value at the given coordinate.
+         */
+        @Override
+        protected Object getValue(ProductPrice object, TableColumn column, int row) {
+            Object result = null;
+            switch (column.getModelIndex()) {
+                case NAME_INDEX:
+                    result = object.getName();
+                    break;
+                case PRICE_INDEX:
+                    result = TableHelper.rightAlign(NumberFormatter.formatCurrency(getPrice(object)));
+                    break;
+            }
+            return result;
+        }
     }
 
 }

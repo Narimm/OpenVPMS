@@ -16,7 +16,6 @@
 
 package org.openvpms.web.component.im.edit.reminder;
 
-import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -41,6 +40,11 @@ import org.openvpms.web.system.ServiceHelper;
 public class ReminderEditor extends PatientActEditor {
 
     /**
+     * The reminder rules.
+     */
+    private final ReminderRules rules;
+
+    /**
      * Constructs a {@link ReminderEditor}.
      *
      * @param act     the reminder act
@@ -53,6 +57,7 @@ public class ReminderEditor extends PatientActEditor {
             throw new IllegalArgumentException(
                     "Invalid act type:" + act.getArchetypeId().getShortName());
         }
+        rules = ServiceHelper.getBean(ReminderRules.class);
     }
 
     /**
@@ -126,9 +131,6 @@ public class ReminderEditor extends PatientActEditor {
      */
     private void onReminderTypeChanged() {
         try {
-            ReminderRules rules = new ReminderRules(ServiceHelper.getArchetypeService(),
-                                                    new PatientRules(ServiceHelper.getArchetypeService(),
-                                                                     ServiceHelper.getLookupService()));
             rules.calculateReminderDueDate((Act) getObject());
             Property property = getProperty("endTime");
             property.refresh();

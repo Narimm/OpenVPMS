@@ -46,7 +46,7 @@
         <site>
             <id>openvpms-site</id>
             <name>OpenVPMS Maven Site</name>
-            <url>scp://dev.openvpms.org:2233/home/admin/public_html/dev.openvpms.org/public/${pom.artifactId}</url>
+            <url>scp://dev.openvpms.org:2233/home/admin/public_html/dev.openvpms.org/public/${project.artifactId}</url>
         </site>
     </distributionManagement>
 
@@ -87,17 +87,15 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-archetypes</artifactId>
-            <version>${pom.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-framework</artifactId>
-            <version>${pom.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-archetypes</artifactId>
-            <version>${pom.version}</version>
+            <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>

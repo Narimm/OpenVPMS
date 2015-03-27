@@ -93,7 +93,7 @@ public class SubscriptionHelper {
     public static Subscription getSubscription(IArchetypeService service) {
         Subscription result = null;
         try {
-            Party practice = new PracticeRules(service).getPractice();
+            Party practice = new PracticeRules(service, null).getPractice();
             if (practice != null) {
                 DocumentAct act = getSubscriptionAct(practice, service);
                 result = getSubscription(act, service);

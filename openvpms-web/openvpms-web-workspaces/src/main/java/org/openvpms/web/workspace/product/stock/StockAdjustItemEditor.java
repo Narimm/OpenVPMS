@@ -32,6 +32,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -61,15 +62,15 @@ public class StockAdjustItemEditor extends ActItemEditor {
 
 
     /**
-     * Creates a new <tt>StockTransferItemEditor</tt>.
+     * Constructs a {@link StockTransferItemEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent act.
-     * @param context the layout context. May be <tt>null</tt>
+     * @param context the layout context
      */
     public StockAdjustItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
-        rules = new StockRules();
+        rules = ServiceHelper.getBean(StockRules.class);
         currentQuantity = new SimpleProperty("fromQuantity", BigDecimal.class);
         currentQuantity.setDisplayName(Messages.get("product.stock.quantity"));
         currentQuantity.setReadOnly(true);
@@ -92,7 +93,7 @@ public class StockAdjustItemEditor extends ActItemEditor {
     /**
      * Updates the current stock quantity when the product changes.
      *
-     * @param product the product. May be <tt>null</tt>
+     * @param product the product. May be {@code null}
      */
     @Override
     protected void productModified(Product product) {

@@ -24,6 +24,8 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.ActStatusHelper;
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.math.MathRules;
+import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.rules.product.ProductPriceUpdater;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductSupplier;
@@ -139,7 +141,9 @@ public class DeliveryProcessor {
         this.act = act;
         this.service = service;
         this.rules = new ProductRules(service);
-        priceUpdater = new ProductPriceUpdater(currencies, service, lookups);
+        ProductPriceRules priceRules = new ProductPriceRules(service, lookups);
+        PracticeRules practiceRules = new PracticeRules(service, currencies);
+        priceUpdater = new ProductPriceUpdater(priceRules, practiceRules, service);
     }
 
     /**

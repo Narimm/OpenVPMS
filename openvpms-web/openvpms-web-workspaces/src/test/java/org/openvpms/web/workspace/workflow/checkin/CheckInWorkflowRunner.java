@@ -164,7 +164,7 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
         Party p = getContext().getPatient();
         assertEquals(patient, p);
         assertFalse(p.isNew());
-        PatientRules rules = new PatientRules(ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService());
+        PatientRules rules = ServiceHelper.getBean(PatientRules.class);
         customer = IMObjectHelper.reload(customer);
         assertNotNull(customer);
         assertTrue(rules.isOwner(customer, patient));

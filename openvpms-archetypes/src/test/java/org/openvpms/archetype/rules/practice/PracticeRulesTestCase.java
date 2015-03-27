@@ -18,6 +18,8 @@ package org.openvpms.archetype.rules.practice;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.math.Currencies;
+import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -27,6 +29,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
@@ -175,11 +178,23 @@ public class PracticeRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link PracticeRules#getCurrency(Party)} method.
+     */
+    @Test
+    public void testGetCurrency() {
+        Party practice = createPractice();
+        Currency currency = rules.getCurrency(practice);
+        assertEquals("AUD", currency.getCode());
+        assertEquals(2, currency.getDefaultFractionDigits());
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
-        rules = new PracticeRules(getArchetypeService());
+        IArchetypeService service = getArchetypeService();
+        rules = new PracticeRules(service, new Currencies(service, getLookupService()));
     }
 
     /**

@@ -81,10 +81,10 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
     @Before
     public void setUp() {
         IArchetypeService service = getArchetypeService();
-        practiceRules = new PracticeRules(service);
+        practiceRules = new PracticeRules(service, null);
         ILookupService lookups = getLookupService();
         PartyRules partyRules = new PartyRules(service, lookups);
-        PatientRules patientRules = new PatientRules(service, lookups);
+        PatientRules patientRules = new PatientRules(practiceRules, service, lookups);
         handlers = new DocumentHandlers();
         exporter = new ReminderCSVExporter(practiceRules, partyRules, patientRules, service, lookups, handlers);
     }
