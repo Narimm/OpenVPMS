@@ -21,7 +21,6 @@ import nextapp.echo2.app.Label;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemDocumentLinker;
-import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.finance.tax.TaxRuleException;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
@@ -192,11 +191,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private boolean cancelPrescription;
 
     /**
-     * Customer tax rules.
-     */
-    private CustomerTaxRules taxRules;
-
-    /**
      * The charge context.
      */
     private ChargeContext chargeContext;
@@ -212,9 +206,19 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private static final String REMINDERS = "reminders";
 
     /**
+     * Returned quantity node name.
+     */
+    private static final String RETURNED_QUANTITY = "returnedQuantity";
+
+    /**
+     * Received quantity node name.
+     */
+    private static final String RECEIVED_QUANTITY = "receivedQuantity";
+
+    /**
      * Pharmacy order nodes.
      */
-    private static final String[] ORDER_NODES = {"receivedQuantity", "returnedQuantity"};
+    private static final String[] ORDER_NODES = {RECEIVED_QUANTITY, RETURNED_QUANTITY};
 
     /**
      * Investigations node name.
@@ -222,10 +226,50 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private static final String INVESTIGATIONS = "investigations";
 
     /**
+     * Start time node name.
+     */
+    private static final String START_TIME = "startTime";
+
+    /**
+     * Discount node name.
+     */
+    private static final String DISCOUNT = "discount";
+
+    /**
+     * Quantity node name.
+     */
+    private static final String QUANTITY = "quantity";
+
+    /**
+     * Fixed cost node name.
+     */
+    private static final String FIXED_COST = "fixedCost";
+
+    /**
+     * Fixed price node name.
+     */
+    private static final String FIXED_PRICE = "fixedPrice";
+
+    /**
+     * Unit cost node name.
+     */
+    private static final String UNIT_COST = "unitCost";
+
+    /**
+     * Unit price node name.
+     */
+    private static final String UNIT_PRICE = "unitPrice";
+
+    /**
+     * Total node name.
+     */
+    private static final String TOTAL = "total";
+
+    /**
      * Nodes to use when a product template is selected.
      */
     private static final ArchetypeNodes TEMPLATE_NODES = new ArchetypeNodes().exclude(
-            "quantity", "fixedPrice", "unitPrice", "discount", "clinician", "total", DISPENSING, INVESTIGATIONS,
+            QUANTITY, FIXED_PRICE, UNIT_PRICE, DISCOUNT, "clinician", TOTAL, DISPENSING, INVESTIGATIONS,
             REMINDERS, "batch");
 
 
@@ -245,14 +289,13 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                             CustomerAccountArchetypes.COUNTER_ITEM)) {
             throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
         }
+        setDisableDiscounts(getDisableDiscounts(getLocation()));
         dispensing = createDispensingCollectionEditor();
         investigations = createCollectionEditor(INVESTIGATIONS, act);
         reminders = createCollectionEditor(REMINDERS, act);
 
-        rules = new StockRules();
+        rules = ServiceHelper.getBean(StockRules.class);
         reminderRules = ServiceHelper.getBean(ReminderRules.class);
-        taxRules = new CustomerTaxRules(context.getContext().getPractice(), ServiceHelper.getArchetypeService(),
-                                        ServiceHelper.getLookupService());
         quantityListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updateMedicationQuantity();
@@ -286,7 +329,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 updateTaxAmount();
             }
         };
-        getProperty("total").addModifiableListener(totalListener);
+        getProperty(TOTAL).addModifiableListener(totalListener);
 
         // add a listener to update the discount amount when the quantity,
         // fixed or unit price changes.
@@ -295,17 +338,17 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 updateDiscount();
             }
         };
-        getProperty("fixedPrice").addModifiableListener(discountListener);
-        getProperty("quantity").addModifiableListener(discountListener);
-        getProperty("unitPrice").addModifiableListener(discountListener);
-        getProperty("quantity").addModifiableListener(quantityListener);
+        getProperty(FIXED_PRICE).addModifiableListener(discountListener);
+        getProperty(QUANTITY).addModifiableListener(discountListener);
+        getProperty(UNIT_PRICE).addModifiableListener(discountListener);
+        getProperty(QUANTITY).addModifiableListener(quantityListener);
 
         startTimeListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updatePatientActsStartTime();
             }
         };
-        getProperty("startTime").addModifiableListener(startTimeListener);
+        getProperty(START_TIME).addModifiableListener(startTimeListener);
 
         batchListener = new ModifiableListener() {
             @Override
@@ -331,7 +374,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @return the received quantity
      */
     public BigDecimal getReceivedQuantity() {
-        Property property = getProperty("receivedQuantity");
+        Property property = getProperty(RECEIVED_QUANTITY);
         return property != null ? property.getBigDecimal(BigDecimal.ZERO) : BigDecimal.ZERO;
     }
 
@@ -341,7 +384,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @param quantity the received quantity
      */
     public void setReceivedQuantity(BigDecimal quantity) {
-        Property property = getProperty("receivedQuantity");
+        Property property = getProperty(RECEIVED_QUANTITY);
         if (property != null) {
             property.setValue(quantity);
         }
@@ -353,7 +396,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @return the returned quantity
      */
     public BigDecimal getReturnedQuantity() {
-        Property property = getProperty("returnedQuantity");
+        Property property = getProperty(RETURNED_QUANTITY);
         return property != null ? property.getBigDecimal(BigDecimal.ZERO) : BigDecimal.ZERO;
     }
 
@@ -363,7 +406,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @param quantity the returned quantity
      */
     public void setReturnedQuantity(BigDecimal quantity) {
-        Property property = getProperty("returnedQuantity");
+        Property property = getProperty(RETURNED_QUANTITY);
         if (property != null) {
             property.setValue(quantity);
         }
@@ -381,12 +424,12 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             dispensing.removeModifiableListener(dispensingListener);
         }
 
-        getProperty("total").removeModifiableListener(totalListener);
-        getProperty("fixedPrice").removeModifiableListener(discountListener);
-        getProperty("quantity").removeModifiableListener(discountListener);
-        getProperty("unitPrice").removeModifiableListener(discountListener);
-        getProperty("quantity").removeModifiableListener(quantityListener);
-        getProperty("startTime").removeModifiableListener(startTimeListener);
+        getProperty(TOTAL).removeModifiableListener(totalListener);
+        getProperty(FIXED_PRICE).removeModifiableListener(discountListener);
+        getProperty(QUANTITY).removeModifiableListener(discountListener);
+        getProperty(UNIT_PRICE).removeModifiableListener(discountListener);
+        getProperty(QUANTITY).removeModifiableListener(quantityListener);
+        getProperty(START_TIME).removeModifiableListener(startTimeListener);
     }
 
     /**
@@ -399,7 +442,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     @Override
     protected boolean updateDiscount() {
         boolean updated = super.updateDiscount();
-        BigDecimal discount = getProperty("discount").getBigDecimal(BigDecimal.ZERO);
+        BigDecimal discount = getProperty(DISCOUNT).getBigDecimal(BigDecimal.ZERO);
         if (updated && discount.compareTo(BigDecimal.ZERO) != 0) {
             BigDecimal fixedPriceMaxDiscount = getFixedPriceMaxDiscount(null);
             BigDecimal unitPriceMaxDiscount = getUnitPriceMaxDiscount(null);
@@ -422,7 +465,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                     dialog.addWindowPaneListener(new PopupDialogListener() {
                         @Override
                         public void onYes() {
-                            getProperty("discount").setValue(BigDecimal.ZERO);
+                            getProperty(DISCOUNT).setValue(BigDecimal.ZERO);
                             super.onYes();
                         }
                     });
@@ -631,6 +674,12 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     protected void onLayoutCompleted() {
         super.onLayoutCompleted();
 
+        ProductParticipationEditor product = getProductEditor();
+        if (product != null) {
+            // register the location in order to determine service ratios
+            product.setLocation(getLocation());
+        }
+
         PatientParticipationEditor patient = getPatientEditor();
         if (patient != null) {
             // add a listener to update the dispensing, investigation and reminder acts when the patient changes
@@ -660,9 +709,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     @Override
     protected void productModified(Product product) {
-        getProperty("fixedPrice").removeModifiableListener(discountListener);
-        getProperty("quantity").removeModifiableListener(discountListener);
-        getProperty("unitPrice").removeModifiableListener(discountListener);
+        getProperty(FIXED_PRICE).removeModifiableListener(discountListener);
+        getProperty(QUANTITY).removeModifiableListener(discountListener);
+        getProperty(UNIT_PRICE).removeModifiableListener(discountListener);
         super.productModified(product);
 
         // update the layout if nodes require filtering
@@ -672,25 +721,20 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         updateInvestigations(product);
         updateReminders(product);
 
-        Property discount = getProperty("discount");
+        Property discount = getProperty(DISCOUNT);
         discount.setValue(BigDecimal.ZERO);
 
+        Property fixedPrice = getProperty(FIXED_PRICE);
+        Property unitPrice = getProperty(UNIT_PRICE);
+        Property fixedCost = getProperty(FIXED_COST);
+        Property unitCost = getProperty(UNIT_COST);
         if (TypeHelper.isA(product, TEMPLATE)) {
-            Property fixedPrice = getProperty("fixedPrice");
-            Property unitPrice = getProperty("unitPrice");
-            Property fixedCost = getProperty("fixedCost");
-            Property unitCost = getProperty("unitCost");
             fixedPrice.setValue(BigDecimal.ZERO);
             unitPrice.setValue(BigDecimal.ZERO);
             fixedCost.setValue(BigDecimal.ZERO);
             unitCost.setValue(BigDecimal.ZERO);
             updateSellingUnits(null);
         } else {
-            Property fixedPrice = getProperty("fixedPrice");
-            Property unitPrice = getProperty("unitPrice");
-            Property fixedCost = getProperty("fixedCost");
-            Property unitCost = getProperty("unitCost");
-
             ProductPrice fixedProductPrice = null;
             ProductPrice unitProductPrice = null;
             if (product != null) {
@@ -718,9 +762,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             updateDiscount();
         }
         notifyProductListener(product);
-        getProperty("fixedPrice").addModifiableListener(discountListener);
-        getProperty("quantity").addModifiableListener(discountListener);
-        getProperty("unitPrice").addModifiableListener(discountListener);
+        getProperty(FIXED_PRICE).addModifiableListener(discountListener);
+        getProperty(QUANTITY).addModifiableListener(discountListener);
+        getProperty(UNIT_PRICE).addModifiableListener(discountListener);
     }
 
     /**
@@ -734,7 +778,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         if (customer != null && getProductRef() != null) {
             FinancialAct act = (FinancialAct) getObject();
             BigDecimal previousTax = act.getTaxAmount();
-            BigDecimal tax = taxRules.calculateTax(act, customer);
+            BigDecimal tax = calculateTax(customer);
             if (tax.compareTo(previousTax) != 0) {
                 Property property = getProperty("tax");
                 property.refresh();
@@ -1084,8 +1128,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     private Map<Entity, EntityRelationship> getReminderTypes(Product product) {
         Map<EntityRelationship, Entity> map = reminderRules.getReminderTypes(product);
-        Map<Entity, EntityRelationship> result
-                = new TreeMap<Entity, EntityRelationship>(IMObjectSorter.getNameComparator(true));
+        Map<Entity, EntityRelationship> result = new TreeMap<Entity, EntityRelationship>(IMObjectSorter.getNameComparator(true));
         for (Map.Entry<EntityRelationship, Entity> entry : map.entrySet()) {
             result.put(entry.getValue(), entry.getKey());
         }
@@ -1129,7 +1172,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Updates the medication quantity from the invoice.
      */
     private void updateMedicationQuantity() {
-        BigDecimal quantity = (BigDecimal) getProperty("quantity").getValue();
+        BigDecimal quantity = (BigDecimal) getProperty(QUANTITY).getValue();
         if (dispensing != null && quantity != null) {
             dispensing.removeModifiableListener(dispensingListener);
             try {
@@ -1154,7 +1197,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Updates the invoice quantity when a medication act changes.
      */
     private void updateQuantity() {
-        Property property = getProperty("quantity");
+        Property property = getProperty(QUANTITY);
         property.removeModifiableListener(quantityListener);
         try {
             if (dispensing != null) {
@@ -1167,7 +1210,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                     BigDecimal total = BigDecimal.ZERO;
                     for (Act act : acts) {
                         ActBean bean = new ActBean(act);
-                        BigDecimal quantity = bean.getBigDecimal("quantity", BigDecimal.ZERO);
+                        BigDecimal quantity = bean.getBigDecimal(QUANTITY, BigDecimal.ZERO);
                         total = total.add(quantity);
                     }
                     property.setValue(total);
@@ -1372,19 +1415,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
-     * Returns the price of a product.
-     * <p/>
-     * This subtracts any tax exclusions the customer may have.
-     *
-     * @param price the price
-     * @return the price, minus any tax exclusions
-     */
-    private BigDecimal getPrice(Product product, ProductPrice price) {
-        BigDecimal amount = price.getPrice();
-        return taxRules.getTaxExAmount(amount, product, getCustomer());
-    }
-
-    /**
      * Returns the value of the cost node of a price.
      *
      * @param price the product price
@@ -1404,6 +1434,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * <li>the investigations node if the product isn't a <em>product.medication</em>, <em>product.merchandise</em>,
      * or <em>product.service</em>
      * <li>the reminders node is excluded if there are no reminders present.
+     * <li>the discount node, if discounts are disabled</li>
      * </ul>
      *
      * @param product a reference to the product. May be {@code null}
@@ -1418,6 +1449,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             filter.add(DISPENSING);
             filter.add(INVESTIGATIONS);
             filter.add(REMINDERS);
+            if (getDisableDiscounts()) {
+                filter.add(DISCOUNT);
+            }
             boolean medication = TypeHelper.isA(product, MEDICATION);
             if (medication) {
                 filter.remove(DISPENSING);
@@ -1497,7 +1531,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         return (BatchParticipationEditor) editor;
     }
 
-
     protected class CustomerChargeItemLayoutStrategy extends PriceItemLayoutStrategy {
 
         public CustomerChargeItemLayoutStrategy(FixedPriceEditor fixedPrice) {
@@ -1517,7 +1550,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
             ComponentState state;
             String name = property.getName();
-            if ("quantity".equals(name)) {
+            if (QUANTITY.equals(name)) {
                 state = super.createComponent(property, parent, context);
                 Component component = RowFactory.create(Styles.CELL_SPACING, state.getComponent(), sellingUnits);
                 state = new ComponentState(component, property);

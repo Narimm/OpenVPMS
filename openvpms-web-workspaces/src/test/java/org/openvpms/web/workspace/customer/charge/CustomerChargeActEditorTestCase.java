@@ -1280,7 +1280,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      * @param quantity      the initial stock quantity
      */
     private void initStock(Product product, Party stockLocation, BigDecimal quantity) {
-        StockRules rules = new StockRules();
+        StockRules rules = new StockRules(getArchetypeService());
         rules.updateStock(product, stockLocation, quantity);
     }
 
@@ -1309,7 +1309,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      * @param expected      the expected stock quantity
      */
     private void checkStock(Product product, Party stockLocation, BigDecimal expected) {
-        StockRules rules = new StockRules();
+        StockRules rules = new StockRules(getArchetypeService());
         checkEquals(expected, rules.getStock(get(product), get(stockLocation)));
     }
 

@@ -16,10 +16,7 @@
 
 package org.openvpms.web.component.im.table.act;
 
-import echopointng.layout.TableLayoutDataEx;
-import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
@@ -29,7 +26,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.im.util.LookupNameHelper;
-import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
 
@@ -66,14 +63,14 @@ public class ActAmountTableModel<T extends Act> extends BaseIMObjectTableModel<T
 
 
     /**
-     * Constructs an {@code ActAmountTableModel}.
+     * Constructs an {@link ActAmountTableModel}.
      */
     public ActAmountTableModel() {
         this(true, false);
     }
 
     /**
-     * Constructs a {@code ActAmountTableModel}.
+     * Constructs a {@link ActAmountTableModel}.
      *
      * @param showStatus determines if the status column should be displayed
      * @param showAmount determines if the credit/debit amount should be displayed
@@ -227,13 +224,7 @@ public class ActAmountTableModel<T extends Act> extends BaseIMObjectTableModel<T
             amount = amount.negate();
         }
         String result = NumberFormatter.format(amount);
-        Label label = LabelFactory.create();
-        label.setText(result);
-        TableLayoutData layout = new TableLayoutDataEx();
-        Alignment right = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
-        layout.setAlignment(right);
-        label.setLayoutData(layout);
-        return label;
+        return TableHelper.rightAlign(result);
     }
 
     /**

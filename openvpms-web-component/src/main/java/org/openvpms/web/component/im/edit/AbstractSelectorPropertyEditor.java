@@ -24,6 +24,7 @@ import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.select.IMObjectSelector;
@@ -92,6 +93,11 @@ public abstract class AbstractSelectorPropertyEditor<T extends IMObject> extends
             @Override
             protected Query<T> createQuery(String name) {
                 return AbstractSelectorPropertyEditor.this.createQuery(name);
+            }
+
+            @Override
+            protected Browser<T> createBrowser(Query<T> query) {
+                return AbstractSelectorPropertyEditor.this.createBrowser(query);
             }
         };
         selector.setListener(new IMObjectSelectorListener<T>() {
@@ -271,6 +277,16 @@ public abstract class AbstractSelectorPropertyEditor<T extends IMObject> extends
         Query<T> query = QueryFactory.create(shortNames, context.getContext());
         query.setValue(name);
         return query;
+    }
+
+    /**
+     * Creates a new browser.
+     *
+     * @param query the query
+     * @return a return a new browser
+     */
+    protected Browser<T> createBrowser(Query<T> query) {
+        return BrowserFactory.create(query, context);
     }
 
     /**

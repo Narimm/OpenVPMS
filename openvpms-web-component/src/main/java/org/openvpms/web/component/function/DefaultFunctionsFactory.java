@@ -19,6 +19,7 @@ package org.openvpms.web.component.function;
 import org.apache.commons.jxpath.FunctionLibrary;
 import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.function.factory.DefaultArchetypeFunctionsFactory;
+import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.patient.PatientAgeFormatter;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
@@ -45,12 +46,14 @@ public class DefaultFunctionsFactory extends DefaultArchetypeFunctionsFactory {
     /**
      * Constructs an {@link DefaultFunctionsFactory}.
      *
-     * @param service   the archetype service
-     * @param lookups   the lookup service
-     * @param formatter the patient age formatter. May be {@code null}
+     * @param service    the archetype service
+     * @param lookups    the lookup service
+     * @param currencies hte currencies
+     * @param formatter  the patient age formatter. May be {@code null}
      */
-    public DefaultFunctionsFactory(IArchetypeService service, ILookupService lookups, PatientAgeFormatter formatter) {
-        super(service, lookups, formatter);
+    public DefaultFunctionsFactory(IArchetypeService service, ILookupService lookups, Currencies currencies,
+                                   PatientAgeFormatter formatter) {
+        super(service, lookups, currencies, formatter);
     }
 
     /**

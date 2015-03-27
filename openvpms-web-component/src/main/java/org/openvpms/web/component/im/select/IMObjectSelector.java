@@ -298,7 +298,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
         }
         try {
             final FocusCommand focus = new FocusCommand();
-            final Browser<T> browser = BrowserFactory.create(query, context);
+            final Browser<T> browser = createBrowser(query);
             final BrowserDialog<T> popup = new BrowserDialog<T>(type, browser, allowCreate, context.getHelpContext());
 
             popup.addWindowPaneListener(new WindowPaneListener() {
@@ -376,15 +376,14 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      * @param query the query
      * @return a return a new browser
      */
-    protected Browser<IMObject> createBrowser(Query<IMObject> query) {
+    protected Browser<T> createBrowser(Query<T> query) {
         return BrowserFactory.create(query, context);
     }
 
     /**
      * Determines if a selection dialog has been popped up.
      *
-     * @param select if {@code true} denotes that a selection dialog has
-     *               been popped up
+     * @param select if {@code true} denotes that a selection dialog has been popped up
      */
     protected void setInSelect(boolean select) {
         this.inSelect = select;

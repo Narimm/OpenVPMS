@@ -64,7 +64,7 @@ public abstract class AbstractMessageTest extends ArchetypeServiceTest {
     @Before
     public void setUp() {
         ILookupService lookups = getLookupService();
-        PatientRules rules = new PatientRules(getArchetypeService(), lookups);
+        PatientRules rules = new PatientRules(null, getArchetypeService(), lookups);
         CustomerRules customerRules = new CustomerRules(getArchetypeService(), lookups);
         Party owner = TestHelper.createCustomer("Foo", "Bar", true);
         Party patient = TestHelper.createPatient(owner);

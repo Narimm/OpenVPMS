@@ -19,7 +19,6 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -68,9 +67,7 @@ class ReminderHelper {
         if (current != null && !ActStatus.CANCELLED.equals(current.getStatus())) {
             try {
                 if (compare(reminder, current)) {
-                    ReminderRules rules = new ReminderRules(ServiceHelper.getArchetypeService(),
-                                                            new PatientRules(ServiceHelper.getArchetypeService(),
-                                                                             ServiceHelper.getLookupService()));
+                    ReminderRules rules = ServiceHelper.getBean(ReminderRules.class);
                     rules.updateReminder(current, lastSent);
                     result = true;
                 }

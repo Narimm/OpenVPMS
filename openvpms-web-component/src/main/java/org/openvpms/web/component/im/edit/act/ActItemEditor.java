@@ -65,9 +65,14 @@ public abstract class ActItemEditor extends AbstractActEditor {
     private ProductListener listener;
 
     /**
-     * The pricing location.
+     * The practice location.
      */
-    private final Lookup pricingLocation;
+    private final Party location;
+
+    /**
+     * The pricing group.
+     */
+    private final Lookup pricingGroup;
 
 
     /**
@@ -85,7 +90,8 @@ public abstract class ActItemEditor extends AbstractActEditor {
             // default the act start time to that of the parent
             act.setActivityStartTime(parent.getActivityStartTime());
         }
-        pricingLocation = getPricingGroup(parent, context);
+        location = getLocation(parent, context);
+        pricingGroup = getPricingGroup(location);
     }
 
     /**
@@ -290,12 +296,21 @@ public abstract class ActItemEditor extends AbstractActEditor {
     }
 
     /**
-     * Returns the pricing location.
+     * Returns the practice location.
      *
-     * @return the pricing location. May be {@code null}
+     * @return the practice location. May be {@code null}
      */
-    public Lookup getPricingLocation() {
-        return pricingLocation;
+    public Party getLocation() {
+        return location;
+    }
+
+    /**
+     * Returns the pricing group.
+     *
+     * @return the pricing group. May be {@code null}
+     */
+    public Lookup getPricingGroup() {
+        return pricingGroup;
     }
 
     /**
@@ -339,7 +354,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return the corresponding product price, or {@code null} if none exists
      */
     protected ProductPrice getProductPrice(String shortName, Product product) {
-        return rules.getProductPrice(product, shortName, getStartTime(), pricingLocation);
+        return rules.getProductPrice(product, shortName, getStartTime(), pricingGroup);
     }
 
     /**
@@ -350,7 +365,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @param product   the product
      */
     protected ProductPrice getProductPrice(String shortName, BigDecimal price, Product product) {
-        return rules.getProductPrice(product, price, shortName, getStartTime(), pricingLocation);
+        return rules.getProductPrice(product, price, shortName, getStartTime(), pricingGroup);
     }
 
     /**
@@ -502,17 +517,16 @@ public abstract class ActItemEditor extends AbstractActEditor {
     }
 
     /**
-     * Determines the pricing group.
+     * Determines the practice location.
      * <p/>
      * This uses the location of the parent act, if it defines a {@code location} node, otherwise it uses the
      * location from the context.
      *
-     * @param parent  the parent act. May be {@code null}
+     * @param parent  the parent act
      * @param context the layout context
-     * @return the pricing group. May be {@code null}
+     * @return the practice location. May be {@code null}
      */
-    private Lookup getPricingGroup(Act parent, LayoutContext context) {
-        Lookup result = null;
+    protected Party getLocation(Act parent, LayoutContext context) {
         Party location = null;
         if (parent != null) {
             ActBean bean = new ActBean(parent);
@@ -523,6 +537,17 @@ public abstract class ActItemEditor extends AbstractActEditor {
         if (location == null) {
             location = context.getContext().getLocation();
         }
+        return location;
+    }
+
+    /**
+     * Determines the pricing group from the location.
+     *
+     * @param location the location. May be {@code null}
+     * @return the pricing group. May be {@code null}
+     */
+    private Lookup getPricingGroup(Party location) {
+        Lookup result = null;
         if (location != null) {
             LocationRules locationRules = ServiceHelper.getBean(LocationRules.class);
             result = locationRules.getPricingGroup(location);

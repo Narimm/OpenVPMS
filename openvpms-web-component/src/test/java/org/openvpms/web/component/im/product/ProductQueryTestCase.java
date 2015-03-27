@@ -59,7 +59,7 @@ public class ProductQueryTestCase extends AbstractEntityQueryTest<Product> {
      */
     @Test
     public void testQueryByStockLocation() {
-        StockRules rules = new StockRules();
+        StockRules rules = new StockRules(getArchetypeService());
         Party stockLocation1 = createStockLocation();
         Party stockLocation2 = createStockLocation();
 
@@ -140,7 +140,7 @@ public class ProductQueryTestCase extends AbstractEntityQueryTest<Product> {
      */
     @Test
     public void testQueryBySpeciesAndStockLocation() {
-        StockRules rules = new StockRules();
+        StockRules rules = new StockRules(getArchetypeService());
         Party stockLocation1 = createStockLocation();
         Party stockLocation2 = createStockLocation();
 

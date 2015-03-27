@@ -76,7 +76,7 @@ public class PatientTableModel extends AbstractEntityObjectSetTableModel {
     public PatientTableModel(Context context) {
         super("patient", "identity");
         this.context = context;
-        rules = new PatientRules(ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService());
+        rules = ServiceHelper.getBean(PatientRules.class);
         setTableColumnModel(createTableColumnModel());
     }
 
