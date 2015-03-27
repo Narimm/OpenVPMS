@@ -62,7 +62,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
      */
     @Test
     public void testCopy() {
-        StockRules stockRules = new StockRules();
+        StockRules stockRules = new StockRules(getArchetypeService());
         BigDecimal price = new BigDecimal("2.00");
         Party supplier = TestHelper.createSupplier();
         Product product = TestHelper.createProduct();

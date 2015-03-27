@@ -159,7 +159,7 @@ public class ReminderFunctionsTestCase extends ArchetypeServiceTest {
     private JXPathContext createContext(Object context) {
         IArchetypeService service = getArchetypeService();
         ILookupService lookups = getLookupService();
-        PatientRules patientRules = new PatientRules(service, lookups);
+        PatientRules patientRules = new PatientRules(null, service, lookups);
         ReminderFunctions functions = new ReminderFunctions(service,
                                                             new ReminderRules(service, patientRules),
                                                             new CustomerRules(service, lookups));

@@ -38,10 +38,16 @@
                 org.openvpms.component.business.service.lookup.ILookupService
             </java:class>
         </parameter>
+        <parameter identifier="currencies">
+            <java:class>org.openvpms.archetype.rules.math.Currencies</java:class>
+        </parameter>
         <java:consequence>
             import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
             import org.openvpms.archetype.rules.patient.PatientRules;
-            ReminderRules rules = new ReminderRules(service, new PatientRules(service, lookups));
+            import org.openvpms.archetype.rules.practice.PracticeRules;
+
+            PracticeRules practiceRules = new PracticeRules(service, currencies);
+            ReminderRules rules = new ReminderRules(service, new PatientRules(practiceRules, service, lookups));
             rules.markMatchingRemindersCompleted(act);
         </java:consequence>
 

@@ -17,6 +17,9 @@
 package org.openvpms.archetype.rules.practice;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.math.Currencies;
+import org.openvpms.archetype.rules.math.Currency;
+import org.openvpms.archetype.rules.math.CurrencyException;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
@@ -47,12 +50,19 @@ public class PracticeRules {
     private final IArchetypeService service;
 
     /**
+     * The currencies.
+     */
+    private final Currencies currencies;
+
+    /**
      * Constructs a {@link PracticeRules}.
      *
-     * @param service the archetype service
+     * @param service    the archetype service
+     * @param currencies the currencies
      */
-    public PracticeRules(IArchetypeService service) {
+    public PracticeRules(IArchetypeService service, Currencies currencies) {
         this.service = service;
+        this.currencies = currencies;
     }
 
     /**
@@ -113,6 +123,20 @@ public class PracticeRules {
     public User getServiceUser(Party practice) {
         EntityBean bean = new EntityBean(practice, service);
         return (User) bean.getNodeTargetEntity("serviceUser");
+    }
+
+    /**
+     * Returns the currency associated with a practice.
+     *
+     * @param practice the practice
+     * @return the practice currency
+     * @throws CurrencyException if the currency code is invalid or no <em>lookup.currency</em> is defined for the
+     *                           currency
+     */
+    public Currency getCurrency(Party practice) {
+        IMObjectBean bean = new IMObjectBean(practice, service);
+        String code = bean.getString("currency");
+        return currencies.getCurrency(code);
     }
 
     /**

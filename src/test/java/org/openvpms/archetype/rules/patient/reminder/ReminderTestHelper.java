@@ -157,7 +157,7 @@ public class ReminderTestHelper extends TestHelper {
         Act reminder = createReminder(patient, reminderType);
         reminder.setActivityStartTime(startTime);
         ReminderRules rules = new ReminderRules(ArchetypeServiceHelper.getArchetypeService(),
-                                                new PatientRules(ArchetypeServiceHelper.getArchetypeService(),
+                                                new PatientRules(null, ArchetypeServiceHelper.getArchetypeService(),
                                                                  LookupServiceHelper.getLookupService()));
         rules.calculateReminderDueDate(reminder);
         save(reminder);

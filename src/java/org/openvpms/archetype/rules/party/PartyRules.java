@@ -724,7 +724,7 @@ public class PartyRules {
      * @return the patient owner. May be {@code null}
      */
     private Party getOwner(Act act) {
-        return new PatientRules(service, null, null).getOwner(act);
+        return new PatientRules(null, service, null, null).getOwner(act);
     }
 
     /**

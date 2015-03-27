@@ -123,6 +123,6 @@ public class StockRulesTestCase extends AbstractStockTest {
      */
     @Before
     public void setUp() {
-        rules = new StockRules();
+        rules = new StockRules(getArchetypeService());
     }
 }

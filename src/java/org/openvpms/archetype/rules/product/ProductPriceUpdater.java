@@ -17,7 +17,6 @@
 package org.openvpms.archetype.rules.product;
 
 import org.apache.commons.collections.Transformer;
-import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.math.CurrencyException;
 import org.openvpms.archetype.rules.math.MathRules;
@@ -31,8 +30,6 @@ import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
@@ -69,11 +66,6 @@ public class ProductPriceUpdater {
     private Currency currency;
 
     /**
-     * The currency cache.
-     */
-    private final Currencies currencies;
-
-    /**
      * The archetype service.
      */
     private final IArchetypeService service;
@@ -83,18 +75,22 @@ public class ProductPriceUpdater {
      */
     private final ProductPriceRules rules;
 
+    /**
+     * The practice rules
+     */
+    private final PracticeRules practiceRules;
 
     /**
      * Constructs a {@link ProductPriceUpdater}.
      *
-     * @param currencies the currency cache
-     * @param service    the archetype service
-     * @param lookups    the lookup service
+     * @param priceRules    the product price rules
+     * @param practiceRules the practice rules
+     * @param service       the archetype service
      */
-    public ProductPriceUpdater(Currencies currencies, IArchetypeService service, ILookupService lookups) {
-        this.currencies = currencies;
+    public ProductPriceUpdater(ProductPriceRules priceRules, PracticeRules practiceRules, IArchetypeService service) {
         this.service = service;
-        rules = new ProductPriceRules(service, lookups);
+        this.rules = priceRules;
+        this.practiceRules = practiceRules;
     }
 
     /**
@@ -233,6 +229,13 @@ public class ProductPriceUpdater {
         return update;
     }
 
+    /**
+     * Determines if the supplier relationships are equal based on list price and package size.
+     *
+     * @param oldSuppliers the old supplier relationships
+     * @param newSuppliers the new supplier relationships
+     * @return {@code true} if they are equal
+     */
     private boolean checkEquals(Set<EntityRelationship> oldSuppliers, Set<EntityRelationship> newSuppliers) {
         Map<IMObjectReference, ProductSupplier> oldMap = getProductSuppliers(oldSuppliers);
         Map<IMObjectReference, ProductSupplier> newMap = getProductSuppliers(newSuppliers);
@@ -247,6 +250,12 @@ public class ProductPriceUpdater {
         return true;
     }
 
+    /**
+     * Returns the product suppliers for a set of <em>entityRelationship.productSupplier</em> relationships.
+     *
+     * @param suppliers the product supplier relationships
+     * @return the product suppliers, keyed on supplier reference.
+     */
     private Map<IMObjectReference, ProductSupplier> getProductSuppliers(Set<EntityRelationship> suppliers) {
         Map<IMObjectReference, ProductSupplier> result = new HashMap<IMObjectReference, ProductSupplier>();
         for (EntityRelationship supplier : suppliers) {
@@ -342,8 +351,7 @@ public class ProductPriceUpdater {
      */
     private Party getPractice() {
         if (practice == null) {
-            PracticeRules rules = new PracticeRules(service);
-            practice = rules.getPractice();
+            practice = practiceRules.getPractice();
             if (practice == null) {
                 throw new ProductPriceUpdaterException(NoPractice);
             }
@@ -360,9 +368,7 @@ public class ProductPriceUpdater {
      */
     private Currency getCurrency() {
         if (currency == null) {
-            IMObjectBean bean = new IMObjectBean(getPractice(), service);
-            String code = bean.getString("currency");
-            currency = currencies.getCurrency(code);
+            currency = practiceRules.getCurrency(getPractice());
         }
         return currency;
     }
