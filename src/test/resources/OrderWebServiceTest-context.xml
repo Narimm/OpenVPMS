@@ -79,8 +79,14 @@
         <constructor-arg index="0" ref="archetypeService"/>
     </bean>
 
+    <bean id="currencies" class="org.openvpms.archetype.rules.math.Currencies">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+    </bean>
+
     <bean id="practiceRules" class="org.openvpms.archetype.rules.practice.PracticeRules">
         <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="currencies"/>
     </bean>
 
     <bean id="locationRules" class="org.openvpms.archetype.rules.practice.LocationRules">

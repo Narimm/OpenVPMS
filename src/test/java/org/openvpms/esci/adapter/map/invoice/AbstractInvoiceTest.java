@@ -470,10 +470,11 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         IArchetypeService service = getArchetypeService();
         ILookupService lookups = getLookupService();
         InvoiceMapperImpl mapper = new InvoiceMapperImpl();
-        mapper.setPracticeRules(new PracticeRules(service));
+        Currencies currencies = new Currencies(service, lookups);
+        mapper.setPracticeRules(new PracticeRules(service, currencies));
         mapper.setProductRules(new ProductRules(service));
         mapper.setLookupService(lookups);
-        mapper.setCurrencies(new Currencies(service, lookups));
+        mapper.setCurrencies(currencies);
         mapper.setArchetypeService(service);
         mapper.setBeanFactory(new IMObjectBeanFactory(service));
         mapper.setSupplierRules(new SupplierRules(service));
