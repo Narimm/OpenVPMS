@@ -16,8 +16,6 @@
 
 package org.openvpms.sms.mail.template;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.practice.PracticeRules;
@@ -29,6 +27,9 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.sms.SMSException;
 import org.openvpms.sms.mail.AbstractSMSTest;
 import org.openvpms.sms.mail.SMSArchetypes;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -60,7 +61,7 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
             bean.removeRelationship(relationship);
         }
         save(practice);
-        config = new PracticeMailTemplateConfig(getArchetypeService(), new PracticeRules(getArchetypeService()));
+        config = new PracticeMailTemplateConfig(getArchetypeService(), new PracticeRules(getArchetypeService(), null));
     }
 
     /**
@@ -83,7 +84,7 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
     @Test
     public void testNoPractice() {
         remove(practice);
-        config = new PracticeMailTemplateConfig(getArchetypeService(), new PracticeRules(getArchetypeService()));
+        config = new PracticeMailTemplateConfig(getArchetypeService(), new PracticeRules(getArchetypeService(), null));
         try {
             config.getTemplate();
             fail("Expected getTemplate() to fail");
