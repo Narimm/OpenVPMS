@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.product;
@@ -35,14 +33,12 @@ import org.openvpms.web.component.property.Property;
 /**
  * Participation editor for products.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class ProductParticipationEditor extends ParticipationEditor<Product> {
 
     /**
-     * The patient, used to constrain searches to a particular species. May be
-     * <tt>null</tt>.
+     * The patient, used to constrain searches to a particular species. May be {@code null}.
      */
     private Party patient;
 
@@ -57,36 +53,36 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
     private ProductSupplier productSupplier;
 
     /**
-     * The stock location, used to constrain searches to a particular location.
-     * May be <tt>null</tt>.
+     * The practice location, used to determine price service ratios. May be {@code null}
      */
     private Party location;
 
+    /**
+     * The stock location, used to constrain searches to a particular location. May be {@code null}.
+     */
+    private Party stockLocation;
+
 
     /**
-     * Constructs a new <tt>ProductParticipationEditor</tt>.
+     * Constructs a new {@link ProductParticipationEditor}.
      *
      * @param participation the object to edit
      * @param parent        the parent object
-     * @param context       the layout context. May be <tt>null</tt>
+     * @param context       the layout context. May be {@code null}
      */
-    public ProductParticipationEditor(Participation participation,
-                                      Act parent, LayoutContext context) {
+    public ProductParticipationEditor(Participation participation, Act parent, LayoutContext context) {
         super(participation, parent, context);
-        if (!TypeHelper.isA(participation,
-                            ProductArchetypes.PRODUCT_PARTICIPATION,
+        if (!TypeHelper.isA(participation, ProductArchetypes.PRODUCT_PARTICIPATION,
                             StockArchetypes.STOCK_PARTICIPATION)) {
-            throw new IllegalArgumentException(
-                "Invalid participation type:"
-                + participation.getArchetypeId().getShortName());
+            throw new IllegalArgumentException("Invalid participation type:"
+                                               + participation.getArchetypeId().getShortName());
         }
     }
 
     /**
-     * Sets the patient, used to constrain product searches to a set of
-     * species.
+     * Sets the patient, used to constrain product searches to a set of species.
      *
-     * @param patient the patient. May be <tt>null</tt>
+     * @param patient the patient. May be {@code null}
      */
     public void setPatient(Party patient) {
         this.patient = patient;
@@ -95,7 +91,7 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
     /**
      * Returns the patient .
      *
-     * @return the patient. May be <tt>null</tt>
+     * @return the patient. May be {@code null}
      */
     public Party getPatient() {
         return patient;
@@ -104,7 +100,7 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
     /**
      * Sets the product supplier.
      *
-     * @param supplier the supplier. May be <tt>null</tt>
+     * @param supplier the supplier. May be {@code null}
      */
     public void setSupplier(Party supplier) {
         this.supplier = supplier;
@@ -114,10 +110,30 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
     /**
      * Returns the product supplier.
      *
-     * @return the product supplier. May be <tt>null</tt>
+     * @return the product supplier. May be {@code null}
      */
     public Party getSupplier() {
         return supplier;
+    }
+
+    /**
+     * Sets the practice location.
+     * <p/>
+     * This is used to determine price service ratios.
+     *
+     * @param location the practice location. May be {@code null}
+     */
+    public void setLocation(Party location) {
+        this.location = location;
+    }
+
+    /**
+     * Returns the practice location.
+     *
+     * @return the practice location. May be {@code null}
+     */
+    public Party getLocation() {
+        return location;
     }
 
     /**
@@ -125,27 +141,26 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
      * an relationship with the location, or no stock relationships at all
      * will be returned.
      *
-     * @param location the stock location. May be <tt>null</tt>
+     * @param location the stock location. May be {@code null}
      */
     public void setStockLocation(Party location) {
-        this.location = location;
+        this.stockLocation = location;
     }
 
     /**
      * Returns the stock location.
      *
-     * @return the stock location. May be <tt>null</tt>
+     * @return the stock location. May be {@code null}
      */
     public Party getStockLocation() {
-        return location;
+        return stockLocation;
     }
 
     /**
-     * The <em>entityRelationship.productSupplier</em> relationship
-     * associated with the product. Only populated when the user selects
-     * the product.
+     * The <em>entityRelationship.productSupplier</em> relationship associated with the product. Only populated when
+     * the user selects the product.
      *
-     * @return the product supplier relationship. May be <tt>null</tt>
+     * @return the product supplier relationship. May be {@code null}
      */
     public ProductSupplier getProductSupplier() {
         return productSupplier;
@@ -154,8 +169,7 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
     /**
      * Sets the product supplier relationship.
      *
-     * @param relationship the product supplier relationship.
-     *                     May be <tt>null</tt>
+     * @param relationship the product supplier relationship. May be {@code null}
      */
     public void setProductSupplier(ProductSupplier relationship) {
         productSupplier = relationship;
@@ -168,8 +182,7 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
      * @return a new object reference editor
      */
     @Override
-    protected IMObjectReferenceEditor<Product> createEntityEditor(
-        Property property) {
+    protected IMObjectReferenceEditor<Product> createEntityEditor(Property property) {
         return new ProductReferenceEditor(this, property, getLayoutContext());
     }
 

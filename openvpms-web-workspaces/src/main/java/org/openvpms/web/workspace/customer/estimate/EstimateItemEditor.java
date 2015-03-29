@@ -18,11 +18,12 @@ package org.openvpms.web.workspace.customer.estimate;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
-import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -32,6 +33,7 @@ import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
+import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
@@ -40,12 +42,12 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
-import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
+import static org.openvpms.archetype.rules.product.ProductArchetypes.TEMPLATE;
 import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
 
 
@@ -55,11 +57,6 @@ import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
  * @author Tim Anderson
  */
 public class EstimateItemEditor extends PriceActItemEditor {
-
-    /**
-     * Tax rules.
-     */
-    private final CustomerTaxRules taxRules;
 
     /**
      * Low quantity selling units.
@@ -72,10 +69,45 @@ public class EstimateItemEditor extends PriceActItemEditor {
     private Label highQtySellingUnits = LabelFactory.create();
 
     /**
+     * Fixed price node name.
+     */
+    private static final String FIXED_PRICE = "fixedPrice";
+
+    /**
+     * Low unit price node name.
+     */
+    private static final String LOW_UNIT_PRICE = "lowUnitPrice";
+
+    /**
+     * High unit price node name.
+     */
+    private static final String HIGH_UNIT_PRICE = "highUnitPrice";
+
+    /**
+     * Low quantity node name.
+     */
+    private static final String LOW_QTY = "lowQty";
+
+    /**
+     * High quantity node name.
+     */
+    private static final String HIGH_QTY = "highQty";
+
+    /**
+     * Low discount node name.
+     */
+    private static final String LOW_DISCOUNT = "lowDiscount";
+
+    /**
+     * High discount node name.
+     */
+    private static final String HIGH_DISCOUNT = "highDiscount";
+
+    /**
      * Nodes to display when a product template is selected.
      */
     private static final ArchetypeNodes TEMPLATE_NODES = new ArchetypeNodes().exclude(
-            "lowQty", "highQty", "fixedPrice", "lowUnitPrice", "highUnitPrice", "lowDiscount", "highDiscount",
+            LOW_QTY, HIGH_QTY, FIXED_PRICE, LOW_UNIT_PRICE, HIGH_UNIT_PRICE, LOW_DISCOUNT, HIGH_DISCOUNT,
             "lowTotal", "highTotal");
 
 
@@ -91,12 +123,14 @@ public class EstimateItemEditor extends PriceActItemEditor {
         if (!TypeHelper.isA(act, EstimateArchetypes.ESTIMATE_ITEM)) {
             throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
         }
+        setDisableDiscounts(getDisableDiscounts(getLocation()));
         if (act.isNew()) {
             // default the act start time to today
             act.setActivityStartTime(new Date());
         }
-        taxRules = new CustomerTaxRules(context.getContext().getPractice(), ServiceHelper.getArchetypeService(),
-                                        ServiceHelper.getLookupService());
+
+        ArchetypeNodes nodes = getFilterForProduct(getProductRef());
+        setArchetypeNodes(nodes);
 
         // add a listener to update the discount when the fixed, high unit price
         // or quantity, changes
@@ -117,11 +151,11 @@ public class EstimateItemEditor extends PriceActItemEditor {
                 updateHighDiscount();
             }
         };
-        getProperty("fixedPrice").addModifiableListener(listener);
-        getProperty("lowUnitPrice").addModifiableListener(lowListener);
-        getProperty("lowQty").addModifiableListener(lowListener);
-        getProperty("highUnitPrice").addModifiableListener(highListener);
-        getProperty("highQty").addModifiableListener(highListener);
+        getProperty(FIXED_PRICE).addModifiableListener(listener);
+        getProperty(LOW_UNIT_PRICE).addModifiableListener(lowListener);
+        getProperty(LOW_QTY).addModifiableListener(lowListener);
+        getProperty(HIGH_UNIT_PRICE).addModifiableListener(highListener);
+        getProperty(HIGH_QTY).addModifiableListener(highListener);
     }
 
     /**
@@ -152,7 +186,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * @return the low quantity
      */
     public BigDecimal getLowQuantity() {
-        return getProperty("lowQty").getBigDecimal(BigDecimal.ZERO);
+        return getProperty(LOW_QTY).getBigDecimal(BigDecimal.ZERO);
     }
 
     /**
@@ -161,7 +195,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * @param quantity the low quantity
      */
     public void setLowQuantity(BigDecimal quantity) {
-        getProperty("lowQty").setValue(quantity);
+        getProperty(LOW_QTY).setValue(quantity);
     }
 
     /**
@@ -170,7 +204,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * @return the high quantity
      */
     public BigDecimal getHighQuantity() {
-        return getProperty("highQty").getBigDecimal(BigDecimal.ZERO);
+        return getProperty(HIGH_QTY).getBigDecimal(BigDecimal.ZERO);
     }
 
     /**
@@ -179,7 +213,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * @param quantity the high quantity
      */
     public void setHighQuantity(BigDecimal quantity) {
-        getProperty("highQty").setValue(quantity);
+        getProperty(HIGH_QTY).setValue(quantity);
     }
 
     /**
@@ -191,8 +225,8 @@ public class EstimateItemEditor extends PriceActItemEditor {
      */
     @Override
     public void setUnitPrice(BigDecimal unitPrice) {
-        getProperty("lowUnitPrice").setValue(unitPrice);
-        getProperty("highUnitPrice").setValue(unitPrice);
+        getProperty(LOW_UNIT_PRICE).setValue(unitPrice);
+        getProperty(HIGH_UNIT_PRICE).setValue(unitPrice);
     }
 
     /**
@@ -213,7 +247,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * @return the low unit price
      */
     public BigDecimal getLowUnitPrice() {
-        return getProperty("lowUnitPrice").getBigDecimal(BigDecimal.ZERO);
+        return getProperty(LOW_UNIT_PRICE).getBigDecimal(BigDecimal.ZERO);
     }
 
     /**
@@ -222,7 +256,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * @return the high unit price
      */
     public BigDecimal getHighUnitPrice() {
-        return getProperty("highUnitPrice").getBigDecimal(BigDecimal.ZERO);
+        return getProperty(HIGH_UNIT_PRICE).getBigDecimal(BigDecimal.ZERO);
     }
 
     /**
@@ -231,7 +265,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * @param lowDiscount the low discount
      */
     public void setLowDiscount(BigDecimal lowDiscount) {
-        getProperty("lowDiscount").setValue(lowDiscount);
+        getProperty(LOW_DISCOUNT).setValue(lowDiscount);
     }
 
     /**
@@ -240,7 +274,20 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * @param highDiscount the high discount
      */
     public void setHighDiscount(BigDecimal highDiscount) {
-        getProperty("highDiscount").setValue(highDiscount);
+        getProperty(HIGH_DISCOUNT).setValue(highDiscount);
+    }
+
+    /**
+     * Invoked when layout has completed.
+     */
+    @Override
+    protected void onLayoutCompleted() {
+        super.onLayoutCompleted();
+        ProductParticipationEditor product = getProductEditor();
+        if (product != null) {
+            // register the location in order to determine service ratios
+            product.setLocation(getLocation());
+        }
     }
 
     /**
@@ -252,28 +299,33 @@ public class EstimateItemEditor extends PriceActItemEditor {
     protected void productModified(Product product) {
         super.productModified(product);
 
-        Property discount = getProperty("discount");
-        discount.setValue(BigDecimal.ZERO);
+        Property lowDiscount = getProperty(LOW_DISCOUNT);
+        Property highDiscount = getProperty(HIGH_DISCOUNT);
+        lowDiscount.setValue(BigDecimal.ZERO);
+        highDiscount.setValue(BigDecimal.ZERO);
 
         if (TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
             if (getArchetypeNodes() != TEMPLATE_NODES) {
                 changeLayout(TEMPLATE_NODES);
             }
             // zero out the fixed, low and high prices.
-            Property fixedPrice = getProperty("fixedPrice");
-            Property lowUnitPrice = getProperty("lowUnitPrice");
-            Property highUnitPrice = getProperty("highUnitPrice");
+            Property fixedPrice = getProperty(FIXED_PRICE);
+            Property lowUnitPrice = getProperty(LOW_UNIT_PRICE);
+            Property highUnitPrice = getProperty(HIGH_UNIT_PRICE);
             fixedPrice.setValue(BigDecimal.ZERO);
             lowUnitPrice.setValue(BigDecimal.ZERO);
             highUnitPrice.setValue(BigDecimal.ZERO);
             updateSellingUnits(null);
         } else {
-            if (getArchetypeNodes() != null) {
-                changeLayout(null);
+            ArchetypeNodes currentNodes = getArchetypeNodes();
+            IMObjectReference productRef = (product != null) ? product.getObjectReference() : null;
+            ArchetypeNodes expectedFilter = getFilterForProduct(productRef);
+            if (!ObjectUtils.equals(currentNodes, expectedFilter)) {
+                changeLayout(expectedFilter);
             }
-            Property fixedPrice = getProperty("fixedPrice");
-            Property lowUnitPrice = getProperty("lowUnitPrice");
-            Property highUnitPrice = getProperty("highUnitPrice");
+            Property fixedPrice = getProperty(FIXED_PRICE);
+            Property lowUnitPrice = getProperty(LOW_UNIT_PRICE);
+            Property highUnitPrice = getProperty(HIGH_UNIT_PRICE);
             ProductPrice fixed = null;
             ProductPrice unit = null;
             if (product != null) {
@@ -349,19 +401,6 @@ public class EstimateItemEditor extends PriceActItemEditor {
     }
 
     /**
-     * Returns the price of a product.
-     * <p/>
-     * This subtracts any tax exclusions the customer may have.
-     *
-     * @param price the price
-     * @return the price, minus any tax exclusions
-     */
-    private BigDecimal getPrice(Product product, ProductPrice price) {
-        BigDecimal amount = price.getPrice();
-        return taxRules.getTaxExAmount(amount, product, getCustomer());
-    }
-
-    /**
      * Updates the selling units label.
      *
      * @param product the product. May be {@code null}
@@ -391,8 +430,8 @@ public class EstimateItemEditor extends PriceActItemEditor {
             BigDecimal quantity = getLowQuantity();
             BigDecimal amount = calculateDiscount(unitPrice, quantity);
             // If discount amount calculates to zero don't update any existing value as may have been manually modified.
-            if (amount.compareTo(BigDecimal.ZERO) != 0) {
-                Property discount = getProperty("lowDiscount");
+            if (getDisableDiscounts() || amount.compareTo(BigDecimal.ZERO) != 0) {
+                Property discount = getProperty(LOW_DISCOUNT);
                 result = discount.setValue(amount);
             }
         } catch (OpenVPMSException exception) {
@@ -413,8 +452,8 @@ public class EstimateItemEditor extends PriceActItemEditor {
             BigDecimal quantity = getHighQuantity();
             BigDecimal amount = calculateDiscount(unitPrice, quantity);
             // If discount amount calculates to zero don't update any existing value as may have been manually modified.
-            if (amount.compareTo(BigDecimal.ZERO) != 0) {
-                Property discount = getProperty("highDiscount");
+            if (getDisableDiscounts() || amount.compareTo(BigDecimal.ZERO) != 0) {
+                Property discount = getProperty(HIGH_DISCOUNT);
                 discount.setValue(amount);
             }
         } catch (OpenVPMSException exception) {
@@ -431,14 +470,36 @@ public class EstimateItemEditor extends PriceActItemEditor {
         @Override
         protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
             ComponentState state = super.createComponent(property, parent, context);
-            if ("lowQty".equals(property.getName())) {
+            if (LOW_QTY.equals(property.getName())) {
                 Component component = RowFactory.create(CELL_SPACING, state.getComponent(), lowQtySellingUnits);
                 state = new ComponentState(component, property);
-            } else if ("highQty".equals(property.getName())) {
+            } else if (HIGH_QTY.equals(property.getName())) {
                 Component component = RowFactory.create(CELL_SPACING, state.getComponent(), highQtySellingUnits);
                 state = new ComponentState(component, property);
             }
             return state;
         }
+    }
+
+    /**
+     * Returns a node filter for the specified product reference.
+     * <p/>
+     * This excludes:
+     * <ul>
+     * <li>the price and discount nodes for <em>product.template</em>
+     * <li>the discount node, if discounts are disabled</li>
+     * </ul>
+     *
+     * @param product a reference to the product. May be {@code null}
+     * @return a node filter for the product. If {@code null}, no nodes require filtering
+     */
+    private ArchetypeNodes getFilterForProduct(IMObjectReference product) {
+        ArchetypeNodes result = null;
+        if (TypeHelper.isA(product, TEMPLATE)) {
+            result = TEMPLATE_NODES;
+        } else if (getDisableDiscounts()) {
+            result = new ArchetypeNodes().exclude(LOW_DISCOUNT, HIGH_DISCOUNT);
+        }
+        return result;
     }
 }

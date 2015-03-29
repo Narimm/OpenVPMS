@@ -74,7 +74,7 @@ public class PracticeEmailAddressesTestCase extends ArchetypeServiceTest {
         // customer 3 has no link, so should get the practice reminder address
         Party customer3 = createCustomer(null);
 
-        PracticeRules rules = new PracticeRules(getArchetypeService());
+        PracticeRules rules = new PracticeRules(getArchetypeService(), null);
         PracticeEmailAddresses addresses = new PracticeEmailAddresses(practice, "REMINDER", rules,
                                                                       getArchetypeService());
 

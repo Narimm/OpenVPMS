@@ -59,8 +59,8 @@ public class MacroFunctionsTestCase extends ArchetypeServiceTest {
         MacroTestHelper.createMacro("displayName", "openvpms:get(., 'displayName')");
         MacroTestHelper.createMacro("numbertest", "concat('input number: ', $number)");
 
-        functions = new DefaultArchetypeFunctionsFactory(getArchetypeService(),
-                                                         getLookupService(), null) {
+        final IArchetypeService service = getArchetypeService();
+        functions = new DefaultArchetypeFunctionsFactory(service, getLookupService(), null, null) {
             @Override
             public FunctionLibrary create(IArchetypeService service) {
                 FunctionLibrary library = super.create(service);
@@ -69,9 +69,8 @@ public class MacroFunctionsTestCase extends ArchetypeServiceTest {
             }
         };
 
-        ReportFactory factory = new ReportFactory(getArchetypeService(), getLookupService(), new DocumentHandlers(),
-                                                  functions);
-        macros = new LookupMacros(getLookupService(), getArchetypeService(), factory);
+        ReportFactory factory = new ReportFactory(service, getLookupService(), new DocumentHandlers(), functions);
+        macros = new LookupMacros(getLookupService(), service, factory);
     }
 
     /**
