@@ -1,20 +1,20 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.workflow.worklist;
+package org.openvpms.web.workspace.workflow.appointment;
 
 import echopointng.layout.TableLayoutDataEx;
 import echopointng.xhtml.XhtmlFragment;
@@ -29,29 +29,29 @@ import static org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid.A
 
 
 /**
- * Cell renderer for tasks.
+ * TableCellRender for {@link MultiDayTableModel}.
  *
  * @author Tim Anderson
  */
-public class TaskTableCellRenderer extends ScheduleTableCellRenderer {
+public class MultiDayTableCellRenderer extends ScheduleTableCellRenderer {
 
     /**
-     * Constructs a {@link TaskTableCellRenderer}.
+     * Default constructor.
      */
-    public TaskTableCellRenderer() {
-        super("entity.taskType");
+    public MultiDayTableCellRenderer() {
+        super("entity.appointmentType");
     }
 
     /**
-     * Returns a {@code XhtmlFragment} that will be displayed as the
-     * content at the specified coordinate in the table.
+     * Returns a <tt>XhtmlFragment</tt> that will be displayed as the
+     * content at the specified co-ordinate in the table.
      *
-     * @param table  the {@code Table} for which the rendering is occurring
-     * @param value  the value retrieved from the {@code TableModel} for the
+     * @param table  the <tt>Table</tt> for which the rendering is occurring
+     * @param value  the value retrieved from the <tt>TableModel</tt> for the
      *               specified coordinate
      * @param column the column index to render
      * @param row    the row index to render
-     * @return a {@code XhtmlFragment} representation of the value
+     * @return a <tt>XhtmlFragment</tt> representation of the value
      */
     public XhtmlFragment getTableCellRendererContent(Table table, Object value,
                                                      int column, int row) {
@@ -71,4 +71,5 @@ public class TaskTableCellRenderer extends ScheduleTableCellRenderer {
         result.setLayoutData(layout);
         return result;
     }
+
 }

@@ -161,16 +161,14 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         boolean found = false;
         selected = object;
         if (selected != null) {
-            int column = model.getColumn(object.getReference(ScheduleEvent.SCHEDULE_REFERENCE));
-            if (column != -1) {
-                Schedule schedule = model.getSchedule(column);
-                int row = model.getRow(schedule, object.getReference(ScheduleEvent.ACT_REFERENCE));
-                if (row != -1) {
-                    model.setSelectedCell(column, row);
-                    selectedTime = object.getDate(ScheduleEvent.ACT_START_TIME);
-                    selectedSchedule = schedule.getSchedule();
-                    found = true;
-                }
+            Cell cell = model.getCell(object.getReference(ScheduleEvent.SCHEDULE_REFERENCE),
+                                      object.getReference(ScheduleEvent.ACT_REFERENCE));
+            if (cell != null) {
+                Schedule schedule = model.getSchedule(cell);
+                model.setSelectedCell(cell);
+                selectedTime = object.getDate(ScheduleEvent.ACT_START_TIME);
+                selectedSchedule = schedule.getSchedule();
+                found = true;
             }
         }
         if (!found) {
@@ -412,8 +410,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     protected TableEx createTable(ScheduleTableModel model) {
         TableEx table = new TableEx(model, model.getColumnModel());
         table.setStyleName("ScheduleTable");
-        table.setDefaultHeaderRenderer(DefaultTableHeaderRenderer.DEFAULT);
-        table.setDefaultRenderer(EvenOddTableCellRenderer.INSTANCE);
+        initTable(table);
 /*
         table.setScrollable(true);
         table.setResizeable(true);
@@ -421,6 +418,16 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         table.setResizeDragBarUsed(true);
 */
         return table;
+    }
+
+    /**
+     * Initialises a table.
+     *
+     * @param table the table
+     */
+    protected void initTable(TableEx table) {
+        table.setDefaultHeaderRenderer(DefaultTableHeaderRenderer.DEFAULT);
+        table.setDefaultRenderer(EvenOddTableCellRenderer.INSTANCE);
     }
 
     /**
@@ -530,6 +537,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         } else {
             table.setModel(model);
             table.setColumnModel(model.getColumnModel());
+            initTable(table);
         }
         User clinician = query.getClinician();
         if (clinician != null) {
@@ -575,14 +583,10 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
             if (marked != null) {
                 IMObjectReference scheduleRef = marked.getReference(ScheduleEvent.SCHEDULE_REFERENCE);
                 IMObjectReference eventRef = marked.getReference(ScheduleEvent.ACT_REFERENCE);
-                int column = model.getColumn(scheduleRef);
-                if (column != -1) {
-                    Schedule schedule = model.getSchedule(column);
-                    int row = model.getRow(schedule, eventRef);
-                    if (row != -1) {
-                        model.setMarkedCell(column, row, isCut);
-                        found = true;
-                    }
+                Cell cell = model.getCell(scheduleRef, eventRef);
+                if (cell != null) {
+                    model.setMarkedCell(cell, isCut);
+                    found = true;
                 }
             }
             if (!found) {
@@ -613,10 +617,10 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         model.setSelectedCell(column, row);
         selected = model.getEvent(column, row);
         if (model.getAvailability(column, row) != Availability.UNAVAILABLE) {
-            Schedule schedule = model.getSchedule(column);
+            Schedule schedule = model.getSchedule(column, row);
             if (schedule != null) {
                 selectedTime = model.getStartTime(schedule, row);
-                selectedSchedule = model.getScheduleEntity(column);
+                selectedSchedule = model.getScheduleEntity(column, row);
             } else {
                 selectedTime = null;
                 selectedSchedule = null;

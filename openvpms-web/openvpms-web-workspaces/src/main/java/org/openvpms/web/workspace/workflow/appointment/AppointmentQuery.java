@@ -17,11 +17,17 @@
 package org.openvpms.web.workspace.workflow.appointment;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.joda.time.DateTime;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.resource.i18n.Messages;
@@ -29,6 +35,7 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleServiceQuery;
 
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -117,6 +124,16 @@ class AppointmentQuery extends ScheduleServiceQuery {
     }
 
     /**
+     * Creates a container to lay out the component.
+     *
+     * @return a new container
+     */
+    @Override
+    protected Component createContainer() {
+        return GridFactory.create(8);
+    }
+
+    /**
      * Lays out the component.
      *
      * @param container the container
@@ -143,5 +160,22 @@ class AppointmentQuery extends ScheduleServiceQuery {
         container.add(LabelFactory.create("workflow.scheduling.time"));
         container.add(timeSelector);
         getFocusGroup().add(timeSelector);
+        Label view = LabelFactory.create();
+        view.setText("Dates");
+        container.add(view, 6);
+        String[] dwm = {"Day", "Week", "Month"};
+        container.add(SelectFieldFactory.create(dwm), 7);
+    }
+
+    /**
+     * Returns the events for a schedule and date.
+     *
+     * @param schedule the schedule
+     * @param date     the date
+     * @return the events
+     */
+    @Override
+    protected List<PropertySet> getEvents(Entity schedule, Date date) {
+        return getService().getEvents(schedule, date, DateRules.getDate(date, 30, DateUnits.DAYS));
     }
 }
