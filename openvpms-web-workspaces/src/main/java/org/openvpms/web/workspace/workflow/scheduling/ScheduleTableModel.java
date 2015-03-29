@@ -1,15 +1,15 @@
 /*
- * Version: 1.0
+ *  Version: 1.0
  *
- * The contents of this file are subject to the OpenVPMS License Version
- * 1.0 (the 'License'); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.openvpms.org/license/
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
  *
- * Software distributed under the License is distributed on an 'AS IS' basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
  *
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
@@ -37,8 +37,8 @@ import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.echo.factory.BalloonHelpFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
-import org.openvpms.web.echo.style.Styles;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -68,12 +68,17 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     private final Context context;
 
     /**
+     * Determines if the columns display schedules.
+     */
+    private final boolean scheduleColumns;
+
+    /**
      * The column model.
      */
     private TableColumnModel model = new DefaultTableColumnModel();
 
     /**
-     * The clinician to display svents for.
+     * The clinician to display events for.
      * If {@code null} indicates to display events for all clinicians.
      */
     private IMObjectReference clinician;
@@ -122,12 +127,14 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     /**
      * Constructs a {@code ScheduleTableModel}.
      *
-     * @param grid    the schedule event grid
-     * @param context the context
+     * @param grid            the schedule event grid
+     * @param context         the context
+     * @param scheduleColumns if {@code true}, display the schedules on the columns, otherwise display them on the rows
      */
-    public ScheduleTableModel(ScheduleEventGrid grid, Context context) {
+    public ScheduleTableModel(ScheduleEventGrid grid, Context context, boolean scheduleColumns) {
         this.grid = grid;
         this.context = context;
+        this.scheduleColumns = scheduleColumns;
         IMObjectBean bean = new IMObjectBean(grid.getScheduleView());
         expression = bean.getString("displayExpression");
         displayNotes = bean.getBoolean("displayNotes");
@@ -144,31 +151,63 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     }
 
     /**
-     * Returns the column index of a schedule.
+     * Returns the cell for a schedule and event reference.
      *
-     * @param scheduleRef the schedule reference
-     * @return the index of the schedule, or {@code -1} if the schedule isn't found
+     * @param schedule the schedule reference
+     * @param event    the event reference
+     * @return the cell, or {@code null} if none is found
      */
-    public int getColumn(IMObjectReference scheduleRef) {
-        for (Column column : getColumns()) {
-            if (column.getSchedule() != null) {
-                Entity schedule = column.getSchedule().getSchedule();
-                if (schedule.getObjectReference().equals(scheduleRef)) {
-                    return column.getModelIndex();
+    public Cell getCell(IMObjectReference schedule, IMObjectReference event) {
+        Cell result = null;
+        if (scheduleColumns) {
+            int column = getColumn(schedule);
+            if (column != -1) {
+                Schedule s = getSchedule(column, 0);
+                int row = getSlot(s, event);
+                if (row != -1) {
+                    result = new Cell(row, column);
+                }
+            }
+        } else {
+            int row = getRow(schedule);
+            if (row != -1) {
+                Schedule s = grid.getSchedules().get(row);
+                int column = getSlot(s, event);
+                if (column != -1) {
+                    result = new Cell(row, column);
                 }
             }
         }
-        return -1;
+        return result;
     }
 
     /**
-     * Returns the row of the specified event.
+     * Returns the cell for the selected schedule and date.
+     *
+     * @param schedule the schedule
+     * @param date
+     * @return
+     */
+    public Cell getCell(IMObjectReference schedule, Date date) {
+        Cell result = null;
+        int slot = grid.getSlot(date);
+        if (slot != -1) {
+            int index = (scheduleColumns) ? getColumn(schedule) : getRow(schedule);
+            if (index != -1) {
+                result = (scheduleColumns) ? new Cell(index, slot) : new Cell(slot, index);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the slot of the specified event.
      *
      * @param schedule the schedule
      * @param eventRef the event reference
-     * @return the row, or {@code -1} if the event is not found
+     * @return the slot, or {@code -1} if the event is not found
      */
-    public abstract int getRow(Schedule schedule, IMObjectReference eventRef);
+    public abstract int getSlot(Schedule schedule, IMObjectReference eventRef);
 
     /**
      * Sets the clinician to display appointments for.
@@ -189,6 +228,15 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      */
     public IMObjectReference getClinician() {
         return clinician;
+    }
+
+    /**
+     * Sets the selected cell.
+     *
+     * @param cell the selected cell
+     */
+    public void setSelectedCell(Cell cell) {
+        setSelectedCell(cell.getColumn(), cell.getRow());
     }
 
     /**
@@ -237,6 +285,16 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      */
     public boolean isSelectedCell(int column, int row) {
         return selectedColumn == column && selectedRow == row;
+    }
+
+    /**
+     * Sets the marked cell. This flags a cell as being marked for cutting/copying and pasting purposes.
+     *
+     * @param cell  the cell
+     * @param isCut if {@code true} indicates the cell is being cut; if {@code false} indicates its being copied
+     */
+    public void setMarkedCell(Cell cell, boolean isCut) {
+        setMarkedCell(cell.getColumn(), cell.getRow(), isCut);
     }
 
     /**
@@ -373,7 +431,17 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * @return the row count
      */
     public int getRowCount() {
-        return grid.getSlots();
+        return (scheduleColumns) ? grid.getSlots() : grid.getSchedules().size();
+    }
+
+    /**
+     * Returns the event at the specified cell.
+     *
+     * @param cell the cell
+     * @return the event, or {@code null} if none is found
+     */
+    public PropertySet getEvent(Cell cell) {
+        return getEvent(cell.getColumn(), cell.getRow());
     }
 
     /**
@@ -384,43 +452,47 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * @return the event, or {@code null} if none is found
      */
     public PropertySet getEvent(int column, int row) {
-        return getEvent(getColumn(column), row);
+        int slot = (scheduleColumns) ? row : column;
+        Schedule schedule = getSchedule(column, row);
+        return (schedule != null) ? grid.getEvent(schedule, slot) : null;
     }
 
     /**
-     * Returns the schedule at the given column.
+     * Returns the schedule at the given cell.
      *
-     * @param column the column
-     * @return the schedule, or {@code null} if there is no schedule associated
-     *         with the column
+     * @param cell the cell
+     * @return the schedule, or {@code null} if there is no schedule associated with the cell
      */
-    public Schedule getSchedule(int column) {
-        Column col = getColumn(column);
-        return col.getSchedule();
+    public Schedule getSchedule(Cell cell) {
+        return getSchedule(cell.getColumn(), cell.getRow());
     }
 
     /**
-     * Returns the schedule entity at the given column.
+     * Returns the schedule at the given column and row.
      *
      * @param column the column
-     * @return the schedule entity, or {@code null} if there is no schedule
-     *         associated with the column
+     * @param row    the row
+     * @return the schedule, or {@code null} if there is no schedule associated with the column and row
      */
-    public Entity getScheduleEntity(int column) {
-        Schedule schedule = getSchedule(column);
+    public Schedule getSchedule(int column, int row) {
+        if (scheduleColumns) {
+            ScheduleColumn col = (ScheduleColumn) getColumn(column);
+            return col.getSchedule();
+        } else {
+            return grid.getSchedules().get(row);
+        }
+    }
+
+    /**
+     * Returns the schedule entity at the given column and row.
+     *
+     * @param column the column
+     * @param row    the row
+     * @return the schedule entity, or {@code null} if there is no schedule associated with the column and row
+     */
+    public Entity getScheduleEntity(int column, int row) {
+        Schedule schedule = getSchedule(column, row);
         return (schedule != null) ? schedule.getSchedule() : null;
-    }
-
-    /**
-     * Returns the value found at the given coordinate within the table.
-     * Column and row values are 0-based.
-     *
-     * @param column the column index (0-based)
-     * @param row    the row index (0-based)
-     * @return the cell value
-     */
-    public Object getValueAt(int column, int row) {
-        return getValueAt(getColumn(column), row);
     }
 
     /**
@@ -431,12 +503,12 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * @return the availability of the cell
      */
     public ScheduleEventGrid.Availability getAvailability(int column, int row) {
-        Column col = getColumn(column);
-        Schedule schedule = col.getSchedule();
+        Schedule schedule = getSchedule(column, row);
         if (schedule == null) {
             return ScheduleEventGrid.Availability.UNAVAILABLE;
         }
-        return grid.getAvailability(schedule, row);
+        int slot = (scheduleColumns) ? row : column;
+        return grid.getAvailability(schedule, slot);
     }
 
     /**
@@ -451,24 +523,14 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     }
 
     /**
-     * Returns the value found at the given coordinate within the table.
+     * Returns the event at the specified schedule and slot.
      *
-     * @param column the column
-     * @param row    the row
-     * @return the cell value
-     */
-    protected abstract Object getValueAt(Column column, int row);
-
-    /**
-     * Returns the event at the specified column and row.
-     *
-     * @param column the column
-     * @param row    the row
+     * @param schedule the schedule. May be {@code null}
+     * @param slot     the slot
      * @return the event, or {@code null} if none is found
      */
-    protected PropertySet getEvent(Column column, int row) {
-        Schedule schedule = column.getSchedule();
-        return (schedule != null) ? grid.getEvent(schedule, row) : null;
+    protected PropertySet getEvent(Schedule schedule, int slot) {
+        return (schedule != null) ? grid.getEvent(schedule, slot) : null;
     }
 
     /**
@@ -477,8 +539,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * @param grid the appointment grid
      * @return a new column model
      */
-    protected abstract TableColumnModel createColumnModel(
-            ScheduleEventGrid grid);
+    protected abstract TableColumnModel createColumnModel(ScheduleEventGrid grid);
 
     /**
      * Returns a viewer for an object reference.
@@ -489,8 +550,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * @param link    if {@code true} enable an hyperlink to the object
      * @return a new component to view the object reference
      */
-    protected Component getViewer(PropertySet set, String refKey,
-                                  String nameKey, boolean link) {
+    protected Component getViewer(PropertySet set, String refKey, String nameKey, boolean link) {
         IMObjectReference ref = set.getReference(refKey);
         String name = set.getString(nameKey);
         IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(ref, name, link, context);
@@ -502,11 +562,11 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      *
      * @return the columns
      */
-    protected List<Column> getColumns() {
-        List<Column> result = new ArrayList<Column>();
+    protected List<ScheduleColumn> getColumns() {
+        List<ScheduleColumn> result = new ArrayList<ScheduleColumn>();
         Iterator iterator = model.getColumns();
         while (iterator.hasNext()) {
-            result.add((Column) iterator.next());
+            result.add((ScheduleColumn) iterator.next());
         }
         return result;
     }
@@ -515,11 +575,23 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * Sets the row span of a component.
      *
      * @param component the component
-     * @param rowSpan   the row span
+     * @param span      the row span
      */
-    protected void setSpan(Component component, int rowSpan) {
+    protected void setRowSpan(Component component, int span) {
         TableLayoutDataEx layout = new TableLayoutDataEx();
-        layout.setRowSpan(rowSpan);
+        layout.setRowSpan(span);
+        component.setLayoutData(layout);
+    }
+
+    /**
+     * Sets the column span of a component.
+     *
+     * @param component the component
+     * @param span      the row span
+     */
+    protected void setColumnSpan(Component component, int span) {
+        TableLayoutDataEx layout = new TableLayoutDataEx();
+        layout.setColSpan(span);
         component.setLayoutData(layout);
     }
 
@@ -571,7 +643,8 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
         }
         if (displayNotes && notes != null) {
             BalloonHelp help = BalloonHelpFactory.create(notes);
-            result = RowFactory.create(Styles.CELL_SPACING, label, help);
+            result = RowFactory.create("CellSpacing", label, help);
+            help.setPopUpTopOffset(-45);       // workaround for OVPMS-1233
         } else {
             result = label;
         }
@@ -584,7 +657,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * @param column the column index
      * @return the column
      */
-    private Column getColumn(int column) {
+    protected Column getColumn(int column) {
         Column result = null;
         Iterator iterator = model.getColumns();
         while (iterator.hasNext()) {
@@ -598,9 +671,72 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     }
 
     /**
+     * Returns the column index of a schedule.
+     *
+     * @param scheduleRef the schedule reference
+     * @return the index of the schedule, or {@code -1} if the schedule isn't found
+     */
+    private int getColumn(IMObjectReference scheduleRef) {
+        for (ScheduleColumn column : getColumns()) {
+            if (column.getSchedule() != null) {
+                Entity schedule = column.getSchedule().getSchedule();
+                if (schedule.getObjectReference().equals(scheduleRef)) {
+                    return column.getModelIndex();
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the row index of a schedule.
+     *
+     * @param scheduleRef the schedule reference
+     * @return the index of the schedule, or {@code -1} if the schedule isn't found
+     */
+    private int getRow(IMObjectReference scheduleRef) {
+        int index = 0;
+        for (Schedule schedule : grid.getSchedules()) {
+            if (schedule.getSchedule().getId() == scheduleRef.getId()) {
+                return index;
+            }
+            ++index;
+        }
+        return -1;
+    }
+
+
+    protected static class Column extends TableColumnEx {
+
+        /**
+         * Constructs a {@link Column}.
+         *
+         * @param modelIndex the model index
+         * @param heading    the column heading
+         */
+        public Column(int modelIndex, String heading) {
+            super(modelIndex);
+            setHeaderValue(heading);
+            setHeaderRenderer(null);
+            setCellRenderer(null);
+        }
+    }
+
+    /**
+     * Date column.
+     */
+    protected static class DateColumn extends Column {
+
+        public DateColumn(int modelIndex, Date startTime) {
+            super(modelIndex, new SimpleDateFormat("d E").format(startTime));
+        }
+
+    }
+
+    /**
      * Schedule column.
      */
-    protected static class Column extends TableColumnEx {
+    protected static class ScheduleColumn extends Column {
 
         /**
          * The schedule, or {@code null} if the column isn't associated with
@@ -614,7 +750,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
          * @param modelIndex the model index
          * @param schedule   the schedule
          */
-        public Column(int modelIndex, Schedule schedule) {
+        public ScheduleColumn(int modelIndex, Schedule schedule) {
             this(modelIndex, schedule, schedule.getName());
         }
 
@@ -625,12 +761,9 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
          * @param schedule   the schedule
          * @param heading    the column heading
          */
-        public Column(int modelIndex, Schedule schedule, String heading) {
-            super(modelIndex);
+        public ScheduleColumn(int modelIndex, Schedule schedule, String heading) {
+            super(modelIndex, heading);
             this.schedule = schedule;
-            setHeaderValue(heading);
-            setHeaderRenderer(null);
-            setCellRenderer(null);
         }
 
         /**
@@ -639,7 +772,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
          * @param modelIndex the model index
          * @param heading    the column heading
          */
-        public Column(int modelIndex, String heading) {
+        public ScheduleColumn(int modelIndex, String heading) {
             this(modelIndex, null, heading);
         }
 
@@ -651,7 +784,5 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
         public Schedule getSchedule() {
             return schedule;
         }
-
     }
-
 }

@@ -30,6 +30,7 @@ import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.Slot;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.AbstractBrowserListener;
@@ -40,12 +41,13 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.factory.TabbedPaneFactory;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.table.StyleTableCellRenderer;
 import org.openvpms.web.echo.tabpane.TabPaneModel;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.workflow.scheduling.Cell;
 import org.openvpms.web.workspace.workflow.scheduling.IntersectComparator;
-import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel;
@@ -53,6 +55,7 @@ import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -139,6 +142,16 @@ public class AppointmentBrowser extends ScheduleBrowser {
      */
     private int freeSlotsTab;
 
+    /**
+     * The default cell renderer.
+     */
+    private final AppointmentTableCellRenderer defaultRenderer;
+
+    /**
+     * The multi-day cell renderer.
+     */
+    private final MultiDayTableCellRenderer multiDayRenderer;
+
 
     /**
      * Constructs an {@link AppointmentBrowser}.
@@ -159,6 +172,8 @@ public class AppointmentBrowser extends ScheduleBrowser {
     public AppointmentBrowser(AppointmentQuery query, LayoutContext context) {
         super(query, context.getContext());
         this.context = context;
+        defaultRenderer = new AppointmentTableCellRenderer();
+        multiDayRenderer = new MultiDayTableCellRenderer();
         rules = ServiceHelper.getBean(AppointmentRules.class);
     }
 
@@ -201,12 +216,9 @@ public class AppointmentBrowser extends ScheduleBrowser {
      * @param startTime the slot start time
      */
     public void setSelected(Entity schedule, Date startTime) {
-        AppointmentGrid grid = (AppointmentGrid) getModel().getGrid();
-        int slot = grid.getSlot(startTime);
-        for (Schedule s : grid.getSchedules()) {
-            if (s.getSchedule().getId() == schedule.getId()) {
-                setSelectedCell(getModel().getColumn(schedule.getObjectReference()), slot);
-            }
+        Cell cell = getModel().getCell(schedule.getObjectReference(), startTime);
+        if (cell != null) {
+            setSelectedCell(cell.getColumn(), cell.getRow());
         }
     }
 
@@ -226,24 +238,29 @@ public class AppointmentBrowser extends ScheduleBrowser {
      * @param date   the query date
      * @param events the events
      */
-    protected ScheduleEventGrid createEventGrid(
-            Date date, Map<Entity, List<PropertySet>> events) {
+    protected ScheduleEventGrid createEventGrid(Date date, Map<Entity, List<PropertySet>> events) {
         Set<Entity> schedules = events.keySet();
-        AppointmentGrid grid;
-        if (schedules.size() == 1) {
-            Party schedule = (Party) schedules.iterator().next();
-            List<PropertySet> sets = events.get(schedule);
-            if (!hasOverlappingEvents(sets, schedule)) {
-                grid = new SingleScheduleGrid(getScheduleView(), date, schedule, sets, rules);
+        ScheduleEventGrid grid;
+        Entity scheduleView = getScheduleView();
+        if (isMultiDayView(scheduleView)) {
+            grid = new MultiDayScheduleGrid(scheduleView, date, 30, events);
+        } else {
+            if (schedules.size() == 1) {
+                Party schedule = (Party) schedules.iterator().next();
+                List<PropertySet> sets = events.get(schedule);
+                if (!hasOverlappingEvents(sets, schedule)) {
+                    grid = new SingleScheduleGrid(scheduleView, date, schedule, sets, rules);
+                } else {
+                    // there are overlapping appointments, so display them in multiple schedules
+                    grid = new MultiScheduleGrid(scheduleView, date, events, rules);
+                }
             } else {
-                // there are overlapping appointments, so display them in multiple schedules
                 grid = new MultiScheduleGrid(getScheduleView(), date, events, rules);
             }
-        } else {
-            grid = new MultiScheduleGrid(getScheduleView(), date, events, rules);
+            AppointmentQuery.TimeRange range = getQuery().getTimeRange();
+            grid = createGridView((AppointmentGrid) grid, range);
         }
-        AppointmentQuery.TimeRange range = getQuery().getTimeRange();
-        return createGridView(grid, range);
+        return grid;
     }
 
     /**
@@ -253,23 +270,31 @@ public class AppointmentBrowser extends ScheduleBrowser {
      * @return the table model
      */
     protected ScheduleTableModel createTableModel(ScheduleEventGrid grid) {
-        if (grid.getSchedules().size() == 1) {
-            return new SingleScheduleTableModel((AppointmentGrid) grid, getContext());
+        ScheduleTableModel model;
+        if (grid instanceof MultiDayScheduleGrid) {
+            model = new MultiDayTableModel((MultiDayScheduleGrid) grid, getContext());
+        } else if (grid.getSchedules().size() == 1) {
+            model = new SingleScheduleTableModel((AppointmentGrid) grid, getContext());
+        } else {
+            model = new MultiScheduleTableModel((AppointmentGrid) grid, getContext());
         }
-        return new MultiScheduleTableModel((AppointmentGrid) grid, getContext());
+        return model;
     }
 
     /**
-     * Creates a new table.
+     * Initialises a table.
      *
-     * @param model the model
-     * @return a new table
+     * @param table the table
      */
     @Override
-    protected TableEx createTable(ScheduleTableModel model) {
-        TableEx table = super.createTable(model);
-        table.setDefaultRenderer(new AppointmentTableCellRenderer());
-        return table;
+    protected void initTable(TableEx table) {
+        if (table.getModel() instanceof MultiDayTableModel) {
+            table.setDefaultHeaderRenderer(new StyleTableCellRenderer("Table.Header"));
+            table.setDefaultRenderer(multiDayRenderer);
+        } else {
+            table.setDefaultHeaderRenderer(AppointmentTableHeaderRenderer.INSTANCE);
+            table.setDefaultRenderer(defaultRenderer);
+        }
     }
 
     /**
@@ -312,9 +337,10 @@ public class AppointmentBrowser extends ScheduleBrowser {
      * Updates the title based on the current selection.
      */
     private void updateTitle() {
-        DateFormat format = DateFormatter.getFullDateFormat();
-        String date = format.format(getDate());
         Entity view = getScheduleView();
+        DateFormat format = (isMultiDayView(view)) ?
+                            new SimpleDateFormat("MMMM YYYY") : DateFormatter.getFullDateFormat(); // TODO
+        String date = format.format(getDate());
         Entity schedule = getQuery().getSchedule();
         String viewName = (view != null) ? view.getName() : null;
         String schedName = (schedule != null) ? schedule.getName() : null;
@@ -467,6 +493,21 @@ public class AppointmentBrowser extends ScheduleBrowser {
         String text = "&" + shortcut + " " + displayName;
         component = ColumnFactory.create(Styles.INSET, component);
         model.addTab(text, component);
+        return result;
+    }
+
+    /**
+     * Determines if a schedule view is a multi-day view.
+     *
+     * @param scheduleView the schedule view. May be {@code null}
+     * @return {@code true} if the view is a multi-day view
+     */
+    private boolean isMultiDayView(Entity scheduleView) {
+        boolean result = false;
+        if (scheduleView != null) {
+            IMObjectBean bean = new IMObjectBean(scheduleView);
+            result = bean.getBoolean("multipleDayView");
+        }
         return result;
     }
 

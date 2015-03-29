@@ -46,11 +46,6 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
     private Schedule schedule;
 
     /**
-     * List containing the above schedule.
-     */
-    private List<Schedule> schedules;
-
-    /**
      * The appointments.
      */
     private List<SlotGroup> appointments = new ArrayList<SlotGroup>();
@@ -74,7 +69,7 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
                               List<PropertySet> appointmentSets, AppointmentRules rules) {
         super(scheduleView, date, -1, -1, rules);
         schedule = createSchedule(organisationSchedule);
-        schedules = Arrays.asList(schedule);
+        setSchedules(Arrays.asList(schedule));
         int startMins = schedule.getStartMins();
         int endMins = schedule.getEndMins();
         int slotSize = schedule.getSlotSize();
@@ -108,15 +103,6 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
     @Override
     public int getSlots() {
         return slots.size();
-    }
-
-    /**
-     * Returns the schedules.
-     *
-     * @return the schedules
-     */
-    public List<Schedule> getSchedules() {
-        return schedules;
     }
 
     /**

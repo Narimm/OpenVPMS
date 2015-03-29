@@ -42,17 +42,17 @@ public abstract class TaskTableModel extends ScheduleTableModel {
      * @param grid the task grid
      */
     public TaskTableModel(TaskGrid grid, Context context) {
-        super(grid, context);
+        super(grid, context, true);
     }
 
     /**
-     * Returns the row of the specified event.
+     * Returns the slot of the specified event.
      *
      * @param schedule the schedule
      * @param eventRef the event reference
-     * @return the row, or {@code -1} if the event is not found
+     * @return the slot, or {@code -1} if the event is not found
      */
-    public int getRow(Schedule schedule, IMObjectReference eventRef) {
+    public int getSlot(Schedule schedule, IMObjectReference eventRef) {
         return schedule.indexOf(eventRef);
     }
 

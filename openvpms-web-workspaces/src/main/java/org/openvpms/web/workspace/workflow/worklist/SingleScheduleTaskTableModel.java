@@ -105,11 +105,11 @@ public class SingleScheduleTaskTableModel extends TaskTableModel {
      * @param row    the row
      * @return the cell value
      */
-    protected Object getValueAt(Column column, int row) {
+    public Object getValueAt(int column, int row) {
         Object result = null;
         PropertySet set = getEvent(column, row);
         if (set != null) {
-            result = getValue(set, column);
+            result = getValue(set, (ScheduleColumn) getColumn(column));
         }
         return result;
     }
@@ -127,7 +127,7 @@ public class SingleScheduleTaskTableModel extends TaskTableModel {
         int i = 0;
         String[] names = getColumnNames();
         for (; i < names.length; ++i) {
-            Column column = new Column(i, schedule, names[i]);
+            ScheduleColumn column = new ScheduleColumn(i, schedule, names[i]);
             result.addColumn(column);
         }
         return result;
@@ -140,7 +140,7 @@ public class SingleScheduleTaskTableModel extends TaskTableModel {
      * @param column the column
      * @return the value at the given coordinate.
      */
-    private Object getValue(PropertySet set, Column column) {
+    private Object getValue(PropertySet set, ScheduleColumn column) {
         Object result = null;
         int index = column.getModelIndex();
         switch (index) {

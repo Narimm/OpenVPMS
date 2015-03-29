@@ -218,6 +218,15 @@ public abstract class ScheduleServiceQuery extends ScheduleQuery {
     }
 
     /**
+     * Returns the schedule service.
+     *
+     * @return the schedule service
+     */
+    protected ScheduleService getService() {
+        return service;
+    }
+
+    /**
      * Returns the events, keyed on schedule.
      *
      * @return the events

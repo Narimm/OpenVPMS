@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -34,11 +32,9 @@ import java.util.Date;
 
 
 /**
- * TableCellRender that assigns blocks of appointments in different hours a
- * different style.
+ * TableCellRender that assigns blocks of appointments in different hours a different style.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-09-06 07:52:23Z $
+ * @author Tim Anderson
  */
 public class AppointmentTableCellRenderer extends ScheduleTableCellRenderer {
 
@@ -87,7 +83,7 @@ public class AppointmentTableCellRenderer extends ScheduleTableCellRenderer {
             layout = TableHelper.getTableLayoutDataEx(style);
 
             if (layout != null && avail == Availability.UNAVAILABLE) {
-                Schedule schedule = model.getSchedule(column);
+                Schedule schedule = model.getSchedule(column, row);
                 int span = model.getGrid().getUnavailableSlots(schedule, row);
                 layout.setRowSpan(span);
             }
