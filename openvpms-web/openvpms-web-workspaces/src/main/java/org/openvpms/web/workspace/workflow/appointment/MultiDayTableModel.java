@@ -2,10 +2,8 @@ package org.openvpms.web.workspace.workflow.appointment;
 
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Extent;
-import nextapp.echo2.app.Font;
-import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
 import nextapp.echo2.app.layout.RowLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
@@ -73,24 +71,8 @@ public class MultiDayTableModel extends ScheduleTableModel {
             result = (schedule != null) ? schedule.getName() : null;
         } else {
             PropertySet set = getEvent(column, row);
-            MultiDayScheduleGrid grid = (MultiDayScheduleGrid) getGrid();
             if (set != null) {
-                result = getEvent(set);
-                int span = grid.getSlots(set, column - 1);
-                if (span > 1) {
-                    if (column + span > getColumnCount()) {
-                        Label next = LabelFactory.create();
-                        next.setFont(new Font(Font.SANS_SERIF, Font.BOLD, new Extent(15)));
-                        next.setText(">");
-                        RowLayoutData newValue = new RowLayoutData();
-                        newValue.setAlignment(Alignment.ALIGN_RIGHT);
-                        newValue.setWidth(Styles.FULL_WIDTH);
-                        newValue.setInsets(new Insets(5, 0));
-                        next.setLayoutData(newValue);
-                        result = RowFactory.create((Component) result, next);
-                    }
-                    setColumnSpan((Component) result, span);
-                }
+                result = getEvent(set, column);
             }
         }
         return result;
@@ -113,6 +95,73 @@ public class MultiDayTableModel extends ScheduleTableModel {
     }
 
     /**
+     * Returns the grid.
+     *
+     * @return the grid
+     */
+    @Override
+    public MultiDayScheduleGrid getGrid() {
+        return (MultiDayScheduleGrid) super.getGrid();
+    }
+
+    /**
+     * Returns the slot of a cell.
+     *
+     * @param column the column
+     * @param row    the row
+     * @return the slot
+     */
+    @Override
+    protected int getSlot(int column, int row) {
+        return column - 1;
+    }
+
+    /**
+     * Returns a component representing an event.
+     *
+     * @param event  the event
+     * @param column the starting column
+     * @return a new component
+     */
+    private Component getEvent(PropertySet event, int column) {
+        Component result;
+        Label next = null;
+        Label previous = null;
+        result = getEvent(event);
+        Date startTime = event.getDate(ScheduleEvent.ACT_START_TIME);
+        int slot = column - 1; // first column is the schedule
+        MultiDayScheduleGrid grid = getGrid();
+        if (DateRules.compareDates(startTime, grid.getDate(slot)) < 0) {
+            previous = LabelFactory.create(null, "navigation.previous");
+        }
+        int span = grid.getSlots(event, column - 1);
+        if (span > 1) {
+            if (column + span > getColumnCount()) {
+                next = LabelFactory.create(null, "navigation.next");
+                RowLayoutData newValue = new RowLayoutData();
+                newValue.setAlignment(Alignment.ALIGN_RIGHT);
+                newValue.setWidth(Styles.FULL_WIDTH);
+                next.setLayoutData(newValue);
+            }
+        }
+        if (previous != null || next != null) {
+            Row container = RowFactory.create();
+            if (previous != null) {
+                container.add(previous);
+            }
+            container.add(result);
+            if (next != null) {
+                container.add(next);
+            }
+            result = container;
+        }
+        if (span > 1) {
+            setColumnSpan(result, span);
+        }
+        return result;
+    }
+
+    /**
      * Returns a component representing an event.
      *
      * @param event the event
@@ -131,13 +180,11 @@ public class MultiDayTableModel extends ScheduleTableModel {
             }
 
             if (patient == null) {
-                text = Messages.format(
-                        "workflow.scheduling.appointment.table.customer",
-                        customer, reason, status);
+                text = Messages.format("workflow.scheduling.appointment.table.customer",
+                                       customer, reason, status);
             } else {
-                text = Messages.format(
-                        "workflow.scheduling.appointment.table.customerpatient",
-                        customer, patient, reason, status);
+                text = Messages.format("workflow.scheduling.appointment.table.customerpatient",
+                                       customer, patient, reason, status);
             }
         }
 

@@ -198,4 +198,13 @@ public class MultiDayScheduleGrid extends AbstractScheduleEventGrid {
         row.addEvent(set);
     }
 
+    /**
+     * Returns the date of a slot.
+     *
+     * @param slot the slot
+     * @return the start time of the specified slot
+     */
+    public Date getDate(int slot) {
+        return DateRules.getDate(getDate(), slot, DateUnits.DAYS);
+    }
 }

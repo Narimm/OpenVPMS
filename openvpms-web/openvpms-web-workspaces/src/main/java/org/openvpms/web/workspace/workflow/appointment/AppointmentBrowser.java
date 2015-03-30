@@ -30,7 +30,6 @@ import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.Slot;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.AbstractBrowserListener;
@@ -66,6 +65,9 @@ import java.util.Set;
 import static org.openvpms.web.echo.style.Styles.BOLD;
 import static org.openvpms.web.echo.style.Styles.INSET;
 import static org.openvpms.web.echo.style.Styles.WIDE_CELL_SPACING;
+import static org.openvpms.web.workspace.workflow.appointment.AppointmentQuery.DateRange.DAY;
+import static org.openvpms.web.workspace.workflow.appointment.AppointmentQuery.DateRange.MONTH;
+import static org.openvpms.web.workspace.workflow.appointment.AppointmentQuery.DateRange.WEEK;
 
 
 /**
@@ -242,8 +244,10 @@ public class AppointmentBrowser extends ScheduleBrowser {
         Set<Entity> schedules = events.keySet();
         ScheduleEventGrid grid;
         Entity scheduleView = getScheduleView();
-        if (isMultiDayView(scheduleView)) {
-            grid = new MultiDayScheduleGrid(scheduleView, date, 30, events);
+        AppointmentQuery.DateRange dateRange = getQuery().getDateRange();
+        if (dateRange != DAY && AppointmentHelper.isMultiDayView(scheduleView)) {
+            int days = (dateRange == WEEK) ? 7 : 31;
+            grid = new MultiDayScheduleGrid(scheduleView, date, days, events);
         } else {
             if (schedules.size() == 1) {
                 Party schedule = (Party) schedules.iterator().next();
@@ -338,7 +342,8 @@ public class AppointmentBrowser extends ScheduleBrowser {
      */
     private void updateTitle() {
         Entity view = getScheduleView();
-        DateFormat format = (isMultiDayView(view)) ?
+        AppointmentQuery.DateRange dateRange = getQuery().getDateRange();
+        DateFormat format = (dateRange == MONTH) ?
                             new SimpleDateFormat("MMMM YYYY") : DateFormatter.getFullDateFormat(); // TODO
         String date = format.format(getDate());
         Entity schedule = getQuery().getSchedule();
@@ -493,21 +498,6 @@ public class AppointmentBrowser extends ScheduleBrowser {
         String text = "&" + shortcut + " " + displayName;
         component = ColumnFactory.create(Styles.INSET, component);
         model.addTab(text, component);
-        return result;
-    }
-
-    /**
-     * Determines if a schedule view is a multi-day view.
-     *
-     * @param scheduleView the schedule view. May be {@code null}
-     * @return {@code true} if the view is a multi-day view
-     */
-    private boolean isMultiDayView(Entity scheduleView) {
-        boolean result = false;
-        if (scheduleView != null) {
-            IMObjectBean bean = new IMObjectBean(scheduleView);
-            result = bean.getBoolean("multipleDayView");
-        }
         return result;
     }
 

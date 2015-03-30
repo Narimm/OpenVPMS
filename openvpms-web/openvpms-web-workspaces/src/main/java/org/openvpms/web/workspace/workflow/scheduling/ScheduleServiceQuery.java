@@ -28,6 +28,7 @@ import org.openvpms.web.component.im.clinician.ClinicianSelectField;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.lookup.NodeLookupQuery;
+import org.openvpms.web.component.im.query.DateNavigator;
 import org.openvpms.web.component.im.query.DateSelector;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -134,6 +135,15 @@ public abstract class ScheduleServiceQuery extends ScheduleQuery {
             result = Highlight.EVENT_TYPE;
         }
         return result;
+    }
+
+    /**
+     * Registers the date navigator.
+     *
+     * @param navigator the date navigator
+     */
+    public void setDateNavigator(DateNavigator navigator) {
+        date.setNavigator(navigator);
     }
 
     /**

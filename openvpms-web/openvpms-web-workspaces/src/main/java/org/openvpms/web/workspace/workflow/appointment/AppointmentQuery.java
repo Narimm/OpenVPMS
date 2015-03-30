@@ -17,7 +17,7 @@
 package org.openvpms.web.workspace.workflow.appointment;
 
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.joda.time.DateTime;
@@ -26,6 +26,7 @@ import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.util.PropertySet;
+import org.openvpms.web.component.im.query.DateNavigator;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -89,11 +90,34 @@ class AppointmentQuery extends ScheduleServiceQuery {
         private final int endMins;
     }
 
+    public enum DateRange {
+        DAY, WEEK, MONTH
+    }
+
     /**
      * Time range selector.
      */
     private SelectField timeSelector;
 
+    /**
+     * Date range selector.
+     */
+    private SelectField dateSelector;
+
+    /**
+     * The selected date range.
+     */
+    private DateRange dateRange = DateRange.DAY;
+
+    /**
+     * The container for the Dates label.
+     */
+    private Component labelContainer = new Row();
+
+    /**
+     * The container for the Dates selector.
+     */
+    private Component datesContainer = new Row();
 
     /**
      * Constructs an {@link AppointmentQuery}.
@@ -121,6 +145,15 @@ class AppointmentQuery extends ScheduleServiceQuery {
      */
     public void setTimeRange(TimeRange range) {
         timeSelector.setSelectedIndex(range.ordinal());
+    }
+
+    /**
+     * Returns the selected date range.
+     *
+     * @return the date range
+     */
+    public DateRange getDateRange() {
+        return dateRange;
     }
 
     /**
@@ -157,14 +190,24 @@ class AppointmentQuery extends ScheduleServiceQuery {
                 onQuery();
             }
         });
+
+        String[] dwm = {Messages.get("workflow.scheduling.dates.day"),
+                        Messages.get("workflow.scheduling.dates.week"),
+                        Messages.get("workflow.scheduling.dates.month")};
+        dateSelector = SelectFieldFactory.create(dwm);
+        dateSelector.addActionListener(new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                onDatesChanged();
+            }
+        });
+
         container.add(LabelFactory.create("workflow.scheduling.time"));
         container.add(timeSelector);
         getFocusGroup().add(timeSelector);
-        Label view = LabelFactory.create();
-        view.setText("Dates");
-        container.add(view, 6);
-        String[] dwm = {"Day", "Week", "Month"};
-        container.add(SelectFieldFactory.create(dwm), 7);
+        container.add(labelContainer, 6);
+        container.add(datesContainer, 7);
+        updateDatesFilter();
     }
 
     /**
@@ -177,5 +220,58 @@ class AppointmentQuery extends ScheduleServiceQuery {
     @Override
     protected List<PropertySet> getEvents(Entity schedule, Date date) {
         return getService().getEvents(schedule, date, DateRules.getDate(date, 30, DateUnits.DAYS));
+    }
+
+    /**
+     * Invoked when the schedule view changes.
+     * <p/>
+     * Notifies any listener to perform a query.
+     */
+    @Override
+    protected void onViewChanged() {
+        updateDatesFilter();
+        super.onViewChanged();
+    }
+
+    /**
+     * Invoked when the Dates filter changes.
+     */
+    private void onDatesChanged() {
+        int index = dateSelector.getSelectedIndex();
+        if (index >= 0 && index < DateRange.values().length) {
+            dateRange = DateRange.values()[index];
+        } else {
+            dateRange = DateRange.DAY;
+        }
+        switch (dateRange) {
+            case DAY:
+                setDateNavigator(DateNavigator.DAY);
+                break;
+            case WEEK:
+                setDateNavigator(DateNavigator.WEEK);
+                break;
+            case MONTH:
+                setDateNavigator(DateNavigator.MONTH);
+                break;
+        }
+        onQuery();
+    }
+
+    /**
+     * Updates the Dates filter.
+     */
+    private void updateDatesFilter() {
+        Entity view = getScheduleView();
+        if (AppointmentHelper.isMultiDayView(view)) {
+            if (datesContainer.getComponentCount() == 0) {
+                labelContainer.add(LabelFactory.create("workflow.scheduling.dates"));
+                datesContainer.add(dateSelector);
+                dateRange = DateRange.MONTH;
+            }
+        } else {
+            dateRange = DateRange.DAY;
+            labelContainer.removeAll();
+            datesContainer.removeAll();
+        }
     }
 }
