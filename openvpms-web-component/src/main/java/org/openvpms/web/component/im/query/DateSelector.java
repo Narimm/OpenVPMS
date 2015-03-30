@@ -12,13 +12,10 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.query;
 
-import echopointng.DateChooser;
 import echopointng.DateField;
 import echopointng.model.CalendarEvent;
 import echopointng.model.CalendarSelectionListener;
@@ -32,10 +29,10 @@ import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.DateFieldFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.style.Styles;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 
 /**
@@ -46,8 +43,7 @@ import java.util.GregorianCalendar;
  * <li>a button to jump to the current date</li>
  * </ul>
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DateSelector {
 
@@ -83,9 +79,14 @@ public class DateSelector {
      */
     private CalendarSelectionListener calendarListener;
 
+    /**
+     * The date navigator.
+     */
+    private DateNavigator navigator = DateNavigator.DAY;
+
 
     /**
-     * Creates a new <tt>DateSelector</tt>.
+     * Constructs a {@link DateSelector}.
      */
     public DateSelector() {
         date = DateFieldFactory.create();
@@ -128,10 +129,19 @@ public class DateSelector {
     /**
      * Sets a listener to be notified of date change events.
      *
-     * @param listener the listener. May be <tt>null</tt>
+     * @param listener the listener. May be {@code null}
      */
     public void setListener(ActionListener listener) {
         this.listener = listener;
+    }
+
+    /**
+     * Sets the date navigator.
+     *
+     * @param navigator the navigator
+     */
+    public void setNavigator(DateNavigator navigator) {
+        this.navigator = navigator;
     }
 
     /**
@@ -159,34 +169,29 @@ public class DateSelector {
      * Lays out the component.
      */
     private void doLayout() {
-        Button prevWeek = ButtonFactory.create(
-            null, "date.previousWeek", new ActionListener() {
+        Button prevWeek = ButtonFactory.create(null, "date.previousWeek", new ActionListener() {
             public void onAction(ActionEvent event) {
-                addDays(-7);
+                update(navigator.getPreviousTerm(getDate()));
             }
         });
-        Button prevDay = ButtonFactory.create(
-            null, "date.previousDay", new ActionListener() {
+        Button prevDay = ButtonFactory.create(null, "date.previousDay", new ActionListener() {
             public void onAction(ActionEvent event) {
-                addDays(-1);
+                update(navigator.getPrevious(getDate()));
             }
         });
-        Button currentDay = ButtonFactory.create(
-            null, "date.currentDay", new ActionListener() {
+        Button currentDay = ButtonFactory.create(null, "date.currentDay", new ActionListener() {
             public void onAction(ActionEvent event) {
-                addDays(0);
+                update(navigator.getCurrent(getDate()));
             }
         });
-        Button nextDay = ButtonFactory.create(
-            null, "date.nextDay", new ActionListener() {
+        Button nextDay = ButtonFactory.create(null, "date.nextDay", new ActionListener() {
             public void onAction(ActionEvent event) {
-                addDays(1);
+                update(navigator.getNext(getDate()));
             }
         });
-        Button nextWeek = ButtonFactory.create(
-            null, "date.nextWeek", new ActionListener() {
+        Button nextWeek = ButtonFactory.create(null, "date.nextWeek", new ActionListener() {
             public void onAction(ActionEvent event) {
-                addDays(7);
+                update(navigator.getNextTerm(getDate()));
             }
         });
 
@@ -196,27 +201,7 @@ public class DateSelector {
         focus.add(currentDay);
         focus.add(nextDay);
         focus.add(nextWeek);
-        component = RowFactory.create("CellSpacing", prevWeek, prevDay, date,
-                                      currentDay, nextDay, nextWeek);
-    }
-
-    /**
-     * Invoked to change the selected date.
-     *
-     * @param days the no. of days to add. <code>0</code> indicates current date
-     */
-    private void addDays(int days) {
-        DateChooser dateChooser = date.getDateChooser();
-        Calendar calendar;
-        if (days == 0) {
-            calendar = new GregorianCalendar();
-            calendar.setTime(new Date());
-        } else {
-            calendar = dateChooser.getSelectedDate();
-            calendar.add(Calendar.DAY_OF_MONTH, days);
-        }
-        date.getDateChooser().setSelectedDate(calendar);
-        onDateChanged();
+        component = RowFactory.create(Styles.CELL_SPACING, prevWeek, prevDay, date, currentDay, nextDay, nextWeek);
     }
 
     /**
@@ -230,6 +215,16 @@ public class DateSelector {
                 listener.actionPerformed(new ActionEvent(this, "date"));
             }
         }
+    }
+
+    /**
+     * Updates the date, notifying listeners.
+     *
+     * @param date the date
+     */
+    private void update(Date date) {
+        setDate(date);
+        onDateChanged();
     }
 
 }

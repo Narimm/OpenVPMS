@@ -619,7 +619,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         if (model.getAvailability(column, row) != Availability.UNAVAILABLE) {
             Schedule schedule = model.getSchedule(column, row);
             if (schedule != null) {
-                selectedTime = model.getStartTime(schedule, row);
+                selectedTime = model.getStartTime(schedule, column, row);
                 selectedSchedule = model.getScheduleEntity(column, row);
             } else {
                 selectedTime = null;

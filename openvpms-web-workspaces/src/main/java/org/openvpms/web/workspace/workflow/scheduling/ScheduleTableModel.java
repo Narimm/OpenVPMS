@@ -37,6 +37,7 @@ import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.echo.factory.BalloonHelpFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.style.Styles;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -185,8 +186,8 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * Returns the cell for the selected schedule and date.
      *
      * @param schedule the schedule
-     * @param date
-     * @return
+     * @param date     the date
+     * @return the cell or {@code null} if there is none
      */
     public Cell getCell(IMObjectReference schedule, Date date) {
         Cell result = null;
@@ -452,7 +453,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * @return the event, or {@code null} if none is found
      */
     public PropertySet getEvent(int column, int row) {
-        int slot = (scheduleColumns) ? row : column;
+        int slot = getSlot(column, row);
         Schedule schedule = getSchedule(column, row);
         return (schedule != null) ? grid.getEvent(schedule, slot) : null;
     }
@@ -507,19 +508,21 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
         if (schedule == null) {
             return ScheduleEventGrid.Availability.UNAVAILABLE;
         }
-        int slot = (scheduleColumns) ? row : column;
+        int slot = getSlot(column, row);
         return grid.getAvailability(schedule, slot);
     }
 
     /**
-     * Returns the event start time at the specified row.
+     * Returns the event start time at the specified cell.
      *
      * @param schedule the schedule
+     * @param column   the column
      * @param row      the row
      * @return the start time. May be {@code null}
      */
-    public Date getStartTime(Schedule schedule, int row) {
-        return grid.getStartTime(schedule, row);
+    public Date getStartTime(Schedule schedule, int column, int row) {
+        int slot = getSlot(column, row);
+        return grid.getStartTime(schedule, slot);
     }
 
     /**
@@ -569,6 +572,17 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
             result.add((ScheduleColumn) iterator.next());
         }
         return result;
+    }
+
+    /**
+     * Returns the slot of a cell.
+     *
+     * @param column the column
+     * @param row    the row
+     * @return the slot
+     */
+    protected int getSlot(int column, int row) {
+        return (scheduleColumns) ? row : column;
     }
 
     /**
@@ -643,8 +657,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
         }
         if (displayNotes && notes != null) {
             BalloonHelp help = BalloonHelpFactory.create(notes);
-            result = RowFactory.create("CellSpacing", label, help);
-            help.setPopUpTopOffset(-45);       // workaround for OVPMS-1233
+            result = RowFactory.create(Styles.CELL_SPACING, label, help);
         } else {
             result = label;
         }
