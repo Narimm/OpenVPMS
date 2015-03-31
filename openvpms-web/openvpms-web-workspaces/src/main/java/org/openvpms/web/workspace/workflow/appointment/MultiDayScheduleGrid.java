@@ -36,7 +36,7 @@ public class MultiDayScheduleGrid extends AbstractScheduleEventGrid {
      * @param appointments the appointments
      */
     public MultiDayScheduleGrid(Entity scheduleView, Date date, int days, Map<Entity, List<PropertySet>> appointments) {
-        super(scheduleView, date);
+        super(scheduleView, date, DateRules.getDate(date, days - 1, DateUnits.DAYS));
         this.days = days;
         setAppointments(appointments);
     }
@@ -77,7 +77,7 @@ public class MultiDayScheduleGrid extends AbstractScheduleEventGrid {
      */
     @Override
     public Date getStartTime(Schedule schedule, int slot) {
-        return DateRules.getDate(getDate(), slot, DateUnits.DAYS);
+        return DateRules.getDate(getStartDate(), slot, DateUnits.DAYS);
     }
 
     /**
@@ -129,7 +129,7 @@ public class MultiDayScheduleGrid extends AbstractScheduleEventGrid {
      */
     public int getSlots(PropertySet appointment, int slot) {
         Date endTime = appointment.getDate(ScheduleEvent.ACT_END_TIME);
-        int endSlot = Days.daysBetween(new DateTime(getDate()), new DateTime(endTime)).getDays() + 1;
+        int endSlot = Days.daysBetween(new DateTime(getStartDate()), new DateTime(endTime)).getDays() + 1;
         return endSlot - slot;
     }
 
@@ -205,6 +205,6 @@ public class MultiDayScheduleGrid extends AbstractScheduleEventGrid {
      * @return the start time of the specified slot
      */
     public Date getDate(int slot) {
-        return DateRules.getDate(getDate(), slot, DateUnits.DAYS);
+        return DateRules.getDate(getStartDate(), slot, DateUnits.DAYS);
     }
 }

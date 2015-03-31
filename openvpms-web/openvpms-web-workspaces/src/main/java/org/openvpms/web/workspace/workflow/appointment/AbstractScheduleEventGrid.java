@@ -27,20 +27,37 @@ public abstract class AbstractScheduleEventGrid implements ScheduleEventGrid {
     private List<Schedule> schedules = Collections.emptyList();
 
     /**
-     * The grid date.
+     * The grid start date.
      */
-    private Date date;
+    private Date startDate;
+
+    /**
+     * The grid end date.
+     */
+    private Date endDate;
 
 
     /**
      * Constructs an {@link AbstractScheduleEventGrid}.
      *
      * @param scheduleView the schedule view
-     * @param date         the schedule date
+     * @param date         the grid start and end date
      */
     public AbstractScheduleEventGrid(Entity scheduleView, Date date) {
+        this(scheduleView, date, date);
+    }
+
+    /**
+     * Constructs an {@link AbstractScheduleEventGrid}.
+     *
+     * @param scheduleView the schedule view
+     * @param startDate    the grid start date
+     * @param endDate      the grid end date
+     */
+    public AbstractScheduleEventGrid(Entity scheduleView, Date startDate, Date endDate) {
         this.scheduleView = scheduleView;
-        setDate(date);
+        setStartDate(startDate);
+        setEndDate(endDate);
     }
 
     /**
@@ -64,24 +81,45 @@ public abstract class AbstractScheduleEventGrid implements ScheduleEventGrid {
     }
 
     /**
-     * Returns the schedule date.
+     * Returns the schedule start date.
      *
-     * @return the date, excluding any time
+     * @return the start date, excluding any time
      */
     @Override
-    public Date getDate() {
-        return date;
+    public Date getStartDate() {
+        return startDate;
     }
 
     /**
-     * Sets the schedule date.
+     * Sets the schedule start date.
      * <p/>
      * Any time is removed.
      *
-     * @param date the schedule date
+     * @param startDate the schedule start date
      */
-    public void setDate(Date date) {
-        this.date = DateRules.getDate(date);
+    public void setStartDate(Date startDate) {
+        this.startDate = DateRules.getDate(startDate);
+    }
+
+    /**
+     * Returns the schedule end date.
+     *
+     * @return the end date, excluding any time
+     */
+    @Override
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    /**
+     * Sets the schedule end date.
+     * <p/>
+     * Any time is removed.
+     *
+     * @param endDate the end date
+     */
+    public void setEndDate(Date endDate) {
+        this.endDate = DateRules.getDate(endDate);
     }
 
     /**

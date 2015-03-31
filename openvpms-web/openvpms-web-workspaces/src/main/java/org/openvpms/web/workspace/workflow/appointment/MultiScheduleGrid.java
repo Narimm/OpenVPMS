@@ -197,8 +197,8 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
         // adjust the grid start and end times, if required
         Date startDate = DateRules.getDate(startTime);
         Date endDate = DateRules.getDate(endTime);
-        int slotStart = startDate.compareTo(getDate()) < 0 ? getStartMins() : getSlotMinutes(startTime, false);
-        int slotEnd = endDate.compareTo(getDate()) > 0 ? getEndMins() : getSlotMinutes(endTime, true);
+        int slotStart = startDate.compareTo(getStartDate()) < 0 ? getStartMins() : getSlotMinutes(startTime, false);
+        int slotEnd = endDate.compareTo(getStartDate()) > 0 ? getEndMins() : getSlotMinutes(endTime, true);
         if (getStartMins() > slotStart) {
             setStartMins(slotStart);
         }

@@ -56,7 +56,7 @@ class AppointmentGridView extends AbstractAppointmentGrid {
      * @param rules     the appointment rules
      */
     public AppointmentGridView(AppointmentGrid grid, int startMins, int endMins, AppointmentRules rules) {
-        super(grid.getScheduleView(), grid.getDate(), startMins, endMins, rules);
+        super(grid.getScheduleView(), grid.getStartDate(), startMins, endMins, rules);
         this.grid = grid;
         startSlot = grid.getFirstSlot(startMins);
         if (startSlot == -1) {

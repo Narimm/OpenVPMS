@@ -201,7 +201,7 @@ public class MultiDayTableModel extends ScheduleTableModel {
     @Override
     protected TableColumnModel createColumnModel(ScheduleEventGrid grid) {
         DefaultTableColumnModel result = new DefaultTableColumnModel();
-        Date start = grid.getDate();
+        Date start = grid.getStartDate();
         int modelIndex = 0;
         result.addColumn(new Column(modelIndex++, "Schedule"));
         for (int i = 0; i < grid.getSlots(); ++i) {
