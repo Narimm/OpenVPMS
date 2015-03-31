@@ -238,11 +238,23 @@ class AppointmentQuery extends ScheduleServiceQuery {
      */
     private void onDatesChanged() {
         int index = dateSelector.getSelectedIndex();
+        DateRange range;
         if (index >= 0 && index < DateRange.values().length) {
-            dateRange = DateRange.values()[index];
+            range = DateRange.values()[index];
         } else {
-            dateRange = DateRange.DAY;
+            range = DateRange.DAY;
         }
+        setDateRange(range);
+        onQuery();
+    }
+
+    /**
+     * Sets the date range.
+     *
+     * @param dateRange the date range
+     */
+    private void setDateRange(DateRange dateRange) {
+        this.dateRange = dateRange;
         switch (dateRange) {
             case DAY:
                 setDateNavigator(DateNavigator.DAY);
@@ -254,24 +266,26 @@ class AppointmentQuery extends ScheduleServiceQuery {
                 setDateNavigator(DateNavigator.MONTH);
                 break;
         }
-        onQuery();
     }
 
     /**
      * Updates the Dates filter.
      */
     private void updateDatesFilter() {
+        DateRange range;
         Entity view = getScheduleView();
         if (AppointmentHelper.isMultiDayView(view)) {
+            range = DateRange.MONTH;
             if (datesContainer.getComponentCount() == 0) {
                 labelContainer.add(LabelFactory.create("workflow.scheduling.dates"));
                 datesContainer.add(dateSelector);
-                dateRange = DateRange.MONTH;
             }
         } else {
-            dateRange = DateRange.DAY;
+            range = DateRange.DAY;
             labelContainer.removeAll();
             datesContainer.removeAll();
         }
+        setDateRange(range);
+        dateSelector.setSelectedIndex(dateRange.ordinal());
     }
 }

@@ -157,7 +157,7 @@ public abstract class AbstractAppointmentGrid extends AbstractScheduleEventGrid 
      * @return the start time of the specified slot
      */
     public Date getStartTime(int slot) {
-        return DateRules.getDate(getDate(), getStartMins(slot), DateUnits.MINUTES);
+        return DateRules.getDate(getStartDate(), getStartMins(slot), DateUnits.MINUTES);
     }
 
     /**
@@ -235,7 +235,7 @@ public abstract class AbstractAppointmentGrid extends AbstractScheduleEventGrid 
      */
     public int getSlot(Date time) {
         int result;
-        Date date = getDate();
+        Date date = getStartDate();
         Date day = DateRules.getDate(time);
         if (day.compareTo(date) < 0) {
             result = 0;

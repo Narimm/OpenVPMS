@@ -26,6 +26,7 @@ import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.ColumnLayoutData;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.Slot;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -43,7 +44,6 @@ import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.table.StyleTableCellRenderer;
 import org.openvpms.web.echo.tabpane.TabPaneModel;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.scheduling.Cell;
 import org.openvpms.web.workspace.workflow.scheduling.IntersectComparator;
@@ -53,8 +53,6 @@ import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -66,7 +64,6 @@ import static org.openvpms.web.echo.style.Styles.BOLD;
 import static org.openvpms.web.echo.style.Styles.INSET;
 import static org.openvpms.web.echo.style.Styles.WIDE_CELL_SPACING;
 import static org.openvpms.web.workspace.workflow.appointment.AppointmentQuery.DateRange.DAY;
-import static org.openvpms.web.workspace.workflow.appointment.AppointmentQuery.DateRange.MONTH;
 import static org.openvpms.web.workspace.workflow.appointment.AppointmentQuery.DateRange.WEEK;
 
 
@@ -246,7 +243,12 @@ public class AppointmentBrowser extends ScheduleBrowser {
         Entity scheduleView = getScheduleView();
         AppointmentQuery.DateRange dateRange = getQuery().getDateRange();
         if (dateRange != DAY && AppointmentHelper.isMultiDayView(scheduleView)) {
-            int days = (dateRange == WEEK) ? 7 : 31;
+            int days;
+            if (dateRange == WEEK) {
+                days = 7;
+            } else {
+                days = DateRules.getDaysInMonth(date);
+            }
             grid = new MultiDayScheduleGrid(scheduleView, date, days, events);
         } else {
             if (schedules.size() == 1) {
@@ -314,7 +316,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
         layout.setAlignment(Alignment.ALIGN_CENTER);
         title.setLayoutData(layout);
 
-        Component column = ColumnFactory.create(INSET, ColumnFactory.create(WIDE_CELL_SPACING, title, layoutQuery()));
+        Component column = ColumnFactory.create(INSET, ColumnFactory.create(WIDE_CELL_SPACING, layoutQuery()));
 
         appointmentsTab = addTab(Messages.get("workflow.scheduling.appointment.title"), column);
         freeSlotsTab = addTab(Messages.get("workflow.scheduling.appointment.find.title"),
@@ -338,19 +340,49 @@ public class AppointmentBrowser extends ScheduleBrowser {
     }
 
     /**
+     * Adds the title and table to the browser component.
+     *
+     * @param table     the table to add
+     * @param component the component
+     */
+    @Override
+    protected void addTable(Table table, Component component) {
+        component.add(ColumnFactory.create(Styles.INSET_CELL_SPACING, title, table));
+    }
+
+    /**
      * Updates the title based on the current selection.
      */
     private void updateTitle() {
         Entity view = getScheduleView();
         AppointmentQuery.DateRange dateRange = getQuery().getDateRange();
-        DateFormat format = (dateRange == MONTH) ?
-                            new SimpleDateFormat("MMMM YYYY") : DateFormatter.getFullDateFormat(); // TODO
-        String date = format.format(getDate());
         Entity schedule = getQuery().getSchedule();
         String viewName = (view != null) ? view.getName() : null;
         String schedName = (schedule != null) ? schedule.getName() : null;
 
+        String date;
         String text;
+        ScheduleEventGrid grid = getModel().getGrid();
+        if (dateRange == DAY) {
+            date = Messages.format("workflow.scheduling.appointment.day", grid.getStartDate());
+        } else {
+            Date from = grid.getStartDate();
+            Date to = grid.getEndDate();
+            boolean sameMonth = DateRules.getMonthStart(from).equals(DateRules.getMonthStart(to));
+            if (dateRange == WEEK) {
+                if (sameMonth) {
+                    date = Messages.format("workflow.scheduling.appointment.week.samemonth", from, to);
+                } else {
+                    date = Messages.format("workflow.scheduling.appointment.week.diffmonth", from, to);
+                }
+            } else {
+                if (sameMonth) {
+                    date = Messages.format("workflow.scheduling.appointment.month.samemonth", from, to);
+                } else {
+                    date = Messages.format("workflow.scheduling.appointment.month.diffmonth", from, to);
+                }
+            }
+        }
         if (viewName != null && schedName != null) {
             text = Messages.format("workflow.scheduling.appointment.viewscheduledate", viewName, schedName, date);
         } else if (viewName != null) {

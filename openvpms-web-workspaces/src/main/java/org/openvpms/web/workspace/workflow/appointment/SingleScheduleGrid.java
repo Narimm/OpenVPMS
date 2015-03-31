@@ -266,8 +266,8 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
         Date endTime = set.getDate(ScheduleEvent.ACT_END_TIME);
         Date startDate = DateRules.getDate(startTime);
         Date endDate = DateRules.getDate(endTime);
-        int startMins = startDate.compareTo(getDate()) < 0 ? 0 : getSlotMinutes(startTime, false);
-        int endMins = endDate.compareTo(getDate()) > 0 ? 24 * 60 : getSlotMinutes(endTime, true);
+        int startMins = startDate.compareTo(getStartDate()) < 0 ? 0 : getSlotMinutes(startTime, false);
+        int endMins = endDate.compareTo(getStartDate()) > 0 ? 24 * 60 : getSlotMinutes(endTime, true);
 
         int slotSize = getSlotSize();
         int size = (endMins - startMins) / slotSize;

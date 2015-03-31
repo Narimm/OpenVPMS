@@ -181,7 +181,7 @@ public class DateSelector {
         });
         Button currentDay = ButtonFactory.create(null, "date.currentDay", new ActionListener() {
             public void onAction(ActionEvent event) {
-                update(navigator.getCurrent(getDate()));
+                update(navigator.getCurrent());
             }
         });
         Button nextDay = ButtonFactory.create(null, "date.nextDay", new ActionListener() {

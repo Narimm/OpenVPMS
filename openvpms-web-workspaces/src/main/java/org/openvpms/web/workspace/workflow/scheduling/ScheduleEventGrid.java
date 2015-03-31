@@ -45,11 +45,18 @@ public interface ScheduleEventGrid {
     Entity getScheduleView();
 
     /**
-     * Returns the schedule date.
+     * Returns the schedule start date.
      *
-     * @return the date, excluding any time
+     * @return the start date, excluding any time
      */
-    Date getDate();
+    Date getStartDate();
+
+    /**
+     * Returns the schedule end date.
+     *
+     * @return the end date, excluding any time
+     */
+    Date getEndDate();
 
     /**
      * Returns the schedules.
