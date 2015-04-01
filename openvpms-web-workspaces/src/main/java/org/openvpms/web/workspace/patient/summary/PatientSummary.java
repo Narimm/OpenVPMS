@@ -342,7 +342,7 @@ public class PatientSummary extends PartySummary {
      * @param grid    the grid
      */
     protected void addMicrochip(Party patient, Grid grid) {
-        String identity = rules.getMicrochip(patient);
+        String identity = rules.getMicrochipNumber(patient);
         if (identity != null) {
             Label microchipTitle = LabelFactory.create("patient.microchip");
             Label microchip = LabelFactory.create();
