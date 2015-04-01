@@ -27,11 +27,14 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.bound.BoundDateTimeField;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
+import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.patient.PatientParticipationEditor;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.PropertySet;
@@ -121,6 +124,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
             }
         });
         addStartEndTimeListeners();
+        updateRelativeDate();
         updateAlerts();
     }
 
@@ -142,7 +146,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new AppointmentLayoutStrategy();
+        return new AppointmentLayoutStrategy(getStartTimeEditor(), getEndTimeEditor());
     }
 
     /**
@@ -184,6 +188,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
+        updateRelativeDate();
     }
 
     /**
@@ -218,6 +223,13 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         super.onCustomerChanged();
         editor.addModifiableListener(patientListener);
         updateAlerts();
+    }
+
+    /**
+     * Updates the end-time editor to base relative dates on the start time.
+     */
+    protected void updateRelativeDate() {
+        getEndTimeEditor().setRelativeDate(getStartTime());
     }
 
     /**
@@ -443,7 +455,18 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         return alerts;
     }
 
-    private class AppointmentLayoutStrategy extends LayoutStrategy {
+    private class AppointmentLayoutStrategy extends AbstractLayoutStrategy {
+
+        /**
+         * Constructs an {@link AppointmentLayoutStrategy}.
+         *
+         * @param startTime the start time
+         * @param endTime   the end time
+         */
+        public AppointmentLayoutStrategy(BoundDateTimeField startTime, BoundDateTimeField endTime) {
+            addComponent(new ComponentState(startTime));
+            addComponent(new ComponentState(endTime));
+        }
 
         /**
          * Lay out out the object in the specified container.

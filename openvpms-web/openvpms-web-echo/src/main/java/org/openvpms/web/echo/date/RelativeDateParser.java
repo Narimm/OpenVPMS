@@ -59,22 +59,25 @@ public class RelativeDateParser {
      * Parses a date relative to the current time.
      *
      * @param source the relative date string
-     * @return the parsed date, or <code>null</code> if the source is invalid
+     * @return the parsed date, or {@code null} if the source is invalid
      */
     public Date parse(String source) {
-        return parse(source, new Date());
+        return parse(source, null);
     }
 
     /**
      * Parses a date relative to the specified date.
      *
      * @param source the relative date string
-     * @param date   the date
-     * @return the relative date, or <code>null</code> if the source is invalid
+     * @param date   the date. If {@code null}, the current date/time is used
+     * @return the relative date, or {@code null} if the source is invalid
      */
     public Date parse(String source, Date date) {
         if (StringUtils.isEmpty(source)) {
             return null;
+        }
+        if (date == null) {
+            date = new Date();
         }
         Matcher matcher = pattern.matcher(source.toLowerCase());
         Calendar calendar;
