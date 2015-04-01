@@ -20,10 +20,21 @@
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="microchip" path="/identity" type="java.lang.String"
               minCardinality="1" maxlength="15"/>
-        <node name="name" type="java.lang.String" path="/name"
-              hidden="true" minCardinality="1" derived="true"
+        <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
               derivedValue="/identity"/>
-        <node name="description" type="java.lang.String"
-              path="/description" minCardinality="0"/>
+        <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
+        <node name="implantSite" defaultValue="DORSAL_NECK" displayName="Implant Site" type="java.lang.String"
+              path="/details/implantSite" minCardinality="0">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="DORSAL_NECK" value="Dorsal Surface of Neck between Shoulders"/>
+                    <property name="LEFT_SHOULDER" value="Left Shoulder / Neck Region"/>
+                    <property name="RIGHT_SHOULDER" value="Right Shoulder / Neck Region"/>
+                    <property name="VENTRAL_NECK" value="Ventral Area of Neck"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="implantDate" displayName="Implant Date or Scan Date" path="/details/startTime" type="java.util.Date"
+              defaultValue="java.util.Date.new()" minCardinality="0"/>
     </archetype>
 </archetypes>

@@ -219,39 +219,39 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link PatientRules#getMicrochip(Party)} method.
+     * Tests the {@link PatientRules#getMicrochipNumber(Party)} method.
      */
     @Test
-    public void testGetMicrochip() {
+    public void testGetMicrochipNumber() {
         Party patient = TestHelper.createPatient(false);
-        assertNull(rules.getMicrochip(patient));
+        assertNull(rules.getMicrochipNumber(patient));
 
         EntityIdentity microchip = createMicrochip("1234567");
         patient.addIdentity(microchip);
-        assertEquals("1234567", rules.getMicrochip(patient));
+        assertEquals("1234567", rules.getMicrochipNumber(patient));
 
         microchip.setActive(false);
-        assertNull(rules.getMicrochip(patient));
+        assertNull(rules.getMicrochipNumber(patient));
     }
 
     /**
-     * Tests the {@link PatientRules#getMicrochips(Party)} method.
+     * Tests the {@link PatientRules#getMicrochipNumbers(Party)} method.
      */
     @Test
-    public void testGetMicrochips() {
+    public void testGetMicrochipNumbers() {
         Party patient = TestHelper.createPatient(false);
-        assertNull(rules.getMicrochips(patient));
+        assertNull(rules.getMicrochipNumbers(patient));
 
         EntityIdentity microchip1 = createMicrochip("123");
         patient.addIdentity(microchip1);
         save(patient);
-        assertEquals("123", rules.getMicrochips(patient));
+        assertEquals("123", rules.getMicrochipNumbers(patient));
 
         EntityIdentity microchip2 = createMicrochip("456");
         patient.addIdentity(microchip2);
         save(patient); // 456 will be returned first as its id is higher
 
-        assertEquals("456, 123", rules.getMicrochips(patient));
+        assertEquals("456, 123", rules.getMicrochipNumbers(patient));
     }
 
     /**

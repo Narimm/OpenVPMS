@@ -564,7 +564,7 @@ public class PatientRules {
      * @param patient the patient
      * @return the most recent microchip number, or {@code null} if none is found
      */
-    public String getMicrochip(Party patient) {
+    public String getMicrochipNumber(Party patient) {
         return getIdentity(patient, "entityIdentity.microchip");
     }
 
@@ -574,7 +574,7 @@ public class PatientRules {
      * @param patient the patient
      * @return the active microchip numbers, or {@code null} if none is found
      */
-    public String getMicrochips(Party patient) {
+    public String getMicrochipNumbers(Party patient) {
         String result = null;
         Collection<EntityIdentity> identities = getIdentities(patient, "entityIdentity.microchip");
         for (EntityIdentity identity : identities) {
@@ -585,6 +585,16 @@ public class PatientRules {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the most recent active microchip identity for a patient.
+     *
+     * @param patient the patient
+     * @return the active microchip object, or {@code null} if none is found
+     */
+    public EntityIdentity getMicrochip(Party patient) {
+        return getEntityIdentity(patient, "entityIdentity.microchip");
     }
 
     /**
@@ -677,15 +687,31 @@ public class PatientRules {
      * @return the identity, or {@code null} if none is found
      */
     private String getIdentity(Party patient, String shortName) {
+        EntityIdentity result = getEntityIdentity(patient, shortName);
+        return (result != null) ? result.getIdentity() : null;
+    }
+
+    /**
+     * Returns the active {@link EntityIdentity} with the specified short name.
+     * If there are multiple identities, that with the highest id will be returned.
+     *
+     * @param patient   the patient  may be {@code null}
+     * @param shortName the identity archetype short name
+     * @return the EntityIdentity, or {@code null} if none is found
+     */
+    private EntityIdentity getEntityIdentity(Party patient, String shortName) {
         EntityIdentity result = null;
-        for (EntityIdentity identity : patient.getIdentities()) {
-            if (identity.isActive() && TypeHelper.isA(identity, shortName)) {
-                if (result == null || result.getId() < identity.getId()) {
-                    result = identity;
+        if (patient != null) {
+            for (EntityIdentity identity : patient.getIdentities()) {
+                if (identity.isActive() && TypeHelper.isA(identity, shortName)) {
+                    if (result == null || result.getId() < identity.getId()) {
+                        result = identity;
+                    }
                 }
             }
         }
-        return (result != null) ? result.getIdentity() : null;
+        return result;
+
     }
 
     /**
