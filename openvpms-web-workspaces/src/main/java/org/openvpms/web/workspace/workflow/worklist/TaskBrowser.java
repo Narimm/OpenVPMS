@@ -78,7 +78,7 @@ public class TaskBrowser extends ScheduleBrowser {
             ScheduleTableModel model = getModel();
             Cell cell = model.getCell(worklist, taskRef);
             if (cell != null) {
-                model.setSelectedCell(cell);
+                model.setSelected(cell);
                 selected = model.getEvent(cell);
             }
         }

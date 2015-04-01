@@ -165,14 +165,14 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
                                       object.getReference(ScheduleEvent.ACT_REFERENCE));
             if (cell != null) {
                 Schedule schedule = model.getSchedule(cell);
-                model.setSelectedCell(cell);
+                model.setSelected(cell);
                 selectedTime = object.getDate(ScheduleEvent.ACT_START_TIME);
                 selectedSchedule = schedule.getSchedule();
                 found = true;
             }
         }
         if (!found) {
-            model.setSelectedCell(-1, -1);
+            model.setSelected(null);
             selectedTime = null;
             selectedSchedule = null;
             getTable().getSelectionModel().clearSelection();
@@ -515,14 +515,12 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         results = query.query();
 
         ScheduleEventGrid grid = createEventGrid(query.getDate(), results);
-        int lastRow = -1;
-        int lastColumn = -1;
+        Cell lastSelected = null;
         boolean isCut = true;
         IMObjectReference lastEventId = null;
         if (model != null) {
-            lastRow = model.getSelectedRow();
-            lastColumn = model.getSelectedColumn();
-            lastEventId = getEventReference(lastColumn, lastRow);
+            lastSelected = model.getSelected();
+            lastEventId = getEventReference(lastSelected);
             isCut = model.isCut();
         }
         model = createTableModel(grid);
@@ -554,11 +552,11 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
             // if the schedules and date haven't changed and there was no previously selected object or the object
             // hasn't changed, reselect the selected cell
             boolean reselected = false;
-            if (lastRow != -1 && lastColumn != -1 && sameSchedules && lastColumn < model.getColumnCount()) {
-                IMObjectReference eventId = getEventReference(lastColumn, lastRow);
+            if (lastSelected != null && sameSchedules && lastSelected.getColumn() < model.getColumnCount()) {
+                IMObjectReference eventId = getEventReference(lastSelected);
                 if (ObjectUtils.equals(selectedDate, query.getDate())
                     && (lastEventId == null || ObjectUtils.equals(lastEventId, eventId))) {
-                    model.setSelectedCell(lastColumn, lastRow);
+                    model.setSelected(lastSelected);
                     reselected = true;
                 }
             }
@@ -585,12 +583,12 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
                 IMObjectReference eventRef = marked.getReference(ScheduleEvent.ACT_REFERENCE);
                 Cell cell = model.getCell(scheduleRef, eventRef);
                 if (cell != null) {
-                    model.setMarkedCell(cell, isCut);
+                    model.setMarked(cell, isCut);
                     found = true;
                 }
             }
             if (!found) {
-                model.setMarkedCell(-1, -1, isCut);
+                model.setMarked(null, isCut);
             }
         }
     }
@@ -610,17 +608,16 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     /**
      * Selects a cell.
      *
-     * @param column the column to select
-     * @param row    the row to select
+     * @param cell the cell to select
      */
-    protected void setSelectedCell(int column, int row) {
-        model.setSelectedCell(column, row);
-        selected = model.getEvent(column, row);
-        if (model.getAvailability(column, row) != Availability.UNAVAILABLE) {
-            Schedule schedule = model.getSchedule(column, row);
+    protected void setSelectedCell(Cell cell) {
+        model.setSelected(cell);
+        selected = model.getEvent(cell);
+        if (model.getAvailability(cell) != Availability.UNAVAILABLE) {
+            Schedule schedule = model.getSchedule(cell);
             if (schedule != null) {
-                selectedTime = model.getStartTime(schedule, column, row);
-                selectedSchedule = model.getScheduleEntity(column, row);
+                selectedTime = model.getStartTime(schedule, cell);
+                selectedSchedule = model.getScheduleEntity(cell);
             } else {
                 selectedTime = null;
                 selectedSchedule = null;
@@ -645,17 +642,18 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         if (click.isDoubleClick()) {
             if (model.isSingleScheduleView()) {
                 // click the same row to get double click in single schedule view
-                if (model.getSelectedRow() == row) {
+                Cell cell = model.getSelected();
+                if (cell != null && cell.getRow() == row) {
                     doubleClick = true;
                 }
             } else {
                 // click the same cell to get double click in multi schedule view
-                if (model.isSelectedCell(column, row)) {
+                if (model.isSelected(column, row)) {
                     doubleClick = true;
                 }
             }
         }
-        setSelectedCell(column, row);
+        setSelectedCell(new Cell(column, row));
         if (doubleClick) {
             if (selected == null) {
                 for (BrowserListener<PropertySet> listener : getBrowserListeners()) {
@@ -681,16 +679,15 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     }
 
     /**
-     * Returns the reference of the event at the specified column and row.
+     * Returns the reference of the event at the specified cell.
      *
-     * @param column the column
-     * @param row    the row
+     * @param cell the cell. May be {@code null}
      * @return the corresponding event reference, or {@code null} if none exists
      */
-    private IMObjectReference getEventReference(int column, int row) {
+    private IMObjectReference getEventReference(Cell cell) {
         IMObjectReference result = null;
-        if (column != -1 && row != -1) {
-            PropertySet event = model.getEvent(column, row);
+        if (cell != null) {
+            PropertySet event = model.getEvent(cell);
             if (event != null) {
                 result = event.getReference(ScheduleEvent.ACT_REFERENCE);
             }

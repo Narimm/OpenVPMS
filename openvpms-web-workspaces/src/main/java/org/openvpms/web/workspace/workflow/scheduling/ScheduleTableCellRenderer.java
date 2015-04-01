@@ -186,11 +186,11 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
             if (availability != UNAVAILABLE) {
                 if (value == null && availability == FREE) {
                     // free slot.
-                    if (row == model.getSelectedRow() && !newPrompt) {
+                    Cell cell = model.getSelected();
+                    if (cell != null && row == cell.getRow() && !newPrompt) {
                         // render a 'New' prompt if required
                         if (renderNewPrompt(model, column, row)) {
-                            component = LabelFactory.create(
-                                    "workflow.scheduling.table.new");
+                            component = LabelFactory.create("workflow.scheduling.table.new");
                             highlightCell(component);
                             newPrompt = true;
                         }
@@ -236,8 +236,10 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
         ScheduleTableModel model = (ScheduleTableModel) table.getModel();
         boolean highlight = false;
         boolean single = model.isSingleScheduleView();
-        if ((single && model.getSelectedRow() == row) || (!single && model.isSelectedCell(column, row))
-                                                         && model.getAvailability(column, row) == Availability.BUSY) {
+        Cell cell = model.getSelected();
+        if ((single && cell != null && cell.getRow() == row)
+            || (!single && model.isSelected(column, row))
+               && model.getAvailability(column, row) == Availability.BUSY) {
             highlight = true;
         }
         return highlight;
@@ -253,7 +255,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      */
     protected boolean isCut(Table table, int column, int row) {
         ScheduleTableModel model = (ScheduleTableModel) table.getModel();
-        return model.isCut() && model.isMarkedCell(column, row);
+        return model.isCut() && model.isMarked(column, row);
     }
 
     /**
@@ -414,15 +416,18 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      */
     private boolean renderNewPrompt(ScheduleTableModel model, int column, int row) {
         boolean result = false;
-        int selected = model.getSelectedColumn();
-        if (selected == column) {
-            result = true;
-        } else if (model.isSingleScheduleView() && (column == selected - 1 || column == selected + 1)) {
-            // if the column is adjacent to the selected column
-            if (model.getValueAt(selected, row) != null) {
-                // render the prompt in the current column if the selected
-                // column isn't empty
+        Cell cell = model.getSelected();
+        if (cell != null) {
+            int selected = cell.getColumn();
+            if (selected == column) {
                 result = true;
+            } else if (model.isSingleScheduleView() && (column == selected - 1 || column == selected + 1)) {
+                // if the column is adjacent to the selected column
+                if (model.getValueAt(selected, row) != null) {
+                    // render the prompt in the current column if the selected
+                    // column isn't empty
+                    result = true;
+                }
             }
         }
         return result;
