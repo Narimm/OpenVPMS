@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -850,7 +851,7 @@ public class PartyFunctions {
     public String getPatientMicrochip(Party patient) {
         String result = null;
         if (patient != null) {
-            result = patientRules.getMicrochip(patient);
+            result = patientRules.getMicrochipNumber(patient);
         }
         return (result != null) ? result : "";
     }
@@ -864,7 +865,7 @@ public class PartyFunctions {
     public String getPatientMicrochips(Party patient) {
         String result = null;
         if (patient != null) {
-            result = patientRules.getMicrochips(patient);
+            result = patientRules.getMicrochipNumbers(patient);
         }
         return (result != null) ? result : "";
     }
@@ -887,6 +888,45 @@ public class PartyFunctions {
      */
     public String getPatientMicrochips(Act act) {
         return getPatientMicrochips(getPatient(act));
+    }
+
+    /**
+     * Returns the most recent active microchip identity for a party.
+     *
+     * @param party the party
+     * @return the active microchip object, or {@code null} if none is found
+     */
+    public EntityIdentity getMicrochip(Party party) {
+        return patientRules.getMicrochip(party);
+    }
+
+    /**
+     * Returns the most recent active microchip identity for a patient.
+     *
+     * @param act the act
+     * @return the active microchip object, or {@code null} if none is found
+     */
+    public EntityIdentity getMicrochip(Act act) {
+        Party party = getPatient(act);
+        return patientRules.getMicrochip(party);
+    }
+
+    /**
+     * Returns the most recent active microchip identity for a patient.
+     *
+     * @param context the expression context
+     * @return the active microchip object, or {@code null} if none is found
+     */
+    public Object getMicrochip(ExpressionContext context) {
+        Object result = null;
+        Pointer pointer = context.getContextNodePointer();
+        Object value = pointer.getValue();
+        if (value instanceof Act) {
+            result = getMicrochip((Act) value);
+        } else if (value instanceof Party) {
+            result = getMicrochip((Party) value);
+        }
+        return result;
     }
 
     /**
