@@ -31,6 +31,11 @@ import java.util.Date;
 public class MultiDayTableModel extends ScheduleTableModel {
 
     /**
+     * The schedule column index.
+     */
+    private static final int SCHEDULE_INDEX = 0;
+
+    /**
      * Constructs a {@link MultiDayTableModel}.
      *
      * @param grid    the appointment grid
@@ -66,9 +71,13 @@ public class MultiDayTableModel extends ScheduleTableModel {
     @Override
     public Object getValueAt(int column, int row) {
         Object result = null;
-        if (column == 0) {
+        if (column == SCHEDULE_INDEX) {
             Schedule schedule = getSchedule(column, row);
-            result = (schedule != null) ? schedule.getName() : null;
+            if (schedule != null) {
+                Label label = LabelFactory.create(null, Styles.BOLD);
+                label.setText(schedule.getName());
+                result = label;
+            }
         } else {
             PropertySet set = getEvent(column, row);
             if (set != null) {
@@ -105,6 +114,47 @@ public class MultiDayTableModel extends ScheduleTableModel {
     }
 
     /**
+     * Determines if the specified column is the schedule column.
+     *
+     * @param column the column
+     * @return {@code true} if the column is the schedule column
+     */
+    public boolean isScheduleColumn(int column) {
+        return column == SCHEDULE_INDEX;
+    }
+
+    /**
+     * Returns the availability of the specified cell.
+     *
+     * @param column the column
+     * @param row    the row
+     * @return the availability of the cell
+     */
+    @Override
+    public ScheduleEventGrid.Availability getAvailability(int column, int row) {
+        return (isScheduleColumn(column)) ? ScheduleEventGrid.Availability.UNAVAILABLE
+                                          : super.getAvailability(column, row);
+    }
+
+    /**
+     * Creates a column model to display a list of schedules.
+     *
+     * @param grid the appointment grid
+     * @return a new column model
+     */
+    @Override
+    protected TableColumnModel createColumnModel(ScheduleEventGrid grid) {
+        DefaultTableColumnModel result = new DefaultTableColumnModel();
+        Date start = grid.getStartDate();
+        int modelIndex = 0;
+        result.addColumn(new Column(modelIndex++, Messages.get("workflow.scheduling.type")));
+        for (int i = 0; i < grid.getSlots(); ++i) {
+            result.addColumn(new DateColumn(modelIndex++, DateRules.getDate(start, i, DateUnits.DAYS)));
+        }
+        return result;
+    }
+
+    /**
      * Returns the slot of a cell.
      *
      * @param column the column
@@ -114,6 +164,17 @@ public class MultiDayTableModel extends ScheduleTableModel {
     @Override
     protected int getSlot(int column, int row) {
         return column - 1;
+    }
+
+    /**
+     * Returns the cell column corresponding to a slot.
+     *
+     * @param slot the slot
+     * @return the column
+     */
+    @Override
+    protected int getCellColumn(int slot) {
+        return slot + 1;
     }
 
     /**
@@ -190,24 +251,6 @@ public class MultiDayTableModel extends ScheduleTableModel {
 
         String notes = event.getString(ScheduleEvent.ACT_DESCRIPTION);
         return createLabelWithNotes(text, notes);
-    }
-
-    /**
-     * Creates a column model to display a list of schedules.
-     *
-     * @param grid the appointment grid
-     * @return a new column model
-     */
-    @Override
-    protected TableColumnModel createColumnModel(ScheduleEventGrid grid) {
-        DefaultTableColumnModel result = new DefaultTableColumnModel();
-        Date start = grid.getStartDate();
-        int modelIndex = 0;
-        result.addColumn(new Column(modelIndex++, "Schedule"));
-        for (int i = 0; i < grid.getSlots(); ++i) {
-            result.addColumn(new DateColumn(modelIndex++, DateRules.getDate(start, i, DateUnits.DAYS)));
-        }
-        return result;
     }
 
 }

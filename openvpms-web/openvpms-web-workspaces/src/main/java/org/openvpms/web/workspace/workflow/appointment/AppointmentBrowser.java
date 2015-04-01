@@ -217,7 +217,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
     public void setSelected(Entity schedule, Date startTime) {
         Cell cell = getModel().getCell(schedule.getObjectReference(), startTime);
         if (cell != null) {
-            setSelectedCell(cell.getColumn(), cell.getRow());
+            setSelectedCell(cell);
         }
     }
 
@@ -241,14 +241,10 @@ public class AppointmentBrowser extends ScheduleBrowser {
         Set<Entity> schedules = events.keySet();
         ScheduleEventGrid grid;
         Entity scheduleView = getScheduleView();
-        AppointmentQuery.DateRange dateRange = getQuery().getDateRange();
+        AppointmentQuery query = getQuery();
+        AppointmentQuery.DateRange dateRange = query.getDateRange();
         if (dateRange != DAY && AppointmentHelper.isMultiDayView(scheduleView)) {
-            int days;
-            if (dateRange == WEEK) {
-                days = 7;
-            } else {
-                days = DateRules.getDaysInMonth(date);
-            }
+            int days = query.getDays();
             grid = new MultiDayScheduleGrid(scheduleView, date, days, events);
         } else {
             if (schedules.size() == 1) {
@@ -263,7 +259,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
             } else {
                 grid = new MultiScheduleGrid(getScheduleView(), date, events, rules);
             }
-            AppointmentQuery.TimeRange range = getQuery().getTimeRange();
+            AppointmentQuery.TimeRange range = query.getTimeRange();
             grid = createGridView((AppointmentGrid) grid, range);
         }
         return grid;

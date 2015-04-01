@@ -8,24 +8,24 @@ package org.openvpms.web.workspace.workflow.scheduling;
 public class Cell {
 
     /**
-     * The row.
-     */
-    private final int row;
-
-    /**
      * The column.
      */
     private final int column;
 
     /**
+     * The row.
+     */
+    private final int row;
+
+    /**
      * Constructs a {@link Cell}.
      *
-     * @param row    the row
      * @param column the column
+     * @param row    the row
      */
-    public Cell(int row, int column) {
-        this.row = row;
+    public Cell(int column, int row) {
         this.column = column;
+        this.row = row;
     }
 
     /**
@@ -44,6 +44,17 @@ public class Cell {
      */
     public int getRow() {
         return row;
+    }
+
+    /**
+     * Determines if the cell is equal to the specified column and row.
+     *
+     * @param column the column
+     * @param row    the row
+     * @return {@code true} if they are equal
+     */
+    public boolean equals(int column, int row) {
+        return this.column == column && this.row == row;
     }
 
 }

@@ -85,24 +85,14 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     private IMObjectReference clinician;
 
     /**
-     * The selected column.
+     * The selected cell.
      */
-    private int selectedColumn = -1;
+    private Cell selected;
 
     /**
-     * The selected row.
+     * The marked cell.
      */
-    private int selectedRow = -1;
-
-    /**
-     * The marked cell column.
-     */
-    private int markedColumn = -1;
-
-    /**
-     * The marked cell row.
-     */
-    private int markedRow = -1;
+    private Cell marked;
 
     /**
      * If {@code true} the marked cell is being cut, else it is being copied.
@@ -164,18 +154,20 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
             int column = getColumn(schedule);
             if (column != -1) {
                 Schedule s = getSchedule(column, 0);
-                int row = getSlot(s, event);
-                if (row != -1) {
-                    result = new Cell(row, column);
+                int slot = getSlot(s, event);
+                if (slot != -1) {
+                    int row = getCellRow(slot);
+                    result = new Cell(column, row);
                 }
             }
         } else {
             int row = getRow(schedule);
             if (row != -1) {
                 Schedule s = grid.getSchedules().get(row);
-                int column = getSlot(s, event);
-                if (column != -1) {
-                    result = new Cell(row, column);
+                int slot = getSlot(s, event);
+                if (slot != -1) {
+                    int column = getCellColumn(slot);
+                    result = new Cell(column, row);
                 }
             }
         }
@@ -195,7 +187,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
         if (slot != -1) {
             int index = (scheduleColumns) ? getColumn(schedule) : getRow(schedule);
             if (index != -1) {
-                result = (scheduleColumns) ? new Cell(index, slot) : new Cell(slot, index);
+                result = (scheduleColumns) ? new Cell(slot, index) : new Cell(index, slot);
             }
         }
         return result;
@@ -234,47 +226,26 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     /**
      * Sets the selected cell.
      *
-     * @param cell the selected cell
+     * @param cell the selected cell. May be {@code null}
      */
-    public void setSelectedCell(Cell cell) {
-        setSelectedCell(cell.getColumn(), cell.getRow());
-    }
-
-    /**
-     * Sets the selected cell.
-     *
-     * @param column the selected column
-     * @param row    the selected row
-     */
-    public void setSelectedCell(int column, int row) {
-        int oldColumn = selectedColumn;
-        int oldRow = selectedRow;
-        selectedColumn = column;
-        selectedRow = row;
-        if (oldColumn != -1 && oldRow != -1) {
-            fireTableCellUpdated(oldColumn, oldRow);
+    public void setSelected(Cell cell) {
+        Cell old = selected;
+        selected = cell;
+        if (old != null) {
+            fireTableCellUpdated(old.getColumn(), old.getRow());
         }
-        if (selectedColumn != -1 && selectedRow != -1) {
-            fireTableCellUpdated(selectedColumn, selectedRow);
+        if (selected != null) {
+            fireTableCellUpdated(selected.getColumn(), selected.getRow());
         }
     }
 
     /**
-     * Returns the selected column.
+     * Returns the selected cell.
      *
-     * @return the selected column, or {@code -1} if none is selected
+     * @return the selected cell, or {@code null} if none is selected
      */
-    public int getSelectedColumn() {
-        return selectedColumn;
-    }
-
-    /**
-     * Returns the selected row.
-     *
-     * @return the selected row, or {@code -1} if none is selected
-     */
-    public int getSelectedRow() {
-        return selectedRow;
+    public Cell getSelected() {
+        return selected;
     }
 
     /**
@@ -284,58 +255,36 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * @param row    the row
      * @return {@code true} if the cell is selected
      */
-    public boolean isSelectedCell(int column, int row) {
-        return selectedColumn == column && selectedRow == row;
+    public boolean isSelected(int column, int row) {
+        return selected != null && selected.equals(column, row);
     }
 
     /**
      * Sets the marked cell. This flags a cell as being marked for cutting/copying and pasting purposes.
      *
-     * @param cell  the cell
-     * @param isCut if {@code true} indicates the cell is being cut; if {@code false} indicates its being copied
+     * @param cell  the cell, or {@code null} to unmark the cell
+     * @param isCut if {@code true} indicates the cell is being cut; if {@code false} indicates its being copied.
+     *              Ignored if the cell is being unmarked.
      */
-    public void setMarkedCell(Cell cell, boolean isCut) {
-        setMarkedCell(cell.getColumn(), cell.getRow(), isCut);
-    }
-
-    /**
-     * Sets the marked cell. This flags a cell as being marked for cutting/copying and pasting purposes.
-     *
-     * @param column the marked column, or {@code -1} to unmark the cell
-     * @param row    the marked row, or {@code -1} to unmark the cell
-     * @param isCut  if {@code true} indicates the cell is being cut; if {@code false} indicates its being copied.
-     *               Ignored if the cell is being unmarked.
-     */
-    public void setMarkedCell(int column, int row, boolean isCut) {
-        int oldColumn = markedColumn;
-        int oldRow = markedRow;
+    public void setMarked(Cell cell, boolean isCut) {
+        Cell old = marked;
         this.isCut = isCut;
-        markedColumn = column;
-        markedRow = row;
-        if (oldColumn != -1 && oldRow != -1) {
-            fireTableCellUpdated(oldColumn, oldRow);
+        marked = cell;
+        if (old != null) {
+            fireTableCellUpdated(old.getColumn(), old.getRow());
         }
-        if (markedColumn != -1 && markedRow != -1) {
-            fireTableCellUpdated(markedColumn, markedRow);
+        if (marked != null) {
+            fireTableCellUpdated(marked.getColumn(), marked.getRow());
         }
     }
 
     /**
-     * Returns the cut column.
+     * Returns the marked cell.
      *
-     * @return the cut column, or {@code -1} if no cell is selected to be cut
+     * @return the marked cell, or {@code null} if no cell is marked
      */
-    public int getMarkedColumn() {
-        return markedColumn;
-    }
-
-    /**
-     * Returns the marked row.
-     *
-     * @return the marked row, or {@code -1} if no cell is selected to be cut/copied
-     */
-    public int getMarkedRow() {
-        return markedRow;
+    public Cell getMarked() {
+        return marked;
     }
 
     /**
@@ -345,8 +294,8 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * @param row    the row
      * @return {@code true} if the cell is cut
      */
-    public boolean isMarkedCell(int column, int row) {
-        return markedColumn == column && markedColumn != -1 && markedRow == row && markedRow != -1;
+    public boolean isMarked(int column, int row) {
+        return marked != null && marked.equals(column, row);
     }
 
     /**
@@ -485,6 +434,15 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     }
 
     /**
+     * Returns the schedule entity at the given cell.
+     *
+     * @return the schedule entity, or {@code null} if there is no schedule associated with the cell
+     */
+    public Entity getScheduleEntity(Cell cell) {
+        return getScheduleEntity(cell.getColumn(), cell.getRow());
+    }
+
+    /**
      * Returns the schedule entity at the given column and row.
      *
      * @param column the column
@@ -494,6 +452,17 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     public Entity getScheduleEntity(int column, int row) {
         Schedule schedule = getSchedule(column, row);
         return (schedule != null) ? schedule.getSchedule() : null;
+    }
+
+
+    /**
+     * Returns the availability of the specified cell.
+     *
+     * @param cell the cell
+     * @return the availability of the cell
+     */
+    public ScheduleEventGrid.Availability getAvailability(Cell cell) {
+        return getAvailability(cell.getColumn(), cell.getRow());
     }
 
     /**
@@ -516,12 +485,11 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * Returns the event start time at the specified cell.
      *
      * @param schedule the schedule
-     * @param column   the column
-     * @param row      the row
+     * @param cell     the cell
      * @return the start time. May be {@code null}
      */
-    public Date getStartTime(Schedule schedule, int column, int row) {
-        int slot = getSlot(column, row);
+    public Date getStartTime(Schedule schedule, Cell cell) {
+        int slot = getSlot(cell.getColumn(), cell.getRow());
         return grid.getStartTime(schedule, slot);
     }
 
@@ -607,6 +575,30 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
         TableLayoutDataEx layout = new TableLayoutDataEx();
         layout.setColSpan(span);
         component.setLayoutData(layout);
+    }
+
+    /**
+     * Returns the cell column corresponding to a slot.
+     * <p/>
+     * This implementation returns the slot unchanged.
+     *
+     * @param slot the slot
+     * @return the column
+     */
+    protected int getCellColumn(int slot) {
+        return slot;
+    }
+
+    /**
+     * Returns the cell row corresponding to a slot.
+     * <p/>
+     * This implementation returns the slot unchanged.
+     *
+     * @param slot the slot
+     * @return the row
+     */
+    protected int getCellRow(int slot) {
+        return slot;
     }
 
     /**

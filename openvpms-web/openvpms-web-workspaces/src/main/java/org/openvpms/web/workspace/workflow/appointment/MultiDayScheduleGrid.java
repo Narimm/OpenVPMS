@@ -89,6 +89,9 @@ public class MultiDayScheduleGrid extends AbstractScheduleEventGrid {
      */
     @Override
     public Availability getAvailability(Schedule schedule, int slot) {
+        if (getEvent(schedule, slot) != null) {
+            return Availability.BUSY;
+        }
         return Availability.FREE;
     }
 
@@ -113,7 +116,7 @@ public class MultiDayScheduleGrid extends AbstractScheduleEventGrid {
      */
     @Override
     public int getSlot(Date time) {
-        return 0;
+        return Days.daysBetween(new DateTime(getStartDate()), new DateTime(time)).getDays();
     }
 
     /**
@@ -131,6 +134,16 @@ public class MultiDayScheduleGrid extends AbstractScheduleEventGrid {
         Date endTime = appointment.getDate(ScheduleEvent.ACT_END_TIME);
         int endSlot = Days.daysBetween(new DateTime(getStartDate()), new DateTime(endTime)).getDays() + 1;
         return endSlot - slot;
+    }
+
+    /**
+     * Returns the date of a slot.
+     *
+     * @param slot the slot
+     * @return the start time of the specified slot
+     */
+    public Date getDate(int slot) {
+        return DateRules.getDate(getStartDate(), slot, DateUnits.DAYS);
     }
 
     /**
@@ -198,13 +211,4 @@ public class MultiDayScheduleGrid extends AbstractScheduleEventGrid {
         row.addEvent(set);
     }
 
-    /**
-     * Returns the date of a slot.
-     *
-     * @param slot the slot
-     * @return the start time of the specified slot
-     */
-    public Date getDate(int slot) {
-        return DateRules.getDate(getStartDate(), slot, DateUnits.DAYS);
-    }
 }

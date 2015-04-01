@@ -23,6 +23,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.joda.time.DateTime;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.archetype.rules.workflow.ScheduleService;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.util.PropertySet;
@@ -110,6 +111,11 @@ class AppointmentQuery extends ScheduleServiceQuery {
     private DateRange dateRange = DateRange.DAY;
 
     /**
+     * The no. of days to query.
+     */
+    private int days = 1;
+
+    /**
      * The container for the Dates label.
      */
     private Component labelContainer = new Row();
@@ -154,6 +160,15 @@ class AppointmentQuery extends ScheduleServiceQuery {
      */
     public DateRange getDateRange() {
         return dateRange;
+    }
+
+    /**
+     * Returns the no. of days to query.
+     *
+     * @return the no of days
+     */
+    public int getDays() {
+        return days;
     }
 
     /**
@@ -219,7 +234,12 @@ class AppointmentQuery extends ScheduleServiceQuery {
      */
     @Override
     protected List<PropertySet> getEvents(Entity schedule, Date date) {
-        return getService().getEvents(schedule, date, DateRules.getDate(date, 30, DateUnits.DAYS));
+        ScheduleService service = getService();
+        if (days == 1) {
+            return service.getEvents(schedule, date);
+        } else {
+            return service.getEvents(schedule, date, DateRules.getDate(date, days, DateUnits.DAYS));
+        }
     }
 
     /**
@@ -265,6 +285,37 @@ class AppointmentQuery extends ScheduleServiceQuery {
             case MONTH:
                 setDateNavigator(DateNavigator.MONTH);
                 break;
+        }
+        updateDays(getDate(), dateRange);
+    }
+
+    /**
+     * Invoked when the date changes.
+     * <p/>
+     * This implementation invokes {@link #onQuery()}.
+     */
+    @Override
+    protected void onDateChanged() {
+        updateDays(getDate(), dateRange);
+        super.onDateChanged();
+    }
+
+    /**
+     * Updates the no. of days to query.
+     *
+     * @param date  the date
+     * @param range the date range
+     */
+    private void updateDays(Date date, DateRange range) {
+        switch (range) {
+            case DAY:
+                days = 1;
+                break;
+            case WEEK:
+                days = 7;
+                break;
+            default:
+                days = DateRules.getDaysInMonth(date);
         }
     }
 
