@@ -19,7 +19,11 @@ package org.openvpms.web.workspace.workflow.appointment;
 import echopointng.KeyStrokes;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import org.joda.time.DateTime;
+import org.joda.time.Minutes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -404,7 +408,8 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * @param startTime   the new start time
      */
     private void cut(Act appointment, Entity schedule, Date startTime) {
-        paste(appointment, schedule, startTime);
+        int duration = getDuration(appointment.getActivityStartTime(), appointment.getActivityEndTime());
+        paste(appointment, schedule, startTime, duration);
         browser.clearMarked();
     }
 
@@ -416,12 +421,13 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * @param startTime   the new start time
      */
     private void copy(Act appointment, Entity schedule, Date startTime) {
+        int duration = getDuration(appointment.getActivityStartTime(), appointment.getActivityEndTime());
         appointment = rules.copy(appointment);
         ActBean bean = new ActBean(appointment);
         bean.setValue("status", AppointmentStatus.PENDING);
         bean.setValue("arrivalTime", null);
         bean.setParticipant(UserArchetypes.AUTHOR_PARTICIPATION, getContext().getUser());
-        paste(appointment, schedule, startTime);
+        paste(appointment, schedule, startTime, duration);
     }
 
     /**
@@ -430,16 +436,37 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * @param appointment the appointment
      * @param schedule    the new schedule
      * @param startTime   the new start time
+     * @param duration    the duration of the appointment, in minutes
      */
-    private void paste(Act appointment, Entity schedule, Date startTime) {
+    private void paste(Act appointment, Entity schedule, Date startTime, int duration) {
         HelpContext edit = createEditTopic(appointment);
         DefaultLayoutContext context = new DefaultLayoutContext(getContext(), edit);
         AppointmentActEditor editor = new AppointmentActEditor(appointment, null, context);
         EditDialog dialog = edit(editor, null);  // NOTE: need to update the start time after dialog is created
         editor.setSchedule(schedule);            //       See AppointmentEditDialog.timesModified().
-        editor.setStartTime(startTime); // will recalc end time
+        editor.setStartTime(startTime);   // will recalc end time. May be rounded to nearest slot
+        startTime = editor.getStartTime();
+        Date endTime = editor.getEndTime();
+        if (endTime != null) {
+            // if the new appointment is shorter than the old, try and adjust it
+            int newLength = getDuration(editor.getStartTime(), endTime);
+            if (newLength < duration) {
+                editor.setEndTime(DateRules.getDate(startTime, duration, DateUnits.MINUTES));
+            }
+        }
         dialog.save(true);              // checks for overlapping appointments
         browser.setSelected(browser.getEvent(appointment));
+    }
+
+    /**
+     * Returns the duration in minutes between two times.
+     *
+     * @param startTime the start time
+     * @param endTime   the end time
+     * @return the duration in minutes
+     */
+    private int getDuration(Date startTime, Date endTime) {
+        return Minutes.minutesBetween(new DateTime(startTime), new DateTime(endTime)).getMinutes();
     }
 
     /**

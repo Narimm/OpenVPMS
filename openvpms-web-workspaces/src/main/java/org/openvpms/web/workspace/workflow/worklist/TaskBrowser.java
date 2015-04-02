@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.echo.table.DefaultTableHeaderRenderer;
 import org.openvpms.web.workspace.workflow.scheduling.Cell;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
@@ -117,6 +118,7 @@ public class TaskBrowser extends ScheduleBrowser {
      */
     @Override
     protected void initTable(TableEx table) {
+        table.setDefaultHeaderRenderer(DefaultTableHeaderRenderer.DEFAULT);
         table.setDefaultRenderer(renderer);
     }
 

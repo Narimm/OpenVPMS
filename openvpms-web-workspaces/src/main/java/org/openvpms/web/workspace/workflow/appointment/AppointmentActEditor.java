@@ -17,7 +17,10 @@
 package org.openvpms.web.workspace.workflow.appointment;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
+import org.openvpms.archetype.i18n.time.DateDurationFormatter;
+import org.openvpms.archetype.i18n.time.DurationFormatter;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
@@ -27,9 +30,9 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.bound.BoundDateTimeField;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -37,12 +40,14 @@ import org.openvpms.web.component.im.patient.PatientParticipationEditor;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.alert.AlertSummary;
 import org.openvpms.web.workspace.customer.CustomerSummary;
@@ -53,6 +58,7 @@ import org.openvpms.web.workspace.workflow.scheduling.SchedulingHelper;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import static org.openvpms.web.echo.style.Styles.BOLD;
 import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
@@ -86,6 +92,15 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      */
     private final AppointmentRules rules;
 
+    /**
+     * The appointment duration.
+     */
+    private Label duration = LabelFactory.create();
+
+    /**
+     * The appointment duration formatter.
+     */
+    private static DurationFormatter formatter = DateDurationFormatter.create(true, true, true, true, true, true);
 
     /**
      * Constructs an {@link AppointmentActEditor}.
@@ -125,6 +140,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         });
         addStartEndTimeListeners();
         updateRelativeDate();
+        updateDuration();
         updateAlerts();
     }
 
@@ -146,7 +162,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new AppointmentLayoutStrategy(getStartTimeEditor(), getEndTimeEditor());
+        return new AppointmentLayoutStrategy();
     }
 
     /**
@@ -189,6 +205,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
             ErrorHelper.show(exception);
         }
         updateRelativeDate();
+        updateDuration();
     }
 
     /**
@@ -208,6 +225,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
                 }
             }
         }
+        updateDuration();
     }
 
     /**
@@ -230,6 +248,19 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      */
     protected void updateRelativeDate() {
         getEndTimeEditor().setRelativeDate(getStartTime());
+    }
+
+    /**
+     * Updates the appointment duration display.
+     */
+    private void updateDuration() {
+        Date startTime = getStartTime();
+        Date endTime = getEndTime();
+        if (startTime != null && endTime != null) {
+            duration.setText(formatter.format(startTime, endTime));
+        } else {
+            duration.setText(null);
+        }
     }
 
     /**
@@ -459,13 +490,26 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
 
         /**
          * Constructs an {@link AppointmentLayoutStrategy}.
-         *
-         * @param startTime the start time
-         * @param endTime   the end time
          */
-        public AppointmentLayoutStrategy(BoundDateTimeField startTime, BoundDateTimeField endTime) {
-            addComponent(new ComponentState(startTime));
-            addComponent(new ComponentState(endTime));
+        public AppointmentLayoutStrategy() {
+            addComponent(new ComponentState(getStartTimeEditor()));
+            addComponent(new ComponentState(getEndTimeEditor()));
+        }
+
+        /**
+         * Lays out components in a grid.
+         *
+         * @param object     the object to lay out
+         * @param properties the properties
+         * @param context    the layout context
+         */
+        @Override
+        protected ComponentGrid createGrid(IMObject object, List<Property> properties, LayoutContext context) {
+            ComponentGrid grid = super.createGrid(object, properties, context);
+            ComponentState state = new ComponentState(duration, null, null,
+                                                      Messages.get("workflow.scheduling.appointment.duration"));
+            grid.add(state);
+            return grid;
         }
 
         /**
