@@ -151,23 +151,21 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     public Cell getCell(IMObjectReference schedule, IMObjectReference event) {
         Cell result = null;
         if (scheduleColumns) {
-            int column = getColumn(schedule);
-            if (column != -1) {
-                Schedule s = getSchedule(column, 0);
+            for (ScheduleColumn column : getColumns(schedule)) {
+                Schedule s = column.getSchedule();
                 int slot = getSlot(s, event);
                 if (slot != -1) {
                     int row = getCellRow(slot);
-                    result = new Cell(column, row);
+                    result = new Cell(column.getModelIndex(), row);
                 }
             }
         } else {
-            int row = getRow(schedule);
-            if (row != -1) {
-                Schedule s = grid.getSchedules().get(row);
+            for (ScheduleRow row : getRows(schedule)) {
+                Schedule s = row.getSchedule();
                 int slot = getSlot(s, event);
                 if (slot != -1) {
                     int column = getCellColumn(slot);
-                    result = new Cell(column, row);
+                    result = new Cell(column, row.getRow());
                 }
             }
         }
@@ -185,9 +183,18 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
         Cell result = null;
         int slot = grid.getSlot(date);
         if (slot != -1) {
-            int index = (scheduleColumns) ? getColumn(schedule) : getRow(schedule);
-            if (index != -1) {
-                result = (scheduleColumns) ? new Cell(slot, index) : new Cell(index, slot);
+            if (scheduleColumns) {
+                List<ScheduleColumn> columns = getColumns(schedule);
+                if (!columns.isEmpty()) {
+                    int index = columns.get(0).getModelIndex();
+                    result = new Cell(index, getCellRow(slot));
+                }
+            } else {
+                List<ScheduleRow> rows = getRows(schedule);
+                if (!rows.isEmpty()) {
+                    int row = rows.get(0).getRow();
+                    result = new Cell(getCellColumn(slot), row);
+                }
             }
         }
         return result;
@@ -676,40 +683,41 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     }
 
     /**
-     * Returns the column index of a schedule.
+     * Returns all columns that a schedule appears in.
      *
      * @param scheduleRef the schedule reference
-     * @return the index of the schedule, or {@code -1} if the schedule isn't found
+     * @return the columns
      */
-    private int getColumn(IMObjectReference scheduleRef) {
+    private List<ScheduleColumn> getColumns(IMObjectReference scheduleRef) {
+        List<ScheduleColumn> result = new ArrayList<ScheduleColumn>();
         for (ScheduleColumn column : getColumns()) {
             if (column.getSchedule() != null) {
                 Entity schedule = column.getSchedule().getSchedule();
                 if (schedule.getObjectReference().equals(scheduleRef)) {
-                    return column.getModelIndex();
+                    result.add(column);
                 }
             }
         }
-        return -1;
+        return result;
     }
 
     /**
-     * Returns the row index of a schedule.
+     * Returns all rows that a schedule appears in.
      *
      * @param scheduleRef the schedule reference
-     * @return the index of the schedule, or {@code -1} if the schedule isn't found
+     * @return the rows
      */
-    private int getRow(IMObjectReference scheduleRef) {
+    private List<ScheduleRow> getRows(IMObjectReference scheduleRef) {
+        List<ScheduleRow> result = new ArrayList<ScheduleRow>();
         int index = 0;
         for (Schedule schedule : grid.getSchedules()) {
             if (schedule.getSchedule().getId() == scheduleRef.getId()) {
-                return index;
+                result.add(new ScheduleRow(schedule, index));
             }
             ++index;
         }
-        return -1;
+        return result;
     }
-
 
     protected static class Column extends TableColumnEx {
 
@@ -788,6 +796,51 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
          */
         public Schedule getSchedule() {
             return schedule;
+        }
+    }
+
+    /**
+     * Associates a schedule with a row.
+     */
+    protected static class ScheduleRow {
+
+        /**
+         * The schedule.
+         */
+        private final Schedule schedule;
+
+        /**
+         * The row.
+         */
+        private final int row;
+
+        /**
+         * Constructs a {@link ScheduleRow}.
+         *
+         * @param schedule the schedule
+         * @param row      the row
+         */
+        public ScheduleRow(Schedule schedule, int row) {
+            this.schedule = schedule;
+            this.row = row;
+        }
+
+        /**
+         * Returns the schedule.
+         *
+         * @return the schedule. May be {@code null}
+         */
+        public Schedule getSchedule() {
+            return schedule;
+        }
+
+        /**
+         * Returns the row.
+         *
+         * @return the row
+         */
+        public int getRow() {
+            return row;
         }
     }
 }

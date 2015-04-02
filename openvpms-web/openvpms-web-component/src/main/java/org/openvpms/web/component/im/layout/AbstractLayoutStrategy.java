@@ -34,6 +34,7 @@ import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.style.Styles;
 
 import java.util.HashMap;
 import java.util.List;
@@ -208,7 +209,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         if (!properties.isEmpty()) {
             ComponentGrid grid = createGrid(object, properties, context);
             Component component = createGrid(grid);
-            container.add(ColumnFactory.create("Inset", component));
+            container.add(ColumnFactory.create(Styles.INSET, component));
         }
     }
 
@@ -399,7 +400,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         }
 
         if (LayoutHelper.needsInset(child)) {
-            child = ColumnFactory.create("Inset", child);
+            child = ColumnFactory.create(Styles.INSET, child);
         }
         model.addTab(property, text, child);
     }

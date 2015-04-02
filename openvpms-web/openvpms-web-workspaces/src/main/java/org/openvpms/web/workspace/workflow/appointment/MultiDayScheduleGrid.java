@@ -77,7 +77,8 @@ public class MultiDayScheduleGrid extends AbstractScheduleEventGrid {
      */
     @Override
     public Date getStartTime(Schedule schedule, int slot) {
-        return DateRules.getDate(getStartDate(), slot, DateUnits.DAYS);
+        Date date = DateRules.getDate(getStartDate(), slot, DateUnits.DAYS);
+        return DateRules.getDate(date, schedule.getStartMins(), DateUnits.MINUTES);
     }
 
     /**
@@ -131,8 +132,11 @@ public class MultiDayScheduleGrid extends AbstractScheduleEventGrid {
      * @return the no. of slots that the appointment occupies
      */
     public int getSlots(PropertySet appointment, int slot) {
-        Date endTime = appointment.getDate(ScheduleEvent.ACT_END_TIME);
-        int endSlot = Days.daysBetween(new DateTime(getStartDate()), new DateTime(endTime)).getDays() + 1;
+        DateTime endTime = new DateTime(appointment.getDate(ScheduleEvent.ACT_END_TIME));
+        int endSlot = Days.daysBetween(new DateTime(getStartDate()), endTime).getDays();
+        if (endTime.getHourOfDay() > 0 || endTime.getMinuteOfHour() > 0) {
+            ++endSlot;
+        }
         return endSlot - slot;
     }
 
