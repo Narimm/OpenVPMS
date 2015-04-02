@@ -135,6 +135,17 @@ class AppointmentQuery extends ScheduleServiceQuery {
     }
 
     /**
+     * Sets the selected schedule view.
+     *
+     * @param view the schedule view
+     */
+    @Override
+    public void setScheduleView(Entity view) {
+        super.setScheduleView(view);
+        updateDatesFilter();
+    }
+
+    /**
      * Returns the selected time range.
      *
      * @return the selected time range
