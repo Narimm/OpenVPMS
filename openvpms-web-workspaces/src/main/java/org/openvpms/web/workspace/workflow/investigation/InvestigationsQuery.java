@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -70,7 +71,7 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     /**
      * The location selector.
      */
-    private final LocationSelectField locationSelector;
+    private final LocationSelectField location;
 
     /**
      * The clinician selector.
@@ -119,9 +120,45 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         setStatus(INCOMPLETE_STATUS.getCode());
         // TODO - shouldn't need this as its returned by StatusLookupQuery, but addStatusSelector() ignores it
 
-        locationSelector = createLocationSelector(context.getContext());
+        location = createLocationSelector(context.getContext());
         clinician = createClinicianSelector();
         investigationType = createInvestigationTypeSelector(context);
+    }
+
+    /**
+     * Sets the practice location.
+     *
+     * @param location the practice location. May be {@code null}
+     */
+    public void setLocation(Party location) {
+        this.location.setSelectedItem(location);
+    }
+
+    /**
+     * Returns the selected practice location.
+     *
+     * @return the selected location. May be {@code null}
+     */
+    public Party getLocation() {
+        return (Party) location.getSelectedItem();
+    }
+
+    /**
+     * Sets the investigation type.
+     *
+     * @param type the investigation type. May be {@code null}
+     */
+    public void setInvestigationType(Entity type) {
+        investigationType.setObject(type);
+    }
+
+    /**
+     * Sets the clinician.
+     *
+     * @param clinician the clinician. May be {@code null}
+     */
+    public void setClinician(User clinician) {
+        this.clinician.setSelectedItem(clinician);
     }
 
     /**
@@ -191,9 +228,9 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
                                  (Entity) clinician.getSelectedItem());
         ParticipantConstraint[] participants = list.toArray(new ParticipantConstraint[list.size()]);
 
-        Party location = (Party) locationSelector.getSelectedItem();
+        Party location = (Party) this.location.getSelectedItem();
         return new InvestigationResultSet(getArchetypeConstraint(), getValue(), participants, location,
-                                          locationSelector.getLocations(), getFrom(), getTo(), getStatuses(),
+                                          this.location.getLocations(), getFrom(), getTo(), getStatuses(),
                                           getMaxResults(), sort);
     }
 
@@ -269,8 +306,8 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         Label label = LabelFactory.create();
         label.setText(DescriptorHelper.getDisplayName(PATIENT_INVESTIGATION, "location"));
         container.add(label);
-        container.add(locationSelector);
-        getFocusGroup().add(locationSelector);
+        container.add(location);
+        getFocusGroup().add(location);
     }
 
     /**
