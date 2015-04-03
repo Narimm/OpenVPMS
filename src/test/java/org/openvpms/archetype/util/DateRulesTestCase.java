@@ -75,4 +75,15 @@ public class DateRulesTestCase {
         assertEquals(expected, DateRules.getPreviousDate(date));
     }
 
+    /**
+     * Tests the {@link DateRules#getDaysInMonth(Date)} method.
+     */
+    @Test
+    public void testGetDaysInMonth() {
+        assertEquals(31, DateRules.getDaysInMonth(TestHelper.getDate("2015-12-01")));
+        assertEquals(30, DateRules.getDaysInMonth(TestHelper.getDate("2015-06-06")));
+        assertEquals(28, DateRules.getDaysInMonth(TestHelper.getDate("2015-02-05")));
+        assertEquals(29, DateRules.getDaysInMonth(TestHelper.getDate("2012-02-05")));
+    }
+
 }
