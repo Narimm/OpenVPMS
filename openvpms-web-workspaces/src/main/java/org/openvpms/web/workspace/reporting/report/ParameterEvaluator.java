@@ -12,7 +12,7 @@ import org.openvpms.web.component.im.report.ReportContextFactory;
 
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -71,7 +71,7 @@ public class ParameterEvaluator {
      * @return the parameter types, with "$OpenVPMS..." default values expressions replaced with their actual values
      */
     public Set<ParameterType> evaluate(Set<ParameterType> parameterTypes, Map<String, Object> variables) {
-        Set<ParameterType> result = new HashSet<ParameterType>();
+        Set<ParameterType> result = new LinkedHashSet<ParameterType>();
         JXPathContext context = null;
         for (ParameterType type : parameterTypes) {
             ParameterType toAdd;

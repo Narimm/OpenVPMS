@@ -9,7 +9,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.report.ParameterType;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,7 +37,7 @@ public class ParameterEvaluatorTestCase extends ArchetypeServiceTest {
         variables.put("OpenVPMS.task", null);
 
         ParameterEvaluator evaluator = new ParameterEvaluator(getArchetypeService(), getLookupService());
-        Set<ParameterType> set = new HashSet<ParameterType>();
+        Set<ParameterType> set = new LinkedHashSet<ParameterType>();
         set.add(new ParameterType("firstName", String.class, null, "$OpenVPMS.customer.firstName"));
         set.add(new ParameterType("id", String.class, null, "$OpenVPMS.customer.id"));
         set.add(new ParameterType("startTime", String.class, null, "$OpenVPMS.appointment.startTime"));
@@ -59,6 +59,11 @@ public class ParameterEvaluatorTestCase extends ArchetypeServiceTest {
         check(evaluated, "string", "ABC");                            // not evaluated
         check(evaluated, "long", 1L);                                 // not evaluated
         check(evaluated, "task", null);                               // not present
+
+        // verify order is preserved
+        ParameterType[] types = evaluated.toArray(new ParameterType[evaluated.size()]);
+        assertEquals("firstName", types[0].getName());
+        assertEquals("task", types[types.length - 1].getName());
     }
 
     /**
