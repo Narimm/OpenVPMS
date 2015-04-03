@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -30,16 +28,14 @@ import org.openvpms.web.echo.table.AbstractTableCellRenderer;
 /**
  * Header cell renderer for the {@link AppointmentTableModel}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-09-06 07:52:23Z $
+ * @author Tim Anderson
  */
 class AppointmentTableHeaderRenderer extends AbstractTableCellRenderer {
 
     /**
      * The singleton instance.
      */
-    public static AppointmentTableHeaderRenderer INSTANCE
-        = new AppointmentTableHeaderRenderer();
+    public static AppointmentTableHeaderRenderer INSTANCE = new AppointmentTableHeaderRenderer();
 
     /**
      * Default style.
@@ -85,13 +81,12 @@ class AppointmentTableHeaderRenderer extends AbstractTableCellRenderer {
         Component component = super.getComponent(table, value, column, row);
         AppointmentTableModel model = (AppointmentTableModel) table.getModel();
         if (!model.isSingleScheduleView()) {
-            Entity schedule = model.getScheduleEntity(column);
+            Entity schedule = model.getScheduleEntity(column, row);
             if (schedule != null) {
                 ++column;
                 int span = 1;
                 while (column < model.getColumnCount()) {
-                    if (!ObjectUtils.equals(schedule,
-                                            model.getScheduleEntity(column))) {
+                    if (!ObjectUtils.equals(schedule, model.getScheduleEntity(column, row))) {
                         break;
                     }
                     ++column;

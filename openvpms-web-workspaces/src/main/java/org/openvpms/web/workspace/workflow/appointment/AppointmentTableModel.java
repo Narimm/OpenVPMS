@@ -48,7 +48,7 @@ public abstract class AppointmentTableModel extends ScheduleTableModel {
      * @param context the context
      */
     public AppointmentTableModel(AppointmentGrid grid, Context context) {
-        super(grid, context);
+        super(grid, context, true);
     }
 
     /**
@@ -88,7 +88,7 @@ public abstract class AppointmentTableModel extends ScheduleTableModel {
      * @param eventRef the event reference
      * @return the row, or {@code -1} if the event is not found
      */
-    public int getRow(Schedule schedule, IMObjectReference eventRef) {
+    public int getSlot(Schedule schedule, IMObjectReference eventRef) {
         PropertySet event = schedule.getEvent(eventRef);
         if (event != null) {
             return getGrid().getSlot(event.getDate(ScheduleEvent.ACT_START_TIME));
@@ -102,7 +102,7 @@ public abstract class AppointmentTableModel extends ScheduleTableModel {
      * @param event the event
      * @return the status name
      */
-    protected String getStatus(PropertySet event) {
+    protected static String getStatus(PropertySet event) {
         String status = null;
 
         String code = event.getString(ScheduleEvent.ACT_STATUS);
@@ -110,8 +110,7 @@ public abstract class AppointmentTableModel extends ScheduleTableModel {
             Date arrival = event.getDate(ScheduleEvent.ARRIVAL_TIME);
             if (arrival != null) {
                 String diff = DateFormatter.formatTimeDiff(arrival, new Date());
-                status = Messages.format("workflow.scheduling.table.waiting",
-                                         diff);
+                status = Messages.format("workflow.scheduling.table.waiting", diff);
             }
         } else {
             status = event.getString(ScheduleEvent.ACT_STATUS_NAME);

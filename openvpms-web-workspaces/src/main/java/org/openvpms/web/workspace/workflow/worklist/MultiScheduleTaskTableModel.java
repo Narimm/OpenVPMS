@@ -52,7 +52,8 @@ public class MultiScheduleTaskTableModel extends TaskTableModel {
      * @param row    the row
      * @return the cell value
      */
-    protected Object getValueAt(Column column, int row) {
+    @Override
+    public Object getValueAt(int column, int row) {
         Object result = null;
         PropertySet set = getEvent(column, row);
         if (set != null) {
@@ -94,7 +95,7 @@ public class MultiScheduleTaskTableModel extends TaskTableModel {
         List<Schedule> schedules = grid.getSchedules();
         int i = 0;
         for (Schedule schedule : schedules) {
-            result.addColumn(new Column(i++, schedule));
+            result.addColumn(new ScheduleColumn(i++, schedule));
         }
         return result;
     }

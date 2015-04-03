@@ -53,7 +53,7 @@ public class DateFieldImpl extends DateField {
     public DateFieldImpl() {
         DateFormat edit = DateFormatter.getDateFormat(true);
         DateFormat view = DateFormatter.getDateFormat(false);
-        DateFormat format = new DelegatingDateFormat(edit, view);
+        DateFormat format = new DelegatingDateFormat(edit, view, null);
         setDateFormat(format);
         setPopUpAlwaysOnTop(true);
 
@@ -93,6 +93,20 @@ public class DateFieldImpl extends DateField {
      */
     public void setAllowNulls(boolean allow) {
         this.allowNulls = allow;
+    }
+
+    /**
+     * Sets the date to base relative dates on.
+     * <p/>
+     * Note that this only works when using the default date format.
+     *
+     * @param date the date. If {@code null}, relative dates will be based on the current date/time
+     */
+    public void setRelativeDate(Date date) {
+        DateFormat format = getDateFormat();
+        if (format instanceof DelegatingDateFormat) {
+            ((DelegatingDateFormat) format).setRelativeDate(date);
+        }
     }
 
     /**
@@ -136,28 +150,43 @@ public class DateFieldImpl extends DateField {
         /**
          * The relative date parser.
          */
-        private static final RelativeDateParser _parser
-                = new RelativeDateParser();
+        private static final RelativeDateParser parser = new RelativeDateParser();
 
         /**
          * The edit format.
          */
-        private final DateFormat _edit;
+        private final DateFormat edit;
 
         /**
          * The view format.
          */
-        private final DateFormat _view;
+        private final DateFormat view;
 
         /**
-         * Construct a new {@code DelegatingDateFormat}
+         * The date to base relative dates on. May be {@code null},
+         */
+        private Date date;
+
+        /**
+         * Constructs a {@link DelegatingDateFormat}
          *
          * @param edit the edit format
          * @param view the view format
+         * @param date the date to base relative dates on. May be {@code null}
          */
-        public DelegatingDateFormat(DateFormat edit, DateFormat view) {
-            _edit = edit;
-            _view = view;
+        public DelegatingDateFormat(DateFormat edit, DateFormat view, Date date) {
+            this.edit = edit;
+            this.view = view;
+            this.date = date;
+        }
+
+        /**
+         * Sets the date to base relative dates on.
+         *
+         * @param date the date. If {@code null}, relative dates will be based on the current date/time
+         */
+        public void setRelativeDate(Date date) {
+            this.date = date;
         }
 
         /**
@@ -186,9 +215,8 @@ public class DateFieldImpl extends DateField {
          *                      timezone pattern character 'z'.
          * @return the formatted date/time string.
          */
-        public StringBuffer format(Date date, StringBuffer toAppendTo,
-                                   FieldPosition fieldPosition) {
-            return _view.format(date, toAppendTo, fieldPosition);
+        public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition fieldPosition) {
+            return view.format(date, toAppendTo, fieldPosition);
         }
 
         /**
@@ -209,26 +237,24 @@ public class DateFieldImpl extends DateField {
          * @see DateFormat#setLenient(boolean)
          */
         public Date parse(String source, ParsePosition pos) {
-            return _edit.parse(source, pos);
+            return edit.parse(source, pos);
         }
 
         /**
          * Parses text from the beginning of the given string to produce a date.
          * The method may not use the entire text of the given string.
          *
-         * @param source A {@code String} whose beginning should be
-         *               parsed.
+         * @param source A {@code String} whose beginning should be parsed.
          * @return A {@code Date} parsed from the string.
-         * @throws ParseException if the beginning of the specified string
-         *                        cannot be parsed.
+         * @throws ParseException if the beginning of the specified string cannot be parsed.
          */
         @Override
         public Date parse(String source) throws ParseException {
-            Date date = _parser.parse(source);
-            if (date == null) {
-                date = _edit.parse(source);
+            Date result = parser.parse(source, date);
+            if (result == null) {
+                result = edit.parse(source);
             }
-            return date;
+            return result;
         }
 
         /**
@@ -237,13 +263,12 @@ public class DateFieldImpl extends DateField {
          * @param source A {@code String}, part of which should be parsed.
          * @param pos    A {@code ParsePosition} object with index and
          *               error index information as described above.
-         * @return A {@code Date} parsed from the string. In case of error,
-         *         returns null.
+         * @return A {@code Date} parsed from the string. In case of error, returns null.
          * @throws NullPointerException if {@code pos} is null.
          */
         @Override
         public Object parseObject(String source, ParsePosition pos) {
-            return _edit.parseObject(source, pos);
+            return edit.parseObject(source, pos);
         }
 
         /**
@@ -254,8 +279,8 @@ public class DateFieldImpl extends DateField {
          */
         @Override
         public void setCalendar(Calendar newCalendar) {
-            _edit.setCalendar(newCalendar);
-            _view.setCalendar(newCalendar);
+            edit.setCalendar(newCalendar);
+            view.setCalendar(newCalendar);
         }
 
         /**
@@ -265,7 +290,7 @@ public class DateFieldImpl extends DateField {
          */
         @Override
         public Calendar getCalendar() {
-            return _edit.getCalendar();
+            return edit.getCalendar();
         }
 
         /**
@@ -275,8 +300,8 @@ public class DateFieldImpl extends DateField {
          */
         @Override
         public void setNumberFormat(NumberFormat newNumberFormat) {
-            _edit.setNumberFormat(newNumberFormat);
-            _view.setNumberFormat(newNumberFormat);
+            edit.setNumberFormat(newNumberFormat);
+            view.setNumberFormat(newNumberFormat);
         }
 
         /**
@@ -287,7 +312,7 @@ public class DateFieldImpl extends DateField {
          */
         @Override
         public NumberFormat getNumberFormat() {
-            return _edit.getNumberFormat();
+            return edit.getNumberFormat();
         }
 
         /**
@@ -297,8 +322,8 @@ public class DateFieldImpl extends DateField {
          */
         @Override
         public void setTimeZone(TimeZone zone) {
-            _edit.setTimeZone(zone);
-            _view.setTimeZone(zone);
+            edit.setTimeZone(zone);
+            view.setTimeZone(zone);
         }
 
         /**
@@ -308,7 +333,7 @@ public class DateFieldImpl extends DateField {
          */
         @Override
         public TimeZone getTimeZone() {
-            return _edit.getTimeZone();
+            return edit.getTimeZone();
         }
 
         /**
@@ -322,7 +347,7 @@ public class DateFieldImpl extends DateField {
          */
         @Override
         public void setLenient(boolean lenient) {
-            _edit.setLenient(lenient);
+            edit.setLenient(lenient);
         }
 
         /**
@@ -330,7 +355,7 @@ public class DateFieldImpl extends DateField {
          */
         @Override
         public boolean isLenient() {
-            return _edit.isLenient();
+            return edit.isLenient();
         }
 
     }

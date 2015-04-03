@@ -26,6 +26,7 @@ import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.ColumnLayoutData;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.Slot;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -40,19 +41,18 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.factory.TabbedPaneFactory;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.table.StyleTableCellRenderer;
 import org.openvpms.web.echo.tabpane.TabPaneModel;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.workflow.scheduling.Cell;
 import org.openvpms.web.workspace.workflow.scheduling.IntersectComparator;
-import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -63,6 +63,8 @@ import java.util.Set;
 import static org.openvpms.web.echo.style.Styles.BOLD;
 import static org.openvpms.web.echo.style.Styles.INSET;
 import static org.openvpms.web.echo.style.Styles.WIDE_CELL_SPACING;
+import static org.openvpms.web.workspace.workflow.appointment.AppointmentQuery.DateRange.DAY;
+import static org.openvpms.web.workspace.workflow.appointment.AppointmentQuery.DateRange.WEEK;
 
 
 /**
@@ -139,6 +141,16 @@ public class AppointmentBrowser extends ScheduleBrowser {
      */
     private int freeSlotsTab;
 
+    /**
+     * The default cell renderer.
+     */
+    private final AppointmentTableCellRenderer defaultRenderer;
+
+    /**
+     * The multi-day cell renderer.
+     */
+    private final MultiDayTableCellRenderer multiDayRenderer;
+
 
     /**
      * Constructs an {@link AppointmentBrowser}.
@@ -159,6 +171,8 @@ public class AppointmentBrowser extends ScheduleBrowser {
     public AppointmentBrowser(AppointmentQuery query, LayoutContext context) {
         super(query, context.getContext());
         this.context = context;
+        defaultRenderer = new AppointmentTableCellRenderer();
+        multiDayRenderer = new MultiDayTableCellRenderer();
         rules = ServiceHelper.getBean(AppointmentRules.class);
     }
 
@@ -201,12 +215,9 @@ public class AppointmentBrowser extends ScheduleBrowser {
      * @param startTime the slot start time
      */
     public void setSelected(Entity schedule, Date startTime) {
-        AppointmentGrid grid = (AppointmentGrid) getModel().getGrid();
-        int slot = grid.getSlot(startTime);
-        for (Schedule s : grid.getSchedules()) {
-            if (s.getSchedule().getId() == schedule.getId()) {
-                setSelectedCell(getModel().getColumn(schedule.getObjectReference()), slot);
-            }
+        Cell cell = getModel().getCell(schedule.getObjectReference(), startTime);
+        if (cell != null) {
+            setSelectedCell(cell);
         }
     }
 
@@ -226,24 +237,32 @@ public class AppointmentBrowser extends ScheduleBrowser {
      * @param date   the query date
      * @param events the events
      */
-    protected ScheduleEventGrid createEventGrid(
-            Date date, Map<Entity, List<PropertySet>> events) {
+    protected ScheduleEventGrid createEventGrid(Date date, Map<Entity, List<PropertySet>> events) {
         Set<Entity> schedules = events.keySet();
-        AppointmentGrid grid;
-        if (schedules.size() == 1) {
-            Party schedule = (Party) schedules.iterator().next();
-            List<PropertySet> sets = events.get(schedule);
-            if (!hasOverlappingEvents(sets, schedule)) {
-                grid = new SingleScheduleGrid(getScheduleView(), date, schedule, sets, rules);
+        ScheduleEventGrid grid;
+        Entity scheduleView = getScheduleView();
+        AppointmentQuery query = getQuery();
+        AppointmentQuery.DateRange dateRange = query.getDateRange();
+        if (dateRange != DAY && AppointmentHelper.isMultiDayView(scheduleView)) {
+            int days = query.getDays();
+            grid = new MultiDayScheduleGrid(scheduleView, date, days, events);
+        } else {
+            if (schedules.size() == 1) {
+                Party schedule = (Party) schedules.iterator().next();
+                List<PropertySet> sets = events.get(schedule);
+                if (!hasOverlappingEvents(sets, schedule)) {
+                    grid = new SingleScheduleGrid(scheduleView, date, schedule, sets, rules);
+                } else {
+                    // there are overlapping appointments, so display them in multiple schedules
+                    grid = new MultiScheduleGrid(scheduleView, date, events, rules);
+                }
             } else {
-                // there are overlapping appointments, so display them in multiple schedules
                 grid = new MultiScheduleGrid(getScheduleView(), date, events, rules);
             }
-        } else {
-            grid = new MultiScheduleGrid(getScheduleView(), date, events, rules);
+            AppointmentQuery.TimeRange range = query.getTimeRange();
+            grid = createGridView((AppointmentGrid) grid, range);
         }
-        AppointmentQuery.TimeRange range = getQuery().getTimeRange();
-        return createGridView(grid, range);
+        return grid;
     }
 
     /**
@@ -253,23 +272,31 @@ public class AppointmentBrowser extends ScheduleBrowser {
      * @return the table model
      */
     protected ScheduleTableModel createTableModel(ScheduleEventGrid grid) {
-        if (grid.getSchedules().size() == 1) {
-            return new SingleScheduleTableModel((AppointmentGrid) grid, getContext());
+        ScheduleTableModel model;
+        if (grid instanceof MultiDayScheduleGrid) {
+            model = new MultiDayTableModel((MultiDayScheduleGrid) grid, getContext());
+        } else if (grid.getSchedules().size() == 1) {
+            model = new SingleScheduleTableModel((AppointmentGrid) grid, getContext());
+        } else {
+            model = new MultiScheduleTableModel((AppointmentGrid) grid, getContext());
         }
-        return new MultiScheduleTableModel((AppointmentGrid) grid, getContext());
+        return model;
     }
 
     /**
-     * Creates a new table.
+     * Initialises a table.
      *
-     * @param model the model
-     * @return a new table
+     * @param table the table
      */
     @Override
-    protected TableEx createTable(ScheduleTableModel model) {
-        TableEx table = super.createTable(model);
-        table.setDefaultRenderer(new AppointmentTableCellRenderer());
-        return table;
+    protected void initTable(TableEx table) {
+        if (table.getModel() instanceof MultiDayTableModel) {
+            table.setDefaultHeaderRenderer(new StyleTableCellRenderer("Table.Header"));
+            table.setDefaultRenderer(multiDayRenderer);
+        } else {
+            table.setDefaultHeaderRenderer(AppointmentTableHeaderRenderer.INSTANCE);
+            table.setDefaultRenderer(defaultRenderer);
+        }
     }
 
     /**
@@ -285,7 +312,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
         layout.setAlignment(Alignment.ALIGN_CENTER);
         title.setLayoutData(layout);
 
-        Component column = ColumnFactory.create(INSET, ColumnFactory.create(WIDE_CELL_SPACING, title, layoutQuery()));
+        Component column = ColumnFactory.create(INSET, ColumnFactory.create(WIDE_CELL_SPACING, layoutQuery()));
 
         appointmentsTab = addTab(Messages.get("workflow.scheduling.appointment.title"), column);
         freeSlotsTab = addTab(Messages.get("workflow.scheduling.appointment.find.title"),
@@ -309,17 +336,49 @@ public class AppointmentBrowser extends ScheduleBrowser {
     }
 
     /**
+     * Adds the title and table to the browser component.
+     *
+     * @param table     the table to add
+     * @param component the component
+     */
+    @Override
+    protected void addTable(Table table, Component component) {
+        component.add(ColumnFactory.create(Styles.INSET_CELL_SPACING, title, table));
+    }
+
+    /**
      * Updates the title based on the current selection.
      */
     private void updateTitle() {
-        DateFormat format = DateFormatter.getFullDateFormat();
-        String date = format.format(getDate());
         Entity view = getScheduleView();
+        AppointmentQuery.DateRange dateRange = getQuery().getDateRange();
         Entity schedule = getQuery().getSchedule();
         String viewName = (view != null) ? view.getName() : null;
         String schedName = (schedule != null) ? schedule.getName() : null;
 
+        String date;
         String text;
+        ScheduleEventGrid grid = getModel().getGrid();
+        if (dateRange == DAY) {
+            date = Messages.format("workflow.scheduling.appointment.day", grid.getStartDate());
+        } else {
+            Date from = grid.getStartDate();
+            Date to = grid.getEndDate();
+            boolean sameMonth = DateRules.getMonthStart(from).equals(DateRules.getMonthStart(to));
+            if (dateRange == WEEK) {
+                if (sameMonth) {
+                    date = Messages.format("workflow.scheduling.appointment.week.samemonth", from, to);
+                } else {
+                    date = Messages.format("workflow.scheduling.appointment.week.diffmonth", from, to);
+                }
+            } else {
+                if (sameMonth) {
+                    date = Messages.format("workflow.scheduling.appointment.month.samemonth", from, to);
+                } else {
+                    date = Messages.format("workflow.scheduling.appointment.month.diffmonth", from, to);
+                }
+            }
+        }
         if (viewName != null && schedName != null) {
             text = Messages.format("workflow.scheduling.appointment.viewscheduledate", viewName, schedName, date);
         } else if (viewName != null) {

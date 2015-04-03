@@ -23,7 +23,8 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.workspace.workflow.scheduling.Schedule;
+import org.openvpms.web.echo.table.DefaultTableHeaderRenderer;
+import org.openvpms.web.workspace.workflow.scheduling.Cell;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel;
@@ -41,12 +42,18 @@ import java.util.Map;
 public class TaskBrowser extends ScheduleBrowser {
 
     /**
+     * Table cell renderer.
+     */
+    private final TaskTableCellRenderer renderer;
+
+    /**
      * Constructs a {@link TaskBrowser}.
      *
      * @param context the context
      */
     public TaskBrowser(Context context) {
         super(new TaskQuery(context), context);
+        renderer = new TaskTableCellRenderer();
     }
 
     /**
@@ -61,8 +68,7 @@ public class TaskBrowser extends ScheduleBrowser {
      * Attempts to select a task.
      *
      * @param task the task
-     * @return {@code true} if the task was selected, {@code false} if it was
-     *         not found
+     * @return {@code true} if the task was selected, {@code false} if it was not found
      */
     public boolean setSelected(Act task) {
         ActBean bean = new ActBean(task);
@@ -71,14 +77,10 @@ public class TaskBrowser extends ScheduleBrowser {
         if (worklist != null) {
             IMObjectReference taskRef = task.getObjectReference();
             ScheduleTableModel model = getModel();
-            int column = model.getColumn(worklist);
-            if (column != -1) {
-                Schedule schedule = model.getSchedule(column);
-                int row = model.getRow(schedule, taskRef);
-                if (row != -1) {
-                    model.setSelectedCell(column, row);
-                    selected = model.getEvent(column, row);
-                }
+            Cell cell = model.getCell(worklist, taskRef);
+            if (cell != null) {
+                model.setSelected(cell);
+                selected = model.getEvent(cell);
             }
         }
         setSelected(selected);
@@ -92,8 +94,7 @@ public class TaskBrowser extends ScheduleBrowser {
      * @param date   the query date
      * @param events the events
      */
-    protected ScheduleEventGrid createEventGrid(
-            Date date, Map<Entity, List<PropertySet>> events) {
+    protected ScheduleEventGrid createEventGrid(Date date, Map<Entity, List<PropertySet>> events) {
         return new TaskGrid(getScheduleView(), date, events);
     }
 
@@ -111,16 +112,14 @@ public class TaskBrowser extends ScheduleBrowser {
     }
 
     /**
-     * Creates a new table.
+     * Initialises a table.
      *
-     * @param model the model
-     * @return a new table
+     * @param table the table
      */
     @Override
-    protected TableEx createTable(ScheduleTableModel model) {
-        TableEx table = super.createTable(model);
-        table.setDefaultRenderer(new TaskTableCellRenderer());
-        return table;
+    protected void initTable(TableEx table) {
+        table.setDefaultHeaderRenderer(DefaultTableHeaderRenderer.DEFAULT);
+        table.setDefaultRenderer(renderer);
     }
 
 }

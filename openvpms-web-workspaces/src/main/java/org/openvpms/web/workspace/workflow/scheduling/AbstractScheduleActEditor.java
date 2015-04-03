@@ -25,7 +25,6 @@ import org.openvpms.web.component.bound.BoundDateTimeFieldFactory;
 import org.openvpms.web.component.im.customer.CustomerParticipationEditor;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.patient.PatientParticipationEditor;
@@ -53,21 +52,33 @@ public class AbstractScheduleActEditor extends AbstractActEditor {
     private final PatientRules rules;
 
     /**
+     * The start time editor.
+     */
+    private final BoundDateTimeField startTime;
+
+    /**
+     * The end time editor.
+     */
+    private final BoundDateTimeField endTime;
+
+    /**
      * Constructs a {@link AbstractScheduleActEditor}.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <tt>null</tt>
-     * @param context the layout context. May be <tt>null</tt>
+     * @param parent  the parent object. May be {@code null}
+     * @param context the layout context. May be {@code null}
      */
     public AbstractScheduleActEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
         rules = ServiceHelper.getBean(PatientRules.class);
+        startTime = createDateTime(START_TIME);
+        endTime = createDateTime(END_TIME);
     }
 
     /**
      * Sets the customer.
      *
-     * @param customer the customer. May be <tt>null</tt>
+     * @param customer the customer. May be {@code null}
      */
     public void setCustomer(Party customer) {
         getCustomerEditor().setEntity(customer);
@@ -76,7 +87,7 @@ public class AbstractScheduleActEditor extends AbstractActEditor {
     /**
      * Returns the customer.
      *
-     * @return the customer. May be <tt>null</tt>
+     * @return the customer. May be {@code null}
      */
     public Party getCustomer() {
         return (Party) getParticipant("customer");
@@ -85,7 +96,7 @@ public class AbstractScheduleActEditor extends AbstractActEditor {
     /**
      * Returns the patient.
      *
-     * @return the patient. May be <tt>null</tt>
+     * @return the patient. May be {@code null}
      */
     public Party getPatient() {
         return (Party) getParticipant("patient");
@@ -98,7 +109,10 @@ public class AbstractScheduleActEditor extends AbstractActEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new LayoutStrategy();
+        IMObjectLayoutStrategy strategy = super.createLayoutStrategy();
+        strategy.addComponent(new ComponentState(startTime));
+        strategy.addComponent(new ComponentState(endTime));
+        return strategy;
     }
 
     /**
@@ -116,6 +130,24 @@ public class AbstractScheduleActEditor extends AbstractActEditor {
                 onCustomerChanged();
             }
         });
+    }
+
+    /**
+     * Returns the start time editor.
+     *
+     * @return the start time editor
+     */
+    protected BoundDateTimeField getStartTimeEditor() {
+        return startTime;
+    }
+
+    /**
+     * Returns the end time editor
+     *
+     * @return the end time editor
+     */
+    protected BoundDateTimeField getEndTimeEditor() {
+        return endTime;
     }
 
     /**
@@ -157,32 +189,18 @@ public class AbstractScheduleActEditor extends AbstractActEditor {
     }
 
     /**
-     * Layout strategy to create a date/time for act the start end end times.
+     * Creates a date/time editor for a property.
+     *
+     * @param name the property name
+     * @return a new editor
      */
-    protected class LayoutStrategy extends AbstractLayoutStrategy {
-
-        /**
-         * Creates a component for a property.
-         *
-         * @param property the property
-         * @param parent   the parent object
-         * @param context  the layout context
-         * @return a component to display <code>property</code>
-         */
-        @Override
-        protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
-            ComponentState result;
-            String name = property.getName();
-            if (name.equals(START_TIME) || name.equals(END_TIME)) {
-                BoundDateTimeField field = BoundDateTimeFieldFactory.create(property);
-                DateTimePropertyTransformer transformer = (DateTimePropertyTransformer) property.getTransformer();
-                transformer.setKeepSeconds(false);
-                // remove seconds as these screw up appointment slot comparisons, and they aren't needed for tasks 
-                result = new ComponentState(field.getComponent(), property, field.getFocusGroup());
-            } else {
-                result = super.createComponent(property, parent, context);
-            }
-            return result;
-        }
+    protected BoundDateTimeField createDateTime(String name) {
+        Property property = getProperty(name);
+        BoundDateTimeField field = BoundDateTimeFieldFactory.create(property);
+        DateTimePropertyTransformer transformer = (DateTimePropertyTransformer) property.getTransformer();
+        transformer.setKeepSeconds(false);
+        // remove seconds as these screw up appointment slot comparisons, and they aren't needed for tasks
+        return field;
     }
+
 }
