@@ -14,7 +14,7 @@
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.reporting;
+package org.openvpms.web.workspace.reporting.report;
 
 import org.apache.commons.resources.Messages;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -23,8 +23,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 /**
  * Exception class for {@link SQLReportPrinter}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class SQLReportException extends OpenVPMSException {
 
@@ -47,7 +46,7 @@ public class SQLReportException extends OpenVPMSException {
      * class is loaded.
      */
     private static Messages MESSAGES
-            = Messages.getMessages("org.openvpms.web.workspace.reporting." + OpenVPMSException.ERRMESSAGES_FILE);
+            = Messages.getMessages("org.openvpms.web.workspace.reporting.report" + OpenVPMSException.ERRMESSAGES_FILE);
 
 
     /**

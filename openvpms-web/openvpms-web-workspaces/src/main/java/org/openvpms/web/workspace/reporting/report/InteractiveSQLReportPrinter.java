@@ -14,14 +14,16 @@
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.reporting;
+package org.openvpms.web.workspace.reporting.report;
 
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.report.DocFormats;
+import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
 import org.openvpms.web.component.mail.MailEditor;
@@ -30,6 +32,10 @@ import org.openvpms.web.component.print.PrintDialog;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.servlet.DownloadServlet;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
+
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -46,7 +52,7 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
     private final Variables variables;
 
     /**
-     * Constructs an {@code InteractiveSQLReportPrinter}.
+     * Constructs an {@link InteractiveSQLReportPrinter}.
      *
      * @param printer   the printer to delegate to
      * @param context   the context
@@ -68,7 +74,8 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
     @Override
     protected PrintDialog createDialog() {
         final SQLReportPrinter printer = getPrinter();
-        return new SQLReportDialog(getTitle(), printer.getParameterTypes(), variables, getHelpContext()) {
+        Set<ParameterType> parameterTypes = replaceVariables(printer.getParameterTypes());
+        return new SQLReportDialog(getTitle(), parameterTypes, variables, getHelpContext()) {
 
             @Override
             protected void doPrint() {
@@ -149,4 +156,10 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
         dialog.show();
     }
 
+    private Set<ParameterType> replaceVariables(Set<ParameterType> parameterTypes) {
+        ParameterEvaluator evaluator = new ParameterEvaluator(ServiceHelper.getArchetypeService(),
+                                                              ServiceHelper.getLookupService());
+        Map<String, Object> variables = ReportContextFactory.create(getContext());
+        return evaluator.evaluate(parameterTypes, variables);
+    }
 }

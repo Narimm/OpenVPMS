@@ -14,7 +14,7 @@
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.reporting;
+package org.openvpms.web.workspace.reporting.report;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
@@ -44,6 +44,8 @@ import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.reporting.AbstractReportingWorkspace;
+import org.openvpms.web.workspace.reporting.ReportQuery;
 
 import java.util.List;
 
