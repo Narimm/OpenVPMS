@@ -43,7 +43,7 @@
         <data archetype="entityRelationship.viewSchedule" source="id:VS2" target="id:OS4" sequence="1"/>
         <data archetype="entityRelationship.locationView" source="id:OL2" target="id:VS2"/>
     </data>
-    <data id="VS3" archetype="entity.organisationScheduleView" name="Boarding">
+    <data id="VS3" archetype="entity.organisationScheduleView" name="Boarding" multipleDayView="true">
         <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS5" sequence="0"/>
         <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS6" sequence="1"/>
         <data archetype="entityRelationship.viewSchedule" source="id:VS3" target="id:OS7" sequence="2"/>
@@ -71,6 +71,8 @@
     <data id="AT3" archetype="entity.appointmentType" name="New Patient" description="New Patient" colour="0xffb1c6"/>
     <data id="AT4" archetype="entity.appointmentType" name="Short Consult" description="Short Consult"
           colour="0xffecb1"/>
+    <data id="AT5" archetype="entity.appointmentType" name="Boarding" description="Boarding" colour="0xffb1c6"/>
+    <data id="AT6" archetype="entity.appointmentType" name="Hospital" description="Hospital" colour="0xd1ffb1"/>
     <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS1" target="id:AT1" noSlots="1"/>
     <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS1" target="id:AT2" noSlots="2"/>
     <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS1" target="id:AT3" noSlots="2"/>
@@ -81,6 +83,16 @@
     <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS2" target="id:AT4" noSlots="1"/>
     <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS3" target="id:AT1" noSlots="1"/>
     <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS3" target="id:AT2" noSlots="2"/>
+    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS5" target="id:AT5" noSlots="1"/>
+    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS5" target="id:AT6" noSlots="1"/>
+    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS6" target="id:AT5" noSlots="1"/>
+    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS6" target="id:AT6" noSlots="1"/>
+    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS7" target="id:AT5" noSlots="1"/>
+    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS7" target="id:AT6" noSlots="1"/>
+    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS8" target="id:AT5" noSlots="1"/>
+    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS8" target="id:AT6" noSlots="1"/>
+    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS9" target="id:AT5" noSlots="1"/>
+    <data archetype="entityRelationship.scheduleAppointmentType" source="id:OS9" target="id:AT6" noSlots="1"/>
     <data id="TT1" archetype="entity.taskType" name="Consultation" description="Consultation"/>
     <data id="TT2" archetype="entity.taskType" name="Surgery" description="Surgery"/>
     <data id="TT3" archetype="entity.taskType" name="Day Procedure" description="New Patient"/>

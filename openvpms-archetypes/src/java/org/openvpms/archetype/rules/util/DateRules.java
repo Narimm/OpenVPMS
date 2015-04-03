@@ -163,6 +163,18 @@ public class DateRules {
     }
 
     /**
+     * Returns the number of days in the month for the specified date.
+     *
+     * @param date the date
+     * @return the days in the month for the date
+     */
+    public static int getDaysInMonth(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+    }
+
+    /**
      * Helper to compare two dates.
      * <p/>
      * Null dates are treated as greater than non-null dates.
