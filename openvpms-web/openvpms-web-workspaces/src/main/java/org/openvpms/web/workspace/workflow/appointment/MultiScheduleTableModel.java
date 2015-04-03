@@ -18,13 +18,11 @@ package org.openvpms.web.workspace.workflow.appointment;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
-import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
@@ -71,9 +69,11 @@ class MultiScheduleTableModel extends AppointmentTableModel {
      * @param row    the row
      * @return the cell value
      */
-    protected Object getValueAt(Column column, int row) {
+    @Override
+    public Object getValueAt(int column, int row) {
         Object result = null;
-        int index = column.getModelIndex();
+        Column c = getColumn(column);
+        int index = c.getModelIndex();
         if (index == START_TIME_INDEX || index == rightStartTimeIndex) {
             result = getGrid().getStartTime(row);
         } else {
@@ -85,14 +85,7 @@ class MultiScheduleTableModel extends AppointmentTableModel {
                 rowSpan = grid.getSlots(set, row);
             }
             if (rowSpan > 1) {
-                if (!(result instanceof Component)) {
-                    Label label = LabelFactory.create();
-                    if (result != null) {
-                        label.setText(result.toString());
-                    }
-                    result = label;
-                }
-                setSpan((Component) result, rowSpan);
+                setRowSpan((Component) result, rowSpan);
             }
         }
         return result;
@@ -143,20 +136,20 @@ class MultiScheduleTableModel extends AppointmentTableModel {
         List<Schedule> schedules = grid.getSchedules();
         int index = START_TIME_INDEX;
         String startTime = Messages.get("workflow.scheduling.table.time");
-        Column leftStartCol = new Column(index, startTime);
+        ScheduleColumn leftStartCol = new ScheduleColumn(index, startTime);
         leftStartCol.setWidth(new Extent(100));
         result.addColumn(leftStartCol);
         ++index;
         int percent = (!schedules.isEmpty()) ? 100 / schedules.size() : 0;
         for (Schedule schedule : schedules) {
-            Column column = new Column(index++, schedule);
+            ScheduleColumn column = new ScheduleColumn(index++, schedule);
             if (percent != 0) {
                 column.setWidth(new Extent(percent, Extent.PERCENT));
             }
             result.addColumn(column);
         }
         rightStartTimeIndex = index;
-        Column rightStartCol = new Column(rightStartTimeIndex, startTime);
+        ScheduleColumn rightStartCol = new ScheduleColumn(rightStartTimeIndex, startTime);
         rightStartCol.setWidth(new Extent(100));
         result.addColumn(rightStartCol);
         return result;

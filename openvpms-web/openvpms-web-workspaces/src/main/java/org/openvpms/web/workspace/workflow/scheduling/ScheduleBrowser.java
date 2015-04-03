@@ -161,20 +161,18 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         boolean found = false;
         selected = object;
         if (selected != null) {
-            int column = model.getColumn(object.getReference(ScheduleEvent.SCHEDULE_REFERENCE));
-            if (column != -1) {
-                Schedule schedule = model.getSchedule(column);
-                int row = model.getRow(schedule, object.getReference(ScheduleEvent.ACT_REFERENCE));
-                if (row != -1) {
-                    model.setSelectedCell(column, row);
-                    selectedTime = object.getDate(ScheduleEvent.ACT_START_TIME);
-                    selectedSchedule = schedule.getSchedule();
-                    found = true;
-                }
+            Cell cell = model.getCell(object.getReference(ScheduleEvent.SCHEDULE_REFERENCE),
+                                      object.getReference(ScheduleEvent.ACT_REFERENCE));
+            if (cell != null) {
+                Schedule schedule = model.getSchedule(cell);
+                model.setSelected(cell);
+                selectedTime = object.getDate(ScheduleEvent.ACT_START_TIME);
+                selectedSchedule = schedule.getSchedule();
+                found = true;
             }
         }
         if (!found) {
-            model.setSelectedCell(-1, -1);
+            model.setSelected(null);
             selectedTime = null;
             selectedSchedule = null;
             getTable().getSelectionModel().clearSelection();
@@ -412,8 +410,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     protected TableEx createTable(ScheduleTableModel model) {
         TableEx table = new TableEx(model, model.getColumnModel());
         table.setStyleName("ScheduleTable");
-        table.setDefaultHeaderRenderer(DefaultTableHeaderRenderer.DEFAULT);
-        table.setDefaultRenderer(EvenOddTableCellRenderer.INSTANCE);
+        initTable(table);
 /*
         table.setScrollable(true);
         table.setResizeable(true);
@@ -421,6 +418,16 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         table.setResizeDragBarUsed(true);
 */
         return table;
+    }
+
+    /**
+     * Initialises a table.
+     *
+     * @param table the table
+     */
+    protected void initTable(TableEx table) {
+        table.setDefaultHeaderRenderer(DefaultTableHeaderRenderer.DEFAULT);
+        table.setDefaultRenderer(EvenOddTableCellRenderer.INSTANCE);
     }
 
     /**
@@ -508,14 +515,12 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         results = query.query();
 
         ScheduleEventGrid grid = createEventGrid(query.getDate(), results);
-        int lastRow = -1;
-        int lastColumn = -1;
+        Cell lastSelected = null;
         boolean isCut = true;
         IMObjectReference lastEventId = null;
         if (model != null) {
-            lastRow = model.getSelectedRow();
-            lastColumn = model.getSelectedColumn();
-            lastEventId = getEventReference(lastColumn, lastRow);
+            lastSelected = model.getSelected();
+            lastEventId = getEventReference(lastSelected);
             isCut = model.isCut();
         }
         model = createTableModel(grid);
@@ -530,6 +535,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         } else {
             table.setModel(model);
             table.setColumnModel(model.getColumnModel());
+            initTable(table);
         }
         User clinician = query.getClinician();
         if (clinician != null) {
@@ -546,11 +552,11 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
             // if the schedules and date haven't changed and there was no previously selected object or the object
             // hasn't changed, reselect the selected cell
             boolean reselected = false;
-            if (lastRow != -1 && lastColumn != -1 && sameSchedules && lastColumn < model.getColumnCount()) {
-                IMObjectReference eventId = getEventReference(lastColumn, lastRow);
+            if (lastSelected != null && sameSchedules && lastSelected.getColumn() < model.getColumnCount()) {
+                IMObjectReference eventId = getEventReference(lastSelected);
                 if (ObjectUtils.equals(selectedDate, query.getDate())
                     && (lastEventId == null || ObjectUtils.equals(lastEventId, eventId))) {
-                    model.setSelectedCell(lastColumn, lastRow);
+                    model.setSelected(lastSelected);
                     reselected = true;
                 }
             }
@@ -575,18 +581,14 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
             if (marked != null) {
                 IMObjectReference scheduleRef = marked.getReference(ScheduleEvent.SCHEDULE_REFERENCE);
                 IMObjectReference eventRef = marked.getReference(ScheduleEvent.ACT_REFERENCE);
-                int column = model.getColumn(scheduleRef);
-                if (column != -1) {
-                    Schedule schedule = model.getSchedule(column);
-                    int row = model.getRow(schedule, eventRef);
-                    if (row != -1) {
-                        model.setMarkedCell(column, row, isCut);
-                        found = true;
-                    }
+                Cell cell = model.getCell(scheduleRef, eventRef);
+                if (cell != null) {
+                    model.setMarked(cell, isCut);
+                    found = true;
                 }
             }
             if (!found) {
-                model.setMarkedCell(-1, -1, isCut);
+                model.setMarked(null, isCut);
             }
         }
     }
@@ -606,17 +608,16 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     /**
      * Selects a cell.
      *
-     * @param column the column to select
-     * @param row    the row to select
+     * @param cell the cell to select
      */
-    protected void setSelectedCell(int column, int row) {
-        model.setSelectedCell(column, row);
-        selected = model.getEvent(column, row);
-        if (model.getAvailability(column, row) != Availability.UNAVAILABLE) {
-            Schedule schedule = model.getSchedule(column);
+    protected void setSelectedCell(Cell cell) {
+        model.setSelected(cell);
+        selected = model.getEvent(cell);
+        if (model.getAvailability(cell) != Availability.UNAVAILABLE) {
+            Schedule schedule = model.getSchedule(cell);
             if (schedule != null) {
-                selectedTime = model.getStartTime(schedule, row);
-                selectedSchedule = model.getScheduleEntity(column);
+                selectedTime = model.getStartTime(schedule, cell);
+                selectedSchedule = model.getScheduleEntity(cell);
             } else {
                 selectedTime = null;
                 selectedSchedule = null;
@@ -641,17 +642,18 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         if (click.isDoubleClick()) {
             if (model.isSingleScheduleView()) {
                 // click the same row to get double click in single schedule view
-                if (model.getSelectedRow() == row) {
+                Cell cell = model.getSelected();
+                if (cell != null && cell.getRow() == row) {
                     doubleClick = true;
                 }
             } else {
                 // click the same cell to get double click in multi schedule view
-                if (model.isSelectedCell(column, row)) {
+                if (model.isSelected(column, row)) {
                     doubleClick = true;
                 }
             }
         }
-        setSelectedCell(column, row);
+        setSelectedCell(new Cell(column, row));
         if (doubleClick) {
             if (selected == null) {
                 for (BrowserListener<PropertySet> listener : getBrowserListeners()) {
@@ -677,16 +679,15 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     }
 
     /**
-     * Returns the reference of the event at the specified column and row.
+     * Returns the reference of the event at the specified cell.
      *
-     * @param column the column
-     * @param row    the row
+     * @param cell the cell. May be {@code null}
      * @return the corresponding event reference, or {@code null} if none exists
      */
-    private IMObjectReference getEventReference(int column, int row) {
+    private IMObjectReference getEventReference(Cell cell) {
         IMObjectReference result = null;
-        if (column != -1 && row != -1) {
-            PropertySet event = model.getEvent(column, row);
+        if (cell != null) {
+            PropertySet event = model.getEvent(cell);
             if (event != null) {
                 result = event.getReference(ScheduleEvent.ACT_REFERENCE);
             }

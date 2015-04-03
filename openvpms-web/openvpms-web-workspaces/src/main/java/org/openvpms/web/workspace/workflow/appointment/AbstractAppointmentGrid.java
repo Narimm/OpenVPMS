@@ -36,17 +36,7 @@ import java.util.Date;
  *
  * @author Tim Anderson
  */
-public abstract class AbstractAppointmentGrid implements AppointmentGrid {
-
-    /**
-     * The schedule view.
-     */
-    private final Entity scheduleView;
-
-    /**
-     * The grid date. All appointments must begin or end on this date.
-     */
-    private Date date;
+public abstract class AbstractAppointmentGrid extends AbstractScheduleEventGrid implements AppointmentGrid {
 
     /**
      * The grid start time, as minutes since midnight.
@@ -93,37 +83,16 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
      * Constructs an {@link AbstractAppointmentGrid}.
      *
      * @param scheduleView the schedule view
-     * @param date         the appointment date
+     * @param date         the grid start and end date
      * @param startMins    the grid start time, as minutes from midnight
      * @param endMins      the grid end time, as minutes from midnight
      * @param rules        the appointment rules
      */
     public AbstractAppointmentGrid(Entity scheduleView, Date date, int startMins, int endMins, AppointmentRules rules) {
-        this.scheduleView = scheduleView;
-        this.date = DateRules.getDate(date);
+        super(scheduleView, date);
         this.startMins = startMins;
         this.endMins = endMins;
         this.rules = rules;
-    }
-
-    /**
-     * Returns the schedule view associated with this grid.
-     *
-     * @return the schedule view
-     */
-    public Entity getScheduleView() {
-        return scheduleView;
-    }
-
-    /**
-     * Returns the appointment date.
-     * <p/>
-     * All appointments in the grid start or end on this date.
-     *
-     * @return the date, excluding any time
-     */
-    public Date getDate() {
-        return date;
     }
 
     /**
@@ -188,7 +157,7 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
      * @return the start time of the specified slot
      */
     public Date getStartTime(int slot) {
-        return DateRules.getDate(date, getStartMins(slot), DateUnits.MINUTES);
+        return DateRules.getDate(getStartDate(), getStartMins(slot), DateUnits.MINUTES);
     }
 
     /**
@@ -203,8 +172,7 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
     }
 
     /**
-     * Returns the no. of minutes from midnight that the specified slot starts
-     * at.
+     * Returns the no. of minutes from midnight that the specified slot starts at.
      *
      * @param slot the slot
      * @return the minutes that the slot starts at
@@ -253,8 +221,7 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
     public int getUnavailableSlots(Schedule schedule, int slot) {
         int slots = getSlots();
         int i = slot;
-        while (i < slots
-               && getAvailability(schedule, i) == Availability.UNAVAILABLE) {
+        while (i < slots && getAvailability(schedule, i) == Availability.UNAVAILABLE) {
             ++i;
         }
         return i - slot;
@@ -264,10 +231,11 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
      * Returns the slot that a time falls in.
      *
      * @param time the time
-     * @return the slot, or <tt>-1</tt> if the time doesn't intersect any slot
+     * @return the slot, or {@code -1} if the time doesn't intersect any slot
      */
     public int getSlot(Date time) {
         int result;
+        Date date = getStartDate();
         Date day = DateRules.getDate(time);
         if (day.compareTo(date) < 0) {
             result = 0;
@@ -323,12 +291,10 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
     }
 
     /**
-     * Returns the minutes from midnight for the specified time, rounded
-     * up or down to the nearest slot.
+     * Returns the minutes from midnight for the specified time, rounded up or down to the nearest slot.
      *
      * @param time    the time
-     * @param roundUp if <tt>true</tt> round up to the nearest slot, otherwise
-     *                round down
+     * @param roundUp if {@code true} round up to the nearest slot, otherwise round down
      * @return the minutes from midnight for the specified time
      */
     protected int getSlotMinutes(Date time, boolean roundUp) {

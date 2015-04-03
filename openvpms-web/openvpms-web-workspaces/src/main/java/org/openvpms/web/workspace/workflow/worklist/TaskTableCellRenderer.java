@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
@@ -33,28 +31,27 @@ import static org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid.A
 /**
  * Cell renderer for tasks.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TaskTableCellRenderer extends ScheduleTableCellRenderer {
 
     /**
-     * Creates a new <tt>TaskTableCellRenderer</tt>.
+     * Constructs a {@link TaskTableCellRenderer}.
      */
     public TaskTableCellRenderer() {
         super("entity.taskType");
     }
 
     /**
-     * Returns a <tt>XhtmlFragment</tt> that will be displayed as the
-     * content at the specified co'ordinate in the table.
+     * Returns a {@code XhtmlFragment} that will be displayed as the
+     * content at the specified coordinate in the table.
      *
-     * @param table  the <tt>Table</tt> for which the rendering is occurring
-     * @param value  the value retrieved from the <tt>TableModel</tt> for the
+     * @param table  the {@code Table} for which the rendering is occurring
+     * @param value  the value retrieved from the {@code TableModel} for the
      *               specified coordinate
      * @param column the column index to render
      * @param row    the row index to render
-     * @return a <tt>XhtmlFragment</tt> representation of the value
+     * @return a {@code XhtmlFragment} representation of the value
      */
     public XhtmlFragment getTableCellRendererContent(Table table, Object value,
                                                      int column, int row) {
@@ -67,7 +64,7 @@ public class TaskTableCellRenderer extends ScheduleTableCellRenderer {
         TableLayoutDataEx layout = TableHelper.getTableLayoutDataEx(style);
 
         if (layout != null && avail == UNAVAILABLE) {
-            Schedule schedule = model.getSchedule(column);
+            Schedule schedule = model.getSchedule(column, row);
             int span = model.getGrid().getUnavailableSlots(schedule, row);
             layout.setRowSpan(span);
         }

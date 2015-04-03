@@ -41,13 +41,7 @@ import java.util.Map;
 class MultiScheduleGrid extends AbstractAppointmentGrid {
 
     /**
-     * The schedules.
-     */
-    private List<Schedule> columns;
-
-
-    /**
-     * Constructs a {@code MultiScheduleGrid}.
+     * Constructs a {@link MultiScheduleGrid}.
      *
      * @param scheduleView the schedule view
      * @param date         the appointment date
@@ -57,17 +51,7 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
     public MultiScheduleGrid(Entity scheduleView, Date date,
                              Map<Entity, List<PropertySet>> appointments, AppointmentRules rules) {
         super(scheduleView, date, -1, -1, rules);
-        columns = new ArrayList<Schedule>();
         setAppointments(appointments);
-    }
-
-    /**
-     * Returns the schedules.
-     *
-     * @return the schedules
-     */
-    public List<Schedule> getSchedules() {
-        return columns;
     }
 
     /**
@@ -124,13 +108,15 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
         int slotSize = -1;
         setSlotSize(-1);
 
+        List<Schedule> schedules = new ArrayList<Schedule>();
+
         // Determine the startMins, endMins and slotSize. The:
         // . startMins is the minimum startMins of all schedules
         // . endMins is the minimum endMins of all schedules
         // . slotSize is the minimum slotSize of all schedules
         for (Entity schedule : appointments.keySet()) {
             Schedule column = createSchedule((Party) schedule);
-            columns.add(column);
+            schedules.add(column);
             int start = column.getStartMins();
             if (startMins == -1 || start < startMins) {
                 startMins = start;
@@ -152,6 +138,7 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
         if (slotSize == -1) {
             slotSize = DEFAULT_SLOT_SIZE;
         }
+        setSchedules(schedules);
         setStartMins(startMins);
         setEndMins(endMins);
         setSlotSize(slotSize);
@@ -187,6 +174,7 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
 
         // try and find a corresponding Schedule that has no appointment that
         // intersects the supplied one
+        List<Schedule> columns = getSchedules();
         for (int i = 0; i < columns.size(); ++i) {
             column = columns.get(i);
             if (column.getSchedule().equals(schedule)) {
@@ -209,8 +197,8 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
         // adjust the grid start and end times, if required
         Date startDate = DateRules.getDate(startTime);
         Date endDate = DateRules.getDate(endTime);
-        int slotStart = startDate.compareTo(getDate()) < 0 ? getStartMins() : getSlotMinutes(startTime, false);
-        int slotEnd = endDate.compareTo(getDate()) > 0 ? getEndMins() : getSlotMinutes(endTime, true);
+        int slotStart = startDate.compareTo(getStartDate()) < 0 ? getStartMins() : getSlotMinutes(startTime, false);
+        int slotEnd = endDate.compareTo(getStartDate()) > 0 ? getEndMins() : getSlotMinutes(endTime, true);
         if (getStartMins() > slotStart) {
             setStartMins(slotStart);
         }

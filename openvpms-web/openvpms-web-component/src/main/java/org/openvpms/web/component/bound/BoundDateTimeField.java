@@ -63,10 +63,10 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
     private final Row component;
 
     /**
-     * Constructs a new <tt>BoundDateTimeField</tt>.
+     * Constructs a {@link BoundDateTimeField}.
      * <p/>
      * If the property doesn't already have a {@link PropertyTransformer} registered, one will be added that
-     * restricts entered dates to the range <tt>{@link BoundDateField#MIN_DATE}..now + 100 years</tt>.
+     * restricts entered dates to the range {@code {@link BoundDateField#MIN_DATE}..now + 100 years}.
      * This a workaround for OVPMS-1006.
      *
      * @param property the property to bind
@@ -90,7 +90,7 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
     /**
      * Sets the date portion of the date/time.
      *
-     * @param date the date. May be <tt>null</tt>
+     * @param date the date. May be {@code null}
      */
     public void setDate(Date date) {
         getProperty().setValue(getDatetime(date));
@@ -99,7 +99,7 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
     /**
      * Returns the minimum date allowed for this field.
      *
-     * @return the minimum date, or <tt>null</tt> if there is no minimum date
+     * @return the minimum date, or {@code null} if there is no minimum date
      */
     public Date getMinDate() {
         Date result = null;
@@ -113,7 +113,7 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
     /**
      * Returns the maximum date allowed for this field.
      *
-     * @return the maximum date, or <tt>null</tt> if there is no maximum date
+     * @return the maximum date, or {@code null} if there is no maximum date
      */
     public Date getMaxDate() {
         Date result = null;
@@ -127,7 +127,7 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
     /**
      * Returns the date portion of the date/time.
      *
-     * @return the date. May be <tt>null</tt>
+     * @return the date. May be {@code null}
      */
     public Date getDate() {
         Date result = null;
@@ -156,6 +156,15 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
     public Date getDatetime() {
         Date result = getDate();
         return getDatetime(result);
+    }
+
+    /**
+     * Sets the date to base relative dates on.
+     *
+     * @param date the date. If {@code null}, relative dates will be based on the current date/time
+     */
+    public void setRelativeDate(Date date) {
+        this.date.setRelativeDate(date);
     }
 
     /**

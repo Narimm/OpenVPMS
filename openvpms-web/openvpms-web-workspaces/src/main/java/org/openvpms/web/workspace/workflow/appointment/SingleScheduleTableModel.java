@@ -29,6 +29,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
+import org.openvpms.web.workspace.workflow.scheduling.Cell;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
 
@@ -83,8 +84,7 @@ class SingleScheduleTableModel extends AppointmentTableModel {
      * The nodes to display.
      */
     private static final String[] NODE_NAMES = {
-            "startTime", "status", "appointmentType", "customer", "patient",
-            "reason", "description"};
+            "startTime", "status", "appointmentType", "customer", "patient", "reason", "description"};
 
 
     /**
@@ -108,9 +108,10 @@ class SingleScheduleTableModel extends AppointmentTableModel {
      * @return {@code true} if the cell is cut
      */
     @Override
-    public boolean isMarkedCell(int column, int row) {
-        if (row != -1 && column != -1 && row == getMarkedRow()) {
-            Column col = getColumns().get(column);
+    public boolean isMarked(int column, int row) {
+        Cell cell = getMarked();
+        if (row != -1 && column != -1 && cell != null && row == cell.getRow()) {
+            ScheduleColumn col = getColumns().get(column);
             if (col.getModelIndex() != START_TIME_INDEX) {
                 return true;
             }
@@ -125,19 +126,21 @@ class SingleScheduleTableModel extends AppointmentTableModel {
      * @param row    the row
      * @return the cell value
      */
-    protected Object getValueAt(Column column, int row) {
+    @Override
+    public Object getValueAt(int column, int row) {
         Object result = null;
         AppointmentGrid grid = getGrid();
-        if (column.getModelIndex() == START_TIME_INDEX) {
+        Column c = getColumn(column);
+        if (c.getModelIndex() == START_TIME_INDEX) {
             result = grid.getStartTime(row);
         } else {
             PropertySet set = getEvent(column, row);
             int rowSpan = 1;
             if (set != null) {
-                result = getValue(set, column);
+                result = getValue(set, c);
                 rowSpan = grid.getSlots(set, row);
             } else {
-                Schedule schedule = column.getSchedule();
+                Schedule schedule = getSchedule(column, row);
                 if (schedule != null) {
                     if (grid.getAvailability(schedule, row) == UNAVAILABLE) {
                         rowSpan = grid.getUnavailableSlots(schedule, row);
@@ -152,7 +155,7 @@ class SingleScheduleTableModel extends AppointmentTableModel {
                     }
                     result = label;
                 }
-                setSpan((Component) result, rowSpan);
+                setRowSpan((Component) result, rowSpan);
             }
         }
         return result;
@@ -191,16 +194,13 @@ class SingleScheduleTableModel extends AppointmentTableModel {
                 result = set.getString(ScheduleEvent.ACT_DESCRIPTION);
                 break;
             case APPOINTMENT_INDEX:
-                result = getViewer(set, ScheduleEvent.SCHEDULE_TYPE_REFERENCE,
-                                   ScheduleEvent.SCHEDULE_TYPE_NAME, false);
+                result = getViewer(set, ScheduleEvent.SCHEDULE_TYPE_REFERENCE, ScheduleEvent.SCHEDULE_TYPE_NAME, false);
                 break;
             case CUSTOMER_INDEX:
-                result = getViewer(set, ScheduleEvent.CUSTOMER_REFERENCE,
-                                   ScheduleEvent.CUSTOMER_NAME, true);
+                result = getViewer(set, ScheduleEvent.CUSTOMER_REFERENCE, ScheduleEvent.CUSTOMER_NAME, true);
                 break;
             case PATIENT_INDEX:
-                result = getViewer(set, ScheduleEvent.PATIENT_REFERENCE,
-                                   ScheduleEvent.PATIENT_NAME, true);
+                result = getViewer(set, ScheduleEvent.PATIENT_REFERENCE, ScheduleEvent.PATIENT_NAME, true);
                 break;
         }
         return result;
@@ -218,7 +218,7 @@ class SingleScheduleTableModel extends AppointmentTableModel {
         Schedule schedule = schedules.get(0);
         String[] names = getColumnNames();
         for (int i = 0; i < names.length; ++i) {
-            Column column = new Column(i, schedule, names[i]);
+            ScheduleColumn column = new ScheduleColumn(i, schedule, names[i]);
             result.addColumn(column);
         }
         return result;

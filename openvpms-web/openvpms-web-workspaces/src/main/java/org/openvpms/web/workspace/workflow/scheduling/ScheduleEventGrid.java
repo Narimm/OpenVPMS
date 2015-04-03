@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -28,8 +26,7 @@ import java.util.List;
 /**
  * Represents a grid of schedule events.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public interface ScheduleEventGrid {
 
@@ -48,13 +45,18 @@ public interface ScheduleEventGrid {
     Entity getScheduleView();
 
     /**
-     * Returns the schedule date.
-     * <p/>
-     * All events in the grid start or end on this date.
+     * Returns the schedule start date.
      *
-     * @return the date, excluding any time
+     * @return the start date, excluding any time
      */
-    Date getDate();
+    Date getStartDate();
+
+    /**
+     * Returns the schedule end date.
+     *
+     * @return the end date, excluding any time
+     */
+    Date getEndDate();
 
     /**
      * Returns the schedules.
@@ -75,7 +77,7 @@ public interface ScheduleEventGrid {
      *
      * @param schedule the schedule
      * @param slot     the slot
-     * @return the corresponding event, or <tt>null</tt> if none is found
+     * @return the corresponding event, or {@code null} if none is found
      */
     PropertySet getEvent(Schedule schedule, int slot);
 
@@ -84,7 +86,7 @@ public interface ScheduleEventGrid {
      *
      * @param schedule the schedule
      * @param slot     the slot
-     * @return the start time of the specified slot. May be <tt>null</tt>
+     * @return the start time of the specified slot. May be {@code null}
      */
     Date getStartTime(Schedule schedule, int slot);
 
@@ -106,5 +108,14 @@ public interface ScheduleEventGrid {
      * @return the no. of concurrent slots that are unavailable
      */
     int getUnavailableSlots(Schedule schedule, int slot);
+
+    /**
+     * Returns the slot that a time falls in.
+     *
+     * @param time the time
+     * @return the slot, or {@code -1} if the time doesn't intersect any slot
+     */
+    int getSlot(Date time);
+
 
 }
