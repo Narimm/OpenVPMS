@@ -156,6 +156,12 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
         dialog.show();
     }
 
+    /**
+     * Replaces any "$OpenVPMS." default values with their actual values.
+     *
+     * @param parameterTypes the parameter types
+     * @return the parameter types with default values replaced
+     */
     private Set<ParameterType> replaceVariables(Set<ParameterType> parameterTypes) {
         ParameterEvaluator evaluator = new ParameterEvaluator(ServiceHelper.getArchetypeService(),
                                                               ServiceHelper.getLookupService());
