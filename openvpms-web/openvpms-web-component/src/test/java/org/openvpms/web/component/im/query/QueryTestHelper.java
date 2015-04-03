@@ -72,6 +72,26 @@ public class QueryTestHelper {
     }
 
     /**
+     * Verifies that a query selects objects.
+     *
+     * @param query   the query
+     * @param objects the expected objects
+     */
+    public static <T extends IMObject> void checkExists(Query<T> query, T... objects) {
+        checkExists(query, objects, true);
+    }
+
+    /**
+     * Verifies that a query does not select objects.
+     *
+     * @param query   the query
+     * @param objects the expected objects
+     */
+    public static <T extends IMObject> void checkNotExists(Query<T> query, T... objects) {
+        checkExists(query, objects, false);
+    }
+
+    /**
      * Checks to see if an objects exists in a list of matches and that the {@link Query#selects} method agrees.
      *
      * @param object  the object
@@ -114,6 +134,20 @@ public class QueryTestHelper {
             result.add(iterator.next().getObjectReference());
         }
         return result;
+    }
+
+    /**
+     * Checks to see if an objects exists in a list of matches and that the {@link Query#selects} method agrees.
+     *
+     * @param query   the query
+     * @param objects the objects to check
+     * @param exists  determines if the objects should exist or not
+     */
+    private static <T extends IMObject> void checkExists(Query<T> query, T[] objects, boolean exists) {
+        List<IMObjectReference> matches = getObjectRefs(query);
+        for (T object : objects) {
+            checkExists(object, query, matches, exists);
+        }
     }
 
 }

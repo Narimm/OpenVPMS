@@ -298,10 +298,42 @@ public class PatientTestHelper {
      * @return a new investigation
      */
     public static Act createInvestigation(Party patient, Entity investigationType) {
+        return createInvestigation(patient, null, investigationType);
+    }
+
+    /**
+     * Creates an investigation.
+     *
+     * @param patient           the patient
+     * @param clinician         the clinician. May be {@code null}
+     * @param investigationType the investigation type
+     * @return a new investigation
+     */
+    public static Act createInvestigation(Party patient, User clinician, Entity investigationType) {
+        return createInvestigation(patient, clinician, null, investigationType);
+    }
+
+    /**
+     * Creates an investigation.
+     *
+     * @param patient           the patient
+     * @param clinician         the clinician. May be {@code null}
+     * @param location          the practice location. May be {@code null}
+     * @param investigationType the investigation type
+     * @return a new investigation
+     */
+    public static Act createInvestigation(Party patient, User clinician, Party location, Entity investigationType) {
         Act act = (Act) create(InvestigationArchetypes.PATIENT_INVESTIGATION);
         ActBean bean = new ActBean(act);
         bean.addNodeParticipation("patient", patient);
+        if (clinician != null) {
+            bean.addNodeParticipation("clinician", clinician);
+        }
+        if (location != null) {
+            bean.addNodeParticipation("location", location);
+        }
         bean.addNodeParticipation("investigationType", investigationType);
+        bean.save();
         return act;
     }
 

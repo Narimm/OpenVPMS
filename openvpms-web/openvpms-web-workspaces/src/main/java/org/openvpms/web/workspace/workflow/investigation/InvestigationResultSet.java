@@ -24,6 +24,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.JoinConstraint;
+import org.openvpms.component.system.common.query.NotConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -90,15 +91,14 @@ public class InvestigationResultSet extends ActResultSet<Act> {
         if (!StringUtils.isEmpty(value) && getId(value) == null) {
             query.add(join("patient").add(join("entity").add(eq("name", value))));
         }
-        if (location != null || locations.size() == 1) {
-            Party l = (location != null) ? location : locations.get(0);
-            query.add(new ParticipantConstraint("location", "participation.location", l));
-        } else if (!locations.isEmpty()) {
+        if (location != null || !locations.isEmpty()) {
             OrConstraint or = new OrConstraint();
-            or.add(getLocations());
-            or.add(notExists(subQuery(InvestigationArchetypes.PATIENT_INVESTIGATION, "i2").add(
-                    join("location").add(join("entity").add(idEq("act", "i2"))))));
-            // NB: "act" alias comes from ActQuery. TODO - brittle
+            if (location != null) {
+                or.add(new ParticipantConstraint("location", "participation.location", location));
+            } else {
+                or.add(getLocations());
+            }
+            or.add(getNoLocation());
             query.add(or);
         }
         return query;
@@ -118,4 +118,16 @@ public class InvestigationResultSet extends ActResultSet<Act> {
         }
         return result;
     }
+
+    /**
+     * Creates a constraint that finds investigations that have no location.
+     *
+     * @return a new constraint
+     */
+    private NotConstraint getNoLocation() {
+        return notExists(subQuery(InvestigationArchetypes.PATIENT_INVESTIGATION, "i2").add(
+                join("location").add(join("entity").add(idEq("act", "i2")))));
+        // NB: "act" alias comes from ActQuery. TODO - brittle
+    }
+
 }
