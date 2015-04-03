@@ -549,6 +549,16 @@
         </properties>
     </style>
 
+    <style name="MultiDayTable.Today" base-name="Table.Header" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="font">
+                <font size="${font.size}" bold="true" italic="true">
+                    <typeface name="${font.typeface}"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
     <style name="AppointmentActEditor.Alerts" base-name="CellSpacing" type="nextapp.echo2.app.Column">
         <properties>
             <property name="layoutData">
