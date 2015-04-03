@@ -14,7 +14,7 @@
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.reporting;
+package org.openvpms.web.workspace.reporting.report;
 
 import org.junit.Test;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;

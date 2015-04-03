@@ -22,6 +22,7 @@ import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.workspace.AbstractWorkspaces;
 import org.openvpms.web.workspace.reporting.deposit.DepositWorkspace;
 import org.openvpms.web.workspace.reporting.reminder.ReminderWorkspace;
+import org.openvpms.web.workspace.reporting.report.ReportingWorkspace;
 import org.openvpms.web.workspace.reporting.statement.StatementWorkspace;
 import org.openvpms.web.workspace.reporting.till.TillWorkspace;
 import org.openvpms.web.workspace.reporting.wip.IncompleteChargesWorkspace;

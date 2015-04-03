@@ -14,7 +14,7 @@
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.reporting;
+package org.openvpms.web.workspace.reporting.report;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;

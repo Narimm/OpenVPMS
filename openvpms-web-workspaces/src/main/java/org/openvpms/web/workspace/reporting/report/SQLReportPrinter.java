@@ -14,7 +14,7 @@
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.reporting;
+package org.openvpms.web.workspace.reporting.report;
 
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
@@ -40,8 +40,8 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
-import static org.openvpms.web.workspace.reporting.SQLReportException.ErrorCode.ConnectionError;
-import static org.openvpms.web.workspace.reporting.SQLReportException.ErrorCode.NoQuery;
+import static org.openvpms.web.workspace.reporting.report.SQLReportException.ErrorCode.ConnectionError;
+import static org.openvpms.web.workspace.reporting.report.SQLReportException.ErrorCode.NoQuery;
 
 
 /**
