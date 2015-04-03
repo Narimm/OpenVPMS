@@ -39,7 +39,6 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -725,7 +724,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
          * Constructs a {@link Column}.
          *
          * @param modelIndex the model index
-         * @param heading    the column heading
+         * @param heading    the column heading. May be {@code null}
          */
         public Column(int modelIndex, String heading) {
             super(modelIndex);
@@ -733,17 +732,6 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
             setHeaderRenderer(null);
             setCellRenderer(null);
         }
-    }
-
-    /**
-     * Date column.
-     */
-    protected static class DateColumn extends Column {
-
-        public DateColumn(int modelIndex, Date startTime) {
-            super(modelIndex, new SimpleDateFormat("d E").format(startTime));
-        }
-
     }
 
     /**

@@ -253,4 +253,16 @@ public class MultiDayTableModel extends ScheduleTableModel {
         return createLabelWithNotes(text, notes);
     }
 
+    /**
+     * Date column.
+     */
+    static class DateColumn extends Column {
+
+        public DateColumn(int modelIndex, Date startTime) {
+            super(modelIndex, null);
+            setHeaderValue(startTime);
+            setHeaderRenderer(MultiDayTableHeaderRenderer.INSTANCE);
+        }
+    }
+
 }
