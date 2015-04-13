@@ -1,0 +1,7 @@
+<archetypes>
+    <archetype name="assertion.stringcase.1.0"
+               latest="true" primary="true"
+               type="org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor">
+        <node name="name" path="/name" type="java.lang.String" minCardinality="1"/>
+    </archetype>
+</archetypes>
