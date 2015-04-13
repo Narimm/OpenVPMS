@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.openvpms</groupId>
+        <artifactId>openvpms</artifactId>
+        <version>1.8-beta-2-SNAPSHOT</version>
+        <relativePath>../openvpms/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>openvpms-etl</artifactId>
+    <packaging>pom</packaging>
+    <name>OpenVPMS ETL</name>
+
+    <description>
+        OpenVPMS ETL: data extraction, transformation and loading support
+    </description>
+
+    <issueManagement>
+        <system>jira</system>
+        <url>http://jira.openvpms.org/jira/browse/ETL</url>
+    </issueManagement>
+
+    <scm>
+        <connection>scm:svn:svn://svn.openvpms.org/openvpms/etl/trunk</connection>
+        <developerConnection>scm:svn:svn://svn.openvpms.org/openvpms/etl/trunk</developerConnection>
+        <url>http://svn.openvpms.org</url>
+    </scm>
+
+    <distributionManagement>
+        <site>
+            <id>openvpms-site</id>
+            <name>OpenVPMS Maven Site</name>
+            <url>scp://dev.openvpms.org:2233/home/admin/public_html/dev.openvpms.org/public/${pom.artifactId}</url>
+        </site>
+    </distributionManagement>
+
+    <modules>
+        <module>etl</module>
+        <module>plugin</module>
+    </modules>
+
+</project>
