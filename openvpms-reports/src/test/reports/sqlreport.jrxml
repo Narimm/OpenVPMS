@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="sqlreport.jrxml" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20"
+              topMargin="20" bottomMargin="20">
+    <property name="ireport.zoom" value="1.0"/>
+    <property name="ireport.x" value="0"/>
+    <property name="ireport.y" value="0"/>
+    <parameter name="customerId" class="java.lang.Long"/>
+    <queryString>
+        <![CDATA[select firstName.value as firstName, lastName.value as lastName
+from entities e
+join entity_details firstName on e.entity_id = firstName.entity_id and firstName.name = "firstName"
+join entity_details lastName on e.entity_id = lastName.entity_id and lastName.name = "lastName"
+where e.arch_short_name = "party.customerperson" and e.entity_id = $P{customerId}]]>
+    </queryString>
+    <field name="firstName" class="java.lang.String"/>
+    <field name="lastName" class="java.lang.String"/>
+    <field name="Globals.Location.name" class="java.lang.String"/>
+    <background>
+        <band splitType="Stretch"/>
+    </background>
+    <title>
+        <band height="79" splitType="Stretch"/>
+    </title>
+    <pageHeader>
+        <band height="35" splitType="Stretch"/>
+    </pageHeader>
+    <columnHeader>
+        <band height="61" splitType="Stretch"/>
+    </columnHeader>
+    <detail>
+        <band height="125" splitType="Stretch">
+            <textField>
+                <reportElement x="0" y="0" width="100" height="20"/>
+                <textElement/>
+                <textFieldExpression class="java.lang.String"><![CDATA[$F{firstName}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="100" y="0" width="100" height="20"/>
+                <textElement/>
+                <textFieldExpression class="java.lang.String"><![CDATA[$F{lastName}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="200" y="0" width="121" height="20"/>
+                <textElement/>
+                <textFieldExpression class="java.lang.String">
+                    <![CDATA[$F{Globals.Location.name}]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+    <columnFooter>
+        <band height="45" splitType="Stretch"/>
+    </columnFooter>
+    <pageFooter>
+        <band height="54" splitType="Stretch"/>
+    </pageFooter>
+    <summary>
+        <band height="42" splitType="Stretch"/>
+    </summary>
+</jasperReport>
