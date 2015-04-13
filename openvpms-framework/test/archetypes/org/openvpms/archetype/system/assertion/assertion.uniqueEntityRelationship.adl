@@ -1,8 +1,0 @@
-<archetypes>
-    <archetype name="assertion.uniqueEntityRelationship.1.0"
-               latest="true" primary="true"
-               type="org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor">
-        <node name="name" path="/name" defaultValue="'Unique EntityRelationship'" type="java.lang.String" minCardinality="1"
-              hidden="true"/>
-    </archetype>
-</archetypes>

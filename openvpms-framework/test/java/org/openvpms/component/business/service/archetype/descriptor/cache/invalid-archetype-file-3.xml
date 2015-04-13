@@ -1,8 +1,0 @@
-<archetypes>
-  <archetype name="party.person.1.0"
-    className="org.openvpms.component.business.domain.im.party.Party"
-    latest="false">
-    <node name="name" type="java.lang.String" minCardinality="1" />
-    <node />
-  </archetype>
-</archetypes>
