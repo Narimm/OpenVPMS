@@ -37,13 +37,13 @@
     </prerequisites>
 
     <scm>
-        <connection>scm:svn:svn://svn.openvpms.org/openvpms/openvpms/trunk</connection>
-        <developerConnection>scm:svn:svn://svn.openvpms.org/openvpms/openvpms/trunk</developerConnection>
+        <connection>scm:svn:svn://svn.openvpms.org/openvpms/projects/openvpms/trunk</connection>
+        <developerConnection>scm:svn:svn://svn.openvpms.org/openvpms/projects/openvpms/trunk</developerConnection>
     </scm>
 
     <issueManagement>
         <system>jira</system>
-        <url>http://jira.openvpms.org/jira/secure/Dashboard.jspa</url>
+        <url>https://openvpms.atlassian.net/projects/OVPMS</url>
     </issueManagement>
 
     <licenses>
@@ -492,15 +492,15 @@
     </profiles>
 
     <modules>
-        <module>../openvpms-framework</module>
-        <module>../maven-plugins</module>
-        <module>../openvpms-archetypes</module>
-        <module>../openvpms-reports</module>
-        <module>../openvpms-sms</module>
-        <module>../openvpms-esci-adapter</module>
-        <module>../openvpms-web</module>
-        <module>../openvpms-etl</module>
-        <module>../openvpms-release</module>
+        <module>openvpms-framework</module>
+        <module>maven-plugins</module>
+        <module>openvpms-archetypes</module>
+        <module>openvpms-reports</module>
+        <module>openvpms-sms</module>
+        <module>openvpms-esci-adapter</module>
+        <module>openvpms-web</module>
+        <module>openvpms-etl</module>
+        <module>openvpms-release</module>
     </modules>
 
     <repositories>

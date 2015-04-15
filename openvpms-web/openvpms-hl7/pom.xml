@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -25,18 +25,12 @@
         <artifactId>openvpms-web</artifactId>
         <groupId>org.openvpms</groupId>
         <version>1.8-beta-2-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>openvpms-hl7</artifactId>
     <name>OpenVPMS HL7</name>
 
     <description>OpenVPMS HL7 support</description>
-
-    <issueManagement>
-        <system>jira</system>
-        <url>http://jira.openvpms.org/jira/browse/OVPMS</url>
-    </issueManagement>
 
     <properties>
         <hapi.version>2.2</hapi.version>

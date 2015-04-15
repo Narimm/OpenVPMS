@@ -22,7 +22,6 @@
         <artifactId>openvpms-web</artifactId>
         <groupId>org.openvpms</groupId>
         <version>1.8-beta-2-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -180,7 +179,7 @@
                         <connector implementation="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
                             <port>${jetty.sslport}</port>
                             <maxIdleTime>60000</maxIdleTime>
-                            <keystore>${basedir}/../openvpms/src/test/resources/openvpms-certs.keystore</keystore>
+                            <keystore>${basedir}/../src/test/resources/openvpms-certs.keystore</keystore>
                             <password>password</password>
                             <keyPassword>password</keyPassword>
                         </connector>

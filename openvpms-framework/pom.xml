@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -23,7 +23,6 @@
         <groupId>org.openvpms</groupId>
         <artifactId>openvpms</artifactId>
         <version>1.8-beta-2-SNAPSHOT</version>
-        <relativePath>../openvpms/pom.xml</relativePath>
     </parent>
 
     <artifactId>openvpms-framework</artifactId>
@@ -32,21 +31,8 @@
 
     <issueManagement>
         <system>jira</system>
-        <url>http://jira.openvpms.org/jira/browse/OBF</url>
+        <url>https://openvpms.atlassian.net/projects/OBF</url>
     </issueManagement>
-
-    <scm>
-        <connection>scm:svn:svn://svn.openvpms.org/openvpms/framework/trunk</connection>
-        <developerConnection>scm:svn:svn://svn.openvpms.org/openvpms/framework/trunk</developerConnection>
-    </scm>
-
-    <distributionManagement>
-        <site>
-            <id>openvpms-site</id>
-            <name>OpenVPMS Maven Site</name>
-            <url>scp://dev.openvpms.org:2233/home/admin/public_html/dev.openvpms.org/public/${pom.artifactId}</url>
-        </site>
-    </distributionManagement>
 
     <build>
         <sourceDirectory>src/java</sourceDirectory>
