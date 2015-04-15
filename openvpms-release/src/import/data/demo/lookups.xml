@@ -1,0 +1,63 @@
+<!--
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $$Id$$
+-->
+<archetype>
+	<data id="CTY1" archetype="lookup.country" code="AU" name="Australia" defaultLookup="true"/>
+    <data id="VIC" archetype="lookup.state" code="VIC" name="Victoria" defaultLookup="true"/>
+    <data id="NSW" archetype="lookup.state" code="NSW" name="New South Wales" />
+    <data id="WA" archetype="lookup.state" code="WA" name="Western Australia" />
+    <data id="SA" archetype="lookup.state" code="SA" name="South Australia" />
+    <data id="NT" archetype="lookup.state" code="NT" name="Northern Territory" />
+    <data id="TAS" archetype="lookup.state" code="TAS" name="Tasmania" />
+    <data id="ACT" archetype="lookup.state" code="ACT" name="Australian Capital Territory" />
+    <data id="QLD" archetype="lookup.state" code="QLD" name="Queensland" />
+    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:VIC" />
+    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:NSW" />
+    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:WA" />
+    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:SA" />
+    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:NT" />
+    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:TAS" />
+    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ACT" />
+    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:QLD" />
+    <data id="BLACK_ROCK_5431" archetype="lookup.suburb" code="BLACK_ROCK_5431" name="Black Rock" postCode="5431"/>
+    <data id="CROYDON_3136" archetype="lookup.suburb" code="CROYDON_3136" name="Croydon" postCode="3136"/>
+    <data id="CURRIE_7256" archetype="lookup.suburb" code="CURRIE_7256" name="Currie" postCode="7256"/>
+    <data id="DOREEN_3754" archetype="lookup.suburb" code="DOREEN_3754" name="Doreen" postCode="3754"/>
+    <data id="GREENSBOROUGH_3088" archetype="lookup.suburb" code="GREENSBOROUGH_3088" name="Greensborough" postCode="3088"/>
+    <data id="KANGAROO_GROUND_3097" archetype="lookup.suburb" code="KANGAROO_GROUND_3097" name="Kangaroo Ground" postCode="3097"/>
+    <data id="KENMORE_4069" archetype="lookup.suburb" code="KENMORE_4069" name="Kenmore" postCode="4069"/>
+    <data id="KILMORE_3764" archetype="lookup.suburb" code="KILMORE_3764" name="Kilmore" postCode="3764"/>
+    <data id="PAKENHAM_3810" archetype="lookup.suburb" code="PAKENHAM_3810" name="Pakenham" postCode="3810"/>
+    <data id="STRATHMORE_3041" archetype="lookup.suburb" code="STRATHMORE_3041" name="Strathmore" postCode="3041"/>
+    <data id="UPWEY_3158" archetype="lookup.suburb" code="UPWEY_3158" name="Upwey" postCode="3158"/>
+    <data id="VIEWBANK_3084" archetype="lookup.suburb" code="VIEWBANK_3084" name="Viewbank" postCode="3084"/>
+    <data id="WHITTLESEA_3757" archetype="lookup.suburb" code="WHITTLESEA_3757" name="Whittlesea" postCode="3757"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:UPWEY_3158"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:SA" target="id:BLACK_ROCK_5431"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:CROYDON_3136"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:TAS" target="id:CURRIE_7256"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:DOREEN_3754"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:GREENSBOROUGH_3088"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:KANGAROO_GROUND_3097"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:QLD" target="id:KENMORE_4069"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:KILMORE_3764"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:PAKENHAM_3810"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:STRATHMORE_3041"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:UPWEY_3158"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:VIEWBANK_3084"/>
+    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:WHITTLESEA_3757"/>
+</archetype>

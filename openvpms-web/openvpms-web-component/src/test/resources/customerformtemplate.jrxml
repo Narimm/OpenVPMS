@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="customerformtemplate.jrxml" pageWidth="2380" pageHeight="1684" orientation="Landscape"
+              columnWidth="2340" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+    <property name="ireport.zoom" value="1.0"/>
+    <property name="ireport.x" value="0"/>
+    <property name="ireport.y" value="0"/>
+    <parameter name="customerId" class="java.lang.Long"/>
+    <queryString>
+        <![CDATA[]]>
+    </queryString>
+    <field name="customer.entity.firstName" class="java.lang.String"/>
+    <field name="customer.entity.lastName" class="java.lang.String"/>
+    <field name="OpenVPMS.practice.name" class="java.lang.String"/>
+    <field name="OpenVPMS.location.name" class="java.lang.String"/>
+    <field name="OpenVPMS.stockLocation.name" class="java.lang.String"/>
+    <field name="OpenVPMS.customer.name" class="java.lang.String"/>
+    <field name="OpenVPMS.patient.name" class="java.lang.String"/>
+    <field name="OpenVPMS.supplier.name" class="java.lang.String"/>
+    <field name="OpenVPMS.product.name" class="java.lang.String"/>
+    <field name="OpenVPMS.deposit.name" class="java.lang.String"/>
+    <field name="OpenVPMS.till.name" class="java.lang.String"/>
+    <field name="OpenVPMS.clinician.name" class="java.lang.String"/>
+    <field name="OpenVPMS.user.name" class="java.lang.String"/>
+    <field name="OpenVPMS.visit.displayName" class="java.lang.String"/>
+    <field name="OpenVPMS.invoice.displayName" class="java.lang.String"/>
+    <field name="OpenVPMS.appointment.displayName" class="java.lang.String"/>
+    <field name="OpenVPMS.task.displayName" class="java.lang.String"/>
+    <background>
+        <band splitType="Stretch"/>
+    </background>
+    <title>
+        <band height="79" splitType="Stretch"/>
+    </title>
+    <pageHeader>
+        <band height="35" splitType="Stretch"/>
+    </pageHeader>
+    <columnHeader>
+        <band height="61" splitType="Stretch"/>
+    </columnHeader>
+    <detail>
+        <band height="125" splitType="Stretch">
+            <textField>
+                <reportElement x="0" y="0" width="65" height="20"/>
+                <textElement>
+                    <font size="7"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String">
+                    <![CDATA[$F{customer.entity.firstName}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="65" y="0" width="64" height="20"/>
+                <textElement>
+                    <font size="7"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String">
+                    <![CDATA[$F{customer.entity.lastName}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="129" y="0" width="100" height="20"/>
+                <textElement>
+                    <font size="7"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String">
+                    <![CDATA[$F{OpenVPMS.practice.name}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="229" y="0" width="100" height="20"/>
+                <textElement>
+                    <font size="7"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String">
+                    <![CDATA[$F{OpenVPMS.location.name}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="329" y="0" width="100" height="20"/>
+                <textElement>
+                    <font size="7"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String">
+                    <![CDATA[$F{OpenVPMS.stockLocation.name}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="429" y="0" width="100" height="20"/>
+                <textElement>
+                    <font size="7"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String">
+                    <![CDATA[$F{OpenVPMS.customer.name}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="529" y="0" width="100" height="20"/>
+                <textElement>
+                    <font size="7"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String">
+                    <![CDATA[$F{OpenVPMS.patient.name}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="629" y="0" width="103" height="20"/>
+                <textElement>
+                    <font size="7"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String">
+                    <![CDATA[$F{OpenVPMS.supplier.name}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="732" y="0" width="100" height="20"/>
+                <textElement>
+                    <font size="7"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String">
+                    <![CDATA[$F{OpenVPMS.product.name}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="832" y="0" width="98" height="20"/>
+                <textElement>
+                    <font size="7"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String">
+                    <![CDATA[$F{OpenVPMS.deposit.name}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="929" y="0" width="100" height="20"/>
+                <textElement>
+                    <font size="7"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String"><![CDATA[$F{OpenVPMS.till.name}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="1029" y="0" width="100" height="20"/>
+                <textElement>
+                    <font size="7"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String">
+                    <![CDATA[$F{OpenVPMS.clinician.name}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="1129" y="0" width="88" height="20"/>
+                <textElement>
+                    <font size="7"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String"><![CDATA[$F{OpenVPMS.user.name}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="1217" y="0" width="116" height="20"/>
+                <textElement>
+                    <font size="7"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String">
+                    <![CDATA[$F{OpenVPMS.visit.displayName}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="1333" y="0" width="123" height="20"/>
+                <textElement>
+                    <font size="7"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String">
+                    <![CDATA[$F{OpenVPMS.invoice.displayName}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="1456" y="0" width="140" height="20"/>
+                <textElement>
+                    <font size="7"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String">
+                    <![CDATA[$F{OpenVPMS.appointment.displayName}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="1596" y="0" width="117" height="20"/>
+                <textElement>
+                    <font size="7"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String">
+                    <![CDATA[$F{OpenVPMS.task.displayName}]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+    <columnFooter>
+        <band height="45" splitType="Stretch"/>
+    </columnFooter>
+    <pageFooter>
+        <band height="54" splitType="Stretch"/>
+    </pageFooter>
+    <summary>
+        <band height="42" splitType="Stretch"/>
+    </summary>
+</jasperReport>

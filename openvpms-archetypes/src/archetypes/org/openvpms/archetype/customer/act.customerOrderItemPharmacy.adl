@@ -1,0 +1,65 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="act.customerOrderItemPharmacy.1.0" latest="true" primary="false"
+               type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Pharmacy Order Item">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name"
+              hidden="true" minCardinality="1" derived="true"
+              derivedValue="' '"/>
+        <node name="description" type="java.lang.String" path="/description" hidden="true"/>
+        <node displayName="Date" name="startTime" path="/activityStartTime"
+              type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" readOnly="true"/>
+
+        <!-- source system reference -->
+        <node name="reference" displayName="Reference" path="/details/reference" type="java.lang.String"
+              minCardinality="0" maxLength="50" readOnly="true"/>
+
+        <!-- source invoice item, if the order is in response to an invoice item -->
+        <node name="sourceInvoiceItem" path="/details/sourceInvoiceItem"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="0"
+              hidden="true" readOnly="true">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="act.customerAccountInvoiceItem"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
+
+        <node name="patient" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+              filter="participation.patient"/>
+        <node name="product" path="/participations" type="java.util.HashSet"
+              minCardinality="0" maxCardinality="1" filter="participation.product"/>
+        <!--node name="batch" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+              filter="participation.productBatch"/-->
+        <node name="author" path="/participations" type="java.util.HashSet"
+              minCardinality="0" maxCardinality="1"
+              filter="participation.author" hidden="true"/>
+        <node name="clinician" path="/participations" type="java.util.HashSet"
+              minCardinality="0" maxCardinality="1"
+              filter="participation.clinician"/>
+        <node name="quantity" path="/quantity" type="java.math.BigDecimal" defaultValue="1.0">
+            <assertion name="nonNegative">
+                <errorMessage>Quantity must be >= 0</errorMessage>
+            </assertion>
+        </node>
+        <node name="credit" path="/credit" type="java.lang.Boolean" defaultValue="false()" readOnly="true"
+              hidden="true"/>
+    </archetype>
+</archetypes>

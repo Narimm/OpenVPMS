@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                           http://www.springframework.org/schema/security
+                           http://www.springframework.org/schema/security/spring-security-3.0.xsd">
+
+    <import resource="openvpms-gui-authentication.xml"/>
+
+    <!-- ================================================================== -->
+    <!--                            FILTER CHAIN                            -->
+    <!-- ================================================================== -->
+
+    <bean id="springSecurityFilterChain" class="org.springframework.security.web.FilterChainProxy">
+        <security:filter-chain-map path-type="ant">
+            <security:filter-chain pattern="/**"
+                                   filters="securityContextPersistenceFilter,
+                                            guiExceptionTranslationFilter,
+                                            guiAuthenticationFilter,
+                                            anonymousAuthenticationFilter,
+                                            guiFilterSecurityInterceptor"/>
+        </security:filter-chain-map>
+    </bean>
+
+    <bean id="securityContextPersistenceFilter"
+          class="org.springframework.security.web.context.SecurityContextPersistenceFilter">
+    </bean>
+
+    <!-- security context persistence filter, with allowSessionCreation set false. Use for web services -->
+    <bean id="securityContextPersistenceFilterWithASCFalse"
+          class="org.springframework.security.web.context.SecurityContextPersistenceFilter">
+        <property name="securityContextRepository">
+            <bean class="org.springframework.security.web.context.HttpSessionSecurityContextRepository">
+                <property name="allowSessionCreation" value="false"/>
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="anonymousAuthenticationFilter"
+          class="org.springframework.security.web.authentication.AnonymousAuthenticationFilter">
+        <property name="key" value="foobar"/>
+        <property name="userAttribute" value="anonymousUser,ROLE_ANONYMOUS"/>
+    </bean>
+
+    <bean id="anonymousAuthenticationProvider"
+          class="org.springframework.security.authentication.AnonymousAuthenticationProvider">
+        <property name="key" value="foobar"/>
+    </bean>
+
+
+    <!-- This bean automatically receives AuthenticationEvent messages from Spring Security  -->
+    <bean id="loggerListener" class="org.springframework.security.authentication.event.LoggerListener"/>
+
+    <!-- ================================================================== -->
+    <!--             Authentication Manager                                 -->
+    <!-- ================================================================== -->
+
+    <bean id="authenticatedVoterAccessDecisionManager"
+          class="org.springframework.security.access.vote.AffirmativeBased">
+        <property name="decisionVoters">
+            <list>
+                <bean class="org.springframework.security.access.vote.AuthenticatedVoter"/>
+            </list>
+        </property>
+    </bean>
+
+
+    <!--security:authentication-manager alias="authenticationManager">
+        <security:authentication-provider user-service-ref="userService"/>
+    </security:authentication-manager-->
+
+    <!-- ================================================================== -->
+    <!--             Archetype Service Security                             -->
+    <!-- ================================================================== -->
+
+    <!--  Create a proxy for the Security Service bean -->
+    <bean id="securityserviceProxyCreator"
+          class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+        <property name="beanNames">
+            <list>
+                <value>archetypeService</value>
+            </list>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <value>securityAdvisor</value>
+            </list>
+        </property>
+    </bean>
+
+    <!--  Configure the security advisor -->
+    <bean id="securityAdvisor"
+          class="org.openvpms.component.business.service.security.OpenVPMSMethodSecurityInterceptor">
+        <property name="authenticationManager" ref="guiAuthenticationManager"/>
+        <property name="accessDecisionManager" ref="accessDecisionManager"/>
+        <property name="securityMetadataSource">
+            <value>
+                org.openvpms.component.business.service.archetype.IArchetypeService.create=archetypeService.create
+                org.openvpms.component.business.service.archetype.IArchetypeService.save=archetypeService.save
+                org.openvpms.component.business.service.archetype.IArchetypeService.remove=archetypeService.remove
+            </value>
+        </property>
+    </bean>
+
+    <!--  Define the access decision manager for authorization -->
+    <bean id="accessDecisionManager" class="org.springframework.security.access.vote.AffirmativeBased">
+        <property name="decisionVoters">
+            <list>
+                <ref bean="archetypeAwareVoter"/>
+            </list>
+        </property>
+    </bean>
+
+    <!--  Use the standard role vote -->
+    <bean id="archetypeAwareVoter" class="org.openvpms.component.business.service.security.ArchetypeAwareVoter"/>
+
+
+</beans>
+
