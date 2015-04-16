@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.i18n.time;
@@ -254,13 +254,13 @@ public class DateDurationFormatter implements DurationFormatter {
      */
     public static DurationFormatter create(boolean showYears, boolean showMonths, boolean showWeeks,
                                            boolean showDays, boolean showHours, boolean showMinutes) {
-        if (showYears && !showMonths && !showWeeks && !showDays) {
+        if (showYears && !showMonths && !showWeeks && !showDays && !showHours && !showMinutes) {
             return YEAR;
-        } else if (!showYears && showMonths && !showWeeks && !showDays) {
+        } else if (!showYears && showMonths && !showWeeks && !showDays && !showHours && !showMinutes) {
             return MONTH;
-        } else if (!showYears && !showMonths && showWeeks && !showDays) {
+        } else if (!showYears && !showMonths && showWeeks && !showDays && !showHours && !showMinutes) {
             return WEEK;
-        } else if (!showYears && !showMonths && !showWeeks && showDays) {
+        } else if (!showYears && !showMonths && !showWeeks && showDays && !showHours && !showMinutes) {
             return DAY;
         }
         return new DateDurationFormatter(showYears, showMonths, showWeeks, showDays, showHours, showMinutes);
