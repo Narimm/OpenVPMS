@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -129,8 +129,7 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
             property.removeModifiableListener(priceListener);
             property.setValue(calculatePrice());
             property.addModifiableListener(priceListener);
-            Property maxDiscount = getProperty("maxDiscount");
-            maxDiscount.setValue(calculateDiscount(maxDiscount.getBigDecimal()));
+            updateMaxDiscount();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
@@ -145,11 +144,19 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
             property.removeModifiableListener(markupListener);
             property.setValue(calculateMarkup());
             property.addModifiableListener(markupListener);
-            Property maxDiscount = getProperty("maxDiscount");
-            maxDiscount.setValue(calculateDiscount(maxDiscount.getBigDecimal()));
+            updateMaxDiscount();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
+    }
+
+    /**
+     * Updates the maximum discount.
+     */
+    private void updateMaxDiscount() {
+        Property property = getProperty("maxDiscount");
+        BigDecimal maxDiscount = property.getBigDecimal(BigDecimal.ZERO);
+        property.setValue(calculateDiscount(maxDiscount));
     }
 
     /**
@@ -221,8 +228,7 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
      * @return the property value
      */
     private BigDecimal getValue(String name) {
-        BigDecimal value = getProperty(name).getBigDecimal();
-        return (value == null) ? BigDecimal.ZERO : value;
+        return getProperty(name).getBigDecimal(BigDecimal.ZERO);
     }
 
 }
