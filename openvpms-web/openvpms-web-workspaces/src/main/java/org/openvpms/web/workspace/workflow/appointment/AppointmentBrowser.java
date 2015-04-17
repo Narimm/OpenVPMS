@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -358,26 +358,30 @@ public class AppointmentBrowser extends ScheduleBrowser {
 
         String date;
         String text;
-        ScheduleEventGrid grid = getModel().getGrid();
-        if (dateRange == DAY) {
-            date = Messages.format("workflow.scheduling.appointment.day", grid.getStartDate());
-        } else {
-            Date from = grid.getStartDate();
-            Date to = grid.getEndDate();
-            boolean sameMonth = DateRules.getMonthStart(from).equals(DateRules.getMonthStart(to));
-            if (dateRange == WEEK) {
-                if (sameMonth) {
-                    date = Messages.format("workflow.scheduling.appointment.week.samemonth", from, to);
-                } else {
-                    date = Messages.format("workflow.scheduling.appointment.week.diffmonth", from, to);
-                }
+        if (view != null && schedule != null) {
+            ScheduleEventGrid grid = getModel().getGrid();
+            if (dateRange == DAY) {
+                date = Messages.format("workflow.scheduling.appointment.day", grid.getStartDate());
             } else {
-                if (sameMonth) {
-                    date = Messages.format("workflow.scheduling.appointment.month.samemonth", from, to);
+                Date from = grid.getStartDate();
+                Date to = grid.getEndDate();
+                boolean sameMonth = DateRules.getMonthStart(from).equals(DateRules.getMonthStart(to));
+                if (dateRange == WEEK) {
+                    if (sameMonth) {
+                        date = Messages.format("workflow.scheduling.appointment.week.samemonth", from, to);
+                    } else {
+                        date = Messages.format("workflow.scheduling.appointment.week.diffmonth", from, to);
+                    }
                 } else {
-                    date = Messages.format("workflow.scheduling.appointment.month.diffmonth", from, to);
+                    if (sameMonth) {
+                        date = Messages.format("workflow.scheduling.appointment.month.samemonth", from, to);
+                    } else {
+                        date = Messages.format("workflow.scheduling.appointment.month.diffmonth", from, to);
+                    }
                 }
             }
+        } else {
+            date = Messages.format("workflow.scheduling.appointment.day", getDate());
         }
         if (viewName != null && schedName != null) {
             text = Messages.format("workflow.scheduling.appointment.viewscheduledate", viewName, schedName, date);
