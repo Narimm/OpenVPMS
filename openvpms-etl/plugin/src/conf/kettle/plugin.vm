@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin id="OpenVPMSLoaderPlugin"
+        iconfile="plugin.png"
+        description="OpenVPMS Loader"
+        tooltip="This is an OpenVPMS ETL plugin step"
+        category="Transform"
+        classname="org.openvpms.etl.kettle.LoaderPluginMeta">
+    <libraries>
+        #foreach ($dep in $pom.getDependencies())
+        #if ($dep.getProperty("kettle.plugin"))
+        <library name="${dep.Artifact}"/>
+        #end
+        #end
+    </libraries>
+
+</plugin>
