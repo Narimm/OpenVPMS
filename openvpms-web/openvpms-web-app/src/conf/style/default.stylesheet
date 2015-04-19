@@ -551,10 +551,13 @@
 
     <style name="MultiDayTable.Today" base-name="Table.Header" type="nextapp.echo2.app.Label">
         <properties>
-            <property name="font">
-                <font size="${font.size}" bold="true" italic="true">
-                    <typeface name="${font.typeface}"/>
-                </font>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="insets" value="${padding.medium} 1px"/>
+                        <property name="background" value="#ffffff"/>
+                    </properties>
+                </layout-data>
             </property>
         </properties>
     </style>

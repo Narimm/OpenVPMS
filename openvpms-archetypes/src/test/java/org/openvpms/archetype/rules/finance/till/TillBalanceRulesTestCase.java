@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.till;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -181,15 +182,36 @@ public class TillBalanceRulesTestCase extends AbstractTillRulesTest {
     @Test
     public void testAddToTillBalanceWithNoTill() {
         TillBalanceRules rules = new TillBalanceRules(getArchetypeService());
-        ActBean act = createAct("act.customerAccountPayment");
+        ActBean act = createAct(CustomerAccountArchetypes.PAYMENT);
         act.setStatus(IN_PROGRESS);
         Party party = TestHelper.createCustomer();
-        act.setParticipant("participation.customer", party);
+        act.addNodeParticipation("customer", party);
         try {
             rules.addToTill(act.getAct());
         } catch (TillRuleException expected) {
             assertEquals(MissingTill, expected.getErrorCode());
         }
+    }
+
+    /**
+     * Verifies that if a till balance adjustment is changed, this is reflected in the till balance.
+     */
+    @Test
+    public void testChangeTillBalanceAdjustment() {
+        TillBalanceRules rules = new TillBalanceRules(getArchetypeService());
+        ActBean bean = createAct(TillArchetypes.TILL_BALANCE_ADJUSTMENT);
+        bean.setValue("credit", true);
+        bean.addNodeParticipation("till", till);
+        bean.setValue("amount", BigDecimal.ONE);
+        bean.save();
+        FinancialAct balance = rules.getUnclearedBalance(till);
+        assertNotNull(balance);
+        checkEquals(BigDecimal.ONE, balance.getTotal());
+
+        bean.setValue("amount", BigDecimal.TEN);
+        bean.save();
+        balance = get(balance);
+        checkEquals(BigDecimal.TEN, balance.getTotal());
     }
 
 }

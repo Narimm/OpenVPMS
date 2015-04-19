@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -81,7 +81,7 @@ public abstract class AbstractCSVReader {
             if (first.length < header.length) {
                 throw new ProductIOException(ProductIOException.ErrorCode.UnrecognisedDocument, 1, document.getName());
             }
-            for (int i = 0; i < first.length; ++i) {
+            for (int i = 0; i < header.length; ++i) {
                 if (!first[i].equalsIgnoreCase(header[i])) {
                     throw new ProductIOException(ProductIOException.ErrorCode.InvalidColumn, 1, first[i]);
                 }

@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
 
+import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -25,6 +26,7 @@ import java.io.InputStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -61,9 +63,11 @@ public class JRXMLDocumentHandlerTestCase extends AbstractReportTest {
 
     /**
      * Tests the {@link JRXMLDocumentHandler#create(String, InputStream, String, int)} method.
+     *
+     * @throws Exception for any error
      */
     @Test
-    public void testCreateFromStream() {
+    public void testCreateFromStream() throws Exception {
         handler = new JRXMLDocumentHandler(getArchetypeService());
         String name = "/reports/valid.jrxml";
         InputStream report = getClass().getResourceAsStream(name);
@@ -71,6 +75,14 @@ public class JRXMLDocumentHandlerTestCase extends AbstractReportTest {
         assertNotNull(document);
         assertEquals("valid.jrxml", document.getName());
         assertEquals("text/xml", document.getMimeType());
+        assertEquals(1521, document.getDocSize()); // file is recoded, so the length changes
+
+        // doc size represents the uncompressed length
+        assertNotEquals(document.getDocSize(), document.getContents().length);
+
+        InputStream stream = handler.getContent(document);
+        JRXmlLoader.load(stream);
+        stream.close();
     }
 
     /**

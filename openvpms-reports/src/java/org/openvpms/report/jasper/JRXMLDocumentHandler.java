@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -20,6 +20,7 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
+import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.openvpms.archetype.rules.doc.AbstractDocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
@@ -105,10 +106,11 @@ public class JRXMLDocumentHandler extends AbstractDocumentHandler {
         }
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            DeflaterOutputStream output = new DeflaterOutputStream(bytes);
+            DeflaterOutputStream deflater = new DeflaterOutputStream(bytes);
+            CountingOutputStream output = new CountingOutputStream(deflater);
             JRXmlWriter.writeReport(design, output, "UTF-8");
-            output.close();
-            document = create(name, bytes.toByteArray(), "text/xml", size);
+            deflater.close();
+            document = create(name, bytes.toByteArray(), "text/xml", output.getCount());
         } catch (Exception exception) {
             throw new DocumentException(DocumentException.ErrorCode.WriteError, exception, name);
         }

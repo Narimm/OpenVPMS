@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.till;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -27,10 +28,12 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import static org.openvpms.archetype.rules.finance.till.TillArchetypes.TILL_BALANCE;
+import static org.openvpms.archetype.rules.finance.till.TillArchetypes.TILL_BALANCE_ADJUSTMENT;
 import static org.openvpms.archetype.rules.finance.till.TillArchetypes.TILL_BALANCE_ITEM;
 import static org.openvpms.archetype.rules.finance.till.TillHelper.getTill;
 import static org.openvpms.archetype.rules.finance.till.TillRuleException.ErrorCode.CantAddActToTill;
@@ -58,6 +61,16 @@ public class TillBalanceRules {
      */
     public TillBalanceRules(IArchetypeService service) {
         this.service = service;
+    }
+
+    /**
+     * Helper to return the uncleared till balance for a till, if it exists.
+     *
+     * @param till the till
+     * @return the uncleared till balance, or {@code null} if none exists
+     */
+    public FinancialAct getUnclearedBalance(Entity till) {
+        return TillHelper.getUnclearedTillBalance(till, service);
     }
 
     /**
@@ -104,14 +117,130 @@ public class TillBalanceRules {
      * For <em>act.customerAccount*</em> acts, this only occurs if the act's
      * status is 'Posted'. If no uncleared till balance exists, one will be
      * created.
+     * <p/>
+     * <strong>NOTE: </strong> callers invoking this directly are responsible for calling
+     * {@link #updateBalance(FinancialAct)} if {@code act} has not already been saved.
      *
      * @param act the till balance act
      * @throws TillRuleException         if the act is invalid or the till is missing
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void addToTill(Act act) {
-        ActBean bean = new ActBean(act, service);
+        List<Act> acts = addToBalance(act);
+        if (!acts.isEmpty()) {
+            service.save(acts);
+        }
+    }
+
+    /**
+     * Adds an act to a till balance.
+     * <p/>
+     * <strong>NOTE: </strong> callers invoking this directly are responsible for calling
+     * {@link #updateBalance(FinancialAct)} if {@code act} has not already been saved.
+     *
+     * @param act the act
+     * @return the changed acts
+     */
+    public List<Act> addToBalance(Act act) {
+        List<Act> result = Collections.emptyList();
+        if (checkAdd(act)) {
+            FinancialAct balance = getBalance(act);
+            result = doAddToBalance(act, balance);
+        }
+        return result;
+    }
+
+    /**
+     * Adds an act to a till balance.
+     * <p/>
+     * <strong>NOTE: </strong> callers invoking this directly are responsible for calling
+     * {@link #updateBalance(FinancialAct)} if {@code act} has not already been saved.
+     *
+     * @param act     the act
+     * @param balance the balance
+     * @return the changed acts
+     */
+    public List<Act> addToBalance(Act act, Act balance) {
+        List<Act> result;
+        if (checkAdd(act)) {
+            result = doAddToBalance(act, balance);
+        } else {
+            result = Collections.emptyList();
+        }
+        return result;
+    }
+
+    /**
+     * Updates the amount of an <em>act.tillBalance</em>.
+     *
+     * @param balance the till balance
+     * @return {@code true} if the balance changed
+     */
+    public boolean updateBalance(FinancialAct balance) {
+        boolean result = false;
+        if (TillBalanceStatus.CLEARED.equals(balance.getStatus())) {
+            throw new TillRuleException(ClearedTill, balance.getId());
+        }
+        ActBean bean = new ActBean(balance, service);
+        if (TillHelper.updateBalance(bean, service)) {
+            bean.save();
+            result = true;
+        }
+        return result;
+    }
+
+    /**
+     * Adds an act to a till balance.
+     * <p/>
+     * <strong>NOTE: </strong> callers invoking this directly are responsible for calling
+     * {@link #updateBalance(FinancialAct)} if {@code act} has not already been saved.
+     *
+     * @param act     the act
+     * @param balance the balance
+     * @return the changed acts
+     */
+    private List<Act> doAddToBalance(Act act, Act balance) {
+        List<Act> result = new ArrayList<Act>();
+        if (TillBalanceStatus.CLEARED.equals(balance.getStatus())) {
+            throw new IllegalStateException("Till balance cannot be " + TillBalanceStatus.CLEARED);
+        }
+        ActBean bean = new ActBean(act);
+        ActBean balanceBean = new ActBean(balance, service);
+        IMObjectReference till = bean.getNodeParticipantRef("till");
+        if (till == null) {
+            throw new IllegalStateException(act.getObjectReference() + "  has no till");
+        }
+        if (!ObjectUtils.equals(till, balanceBean.getNodeParticipantRef("till"))) {
+            throw new IllegalStateException(act.getObjectReference() + "  has as different till to "
+                                            + balance.getObjectReference());
+        }
+        if (!balanceBean.hasNodeTarget("items", act)) {
+            balanceBean.addNodeRelationship("items", act);
+            result.add(act);
+            result.add(balance);
+            TillHelper.updateBalance(balanceBean, service);
+        } else if (TypeHelper.isA(act, TILL_BALANCE_ADJUSTMENT)) {
+            // TODO - due to a historical oversight, till balance adjustments don't get POSTED
+            if (TillHelper.updateBalance(balanceBean, service)) {
+                result.add(balance);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Verifies an act can be added to a till balance.
+     * <p/>
+     * Note that act.tillBalanceAdjustments can always be added to balances that are UNCLEARED or IN_PROGRESS as
+     * there is no restrictions on changing them.
+     *
+     * @param act the act
+     * @return {@code true} if it can be added, otherwise {@code false}
+     * @throws TillRuleException if the act is not a valid act to add
+     */
+    private boolean checkAdd(Act act) {
         boolean add = true;
+        ActBean bean = new ActBean(act, service);
         boolean isAccount = bean.isA(CustomerAccountArchetypes.PAYMENT, CustomerAccountArchetypes.REFUND);
         boolean isAdjust = bean.isA(TillArchetypes.TILL_BALANCE_ADJUSTMENT);
         if (!isAccount && !isAdjust) {
@@ -119,26 +248,22 @@ public class TillBalanceRules {
         }
         if (isAccount && !POSTED.equals(act.getStatus())) {
             add = false;
-        } else if (!bean.getRelationships(TILL_BALANCE_ITEM).isEmpty()) {
-            // already associated with a balance
+        } else if (!bean.getRelationships(TILL_BALANCE_ITEM).isEmpty() && !isAdjust) {
+            // already associated with a balance.
             add = false;
         }
-        if (add) {
-            List<Act> acts = doAddToTill(act);
-            service.save(acts);
-        }
+        return add;
     }
 
     /**
-     * Adds an act to a till.
+     * Returns an uncleared till balance to add an act to.
+     * <p/>
+     * This will create one if none exists.
      *
-     * @param act the act to add
-     * @return the changed acts
-     * @throws TillRuleException         if the act is invalid or the till is missing
-     * @throws ArchetypeServiceException for any archetype service error
+     * @param act the act
+     * @return an uncleared till balance
      */
-    protected List<Act> doAddToTill(Act act) {
-        List<Act> result = new ArrayList<Act>();
+    private FinancialAct getBalance(Act act) {
         IMObjectReference tillRef = TillHelper.getTillRef(act, service);
         FinancialAct balance = TillHelper.getUnclearedTillBalance(tillRef, service);
         if (balance == null) {
@@ -148,20 +273,7 @@ public class TillBalanceRules {
             }
             balance = TillHelper.createTillBalance(till, service);
         }
-        boolean isAdjust = TypeHelper.isA(act, TillArchetypes.TILL_BALANCE_ADJUSTMENT);
-        ActBean balanceBean = new ActBean(balance, service);
-        if (!balanceBean.hasNodeTarget("items", act)) {
-            balanceBean.addNodeRelationship("items", act);
-            result.add(act);
-            result.add(balance);
-            TillHelper.updateBalance(balanceBean, service);
-        } else if (isAdjust) {
-            if (TillHelper.updateBalance(balanceBean, service)) {
-                result.add(balance);
-            }
-        }
-        return result;
+        return balance;
     }
-
 
 }

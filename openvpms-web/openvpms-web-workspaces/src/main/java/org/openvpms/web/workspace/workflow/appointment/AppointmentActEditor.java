@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -100,7 +100,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     /**
      * The appointment duration formatter.
      */
-    private static DurationFormatter formatter = DateDurationFormatter.create(true, true, true, true, true, true);
+    private static DurationFormatter formatter = DateDurationFormatter.create(false, false, false, true, true, true);
 
     /**
      * Constructs an {@link AppointmentActEditor}.

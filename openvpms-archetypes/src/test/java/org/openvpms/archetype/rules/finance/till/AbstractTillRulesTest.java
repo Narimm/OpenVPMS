@@ -99,10 +99,9 @@ public abstract class AbstractTillRulesTest extends ArchetypeServiceTest {
      * @return a new act
      */
     protected ActBean createBalance(Party till, String status) {
-        ActBean act = createAct(TillArchetypes.TILL_BALANCE);
+        FinancialAct act = FinancialTestHelper.createTillBalance(till);
         act.setStatus(status);
-        act.addNodeParticipation("till", till);
-        return act;
+        return new ActBean(act);
     }
 
     /**
