@@ -17,9 +17,9 @@
 package org.openvpms.archetype.rules.finance.account;
 
 import org.junit.Test;
-import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
+import org.openvpms.archetype.rules.finance.till.TillBalanceRules;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
@@ -47,14 +47,38 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
+import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.BALANCE_PARTICIPATION;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.CREDIT;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.CREDIT_ADJUST;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.CREDIT_ITEM;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.DEBIT_ADJUST;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE_ITEM;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.PAYMENT;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.PAYMENT_CASH;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.PAYMENT_CHEQUE;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.PAYMENT_CREDIT;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.PAYMENT_DISCOUNT;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.PAYMENT_EFT;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.PAYMENT_OTHER;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.REFUND;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.REFUND_CASH;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.REFUND_CHEQUE;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.REFUND_CREDIT;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.REFUND_DISCOUNT;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.REFUND_EFT;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.REFUND_OTHER;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 
 /**
@@ -461,9 +485,9 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         FinancialAct badDebt = createBadDebt(amount);
 
         FinancialAct chargesCredit = credits.get(0);
-        chargesCredit.setStatus(ActStatus.IN_PROGRESS);
+        chargesCredit.setStatus(IN_PROGRESS);
         save(credits);
-        chargesCredit.setStatus(ActStatus.POSTED);
+        chargesCredit.setStatus(POSTED);
 
         FinancialAct[] acts = {chargesCredit, creditAdjust, payment, badDebt};
         for (int i = 0; i < acts.length; ++i) {
@@ -489,13 +513,13 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         List<FinancialAct> credits = createChargesCredit(amount);
 
         FinancialAct invoice = invoices.get(0);
-        invoice.setStatus(ActStatus.IN_PROGRESS);
+        invoice.setStatus(IN_PROGRESS);
 
         FinancialAct counter = counters.get(0);
-        counter.setStatus(ActStatus.IN_PROGRESS);
+        counter.setStatus(IN_PROGRESS);
 
         FinancialAct credit = credits.get(0);
-        credit.setStatus(ActStatus.IN_PROGRESS);
+        credit.setStatus(IN_PROGRESS);
 
         checkEquals(ZERO, rules.getUnbilledAmount(getCustomer()));
 
@@ -509,15 +533,15 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         save(credits);
         checkEquals(amount, rules.getUnbilledAmount(getCustomer()));
 
-        credit.setStatus(ActStatus.POSTED);
+        credit.setStatus(POSTED);
         save(credit);
         checkEquals(amount.multiply(new BigDecimal(2)), rules.getUnbilledAmount(getCustomer()));
 
-        counter.setStatus(ActStatus.POSTED);
+        counter.setStatus(POSTED);
         save(counter);
         checkEquals(amount, rules.getUnbilledAmount(getCustomer()));
 
-        invoice.setStatus(ActStatus.POSTED);
+        invoice.setStatus(POSTED);
         save(invoice);
         checkEquals(ZERO, rules.getUnbilledAmount(getCustomer()));
     }
@@ -527,77 +551,43 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     @Test
     public void testReverse() {
-        checkReverseCharge(createChargesInvoice(new BigDecimal(100)),
-                           "act.customerAccountChargesCredit",
-                           "act.customerAccountCreditItem");
+        checkReverseCharge(createChargesInvoice(new BigDecimal(100)), CREDIT, CREDIT_ITEM);
 
-        checkReverseCharge(createChargesCredit(new BigDecimal(50)),
-                           "act.customerAccountChargesInvoice",
-                           "act.customerAccountInvoiceItem");
+        checkReverseCharge(createChargesCredit(new BigDecimal(50)), INVOICE, INVOICE_ITEM);
 
-        checkReverseCharge(createChargesCounter(new BigDecimal(40)),
-                           "act.customerAccountChargesCredit",
-                           "act.customerAccountCreditItem");
+        checkReverseCharge(createChargesCounter(new BigDecimal(40)), CREDIT, CREDIT_ITEM);
 
-        checkReverse(createPaymentCash(new BigDecimal(75)),
-                     "act.customerAccountRefund",
-                     "act.customerAccountRefundCash", false);
+        checkReverse(createPaymentCash(new BigDecimal(75)), REFUND, REFUND_CASH, false, null);
 
-        checkReverse(createPaymentCheque(new BigDecimal(23)),
-                     "act.customerAccountRefund",
-                     "act.customerAccountRefundCheque", false);
+        checkReverse(createPaymentCheque(new BigDecimal(23)), REFUND, REFUND_CHEQUE, false, null);
 
-        checkReverse(createPaymentCredit(new BigDecimal(24)),
-                     "act.customerAccountRefund",
-                     "act.customerAccountRefundCredit", false);
+        checkReverse(createPaymentCredit(new BigDecimal(24)), REFUND, REFUND_CREDIT, false, null);
 
-        checkReverse(createPaymentDiscount(new BigDecimal(25)),
-                     "act.customerAccountRefund",
-                     "act.customerAccountRefundDiscount", false);
+        checkReverse(createPaymentDiscount(new BigDecimal(25)), REFUND, REFUND_DISCOUNT, false, null);
 
-        checkReverse(createPaymentEFT(new BigDecimal(26)),
-                     "act.customerAccountRefund",
-                     "act.customerAccountRefundEFT", false);
+        checkReverse(createPaymentEFT(new BigDecimal(26)), REFUND, REFUND_EFT, false, null);
 
-        checkReverse(createPaymentOther(new BigDecimal(26)),
-                     "act.customerAccountRefund",
-                     "act.customerAccountRefundOther", false);
+        checkReverse(createPaymentOther(new BigDecimal(26)), REFUND, REFUND_OTHER, false, null);
 
-        checkReverse(createRefundCash(new BigDecimal(10)),
-                     "act.customerAccountPayment",
-                     "act.customerAccountPaymentCash", false);
+        checkReverse(createRefundCash(new BigDecimal(10)), PAYMENT, PAYMENT_CASH, false, null);
 
-        checkReverse(createRefundCheque(new BigDecimal(11)),
-                     "act.customerAccountPayment",
-                     "act.customerAccountPaymentCheque", false);
+        checkReverse(createRefundCheque(new BigDecimal(11)), PAYMENT, PAYMENT_CHEQUE, false, null);
 
-        checkReverse(createRefundCredit(new BigDecimal(12)),
-                     "act.customerAccountPayment",
-                     "act.customerAccountPaymentCredit", false);
+        checkReverse(createRefundCredit(new BigDecimal(12)), PAYMENT, PAYMENT_CREDIT, false, null);
 
-        checkReverse(createRefundDiscount(new BigDecimal(13)),
-                     "act.customerAccountPayment",
-                     "act.customerAccountPaymentDiscount", false);
+        checkReverse(createRefundDiscount(new BigDecimal(13)), PAYMENT, PAYMENT_DISCOUNT, false, null);
 
-        checkReverse(createRefundEFT(new BigDecimal(15)),
-                     "act.customerAccountPayment",
-                     "act.customerAccountPaymentEFT", false);
+        checkReverse(createRefundEFT(new BigDecimal(15)), PAYMENT, PAYMENT_EFT, false, null);
 
-        checkReverse(createRefundOther(new BigDecimal(15)),
-                     "act.customerAccountPayment",
-                     "act.customerAccountPaymentOther", false);
+        checkReverse(createRefundOther(new BigDecimal(15)), PAYMENT, PAYMENT_OTHER, false, null);
 
-        checkReverse(createDebitAdjust(new BigDecimal(5)),
-                     "act.customerAccountCreditAdjust");
+        checkReverse(createDebitAdjust(new BigDecimal(5)), CREDIT_ADJUST);
 
-        checkReverse(createCreditAdjust(new BigDecimal(15)),
-                     "act.customerAccountDebitAdjust");
+        checkReverse(createCreditAdjust(new BigDecimal(15)), DEBIT_ADJUST);
 
-        checkReverse(createBadDebt(new BigDecimal(20)),
-                     "act.customerAccountDebitAdjust");
+        checkReverse(createBadDebt(new BigDecimal(20)), DEBIT_ADJUST);
 
-        checkReverse(createInitialBalance(new BigDecimal(25)),
-                     "act.customerAccountCreditAdjust");
+        checkReverse(createInitialBalance(new BigDecimal(25)), CREDIT_ADJUST);
     }
 
     /**
@@ -710,12 +700,12 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     public void testReverseHide() {
         List<FinancialAct> invoice1 = createChargesInvoice(new BigDecimal(100));
         save(invoice1);
-        checkReverse(invoice1.get(0), "act.customerAccountChargesCredit", "act.customerAccountCreditItem", true);
+        checkReverse(invoice1.get(0), "act.customerAccountChargesCredit", "act.customerAccountCreditItem", true, null);
 
         List<FinancialAct> invoice2 = createChargesInvoice(new BigDecimal(100));
         save(invoice2);
 
-        checkReverse(invoice2.get(0), "act.customerAccountChargesCredit", "act.customerAccountCreditItem", false);
+        checkReverse(invoice2.get(0), "act.customerAccountChargesCredit", "act.customerAccountCreditItem", false, null);
     }
 
     /**
@@ -829,7 +819,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         // has no balance participation
         List<FinancialAct> invoices = createChargesInvoice(ZERO);
         FinancialAct invoice = invoices.get(0);
-        invoice.setStatus(ActStatus.IN_PROGRESS);
+        invoice.setStatus(IN_PROGRESS);
         save(invoices);
         ActBean bean = new ActBean(invoice);
         assertNull(bean.getParticipation(BALANCE_PARTICIPATION));
@@ -845,7 +835,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         assertNull(bean.getParticipation(BALANCE_PARTICIPATION));
 
         // Post the invoice and verify no participation added
-        invoice.setStatus(ActStatus.POSTED);
+        invoice.setStatus(POSTED);
         save(invoice);
         assertNull(bean.getParticipation(BALANCE_PARTICIPATION));
     }
@@ -906,7 +896,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         assertNull(rules.getInvoice(customer));
 
         // verify posted, on hold invoices not returned
-        createInvoice(getDate("2013-05-02"), FinancialActStatus.POSTED);
+        createInvoice(getDate("2013-05-02"), POSTED);
         createInvoice(getDate("2013-05-02"), FinancialActStatus.ON_HOLD);
         assertNull(rules.getInvoice(customer));
 
@@ -914,11 +904,11 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         assertEquals(invoice2, rules.getInvoice(customer));
 
         // verify back-dated IN_PROGRESS invoice returned in preference to COMPLETED invoice
-        FinancialAct invoice3 = createInvoice(getDate("2013-05-01"), FinancialActStatus.IN_PROGRESS);
+        FinancialAct invoice3 = createInvoice(getDate("2013-05-01"), IN_PROGRESS);
         assertEquals(invoice3, rules.getInvoice(customer));
 
         // verify more recent IN_PROGRESS returned
-        FinancialAct invoice4 = createInvoice(getDate("2013-05-05"), FinancialActStatus.IN_PROGRESS);
+        FinancialAct invoice4 = createInvoice(getDate("2013-05-05"), IN_PROGRESS);
         assertEquals(invoice4, rules.getInvoice(customer));
     }
 
@@ -933,18 +923,18 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         assertNull(rules.getCredit(customer));
 
         // verify posted credits not returned
-        createCredit(getDate("2013-05-02"), FinancialActStatus.POSTED);
+        createCredit(getDate("2013-05-02"), POSTED);
         assertNull(rules.getInvoice(customer));
 
         FinancialAct credit2 = createCredit(getDate("2013-05-02"), FinancialActStatus.COMPLETED);
         assertEquals(credit2, rules.getCredit(customer));
 
         // verify back-dated IN_PROGRESS invoice returned in preference to COMPLETED credit
-        FinancialAct credit3 = createCredit(getDate("2013-05-01"), FinancialActStatus.IN_PROGRESS);
+        FinancialAct credit3 = createCredit(getDate("2013-05-01"), IN_PROGRESS);
         assertEquals(credit3, rules.getCredit(customer));
 
         // verify more recent IN_PROGRESS returned
-        FinancialAct credit4 = createCredit(getDate("2013-05-05"), FinancialActStatus.IN_PROGRESS);
+        FinancialAct credit4 = createCredit(getDate("2013-05-05"), IN_PROGRESS);
         assertEquals(credit4, rules.getCredit(customer));
     }
 
@@ -977,7 +967,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         // create the invoice
         List<FinancialAct> invoice1 = createChargesInvoice(new BigDecimal(100));
         FinancialAct invoice = invoice1.get(0);
-        invoice.setStatus(ActStatus.IN_PROGRESS);
+        invoice.setStatus(IN_PROGRESS);
         Act item1 = invoice1.get(1);
         Act medication = PatientTestHelper.createMedication(patient, getProduct());
         Act investigation = PatientTestHelper.createInvestigation(patient, PatientTestHelper.createInvestigationType());
@@ -1027,7 +1017,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         assertTrue(items.contains(document));
 
         // now post the invoice. The demographic update should be executed
-        invoice.setStatus(ActStatus.POSTED);
+        invoice.setStatus(POSTED);
         save(invoice);
 
         // stock should remain the same
@@ -1044,7 +1034,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         // reverse the invoice.
         FinancialAct credit = rules.reverse(invoice, new Date());
-        assertTrue(TypeHelper.isA(credit, CustomerAccountArchetypes.CREDIT));
+        assertTrue(TypeHelper.isA(credit, CREDIT));
         ActBean creditBean = new ActBean(credit);
         List<Act> creditItems = creditBean.getNodeActs("items");
         assertEquals(1, creditItems.size());
@@ -1092,7 +1082,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         // create the invoice
         List<FinancialAct> invoiceActs = createChargesInvoice(new BigDecimal(100));
         FinancialAct invoice = invoiceActs.get(0);
-        invoice.setStatus(ActStatus.IN_PROGRESS);
+        invoice.setStatus(IN_PROGRESS);
         Act item = invoiceActs.get(1);
         Act reminder = ReminderTestHelper.createReminder(patient, ReminderTestHelper.createReminderType());
         ActBean itemBean = new ActBean(item);
@@ -1104,7 +1094,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         save(toSave);
 
         FinancialAct credit = rules.reverse(invoice, new Date());
-        assertTrue(TypeHelper.isA(credit, CustomerAccountArchetypes.CREDIT));
+        assertTrue(TypeHelper.isA(credit, CREDIT));
         ActBean creditBean = new ActBean(credit);
         List<Act> creditItems = creditBean.getNodeActs("items");
         assertEquals(1, creditItems.size());
@@ -1116,6 +1106,43 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         reminder = get(reminder);
         assertNotNull(reminder);
         itemBean.getNodeActs("reminders").contains(reminder);
+    }
+
+    /**
+     * Verifies that a reversal of a payment or refund can be added to the specified till balance.
+     */
+    @Test
+    public void testReverseToSpecifiedTillBalance() {
+        TillBalanceRules rules = new TillBalanceRules(getArchetypeService());
+        Party till = getTill();
+        assertNull(rules.getUnclearedBalance(till));
+        BigDecimal amount = new BigDecimal(75);
+        FinancialAct payment1 = createPaymentCash(amount);
+        payment1.setStatus(POSTED);
+        save(payment1);
+        FinancialAct balance1 = rules.getUnclearedBalance(till);
+        assertNotNull(balance1);
+        checkEquals(amount, balance1.getTotal());
+        balance1.setStatus(IN_PROGRESS);  // i.e. clear in progress
+        save(balance1);
+
+        // create a new payment. This should go into a different till balance
+        FinancialAct payment2 = createPaymentCash(TEN);
+        payment2.setStatus(POSTED);
+        save(payment2);
+        FinancialAct balance2 = rules.getUnclearedBalance(till);
+        assertNotNull(balance2);
+        assertNotEquals(balance1.getId(), balance2.getId());
+        checkEquals(TEN, balance2.getTotal());
+
+        // now reverse payment1 into balance1. The new total should be zero.
+        FinancialAct refund = checkReverse(payment1, REFUND, REFUND_CASH, false, balance1);
+
+        balance1 = get(balance1);
+        ActBean bean = new ActBean(balance1);
+        assertTrue(bean.hasNodeTarget("items", payment1));
+        assertTrue(bean.hasNodeTarget("items", refund));
+        checkEquals(ZERO, balance1.getTotal());
     }
 
     /**
@@ -1257,7 +1284,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * @param shortName the reversal act short name
      */
     private void checkReverse(FinancialAct act, String shortName) {
-        checkReverse(act, shortName, null, false);
+        checkReverse(act, shortName, null, false, null);
     }
 
     /**
@@ -1284,7 +1311,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         }
 
         // reverse the charge
-        checkReverse(acts.get(0), shortName, itemShortName, false);
+        checkReverse(acts.get(0), shortName, itemShortName, false, null);
 
         // ensure the stock has gone back to its initial value
         checkStock(relationship, quantity);
@@ -1323,19 +1350,36 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * @param shortName     the reversal act short name
      * @param itemShortName the reversal act child short name.
      * @param hide          if {@code true}, set the hide flag on both the original and reversed transactions
+     * @param tillBalance   the till balance to add the reversal to. Only applies to payments and refunds.
+     *                      May be {@code null}
+     * @return the reversal
      */
-    private void checkReverse(FinancialAct act, String shortName, String itemShortName, boolean hide) {
+    private FinancialAct checkReverse(FinancialAct act, String shortName, String itemShortName, boolean hide,
+                                      FinancialAct tillBalance) {
         CustomerAccountRules rules = getRules();
+        BigDecimal currentBalance = rules.getBalance(getCustomer());
+
         BigDecimal amount = act.getTotal();
-        act.setStatus(ActStatus.POSTED);
-        save(act);
+        BigDecimal preBalance;
+        BigDecimal reverseBalance;
+        BigDecimal change = act.isCredit() ? amount.negate() : amount;
+
+        if (!act.isNew()) {
+            // already factored into the balance
+            preBalance = currentBalance;
+            reverseBalance = currentBalance.subtract(change);
+        } else {
+            preBalance = currentBalance.add(change);
+            reverseBalance = currentBalance;
+            act.setStatus(POSTED);
+            save(act);
+        }
 
         // check the balance
-        BigDecimal balance = act.isCredit() ? amount.negate() : amount;
-        checkBalance(balance);
+        checkBalance(preBalance);
 
         Date now = new Date();
-        FinancialAct reversal = rules.reverse(act, now, "Test reversal", null, hide);
+        FinancialAct reversal = rules.reverse(act, now, "Test reversal", null, hide, tillBalance);
         assertTrue(TypeHelper.isA(reversal, shortName));
         ActBean bean = new ActBean(reversal);
         if (itemShortName != null) {
@@ -1343,11 +1387,9 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
             assertEquals(1, items.size());
             Act item = items.get(0);
             assertTrue(TypeHelper.isA(item, itemShortName));
-            if (TypeHelper.isA(item, "act.customerAccountPaymentCash",
-                               "act.customerAccountRefundCash")) {
+            if (TypeHelper.isA(item, PAYMENT_CASH, REFUND_CASH)) {
                 ActBean itemBean = new ActBean(item);
-                BigDecimal roundedAmount
-                        = (BigDecimal) itemBean.getValue("roundedAmount");
+                BigDecimal roundedAmount = itemBean.getBigDecimal("roundedAmount");
                 checkEquals(amount, roundedAmount);
             }
             checkEquals(amount, ((FinancialAct) item).getTotal());
@@ -1374,7 +1416,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         assertEquals(hide, bean.getBoolean("hide"));
 
         // check the balance
-        checkBalance(ZERO);
+        checkBalance(reverseBalance);
+        return reversal;
     }
 
     /**

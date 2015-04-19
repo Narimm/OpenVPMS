@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.act.FinancialActStatus;
+import org.openvpms.archetype.rules.finance.till.TillBalanceRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -54,7 +54,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
+import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.DEBITS;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.PAYMENT;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.REFUND;
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM;
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.CLINICAL_EVENT_ITEM;
 
@@ -385,6 +389,28 @@ public class CustomerAccountRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public FinancialAct reverse(final FinancialAct act, Date startTime, String notes, String reference, boolean hide) {
+        return reverse(act, startTime, notes, reference, hide, null);
+    }
+
+    /**
+     * Reverses an act.
+     * <p/>
+     * If the act to be reversed is an invoice, charge items and medication acts will be unlinked from patient history.
+     * Reminders and investigations will be retained.
+     *
+     * @param act         the act to reverse
+     * @param startTime   the start time of the reversal
+     * @param notes       notes indicating the reason for the reversal, to set the 'notes' node if the act has one.
+     *                    May be {@code null}
+     * @param reference   the reference. If {@code null}, the act identifier will be used
+     * @param hide        if {@code true}, hide the reversal iff the act being reversed isn't already hidden
+     * @param tillBalance the till balance to add the reversal to. Only applies to payments and refunds, and
+     *                    IN_PROGRESS till balance acts. May be {@code null}
+     * @return the reversal of {@code act}
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public FinancialAct reverse(final FinancialAct act, Date startTime, String notes, String reference, boolean hide,
+                                final FinancialAct tillBalance) {
         final ActBean original = new ActBean(act, service);
         if (!original.getValues("reversal").isEmpty()) {
             throw new IllegalStateException("Act=" + act.getId() + " has already been reversed");
@@ -395,7 +421,7 @@ public class CustomerAccountRules {
         ActBean bean = new ActBean(reversal, service);
         bean.setValue("reference", !StringUtils.isEmpty(reference) ? reference : act.getId());
         bean.setValue("notes", notes);
-        reversal.setStatus(FinancialActStatus.POSTED);
+        reversal.setStatus(POSTED);
         reversal.setActivityStartTime(startTime);
 
         original.addNodeRelationship("reversal", reversal);
@@ -403,6 +429,13 @@ public class CustomerAccountRules {
         if (hide && !original.getBoolean("hide")) {
             bean.setValue("hide", hide);
             original.setValue("hide", hide);
+        }
+
+        boolean updateBalance = tillBalance != null && bean.isA(PAYMENT, REFUND);
+        final TillBalanceRules rules = (updateBalance) ? new TillBalanceRules(service) : null;
+        if (updateBalance) {
+            List<Act> changed = rules.addToBalance(reversal, tillBalance);
+            objects.addAll(changed);
         }
 
         // This smells. The original acts needs to be saved without using the rule based archetype service, to avoid
@@ -420,6 +453,11 @@ public class CustomerAccountRules {
                 }
                 service.save(noRules);
                 ruleService.save(objects);
+
+                // can only update the till balance when all of the other objects have been saved
+                if (rules != null) {
+                    rules.updateBalance(tillBalance);
+                }
             }
         });
         return reversal;
@@ -592,7 +630,7 @@ public class CustomerAccountRules {
      * @return the invoice, or {@code null} if none can be found
      */
     private FinancialAct getCharge(String shortName, IMObjectReference customer) {
-        FinancialAct result = getCharge(shortName, customer, ActStatus.IN_PROGRESS);
+        FinancialAct result = getCharge(shortName, customer, IN_PROGRESS);
         if (result == null) {
             result = getCharge(shortName, customer, ActStatus.COMPLETED);
         }
