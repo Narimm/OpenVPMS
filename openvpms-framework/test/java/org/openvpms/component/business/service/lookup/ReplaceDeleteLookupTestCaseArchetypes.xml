@@ -1,0 +1,339 @@
+<archetypes>
+	<archetype name="act.basic.1.0" latest="true" type="org.openvpms.component.business.domain.im.act.Act">
+		<node name="id" path="/id" type="java.lang.Long" />
+		<node name="name" path="/name" type="java.lang.String" />
+		<node name="title" path="/title" type="java.lang.String" />
+		<node name="reason" path="/reason" type="java.lang.String" />
+		<node name="status" path="/status" type="java.lang.String">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.status"/>
+            </assertion>
+		</node>
+        <node name="category" path="/details/category" type="java.lang.String">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.category"/>
+            </assertion>
+        </node>
+		<node name="startTime" path="/activityStartTime" type="java.util.Date" />
+		<node name="endTime" path="/activityEndTime" type="java.util.Date" />
+	</archetype>
+
+    <archetype name="actRelationship.basic.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.act.ActRelationship">
+        <node name="id" path="/id" type="java.lang.Long"/>
+        <node name="name" type="java.lang.String" path="/name"/>
+        <node name="description" path="/description" type="java.lang.String" minCardinality="0">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.description"/>
+            </assertion>
+        </node>
+        <node name="category" path="/details/category" type="java.lang.String" minCardinality="0">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.category"/>
+            </assertion>
+        </node>
+        <node name="source" path="/source" type="org.openvpms.component.business.domain.im.common.IMObjectReference">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="act.basic"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="target" path="/target" type="org.openvpms.component.business.domain.im.common.IMObjectReference">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="act.basic"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
+    </archetype>
+
+    <archetype name="contact.location.1.0" latest="true" primary="false"
+               type="org.openvpms.component.business.domain.im.party.Contact">
+        <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
+        <node name="description" path="/description" type="java.lang.String" minCardinality="0" maxLength="10">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.description"/>
+            </assertion>
+        </node>
+        <node name="address" path="/details/address"
+              type="java.lang.String" maxLength="300" minCardinality="0"/>
+        <node name="suburb" path="/details/suburb"
+              type="java.lang.String" minCardinality="0">
+            <assertion name="lookup">
+                <property name="type" value="targetLookup"/>
+                <property name="relationship" value="lookupRelationship.stateSuburb"/>
+                <property name="value" value="/details/state"/>
+            </assertion>
+        </node>
+        <node name="state" path="/details/state"
+              type="java.lang.String" minCardinality="0">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.state"/>
+            </assertion>
+        </node>
+        <node name="classifications" path="/classifications" parentChild="false"
+              type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="lookup.category"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
+    </archetype>
+
+    <archetype name="document.basic.1.0" latest="true"
+        type="org.openvpms.component.business.domain.im.document.Document">
+        <node name="id" path="/id" type="java.lang.Long" />
+        <node name="name" path="/name" type="java.lang.String" />
+        <node name="mimeType" path="/mimeType" type="java.lang.String">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.category"/>
+            </assertion>
+        </node>
+        <node name="size" path="/docSize" type="java.lang.Long"/>
+        <node name="checksum" path="/checksum" type="java.lang.Long"/>
+        <node name="contents" path="/contents" type="java.lang.Byte[]" />
+        <node name="title" path="/details/title" type="java.lang.String">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.title"/>
+            </assertion>
+        </node>
+    </archetype>
+
+    <archetype name="entityIdentity.code.1.0" latest="true" primary="false"
+               type="org.openvpms.component.business.domain.im.common.EntityIdentity">
+        <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
+        <node name="code" path="/identity" type="java.lang.String"/>
+        <node name="name" type="java.lang.String" path="/name"/>
+        <node name="description" path="/description" type="java.lang.String">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.description"/>
+            </assertion>
+        </node>
+        <node name="status" path="/details/status" type="java.lang.String">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.status"/>
+            </assertion>
+        </node>
+    </archetype>
+
+    <archetype name="entityRelationship.basic.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.common.EntityRelationship">
+        <node name="id" path="/id" type="java.lang.Long"/>
+        <node name="sequence" path="/sequence" type="java.lang.Integer"/>
+        <node name="description" path="/description" type="java.lang.String" minCardinality="0" maxLength="10">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.description"/>
+            </assertion>
+        </node>
+        <node name="reason" path="/reason" type="java.lang.String"/>
+        <node name="category" path="/details/category" type="java.lang.String" minCardinality="0">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.category"/>
+            </assertion>
+        </node>
+        <node name="activeStartTime" path="/activeStartTime" type="java.util.Date" minCardinality="1"
+              defaultValue="java.util.Date.new()"/>
+        <node name="source" path="/source" type="org.openvpms.component.business.domain.im.common.IMObjectReference"/>
+        <node name="target" path="/target" type="org.openvpms.component.business.domain.im.common.IMObjectReference"/>
+    </archetype>
+
+    <archetype name="lookup.category.1.0" latest="true" type="org.openvpms.component.business.domain.im.lookup.Lookup">
+        <node name="id" path="/id" displayName="id" type="java.lang.Long" />
+        <node name="code" path="/code" type="java.lang.String" minCardinality="1"/>
+        <node name="name" path="/name" type="java.lang.String" minCardinality="1" />
+        <node name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup" defaultValue="false()"/>
+    </archetype>
+
+    <archetype name="lookup.description.1.0" latest="true" type="org.openvpms.component.business.domain.im.lookup.Lookup">
+        <node name="id" path="/id" displayName="id" type="java.lang.Long"/>
+        <node name="code" path="/code" type="java.lang.String" minCardinality="1"/>
+        <node name="name" path="/name" type="java.lang.String" minCardinality="1" />
+        <node name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup" defaultValue="false()"/>
+    </archetype>
+
+    <archetype name="lookup.staff.1.0" latest="true" type="org.openvpms.component.business.domain.im.lookup.Lookup">
+        <node name="id" path="/id" displayName="id" type="java.lang.Long"/>
+        <node name="code" path="/code" type="java.lang.String" minCardinality="1"/>
+        <node name="name" path="/name" type="java.lang.String" minCardinality="1"/>
+        <node name="description" path="/description" type="java.lang.String" minCardinality="0">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.description"/>
+            </assertion>
+        </node>
+        <node name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup" defaultValue="false()"/>
+        <node name="category" path="/details/category" type="java.lang.String"
+              minCardinality="0" maxLength="10">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.category"/>
+            </assertion>
+        </node>
+    </archetype>
+
+    <archetype name="lookup.state.1.0" latest="true" type="org.openvpms.component.business.domain.im.lookup.Lookup">
+        <node name="id" path="/id" type="java.lang.Long" />
+        <node name="code" path="/code" type="java.lang.String" minCardinality="1"/>
+        <node name="name" path="/name" type="java.lang.String" minCardinality="1" />
+        <node name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup" defaultValue="false()"/>
+    </archetype>
+
+    <archetype name="lookup.status.1.0" latest="true" type="org.openvpms.component.business.domain.im.lookup.Lookup">
+        <node name="id" path="/id" displayName="id" type="java.lang.Long" />
+        <node name="code" path="/code" type="java.lang.String" minCardinality="1"/>
+        <node name="name" path="/name" type="java.lang.String" minCardinality="1" />
+        <node name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup" defaultValue="false()"/>
+    </archetype>
+
+    <archetype name="lookup.suburb.1.0" latest="true" type="org.openvpms.component.business.domain.im.lookup.Lookup">
+        <node name="id" path="/id" type="java.lang.Long" />
+        <node name="code" path="/code" type="java.lang.String" minCardinality="1"/>
+        <node name="name" path="/name" type="java.lang.String" minCardinality="1" />
+        <node name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup" defaultValue="false()"/>
+    </archetype>
+
+    <archetype name="lookup.title.1.0" latest="true" type="org.openvpms.component.business.domain.im.lookup.Lookup">
+        <node name="id" path="/id" displayName="id" type="java.lang.Long" />
+        <node name="code" path="/code" type="java.lang.String" minCardinality="1"/>
+        <node name="name" path="/name" type="java.lang.String" minCardinality="1" />
+        <node name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup" defaultValue="false()"/>
+    </archetype>
+
+    <archetype name="lookupRelationship.stateSuburb.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.lookup.LookupRelationship">
+        <node name="id" path="/id" type="java.lang.Long"/>
+        <node name="description" path="/details/description" type="java.lang.String" minCardinality="0" maxLength="10">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.description"/>
+            </assertion>
+        </node>
+        <node name="source" path="/source" type="org.openvpms.component.business.domain.im.common.IMObjectReference"
+              minCardinality="1">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="lookup.state"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="target" path="/target" type="org.openvpms.component.business.domain.im.common.IMObjectReference"
+              minCardinality="1">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="lookup.suburb"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
+    </archetype>
+
+    <archetype name="participation.basic.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.common.Participation">
+        <node name="id" path="/id" type="java.lang.Long"/>
+        <node name="name" path="/name" type="java.lang.String"/>
+        <node name="description" path="/description" type="java.lang.String" minCardinality="0" maxLength="10">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.description"/>
+            </assertion>
+        </node>
+        <node name="category" path="/details/category" type="java.lang.String" minCardinality="0">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.category"/>
+            </assertion>
+        </node>
+        <node name="sequence" path="/sequence" type="java.lang.Integer"/>
+        <node name="mode" path="/mode" type="java.lang.String"/>
+        <node name="startTime" path="/activeStartTime" type="java.util.Date"/>
+        <node name="endTime" path="/activeEndTime" type="java.util.Date"/>
+        <node name="entity" path="/entity" type="org.openvpms.component.business.domain.im.common.IMObjectReference"/>
+        <node name="act" path="/act" type="org.openvpms.component.business.domain.im.common.IMObjectReference"/>
+    </archetype>
+
+    <archetype name="party.basic.1.0" latest="true" type="org.openvpms.component.business.domain.im.party.Party">
+        <node name="id" path="/id" displayName="id" type="java.lang.Long" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name"/>
+        <node name="description" path="/description" type="java.lang.String" minCardinality="0" maxLength="10">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.description"/>
+            </assertion>
+        </node>
+        <node name="title" path="/details/title" type="java.lang.String" minCardinality="0" maxLength="10">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.title"/>
+            </assertion>
+        </node>
+        <node name="classifications" path="/classifications" parentChild="false" type="java.util.HashSet"
+              baseName="Classification" minCardinality="0" maxCardinality="*">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="lookup.staff"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="lookup.category"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
+    </archetype>
+
+    <archetype name="productPrice.basic.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.product.ProductPrice">
+        <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
+        <node name="name" path="/name" type="java.lang.String"/>
+        <node name="description" path="/description" type="java.lang.String" minCardinality="0" maxLength="10">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.description"/>
+            </assertion>
+        </node>
+        <node name="category" path="/details/category" type="java.lang.String" minCardinality="0">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.category"/>
+            </assertion>
+        </node>
+        <node name="fixed" path="/fixed" type="java.lang.Boolean"/>
+        <node name="price" path="/price" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"/>
+        <node name="fromDate" path="/fromDate" type="java.util.Date"/>
+        <node name="toDate" path="/toDate" type="java.util.Date"/>
+        <node name="classifications" path="/classifications" parentChild="false" type="java.util.HashSet"
+              baseName="Classification" minCardinality="0" maxCardinality="*">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="lookup.category"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
+    </archetype>
+    
+</archetypes>

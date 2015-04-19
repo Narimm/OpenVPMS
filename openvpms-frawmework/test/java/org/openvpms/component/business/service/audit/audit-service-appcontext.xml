@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <import resource="classpath:/datasource-context.xml"/>
+
+    <!--  The IMObject DAO bean -->
+    <bean id="imObjectDao"
+          class="org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate">
+        <constructor-arg ref="sessionFactory"/>
+        <property name="transactionManager" ref="txnManager"/>
+        <property name="archetypeDescriptorCache">
+            <ref local="archetypeDescriptorCache"/>
+        </property>
+    </bean>
+
+    <!--  The AuditRecord DAO bean -->
+    <bean id="auditDao"
+          class="org.openvpms.component.business.dao.hibernate.im.audit.AuditDAOHibernate">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+
+    <!--  The Archetype Descriptor Cache -->
+    <bean id="archetypeDescriptorCache"
+          class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS">
+        <constructor-arg index="0" value="org/openvpms/archetype"/>
+        <constructor-arg index="1">
+            <list>
+                <value>adl</value>
+            </list>
+        </constructor-arg>
+        <constructor-arg index="2"
+                         value="org/openvpms/archetype/assertionTypes.xml"/>
+    </bean>
+
+    <!--  The Archetype Service -->
+    <bean id="archetypeService"
+          class="org.openvpms.component.business.service.archetype.ArchetypeService">
+        <constructor-arg index="0">
+            <ref local="archetypeDescriptorCache"/>
+        </constructor-arg>
+        <property name="dao">
+            <ref local="imObjectDao"/>
+        </property>
+    </bean>
+
+    <!--  Instantiate the archetype service helper bean and inject their dependencies -->
+    <bean id="archetypeServiceHelper"
+          class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
+        <constructor-arg index="0">
+            <ref local="archetypeService"/>
+        </constructor-arg>
+    </bean>
+
+    <!--  The Audit Service -->
+    <bean id="auditService"
+          class="org.openvpms.component.business.service.audit.AuditService">
+        <constructor-arg index="0">
+            <ref local="auditDao"/>
+        </constructor-arg>
+    </bean>
+
+
+    <!--  Create a proxy for the ArchetypeService bean -->
+    <bean id="autoProxyCreator"
+          class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+        <property name="beanNames">
+            <list>
+                <value>archetypeService</value>
+            </list>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <value>auditServiceAdvisor</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- The audit service advisor -->
+    <bean id="auditServiceAdvisor"
+          class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
+        <property name="advice">
+            <ref local="auditService"/>
+        </property>
+        <property name="patterns">
+            <list>
+                <value>.*ArchetypeService\.save</value>
+                <value>.*ArchetypeService\.remove</value>
+            </list>
+        </property>
+    </bean>
+</beans>
