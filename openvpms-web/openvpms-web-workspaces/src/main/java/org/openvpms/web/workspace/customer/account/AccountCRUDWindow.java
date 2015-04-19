@@ -11,30 +11,23 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.account;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRuleException;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
-import org.openvpms.archetype.rules.finance.statement.StatementRules;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.archetype.tools.account.AccountBalanceTool;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
@@ -43,7 +36,6 @@ import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
-import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
@@ -55,8 +47,6 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerActCRUDWindow;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
 
 
 /**
@@ -196,47 +186,13 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
             || !FinancialActStatus.POSTED.equals(status)) {
             showStatusError(act, "customer.account.noreverse.title", "customer.account.noreverse.message");
         } else {
-            if (rules.isReversed(act)) {
-                ActBean bean = new ActBean(act);
-                List<ActRelationship> reversal = bean.getValues("reversal", ActRelationship.class);
-                if (!reversal.isEmpty()) {
-                    IMObjectReference target = reversal.get(0).getTarget();
-                    String reversalDisplayName = DescriptorHelper.getDisplayName(
-                            target.getArchetypeId().getShortName());
-                    String displayName = DescriptorHelper.getDisplayName(act);
-                    String title = Messages.format("customer.account.reverse.title", displayName);
-                    String message = Messages.format("customer.account.reversed.message", displayName,
-                                                     reversalDisplayName, target.getId());
-                    ErrorDialog.show(title, message);
+            Reverser reverser = new Reverser(getContext().getPractice(), getHelpContext().subtopic("reverse"));
+            reverser.reverse(act, new Reverser.Listener() {
+                @Override
+                public void completed() {
+                    onRefresh(act);
                 }
-            } else {
-                String name = getArchetypeDescriptor().getDisplayName();
-                String title = Messages.format("customer.account.reverse.title", name);
-                String message = Messages.format("customer.account.reverse.message", name);
-                final String notes = Messages.format("customer.account.reverse.notes",
-                                                     DescriptorHelper.getDisplayName(act), act.getId());
-                final String reference = Long.toString(act.getId());
-
-                HelpContext reverse = getHelpContext().subtopic("reverse");
-                boolean canHide = canHideReversal(act);
-                final ReverseConfirmationDialog dialog = new ReverseConfirmationDialog(title, message, reverse, notes,
-                                                                                       reference, canHide);
-                dialog.addWindowPaneListener(new PopupDialogListener() {
-                    @Override
-                    public void onOK() {
-                        String reversalNotes = dialog.getNotes();
-                        if (StringUtils.isEmpty(reversalNotes)) {
-                            reversalNotes = notes;
-                        }
-                        String reversalRef = dialog.getReference();
-                        if (StringUtils.isEmpty(reversalRef)) {
-                            reversalRef = reference;
-                        }
-                        reverse(act, reversalNotes, reversalRef, dialog.getHide());
-                    }
-                });
-                dialog.show();
-            }
+            });
         }
     }
 
@@ -320,26 +276,6 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     }
 
     /**
-     * Reverse an debit or credit act.
-     *
-     * @param act       the act to reverse
-     * @param notes     the reversal notes
-     * @param reference the reference
-     * @param hide      if {@code true} flag the transaction and its reversal as hidden, so they don't appear in the
-     *                  statement
-     */
-    private void reverse(FinancialAct act, String notes, String reference, boolean hide) {
-        try {
-            rules.reverse(act, new Date(), notes, reference, hide);
-        } catch (OpenVPMSException exception) {
-            String title = Messages.format("customer.account.reverse.failed",
-                                           getArchetypeDescriptor().getDisplayName());
-            ErrorHelper.show(title, exception);
-        }
-        onRefresh(act);
-    }
-
-    /**
      * Confirms if regeneration of a customer account balance should proceed.
      *
      * @param message  the confirmation message
@@ -383,24 +319,6 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         return ServiceHelper.getBean(UserRules.class).isAdministrator(getContext().getUser());
     }
 
-    /**
-     * Determines if a reversal can be hidden in the customer statement.
-     *
-     * @param act the act to reverse
-     * @return {@code true} if the reversal can be hidden
-     */
-    private boolean canHideReversal(FinancialAct act) {
-        if (!rules.isHidden(act)) {
-            StatementRules statementRules = new StatementRules(getContext().getPractice(),
-                                                               ServiceHelper.getArchetypeService(),
-                                                               ServiceHelper.getLookupService(),
-                                                               rules);
-            ActBean bean = new ActBean(act);
-            Party customer = (Party) bean.getNodeParticipant("customer");
-            return customer != null && !statementRules.hasStatement(customer, act.getActivityStartTime());
-        }
-        return false;
-    }
 
     private class AccountActActions extends ActActions<FinancialAct> {
 

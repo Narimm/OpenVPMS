@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.payment;
@@ -109,7 +109,7 @@ public class CustomerPaymentEditor extends AbstractCustomerPaymentEditor {
     /**
      * Updates the balance summary for the current customer.
      */
-    private void updateSummary() {
+    protected void updateSummary() {
         Party customer = (Party) getParticipant("customer");
         BigDecimal overdue = BigDecimal.ZERO;
         BigDecimal previous = BigDecimal.ZERO;

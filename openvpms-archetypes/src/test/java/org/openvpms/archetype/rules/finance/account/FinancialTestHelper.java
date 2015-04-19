@@ -17,6 +17,7 @@
 package org.openvpms.archetype.rules.finance.account;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
+import org.openvpms.archetype.rules.finance.till.TillArchetypes;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -506,6 +507,18 @@ public class FinancialTestHelper extends TestHelper {
         till.setName("XTill-" + System.currentTimeMillis());
         save(till);
         return till;
+    }
+
+    /**
+     * Helper to create a new <em>act.tillBalance</em>.
+     *
+     * @return a new till balance
+     */
+    public static FinancialAct createTillBalance(Party till) {
+        FinancialAct act = (FinancialAct) create(TillArchetypes.TILL_BALANCE);
+        ActBean bean = new ActBean(act);
+        bean.addNodeParticipation("till", till);
+        return act;
     }
 
     /**

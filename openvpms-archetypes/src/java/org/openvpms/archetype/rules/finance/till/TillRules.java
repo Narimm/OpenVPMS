@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.till;
@@ -248,7 +248,7 @@ public class TillRules {
         actBean.setParticipant(TILL_PARTICIPATION, till);
         TillHelper.updateBalance(balanceBean, service);
 
-        List<Act> toSave = rules.doAddToTill(act);
+        List<Act> toSave = rules.addToBalance(act);
         toSave.add(balance);
         service.save(toSave);
     }
@@ -262,15 +262,7 @@ public class TillRules {
      * @return {@code true if the balance was updated, otherwise {@code false}
      */
     public boolean updateBalance(FinancialAct balance) {
-        if (TillBalanceStatus.CLEARED.equals(balance.getStatus())) {
-            throw new TillRuleException(ClearedTill, balance.getId());
-        }
-        ActBean bean = new ActBean(balance, service);
-        boolean result = TillHelper.updateBalance(bean, service);
-        if (result) {
-            bean.save();
-        }
-        return result;
+        return rules.updateBalance(balance);
     }
 
     /**

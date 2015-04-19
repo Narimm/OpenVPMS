@@ -21,6 +21,7 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.ListBox;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.till.TillArchetypes;
 import org.openvpms.archetype.rules.finance.till.TillBalanceQuery;
 import org.openvpms.archetype.rules.finance.till.TillBalanceStatus;
@@ -45,7 +46,6 @@ import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.print.IMPrinter;
@@ -73,6 +73,7 @@ import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.customer.account.Reverser;
 import org.openvpms.web.workspace.reporting.FinancialActCRUDWindow;
 
 import java.math.BigDecimal;
@@ -117,6 +118,11 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      * Adjust button identifier.
      */
     private static final String ADJUST_ID = "button.adjust";
+
+    /**
+     * Reverse button identifier.
+     */
+    private static final String REVERSE_ID = "button.reverse";
 
     /**
      * Transfer button identifier.
@@ -197,6 +203,18 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
                 onAdjust();
             }
         });
+        Button reverse = ButtonFactory.create(REVERSE_ID, new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                onReverse();
+            }
+        });
+        Button create = ButtonFactory.create(NEW_ID, new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                onNew();
+            }
+        });
         Button transfer = ButtonFactory.create(TRANSFER_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onTransfer();
@@ -212,6 +230,8 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         buttons.add(clear);
         buttons.add(createPrintButton());
         buttons.add(adjust);
+        buttons.add(reverse);
+        buttons.add(create);
         buttons.add(createEditButton());
         buttons.add(transfer);
         buttons.add(open);
@@ -227,6 +247,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         boolean uncleared = false;
         boolean inProgress = false;
+        boolean reverse = false;
         boolean enableEdit = false;
         boolean enableTransfer = false;
         if (enable) {
@@ -242,11 +263,16 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
                     enableTransfer = true;
                 }
             }
+            if (inProgress) {
+                reverse = TypeHelper.isA(childAct, CustomerAccountArchetypes.PAYMENT, CustomerAccountArchetypes.REFUND);
+            }
         }
         buttons.setEnabled(START_CLEAR_ID, uncleared);
         buttons.setEnabled(CLEAR_ID, uncleared || inProgress);
         buttons.setEnabled(PRINT_ID, enable);
         buttons.setEnabled(ADJUST_ID, uncleared || inProgress);
+        buttons.setEnabled(REVERSE_ID, reverse);
+        buttons.setEnabled(NEW_ID, inProgress);
         buttons.setEnabled(EDIT_ID, enableEdit);
         buttons.setEnabled(TRANSFER_ID, enableTransfer);
         buttons.setEnabled(OPEN_DRAWER_ID, canOpenDrawer());
@@ -256,31 +282,33 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      * Invoked when the 'start clear' button is pressed.
      */
     protected void onStartClear() {
-        try {
-            final FinancialAct act = getObject();
-            ActBean balanceBean = new ActBean(act);
-            Entity till = balanceBean.getNodeParticipant("till");
-            if (!rules.isClearInProgress(till)) {
-                IMObjectBean tillBean = new IMObjectBean(till);
-                BigDecimal lastFloat = tillBean.getBigDecimal("tillFloat", ZERO);
-                HelpContext help = getHelpContext().subtopic("startClear");
-                final StartClearTillDialog dialog = new StartClearTillDialog(help);
-                dialog.setCashFloat(lastFloat);
-                dialog.addWindowPaneListener(new PopupDialogListener() {
-                    @Override
-                    public void onOK() {
-                        rules.startClearTill(act, dialog.getCashFloat());
-                        onRefresh(act);
-                    }
-                });
-                dialog.show();
-            } else {
-                ErrorDialog.show(Messages.get("till.clear.title"), Messages.get("till.clear.error.clearInProgress"));
+        final FinancialAct act = IMObjectHelper.reload(getObject());
+        if (act != null) {
+            try {
+                ActBean balanceBean = new ActBean(act);
+                Entity till = balanceBean.getNodeParticipant("till");
+                if (!rules.isClearInProgress(till)) {
+                    IMObjectBean tillBean = new IMObjectBean(till);
+                    BigDecimal lastFloat = tillBean.getBigDecimal("tillFloat", ZERO);
+                    HelpContext help = getHelpContext().subtopic("startClear");
+                    final StartClearTillDialog dialog = new StartClearTillDialog(help);
+                    dialog.setCashFloat(lastFloat);
+                    dialog.addWindowPaneListener(new PopupDialogListener() {
+                        @Override
+                        public void onOK() {
+                            rules.startClearTill(act, dialog.getCashFloat());
+                            onRefresh(act);
+                        }
+                    });
+                    dialog.show();
+                } else {
+                    ErrorDialog.show(Messages.get("till.clear.title"), Messages.get("till.clear.error.clearInProgress"));
+                }
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception.getMessage(), exception);
             }
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception.getMessage(), exception);
+            onRefresh(getObject());
         }
-        onRefresh(getObject());
     }
 
     /**
@@ -361,10 +389,37 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     }
 
     /**
+     * Invoked when the 'new' button is pressed.
+     */
+    protected void onNew() {
+        String[] shortNames = {PAYMENT, REFUND};
+        Archetypes<FinancialAct> archetypes = Archetypes.create(shortNames, FinancialAct.class,
+                                                                Messages.get("customer.account.createtype"));
+        onCreate(archetypes);
+    }
+
+    /**
      * Invoked when the 'adjust' button is pressed.
      */
     protected void onAdjust() {
-        create();
+        onCreate(getArchetypes());
+    }
+
+    /**
+     * Invoked when the 'reverse' button is pressed.
+     */
+    protected void onReverse() {
+        final FinancialAct balance = IMObjectHelper.reload(getObject());
+        final FinancialAct act = IMObjectHelper.reload(childAct);
+        if (balance != null && IN_PROGRESS.equals(balance.getStatus()) && TypeHelper.isA(childAct, PAYMENT, REFUND)) {
+            Reverser reverser = new Reverser(getContext().getPractice(), getHelpContext().subtopic("reverse"));
+            reverser.reverse(act, balance, new Reverser.Listener() {
+                @Override
+                public void completed() {
+                    onRefresh(act);
+                }
+            });
+        }
     }
 
     /**
@@ -414,23 +469,25 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     }
 
     /**
-     * Invoked when a new adjustment has been created.
+     * Invoked when an act has been created.
      *
-     * @param adjustment the new adjustment
+     * @param act the new act
      */
     @Override
-    protected void onCreated(FinancialAct adjustment) {
+    protected void onCreated(FinancialAct act) {
         // populate the adjust with the current till
         FinancialAct balance = getObject();
-        adjustment.setDescription(Messages.get("till.adjustment.description"));
+        if (TypeHelper.isA(act, TillArchetypes.TILL_BALANCE_ADJUSTMENT)) {
+            act.setDescription(Messages.get("till.adjustment.description"));
+        }
         ActBean actBean = new ActBean(balance);
         IMObjectReference till = actBean.getParticipantRef("participation.till");
-        ActBean adjBean = new ActBean(adjustment);
+        ActBean adjBean = new ActBean(act);
         if (till != null) {
             adjBean.addNodeParticipation("till", till);
         }
 
-        super.onCreated(adjustment);
+        super.onCreated(act);
     }
 
     /**
@@ -442,13 +499,20 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      */
     @Override
     protected IMObjectEditor createEditor(FinancialAct object, LayoutContext context) {
+        IMObjectEditor result;
         // pass in the parent balance, if it isn't CLEARED
         FinancialAct balance = getObject();
-        if (balance != null && !TillBalanceStatus.CLEARED.equals(balance.getStatus())) {
-            return ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, balance, context);
-        } else {
-            return super.createEditor(object, context);
+        if (TillBalanceStatus.CLEARED.equals(balance.getStatus())) {
+            balance = null;
         }
+        if (TypeHelper.isA(object, TillArchetypes.TILL_BALANCE_ADJUSTMENT)) {
+            result = new TillBalanceAdjustmentEditor(object, balance, context);
+        } else if (TypeHelper.isA(object, PAYMENT, REFUND)) {
+            result = new TillPaymentEditor(object, balance, context);
+        } else {
+            result = super.createEditor(object, context);
+        }
+        return result;
     }
 
     /**
