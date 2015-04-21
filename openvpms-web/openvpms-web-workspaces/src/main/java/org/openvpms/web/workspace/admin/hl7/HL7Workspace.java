@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.hl7;
@@ -128,9 +128,7 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
         SplitPane root = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, STYLE);
         container = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP, STYLE);
         Component heading = super.doLayout();
-        Column wrapper = ColumnFactory.create(Styles.INSET_Y);
-        model = new ObjectTabPaneModel<TabComponent>(wrapper);
-        addTabs(model);
+        model = createTabModel();
         pane = TabbedPaneFactory.create(model);
         pane.getSelectionModel().addChangeListener(new ChangeListener() {
             @Override
@@ -164,11 +162,25 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
         }
     }
 
-    private void addTabs(ObjectTabPaneModel<TabComponent> model) {
-        addServiceBrowser(model);
-        addConnectorBrowser(model);
+    /**
+     * Creates a new tab model.
+     *
+     * @return the tab model
+     */
+    private ObjectTabPaneModel<TabComponent> createTabModel() {
+        Column wrapper = ColumnFactory.create(Styles.INSET_Y);
+        ObjectTabPaneModel<TabComponent> result = new ObjectTabPaneModel<TabComponent>(wrapper);
+        addServiceBrowser(result);
+        addConnectorBrowser(result);
+        addMappingBrowser(result);
+        return result;
     }
 
+    /**
+     * Adds a service browser to the tab pane.
+     *
+     * @param model the tab pane model
+     */
     private void addServiceBrowser(ObjectTabPaneModel<TabComponent> model) {
         Context context = getContext();
         HelpContext help = subtopic("service");
@@ -180,6 +192,11 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
         addTab("admin.hl7.services", model, new HL7BrowserCRUDWindow<IMObject>(browser, window));
     }
 
+    /**
+     * Adds a connector browser to the tab pane.
+     *
+     * @param model the tab pane model
+     */
     private void addConnectorBrowser(ObjectTabPaneModel<TabComponent> model) {
         Context context = getContext();
         HelpContext help = subtopic("connector");
@@ -189,6 +206,22 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
                                                           Messages.get("admin.hl7.connector.type"));
         HL7ConnectorCRUDWindow window = new HL7ConnectorCRUDWindow(archetypes, getContext(), help);
         addTab("admin.hl7.connectors", model, new HL7BrowserCRUDWindow<Entity>(browser, window));
+    }
+
+    /**
+     * Adds a mapping browser to the tab pane.
+     *
+     * @param model the tab pane model
+     */
+    private void addMappingBrowser(ObjectTabPaneModel<TabComponent> model) {
+        Context context = getContext();
+        HelpContext help = subtopic("mapping");
+        Query<Entity> query = QueryFactory.create(HL7Archetypes.MAPPINGS, context);
+        Browser<Entity> browser = BrowserFactory.create(query, new DefaultLayoutContext(context, help));
+        Archetypes<Entity> archetypes = Archetypes.create(HL7Archetypes.MAPPINGS, Entity.class,
+                                                          Messages.get("admin.hl7.mapping.type"));
+        DefaultCRUDWindow<Entity> window = new DefaultCRUDWindow<Entity>(archetypes, context, help);
+        addTab("admin.hl7.mappings", model, new HL7BrowserCRUDWindow<Entity>(browser, window));
     }
 
     /**

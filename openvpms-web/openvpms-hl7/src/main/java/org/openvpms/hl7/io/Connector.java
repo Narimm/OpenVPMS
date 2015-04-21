@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.io;
@@ -20,7 +20,11 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.hl7.impl.HL7Mapping;
 
 /**
  * Represents an HL7 inbound or outbound connection.
@@ -50,20 +54,14 @@ public abstract class Connector {
     private final String receivingFacility;
 
     /**
-     * Determines if milliseconds should be included in date/times.
-     */
-    private final boolean includeMillis;
-
-    /**
-     * Determines if time/zones should be included in date/times.
-     */
-    private final boolean includeTimeZone;
-
-    /**
      * The connector reference.
      */
     private final IMObjectReference reference;
 
+    /**
+     * The HL7 mapping.
+     */
+    private final HL7Mapping mapping;
 
     /**
      * Constructs a {@link Connector}.
@@ -73,33 +71,16 @@ public abstract class Connector {
      * @param receivingApplication the receiving application
      * @param receivingFacility    the receiving facility
      * @param reference            the connector reference
+     * @param mapping              the mapping configuration
      */
     public Connector(String sendingApplication, String sendingFacility, String receivingApplication,
-                     String receivingFacility, IMObjectReference reference) {
-        this(sendingApplication, sendingFacility, receivingApplication, receivingFacility, true, true, reference);
-    }
-
-    /**
-     * Constructs a {@link Connector}.
-     *
-     * @param sendingApplication   the sending application
-     * @param sendingFacility      the sending facility
-     * @param receivingApplication the receiving application
-     * @param receivingFacility    the receiving facility
-     * @param includeMillis        if {@code true} include milliseconds in time fields
-     * @param includeTimeZone      if {@code true} include the timezone in date/time fields
-     * @param reference            the connector reference
-     */
-    public Connector(String sendingApplication, String sendingFacility, String receivingApplication,
-                     String receivingFacility, boolean includeMillis, boolean includeTimeZone,
-                     IMObjectReference reference) {
+                     String receivingFacility, IMObjectReference reference, HL7Mapping mapping) {
         this.sendingApplication = sendingApplication;
         this.sendingFacility = sendingFacility;
         this.receivingApplication = receivingApplication;
         this.receivingFacility = receivingFacility;
-        this.includeMillis = includeMillis;
-        this.includeTimeZone = includeTimeZone;
         this.reference = reference;
+        this.mapping = mapping;
     }
 
     /**
@@ -139,30 +120,21 @@ public abstract class Connector {
     }
 
     /**
-     * Determines if milliseconds should be included in times.
-     *
-     * @return {@code true} if milliseconds should be included in times
-     */
-    public boolean isIncludeMillis() {
-        return includeMillis;
-    }
-
-    /**
-     * Determines if timezones should be included in date/times.
-     *
-     * @return {@code true} if timezones should be included in date/times
-     */
-    public boolean isIncludeTimeZone() {
-        return includeTimeZone;
-    }
-
-    /**
      * Returns the connector reference.
      *
      * @return the connector reference
      */
     public IMObjectReference getReference() {
         return reference;
+    }
+
+    /**
+     * Returns the mapping configuration.
+     *
+     * @return the mapping configuration
+     */
+    public HL7Mapping getMapping() {
+        return mapping;
     }
 
     /**
@@ -216,6 +188,19 @@ public abstract class Connector {
     protected HashCodeBuilder hashCode(HashCodeBuilder builder) {
         return builder.append(sendingApplication).append(sendingFacility)
                 .append(receivingApplication).append(receivingFacility);
+    }
+
+
+    /**
+     * Returns the mapping configuration of a connector.
+     *
+     * @param bean    the connector bean
+     * @param service the archetype service
+     * @return the mapping configuration
+     */
+    protected static HL7Mapping getMapping(IMObjectBean bean, IArchetypeService service) {
+        Entity object = (Entity) bean.getNodeTargetObject("mapping");
+        return (object != null) ? HL7Mapping.create(object, service) : new HL7Mapping();
     }
 
 }

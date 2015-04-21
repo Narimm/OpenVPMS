@@ -82,7 +82,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
     }
 
     /**
-     * Tests the {@link RDEMessageFactory#createOrder(PatientContext, Product, BigDecimal, long, Date, MessageConfig)} method.
+     * Tests the {@link RDEMessageFactory#createOrder(PatientContext, Product, BigDecimal, long, Date, HL7Mapping)} method.
      *
      * @throws Exception for any error
      */
@@ -96,7 +96,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
                           "ORC|NW|10231|||||||20140825090200.11+1000|2001^Blogs^Joe\r" +
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
-        MessageConfig config = new MessageConfig();
+        HL7Mapping config = new HL7Mapping();
         Date date = getDatetime("2014-08-25 09:02:00.110").getTime();
         Message order = messageFactory.createOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, config);
         MSH msh = (MSH) order.get("MSH");
@@ -106,7 +106,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
     }
 
     /**
-     * Tests the {@link RDEMessageFactory#updateOrder(PatientContext, Product, BigDecimal, long, Date, MessageConfig)} method.
+     * Tests the {@link RDEMessageFactory#updateOrder(PatientContext, Product, BigDecimal, long, Date, HL7Mapping)} method.
      *
      * @throws Exception for any error
      */
@@ -121,7 +121,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
-        MessageConfig config = new MessageConfig();
+        HL7Mapping config = new HL7Mapping();
         config.setIncludeTimeZone(false);
         Message order = messageFactory.updateOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, config);
         MSH msh = (MSH) order.get("MSH");
@@ -131,7 +131,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
     }
 
     /**
-     * Tests the {@link RDEMessageFactory#cancelOrder(PatientContext, Product, BigDecimal, long, MessageConfig, Date)} method.
+     * Tests the {@link RDEMessageFactory#cancelOrder(PatientContext, Product, BigDecimal, long, HL7Mapping, Date)} method.
      *
      * @throws Exception for any error
      */
@@ -146,7 +146,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
-        MessageConfig config = new MessageConfig();
+        HL7Mapping config = new HL7Mapping();
         config.setIncludeMillis(false);
         config.setIncludeTimeZone(false);
         Message order = messageFactory.cancelOrder(getContext(), product, BigDecimal.valueOf(2), 10231, config, date);
@@ -158,7 +158,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
 
     /**
      * Tests the {@link RDEMessageFactory#discontinueOrder(PatientContext, Product, BigDecimal, long,
-     * MessageConfig, Date)} method.
+     * HL7Mapping, Date)} method.
      *
      * @throws Exception for any error
      */
@@ -173,7 +173,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
-        MessageConfig config = new MessageConfig();
+        HL7Mapping config = new HL7Mapping();
         config.setIncludeMillis(false);
         config.setIncludeTimeZone(false);
         Message order = messageFactory.discontinueOrder(getContext(), product, BigDecimal.valueOf(2), 10231, config,

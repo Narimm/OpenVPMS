@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -200,7 +200,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      * @return the queued message
      */
     @Override
-    public DocumentAct queue(Message message, Connector connector, MessageConfig config, User user) {
+    public DocumentAct queue(Message message, Connector connector, HL7Mapping config, User user) {
         DocumentAct result;
         if (!(connector instanceof MLLPSender)) {
             throw new IllegalArgumentException("Unsupported connector: " + connector);
@@ -477,7 +477,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      * @throws HL7Exception for any error
      * @throws IOException  if a message control ID cannot be generated
      */
-    private void populate(Message message, MLLPSender sender, MessageConfig config) throws HL7Exception, IOException {
+    private void populate(Message message, MLLPSender sender, HL7Mapping config) throws HL7Exception, IOException {
         populator.populate(message, sender, createMessageTimestamp(), createMessageControlID(), config);
     }
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -132,7 +132,7 @@ abstract class AbstractMessageFactory {
      * @param config  the message population configuration
      * @throws HL7Exception for any error
      */
-    protected void populate(PID pid, PatientContext context, MessageConfig config) throws HL7Exception {
+    protected void populate(PID pid, PatientContext context, HL7Mapping config) throws HL7Exception {
         pidPopulator.populate(pid, context, config);
     }
 
@@ -144,7 +144,7 @@ abstract class AbstractMessageFactory {
      * @param config  the message population configuration
      * @throws HL7Exception for any error
      */
-    protected void populate(PV1 pv1, PatientContext context, MessageConfig config) throws HL7Exception {
+    protected void populate(PV1 pv1, PatientContext context, HL7Mapping config) throws HL7Exception {
         pv1Populator.populate(pv1, context, config);
     }
 

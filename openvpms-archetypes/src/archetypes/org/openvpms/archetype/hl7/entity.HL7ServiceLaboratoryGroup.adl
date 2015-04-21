@@ -15,19 +15,19 @@
   -->
 
 <archetypes>
-    <archetype name="entity.HL7ServicePharmacyGroup.1.0" latest="true"
-               type="org.openvpms.component.business.domain.im.party.Party" displayName="Pharmacy Group">
+    <archetype name="entity.HL7ServiceLaboratoryGroup.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.party.Party" displayName="Laboratory Service Group">
         <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" minCardinality="1">
             <assertion name="propercase"/>
         </node>
         <node name="description" type="java.lang.String" path="/description"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
-        <node name="services" displayName="Pharmacies" path="/entityLinks" type="java.util.HashSet"
-              baseName="EntityLink"
-              minCardinality="0" maxCardinality="*" filter="entityLink.HL7PharmacyGroupPharmacy">
+        <node name="services" displayName="Laboratories" path="/entityLinks" type="java.util.HashSet"
+              baseName="EntityLink" minCardinality="0" maxCardinality="*"
+              filter="entityLink.HL7LaboratoryGroupLaboratory">
             <assertion name="uniqueEntityRelationship">
-                <errorMessage>Duplicate pharmacy</errorMessage>
+                <errorMessage>Duplicate laboratory service</errorMessage>
             </assertion>
         </node>
     </archetype>

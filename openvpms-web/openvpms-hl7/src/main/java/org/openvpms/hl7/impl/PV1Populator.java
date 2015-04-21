@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -39,7 +39,7 @@ class PV1Populator {
      * @param config  the message population configuration
      * @throws HL7Exception for any error
      */
-    public void populate(PV1 pv1, PatientContext context, MessageConfig config) throws HL7Exception {
+    public void populate(PV1 pv1, PatientContext context, HL7Mapping config) throws HL7Exception {
         pv1.getSetIDPV1().setValue("1");
         pv1.getPatientClass().setValue("U"); // i.e. Unknown - see 3.4.3.2 PV1-2 Patient Class
         pv1.getAssignedPatientLocation().getFacility().getNamespaceID().setValue(context.getLocationName());

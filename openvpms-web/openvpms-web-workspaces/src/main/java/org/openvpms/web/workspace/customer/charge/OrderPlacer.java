@@ -18,7 +18,7 @@ package org.openvpms.web.workspace.customer.charge;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
-import org.openvpms.archetype.rules.patient.MedicalRecordRules;
+import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -33,10 +33,9 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.cache.IMObjectCache;
+import org.openvpms.hl7.laboratory.LaboratoryOrderService;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
-import org.openvpms.hl7.patient.PatientInformationService;
-import org.openvpms.hl7.pharmacy.Pharmacies;
 import org.openvpms.hl7.pharmacy.PharmacyOrderService;
 import org.openvpms.hl7.util.HL7Archetypes;
 
@@ -52,11 +51,12 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Places orders with the {@link PharmacyOrderService}, if a product is dispensed via a pharmacy.
+ * Places orders with the {@link PharmacyOrderService}, if a product is dispensed via a pharmacy, or the
+ * {@link LaboratoryOrderService}, if an investigation is processed by a laboratory.
  *
  * @author Tim Anderson
  */
-public class PharmacyOrderPlacer {
+public class OrderPlacer {
 
     /**
      * The customer.
@@ -79,67 +79,37 @@ public class PharmacyOrderPlacer {
     private final IMObjectCache cache;
 
     /**
-     * The orders, keyed on invoice item reference.
+     * The orders, keyed on act reference.
      */
     private Map<IMObjectReference, Order> orders = new HashMap<IMObjectReference, Order>();
 
     /**
-     * The pharmacy order service.
+     * The order services.
      */
-    private final PharmacyOrderService service;
-
-    /**
-     * The pharmacies.
-     */
-    private final Pharmacies pharmacies;
-
-    /**
-     * The patient context factory.
-     */
-    private final PatientContextFactory factory;
-
-    /**
-     * The patient information service, used to send updates when ordering when a patient isn't checked in.
-     */
-    private final PatientInformationService informationService;
-
-    /**
-     * Medical record rules, used to retrieve events.
-     */
-    private final MedicalRecordRules rules;
+    private final OrderServices services;
 
 
     /**
-     * Constructs an {@link PharmacyOrderPlacer}.
+     * Constructs an {@link OrderPlacer}.
      *
-     * @param customer           the customer
-     * @param location           the location
-     * @param user               the user responsible for the orders
-     * @param cache              the object cache
-     * @param service            the pharmacy order service
-     * @param pharmacies         the pharmacies
-     * @param factory            the patient context factory
-     * @param informationService the patient information service
-     * @param rules              the medical record rules
+     * @param customer the customer
+     * @param location the location
+     * @param user     the user responsible for the orders
+     * @param cache    the object cache
+     * @param services the order services
      */
-    public PharmacyOrderPlacer(Party customer, Party location, User user, IMObjectCache cache,
-                               PharmacyOrderService service, Pharmacies pharmacies, PatientContextFactory factory,
-                               PatientInformationService informationService, MedicalRecordRules rules) {
+    public OrderPlacer(Party customer, Party location, User user, IMObjectCache cache, OrderServices services) {
         this.customer = customer;
         this.location = location;
         this.user = user;
         this.cache = cache;
-        this.service = service;
-        this.pharmacies = pharmacies;
-        this.factory = factory;
-        this.informationService = informationService;
-        this.rules = rules;
+        this.services = services;
     }
 
     /**
-     * Initialises the order placer with any existing orders.
+     * Initialises the order placer with an existing order.
      *
-     * @param items the charge items
+     * @param items the charge items and investigations
      */
     public void initialise(List<Act> items) {
         for (Act item : items) {
@@ -150,7 +120,7 @@ public class PharmacyOrderPlacer {
     /**
      * Initialises the order placer with an existing order.
      *
-     * @param item the charge items
+     * @param item the charge item or investigation
      */
     public void initialise(Act item) {
         Order order = getOrder(item);
@@ -179,13 +149,13 @@ public class PharmacyOrderPlacer {
             Order existing = orders.get(id);
             if (order != null) {
                 if (existing != null) {
-                    if (needsCancel(existing, order)) {
+                    if (existing.needsCancel(order)) {
                         // TODO - need to prevent this, as PlacerOrderNumbers should not be reused.
                         cancelOrder(existing, changes, patients);
                         if (createOrder(act, order, changes, patients)) {
                             updated.add(act);
                         }
-                    } else if (needsUpdate(existing, order)) {
+                    } else if (existing.needsUpdate(order)) {
                         updateOrder(changes, order, patients);
                     }
                 } else {
@@ -214,8 +184,7 @@ public class PharmacyOrderPlacer {
         for (Order order : orders.values()) {
             PatientContext context = getPatientContext(order, events);
             if (context != null) {
-                service.cancelOrder(context, order.getProduct(), order.getQuantity(),
-                                    order.getId(), order.getStartTime(), order.getPharmacy(), user);
+                order.cancel(context, services, user);
             }
         }
     }
@@ -228,34 +197,59 @@ public class PharmacyOrderPlacer {
         for (Order order : orders.values()) {
             PatientContext context = getPatientContext(order, events);
             if (context != null) {
-                service.discontinueOrder(context, order.getProduct(), order.getQuantity(),
-                                         order.getId(), order.getStartTime(), order.getPharmacy(), user);
+                order.discontinue(context, services, user);
             }
         }
     }
 
-
     private Order getOrder(Act act) {
         Order result = null;
         if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)) {
-            ActBean bean = new ActBean(act);
-            Product product = (Product) getObject(bean.getNodeParticipantRef("product"));
-            if (product != null && TypeHelper.isA(product, ProductArchetypes.MEDICATION,
-                                                  ProductArchetypes.MERCHANDISE)) {
-                Entity pharmacy = getPharmacy(product);
-                if (pharmacy != null) {
-                    Party patient = (Party) getObject(bean.getNodeParticipantRef("patient"));
-                    if (patient != null) {
-                        BigDecimal quantity = bean.getBigDecimal("quantity", BigDecimal.ZERO);
-                        User clinician = (User) getObject(bean.getNodeParticipantRef("clinician"));
-                        IMObjectReference event = bean.getNodeSourceObjectRef("event");
-                        result = new Order(act.getId(), act.getActivityStartTime(), product, patient, quantity,
-                                           clinician, pharmacy, event);
-                    }
+            result = getPharmacyOrder(act);
+        } else if (TypeHelper.isA(act, InvestigationArchetypes.PATIENT_INVESTIGATION)) {
+            result = getInvestigationOrder(act);
+        }
+        return result;
+    }
+
+    private Order getPharmacyOrder(Act act) {
+        Order order = null;
+        ActBean bean = new ActBean(act);
+        Product product = (Product) getObject(bean.getNodeParticipantRef("product"));
+        if (product != null && TypeHelper.isA(product, ProductArchetypes.MEDICATION,
+                                              ProductArchetypes.MERCHANDISE)) {
+            Entity pharmacy = getPharmacy(product);
+            if (pharmacy != null) {
+                Party patient = (Party) getObject(bean.getNodeParticipantRef("patient"));
+                if (patient != null) {
+                    BigDecimal quantity = bean.getBigDecimal("quantity", BigDecimal.ZERO);
+                    User clinician = (User) getObject(bean.getNodeParticipantRef("clinician"));
+                    IMObjectReference event = bean.getNodeSourceObjectRef("event");
+                    order = new PharmacyOrder(act, product, patient, quantity, clinician, pharmacy, event);
                 }
             }
         }
-        return result;
+        return order;
+    }
+
+    private Order getInvestigationOrder(Act act) {
+        Order order = null;
+        ActBean bean = new ActBean(act);
+        Entity investigationType = (Entity) getObject(bean.getNodeParticipantRef("investigationType"));
+        if (investigationType != null) {
+            IMObjectBean typeBean = new IMObjectBean(investigationType);
+            String serviceId = typeBean.getString("universalServiceIdentifier");
+            Entity lab = getLaboratory(investigationType);
+            if (lab != null && serviceId != null) {
+                Party patient = (Party) getObject(bean.getNodeParticipantRef("patient"));
+                if (patient != null) {
+                    User clinician = (User) getObject(bean.getNodeParticipantRef("clinician"));
+                    IMObjectReference event = bean.getNodeSourceObjectRef("event");
+                    order = new LaboratoryOrder(act, serviceId, patient, clinician, lab, event);
+                }
+            }
+        }
+        return order;
     }
 
     private PatientContext getPatientContext(Order order, PatientHistoryChanges changes) {
@@ -273,7 +267,8 @@ public class PharmacyOrderPlacer {
             });
         }
         if (event != null) {
-            result = factory.createContext(order.getPatient(), customer, event, location, order.getClinician());
+            result = services.getFactory().createContext(order.getPatient(), customer, event, location,
+                                                         order.getClinician());
         }
         return result;
     }
@@ -285,12 +280,13 @@ public class PharmacyOrderPlacer {
             event = (Act) getObject(order.getEvent());
         }
         if (event == null) {
-            event = rules.getEvent(order.getPatient(), order.getStartTime());
+            event = services.getRules().getEvent(order.getPatient(), order.getStartTime());
         }
         if (event != null) {
             events.put(order.getEvent(), event);
         }
         if (event != null) {
+            PatientContextFactory factory = services.getFactory();
             result = factory.createContext(order.getPatient(), customer, event, location, order.getClinician());
         }
         return result;
@@ -310,8 +306,7 @@ public class PharmacyOrderPlacer {
         PatientContext context = getPatientContext(order, changes);
         if (context != null) {
             notifyPatientInformation(context, changes, patients);
-            if (service.createOrder(context, order.getProduct(), order.getQuantity(), order.getId(),
-                                    order.getStartTime(), order.getPharmacy(), user)) {
+            if (order.create(context, services, user)) {
                 ActBean bean = new ActBean(act);
                 bean.setValue("ordered", true);
                 result = true;
@@ -331,8 +326,7 @@ public class PharmacyOrderPlacer {
         PatientContext context = getPatientContext(order, changes);
         if (context != null) {
             notifyPatientInformation(context, changes, patients);
-            service.updateOrder(context, order.getProduct(), order.getQuantity(), order.getId(), order.getStartTime(),
-                                order.getPharmacy(), user);
+            order.update(context, services, user);
         }
     }
 
@@ -347,8 +341,7 @@ public class PharmacyOrderPlacer {
         PatientContext context = getPatientContext(order, changes);
         if (context != null) {
             notifyPatientInformation(context, changes, patients);
-            service.cancelOrder(context, order.getProduct(), order.getQuantity(), order.getId(), order.getStartTime(),
-                                order.getPharmacy(), user);
+            order.cancel(context, services, user);
         }
     }
 
@@ -371,35 +364,10 @@ public class PharmacyOrderPlacer {
             if (changes.isNew(visit)
                 || (visit.getActivityEndTime() != null
                     && DateRules.compareTo(visit.getActivityEndTime(), new Date()) < 0)) {
-                informationService.updated(context, user);
+                services.getInformationService().updated(context, user);
                 patients.add(context.getPatient());
             }
         }
-    }
-
-    /**
-     * Determines if an existing order needs updating.
-     *
-     * @param existing the existing order
-     * @param order    the new order
-     * @return {@code true} if the existing order needs updating
-     */
-    private boolean needsUpdate(Order existing, Order order) {
-        return existing.getQuantity().compareTo(order.getQuantity()) != 0
-               || !ObjectUtils.equals(existing.getClinician(), order.getClinician());
-    }
-
-    /**
-     * Determines if an existing order needs cancelling.
-     *
-     * @param existing the existing order
-     * @param order    the new order
-     * @return {@code true} if the existing order needs cancelling
-     */
-    private boolean needsCancel(Order existing, Order order) {
-        return !ObjectUtils.equals(existing.getPatient(), order.getPatient())
-               || !ObjectUtils.equals(existing.getProduct(), order.getProduct())
-               || !ObjectUtils.equals(existing.getPharmacy(), order.getPharmacy());
     }
 
     /**
@@ -420,9 +388,24 @@ public class PharmacyOrderPlacer {
             }
         }
         if (pharmacy != null && TypeHelper.isA(pharmacy, HL7Archetypes.PHARMACY_GROUP)) {
-            pharmacy = pharmacies.getPharmacy(pharmacy, location.getObjectReference());
+            pharmacy = services.getService(pharmacy, location);
         }
         return pharmacy;
+    }
+
+    /**
+     * Returns the lab for an investigation and location.
+     *
+     * @param investigationType the investigation type
+     * @return the pharmacy, or {@code null} if none is present
+     */
+    private Entity getLaboratory(Entity investigationType) {
+        IMObjectBean bean = new IMObjectBean(investigationType);
+        Entity laboratory = (Entity) getObject(bean.getNodeTargetObjectRef("laboratory"));
+        if (laboratory != null && TypeHelper.isA(laboratory, HL7Archetypes.LABORATORY_GROUP)) {
+            laboratory = services.getService(laboratory, location);
+        }
+        return laboratory;
     }
 
     /**
@@ -435,38 +418,89 @@ public class PharmacyOrderPlacer {
         return (reference != null) ? cache.get(reference) : null;
     }
 
-    private static class Order {
+    private static abstract class Order {
 
-        private final long id;
-
+        private final IMObjectReference actId;
         private final Date startTime;
-
-        private Product product;
-
         private final Party patient;
-
-        private final BigDecimal quantity;
-
-        private final Entity pharmacy;
 
         private final User clinician;
 
         private final IMObjectReference event;
 
-        public Order(long id, Date startTime, Product product, Party patient, BigDecimal quantity, User clinician,
-                     Entity pharmacy, IMObjectReference event) {
-            this.id = id;
+        public Order(IMObjectReference actId, Date startTime, Party patient, User clinician, IMObjectReference event) {
+            this.actId = actId;
             this.startTime = startTime;
-            this.product = product;
             this.patient = patient;
-            this.quantity = quantity;
-            this.pharmacy = pharmacy;
             this.clinician = clinician;
             this.event = event;
         }
 
+        public IMObjectReference getActId() {
+            return actId;
+        }
+
+        public long getPlacerOrderNumber() {
+            return getActId().getId();
+        }
+
+        public Date getStartTime() {
+            return startTime;
+        }
+
         public Party getPatient() {
             return patient;
+        }
+
+        public User getClinician() {
+            return clinician;
+        }
+
+        public IMObjectReference getEvent() {
+            return event;
+        }
+
+        public abstract boolean create(PatientContext context, OrderServices services, User user);
+
+        public abstract void cancel(PatientContext context, OrderServices services, User user);
+
+        public abstract void discontinue(PatientContext context, OrderServices services, User user);
+
+        public abstract void update(PatientContext context, OrderServices services, User user);
+
+
+        /**
+         * Determines if the existing order needs cancelling.
+         *
+         * @param newOrder the new version of the order
+         * @return {@code true} if the existing order needs cancelling
+         */
+        public abstract boolean needsCancel(Order newOrder);
+
+        /**
+         * Determines if the existing order needs updating.
+         *
+         * @param newOrder the new version of the order
+         * @return {@code true} if the existing order needs updating
+         */
+        public abstract boolean needsUpdate(Order newOrder);
+    }
+
+    private static class PharmacyOrder extends Order {
+
+        private Product product;
+
+        private final BigDecimal quantity;
+
+        private final Entity pharmacy;
+
+
+        public PharmacyOrder(Act act, Product product, Party patient, BigDecimal quantity, User clinician,
+                             Entity pharmacy, IMObjectReference event) {
+            super(act.getObjectReference(), act.getActivityStartTime(), patient, clinician, event);
+            this.product = product;
+            this.quantity = quantity;
+            this.pharmacy = pharmacy;
         }
 
         public Entity getPharmacy() {
@@ -481,20 +515,104 @@ public class PharmacyOrderPlacer {
             return quantity;
         }
 
-        public long getId() {
-            return id;
+        @Override
+        public boolean create(PatientContext context, OrderServices services, User user) {
+            PharmacyOrderService service = services.getPharmacyService();
+            return service.createOrder(context, product, quantity, getPlacerOrderNumber(), getStartTime(), pharmacy,
+                                       user);
         }
 
-        public User getClinician() {
-            return clinician;
+        @Override
+        public void update(PatientContext context, OrderServices services, User user) {
+            PharmacyOrderService service = services.getPharmacyService();
+            service.updateOrder(context, product, quantity, getPlacerOrderNumber(), getStartTime(), pharmacy, user);
         }
 
-        public IMObjectReference getEvent() {
-            return event;
+        @Override
+        public void cancel(PatientContext context, OrderServices services, User user) {
+            PharmacyOrderService service = services.getPharmacyService();
+            service.cancelOrder(context, product, quantity, getPlacerOrderNumber(), getStartTime(), pharmacy, user);
         }
 
-        public Date getStartTime() {
-            return startTime;
+        @Override
+        public void discontinue(PatientContext context, OrderServices services, User user) {
+            PharmacyOrderService service = services.getPharmacyService();
+            service.discontinueOrder(context, product, quantity, getPlacerOrderNumber(), getStartTime(), pharmacy,
+                                     user);
+        }
+
+        /**
+         * Determines if the existing order needs cancelling.
+         *
+         * @param newOrder the new version of the order
+         * @return {@code true} if the existing order needs cancelling
+         */
+        @Override
+        public boolean needsCancel(Order newOrder) {
+            PharmacyOrder other = (PharmacyOrder) newOrder;
+            return !ObjectUtils.equals(getPatient(), newOrder.getPatient())
+                   || !ObjectUtils.equals(product, other.getProduct())
+                   || !ObjectUtils.equals(pharmacy, other.getPharmacy());
+        }
+
+        public boolean needsUpdate(Order newOrder) {
+            PharmacyOrder other = (PharmacyOrder) newOrder;
+            return quantity.compareTo(other.getQuantity()) != 0
+                   || !ObjectUtils.equals(getClinician(), other.getClinician());
+        }
+    }
+
+    private static class LaboratoryOrder extends Order {
+
+        private final String serviceId;
+
+        private final Entity lab;
+
+        public LaboratoryOrder(Act act, String serviceId, Party patient, User clinician, Entity lab,
+                               IMObjectReference event) {
+            super(act.getObjectReference(), act.getActivityStartTime(), patient, clinician, event);
+            this.serviceId = serviceId;
+            this.lab = lab;
+        }
+
+        @Override
+        public boolean create(PatientContext context, OrderServices services, User user) {
+            return services.getLaboratoryService().createOrder(context, getPlacerOrderNumber(), serviceId,
+                                                               getStartTime(), lab, user);
+        }
+
+        @Override
+        public void cancel(PatientContext context, OrderServices services, User user) {
+        }
+
+        @Override
+        public void discontinue(PatientContext context, OrderServices services, User user) {
+        }
+
+        @Override
+        public void update(PatientContext context, OrderServices services, User user) {
+        }
+
+        /**
+         * Determines if the existing order needs cancelling.
+         *
+         * @param newOrder the new version of the order
+         * @return {@code true} if the existing order needs cancelling
+         */
+        @Override
+        public boolean needsCancel(Order newOrder) {
+            return false;
+        }
+
+        /**
+         * Determines if the existing order needs updating.
+         *
+         * @param newOrder the new version of the order
+         * @return {@code true} if the existing order needs updating
+         */
+        @Override
+        public boolean needsUpdate(Order newOrder) {
+            return false;
         }
     }
 

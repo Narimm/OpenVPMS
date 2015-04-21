@@ -337,6 +337,11 @@
         <constructor-arg ref="hl7PatientEventServices"/>
     </bean>
 
+    <bean id="hl7Laboratories" class="org.openvpms.hl7.impl.LaboratoriesImpl">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="hl7Connectors"/>
+    </bean>
+
     <bean id="hl7messageDispatcher" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="org.openvpms.hl7.io.MessageDispatcher"/>
     </bean>
@@ -355,6 +360,11 @@
     <bean id="hl7PharmacyOrderService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="org.openvpms.hl7.pharmacy.PharmacyOrderService"/>
     </bean>
+
+    <bean id="hl7LaboratoryOrderService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.openvpms.hl7.laboratory.LaboratoryOrderService"/>
+    </bean>
+
 
     <!-- ================================================================== -->
     <!--                        REPORTING                                   -->
