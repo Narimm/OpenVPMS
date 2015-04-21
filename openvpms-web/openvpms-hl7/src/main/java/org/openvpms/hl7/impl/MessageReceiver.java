@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -75,7 +75,7 @@ class MessageReceiver implements ReceivingApplication, ReceivingApplicationExcep
     /**
      * Message configuration, used to format responses correctly.
      */
-    private final MessageConfig config;
+    private final HL7Mapping mapping;
 
     /**
      * The timestamp of the last received message.
@@ -113,9 +113,7 @@ class MessageReceiver implements ReceivingApplication, ReceivingApplicationExcep
      */
     public MessageReceiver(ReceivingApplication receiver, Connector connector, MessageService service, User user) {
         this.connector = connector;
-        config = new MessageConfig();
-        config.setIncludeMillis(connector.isIncludeMillis());
-        config.setIncludeTimeZone(connector.isIncludeTimeZone());
+        mapping = connector.getMapping();
         this.receiver = receiver;
         this.service = service;
         this.user = user;
@@ -286,13 +284,13 @@ class MessageReceiver implements ReceivingApplication, ReceivingApplicationExcep
         Message response;
         try {
             response = receiver.processMessage(message, metaData);
-            if (!config.isIncludeMillis() || !config.isIncludeTimeZone()) {
+            if (!mapping.isIncludeMillis() || !mapping.isIncludeTimeZone()) {
                 // correct the date/time format
                 try {
                     MSH msh = (MSH) response.get("MSH");
                     DTM time = msh.getDateTimeOfMessage().getTime();
                     Calendar calendar = time.getValueAsCalendar();
-                    PopulateHelper.populateDTM(time, calendar, config);
+                    PopulateHelper.populateDTM(time, calendar, mapping);
                 } catch (HL7Exception ignore) {
                     // do nothing
                 }

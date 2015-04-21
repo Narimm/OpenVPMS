@@ -73,22 +73,22 @@ public class PharmacyDispenseServiceImplTestCase extends AbstractRDSTest {
         bean.addNodeTarget("location", location);
 
         Pharmacies pharmacies = new Pharmacies() {
-            public List<Entity> getPharmacies() {
+            public List<Entity> getServices() {
                 return Arrays.asList(pharmacy);
             }
 
             @Override
-            public Entity getPharmacy(IMObjectReference reference) {
+            public Entity getService(IMObjectReference reference) {
                 return pharmacy;
             }
 
             @Override
-            public Entity getPharmacy(Entity group, IMObjectReference location) {
+            public Entity getService(Entity group, IMObjectReference location) {
                 return null;
             }
 
             @Override
-            public Connector getOrderConnection(Entity pharmacy) {
+            public Connector getSender(Entity pharmacy) {
                 return null;
             }
 
@@ -105,7 +105,8 @@ public class PharmacyDispenseServiceImplTestCase extends AbstractRDSTest {
         PatientRules rules = new PatientRules(null, getArchetypeService(), getLookupService());
         UserRules userRules = new UserRules(getArchetypeService());
         final Connector receiver = new MLLPReceiver(10001, "Cubex", "Cubex", "VPMS", "VPMS",
-                                                    new IMObjectReference(HL7Archetypes.MLLP_RECEIVER, -1));
+                                                    new IMObjectReference(HL7Archetypes.MLLP_RECEIVER, -1),
+                                                    new HL7Mapping());
         final List<Act> order = new ArrayList<Act>();
         PharmacyDispenseServiceImpl service = new PharmacyDispenseServiceImpl(pharmacies, dispatcher, connectors,
                                                                               getArchetypeService(), rules, userRules) {

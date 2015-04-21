@@ -78,7 +78,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
         Pharmacies pharmacies = new PharmaciesImpl(getArchetypeService(), getConnectors(), getEventServices()) {
 
             @Override
-            public Entity getPharmacy(Entity group, IMObjectReference location) {
+            public Entity getService(Entity group, IMObjectReference location) {
                 return pharmacy;
             }
         };

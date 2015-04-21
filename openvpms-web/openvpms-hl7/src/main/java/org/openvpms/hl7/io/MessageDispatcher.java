@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.io;
@@ -21,7 +21,7 @@ import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.hl7.impl.MessageConfig;
+import org.openvpms.hl7.impl.HL7Mapping;
 import org.openvpms.hl7.util.HL7MessageStatuses;
 
 /**
@@ -40,7 +40,7 @@ public interface MessageDispatcher {
      * @param user      the user responsible for the message
      * @return the queued message
      */
-    DocumentAct queue(Message message, Connector connector, MessageConfig config, User user);
+    DocumentAct queue(Message message, Connector connector, HL7Mapping config, User user);
 
     /**
      * Resubmit a message.

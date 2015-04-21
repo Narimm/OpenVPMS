@@ -1,0 +1,49 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="entity.HL7Mapping.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.common.Entity" displayName="HL7 Mapping">
+        <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" minCardinality="1">
+            <assertion name="propercase"/>
+        </node>
+        <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="male" displayName="Sex: Male" path="/details/male" type="java.lang.String" minCardinality="0"
+              defaultValue="'M'"/>
+        <node name="maleDesexed" displayName="Sex: Male - desexed" path="/details/maleDesexed" type="java.lang.String"
+              minCardinality="0"
+              defaultValue="'C'"/>
+        <node name="female" displayName="Sex: Female" path="/details/female" type="java.lang.String" minCardinality="0"
+              defaultValue="'F'"/>
+        <node name="femaleDesexed" displayName="Sex: Female - desexed" path="/details/femaleDesexed"
+              type="java.lang.String" minCardinality="0" defaultValue="'S'"/>
+        <node name="unknownSex" displayName="Sex: Unknown" path="/details/unknownSex" type="java.lang.String"
+              minCardinality="0" defaultValue="'U'"/>
+        <node name="speciesMapping" path="/details/speciesMapping" type="java.lang.String" minCardinality="0">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="lookup.speciesIDEXX" value="IDEXX Species"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="includeMillis" displayName="Include Milliseconds" type="java.lang.Boolean"
+              path="/details/includeMillis" minCardinality="0" defaultValue="false()"/>
+        <node name="includeTimeZone" type="java.lang.Boolean" path="/details/includeTimeZone" minCardinality="0"
+              defaultValue="false()"/>
+    </archetype>
+</archetypes>

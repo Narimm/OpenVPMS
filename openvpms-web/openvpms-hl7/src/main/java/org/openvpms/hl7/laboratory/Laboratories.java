@@ -14,16 +14,14 @@
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.hl7.pharmacy;
+package org.openvpms.hl7.laboratory;
 
 import org.openvpms.hl7.service.Services;
 
 /**
- * HL7 Pharmacies.
+ * HL7 Laboratories.
  *
  * @author Tim Anderson
  */
-public interface Pharmacies extends Services {
-
-
+public interface Laboratories extends Services {
 }

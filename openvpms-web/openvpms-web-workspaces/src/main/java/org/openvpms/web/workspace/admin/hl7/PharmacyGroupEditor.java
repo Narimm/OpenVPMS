@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.hl7;
@@ -84,7 +84,7 @@ public class PharmacyGroupEditor extends AbstractIMObjectEditor {
         for (Object value : property.getValues()) {
             IMObjectRelationship relationship = (IMObjectRelationship) value;
             Entity pharmacy = (relationship.getTarget() != null) ?
-                              pharmacies.getPharmacy(relationship.getTarget()) : null;
+                              pharmacies.getService(relationship.getTarget()) : null;
             if (pharmacy != null) {
                 EntityBean bean = new EntityBean(pharmacy);
                 IMObjectReference location = bean.getNodeTargetObjectRef("location");

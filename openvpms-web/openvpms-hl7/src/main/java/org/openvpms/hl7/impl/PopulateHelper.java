@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -42,7 +42,7 @@ public class PopulateHelper {
      * @param config the message population configuration
      * @throws DataTypeException for any error
      */
-    public static void populateDTM(DTM dtm, Calendar value, MessageConfig config) throws DataTypeException {
+    public static void populateDTM(DTM dtm, Calendar value, HL7Mapping config) throws DataTypeException {
         if (!config.isIncludeMillis()) {
             value.set(Calendar.MILLISECOND, 0);
         }
@@ -66,8 +66,7 @@ public class PopulateHelper {
      * @param config the message population configuration
      * @throws DataTypeException for any error
      */
-    public static void populateDTM(DTM dtm, Date value, MessageConfig config)
-            throws DataTypeException {
+    public static void populateDTM(DTM dtm, Date value, HL7Mapping config) throws DataTypeException {
         Calendar calendar = new GregorianCalendar();
         calendar.setTime(value);
         populateDTM(dtm, calendar, config);

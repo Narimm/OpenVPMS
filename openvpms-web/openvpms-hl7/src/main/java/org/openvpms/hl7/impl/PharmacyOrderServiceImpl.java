@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -86,7 +86,7 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
         boolean result = false;
         Connector connector = getConnector(pharmacy);
         if (connector != null) {
-            MessageConfig config = MessageConfigFactory.create(connector);
+            HL7Mapping config = connector.getMapping();
             Message message = factory.createOrder(context, product, quantity, placerOrderNumber, date, config);
             dispatcher.queue(message, connector, config, user);
             result = true;
@@ -110,7 +110,7 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
                             Date date, Entity pharmacy, User user) {
         Connector connector = getConnector(pharmacy);
         if (connector != null) {
-            MessageConfig config = MessageConfigFactory.create(connector);
+            HL7Mapping config = connector.getMapping();
             Message message = factory.updateOrder(context, product, quantity, placerOrderNumber, date, config);
             dispatcher.queue(message, connector, config, user);
         }
@@ -132,7 +132,7 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
                             Date date, Entity pharmacy, User user) {
         Connector connector = getConnector(pharmacy);
         if (connector != null) {
-            MessageConfig config = MessageConfigFactory.create(connector);
+            HL7Mapping config = connector.getMapping();
             Message message = factory.cancelOrder(context, product, quantity, placerOrderNumber, config, date);
             dispatcher.queue(message, connector, config, user);
         }
@@ -154,7 +154,7 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
                                  Date date, Entity pharmacy, User user) {
         Connector connector = getConnector(pharmacy);
         if (connector != null) {
-            MessageConfig config = MessageConfigFactory.create(connector);
+            HL7Mapping config = connector.getMapping();
             Message message = factory.discontinueOrder(context, product, quantity, placerOrderNumber, config, date);
             dispatcher.queue(message, connector, config, user);
         }
@@ -167,7 +167,7 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
      * @return the connection, or {@code null} if none is found
      */
     private Connector getConnector(Entity pharmacy) {
-        return pharmacies.getOrderConnection(pharmacy);
+        return pharmacies.getSender(pharmacy);
     }
 
 }

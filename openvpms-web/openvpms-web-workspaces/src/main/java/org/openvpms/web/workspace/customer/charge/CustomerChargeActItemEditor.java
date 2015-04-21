@@ -413,6 +413,15 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Return any investigations associated with the charge item.
+     *
+     * @return the investigations
+     */
+    public List<Act> getInvestigations() {
+        return (investigations != null) ? investigations.getActs() : Collections.<Act>emptyList();
+    }
+
+    /**
      * Disposes of the editor.
      * <br/>
      * Once disposed, the behaviour of invoking any method is undefined.
