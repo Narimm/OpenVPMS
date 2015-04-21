@@ -446,6 +446,18 @@ public class ReminderRules {
     public Contact getContact(Set<Contact> contacts) {
         return getContact(contacts, true, ContactArchetypes.LOCATION);
     }
+    /**
+     * Returns the first contact.location with classification 'REMINDER', or; the
+     * preferred contact.location if no contact has this classification,
+     * or; the first contact.location if none is preferred.
+     *
+     * @param contacts the contacts
+     * @return a contact, or {@code null} if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Contact getLocationContact(Set<Contact> contacts) {
+        return getContact(contacts, false, ContactArchetypes.LOCATION);
+    }
 
     /**
      * Returns the first phone contact with classification 'REMINDER' or

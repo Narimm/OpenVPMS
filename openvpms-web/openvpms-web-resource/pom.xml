@@ -15,8 +15,8 @@
   ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>openvpms-web</artifactId>
@@ -26,7 +26,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>openvpms-web-resource</artifactId>
-
+    <name>OpenVPMS Web Resources</name>
     <dependencies>
         <dependency>
             <groupId>org.openvpms</groupId>
@@ -58,8 +58,22 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <doCheck>false</doCheck>
+                    <doUpdate>false</doUpdate>
+                    <shortRevisionLength>5</shortRevisionLength>
+                    <revisionOnScmFailure>-1</revisionOnScmFailure>
+                </configuration>
             </plugin>
         </plugins>
     </build>
-
 </project>

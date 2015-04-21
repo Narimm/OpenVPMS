@@ -48,6 +48,7 @@
         <node name="export" path="/details/export" type="java.lang.Boolean" minCardinality="0" defaultValue="false()"/>
         <node name="sms" displayName="SMS" path="/details/sms" type="java.lang.Boolean" minCardinality="0"
               defaultValue="false()"/>
+        <node name="alwaysprint" displayName="Always Print(never Email)" path="/details/alwaysprint" type="java.lang.Boolean" minCardinality="0" defaultValue="false()"/>      
         <node name="source" displayName="Reminder Type" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
             <assertion name="archetypeRange">

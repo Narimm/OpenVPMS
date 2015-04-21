@@ -70,7 +70,10 @@ public class PrintDialog extends PopupDialog {
      * The no. of copies to print.
      */
     private SpinBox copies;
-
+    /**
+     * The duplex setting
+     */
+    private final SelectField sides;
 
     /**
      * Constructs a {@code PrintDialog}.
@@ -123,9 +126,10 @@ public class PrintDialog extends PopupDialog {
         super(title, "PrintDialog", (skip) ? OK_SKIP_CANCEL : OK_CANCEL, help);
         setModal(true);
         copies = new SpinBox(1, 99);
-        DefaultListModel model = new DefaultListModel(
-            PrintHelper.getPrinters());
-        printers = SelectFieldFactory.create(model);
+        DefaultListModel printmodel = new DefaultListModel(PrintHelper.getPrinters());
+        DefaultListModel duplexmodel = new DefaultListModel();
+        printers = SelectFieldFactory.create(printmodel);
+        sides = SelectFieldFactory.create(duplexmodel);
         this.preview = preview;
         this.mail = mail;
     }
