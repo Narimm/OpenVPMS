@@ -142,10 +142,14 @@ public class TillBalanceRules {
      * @return the changed acts
      */
     public List<Act> addToBalance(Act act) {
-        List<Act> result = Collections.emptyList();
+        List<Act> result;
         if (checkAdd(act)) {
             FinancialAct balance = getBalance(act);
             result = doAddToBalance(act, balance);
+        } else if (TypeHelper.isA(act, TILL_BALANCE_ADJUSTMENT)) {
+            result = updateBalanceForTillAdjustment(act);
+        } else {
+            result = Collections.emptyList();
         }
         return result;
     }
@@ -164,6 +168,8 @@ public class TillBalanceRules {
         List<Act> result;
         if (checkAdd(act)) {
             result = doAddToBalance(act, balance);
+        } else if (TypeHelper.isA(act, TILL_BALANCE_ADJUSTMENT)) {
+            result = updateBalanceForTillAdjustment(act);
         } else {
             result = Collections.emptyList();
         }
@@ -219,20 +225,12 @@ public class TillBalanceRules {
             result.add(act);
             result.add(balance);
             TillHelper.updateBalance(balanceBean, service);
-        } else if (TypeHelper.isA(act, TILL_BALANCE_ADJUSTMENT)) {
-            // TODO - due to a historical oversight, till balance adjustments don't get POSTED
-            if (TillHelper.updateBalance(balanceBean, service)) {
-                result.add(balance);
-            }
         }
         return result;
     }
 
     /**
      * Verifies an act can be added to a till balance.
-     * <p/>
-     * Note that act.tillBalanceAdjustments can always be added to balances that are UNCLEARED or IN_PROGRESS as
-     * there is no restrictions on changing them.
      *
      * @param act the act
      * @return {@code true} if it can be added, otherwise {@code false}
@@ -248,7 +246,7 @@ public class TillBalanceRules {
         }
         if (isAccount && !POSTED.equals(act.getStatus())) {
             add = false;
-        } else if (!bean.getRelationships(TILL_BALANCE_ITEM).isEmpty() && !isAdjust) {
+        } else if (!bean.getRelationships(TILL_BALANCE_ITEM).isEmpty()) {
             // already associated with a balance.
             add = false;
         }
@@ -274,6 +272,26 @@ public class TillBalanceRules {
             balance = TillHelper.createTillBalance(till, service);
         }
         return balance;
+    }
+
+    /**
+     * Due to an historical oversight, till balance adjustments don't get POSTED. This means that they can be changed
+     * until the till is CLEARED.
+     *
+     * @param act the till balance adjustment
+     * @return the updated acts, if any
+     */
+    private List<Act> updateBalanceForTillAdjustment(Act act) {
+        List<Act> result = Collections.emptyList();
+        ActBean bean = new ActBean(act, service);
+        FinancialAct balance = (FinancialAct) bean.getSourceAct(TILL_BALANCE_ITEM);
+        if (balance != null) {
+            if (updateBalance(balance)) {
+                result = new ArrayList<Act>();
+                result.add(balance);
+            }
+        }
+        return result;
     }
 
 }
