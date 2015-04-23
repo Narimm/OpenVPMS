@@ -131,13 +131,13 @@ public class EstimateInvoicerTestCase extends AbstractCustomerChargeActEditorTes
         checkCharge(invoice, customer, author, clinician, tax, total);
 
         BigDecimal discount = BigDecimal.ZERO;
-        checkItem(items, patient, product1, author, clinician, quantity1, BigDecimal.ZERO, price1,
+        checkItem(items, patient, product1, null, author, clinician, quantity1, BigDecimal.ZERO, price1,
                   BigDecimal.ZERO, BigDecimal.ZERO, discount, tax1, amount1, null, 1);
-        checkItem(items, patient, product2, author, clinician, quantity2, BigDecimal.ZERO, price2,
+        checkItem(items, patient, product2, null, author, clinician, quantity2, BigDecimal.ZERO, price2,
                   BigDecimal.ZERO, BigDecimal.ZERO, discount, tax2, amount2, null, 0);
-        checkItem(items, patient, product3, author, clinician, quantity3, BigDecimal.ZERO, price3,
+        checkItem(items, patient, product3, null, author, clinician, quantity3, BigDecimal.ZERO, price3,
                   BigDecimal.ZERO, BigDecimal.ZERO, discount, tax3, amount3, null, 0);
-        checkItem(items, patient, product4, author, clinician, quantity4, BigDecimal.ZERO, price4,
+        checkItem(items, patient, product4, null, author, clinician, quantity4, BigDecimal.ZERO, price4,
                   BigDecimal.ZERO, BigDecimal.ZERO, discount, tax4, amount4, null, 1);
     }
 

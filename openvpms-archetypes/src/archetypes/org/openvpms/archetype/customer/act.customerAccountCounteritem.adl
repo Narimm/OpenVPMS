@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -31,6 +31,9 @@
         <node name="product" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
               filter="participation.product"/>
+        <node name="template" path="/participations" type="java.util.HashSet"
+              minCardinality="0" maxCardinality="1"
+              filter="participation.productTemplate" hidden="true" readOnly="true"/>
         <node name="stockLocation" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.stockLocation" hidden="true"/>
@@ -59,6 +62,7 @@
                 <errorMessage>Value must be >= 0.0</errorMessage>
             </assertion-->
         </node>
+        <node name="print" path="/details/print" type="java.lang.Boolean" minCardinality="0" defaultValue="true()"/>
         <node name="tax" path="/taxAmount"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
               defaultValue="'0.0'" readOnly="true"/>

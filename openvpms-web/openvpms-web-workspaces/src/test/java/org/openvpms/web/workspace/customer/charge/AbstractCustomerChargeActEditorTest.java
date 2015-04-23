@@ -157,6 +157,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param items      the items to search
      * @param patient    the expected patient
      * @param product    the expected product
+     * @param template   the expected template. May be {@code null}
      * @param author     the expected author
      * @param clinician  the expected clinician
      * @param quantity   the expected quantity
@@ -167,17 +168,17 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param discount   the expected discount
      * @param tax        the expected tax
      * @param total      the expected total
-     * @param event      the clinical event. May be <tt>null</tt>
+     * @param event      the clinical event. May be {@code null}
      * @param childActs  the expected no. of child acts
      */
-    protected void checkItem(List<FinancialAct> items, Party patient, Product product, User author, User clinician,
-                             BigDecimal quantity, BigDecimal unitCost, BigDecimal unitPrice, BigDecimal fixedCost,
-                             BigDecimal fixedPrice, BigDecimal discount, BigDecimal tax, BigDecimal total,
-                             Act event, int childActs) {
+    protected void checkItem(List<FinancialAct> items, Party patient, Product product, Product template, User author,
+                             User clinician, BigDecimal quantity, BigDecimal unitCost, BigDecimal unitPrice,
+                             BigDecimal fixedCost, BigDecimal fixedPrice, BigDecimal discount, BigDecimal tax,
+                             BigDecimal total, Act event, int childActs) {
         int count = 0;
         FinancialAct item = find(items, product);
-        checkItem(item, patient, product, author, clinician, quantity, unitCost, unitPrice, fixedCost, fixedPrice,
-                  discount, tax, total);
+        checkItem(item, patient, product, template, author, clinician, quantity, unitCost, unitPrice, fixedCost,
+                  fixedPrice, discount, tax, total);
         ActBean itemBean = new ActBean(item);
         EntityBean bean = new EntityBean(product);
 
@@ -210,9 +211,9 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
             }
             List<Entity> templates = bean.getNodeTargetEntities("documents");
             assertEquals(templates.size(), itemBean.getNodeActs("documents").size());
-            for (Entity template : templates) {
+            for (Entity docTemplate : templates) {
                 // verify there is a document for each template, and it is linked to the event
-                Act document = checkDocument(item, patient, product, template, author, clinician);
+                Act document = checkDocument(item, patient, product, docTemplate, author, clinician);
                 if (event != null) {
                     checkEventRelationship(event, document);
                 }
@@ -292,6 +293,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param item       the item to check
      * @param patient    the expected patient
      * @param product    the expected product
+     * @param template   the expected template. May be {@code null}
      * @param author     the expected author
      * @param clinician  the expected clinician
      * @param quantity   the expected quantity
@@ -303,14 +305,20 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param tax        the expected tax
      * @param total      the expected total
      */
-    protected void checkItem(FinancialAct item, Party patient, Product product, User author, User clinician,
-                             BigDecimal quantity, BigDecimal unitCost, BigDecimal unitPrice, BigDecimal fixedCost,
-                             BigDecimal fixedPrice, BigDecimal discount, BigDecimal tax, BigDecimal total) {
+    protected void checkItem(FinancialAct item, Party patient, Product product, Product template, User author,
+                             User clinician, BigDecimal quantity, BigDecimal unitCost, BigDecimal unitPrice,
+                             BigDecimal fixedCost, BigDecimal fixedPrice, BigDecimal discount, BigDecimal tax,
+                             BigDecimal total) {
         ActBean bean = new ActBean(item);
         if (bean.hasNode("patient")) {
             assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
         }
         assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
+        if (template == null) {
+            assertNull(bean.getNodeParticipantRef("template"));
+        } else {
+            assertEquals(template.getObjectReference(), bean.getNodeParticipantRef("template"));
+        }
         assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
         if (bean.hasNode("clinician")) {
             if (clinician != null) {

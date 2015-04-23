@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -35,16 +35,16 @@ public class ParticipationHelper {
      * Helper to return a participation.
      *
      * @param property the participation property
-     * @return the participation
+     * @return the participation, or {@code null} if one wasn't found or {@code create} was {@code false}
      */
-    public static Participation getParticipation(Property property) {
+    public static Participation getParticipation(Property property, boolean create) {
         Object value = null;
         if (property.isCollection() && property instanceof CollectionProperty) {
             CollectionProperty collection = (CollectionProperty) property;
             List values = collection.getValues();
             if (!values.isEmpty()) {
                 value = values.get(0);
-            } else {
+            } else if (create) {
                 String[] shortNames = DescriptorHelper.getShortNames(property.getDescriptor());
                 if (shortNames.length == 1) {
                     value = IMObjectCreator.create(shortNames[0]);
