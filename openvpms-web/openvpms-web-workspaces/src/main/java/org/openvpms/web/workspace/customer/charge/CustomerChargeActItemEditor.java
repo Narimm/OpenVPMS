@@ -42,7 +42,9 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.bound.BoundCheckBox;
 import org.openvpms.web.component.edit.Editor;
+import org.openvpms.web.component.edit.PropertyComponentEditor;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditorFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
@@ -92,6 +94,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static java.math.BigDecimal.ZERO;
 import static org.openvpms.archetype.rules.math.MathRules.ONE_HUNDRED;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.MEDICATION;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.MERCHANDISE;
@@ -126,6 +129,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private ActRelationshipCollectionEditor reminders;
 
     /**
+     * The print flag editor. May be {@code null}
+     */
+    private PropertyComponentEditor print;
+
+    /**
      * The medication, investigation and reminder act editor manager.
      */
     private EditorQueue editorQueue;
@@ -148,7 +156,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Listener for changes to the fixed price, quantity and unit price, to update the discount.
      */
-    private final ModifiableListener discountListener;
+    private final ModifiableListener quantityPriceListener;
 
     /**
      * Listener for changes to the total, so the tax amount can be recalculated.
@@ -194,6 +202,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * The charge context.
      */
     private ChargeContext chargeContext;
+
+    /**
+     * Used to determine if the current template relates to the product, or needs to be removed.
+     */
+    private boolean currentTemplate;
 
     /**
      * Dispensing node name.
@@ -293,6 +306,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         dispensing = createDispensingCollectionEditor();
         investigations = createCollectionEditor(INVESTIGATIONS, act);
         reminders = createCollectionEditor(REMINDERS, act);
+        print = createPrintEditor();
 
         rules = ServiceHelper.getBean(StockRules.class);
         reminderRules = ServiceHelper.getBean(ReminderRules.class);
@@ -319,6 +333,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         }
 
         calculateTax();
+        updatePrint();
 
         ArchetypeNodes nodes = getFilterForProduct(getProductRef());
         setArchetypeNodes(nodes);
@@ -331,16 +346,15 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         };
         getProperty(TOTAL).addModifiableListener(totalListener);
 
-        // add a listener to update the discount amount when the quantity,
-        // fixed or unit price changes.
-        discountListener = new ModifiableListener() {
+        // add a listener to update the discount amount and print flag when the quantity, fixed or unit price changes.
+        quantityPriceListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
-                updateDiscount();
+                onQuantityPriceChange();
             }
         };
-        getProperty(FIXED_PRICE).addModifiableListener(discountListener);
-        getProperty(QUANTITY).addModifiableListener(discountListener);
-        getProperty(UNIT_PRICE).addModifiableListener(discountListener);
+        getProperty(FIXED_PRICE).addModifiableListener(quantityPriceListener);
+        getProperty(QUANTITY).addModifiableListener(quantityPriceListener);
+        getProperty(UNIT_PRICE).addModifiableListener(quantityPriceListener);
         getProperty(QUANTITY).addModifiableListener(quantityListener);
 
         startTimeListener = new ModifiableListener() {
@@ -375,7 +389,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     public BigDecimal getReceivedQuantity() {
         Property property = getProperty(RECEIVED_QUANTITY);
-        return property != null ? property.getBigDecimal(BigDecimal.ZERO) : BigDecimal.ZERO;
+        return property != null ? property.getBigDecimal(ZERO) : ZERO;
     }
 
     /**
@@ -397,7 +411,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     public BigDecimal getReturnedQuantity() {
         Property property = getProperty(RETURNED_QUANTITY);
-        return property != null ? property.getBigDecimal(BigDecimal.ZERO) : BigDecimal.ZERO;
+        return property != null ? property.getBigDecimal(ZERO) : ZERO;
     }
 
     /**
@@ -425,55 +439,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         }
 
         getProperty(TOTAL).removeModifiableListener(totalListener);
-        getProperty(FIXED_PRICE).removeModifiableListener(discountListener);
-        getProperty(QUANTITY).removeModifiableListener(discountListener);
-        getProperty(UNIT_PRICE).removeModifiableListener(discountListener);
+        getProperty(FIXED_PRICE).removeModifiableListener(quantityPriceListener);
+        getProperty(QUANTITY).removeModifiableListener(quantityPriceListener);
+        getProperty(UNIT_PRICE).removeModifiableListener(quantityPriceListener);
         getProperty(QUANTITY).removeModifiableListener(quantityListener);
         getProperty(START_TIME).removeModifiableListener(startTimeListener);
-    }
-
-    /**
-     * Updates the discount and checks that it isn't less than the total cost.
-     * <p/>
-     * If so, gives the user the opportunity to remove the discount.
-     *
-     * @return {@code true} if the discount was updated
-     */
-    @Override
-    protected boolean updateDiscount() {
-        boolean updated = super.updateDiscount();
-        BigDecimal discount = getProperty(DISCOUNT).getBigDecimal(BigDecimal.ZERO);
-        if (updated && discount.compareTo(BigDecimal.ZERO) != 0) {
-            BigDecimal fixedPriceMaxDiscount = getFixedPriceMaxDiscount(null);
-            BigDecimal unitPriceMaxDiscount = getUnitPriceMaxDiscount(null);
-            if ((fixedPriceMaxDiscount != null && !MathRules.equals(fixedPriceMaxDiscount, ONE_HUNDRED))
-                || (unitPriceMaxDiscount != null && !MathRules.equals(unitPriceMaxDiscount, ONE_HUNDRED))) {
-                // if there is a fixed and/or unit price maximum discount present, and it is not 100%, check if the
-                // sale price is less than the cost price
-
-                BigDecimal quantity = getQuantity();
-                BigDecimal fixedCost = getFixedCost();
-                BigDecimal fixedPrice = getFixedPrice();
-                BigDecimal unitCost = getUnitCost();
-                BigDecimal unitPrice = getUnitPrice();
-                BigDecimal costPrice = fixedCost.add(unitCost.multiply(quantity));
-                BigDecimal salePrice = fixedPrice.add(unitPrice.multiply(quantity));
-                if (costPrice.compareTo(salePrice.subtract(discount)) > 0) {
-                    ConfirmationDialog dialog = new ConfirmationDialog(Messages.get("customer.charge.discount.title"),
-                                                                       Messages.get("customer.charge.discount.message"),
-                                                                       ConfirmationDialog.YES_NO);
-                    dialog.addWindowPaneListener(new PopupDialogListener() {
-                        @Override
-                        public void onYes() {
-                            getProperty(DISCOUNT).setValue(BigDecimal.ZERO);
-                            super.onYes();
-                        }
-                    });
-                    editorQueue.queue(dialog);
-                }
-            }
-        }
-        return updated;
     }
 
     /**
@@ -589,6 +559,61 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     public void ordered() {
         updateLayout(getProduct());
+    }
+
+    /**
+     * Sets the product template.
+     *
+     * @param template a reference to the product. May be {@code null}
+     */
+    @Override
+    public void setTemplateRef(IMObjectReference template) {
+        super.setTemplateRef(template);
+        currentTemplate = template != null;
+    }
+
+    /**
+     * Updates the discount and checks that it isn't less than the total cost.
+     * <p/>
+     * If so, gives the user the opportunity to remove the discount.
+     *
+     * @return {@code true} if the discount was updated
+     */
+    @Override
+    protected boolean updateDiscount() {
+        boolean updated = super.updateDiscount();
+        BigDecimal discount = getProperty(DISCOUNT).getBigDecimal(ZERO);
+        if (updated && discount.compareTo(ZERO) != 0) {
+            BigDecimal fixedPriceMaxDiscount = getFixedPriceMaxDiscount(null);
+            BigDecimal unitPriceMaxDiscount = getUnitPriceMaxDiscount(null);
+            if ((fixedPriceMaxDiscount != null && !MathRules.equals(fixedPriceMaxDiscount, ONE_HUNDRED))
+                || (unitPriceMaxDiscount != null && !MathRules.equals(unitPriceMaxDiscount, ONE_HUNDRED))) {
+                // if there is a fixed and/or unit price maximum discount present, and it is not 100%, check if the
+                // sale price is less than the cost price
+
+                BigDecimal quantity = getQuantity();
+                BigDecimal fixedCost = getFixedCost();
+                BigDecimal fixedPrice = getFixedPrice();
+                BigDecimal unitCost = getUnitCost();
+                BigDecimal unitPrice = getUnitPrice();
+                BigDecimal costPrice = fixedCost.add(unitCost.multiply(quantity));
+                BigDecimal salePrice = fixedPrice.add(unitPrice.multiply(quantity));
+                if (costPrice.compareTo(salePrice.subtract(discount)) > 0) {
+                    ConfirmationDialog dialog = new ConfirmationDialog(Messages.get("customer.charge.discount.title"),
+                                                                       Messages.get("customer.charge.discount.message"),
+                                                                       ConfirmationDialog.YES_NO);
+                    dialog.addWindowPaneListener(new PopupDialogListener() {
+                        @Override
+                        public void onYes() {
+                            getProperty(DISCOUNT).setValue(ZERO);
+                            super.onYes();
+                        }
+                    });
+                    editorQueue.queue(dialog);
+                }
+            }
+        }
+        return updated;
     }
 
     /**
@@ -709,10 +734,20 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     @Override
     protected void productModified(Product product) {
-        getProperty(FIXED_PRICE).removeModifiableListener(discountListener);
-        getProperty(QUANTITY).removeModifiableListener(discountListener);
-        getProperty(UNIT_PRICE).removeModifiableListener(discountListener);
+        getProperty(FIXED_PRICE).removeModifiableListener(quantityPriceListener);
+        getProperty(QUANTITY).removeModifiableListener(quantityPriceListener);
+        getProperty(UNIT_PRICE).removeModifiableListener(quantityPriceListener);
         super.productModified(product);
+
+        // product modification can happen either via user intervention or template expansion. If by template expansion
+        // the template is populated before the product, and must be retained. If not, the template must be removed
+        // TODO - this is brittle. Could either have two arguments for the product and template, or have a wrapper
+        // containing both, so they can be handled simultaneously
+        if (!currentTemplate) {
+            setTemplateRef(null);
+        } else {
+            currentTemplate = false;
+        }
 
         // update the layout if nodes require filtering
         updateLayout(product);
@@ -722,17 +757,17 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         updateReminders(product);
 
         Property discount = getProperty(DISCOUNT);
-        discount.setValue(BigDecimal.ZERO);
+        discount.setValue(ZERO);
 
         Property fixedPrice = getProperty(FIXED_PRICE);
         Property unitPrice = getProperty(UNIT_PRICE);
         Property fixedCost = getProperty(FIXED_COST);
         Property unitCost = getProperty(UNIT_COST);
         if (TypeHelper.isA(product, TEMPLATE)) {
-            fixedPrice.setValue(BigDecimal.ZERO);
-            unitPrice.setValue(BigDecimal.ZERO);
-            fixedCost.setValue(BigDecimal.ZERO);
-            unitCost.setValue(BigDecimal.ZERO);
+            fixedPrice.setValue(ZERO);
+            unitPrice.setValue(ZERO);
+            fixedCost.setValue(ZERO);
+            unitCost.setValue(ZERO);
             updateSellingUnits(null);
         } else {
             ProductPrice fixedProductPrice = null;
@@ -746,25 +781,26 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 fixedPrice.setValue(getPrice(product, fixedProductPrice));
                 fixedCost.setValue(getCost(fixedProductPrice));
             } else {
-                fixedPrice.setValue(BigDecimal.ZERO);
-                fixedCost.setValue(BigDecimal.ZERO);
+                fixedPrice.setValue(ZERO);
+                fixedCost.setValue(ZERO);
             }
             if (unitProductPrice != null) {
                 unitPrice.setValue(getPrice(product, unitProductPrice));
                 unitCost.setValue(getCost(unitProductPrice));
             } else {
-                unitPrice.setValue(BigDecimal.ZERO);
-                unitCost.setValue(BigDecimal.ZERO);
+                unitPrice.setValue(ZERO);
+                unitCost.setValue(ZERO);
             }
             IMObjectReference stockLocation = updateStockLocation(product);
             updateSellingUnits(product);
             updateBatch(product, stockLocation);
             updateDiscount();
+            updatePrint();
         }
         notifyProductListener(product);
-        getProperty(FIXED_PRICE).addModifiableListener(discountListener);
-        getProperty(QUANTITY).addModifiableListener(discountListener);
-        getProperty(UNIT_PRICE).addModifiableListener(discountListener);
+        getProperty(FIXED_PRICE).addModifiableListener(quantityPriceListener);
+        getProperty(QUANTITY).addModifiableListener(quantityPriceListener);
+        getProperty(UNIT_PRICE).addModifiableListener(quantityPriceListener);
     }
 
     /**
@@ -784,6 +820,35 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 property.refresh();
             }
         }
+    }
+
+    /**
+     * Invoked when a quantity or price changes.
+     */
+    private void onQuantityPriceChange() {
+        updateDiscount();
+        updatePrint();
+    }
+
+    /**
+     * Enables the print flag if the total is zero.
+     */
+    private void updatePrint() {
+        if (print != null) {
+            BigDecimal total = getProperty(TOTAL).getBigDecimal(ZERO);
+            boolean enabled = MathRules.equals(total, ZERO);
+            print.getComponent().setEnabled(enabled);
+        }
+    }
+
+    /**
+     * Creates the print flag editor.
+     *
+     * @return a new editor, or {@code null} if there is no print property
+     */
+    private PropertyComponentEditor createPrintEditor() {
+        Property property = getProperty("print");
+        return (property != null) ? new PropertyComponentEditor(property, new BoundCheckBox(property)) : null;
     }
 
     /**
@@ -1207,10 +1272,10 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                     acts.add((Act) current.getObject());
                 }
                 if (!acts.isEmpty()) {
-                    BigDecimal total = BigDecimal.ZERO;
+                    BigDecimal total = ZERO;
                     for (Act act : acts) {
                         ActBean bean = new ActBean(act);
-                        BigDecimal quantity = bean.getBigDecimal(QUANTITY, BigDecimal.ZERO);
+                        BigDecimal quantity = bean.getBigDecimal(QUANTITY, ZERO);
                         total = total.add(quantity);
                     }
                     property.setValue(total);
@@ -1247,17 +1312,17 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Updates the batch if the medication batch changes.
      */
     private void updateBatch() {
-        Property batch = getProperty("batch");
-        if (batch != null) {
-            batch.removeModifiableListener(batchListener);
+        BatchParticipationEditor batchEditor = getBatchEditor();
+        if (batchEditor != null) {
+            batchEditor.removeModifiableListener(batchListener);
             try {
                 Entity selected = null;
                 for (PatientMedicationActEditor editor : getMedicationActEditors()) {
                     selected = editor.getBatch();
                 }
-                getBatchEditor().setEntity(selected);
+                batchEditor.setEntity(selected);
             } finally {
-                batch.addModifiableListener(batchListener);
+                batchEditor.addModifiableListener(batchListener);
             }
         }
     }
@@ -1422,7 +1487,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     private BigDecimal getCost(ProductPrice price) {
         IMObjectBean bean = new IMObjectBean(price);
-        return bean.getBigDecimal("cost", BigDecimal.ZERO);
+        return bean.getBigDecimal("cost", ZERO);
     }
 
     /**
@@ -1543,6 +1608,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             }
             if (reminders != null) {
                 addComponent(new ComponentState(reminders));
+            }
+            if (print != null) {
+                addComponent(new ComponentState(print));
             }
         }
 

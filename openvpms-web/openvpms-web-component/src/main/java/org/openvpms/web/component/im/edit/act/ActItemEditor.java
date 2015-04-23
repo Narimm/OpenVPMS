@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -122,8 +122,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns a reference to the product.
      *
-     * @return a reference to the product, or {@code null} if the act has
-     *         no product
+     * @return a reference to the product, or {@code null} if the act has no product
      */
     public IMObjectReference getProductRef() {
         return getParticipantRef("product");
@@ -154,6 +153,42 @@ public abstract class ActItemEditor extends AbstractActEditor {
      */
     public void setProductRef(IMObjectReference product) {
         setParticipant("product", product);
+    }
+
+    /**
+     * Returns the product template.
+     *
+     * @return the product template, or {@code null} if the act has no template
+     */
+    public Product getTemplate() {
+        return (Product) getObject(getTemplateRef());
+    }
+
+    /**
+     * Sets the product template.
+     *
+     * @param template the product template. May be {@code null}
+     */
+    public void setTemplate(Product template) {
+        setTemplateRef(template != null ? template.getObjectReference() : null);
+    }
+
+    /**
+     * Returns a reference to the product template.
+     *
+     * @return a reference to the product template, or {@code null} if the act has no template
+     */
+    public IMObjectReference getTemplateRef() {
+        return getParticipantRef("template");
+    }
+
+    /**
+     * Sets the product template.
+     *
+     * @param template a reference to the product. May be {@code null}
+     */
+    public void setTemplateRef(IMObjectReference template) {
+        setParticipant("template", template);
     }
 
     /**
@@ -405,8 +440,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return the product editor, or {@code null} if none exists
      */
     protected ProductParticipationEditor getProductEditor(boolean create) {
-        ParticipationEditor<Product> editor = getParticipationEditor("product",
-                                                                     create);
+        ParticipationEditor<Product> editor = getParticipationEditor("product", create);
         return (ProductParticipationEditor) editor;
     }
 
