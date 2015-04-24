@@ -43,9 +43,7 @@
     <field name="target.template.entity.name" class="java.lang.String"/>
     <field name="target.template.entity.printAggregate" class="java.lang.Boolean"/>
     <field name="target.template" class="java.lang.Object"/>
-    <field name="target.print" class="java.lang.Boolean">
-        <fieldDescription><![CDATA[]]></fieldDescription>
-    </field>
+    <field name="target.print" class="java.lang.Boolean"/>
     <sortField name="target.patient.entity.name"/>
     <sortField name="noTemplate" type="Variable"/>
     <sortField name="target.template.entity.name"/>
@@ -56,7 +54,7 @@
     <variable name="SUM_target.discount" class="java.math.BigDecimal" calculation="Sum">
         <variableExpression><![CDATA[$F{target.discount}]]></variableExpression>
     </variable>
-    <variable name="TemplateTotal" class="java.math.BigDecimal" resetType="Group" resetGroup="templateGroup"
+    <variable name="templateTotal" class="java.math.BigDecimal" resetType="Group" resetGroup="templateGroup"
               calculation="Sum">
         <variableExpression><![CDATA[$F{target.total}]]></variableExpression>
     </variable>
@@ -125,7 +123,7 @@
                         <printWhenExpression><![CDATA[$F{target.template.entity.printAggregate}]]></printWhenExpression>
                     </reportElement>
                     <textElement textAlignment="Right"/>
-                    <textFieldExpression><![CDATA[$V{TemplateTotal}]]></textFieldExpression>
+                    <textFieldExpression><![CDATA[$V{templateTotal}]]></textFieldExpression>
                 </textField>
             </band>
         </groupHeader>

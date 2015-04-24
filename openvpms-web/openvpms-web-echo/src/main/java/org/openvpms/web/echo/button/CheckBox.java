@@ -25,10 +25,35 @@ import org.openvpms.web.echo.style.Styles;
  */
 public class CheckBox extends nextapp.echo2.app.CheckBox {
 
+    private boolean edit = false;
+
     /**
      * The disabled style name.
      */
     private static final String DISABLED_STYLE = "disabled";
+
+    /**
+     * Sets the name of the style to use from the
+     * {@code ApplicationInstance}-defined {@code StyleSheet}.
+     * Setting the style name will have no impact on the local stylistic
+     * properties of the {@code Component}.
+     *
+     * @param newValue the new style name
+     * @see #getStyleName
+     */
+    @Override
+    public void setStyleName(String newValue) {
+        edit = Styles.EDIT.equals(newValue);
+        if (edit) {
+            if (isEnabled()) {
+                super.setStyleName(Styles.DEFAULT);
+            } else {
+                super.setStyleName(DISABLED_STYLE);
+            }
+        } else {
+            super.setStyleName(newValue);
+        }
+    }
 
     /**
      * Sets the enabled state of the {@code Component}.
@@ -39,10 +64,12 @@ public class CheckBox extends nextapp.echo2.app.CheckBox {
     @Override
     public void setEnabled(boolean newValue) {
         super.setEnabled(newValue);
-        if (newValue) {
-            setStyleName(Styles.DEFAULT);
-        } else {
-            setStyleName(DISABLED_STYLE);
+        if (edit) {
+            if (newValue) {
+                super.setStyleName(Styles.DEFAULT);
+            } else {
+                setStyleName(DISABLED_STYLE);
+            }
         }
     }
 }

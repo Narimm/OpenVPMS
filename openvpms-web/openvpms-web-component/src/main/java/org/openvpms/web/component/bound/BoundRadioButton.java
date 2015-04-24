@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
@@ -31,7 +31,7 @@ import org.openvpms.web.echo.event.ActionListener;
  *
  * @author Tim Anderson
  */
-public class BoundRadioButton extends RadioButton {
+public class BoundRadioButton extends RadioButton implements BoundProperty {
 
     /**
      * The property binder.
@@ -50,7 +50,7 @@ public class BoundRadioButton extends RadioButton {
 
 
     /**
-     * Construct a new <tt>BoundCheckBox</tt>.
+     * Constructs a {@link BoundCheckBox}.
      *
      * @param property the property to bind
      * @param group    the button group
@@ -100,12 +100,22 @@ public class BoundRadioButton extends RadioButton {
     }
 
     /**
-     * Life-cycle method invoked when the <tt>Component</tt> is removed from a registered hierarchy.
+     * Life-cycle method invoked when the {@code Component} is removed from a registered hierarchy.
      */
     @Override
     public void dispose() {
         super.dispose();
         binder.unbind();
+    }
+
+    /**
+     * Returns the property.
+     *
+     * @return the property
+     */
+    @Override
+    public Property getProperty() {
+        return binder.getProperty();
     }
 
 }

@@ -84,7 +84,8 @@
                 <errorMessage>Value must be >= 0.0</errorMessage>
             </assertion-->
         </node>
-        <node name="print" path="/details/print" type="java.lang.Boolean" minCardinality="0" defaultValue="true()"/>
+        <node name="print" path="/details/print" type="java.lang.Boolean" minCardinality="0" defaultValue="true()"
+              hidden="true"/>
         <node name="tax" path="/taxAmount"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
               defaultValue="'0.0'" readOnly="true">

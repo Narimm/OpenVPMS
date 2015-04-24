@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.estimate;
@@ -98,6 +98,27 @@ public class EstimateTestHelper {
         Act item = bean.getAct();
         ArchetypeServiceHelper.getArchetypeService().deriveValues(item);
         return item;
+    }
+
+    /**
+     * Creates an estimate item.
+     *
+     * @param patient   the patient
+     * @param product   the product
+     * @param template  the template
+     * @param author    the author
+     * @param quantity  the quantity
+     * @param unitPrice the unit price
+     * @return a new estimation item
+     */
+    public static Act createEstimateItem(Party patient, Product product, Product template, User author,
+                                         BigDecimal quantity, BigDecimal unitPrice) {
+        Act act = createEstimateItem(patient, product, author, quantity, unitPrice);
+        if (template != null) {
+            ActBean bean = new ActBean(act);
+            bean.addNodeParticipation("template", template);
+        }
+        return act;
     }
 
     /**

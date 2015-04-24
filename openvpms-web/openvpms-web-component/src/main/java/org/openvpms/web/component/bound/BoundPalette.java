@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
@@ -29,7 +29,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class BoundPalette<T> extends Palette<T> {
+public class BoundPalette<T> extends Palette<T> implements BoundProperty {
 
     /**
      * The bound property.
@@ -46,6 +46,16 @@ public class BoundPalette<T> extends Palette<T> {
     public BoundPalette(List<T> items, CollectionProperty property) {
         super(items, new ArrayList<T>(property.getValues()));
         this.property = property;
+    }
+
+    /**
+     * Returns the property.
+     *
+     * @return the property
+     */
+    @Override
+    public Property getProperty() {
+        return property;
     }
 
     /**

@@ -20,10 +20,10 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -47,6 +47,7 @@ import org.openvpms.web.workspace.customer.PriceActItemEditor;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import static java.math.BigDecimal.ZERO;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.TEMPLATE;
 import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
 
@@ -104,11 +105,27 @@ public class EstimateItemEditor extends PriceActItemEditor {
     private static final String HIGH_DISCOUNT = "highDiscount";
 
     /**
+     * Print node name.
+     */
+    private static final String PRINT = "print";
+
+    /**
+     * Low total node name.
+     */
+    private static final String LOW_TOTAL = "lowTotal";
+
+    /**
+     * High total node name.
+     */
+    private static final String HIGH_TOTAL = "highTotal";
+
+    /**
      * Nodes to display when a product template is selected.
      */
     private static final ArchetypeNodes TEMPLATE_NODES = new ArchetypeNodes().exclude(
             LOW_QTY, HIGH_QTY, FIXED_PRICE, LOW_UNIT_PRICE, HIGH_UNIT_PRICE, LOW_DISCOUNT, HIGH_DISCOUNT,
-            "lowTotal", "highTotal");
+            PRINT, LOW_TOTAL, HIGH_TOTAL);
+    private final ModifiableListener totalListener;
 
 
     /**
@@ -129,7 +146,8 @@ public class EstimateItemEditor extends PriceActItemEditor {
             act.setActivityStartTime(new Date());
         }
 
-        ArchetypeNodes nodes = getFilterForProduct(getProductRef());
+        Product product = getProduct();
+        ArchetypeNodes nodes = getFilterForProduct(product, showPrint(product));
         setArchetypeNodes(nodes);
 
         // add a listener to update the discount when the fixed, high unit price
@@ -156,6 +174,15 @@ public class EstimateItemEditor extends PriceActItemEditor {
         getProperty(LOW_QTY).addModifiableListener(lowListener);
         getProperty(HIGH_UNIT_PRICE).addModifiableListener(highListener);
         getProperty(HIGH_QTY).addModifiableListener(highListener);
+
+        // add a listener to update the tax amount when the total changes
+        totalListener = new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                onTotalChanged();
+            }
+        };
+        getProperty(LOW_TOTAL).addModifiableListener(totalListener);
+        getProperty(HIGH_TOTAL).addModifiableListener(totalListener);
     }
 
     /**
@@ -297,17 +324,17 @@ public class EstimateItemEditor extends PriceActItemEditor {
      */
     @Override
     protected void productModified(Product product) {
+        getProperty(LOW_TOTAL).removeModifiableListener(totalListener);
+        getProperty(HIGH_TOTAL).removeModifiableListener(totalListener);
         super.productModified(product);
 
         Property lowDiscount = getProperty(LOW_DISCOUNT);
         Property highDiscount = getProperty(HIGH_DISCOUNT);
         lowDiscount.setValue(BigDecimal.ZERO);
         highDiscount.setValue(BigDecimal.ZERO);
+        boolean showPrint = false;
 
         if (TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
-            if (getArchetypeNodes() != TEMPLATE_NODES) {
-                changeLayout(TEMPLATE_NODES);
-            }
             // zero out the fixed, low and high prices.
             Property fixedPrice = getProperty(FIXED_PRICE);
             Property lowUnitPrice = getProperty(LOW_UNIT_PRICE);
@@ -317,12 +344,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
             highUnitPrice.setValue(BigDecimal.ZERO);
             updateSellingUnits(null);
         } else {
-            ArchetypeNodes currentNodes = getArchetypeNodes();
-            IMObjectReference productRef = (product != null) ? product.getObjectReference() : null;
-            ArchetypeNodes expectedFilter = getFilterForProduct(productRef);
-            if (!ObjectUtils.equals(currentNodes, expectedFilter)) {
-                changeLayout(expectedFilter);
-            }
+            showPrint = showPrint(product);
             Property fixedPrice = getProperty(FIXED_PRICE);
             Property lowUnitPrice = getProperty(LOW_UNIT_PRICE);
             Property highUnitPrice = getProperty(HIGH_UNIT_PRICE);
@@ -348,7 +370,24 @@ public class EstimateItemEditor extends PriceActItemEditor {
             }
             updateSellingUnits(product);
         }
+
+        updateLayout(product, showPrint);
+        if (!showPrint) {
+            // set to a reasonable default to avoid exclusion by broken templates
+            getProperty(PRINT).setValue(true);
+        }
+
         notifyProductListener(product);
+        getProperty(LOW_TOTAL).addModifiableListener(totalListener);
+        getProperty(HIGH_TOTAL).addModifiableListener(totalListener);
+    }
+
+    private void updateLayout(Product product, boolean showPrint) {
+        ArchetypeNodes currentNodes = getArchetypeNodes();
+        ArchetypeNodes expectedFilter = getFilterForProduct(product, showPrint);
+        if (!ObjectUtils.equals(currentNodes, expectedFilter)) {
+            changeLayout(expectedFilter);
+        }
     }
 
     /**
@@ -482,6 +521,41 @@ public class EstimateItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Invoked when the total changes.
+     */
+    private void onTotalChanged() {
+        Product product = getProduct();
+        boolean showPrint = showPrint(product);
+        updateLayout(product, showPrint);
+    }
+
+    /**
+     * Determines if the print flag should be shown.
+     * <p/>
+     * Only shown if both the low and high totals are zero and there is either no template, or the template is not
+     * printing as an aggregate.
+     *
+     * @param product the product. May be {@code null}
+     * @return {@code true} if the print flag should be shown
+     */
+    private boolean showPrint(Product product) {
+        boolean result = false;
+        if (product != null) {
+            BigDecimal lowTotal = getProperty(LOW_TOTAL).getBigDecimal(ZERO);
+            BigDecimal highTotal = getProperty(HIGH_TOTAL).getBigDecimal(ZERO);
+            result = MathRules.equals(lowTotal, ZERO) && MathRules.equals(highTotal, ZERO);
+            if (result) {
+                Product template = getTemplate();
+                if (template != null) {
+                    IMObjectBean bean = new IMObjectBean(template);
+                    result = !bean.getBoolean("printAggregate");
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Returns a node filter for the specified product reference.
      * <p/>
      * This excludes:
@@ -490,15 +564,25 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * <li>the discount node, if discounts are disabled</li>
      * </ul>
      *
-     * @param product a reference to the product. May be {@code null}
+     * @param product   a reference to the product. May be {@code null}
+     * @param showPrint if {@code true}, show the print node
      * @return a node filter for the product. If {@code null}, no nodes require filtering
      */
-    private ArchetypeNodes getFilterForProduct(IMObjectReference product) {
+    private ArchetypeNodes getFilterForProduct(Product product, boolean showPrint) {
         ArchetypeNodes result = null;
         if (TypeHelper.isA(product, TEMPLATE)) {
             result = TEMPLATE_NODES;
-        } else if (getDisableDiscounts()) {
-            result = new ArchetypeNodes().exclude(LOW_DISCOUNT, HIGH_DISCOUNT);
+        } else {
+            if (getDisableDiscounts()) {
+                result = new ArchetypeNodes().exclude(LOW_DISCOUNT, HIGH_DISCOUNT);
+            }
+            if (showPrint) {
+                if (result == null) {
+                    result = new ArchetypeNodes();
+                }
+                result.simple(PRINT);
+                result.order(PRINT, LOW_TOTAL);
+            }
         }
         return result;
     }
