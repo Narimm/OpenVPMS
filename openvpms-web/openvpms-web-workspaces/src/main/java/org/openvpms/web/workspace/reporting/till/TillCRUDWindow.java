@@ -366,7 +366,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     protected void onPrint() {
         try {
             final FinancialAct object = getObject();
-            IPage<ObjectSet> set = new TillBalanceQuery(object).query();
+            IPage<ObjectSet> set = new TillBalanceQuery(object, ServiceHelper.getArchetypeService()).query();
             IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), TILL_BALANCE, getContext());
             String displayName = DescriptorHelper.getDisplayName(TILL_BALANCE);
             String title = Messages.format("imobject.print.title", displayName);
@@ -438,8 +438,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         list.setHeight(new Extent(10, Extent.EM));
         list.setCellRenderer(IMObjectListCellRenderer.NAME);
 
-        final SelectionDialog dialog = new SelectionDialog(title, message, list,
-                                                           getHelpContext().subtopic("transfer"));
+        final SelectionDialog dialog = new SelectionDialog(title, message, list, getHelpContext().subtopic("transfer"));
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent e) {
                 Party selected = (Party) dialog.getSelected();
