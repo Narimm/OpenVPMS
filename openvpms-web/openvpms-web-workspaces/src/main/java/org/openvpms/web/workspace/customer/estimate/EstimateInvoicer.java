@@ -92,6 +92,7 @@ public class EstimateInvoicer extends AbstractInvoicer {
 
             // NOTE: setting the product can trigger popups - want the popups to get the correct
             // property values from above
+            itemEditor.setTemplateRef(itemBean.getNodeParticipantRef("template"));
             itemEditor.setProductRef(itemBean.getNodeParticipantRef("product"));
 
             itemEditor.setFixedPrice(itemBean.getBigDecimal("fixedPrice"));

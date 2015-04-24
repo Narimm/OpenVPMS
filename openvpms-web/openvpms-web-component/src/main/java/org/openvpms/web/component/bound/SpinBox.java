@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.bound;
 
@@ -36,7 +36,7 @@ import org.openvpms.web.echo.text.TextField;
  *
  * @author Tim Anderson
  */
-public class SpinBox extends Row {
+public class SpinBox extends Row implements BoundProperty {
 
     /**
      * The minimum value.
@@ -169,6 +169,16 @@ public class SpinBox extends Row {
      */
     public FocusGroup getFocusGroup() {
         return group;
+    }
+
+    /**
+     * Returns the property.
+     *
+     * @return the property
+     */
+    @Override
+    public Property getProperty() {
+        return value;
     }
 
     /**

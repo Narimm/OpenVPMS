@@ -42,9 +42,8 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.bound.BoundCheckBox;
+import org.openvpms.web.component.bound.BoundProperty;
 import org.openvpms.web.component.edit.Editor;
-import org.openvpms.web.component.edit.PropertyComponentEditor;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditorFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
@@ -129,11 +128,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private ActRelationshipCollectionEditor reminders;
 
     /**
-     * The print flag editor. May be {@code null}
-     */
-    private PropertyComponentEditor print;
-
-    /**
      * The medication, investigation and reminder act editor manager.
      */
     private EditorQueue editorQueue;
@@ -156,10 +150,10 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Listener for changes to the fixed price, quantity and unit price, to update the discount.
      */
-    private final ModifiableListener quantityPriceListener;
+    private final ModifiableListener discountListener;
 
     /**
-     * Listener for changes to the total, so the tax amount can be recalculated.
+     * Listener for changes to the total, so the tax amount can be recalculated, and print flag enabled/disabled.
      */
     private final ModifiableListener totalListener;
 
@@ -274,6 +268,16 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private static final String UNIT_PRICE = "unitPrice";
 
     /**
+     * Print node name.
+     */
+    private static final String PRINT = "print";
+
+    /**
+     * Tax node name.
+     */
+    private static final String TAX = "tax";
+
+    /**
      * Total node name.
      */
     private static final String TOTAL = "total";
@@ -306,7 +310,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         dispensing = createDispensingCollectionEditor();
         investigations = createCollectionEditor(INVESTIGATIONS, act);
         reminders = createCollectionEditor(REMINDERS, act);
-        print = createPrintEditor();
 
         rules = ServiceHelper.getBean(StockRules.class);
         reminderRules = ServiceHelper.getBean(ReminderRules.class);
@@ -333,28 +336,29 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         }
 
         calculateTax();
-        updatePrint();
 
-        ArchetypeNodes nodes = getFilterForProduct(getProductRef());
+        Product product = getProduct();
+        ArchetypeNodes nodes = getFilterForProduct(product, showPrint(product));
         setArchetypeNodes(nodes);
 
         // add a listener to update the tax amount when the total changes
         totalListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
-                updateTaxAmount();
+                onTotalChanged();
             }
         };
         getProperty(TOTAL).addModifiableListener(totalListener);
 
-        // add a listener to update the discount amount and print flag when the quantity, fixed or unit price changes.
-        quantityPriceListener = new ModifiableListener() {
+        // add a listener to update the discount amount when the quantity,
+        // fixed or unit price changes.
+        discountListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
-                onQuantityPriceChange();
+                updateDiscount();
             }
         };
-        getProperty(FIXED_PRICE).addModifiableListener(quantityPriceListener);
-        getProperty(QUANTITY).addModifiableListener(quantityPriceListener);
-        getProperty(UNIT_PRICE).addModifiableListener(quantityPriceListener);
+        getProperty(FIXED_PRICE).addModifiableListener(discountListener);
+        getProperty(QUANTITY).addModifiableListener(discountListener);
+        getProperty(UNIT_PRICE).addModifiableListener(discountListener);
         getProperty(QUANTITY).addModifiableListener(quantityListener);
 
         startTimeListener = new ModifiableListener() {
@@ -439,9 +443,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         }
 
         getProperty(TOTAL).removeModifiableListener(totalListener);
-        getProperty(FIXED_PRICE).removeModifiableListener(quantityPriceListener);
-        getProperty(QUANTITY).removeModifiableListener(quantityPriceListener);
-        getProperty(UNIT_PRICE).removeModifiableListener(quantityPriceListener);
+        getProperty(FIXED_PRICE).removeModifiableListener(discountListener);
+        getProperty(QUANTITY).removeModifiableListener(discountListener);
+        getProperty(UNIT_PRICE).removeModifiableListener(discountListener);
         getProperty(QUANTITY).removeModifiableListener(quantityListener);
         getProperty(START_TIME).removeModifiableListener(startTimeListener);
     }
@@ -734,9 +738,10 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     @Override
     protected void productModified(Product product) {
-        getProperty(FIXED_PRICE).removeModifiableListener(quantityPriceListener);
-        getProperty(QUANTITY).removeModifiableListener(quantityPriceListener);
-        getProperty(UNIT_PRICE).removeModifiableListener(quantityPriceListener);
+        getProperty(FIXED_PRICE).removeModifiableListener(discountListener);
+        getProperty(QUANTITY).removeModifiableListener(discountListener);
+        getProperty(UNIT_PRICE).removeModifiableListener(discountListener);
+        getProperty(TOTAL).removeModifiableListener(totalListener);
         super.productModified(product);
 
         // product modification can happen either via user intervention or template expansion. If by template expansion
@@ -748,13 +753,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         } else {
             currentTemplate = false;
         }
-
-        // update the layout if nodes require filtering
-        updateLayout(product);
-
-        updatePatientMedication(product);
-        updateInvestigations(product);
-        updateReminders(product);
 
         Property discount = getProperty(DISCOUNT);
         discount.setValue(ZERO);
@@ -795,12 +793,23 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             updateSellingUnits(product);
             updateBatch(product, stockLocation);
             updateDiscount();
-            updatePrint();
         }
+        updateTaxAmount();
+
+        boolean showPrint = showPrint(product);
+
+        // update the layout if nodes require filtering
+        updateLayout(product, showPrint);
+
+        updatePatientMedication(product);
+        updateInvestigations(product);
+        updateReminders(product);
+
         notifyProductListener(product);
-        getProperty(FIXED_PRICE).addModifiableListener(quantityPriceListener);
-        getProperty(QUANTITY).addModifiableListener(quantityPriceListener);
-        getProperty(UNIT_PRICE).addModifiableListener(quantityPriceListener);
+        getProperty(FIXED_PRICE).addModifiableListener(discountListener);
+        getProperty(QUANTITY).addModifiableListener(discountListener);
+        getProperty(UNIT_PRICE).addModifiableListener(discountListener);
+        getProperty(TOTAL).addModifiableListener(totalListener);
     }
 
     /**
@@ -823,32 +832,13 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
-     * Invoked when a quantity or price changes.
+     * Invoked when the total changes.
      */
-    private void onQuantityPriceChange() {
-        updateDiscount();
-        updatePrint();
-    }
-
-    /**
-     * Enables the print flag if the total is zero.
-     */
-    private void updatePrint() {
-        if (print != null) {
-            BigDecimal total = getProperty(TOTAL).getBigDecimal(ZERO);
-            boolean enabled = MathRules.equals(total, ZERO);
-            print.getComponent().setEnabled(enabled);
-        }
-    }
-
-    /**
-     * Creates the print flag editor.
-     *
-     * @return a new editor, or {@code null} if there is no print property
-     */
-    private PropertyComponentEditor createPrintEditor() {
-        Property property = getProperty("print");
-        return (property != null) ? new PropertyComponentEditor(property, new BoundCheckBox(property)) : null;
+    private void onTotalChanged() {
+        updateTaxAmount();
+        Product product = getProduct();
+        boolean showPrint = showPrint(product);
+        updateLayout(product, showPrint);
     }
 
     /**
@@ -1108,22 +1098,49 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @param product the product. May be {@code null}
      */
     private void updateLayout(Product product) {
+        updateLayout(product, showPrint(product));
+    }
+
+    /**
+     * Invoked when the product changes to update the layout, if required.
+     *
+     * @param product   the product. May be {@code null}
+     * @param showPrint if {@code true}, show the print node
+     */
+    private void updateLayout(Product product, boolean showPrint) {
         ArchetypeNodes currentNodes = getArchetypeNodes();
-        IMObjectReference productRef = (product != null) ? product.getObjectReference() : null;
-        ArchetypeNodes expectedFilter = getFilterForProduct(productRef);
+        ArchetypeNodes expectedFilter = getFilterForProduct(product, showPrint);
         if (!ObjectUtils.equals(currentNodes, expectedFilter)) {
             Component popupFocus = null;
+            Component focus = FocusHelper.getFocus();
+            Property focusProperty = null;
             if (editorQueue != null && !editorQueue.isComplete()) {
-                popupFocus = FocusHelper.getFocus();
+                popupFocus = focus;
+            } else if (focus instanceof BoundProperty) {
+                focusProperty = ((BoundProperty) focus).getProperty();
             }
             changeLayout(expectedFilter);  // this can move the focus away from the popups, if any
             if (editorQueue != null && editorQueue.isComplete()) {
-                // no current popups, so move focus to the product
-                moveFocusToProduct();
+                // no current popups, so move focus to the original property if possible, otherwise move it to the
+                // product
+                if (focusProperty != null) {
+                    Editor editor = getEditors().getEditor(focusProperty.getName());
+                    if (editor != null && editor.getFocusGroup() != null) {
+                        editor.getFocusGroup().setFocus();
+                    } else {
+                        moveFocusToProduct();
+                    }
+                } else {
+                    moveFocusToProduct();
+                }
             } else {
                 // move the focus back to the popup
                 FocusHelper.setFocus(popupFocus);
             }
+        }
+        if (!showPrint) {
+            // set to a reasonable default to avoid exclusion by broken templates
+            getProperty(PRINT).setValue(true);
         }
     }
 
@@ -1502,10 +1519,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * <li>the discount node, if discounts are disabled</li>
      * </ul>
      *
-     * @param product a reference to the product. May be {@code null}
+     * @param product   the product. May be {@code null}
+     * @param showPrint if {@code true} show the print node
      * @return a node filter for the product. If {@code null}, no nodes require filtering
      */
-    private ArchetypeNodes getFilterForProduct(IMObjectReference product) {
+    private ArchetypeNodes getFilterForProduct(Product product, boolean showPrint) {
         ArchetypeNodes result = null;
         if (TypeHelper.isA(product, TEMPLATE)) {
             result = TEMPLATE_NODES;
@@ -1530,11 +1548,41 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             if (!filter.isEmpty()) {
                 result = new ArchetypeNodes().exclude(filter);
             }
+            if (showPrint) {
+                if (result == null) {
+                    result = new ArchetypeNodes();
+                }
+                result.simple(PRINT).order(PRINT, TAX);
+            }
             if (isOrdered()) {
                 if (result == null) {
                     result = new ArchetypeNodes();
                 }
                 result.simple(ORDER_NODES);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Determines if the print flag should be shown.
+     * <p/>
+     * Only shown if the total is zero and there is either no template, or the template is not printing as an aggregate
+     *
+     * @param product the product. May be {@code null}
+     * @return {@code true} if the print flag should be shown
+     */
+    private boolean showPrint(Product product) {
+        boolean result = false;
+        if (product != null) {
+            BigDecimal total = getProperty(TOTAL).getBigDecimal(ZERO);
+            result = MathRules.equals(total, ZERO);
+            if (result) {
+                Product template = getTemplate();
+                if (template != null) {
+                    IMObjectBean bean = new IMObjectBean(template);
+                    result = !bean.getBoolean("printAggregate");
+                }
             }
         }
         return result;
@@ -1608,9 +1656,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             }
             if (reminders != null) {
                 addComponent(new ComponentState(reminders));
-            }
-            if (print != null) {
-                addComponent(new ComponentState(print));
             }
         }
 

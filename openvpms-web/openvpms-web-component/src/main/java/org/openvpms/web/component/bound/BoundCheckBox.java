@@ -30,7 +30,7 @@ import org.openvpms.web.echo.event.ActionListener;
  *
  * @author Tim Anderson
  */
-public class BoundCheckBox extends CheckBox {
+public class BoundCheckBox extends CheckBox implements BoundProperty {
 
     /**
      * The property binder.
@@ -104,4 +104,13 @@ public class BoundCheckBox extends CheckBox {
         binder.unbind();
     }
 
+    /**
+     * Returns the property.
+     *
+     * @return the property
+     */
+    @Override
+    public Property getProperty() {
+        return binder.getProperty();
+    }
 }

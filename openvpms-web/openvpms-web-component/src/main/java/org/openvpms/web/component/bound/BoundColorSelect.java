@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
@@ -26,11 +26,11 @@ import java.beans.PropertyChangeListener;
 
 
 /**
- * Binds a property to a <tt>ColorSelect</tt>.
+ * Binds a property to a {@code ColorSelect}.
  *
  * @author Tim Anderson
  */
-public class BoundColorSelect extends ColorSelect {
+public class BoundColorSelect extends ColorSelect implements BoundProperty {
 
     /**
      * The property binder.
@@ -44,7 +44,7 @@ public class BoundColorSelect extends ColorSelect {
 
 
     /**
-     * Construct a new <tt>BoundColorSelect</tt>.
+     * Constructs a {@link BoundColorSelect}.
      *
      * @param property the property to bind
      */
@@ -83,12 +83,22 @@ public class BoundColorSelect extends ColorSelect {
     }
 
     /**
-     * Life-cycle method invoked when the <tt>Component</tt> is removed from a registered hierarchy.
+     * Life-cycle method invoked when the {@code Component} is removed from a registered hierarchy.
      */
     @Override
     public void dispose() {
         super.dispose();
         binder.unbind();
+    }
+
+    /**
+     * Returns the property.
+     *
+     * @return the property
+     */
+    @Override
+    public Property getProperty() {
+        return binder.getProperty();
     }
 
     private Color convert(Object value) {
