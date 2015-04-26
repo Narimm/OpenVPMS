@@ -49,6 +49,7 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.ClinicianParticipationEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
+import org.openvpms.web.component.im.edit.act.TemplateProduct;
 import org.openvpms.web.component.im.edit.reminder.ReminderEditor;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -262,11 +263,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private static final String UNIT_PRICE = "unitPrice";
 
     /**
-     * Print node name.
-     */
-    private static final String PRINT = "print";
-
-    /**
      * Tax node name.
      */
     private static final String TAX = "tax";
@@ -332,7 +328,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         calculateTax();
 
         Product product = getProduct();
-        ArchetypeNodes nodes = getFilterForProduct(product, showPrint(product));
+        ArchetypeNodes nodes = getFilterForProduct(product, updatePrint(product));
         setArchetypeNodes(nodes);
 
         // add a listener to update the tax amount when the total changes
@@ -368,6 +364,29 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 updateMedicationBatch(getStockLocationRef());
             }
         };
+    }
+
+    /**
+     * Sets a product included from a template.
+     *
+     * @param product  the product. May be {@code null}
+     * @param template the template that included the product. May be {@code null}
+     */
+    @Override
+    public void setProduct(TemplateProduct product, Product template) {
+        super.setProduct(product, template);
+        if (product != null && !product.getPrint() && MathRules.equals(getTotal(), ZERO)) {
+            setPrint(false);
+        }
+    }
+
+    /**
+     * Returns the total.
+     *
+     * @return the total
+     */
+    public BigDecimal getTotal() {
+        return getProperty(TOTAL).getBigDecimal(ZERO);
     }
 
     /**
@@ -769,7 +788,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         }
         updateTaxAmount();
 
-        boolean showPrint = showPrint(product);
+        boolean showPrint = updatePrint(product);
 
         // update the layout if nodes require filtering
         updateLayout(product, showPrint);
@@ -810,7 +829,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private void onTotalChanged() {
         updateTaxAmount();
         Product product = getProduct();
-        boolean showPrint = showPrint(product);
+        boolean showPrint = updatePrint(product);
         updateLayout(product, showPrint);
     }
 
@@ -1071,7 +1090,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @param product the product. May be {@code null}
      */
     private void updateLayout(Product product) {
-        updateLayout(product, showPrint(product));
+        updateLayout(product, updatePrint(product));
     }
 
     /**
@@ -1107,10 +1126,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 // move the focus back to the popup
                 FocusHelper.setFocus(popupFocus);
             }
-        }
-        if (!showPrint) {
-            // set to a reasonable default to avoid exclusion by broken templates
-            getProperty(PRINT).setValue(true);
         }
     }
 
@@ -1522,17 +1537,15 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
-     * Determines if the print flag should be shown.
-     * <p/>
-     * Only shown if the total is zero and there is either no template, or the template is not printing as an aggregate
+     * Updates the print flag when the product or total changes.
      *
      * @param product the product. May be {@code null}
      * @return {@code true} if the print flag should be shown
      */
-    private boolean showPrint(Product product) {
+    private boolean updatePrint(Product product) {
         boolean result = false;
         if (product != null) {
-            BigDecimal total = getProperty(TOTAL).getBigDecimal(ZERO);
+            BigDecimal total = getTotal();
             result = MathRules.equals(total, ZERO);
             if (result) {
                 Product template = getTemplate();
@@ -1540,6 +1553,8 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                     IMObjectBean bean = new IMObjectBean(template);
                     result = !bean.getBoolean("printAggregate");
                 }
+            } else {
+                setPrint(true);
             }
         }
         return result;

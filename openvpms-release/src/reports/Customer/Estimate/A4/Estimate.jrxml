@@ -16,7 +16,7 @@
   -->
 
 <!-- Created with Jaspersoft Studio version 6.0.3.final using JasperReports Library version 6.0.3  -->
-<!-- 2015-04-24T14:21:00 -->
+<!-- 2015-04-26T18:14:58 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
@@ -292,8 +292,11 @@
     <summary>
         <band height="85" splitType="Stretch">
             <staticText>
-                <reportElement key="staticText-8" x="13" y="5" width="153" height="20"
-                               uuid="2aa0f981-57da-4f4f-ac51-c90fb09a0eda"/>
+                <reportElement key="staticText-8" x="0" y="5" width="137" height="20"
+                               uuid="2aa0f981-57da-4f4f-ac51-c90fb09a0eda">
+                    <property name="local_mesure_unitx" value="pixel"/>
+                    <property name="com.jaspersoft.studio.unit.x" value="px"/>
+                </reportElement>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -303,10 +306,10 @@
                 <textElement>
                     <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
-                <text><![CDATA[This Estimate is Valid until  : ]]></text>
+                <text><![CDATA[This Estimate is valid until: ]]></text>
             </staticText>
             <textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
-                <reportElement key="textField" x="166" y="5" width="118" height="20"
+                <reportElement key="textField" x="140" y="5" width="118" height="20"
                                uuid="72cd1bda-1155-420f-821b-66c4c6ee84af"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

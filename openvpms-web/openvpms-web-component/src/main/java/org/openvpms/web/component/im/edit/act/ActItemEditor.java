@@ -35,6 +35,7 @@ import org.openvpms.web.component.im.patient.PatientParticipationEditor;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
@@ -73,6 +74,17 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * The pricing group.
      */
     private final Lookup pricingGroup;
+
+    /**
+     * Used to determine if the current template relates to the product, or needs to be removed.
+     */
+    private boolean currentTemplate;
+
+
+    /**
+     * Print node name.
+     */
+    protected static final String PRINT = "print";
 
 
     /**
@@ -156,6 +168,37 @@ public abstract class ActItemEditor extends AbstractActEditor {
     }
 
     /**
+     * Sets a product included from a template.
+     *
+     * @param product  the template product. May be {@code null}
+     * @param template the template that included the product. May be {@code null}
+     */
+    public void setProduct(IMObjectReference product, IMObjectReference template) {
+        setTemplateRef(template); // NB: template must be set before product
+        setProductRef(product);
+    }
+
+    /**
+     * Sets a product included from a template.
+     *
+     * @param product  the product. May be {@code null}
+     * @param template the template that included the product. May be {@code null}
+     */
+    public void setProduct(TemplateProduct product, Product template) {
+        setTemplate(template);  // NB: template must be set before product
+        if (product != null) {
+            setProduct(product.getProduct());
+            setQuantity(product.getHighQuantity());
+            if (product.getZeroPrice()) {
+                setFixedPrice(BigDecimal.ZERO);
+                setUnitPrice(BigDecimal.ZERO);
+            }
+        } else {
+            setProduct(null);
+        }
+    }
+
+    /**
      * Returns the product template.
      *
      * @return the product template, or {@code null} if the act has no template
@@ -165,30 +208,12 @@ public abstract class ActItemEditor extends AbstractActEditor {
     }
 
     /**
-     * Sets the product template.
-     *
-     * @param template the product template. May be {@code null}
-     */
-    public void setTemplate(Product template) {
-        setTemplateRef(template != null ? template.getObjectReference() : null);
-    }
-
-    /**
      * Returns a reference to the product template.
      *
      * @return a reference to the product template, or {@code null} if the act has no template
      */
     public IMObjectReference getTemplateRef() {
         return getParticipantRef("template");
-    }
-
-    /**
-     * Sets the product template.
-     *
-     * @param template a reference to the product. May be {@code null}
-     */
-    public void setTemplateRef(IMObjectReference template) {
-        setParticipant("template", template);
     }
 
     /**
@@ -349,6 +374,32 @@ public abstract class ActItemEditor extends AbstractActEditor {
     }
 
     /**
+     * Determines if zero-priced products should be printed.
+     *
+     * @param print if {@code true}, print zero-priced products, otherwise suppress them
+     */
+    public void setPrint(boolean print) {
+        Property property = getProperty("print");
+        if (property != null) {
+            property.setValue(print);
+        }
+    }
+
+    /**
+     * Determines if zero-priced products should be printed.
+     *
+     * @return {@code true}, if zero-priced products should be printed, {@code false} if they should be suppressed
+     */
+    public boolean getPrint() {
+        boolean result = true;
+        Property property = getProperty("print");
+        if (property != null) {
+            result = property.getBoolean(true);
+        }
+        return result;
+    }
+
+    /**
      * Invoked when the participation product is changed.
      * <p/>
      * This delegates to {@link #productModified(Product)}.
@@ -357,6 +408,13 @@ public abstract class ActItemEditor extends AbstractActEditor {
      */
     protected void productModified(Participation participation) {
         Product product = (Product) getObject(participation.getEntity());
+        // product modification can happen either via user intervention or template expansion. If by template expansion
+        // the template is populated before the product, and must be retained. If not, the template must be removed
+        if (!currentTemplate) {
+            setTemplateRef(null);
+        } else {
+            currentTemplate = false;
+        }
         productModified(product);
     }
 
@@ -587,6 +645,27 @@ public abstract class ActItemEditor extends AbstractActEditor {
             result = locationRules.getPricingGroup(location);
         }
         return result;
+    }
+
+    /**
+     * Sets the product template.
+     *
+     * @param template the product template. May be {@code null}
+     */
+    private void setTemplate(Product template) {
+        setTemplateRef(template != null ? template.getObjectReference() : null);
+    }
+
+    /**
+     * Sets the product template.
+     *
+     * @param template a reference to the product. May be {@code null}
+     */
+    private void setTemplateRef(IMObjectReference template) {
+        if (getProperty("template") != null) {
+            setParticipant("template", template);
+            currentTemplate = template != null;
+        }
     }
 
     /**
