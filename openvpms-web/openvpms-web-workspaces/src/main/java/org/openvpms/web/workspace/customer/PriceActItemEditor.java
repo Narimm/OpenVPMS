@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -35,9 +36,11 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
 import org.openvpms.web.component.im.product.ProductHelper;
+import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
@@ -82,6 +85,11 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     private BigDecimal serviceRatio;
 
     /**
+     * Used to determine if the current template relates to the product, or needs to be removed.
+     */
+    private boolean currentTemplate;
+
+    /**
      * The product price rules.
      */
     private final ProductPriceRules priceRules;
@@ -121,6 +129,17 @@ public abstract class PriceActItemEditor extends ActItemEditor {
 
         fixedEditor = new FixedPriceEditor(fixedPrice, getPricingGroup(), currency);
         fixedEditor.setProduct(product, serviceRatio);
+    }
+
+    /**
+     * Sets the product template.
+     *
+     * @param template a reference to the product. May be {@code null}
+     */
+    @Override
+    public void setTemplateRef(IMObjectReference template) {
+        super.setTemplateRef(template);
+        currentTemplate = template != null;
     }
 
     /**
@@ -175,6 +194,16 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      */
     @Override
     protected void productModified(Product product) {
+        // product modification can happen either via user intervention or template expansion. If by template expansion
+        // the template is populated before the product, and must be retained. If not, the template must be removed
+        // TODO - this is brittle. Could either have two arguments for the product and template, or have a wrapper
+        // containing both, so they can be handled simultaneously
+        if (!currentTemplate) {
+            setTemplateRef(null);
+        } else {
+            currentTemplate = false;
+        }
+
         serviceRatio = getServiceRatio(product, getLocation());
         if (!TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
             fixedEditor.setProduct(product, serviceRatio);
@@ -447,6 +476,19 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     protected BigDecimal calculateTax(Party customer) {
         FinancialAct act = (FinancialAct) getObject();
         return taxRules.calculateTax(act, customer);
+    }
+
+    /**
+     * Helper to move the focus to the product editor.
+     */
+    protected void moveFocusToProduct() {
+        ProductParticipationEditor productEditor = getProductEditor();
+        if (productEditor != null) {
+            FocusGroup group = productEditor.getFocusGroup();
+            if (group != null) {
+                group.setFocus();
+            }
+        }
     }
 
     /**

@@ -72,7 +72,6 @@ import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
-import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
@@ -196,11 +195,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * The charge context.
      */
     private ChargeContext chargeContext;
-
-    /**
-     * Used to determine if the current template relates to the product, or needs to be removed.
-     */
-    private boolean currentTemplate;
 
     /**
      * Dispensing node name.
@@ -566,17 +560,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
-     * Sets the product template.
-     *
-     * @param template a reference to the product. May be {@code null}
-     */
-    @Override
-    public void setTemplateRef(IMObjectReference template) {
-        super.setTemplateRef(template);
-        currentTemplate = template != null;
-    }
-
-    /**
      * Updates the discount and checks that it isn't less than the total cost.
      * <p/>
      * If so, gives the user the opportunity to remove the discount.
@@ -743,16 +726,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         getProperty(UNIT_PRICE).removeModifiableListener(discountListener);
         getProperty(TOTAL).removeModifiableListener(totalListener);
         super.productModified(product);
-
-        // product modification can happen either via user intervention or template expansion. If by template expansion
-        // the template is populated before the product, and must be retained. If not, the template must be removed
-        // TODO - this is brittle. Could either have two arguments for the product and template, or have a wrapper
-        // containing both, so they can be handled simultaneously
-        if (!currentTemplate) {
-            setTemplateRef(null);
-        } else {
-            currentTemplate = false;
-        }
 
         Property discount = getProperty(DISCOUNT);
         discount.setValue(ZERO);
@@ -1124,10 +1097,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 // no current popups, so move focus to the original property if possible, otherwise move it to the
                 // product
                 if (focusProperty != null) {
-                    Editor editor = getEditors().getEditor(focusProperty.getName());
-                    if (editor != null && editor.getFocusGroup() != null) {
-                        editor.getFocusGroup().setFocus();
-                    } else {
+                    if (!setFocus(focusProperty)) {
                         moveFocusToProduct();
                     }
                 } else {
@@ -1397,19 +1367,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         }
         for (PatientInvestigationActEditor editor : getInvestigationActEditors()) {
             editor.setClinician(clinician);
-        }
-    }
-
-    /**
-     * Helper to move the focus to the product editor.
-     */
-    private void moveFocusToProduct() {
-        ProductParticipationEditor productEditor = getProductEditor();
-        if (productEditor != null) {
-            FocusGroup group = productEditor.getFocusGroup();
-            if (group != null) {
-                group.setFocus();
-            }
         }
     }
 
