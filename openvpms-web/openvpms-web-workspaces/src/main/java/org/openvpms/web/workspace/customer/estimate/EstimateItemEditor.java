@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.bound.BoundProperty;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -42,6 +43,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
 
 import java.math.BigDecimal;
@@ -344,7 +346,6 @@ public class EstimateItemEditor extends PriceActItemEditor {
             highUnitPrice.setValue(BigDecimal.ZERO);
             updateSellingUnits(null);
         } else {
-            showPrint = showPrint(product);
             Property fixedPrice = getProperty(FIXED_PRICE);
             Property lowUnitPrice = getProperty(LOW_UNIT_PRICE);
             Property highUnitPrice = getProperty(HIGH_UNIT_PRICE);
@@ -368,6 +369,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
                 lowUnitPrice.setValue(BigDecimal.ZERO);
                 highUnitPrice.setValue(BigDecimal.ZERO);
             }
+            showPrint = showPrint(product);
             updateSellingUnits(product);
         }
 
@@ -380,14 +382,6 @@ public class EstimateItemEditor extends PriceActItemEditor {
         notifyProductListener(product);
         getProperty(LOW_TOTAL).addModifiableListener(totalListener);
         getProperty(HIGH_TOTAL).addModifiableListener(totalListener);
-    }
-
-    private void updateLayout(Product product, boolean showPrint) {
-        ArchetypeNodes currentNodes = getArchetypeNodes();
-        ArchetypeNodes expectedFilter = getFilterForProduct(product, showPrint);
-        if (!ObjectUtils.equals(currentNodes, expectedFilter)) {
-            changeLayout(expectedFilter);
-        }
     }
 
     /**
@@ -437,6 +431,32 @@ public class EstimateItemEditor extends PriceActItemEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice) {
         return new EstimateItemLayoutStrategy(fixedPrice);
+    }
+
+    /**
+     * Updates the layout if required.
+     *
+     * @param product   the product. May be {@code null}
+     * @param showPrint if {@code true} show the print node
+     */
+    private void updateLayout(Product product, boolean showPrint) {
+        ArchetypeNodes currentNodes = getArchetypeNodes();
+        ArchetypeNodes expectedFilter = getFilterForProduct(product, showPrint);
+        if (!ObjectUtils.equals(currentNodes, expectedFilter)) {
+            Component focus = FocusHelper.getFocus();
+            Property focusProperty = null;
+            if (focus instanceof BoundProperty) {
+                focusProperty = ((BoundProperty) focus).getProperty();
+            }
+            changeLayout(expectedFilter);
+            if (focusProperty != null) {
+                if (!setFocus(focusProperty)) {
+                    moveFocusToProduct();
+                }
+            } else {
+                moveFocusToProduct();
+            }
+        }
     }
 
     /**
