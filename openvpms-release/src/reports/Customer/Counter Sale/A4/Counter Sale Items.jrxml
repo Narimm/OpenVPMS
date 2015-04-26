@@ -16,7 +16,7 @@
   -->
 
 <!-- Created with Jaspersoft Studio version 6.0.3.final using JasperReports Library version 6.0.3  -->
-<!-- 2015-04-26T15:56:00 -->
+<!-- 2015-04-26T23:30:00 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
@@ -139,7 +139,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
                 <text><![CDATA[Product]]></text>
             </staticText>
@@ -159,7 +159,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
                 <text><![CDATA[Amount]]></text>
             </staticText>
@@ -179,7 +179,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
                 <text><![CDATA[Quantity]]></text>
             </staticText>
@@ -187,6 +187,8 @@
     </columnHeader>
     <detail>
         <band height="19" splitType="Stretch">
+            <printWhenExpression>
+                <![CDATA[($F{target.template} == null || !$F{target.template.entity.printAggregate}) && ($F{target.print} || $F{target.total}.compareTo(BigDecimal.ZERO) != 0)]]></printWhenExpression>
             <textField pattern="¤ #,##0.00" isBlankWhenNull="false">
                 <reportElement key="textField-2" x="467" y="2" width="61" height="15"
                                uuid="d13133a1-86c0-43c4-9d74-84b39008951f">
@@ -264,7 +266,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$V{SUM_target.total}]]></textFieldExpression>
             </textField>
@@ -282,7 +284,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
                 <text><![CDATA[TOTAL]]></text>
             </staticText>

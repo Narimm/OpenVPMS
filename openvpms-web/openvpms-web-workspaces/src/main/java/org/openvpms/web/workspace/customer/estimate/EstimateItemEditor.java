@@ -30,6 +30,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.bound.BoundProperty;
+import org.openvpms.web.component.im.edit.act.TemplateProduct;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -107,11 +108,6 @@ public class EstimateItemEditor extends PriceActItemEditor {
     private static final String HIGH_DISCOUNT = "highDiscount";
 
     /**
-     * Print node name.
-     */
-    private static final String PRINT = "print";
-
-    /**
      * Low total node name.
      */
     private static final String LOW_TOTAL = "lowTotal";
@@ -149,7 +145,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
         }
 
         Product product = getProduct();
-        ArchetypeNodes nodes = getFilterForProduct(product, showPrint(product));
+        ArchetypeNodes nodes = getFilterForProduct(product, updatePrint(product));
         setArchetypeNodes(nodes);
 
         // add a listener to update the discount when the fixed, high unit price
@@ -307,6 +303,46 @@ public class EstimateItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Sets a product included from a template.
+     *
+     * @param product  the product. May be {@code null}
+     * @param template the template that included the product. May be {@code null}
+     */
+    @Override
+    public void setProduct(TemplateProduct product, Product template) {
+        super.setProduct(product, template);
+        if (product != null) {
+            setLowQuantity(product.getLowQuantity());
+            setHighQuantity(product.getHighQuantity());
+            if (!product.getPrint()) {
+                BigDecimal low = getLowTotal();
+                BigDecimal high = getHighTotal();
+                if (MathRules.equals(low, ZERO) && MathRules.equals(high, ZERO)) {
+                    setPrint(false);
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the low total.
+     *
+     * @return the low total
+     */
+    public BigDecimal getLowTotal() {
+        return getProperty(LOW_TOTAL).getBigDecimal(ZERO);
+    }
+
+    /**
+     * Returns the high total.
+     *
+     * @return the high total
+     */
+    public BigDecimal getHighTotal() {
+        return getProperty(HIGH_TOTAL).getBigDecimal(ZERO);
+    }
+
+    /**
      * Invoked when layout has completed.
      */
     @Override
@@ -369,15 +405,12 @@ public class EstimateItemEditor extends PriceActItemEditor {
                 lowUnitPrice.setValue(BigDecimal.ZERO);
                 highUnitPrice.setValue(BigDecimal.ZERO);
             }
-            showPrint = showPrint(product);
+            showPrint = updatePrint(product);
             updateSellingUnits(product);
         }
 
+        setPrint(true);
         updateLayout(product, showPrint);
-        if (!showPrint) {
-            // set to a reasonable default to avoid exclusion by broken templates
-            getProperty(PRINT).setValue(true);
-        }
 
         notifyProductListener(product);
         getProperty(LOW_TOTAL).addModifiableListener(totalListener);
@@ -545,24 +578,21 @@ public class EstimateItemEditor extends PriceActItemEditor {
      */
     private void onTotalChanged() {
         Product product = getProduct();
-        boolean showPrint = showPrint(product);
+        boolean showPrint = updatePrint(product);
         updateLayout(product, showPrint);
     }
 
     /**
-     * Determines if the print flag should be shown.
-     * <p/>
-     * Only shown if both the low and high totals are zero and there is either no template, or the template is not
-     * printing as an aggregate.
+     * Updates the print flag when the product or total changes.
      *
      * @param product the product. May be {@code null}
      * @return {@code true} if the print flag should be shown
      */
-    private boolean showPrint(Product product) {
+    private boolean updatePrint(Product product) {
         boolean result = false;
         if (product != null) {
-            BigDecimal lowTotal = getProperty(LOW_TOTAL).getBigDecimal(ZERO);
-            BigDecimal highTotal = getProperty(HIGH_TOTAL).getBigDecimal(ZERO);
+            BigDecimal lowTotal = getLowTotal();
+            BigDecimal highTotal = getHighTotal();
             result = MathRules.equals(lowTotal, ZERO) && MathRules.equals(highTotal, ZERO);
             if (result) {
                 Product template = getTemplate();
@@ -570,10 +600,13 @@ public class EstimateItemEditor extends PriceActItemEditor {
                     IMObjectBean bean = new IMObjectBean(template);
                     result = !bean.getBoolean("printAggregate");
                 }
+            } else {
+                setPrint(true);
             }
         }
         return result;
     }
+
 
     /**
      * Returns a node filter for the specified product reference.

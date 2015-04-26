@@ -16,7 +16,7 @@
   -->
 
 <!-- Created with Jaspersoft Studio version 6.0.3.final using JasperReports Library version 6.0.3  -->
-<!-- 2015-04-26T17:01:15 -->
+<!-- 2015-04-26T18:15:23 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
@@ -120,7 +120,7 @@
                     </textElement>
                     <textFieldExpression><![CDATA[$F{target.template.entity.name}]]></textFieldExpression>
                 </textField>
-                <textField evaluationTime="Group" evaluationGroup="templateGroup">
+                <textField evaluationTime="Group" evaluationGroup="templateGroup" pattern="¤ #,##0.00">
                     <reportElement x="432" y="2" width="47" height="16" uuid="b35b745b-380b-4119-8e0c-f6b7a6c3f58e">
                         <property name="local_mesure_unitheight" value="pixel"/>
                         <property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -131,7 +131,7 @@
                     <textElement textAlignment="Right"/>
                     <textFieldExpression><![CDATA[$V{templateLowTotal}]]></textFieldExpression>
                 </textField>
-                <textField evaluationTime="Group" evaluationGroup="templateGroup">
+                <textField evaluationTime="Group" evaluationGroup="templateGroup" pattern="¤ #,##0.00">
                     <reportElement x="482" y="2" width="47" height="16" uuid="2c3136fa-512c-498d-a4c3-60865a007e1f">
                         <property name="local_mesure_unitheight" value="pixel"/>
                         <property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -419,7 +419,9 @@
                     <bottomPen lineWidth="0.0" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right"/>
+                <textElement textAlignment="Right">
+                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                </textElement>
                 <textFieldExpression><![CDATA[$V{SUM_target.lowTotal}]]></textFieldExpression>
             </textField>
             <textField pattern="##0.00" isBlankWhenNull="false">
@@ -434,7 +436,9 @@
                     <bottomPen lineWidth="0.0" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right"/>
+                <textElement textAlignment="Right">
+                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                </textElement>
                 <textFieldExpression><![CDATA[$V{SUM_target.highTotal}]]></textFieldExpression>
             </textField>
         </band>

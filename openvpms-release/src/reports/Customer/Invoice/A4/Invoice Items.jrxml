@@ -16,7 +16,7 @@
   -->
 
 <!-- Created with Jaspersoft Studio version 6.0.3.final using JasperReports Library version 6.0.3  -->
-<!-- 2015-04-26T16:45:00 -->
+<!-- 2015-04-26T21:58:22 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
@@ -86,7 +86,7 @@
                         <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     </box>
                     <textElement>
-                        <font size="10" isBold="true"/>
+                        <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
                     </textElement>
                     <textFieldExpression><![CDATA[$F{target.patient.entity.name}]]></textFieldExpression>
                 </textField>
@@ -125,7 +125,7 @@
                     </textElement>
                     <textFieldExpression><![CDATA[$F{target.startTime}]]></textFieldExpression>
                 </textField>
-                <textField evaluationTime="Group" evaluationGroup="templateGroup">
+                <textField evaluationTime="Group" evaluationGroup="templateGroup" pattern="¤ #,##0.00">
                     <reportElement x="467" y="2" width="61" height="16" uuid="7c1788e0-7efd-4524-a8a0-ffe225b2ef27">
                         <property name="local_mesure_unitheight" value="pixel"/>
                         <property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -172,7 +172,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font size="10" isBold="true" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
                 <text><![CDATA[Service Provided]]></text>
             </staticText>
@@ -186,7 +186,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="true" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
                 <text><![CDATA[Amount]]></text>
             </staticText>
@@ -200,7 +200,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="true" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
                 <text><![CDATA[Quantity]]></text>
             </staticText>
@@ -214,7 +214,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font size="10" isBold="true" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
                 <text><![CDATA[Patient]]></text>
             </staticText>
@@ -282,7 +282,9 @@
         </band>
     </detail>
     <columnFooter>
-        <band height="30" splitType="Stretch">
+        <band height="22" splitType="Stretch">
+            <property name="local_mesure_unitheight" value="pixel"/>
+            <property name="com.jaspersoft.studio.unit.height" value="px"/>
             <line>
                 <reportElement key="line-3" x="1" y="1" width="532" height="1"
                                uuid="dc40f6f3-1a06-4e39-a22d-16b9eafbf32d"/>
@@ -299,15 +301,17 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$V{SUM_target.total}]]></textFieldExpression>
             </textField>
             <staticText>
-                <reportElement key="staticText-11" x="381" y="5" width="47" height="16"
+                <reportElement key="staticText-11" x="381" y="4" width="47" height="16"
                                uuid="f2cbd94c-671c-46e9-bf6f-0bc4103866df">
                     <property name="local_mesure_unitheight" value="pixel"/>
                     <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <property name="local_mesure_unity" value="pixel"/>
+                    <property name="com.jaspersoft.studio.unit.y" value="px"/>
                 </reportElement>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -316,7 +320,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="true" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
                 <text><![CDATA[TOTAL]]></text>
             </staticText>
