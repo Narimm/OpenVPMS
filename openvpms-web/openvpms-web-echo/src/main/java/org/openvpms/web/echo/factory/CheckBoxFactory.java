@@ -1,31 +1,28 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.factory;
 
-import nextapp.echo2.app.CheckBox;
 
+import org.openvpms.web.echo.button.CheckBox;
 
 /**
  * Factory for {@link CheckBox}es.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class CheckBoxFactory extends ComponentFactory {
 
@@ -43,7 +40,7 @@ public class CheckBoxFactory extends ComponentFactory {
     /**
      * Creates a new check box with localised label.
      *
-     * @param key the resource bundle key. May be <code>null</code>
+     * @param key the resource bundle key. May be {@code null}
      * @return a new check box
      */
     public static CheckBox create(String key) {
@@ -57,7 +54,7 @@ public class CheckBoxFactory extends ComponentFactory {
     /**
      * Creates a new check box with localised label and initial value.
      *
-     * @param key   the resource bundle key. May be <code>null</code>
+     * @param key   the resource bundle key. May be {@code null}
      * @param value the initial value
      * @return a new check box
      */

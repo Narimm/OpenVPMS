@@ -111,7 +111,8 @@ class ProductTemplateExpander {
                                 break;
                             }
                         } else {
-                            TemplateProduct included = new TemplateProduct(product, newLowQty, newHighQty, zero);
+                            TemplateProduct included = new TemplateProduct(product, newLowQty, newHighQty, zero,
+                                                                           include.print);
                             TemplateProduct existing = includes.get(included);
                             if (existing == null) {
                                 includes.put(included, included);
@@ -209,6 +210,11 @@ class ProductTemplateExpander {
          */
         private final boolean zeroPrice;
 
+        /**
+         * Determines if zero-price products should be printed.
+         */
+        private final boolean print;
+
 
         /**
          * Constructs an {@link Include}.
@@ -223,6 +229,7 @@ class ProductTemplateExpander {
             lowQuantity = bean.getBigDecimal("lowQuantity", ZERO);
             highQuantity = bean.getBigDecimal("highQuantity", ZERO);
             zeroPrice = bean.getBoolean("zeroPrice");
+            print = bean.getBoolean("print", true);
             product = relationship.getTarget();
         }
 

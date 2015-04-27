@@ -902,6 +902,41 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
+     * Verifies that if a template is expanded, and a product is subsequently replaced with one not from a template,
+     * the template reference is removed.
+     */
+    @Test
+    public void testChangeTemplateProduct() {
+        BigDecimal fixedPrice = ONE;
+
+        Product template = ProductTestHelper.createTemplate("templateA");
+        Product product1 = createProduct(MEDICATION, fixedPrice);
+        Product product2 = createProduct(MEDICATION, fixedPrice);
+
+        ProductTestHelper.addInclude(template, product1, 1, false);
+
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        ChargeEditorQueue queue = editor.getQueue();
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        CustomerChargeActItemEditor itemEditor = addItem(editor, patient, template, null, queue);
+        assertEquals(product1, itemEditor.getProduct());
+        assertEquals(template, itemEditor.getTemplate());
+
+        itemEditor.setProduct(product2);
+        assertNull(itemEditor.getTemplate());
+
+        assertTrue(SaveHelper.save(editor));
+
+        itemEditor.setProduct(template);
+        assertEquals(product1, itemEditor.getProduct());
+        assertEquals(template, itemEditor.getTemplate());
+    }
+
+    /**
      * Tests template expansion.
      *
      * @param shortName the charge short name
@@ -933,14 +968,14 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         List<FinancialAct> items = bean.getNodeActs("items", FinancialAct.class);
         assertEquals(3, items.size());
 
-        checkItem(items, patient, product1, author, clinician, ONE, ZERO, ZERO, ZERO, ONE, ZERO,
+        checkItem(items, patient, product1, template, author, clinician, ONE, ZERO, ZERO, ZERO, ONE, ZERO,
                   new BigDecimal("0.091"), ONE, null, childActs);
-        checkItem(items, patient, product2, author, clinician, BigDecimal.valueOf(2), ZERO, ZERO, ZERO, ONE, ZERO,
-                  new BigDecimal("0.091"), ONE, null, childActs);
+        checkItem(items, patient, product2, template, author, clinician, BigDecimal.valueOf(2), ZERO, ZERO, ZERO, ONE,
+                  ZERO, new BigDecimal("0.091"), ONE, null, childActs);
 
         // verify that product3 is charged at zero price
-        checkItem(items, patient, product3, author, clinician, BigDecimal.valueOf(3), ZERO, ZERO, ZERO, ZERO, ZERO,
-                  ZERO, ZERO, null, childActs);
+        checkItem(items, patient, product3, template, author, clinician, BigDecimal.valueOf(3), ZERO, ZERO, ZERO, ZERO,
+                  ZERO, ZERO, ZERO, null, childActs);
     }
 
     /**
@@ -1128,11 +1163,11 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         }
 
         BigDecimal discount = ZERO;
-        checkItem(items, patient, product1, author, clinician, quantity, ZERO, ZERO,
+        checkItem(items, patient, product1, null, author, clinician, quantity, ZERO, ZERO,
                   ZERO, fixedPrice, discount, itemTax, itemTotal, event, product1Acts);
-        checkItem(items, patient, product2, author, clinician, quantity, ZERO, ZERO,
+        checkItem(items, patient, product2, null, author, clinician, quantity, ZERO, ZERO,
                   ZERO, fixedPrice, discount, itemTax, itemTotal, event, product2Acts);
-        checkItem(items, patient, product3, author, clinician, quantity, ZERO, ZERO,
+        checkItem(items, patient, product3, null, author, clinician, quantity, ZERO, ZERO,
                   ZERO, fixedPrice, discount, itemTax, itemTotal, event, product3Acts);
 
         boolean add = bean.isA(CustomerAccountArchetypes.CREDIT);
@@ -1264,11 +1299,11 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             assertNull(event);
         }
 
-        checkItem(items, patient, product1, author, clinician, quantity, ZERO, ZERO,
+        checkItem(items, patient, product1, template, author, clinician, quantity, ZERO, ZERO,
                   ZERO, fixedPrice, discount, itemTax, itemTotal, event, product1Acts);
-        checkItem(items, patient, product2, author, clinician, quantity, ZERO, ZERO,
+        checkItem(items, patient, product2, template, author, clinician, quantity, ZERO, ZERO,
                   ZERO, fixedPrice, discount, itemTax, itemTotal, event, 0);
-        checkItem(items, patient, product3, author, clinician, quantity, ZERO, ZERO,
+        checkItem(items, patient, product3, template, author, clinician, quantity, ZERO, ZERO,
                   ZERO, fixedPrice, discount, itemTax, itemTotal, event, 0);
     }
 

@@ -2209,7 +2209,7 @@
     </style>
 
     <!-- =================================================================== -->
-    <!--  CheckBox defaults                                                     -->
+    <!--  CheckBox defaults                                                  -->
     <!-- =================================================================== -->
 
     <style name="default" type="nextapp.echo2.app.CheckBox">
@@ -2218,6 +2218,23 @@
                 <font size="${font.size}">
                     <typeface name="${font.typeface}"/>
                 </font>
+            </property>
+            <property name="stateIcon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/checkbox-off.png"/>
+            </property>
+            <property name="selectedStateIcon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/checkbox-on.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="disabled" type="nextapp.echo2.app.CheckBox" base-name="default">
+        <properties>
+            <property name="stateIcon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/checkbox-off-disabled.png"/>
+            </property>
+            <property name="selectedStateIcon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/checkbox-on-disabled.png"/>
             </property>
         </properties>
     </style>

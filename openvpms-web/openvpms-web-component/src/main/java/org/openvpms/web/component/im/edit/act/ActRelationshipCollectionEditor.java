@@ -369,7 +369,7 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
         }
         if (!result) {
             // template failed to expand. Clear the product reference so its not saved.
-            editor.setProductRef(null);
+            setTemplateProduct(editor, null, null);
         } else {
             populateTable();
             // template act is replaced with the first product in the template, so try and select it in the table
@@ -411,7 +411,7 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
                 // create the component - must do this to ensure that the product editor is created
                 editor.getComponent();
             }
-            setTemplateProduct(editor, include);
+            setTemplateProduct(editor, template, include);
 
             collection.add(copy);
             collection.setEditor(copy, editor);
@@ -425,16 +425,12 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
     /**
      * Populates an editor from a template product.
      *
-     * @param editor  the editor
-     * @param product the template product
+     * @param editor   the editor
+     * @param template the template. May be {@code null}
+     * @param product  the template product. May be {@code null}
      */
-    protected void setTemplateProduct(ActItemEditor editor, TemplateProduct product) {
-        editor.setProduct(product.getProduct());
-        editor.setQuantity(product.getHighQuantity());
-        if (product.getZeroPrice()) {
-            editor.setFixedPrice(BigDecimal.ZERO);
-            editor.setUnitPrice(BigDecimal.ZERO);
-        }
+    protected void setTemplateProduct(ActItemEditor editor, Product template, TemplateProduct product) {
+        editor.setProduct(product, template);
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.messaging;
@@ -76,14 +76,14 @@ class ToAddressEditor extends AbstractModifiable implements PropertyEditor {
     private static final String[] SHORT_NAMES = {UserArchetypes.USER, UserArchetypes.GROUP};
 
     /**
-     * Constructs a {@code ToAddressEditor}.
+     * Constructs a {@link ToAddressEditor}.
      *
      * @param act      the <em>act.userMessage</em>.
      * @param property the "to" participation property
      * @param context  the layout context
      */
     public ToAddressEditor(Act act, Property property, LayoutContext context) {
-        participation = ParticipationHelper.getParticipation(property);
+        participation = ParticipationHelper.getParticipation(property, true);
         if (participation != null) {
             participation.setAct(act.getObjectReference());
         }

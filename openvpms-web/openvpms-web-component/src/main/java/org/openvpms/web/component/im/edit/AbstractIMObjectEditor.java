@@ -909,6 +909,22 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
         return getLayoutContext().getCache().get(reference);
     }
 
+    /**
+     * Attempts to set focus on the component representing the supplied property.
+     *
+     * @param property the property
+     * @return {@code true} if the focus was set, {@code false} if no component could be found
+     */
+    protected boolean setFocus(Property property) {
+        boolean result = false;
+        Editor editor = editors.getEditor(property.getName());
+        if (editor != null && editor.getFocusGroup() != null) {
+            editor.getFocusGroup().setFocus();
+            result = true;
+        }
+        return result;
+    }
+
     private class ComponentFactory extends NodeEditorFactory {
 
         /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
@@ -27,7 +27,7 @@ import org.openvpms.web.echo.text.TextDocument;
  *
  * @author Tim Anderson
  */
-public class BoundTextArea extends TextArea {
+public class BoundTextArea extends TextArea implements BoundProperty {
 
     /**
      * The binder.
@@ -79,4 +79,13 @@ public class BoundTextArea extends TextArea {
         binder.unbind();
     }
 
+    /**
+     * Returns the property.
+     *
+     * @return the property
+     */
+    @Override
+    public Property getProperty() {
+        return binder.getProperty();
+    }
 }
