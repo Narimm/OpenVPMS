@@ -89,10 +89,12 @@ public class EstimateInvoicer extends AbstractInvoicer {
             CustomerChargeActItemEditor itemEditor = getItemEditor(editor);
             itemEditor.setPatientRef(itemBean.getNodeParticipantRef("patient"));
             itemEditor.setQuantity(itemBean.getBigDecimal("highQty"));
+            itemEditor.setPrint(itemBean.getBoolean("print", true));
 
             // NOTE: setting the product can trigger popups - want the popups to get the correct
             // property values from above
-            itemEditor.setProductRef(itemBean.getNodeParticipantRef("product"));
+            itemEditor.setProduct(itemBean.getNodeParticipantRef("product"),
+                                  itemBean.getNodeParticipantRef("template"));
 
             itemEditor.setFixedPrice(itemBean.getBigDecimal("fixedPrice"));
             itemEditor.setUnitPrice(itemBean.getBigDecimal("highUnitPrice"));

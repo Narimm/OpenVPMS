@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -276,7 +276,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         assertNotNull(item);
 
         // verify the item matches that expected
-        checkItem(item, patient, product, author, null, quantity, unitCost, unitPrice, fixedCost,
+        checkItem(item, patient, product, null, author, null, quantity, unitCost, unitPrice, fixedCost,
                   fixedPrice, discount, tax, total);
 
         // verify no errors were logged
@@ -340,7 +340,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         BigDecimal fixedPriceExTax = new BigDecimal("1.82");
         BigDecimal unitPriceExTax = new BigDecimal("9.09");
         BigDecimal totalExTax = new BigDecimal("20");
-        checkItem(item, patient, product, author, null, quantity, unitCost, unitPriceExTax, fixedCost,
+        checkItem(item, patient, product, null, author, null, quantity, unitCost, unitPriceExTax, fixedCost,
                   fixedPriceExTax, discount, BigDecimal.ZERO, totalExTax);
 
         // verify no errors were logged
@@ -404,7 +404,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         BigDecimal fixedPriceExTax = new BigDecimal("1.82").multiply(ratio);
         BigDecimal unitPriceExTax = new BigDecimal("9.09").multiply(ratio);
         BigDecimal totalExTax = new BigDecimal("20").multiply(ratio);
-        checkItem(item, patient, product, author, clinician, quantity, unitCost, unitPriceExTax, fixedCost,
+        checkItem(item, patient, product, null, author, clinician, quantity, unitCost, unitPriceExTax, fixedCost,
                   fixedPriceExTax, discount, BigDecimal.ZERO, totalExTax);
 
         // verify no errors were logged
@@ -502,7 +502,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         BigDecimal discount1 = BigDecimal.ZERO;
         BigDecimal tax1 = new BigDecimal("2.00");
         BigDecimal total1 = new BigDecimal("22.00");
-        checkItem(item, patient, product, author, clinician, quantity, unitCost, unitPrice, fixedCost,
+        checkItem(item, patient, product, null, author, clinician, quantity, unitCost, unitPrice, fixedCost,
                   fixedPrice, discount1, tax1, total1);
     }
 
@@ -642,7 +642,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         assertNotNull(item);
 
         // verify the item matches that expected
-        checkItem(item, patient1, product1, author1, clinician1, quantity1, unitCost1, unitPrice1, fixedCost1,
+        checkItem(item, patient1, product1, null, author1, clinician1, quantity1, unitCost1, unitPrice1, fixedCost1,
                   fixedPrice1, discount1, tax1, total1);
         ActBean itemBean = new ActBean(item);
         if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
@@ -690,7 +690,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         item = get(item);
         assertNotNull(item);
 
-        checkItem(item, patient2, product2, author2, clinician2, quantity2, unitCost2, unitPrice2.multiply(ratio),
+        checkItem(item, patient2, product2, null, author2, clinician2, quantity2, unitCost2, unitPrice2.multiply(ratio),
                   fixedCost2, fixedPrice2.multiply(ratio), discount2, tax2, total2);
         itemBean = new ActBean(item);
         if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)
@@ -714,7 +714,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
             item = get(item);
             assertNotNull(item);
 
-            checkItem(item, patient2, product2, author2, null, quantity2, unitCost2, unitPrice2.multiply(ratio),
+            checkItem(item, patient2, product2, null, author2, null, quantity2, unitCost2, unitPrice2.multiply(ratio),
                       fixedCost2, fixedPrice2.multiply(ratio), discount2, tax2, total2);
         }
 
@@ -779,7 +779,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
             assertEquals("Cannot save with product template: " + product.getName(), expected.getMessage());
         }
 
-        checkItem(item, patient, product, author, clinician, quantity, BigDecimal.ZERO, BigDecimal.ZERO,
+        checkItem(item, patient, product, null, author, clinician, quantity, BigDecimal.ZERO, BigDecimal.ZERO,
                   BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
         ActBean itemBean = new ActBean(item);
         // verify there are no medication acts
@@ -834,7 +834,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         BigDecimal discount1 = new BigDecimal("2.20");
         BigDecimal tax1 = new BigDecimal("1.80");
         BigDecimal total1 = new BigDecimal("19.80");
-        checkItem(item, patient, product, author, clinician, quantity, unitCost, unitPrice, fixedCost,
+        checkItem(item, patient, product, null, author, clinician, quantity, unitCost, unitPrice, fixedCost,
                   fixedPrice, discount1, tax1, total1);
 
         // now remove the discounts
@@ -845,7 +845,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         BigDecimal discount2 = BigDecimal.ZERO;
         BigDecimal tax2 = new BigDecimal("2.00");
         BigDecimal total2 = new BigDecimal("22.00");
-        checkItem(item, patient, product, author, clinician, quantity, unitCost, unitPrice, fixedCost,
+        checkItem(item, patient, product, null, author, clinician, quantity, unitCost, unitPrice, fixedCost,
                   fixedPrice, discount2, tax2, total2);
     }
 
