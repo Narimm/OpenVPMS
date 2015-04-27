@@ -16,7 +16,7 @@
   -->
 
 <!-- Created with Jaspersoft Studio version 6.0.3.final using JasperReports Library version 6.0.3  -->
-<!-- 2015-04-26T22:02:16 -->
+<!-- 2015-04-27T11:25:25 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
@@ -333,7 +333,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font size="12"/>
+                    <font size="10"/>
                     <paragraph lineSpacing="Single"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{notes}]]></textFieldExpression>
