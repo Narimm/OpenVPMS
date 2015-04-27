@@ -145,7 +145,8 @@ public class EstimateItemEditor extends PriceActItemEditor {
         }
 
         Product product = getProduct();
-        ArchetypeNodes nodes = getFilterForProduct(product, updatePrint(product));
+        boolean showPrint = updatePrint(product);
+        ArchetypeNodes nodes = getFilterForProduct(product, showPrint);
         setArchetypeNodes(nodes);
 
         // add a listener to update the discount when the fixed, high unit price

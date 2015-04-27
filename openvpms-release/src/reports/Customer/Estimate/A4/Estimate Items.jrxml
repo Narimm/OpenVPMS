@@ -16,7 +16,7 @@
   -->
 
 <!-- Created with Jaspersoft Studio version 6.0.3.final using JasperReports Library version 6.0.3  -->
-<!-- 2015-04-26T18:15:23 -->
+<!-- 2015-04-27T11:16:51 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
@@ -128,7 +128,9 @@
                         <property name="com.jaspersoft.studio.unit.y" value="px"/>
                         <printWhenExpression><![CDATA[$F{target.template.entity.printAggregate}]]></printWhenExpression>
                     </reportElement>
-                    <textElement textAlignment="Right"/>
+                    <textElement textAlignment="Right">
+                        <font size="10"/>
+                    </textElement>
                     <textFieldExpression><![CDATA[$V{templateLowTotal}]]></textFieldExpression>
                 </textField>
                 <textField evaluationTime="Group" evaluationGroup="templateGroup" pattern="¤ #,##0.00">
@@ -139,7 +141,9 @@
                         <property name="com.jaspersoft.studio.unit.width" value="px"/>
                         <printWhenExpression><![CDATA[$F{target.template.entity.printAggregate}]]></printWhenExpression>
                     </reportElement>
-                    <textElement textAlignment="Right"/>
+                    <textElement textAlignment="Right">
+                        <font size="10"/>
+                    </textElement>
                     <textFieldExpression><![CDATA[$V{templateHighTotal}]]></textFieldExpression>
                 </textField>
             </band>
@@ -317,6 +321,9 @@
                     <bottomPen lineWidth="0.0" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
+                <textElement>
+                    <font size="10"/>
+                </textElement>
                 <textFieldExpression>
                     <![CDATA[($F{target.product.entity.printedName} == null) ? $F{target.product.entity.name}: $F{target.product.entity.printedName}]]></textFieldExpression>
             </textField>
@@ -332,7 +339,9 @@
                     <bottomPen lineWidth="0.0" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right"/>
+                <textElement textAlignment="Right">
+                    <font size="10"/>
+                </textElement>
                 <textFieldExpression><![CDATA[$F{target.lowQty}]]></textFieldExpression>
             </textField>
             <textField pattern="##0.00" isBlankWhenNull="false">
@@ -346,10 +355,12 @@
                     <bottomPen lineWidth="0.0" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right"/>
+                <textElement textAlignment="Right">
+                    <font size="10"/>
+                </textElement>
                 <textFieldExpression><![CDATA[$F{target.highQty}]]></textFieldExpression>
             </textField>
-            <textField pattern="##0.00" isBlankWhenNull="false">
+            <textField pattern="¤ #,##0.00" isBlankWhenNull="false">
                 <reportElement key="textField" x="432" y="2" width="47" height="16"
                                uuid="4bad6e0d-6f85-4b8d-91a6-02da4862ddeb">
                     <property name="local_mesure_unitheight" value="pixel"/>
@@ -361,10 +372,12 @@
                     <bottomPen lineWidth="0.0" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right"/>
+                <textElement textAlignment="Right">
+                    <font size="10"/>
+                </textElement>
                 <textFieldExpression><![CDATA[$F{target.lowTotal}]]></textFieldExpression>
             </textField>
-            <textField pattern="##0.00" isBlankWhenNull="false">
+            <textField pattern="¤ #,##0.00" isBlankWhenNull="false">
                 <reportElement key="textField" x="482" y="2" width="47" height="16"
                                uuid="7d845de5-2121-4aad-9b7a-f98dfd88c6fd">
                     <property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -377,7 +390,9 @@
                     <bottomPen lineWidth="0.0" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right"/>
+                <textElement textAlignment="Right">
+                    <font size="10"/>
+                </textElement>
                 <textFieldExpression><![CDATA[$F{target.highTotal}]]></textFieldExpression>
             </textField>
         </band>
@@ -410,7 +425,7 @@
                 </textElement>
                 <text><![CDATA[TOTAL]]></text>
             </staticText>
-            <textField pattern="##0.00" isBlankWhenNull="false">
+            <textField pattern="¤ #,##0.00" isBlankWhenNull="false">
                 <reportElement key="textField" x="432" y="4" width="47" height="18"
                                uuid="9a285343-711f-4332-9077-2d7999f13111"/>
                 <box>
@@ -424,7 +439,7 @@
                 </textElement>
                 <textFieldExpression><![CDATA[$V{SUM_target.lowTotal}]]></textFieldExpression>
             </textField>
-            <textField pattern="##0.00" isBlankWhenNull="false">
+            <textField pattern="¤ #,##0.00" isBlankWhenNull="false">
                 <reportElement key="textField" x="482" y="4" width="47" height="18"
                                uuid="387f2aa6-15f0-4508-a9c4-161118443509">
                     <property name="local_mesure_unitwidth" value="pixel"/>
