@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.select;
@@ -278,6 +278,12 @@ public abstract class Selector<T extends IMObject> {
         getComponent();
         if (objectText != null) {
             objectText.setText(text);
+            if (objectText.isEnabled()) {
+                int length = (text != null) ? text.length() : 0;
+                if (objectText.getCursorPosition() < length) {
+                    objectText.setCursorPosition(length);
+                }
+            }
         } else {
             objectLabel.setText(text);
         }

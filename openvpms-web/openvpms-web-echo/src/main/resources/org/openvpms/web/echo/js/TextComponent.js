@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 /*
@@ -452,6 +452,7 @@ EchoTextComponent.MessageProcessor = {
      * @param messagePartElement the <code>message-part</code> element to process.
      */
     process: function (messagePartElement) {
+        var cursorPositions = [];
         for (var i = 0; i < messagePartElement.childNodes.length; ++i) {
             if (messagePartElement.childNodes[i].nodeType == 1) {
                 switch (messagePartElement.childNodes[i].tagName) {
@@ -465,10 +466,14 @@ EchoTextComponent.MessageProcessor = {
                         EchoTextComponent.MessageProcessor.processSetText(messagePartElement.childNodes[i]);
                         break;
                     case "set-cursor-position":
-                        EchoTextComponent.MessageProcessor.processSetCursorPosition(messagePartElement.childNodes[i]);
+                        cursorPositions.push(messagePartElement.childNodes[i]);
                         break;
                 }
             }
+        }
+        // the server can return updates in any order, so make sure cursor positioning is handled after set-text
+        for (i = 0; i < cursorPositions.length; ++i) {
+            EchoTextComponent.MessageProcessor.processSetCursorPosition(cursorPositions[i]);
         }
     },
 
@@ -521,8 +526,10 @@ EchoTextComponent.MessageProcessor = {
             var elementId = item.getAttribute("eid");
             var cursorPosition = item.getAttribute("cursorPosition");
             var textComponent = EchoTextComponent.getComponent(elementId);
-            var element = document.getElementById(elementId);
-            textComponent.setCursorPosition(element, cursorPosition);
+            if (textComponent) {
+                var element = document.getElementById(elementId);
+                textComponent.setCursorPosition(element, cursorPosition);
+            }
         }
     },
 
