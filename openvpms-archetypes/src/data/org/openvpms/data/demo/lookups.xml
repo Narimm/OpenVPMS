@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetype>
@@ -188,4 +188,7 @@
           description="Valid for supplier documents only"
           expression="concat($file, ' - ', party:getPartyFullName($supplier), ' - ', date:format(java.util.Date.new(), 'd MMM yyyy'))"/>
 
+    <data archetype="lookup.customerReferral" code="WEBSITE" name="Website"/>
+    <data archetype="lookup.customerVet" code="DR_BLOGGS" name="Dr Bloggs"/>
+    <data archetype="lookup.customerInsurance" code="PET_INSURE" name="Pet Insure Australia"/>
 </archetype>
