@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <plugin id="OpenVPMSLoaderPlugin"
         iconfile="plugin.png"
         description="OpenVPMS Loader"
@@ -21,6 +37,7 @@
         <library name="hibernate-core-${hibernate.version}.jar"/>
         <library name="hibernate-ehcache-${hibernate.version}.jar"/>
         <library name="javassist-${javassist.version}.jar"/>
+        <library name="joda-time-${joda.time.version}.jar"/>
         <library name="jta-${jta.version}.jar"/>
         <library name="slf4j-api-${slf4j.version}.jar"/>
         <library name="slf4j-log4j12-${slf4j.version}.jar"/>

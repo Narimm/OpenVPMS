@@ -1,39 +1,36 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
 
-import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ChangeEvent;
 import nextapp.echo2.app.event.ChangeListener;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.echo.button.CheckBox;
+import org.openvpms.web.echo.event.ActionListener;
 
 
 /**
- * Binds a {@link Property} to a <code>CheckBox</code>.
+ * Binds a {@link Property} to a {@code CheckBox}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
-public class BoundCheckBox extends CheckBox {
+public class BoundCheckBox extends CheckBox implements BoundProperty {
 
     /**
      * The property binder.
@@ -52,7 +49,7 @@ public class BoundCheckBox extends CheckBox {
 
 
     /**
-     * Construct a new <tt>BoundCheckBox</tt>.
+     * Constructs a {@link BoundCheckBox}.
      *
      * @param property the property to bind
      */
@@ -90,7 +87,7 @@ public class BoundCheckBox extends CheckBox {
     }
 
     /**
-     * Life-cycle method invoked when the <code>Component</code> is added to a registered hierarchy.
+     * Life-cycle method invoked when the {@code Component} is added to a registered hierarchy.
      */
     @Override
     public void init() {
@@ -99,7 +96,7 @@ public class BoundCheckBox extends CheckBox {
     }
 
     /**
-     * Life-cycle method invoked when the <tt>Component</tt> is removed from a registered hierarchy.
+     * Life-cycle method invoked when the {@code Component} is removed from a registered hierarchy.
      */
     @Override
     public void dispose() {
@@ -107,4 +104,13 @@ public class BoundCheckBox extends CheckBox {
         binder.unbind();
     }
 
+    /**
+     * Returns the property.
+     *
+     * @return the property
+     */
+    @Override
+    public Property getProperty() {
+        return binder.getProperty();
+    }
 }

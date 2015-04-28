@@ -82,6 +82,7 @@ public class EstimateInvoicerTestCase extends AbstractCustomerChargeActEditorTes
         Product product2 = TestHelper.createProduct(ProductArchetypes.SERVICE, null);
         Product product3 = TestHelper.createProduct(ProductArchetypes.MERCHANDISE, null);
         Product product4 = TestHelper.createProduct(ProductArchetypes.MEDICATION, null);
+        Product template = TestHelper.createProduct(ProductArchetypes.TEMPLATE, null);
 
         BigDecimal price1 = new BigDecimal("10.00");
         BigDecimal price2 = new BigDecimal("20.00");
@@ -106,8 +107,8 @@ public class EstimateInvoicerTestCase extends AbstractCustomerChargeActEditorTes
 
         Act item1 = EstimateTestHelper.createEstimateItem(patient, product1, author, quantity1, price1);
         Act item2 = EstimateTestHelper.createEstimateItem(patient, product2, author, quantity2, price2);
-        Act item3 = EstimateTestHelper.createEstimateItem(patient, product3, author, quantity3, price3);
-        Act item4 = EstimateTestHelper.createEstimateItem(patient, product4, author, quantity4, price4);
+        Act item3 = EstimateTestHelper.createEstimateItem(patient, product3, template, author, quantity3, price3);
+        Act item4 = EstimateTestHelper.createEstimateItem(patient, product4, template, author, quantity4, price4);
         Act estimation = EstimateTestHelper.createEstimate(customer, author, item1, item2, item3, item4);
 
         save(estimation, item1, item2, item3, item4);
@@ -131,13 +132,13 @@ public class EstimateInvoicerTestCase extends AbstractCustomerChargeActEditorTes
         checkCharge(invoice, customer, author, clinician, tax, total);
 
         BigDecimal discount = BigDecimal.ZERO;
-        checkItem(items, patient, product1, author, clinician, quantity1, BigDecimal.ZERO, price1,
+        checkItem(items, patient, product1, null, author, clinician, quantity1, BigDecimal.ZERO, price1,
                   BigDecimal.ZERO, BigDecimal.ZERO, discount, tax1, amount1, null, 1);
-        checkItem(items, patient, product2, author, clinician, quantity2, BigDecimal.ZERO, price2,
+        checkItem(items, patient, product2, null, author, clinician, quantity2, BigDecimal.ZERO, price2,
                   BigDecimal.ZERO, BigDecimal.ZERO, discount, tax2, amount2, null, 0);
-        checkItem(items, patient, product3, author, clinician, quantity3, BigDecimal.ZERO, price3,
+        checkItem(items, patient, product3, template, author, clinician, quantity3, BigDecimal.ZERO, price3,
                   BigDecimal.ZERO, BigDecimal.ZERO, discount, tax3, amount3, null, 0);
-        checkItem(items, patient, product4, author, clinician, quantity4, BigDecimal.ZERO, price4,
+        checkItem(items, patient, product4, template, author, clinician, quantity4, BigDecimal.ZERO, price4,
                   BigDecimal.ZERO, BigDecimal.ZERO, discount, tax4, amount4, null, 1);
     }
 

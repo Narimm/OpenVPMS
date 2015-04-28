@@ -60,6 +60,11 @@ public class ProductIncludesRelationshipStateTableModel extends RelationshipStat
      */
     private static final int ZERO_PRICE_INDEX = WEIGHT_INDEX + 1;
 
+    /**
+     * The print index.
+     */
+    private static final int PRINT_INDEX = ZERO_PRICE_INDEX + 1;
+
 
     /**
      * Constructs a {@link ProductIncludesRelationshipStateTableModel}.
@@ -136,6 +141,7 @@ public class ProductIncludesRelationshipStateTableModel extends RelationshipStat
         model.addColumn(new DescriptorTableColumn(HIGH_QUANTITY_INDEX, "highQuantity", archetype));
         model.addColumn(createTableColumn(WEIGHT_INDEX, "product.template.weight"));
         model.addColumn(new DescriptorTableColumn(ZERO_PRICE_INDEX, "zeroPrice", archetype));
+        model.addColumn(new DescriptorTableColumn(PRINT_INDEX, "print", true, archetype));
         if (getShowActive()) {
             model.addColumn(createTableColumn(ACTIVE_INDEX, ACTIVE));
         }

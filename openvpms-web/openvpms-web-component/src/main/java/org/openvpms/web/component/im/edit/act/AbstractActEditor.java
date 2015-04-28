@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -29,6 +29,7 @@ import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
@@ -260,24 +261,31 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
         if (editor != null) {
             modified = editor.setEntityRef(entity);
         } else {
-            // no editor created yet. Set the participant via the corresponding
-            // property
-            Property property = getProperty(name);
+            // no editor created yet. Set the participant via the corresponding property
+            CollectionProperty property = getCollectionProperty(name);
             if (property == null) {
                 throw new IllegalArgumentException("Invalid node: " + name);
             }
-            Participation participant = getParticipation(property);
-            if (participant != null) {
-                if (participant.getAct() == null) {
-                    participant.setAct(getObject().getObjectReference());
-                    modified = true;
+            boolean remove = entity == null && property.getMinCardinality() == 0 && property.getMaxCardinality() == 1;
+            if (remove) {
+                // the entity is null, and its an optional participation, so remove it if its present
+                if (!property.getValues().isEmpty()) {
+                    modified = property.remove(property.getValues().get(0));
                 }
-                if (!ObjectUtils.equals(participant.getEntity(), entity)) {
-                    participant.setEntity(entity);
-                    modified = true;
-                }
-                if (modified) {
-                    property.refresh();   // flag as modified
+            } else {
+                Participation participant = getParticipation(property);
+                if (participant != null) {
+                    if (participant.getAct() == null) {
+                        participant.setAct(getObject().getObjectReference());
+                        modified = true;
+                    }
+                    if (!ObjectUtils.equals(participant.getEntity(), entity)) {
+                        participant.setEntity(entity);
+                        modified = true;
+                    }
+                    if (modified) {
+                        property.refresh();   // flag as modified
+                    }
                 }
             }
         }
@@ -318,13 +326,13 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Helper to return a participation.
+     * Helper to return a participation, creating it if none exists.
      *
      * @param property the participation property
-     * @return the participation
+     * @return the participation. or {@code null} if creation fails
      */
     protected Participation getParticipation(Property property) {
-        return ParticipationHelper.getParticipation(property);
+        return ParticipationHelper.getParticipation(property, true);
     }
 
     /**
