@@ -305,7 +305,7 @@
 
     <properties>
         <jdbc.admin.username>root</jdbc.admin.username>
-        <jdbc.admin.password>root</jdbc.admin.password>
+        <jdbc.admin.password>password</jdbc.admin.password>
     </properties>
 
 </project>

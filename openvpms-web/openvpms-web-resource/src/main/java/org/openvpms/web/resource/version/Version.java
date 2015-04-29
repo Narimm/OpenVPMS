@@ -44,6 +44,8 @@ public class Version {
      */
     public static final String REVISION;
 
+    public static final String BRANCH;
+
     /**
      * The logger.
      */
@@ -53,6 +55,7 @@ public class Version {
     static {
         String version = "";
         String revision = "";
+        String branch = "";
         try {
             InputStream in = Version.class.getResourceAsStream(
                 "/META-INF/org.openvpms.version.properties");
@@ -62,6 +65,7 @@ public class Version {
                     properties.load(in);
                     version = properties.getProperty("version");
                     revision = properties.getProperty("revision");
+                    branch = properties.getProperty("branch");
                 } finally {
                     in.close();
                 }
@@ -71,5 +75,6 @@ public class Version {
         }
         VERSION = version;
         REVISION = revision;
+        BRANCH = branch;
     }
 }

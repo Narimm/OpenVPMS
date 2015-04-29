@@ -50,6 +50,7 @@ class ErrorReport {
      */
     private String revision;
 
+    private String branch;
     /**
      * The error message.
      */
@@ -90,7 +91,7 @@ class ErrorReport {
     public ErrorReport(String message, Throwable exception) {
         this.message = message;
         version = Version.VERSION;
-        revision = Version.REVISION;
+        revision = Version.BRANCH + " " + Version.REVISION;
         this.exception = (exception != null) ? new ThrowableAdapter(exception) : null;
         freeMemory = Runtime.getRuntime().freeMemory();
         totalMemory = Runtime.getRuntime().totalMemory();

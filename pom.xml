@@ -37,8 +37,8 @@
     </prerequisites>
 
     <scm>
-        <connection>scm:svn:svn://svn.openvpms.org/openvpms/projects/openvpms/trunk</connection>
-        <developerConnection>scm:svn:svn://svn.openvpms.org/openvpms/projects/openvpms/trunk</developerConnection>
+        <connection>scm:git:ssh://git@github.com:Narimm/OpenVPMS.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:Narimm/OpenVPMS.git</developerConnection>
     </scm>
 
     <issueManagement>
