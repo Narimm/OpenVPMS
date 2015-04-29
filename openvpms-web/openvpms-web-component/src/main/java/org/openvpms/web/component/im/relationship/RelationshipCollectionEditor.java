@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -136,12 +136,9 @@ public class RelationshipCollectionEditor
      * @return a new result set
      */
     protected ResultSet<RelationshipState> createResultSet() {
-        RelationshipCollectionPropertyEditor editor
-                = getCollectionPropertyEditor();
-        List<RelationshipState> relationships
-                = new ArrayList<RelationshipState>(editor.getRelationships());
-        return new RelationshipStateResultSet(relationships,
-                                              editor.parentIsSource(), ROWS);
+        RelationshipCollectionPropertyEditor editor = getCollectionPropertyEditor();
+        List<RelationshipState> relationships = new ArrayList<RelationshipState>(editor.getRelationships());
+        return new RelationshipStateResultSet(relationships, ROWS);
     }
 
     /**

@@ -20,12 +20,13 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.apache.commons.collections.Transformer;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
+import org.openvpms.web.component.im.util.VirtualNodeSortConstraint;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 
 
@@ -35,23 +36,7 @@ import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
  *
  * @author Tim Anderson
  */
-public class RelationshipStateTableModel
-        extends AbstractIMTableModel<RelationshipState> {
-
-    /**
-     * Dummy node name for the 'name' column.
-     */
-    public static final String NAME_NODE = "name";
-
-    /**
-     * Dummy node name for the 'description' column.
-     */
-    public static final String DESCRIPTION_NODE = "description";
-
-    /**
-     * Dummy node name for the 'detail' column.
-     */
-    public static final String DETAIL_NODE = "detail";
+public class RelationshipStateTableModel extends AbstractIMTableModel<RelationshipState> {
 
     /**
      * If {@code true} displays the target of the relationship; otherwise displays the source.
@@ -139,23 +124,63 @@ public class RelationshipStateTableModel
      * @return the sort criteria, or {@code null} if the column isn't sortable
      */
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
-        SortConstraint result = null;
+        SortConstraint[] result = null;
         TableColumn col = getColumn(column);
         if (col.getModelIndex() == NAME_INDEX) {
-            result = new NodeSortConstraint(NAME_NODE, ascending);
+            result = new SortConstraint[]{getNameSortConstraint(ascending)};
         } else if (col.getModelIndex() == DESCRIPTION_INDEX) {
-            result = new NodeSortConstraint(DESCRIPTION_NODE, ascending);
+            SortConstraint sort = new VirtualNodeSortConstraint("description", ascending, new Transformer() {
+                @Override
+                public Object transform(Object input) {
+                    RelationshipState state = (RelationshipState) input;
+                    return (displayTarget) ? state.getTargetDescription() : state.getSourceDescription();
+                }
+            });
+            result = new SortConstraint[]{sort, getNameSortConstraint(true)};
         } else if (col.getModelIndex() == DETAIL_INDEX) {
-            result = new NodeSortConstraint(DETAIL_NODE, ascending);
+            SortConstraint sort = new VirtualNodeSortConstraint("detail", ascending, new Transformer() {
+                @Override
+                public Object transform(Object input) {
+                    RelationshipState state = (RelationshipState) input;
+                    return state.getRelationship().getDescription();
+                }
+            });
+            result = new SortConstraint[]{sort, getNameSortConstraint(true)};
+        } else if (col.getModelIndex() == ACTIVE_INDEX) {
+            SortConstraint sort = new VirtualNodeSortConstraint("active", ascending, new Transformer() {
+                @Override
+                public Object transform(Object input) {
+                    RelationshipState state = (RelationshipState) input;
+                    return state.getRelationship().isActive();
+                }
+            });
+            result = new SortConstraint[]{sort, getNameSortConstraint(true)};
         }
-        return (result != null) ? new SortConstraint[]{result} : null;
+        return result;
+    }
+
+    /**
+     * Returns a sort constraint on the source/target name.
+     *
+     * @param ascending determines whether to sort in ascending or descending order
+     * @return a new sort constraint
+     */
+    protected SortConstraint getNameSortConstraint(boolean ascending) {
+        SortConstraint result;
+        result = new VirtualNodeSortConstraint("name", ascending, new Transformer() {
+            @Override
+            public Object transform(Object input) {
+                RelationshipState state = (RelationshipState) input;
+                return displayTarget ? state.getTargetName() : state.getSourceName();
+            }
+        });
+        return result;
     }
 
     /**
      * Indicates whether to display the target or source of the relationship.
      *
-     * @return {@code true} to display the target of the relationship, or
-     *         {@code false} to display the source.
+     * @return {@code true} to display the target of the relationship, or {@code false} to display the source.
      */
     protected boolean displayTarget() {
         return displayTarget;

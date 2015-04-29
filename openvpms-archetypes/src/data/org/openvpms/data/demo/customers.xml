@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetype>
@@ -243,4 +243,12 @@
           sex="MALE" dateOfBirth="01/01/2004" desexed="True" deceased="False" active="True">
     </data>
     <data archetype="entityRelationship.patientOwner" source="id:C14" target="id:A24"/>
+
+    <data id="C15" archetype="party.customerperson" title="MS" firstName="Lorna" initials="L" lastName="Collins"
+          referral="WEBSITE" preferredVet="DR_BLOGGS" insurancePlan="PET_INSURE">
+        <data collection="contacts" archetype="contact.phoneNumber" areaCode="0411" telephoneNumber="123 456"
+              preferred="true"/>
+        <data collection="contacts" archetype="contact.email" emailAddress="lcollins43@gmail.com"/>
+    </data>
+
 </archetype>
