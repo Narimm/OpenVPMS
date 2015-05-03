@@ -23,6 +23,8 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
+import org.openvpms.archetype.rules.finance.discount.DiscountRules;
+import org.openvpms.archetype.rules.finance.discount.DiscountTestHelper;
 import org.openvpms.archetype.rules.patient.InvestigationActStatus;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.prescription.PrescriptionTestHelper;
@@ -944,11 +946,14 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      */
     private void checkTemplateExpansion(String shortName, int childActs) {
         BigDecimal fixedPrice = ONE;
+        Entity discount = DiscountTestHelper.createDiscount(BigDecimal.TEN, true, DiscountRules.PERCENTAGE);
 
         Product template = ProductTestHelper.createTemplate("templateA");
         Product product1 = createProduct(MEDICATION, fixedPrice);
         Product product2 = createProduct(MEDICATION, fixedPrice);
         Product product3 = createProduct(MEDICATION, fixedPrice);
+        addDiscount(product3, discount);
+        addDiscount(customer, discount);                           // give customer a discount for product3
         ProductTestHelper.addInclude(template, product1, 1, false);
         ProductTestHelper.addInclude(template, product2, 2, false);
         ProductTestHelper.addInclude(template, product3, 3, true); // zero price

@@ -18,10 +18,13 @@ package org.openvpms.web.workspace.customer.estimate;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.finance.discount.DiscountRules;
+import org.openvpms.archetype.rules.finance.discount.DiscountTestHelper;
 import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
@@ -84,6 +87,7 @@ public class EstimateEditorTestCase extends AbstractEstimateEditorTestCase {
     public void testTemplateExpansion() {
         LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         Party patient = TestHelper.createPatient(customer);
+        Entity discount = DiscountTestHelper.createDiscount(BigDecimal.TEN, true, DiscountRules.PERCENTAGE);
 
         BigDecimal fixedPrice = ONE;
         BigDecimal unitPrice = ONE;
@@ -91,6 +95,8 @@ public class EstimateEditorTestCase extends AbstractEstimateEditorTestCase {
         Product product1 = createProduct(MEDICATION, fixedPrice, unitPrice);
         Product product2 = createProduct(MEDICATION, fixedPrice, unitPrice);
         Product product3 = createProduct(MEDICATION, fixedPrice, unitPrice);
+        addDiscount(product3, discount);
+        addDiscount(customer, discount);                           // give customer a discount for product3
         ProductTestHelper.addInclude(template, product1, 1, 2, false);
         ProductTestHelper.addInclude(template, product2, 2, 4, false);
         ProductTestHelper.addInclude(template, product3, 3, 6, true); // zero price

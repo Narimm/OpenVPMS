@@ -637,9 +637,9 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param discount the discount
      */
     protected void addDiscount(Entity entity, Entity discount) {
-        EntityBean patientBean = new EntityBean(entity);
-        patientBean.addNodeRelationship("discounts", discount);
-        patientBean.save();
+        EntityBean bean = new EntityBean(entity);
+        bean.addNodeRelationship("discounts", discount);
+        bean.save();
     }
 
     /**
