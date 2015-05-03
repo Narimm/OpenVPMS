@@ -16,8 +16,6 @@
 
 package org.openvpms.web.component.im.act;
 
-import org.apache.commons.collections4.comparators.ReverseComparator;
-import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 
 import java.util.Comparator;
@@ -29,21 +27,6 @@ import java.util.List;
  * @author Tim Anderson
  */
 public abstract class ActFilter<T extends Act> {
-
-    /**
-     * Comparator to order acts on start time, oldest first.
-     */
-    private static final Comparator<Act> ASCENDING = new Comparator<Act>() {
-        @Override
-        public int compare(Act o1, Act o2) {
-            return DateRules.compareTo(o1.getActivityStartTime(), o2.getActivityStartTime());
-        }
-    };
-
-    /**
-     * Comparator to order acts on start time, most recent first.
-     */
-    private static final ReverseComparator<Act> DESCENDING = new ReverseComparator<Act>(ASCENDING);
 
     /**
      * Returns the immediate children of an act, after applying filters.
@@ -78,10 +61,8 @@ public abstract class ActFilter<T extends Act> {
      * @param ascending if {@code true}, sort items on ascending times
      * @return the comparator
      */
-    @SuppressWarnings("unchecked")
     protected Comparator<T> getComparator(boolean ascending) {
-        Comparator result = (ascending) ? ASCENDING : DESCENDING;
-        return (Comparator<T>) result;
+        return ascending ? ActHelper.<T>ascending() : ActHelper.<T>descending();
     }
 
 }

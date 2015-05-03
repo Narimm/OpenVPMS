@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.util;
@@ -390,5 +390,18 @@ public class DateRules {
      */
     public static Date max(Date date1, Date date2) {
         return compareTo(date1, date2) > 0 ? date1 : date2;
+    }
+
+    /**
+     * Determines if a date falls on a weekday.
+     *
+     * @param date the date
+     * @return {@code true} if the date falls on a weekday, otherwise {@code false}
+     */
+    public static boolean isWeekday(Date date) {
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(date);
+        int day = calendar.get(Calendar.DAY_OF_WEEK);
+        return day >= Calendar.MONDAY && day <= Calendar.FRIDAY;
     }
 }

@@ -18,7 +18,11 @@ package org.openvpms.web.workspace.workflow.appointment;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.RadioButton;
 import nextapp.echo2.app.Row;
+import nextapp.echo2.app.Table;
+import nextapp.echo2.app.button.ButtonGroup;
+import nextapp.echo2.app.table.AbstractTableModel;
 import org.openvpms.archetype.i18n.time.DateDurationFormatter;
 import org.openvpms.archetype.i18n.time.DurationFormatter;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -46,7 +50,9 @@ import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.factory.TableFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.popup.DropDown;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.alert.AlertSummary;
@@ -55,6 +61,7 @@ import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 import org.openvpms.web.workspace.workflow.scheduling.AbstractScheduleActEditor;
 import org.openvpms.web.workspace.workflow.scheduling.SchedulingHelper;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -86,6 +93,13 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      * The appointment slot size.
      */
     private int slotSize;
+
+    /**
+     * The appointment series, if this appointment is repeated.
+     */
+    private AppointmentSeries series;
+
+    private Repeater repeater;
 
     /**
      * The appointment rules.
@@ -138,6 +152,9 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
                 onStatusChanged();
             }
         });
+        series = new AppointmentSeries(act, ServiceHelper.getArchetypeService(false),
+                                       ServiceHelper.getArchetypeService(), rules);
+        repeater = new Repeater();
         addStartEndTimeListeners();
         updateRelativeDate();
         updateDuration();
@@ -197,6 +214,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
             if (DateRules.compareTo(start, rounded) != 0) {
                 setStartTime(rounded, true);
             }
+            repeater.refresh();
         }
 
         try {
@@ -273,6 +291,8 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     private AppointmentTypeParticipationEditor onScheduleChanged(Entity schedule) {
         AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
         editor.setSchedule(schedule);
+        series.setSchedule(schedule);
+        series.setAppointmentType(editor.getEntity());
         if (schedule != null) {
             slotSize = rules.getSlotSize((Party) schedule);
         }
@@ -389,6 +409,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     private void onAppointmentTypeChanged() {
         try {
             calculateEndTime();
+            series.setAppointmentType(getAppointmentTypeEditor().getEntity());
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
@@ -540,5 +561,91 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         protected Component getDefaultFocus(ComponentSet components) {
             return components.getFocusable("customer");
         }
+    }
+
+    private static class RepeatTableModel extends AbstractTableModel {
+
+        private ButtonGroup group = new ButtonGroup();
+        private List<RadioButton> buttons = new ArrayList<RadioButton>();
+        private List<CronExpression> repeat = new ArrayList<CronExpression>();
+
+        public void add(CronExpression expression) {
+            RadioButton button = new RadioButton();
+            button.setGroup(group);
+            buttons.add(button);
+            repeat.add(expression);
+        }
+
+        @Override
+        public int getColumnCount() {
+            return 2;
+        }
+
+        @Override
+        public int getRowCount() {
+            return repeat.size();
+        }
+
+        @Override
+        public Object getValueAt(int column, int row) {
+            switch (column) {
+                case 0:
+                    return buttons.get(row);
+                case 1:
+                    CronExpression expression = repeat.get(row);
+                    return (expression != null) ? expression.getType() : "No repeat";
+            }
+            return null;
+        }
+    }
+
+    private class Repeater {
+
+        private Label label;
+        private DropDown dropDown;
+        private Table table;
+
+        public Repeater() {
+            table = TableFactory.create(createTableModel());
+            label = LabelFactory.create();
+            dropDown = new DropDown(label, table);
+        }
+
+        private RepeatTableModel createTableModel() {
+            RepeatTableModel model = new RepeatTableModel();
+            Date startTime = series.getStartTime();
+            CronExpression current = series.getExpression();
+            if (current != null) {
+                model.add(current);
+            } else {
+                model.add(null);
+            }
+            if (current == null || current.getType() != CronExpression.Type.DAILY) {
+                model.add(CronExpression.daily(startTime));
+            }
+            if (DateRules.isWeekday(startTime)
+                && (current == null || current.getType() != CronExpression.Type.WEEKDAYS)) {
+                model.add(CronExpression.weekdays(startTime));
+            }
+            if (current == null || current.getType() != CronExpression.Type.WEEKLY) {
+                model.add(CronExpression.weekly(startTime));
+            }
+            if (current == null || current.getType() != CronExpression.Type.MONTHLY) {
+                model.add(CronExpression.monthly(startTime));
+            }
+            if (current == null || current.getType() != CronExpression.Type.YEARLY) {
+                model.add(CronExpression.yearly(startTime));
+            }
+            return model;
+        }
+
+        public void refresh() {
+            table.setModel(createTableModel());
+        }
+
+        public Component getComponent() {
+            return dropDown;
+        }
+
     }
 }
