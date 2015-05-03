@@ -16,7 +16,9 @@
 
 package org.openvpms.web.component.im.act;
 
+import org.apache.commons.collections4.comparators.ReverseComparator;
 import org.openvpms.archetype.rules.act.ActCalculator;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -30,6 +32,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -43,6 +46,56 @@ import java.util.Set;
  * @author Tim Anderson
  */
 public class ActHelper {
+
+    /**
+     * Comparator to order acts on start time, oldest first.
+     */
+    public static final Comparator<Act> ASCENDING = new Comparator<Act>() {
+        @Override
+        public int compare(Act o1, Act o2) {
+            int result = DateRules.compareTo(o1.getActivityStartTime(), o2.getActivityStartTime());
+            if (result == 0) {
+                result = o1.getId() < o2.getId() ? -1 : ((o1.getId() == o2.getId()) ? 0 : 1);
+            }
+            return result;
+        }
+    };
+
+    /**
+     * Comparator to order acts on start time, most recent first.
+     */
+    public static final ReverseComparator<Act> DESCENDING = new ReverseComparator<Act>(ASCENDING);
+
+    /**
+     * Returns a comparator to sort acts on ascending start time.
+     *
+     * @return the comparator
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends Act> Comparator<T> ascending() {
+        return (Comparator<T>) ASCENDING;
+    }
+
+    /**
+     * Returns a comparator to sort acts on descending start time.
+     *
+     * @return the comparator
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends Act> Comparator<T> descending() {
+        return (Comparator<T>) DESCENDING;
+    }
+
+    /**
+     * Sorts acts on ascending timestamp.
+     *
+     * @param acts the acts to sort. Note: this list is modified
+     * @return the sorted acts
+     */
+    public static <T extends Act> List<T> sort(List<T> acts) {
+        Collections.sort(acts, ascending());
+        return acts;
+    }
 
     /**
      * Sums a node in a list of act items, negating the result if the act
