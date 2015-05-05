@@ -14,24 +14,36 @@
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.archetype.rules.util;
+package org.openvpms.web.workspace.workflow.appointment.repeat;
 
+import nextapp.echo2.app.Component;
 
 /**
- * Date units.
+ * An editor for {@link RepeatExpression}s.
  *
  * @author Tim Anderson
  */
-public enum DateUnits {
-    MINUTES, HOURS, DAYS, WEEKS, MONTHS, YEARS;
+public interface RepeatExpressionEditor {
 
     /**
-     * Converts a string to a date unit, ignoring nulls.
+     * Returns the expression.
      *
-     * @param value the string value. May be {@code null}
-     * @return the corresponding unit, or {@code null} if {@code value} is {@code null}
+     * @return the expression
      */
-    public static DateUnits fromString(String value) {
-        return value != null ? valueOf(value) : null;
-    }
+    RepeatExpression getExpression();
+
+    /**
+     * Returns the component representing the editor.
+     *
+     * @return the component
+     */
+    Component getComponent();
+
+    /**
+     * Determines if the editor is valid.
+     *
+     * @return {@code true} if the editor is valid
+     */
+    boolean isValid();
+
 }

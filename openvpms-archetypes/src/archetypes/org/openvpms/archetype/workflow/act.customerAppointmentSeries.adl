@@ -23,12 +23,18 @@
         <node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"/>
         <node name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="0" hidden="true"/>
         <node name="status" path="/status" type="java.lang.String" minCardinality="0" hidden="true"/>
-        <node name="dayOfMonth" path="/details/dayOfMonth" type="java.lang.String" minCardinality="1" maxLength="50"
-              defaultValue="*"/>
-        <node name="month" path="/details/month" type="java.lang.String" minCardinality="1" maxLength="50"
-              defaultValue="'*'"/>
-        <node name="dayOfWeek" path="/details/dayOfWeek" type="java.lang.String" minCardinality="1" maxLength="50"
-              defaultValue="'?'"/>
+        <node name="interval" path="/details/interval" type="java.lang.Integer" minCardinality="0" maxCardinality="1"/>
+        <node name="units" path="/details/units" minCardinality="0" maxCardinality="1" type="java.lang.String">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="DAYS" value="days"/>
+                    <property name="WEEKS" value="weeks"/>
+                    <property name="MONTHS" value="months"/>
+                    <property name="YEARS" value="years"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="expression" path="/details/expression" type="java.lang.String" minCardinality="0" maxLength="5000"/>
         <node name="untilCount" path="/details/until" type="java.lang.Integer" minCardinality="0"
               defaultValue="0" hidden="true"/>
         <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"

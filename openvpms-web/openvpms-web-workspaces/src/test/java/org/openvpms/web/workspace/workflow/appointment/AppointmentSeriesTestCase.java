@@ -31,6 +31,9 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeries;
+import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatExpression;
+import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatExpressions;
 
 import java.util.Date;
 import java.util.List;
@@ -115,7 +118,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         Date startTime = TestHelper.getDatetime("2015-01-01 09:30:00");
         Date endTime = TestHelper.getDatetime("2015-01-01 09:45:00");
 
-        checkCreateSeries(CronExpression.daily(startTime), startTime, endTime, 1, DateUnits.DAYS);
+        checkCreateSeries(RepeatExpressions.daily(), startTime, endTime, 1, DateUnits.DAYS);
     }
 
     /**
@@ -126,7 +129,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         Date startTime = TestHelper.getDatetime("2015-01-01 09:30:00");
         Date endTime = TestHelper.getDatetime("2015-01-01 09:45:00");
 
-        checkCreateSeries(CronExpression.weekly(startTime), startTime, endTime, 1, DateUnits.WEEKS);
+        checkCreateSeries(RepeatExpressions.weekly(), startTime, endTime, 1, DateUnits.WEEKS);
     }
 
     /**
@@ -137,7 +140,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         Date startTime = TestHelper.getDatetime("2015-01-01 09:30:00");
         Date endTime = TestHelper.getDatetime("2015-01-01 09:45:00");
 
-        checkCreateSeries(CronExpression.monthly(startTime), startTime, endTime, 1, DateUnits.MONTHS);
+        checkCreateSeries(RepeatExpressions.monthly(), startTime, endTime, 1, DateUnits.MONTHS);
     }
 
     /**
@@ -148,7 +151,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         Date startTime = TestHelper.getDatetime("2015-01-01 09:30:00");
         Date endTime = TestHelper.getDatetime("2015-01-01 09:45:00");
 
-        checkCreateSeries(CronExpression.yearly(startTime), startTime, endTime, 1, DateUnits.YEARS);
+        checkCreateSeries(RepeatExpressions.yearly(), startTime, endTime, 1, DateUnits.YEARS);
     }
 
     /**
@@ -160,7 +163,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
      * @param interval   the interval between appointments
      * @param units      the interval units
      */
-    private void checkCreateSeries(CronExpression expression, Date startTime, Date endTime, int interval,
+    private void checkCreateSeries(RepeatExpression expression, Date startTime, Date endTime, int interval,
                                    DateUnits units) {
         Act appointment = ScheduleTestHelper.createAppointment(startTime, endTime, schedule, appointmentType, customer,
                                                                patient, clinician, author);

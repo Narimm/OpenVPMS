@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -546,7 +546,9 @@ public class ActBean extends IMObjectBean {
     public Participation setNodeParticipant(String name, IMObjectReference entity) {
         Participation p = getNodeParticipation(name);
         if (p == null) {
-            p = addNodeParticipation(name, entity);
+            if (entity != null) {
+                p = addNodeParticipation(name, entity);
+            }
         } else {
             p.setEntity(entity);
         }
