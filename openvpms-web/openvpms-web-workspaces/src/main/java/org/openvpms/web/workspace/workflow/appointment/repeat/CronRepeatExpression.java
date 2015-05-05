@@ -14,11 +14,14 @@
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.workflow.appointment;
+package org.openvpms.web.workspace.workflow.appointment.repeat;
 
+import org.apache.commons.collections4.BidiMap;
+import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.quartz.CronExpression;
 
 import java.text.ParseException;
 import java.util.BitSet;
@@ -26,18 +29,14 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 /**
  * Simplified cron expression.
  *
  * @author Tim Anderson
  */
-public class CronExpression {
-
-    public enum Type {
-        DAILY, WEEKDAYS, WEEKLY, MONTHLY, YEARLY, CUSTOM
-    }
+public class CronRepeatExpression implements RepeatExpression {
 
     /**
      * The minutes field.
@@ -70,7 +69,23 @@ public class CronExpression {
     private final Type type;
 
     /**
-     * Constructs a {@link CronExpression}.
+     * The underlying Cron expression.
+     */
+    private CronExpression expression;
+
+
+    /**
+     * Constructs a {@link CronRepeatExpression}.
+     *
+     * @param startTime the time the expression starts
+     * @param dayOfWeek the day-of-week
+     */
+    public CronRepeatExpression(Date startTime, DayOfWeek dayOfWeek) {
+        this(startTime, DayOfMonth.NO_VALUE, Month.ALL, dayOfWeek, Type.CUSTOM);
+    }
+
+    /**
+     * Constructs a {@link CronRepeatExpression}.
      *
      * @param startTime  the time the expression starts
      * @param dayOfMonth the day-of-month
@@ -78,7 +93,7 @@ public class CronExpression {
      * @param dayOfWeek  the day-of-week
      * @param type       the expression type
      */
-    private CronExpression(Date startTime, DayOfMonth dayOfMonth, Month month, DayOfWeek dayOfWeek, Type type) {
+    private CronRepeatExpression(Date startTime, DayOfMonth dayOfMonth, Month month, DayOfWeek dayOfWeek, Type type) {
         Calendar calendar = new GregorianCalendar();
         calendar.setTime(startTime);
         minutes = "" + calendar.get(Calendar.MINUTE);
@@ -90,7 +105,7 @@ public class CronExpression {
     }
 
     /**
-     * Constructs a {@link CronExpression}.
+     * Constructs a {@link CronRepeatExpression}.
      *
      * @param minute     the minute the expression starts
      * @param hour       the hour the expression starts
@@ -99,7 +114,8 @@ public class CronExpression {
      * @param dayOfWeek  the day-of-week
      * @param type       the expression type
      */
-    private CronExpression(int minute, int hour, DayOfMonth dayOfMonth, Month month, DayOfWeek dayOfWeek, Type type) {
+    private CronRepeatExpression(int minute, int hour, DayOfMonth dayOfMonth, Month month, DayOfWeek dayOfWeek,
+                                 Type type) {
         this.minutes = "" + minute;
         this.hours = "" + hour;
         this.dayOfMonth = dayOfMonth;
@@ -113,8 +129,8 @@ public class CronExpression {
      *
      * @return the day-of-month field
      */
-    public String getDayOfMonth() {
-        return dayOfMonth.value;
+    public DayOfMonth getDayOfMonth() {
+        return dayOfMonth;
     }
 
     /**
@@ -122,8 +138,8 @@ public class CronExpression {
      *
      * @return the month field
      */
-    public String getMonth() {
-        return month.value;
+    public Month getMonth() {
+        return month;
     }
 
     /**
@@ -131,8 +147,8 @@ public class CronExpression {
      *
      * @return the the day-of-week field
      */
-    public String getDayOfWeek() {
-        return dayOfWeek.value;
+    public DayOfWeek getDayOfWeek() {
+        return dayOfWeek;
     }
 
     /**
@@ -165,14 +181,32 @@ public class CronExpression {
     }
 
     /**
+     * Returns the next repeat time after the specified time.
+     *
+     * @param time the time
+     * @return the next repeat time, or {@code null} if there are no more repeats
+     */
+    @Override
+    public Date getRepeatAfter(Date time) {
+        if (expression == null) {
+            try {
+                expression = new CronExpression(getExpression());
+            } catch (ParseException exception) {
+                // do nopthing
+            }
+        }
+        return (expression != null) ? expression.getNextValidTimeAfter(time) : null;
+    }
+
+    /**
      * Indicates whether some other object is "equal to" this one.
      */
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
-        } else if (obj instanceof CronExpression) {
-            CronExpression other = (CronExpression) obj;
+        } else if (obj instanceof CronRepeatExpression) {
+            CronRepeatExpression other = (CronRepeatExpression) obj;
             return ObjectUtils.equals(minutes, other.minutes) && ObjectUtils.equals(hours, other.hours)
                    && ObjectUtils.equals(dayOfMonth, other.dayOfMonth) && ObjectUtils.equals(month, other.month)
                    && ObjectUtils.equals(dayOfWeek, other.dayOfWeek);
@@ -181,9 +215,7 @@ public class CronExpression {
     }
 
     /**
-     * Returns a hash code value for the object. This method is
-     * supported for the benefit of hash tables such as those provided by
-     * {@link HashMap}.
+     * Returns a hash code value for the object.
      *
      * @return a hash code value for this object.
      */
@@ -199,8 +231,8 @@ public class CronExpression {
      * @param expression the expression
      * @return the parsed expression, or {@code null} if the expression is invalid
      */
-    public static CronExpression parse(String expression) {
-        CronExpression result;
+    public static CronRepeatExpression parse(String expression) {
+        CronRepeatExpression result;
         String[] parts = expression.split(" ");
         if (parts.length < 5) {
             return null;
@@ -219,91 +251,23 @@ public class CronExpression {
     }
 
     /**
-     * Parses a Cron expression.
-     *
-     * @param startTime  the expression start time
-     * @param dayOfMonth the day-of-month field
-     * @param month      the month field
-     * @param dayOfWeek  the day-of-week field
-     * @return the parsed expression, or {@code null} if the expression is invalid
-     */
-    public static CronExpression parse(Date startTime, String dayOfMonth, String month, String dayOfWeek)
-            throws ParseException {
-        Calendar calendar = new GregorianCalendar();
-        calendar.setTime(startTime);
-        int minute = calendar.get(Calendar.MINUTE);
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        return parse(minute, hour, dayOfMonth, month, dayOfWeek);
-    }
-
-    /**
-     * Helper to create a daily Cron expression.
-     *
-     * @param startTime the expression start time
-     * @return a new Cron expression
-     */
-    public static CronExpression daily(Date startTime) {
-        return new CronExpression(startTime, DayOfMonth.ALL, Month.ALL, DayOfWeek.NO_VALUE, Type.DAILY);
-    }
-
-    /**
      * Helper to create a weekday Cron expression.
      *
      * @param startTime the expression start time
      * @return a new Cron expression
      */
-    public static CronExpression weekdays(Date startTime) {
+    public static RepeatExpression weekdays(Date startTime) {
         Calendar calendar = new GregorianCalendar();
         calendar.setTime(startTime);
-        return new CronExpression(startTime, DayOfMonth.NO_VALUE, Month.ALL, DayOfWeek.WEEKDAYS, Type.WEEKDAYS);
+        return new CronRepeatExpression(startTime, DayOfMonth.NO_VALUE, Month.ALL, DayOfWeek.WEEKDAYS, Type.WEEKDAYS);
     }
 
-    /**
-     * Helper to create a weekly Cron expression.
-     *
-     * @param startTime the expression start time
-     * @return a new Cron expression
-     */
-    public static CronExpression weekly(Date startTime) {
-        Calendar calendar = new GregorianCalendar();
-        calendar.setTime(startTime);
-        String dayOfWeek = DayOfWeek.getDay(calendar.get(Calendar.DAY_OF_WEEK));
-        return new CronExpression(startTime, DayOfMonth.NO_VALUE, Month.ALL, new DayOfWeek(dayOfWeek), Type.WEEKLY);
-    }
-
-    /**
-     * Helper to create a monthly Cron expression.
-     *
-     * @param startTime the expression start time
-     * @return a new Cron expression
-     */
-    public static CronExpression monthly(Date startTime) {
-        Calendar calendar = new GregorianCalendar();
-        calendar.setTime(startTime);
-        String dayOfMonth = "" + calendar.get(Calendar.DAY_OF_MONTH);
-        return new CronExpression(startTime, new DayOfMonth(dayOfMonth), Month.ALL, DayOfWeek.NO_VALUE, Type.MONTHLY);
-    }
-
-    /**
-     * Helper to create a yearly Cron expression.
-     *
-     * @param startTime the expression start time
-     * @return a new Cron expression
-     */
-    public static CronExpression yearly(Date startTime) {
-        Calendar calendar = new GregorianCalendar();
-        calendar.setTime(startTime);
-        String dayOfMonth = "" + calendar.get(Calendar.DAY_OF_MONTH);
-        String month = "" + calendar.get(Calendar.MONTH) + 1;
-        return new CronExpression(startTime, new DayOfMonth(dayOfMonth), new Month(month), DayOfWeek.NO_VALUE,
-                                  Type.YEARLY);
-    }
-
-    private static CronExpression parse(int minute, int hour, String dayOfMonth, String month, String dayOfWeek) {
-        CronExpression result;
+    private static CronRepeatExpression parse(int minute, int hour, String dayOfMonth, String month, String dayOfWeek)
+            throws ParseException {
+        CronRepeatExpression result;
         DayOfMonth dom = new DayOfMonth(dayOfMonth);
         Month m = new Month(month);
-        DayOfWeek dow = new DayOfWeek(dayOfWeek);
+        DayOfWeek dow = DayOfWeek.parse(dayOfWeek);
         boolean allDayOfMonth = dom.isAll();
         boolean allMonth = m.isAll();
         boolean allDayOfWeek = dow.isAll();
@@ -322,7 +286,7 @@ public class CronExpression {
         } else {
             type = Type.CUSTOM;
         }
-        result = new CronExpression(minute, hour, dom, m, dow, type);
+        result = new CronRepeatExpression(minute, hour, dom, m, dow, type);
         return result;
     }
 
@@ -379,7 +343,7 @@ public class CronExpression {
         }
     }
 
-    private static class DayOfMonth extends Field {
+    public static class DayOfMonth extends Field {
 
         public static DayOfMonth ALL = new DayOfMonth("*");
 
@@ -394,7 +358,7 @@ public class CronExpression {
         }
     }
 
-    private static class Month extends Field {
+    public static class Month extends Field {
 
         public static Month ALL = new Month("*");
 
@@ -407,11 +371,15 @@ public class CronExpression {
         }
     }
 
-    private static class DayOfWeek extends Field {
+    public static class DayOfWeek extends Field {
 
         public static final DayOfWeek NO_VALUE;
         public static final DayOfWeek ALL;
         public static final DayOfWeek WEEKDAYS;
+
+        public static final int LAST = -1;
+
+        private final int ordindal;
 
         private static final String SUN = "SUN";
 
@@ -427,24 +395,111 @@ public class CronExpression {
 
         private static final String SAT = "SAT";
 
-        private static final Map<String, Integer> DAYS = new HashMap<String, Integer>(60);
+        private static final BidiMap<String, Integer> DAY_ID = new DualHashBidiMap<String, Integer>();
+
+        private static final BidiMap<Integer, String> ID_DAY;
 
         static {
-            DAYS.put(SUN, Calendar.SUNDAY);
-            DAYS.put(MON, Calendar.MONDAY);
-            DAYS.put(TUE, Calendar.TUESDAY);
-            DAYS.put(WED, Calendar.WEDNESDAY);
-            DAYS.put(THU, Calendar.THURSDAY);
-            DAYS.put(FRI, Calendar.FRIDAY);
-            DAYS.put(SAT, Calendar.SATURDAY);
+            DAY_ID.put(SUN, Calendar.SUNDAY);
+            DAY_ID.put(MON, Calendar.MONDAY);
+            DAY_ID.put(TUE, Calendar.TUESDAY);
+            DAY_ID.put(WED, Calendar.WEDNESDAY);
+            DAY_ID.put(THU, Calendar.THURSDAY);
+            DAY_ID.put(FRI, Calendar.FRIDAY);
+            DAY_ID.put(SAT, Calendar.SATURDAY);
+            ID_DAY = DAY_ID.inverseBidiMap();
             NO_VALUE = new DayOfWeek("?");
             ALL = new DayOfWeek("*");
             WEEKDAYS = new DayOfWeek("MON-FRI");
+
         }
 
-        private BitSet set = new BitSet(Calendar.SATURDAY);
+        private final BitSet set;
 
 
+        private DayOfWeek(String value) {
+            this(value, new BitSet(Calendar.SATURDAY));
+        }
+
+
+        private DayOfWeek(String value, BitSet set) {
+            super(value);
+            this.set = set;
+            ordindal = 0;
+        }
+
+        public DayOfWeek(List<String> days) {
+            super(StringUtils.join(days.iterator(), ","));
+            set = new BitSet(Calendar.SATURDAY);
+            for (String day : days) {
+                set.set(getDay(day), true);
+            }
+            ordindal = 0;
+        }
+
+        public DayOfWeek(String day, int ordinal) {
+            super(ordinal == LAST ? day + "L" : day + "#" + ordinal);
+            set = new BitSet(Calendar.SATURDAY);
+            set.set(getDay(day));
+            this.ordindal = ordinal;
+        }
+
+        public int getOrdindal() {
+            return ordindal;
+        }
+
+        public String getDay() {
+            if (set.cardinality() == 1) {
+                return ID_DAY.get(set.nextSetBit(0));
+            }
+            return null;
+        }
+
+        public static DayOfWeek lastDay(String day) {
+            return new DayOfWeek(day + "L");
+        }
+
+        public static DayOfWeek parse(String value) throws ParseException {
+            if (value.contains("-")) {
+                BitSet set = new BitSet(Calendar.SATURDAY);
+                String[] parts = value.split("-");
+                if (parts.length == 2) {
+                    int start = getDay(parts[0]);
+                    int end = getDay(parts[1]);
+                    set.set(start, end, true);
+                } else {
+                    throw new IllegalArgumentException("Invalid day of week: " + value);
+                }
+                return new DayOfWeek(value, set);
+            } else if (value.contains(",")) {
+                BitSet set = new BitSet(Calendar.SATURDAY);
+                String[] parts = value.split(",");
+                for (String part : parts) {
+                    set.set(getDay(part), true);
+                }
+                return new DayOfWeek(value, set);
+            } else if (value.contains("#")) {
+                String[] parts = value.split("#");
+                if (parts.length == 2) {
+                    int nth = parseInt(parts[1], 1, 4, "count");
+                    return new DayOfWeek(parts[0], nth);
+                } else {
+                    throw new IllegalArgumentException("Invalid day of week: " + value);
+                }
+            } else if (value.endsWith("L")) {
+                value = value.substring(0, value.length() - 1);
+                return new DayOfWeek(value, LAST);
+            }
+            return new DayOfWeek(value);
+        }
+
+
+        /**
+         * Returns the Cron day name for a day of week.
+         *
+         * @param dayOfWeek the day name
+         * @return the day name
+         */
         public static String getDay(int dayOfWeek) {
             switch (dayOfWeek) {
                 case Calendar.SUNDAY:
@@ -465,33 +520,6 @@ public class CronExpression {
             return null;
         }
 
-        public DayOfWeek(String value) {
-            super(value);
-            if (value.contains("-")) {
-                String[] parts = value.split("-");
-                if (parts.length == 2) {
-                    int start = getDay(parts[0]);
-                    int end = getDay(parts[1]);
-                    set.set(start, end, true);
-                } else {
-                    throw new IllegalArgumentException("Invalid day of week: " + value);
-                }
-            } else if (value.contains(",")) {
-                String[] parts = value.split(",");
-                for (String part : parts) {
-                    set.set(getDay(part), true);
-                }
-            }
-        }
-
-        private int getDay(String value) {
-            Integer result = DAYS.get(value.toUpperCase());
-            if (result == null) {
-                throw new IllegalArgumentException("Invalid day: " + value);
-            }
-            return result;
-        }
-
         public boolean weekDays() {
             return set.get(Calendar.MONDAY, Calendar.FRIDAY + 1).cardinality() == 5 &&
                    !(set.get(Calendar.SUNDAY) || set.get(Calendar.SATURDAY));
@@ -503,8 +531,24 @@ public class CronExpression {
             return super.isAll() || set.cardinality() == 7;
         }
 
+        public boolean isSelected(int day) {
+            return set.get(day);
+        }
+
         public boolean singleDay() {
             return set.cardinality() == 1;
+        }
+
+        private static int getDay(String value) {
+            Integer result = DAY_ID.get(value.toUpperCase());
+            if (result == null) {
+                throw new IllegalArgumentException("Invalid day: " + value);
+            }
+            return result;
+        }
+
+        public boolean isOrdinal() {
+            return ordindal > 0 || ordindal == LAST;
         }
     }
 

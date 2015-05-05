@@ -14,24 +14,34 @@
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.archetype.rules.util;
+package org.openvpms.web.workspace.workflow.appointment.repeat;
 
+import java.util.Date;
 
 /**
- * Date units.
+ * Appointment repeat expression.
  *
  * @author Tim Anderson
  */
-public enum DateUnits {
-    MINUTES, HOURS, DAYS, WEEKS, MONTHS, YEARS;
+public interface RepeatExpression {
+
+    public enum Type {
+        DAILY, WEEKDAYS, WEEKLY, MONTHLY, YEARLY, CUSTOM
+    }
 
     /**
-     * Converts a string to a date unit, ignoring nulls.
+     * Returns the type of the expression.
      *
-     * @param value the string value. May be {@code null}
-     * @return the corresponding unit, or {@code null} if {@code value} is {@code null}
+     * @return the type
      */
-    public static DateUnits fromString(String value) {
-        return value != null ? valueOf(value) : null;
-    }
+    Type getType();
+
+    /**
+     * Returns the next repeat time after the specified time.
+     *
+     * @param time the time
+     * @return the next repeat time, or {@code null} if there are no more repeats
+     */
+    Date getRepeatAfter(Date time);
+
 }

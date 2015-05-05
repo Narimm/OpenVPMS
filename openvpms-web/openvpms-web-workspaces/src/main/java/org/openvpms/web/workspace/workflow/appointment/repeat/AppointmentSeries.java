@@ -14,10 +14,12 @@
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.workflow.appointment;
+package org.openvpms.web.workspace.workflow.appointment.repeat;
 
 import net.sf.jasperreports.engine.util.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -30,7 +32,6 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.web.component.im.act.ActHelper;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -72,14 +73,14 @@ public class AppointmentSeries {
     private Act series;
 
     /**
-     * The old expression.
+     * The previous expression.
      */
-    private CronExpression old;
+    private RepeatExpression previous;
 
     /**
-     * The new expression.
+     * The current expression.
      */
-    private CronExpression current;
+    private RepeatExpression expression;
 
     /**
      * The repeat start time.
@@ -162,16 +163,19 @@ public class AppointmentSeries {
         author = (User) bean.getNodeParticipant("author");
         series = (Act) bean.getNodeSourceObject("repeat");
         if (series != null) {
+            startTime = series.getActivityStartTime();
             ActBean seriesBean = new ActBean(series, service);
-            String dayOfMonth = seriesBean.getString("dayOfMonth");
-            String month = seriesBean.getString("month");
-            String dayOfWeek = seriesBean.getString("dayOfWeek");
-            try {
-                old = CronExpression.parse(series.getActivityStartTime(), dayOfMonth, month, dayOfWeek);
-                current = old;
-            } catch (ParseException exception) {
-                // no -op
+            int interval = seriesBean.getInt("interval", -1);
+            DateUnits units = DateUnits.fromString(seriesBean.getString("units"));
+            if (interval != -1 && units != null) {
+                previous = new CalendarRepeatExpression(interval, units);
+            } else {
+                String expression = seriesBean.getString("expression");
+                if (!StringUtils.isEmpty(expression)) {
+                    previous = CronRepeatExpression.parse(expression);
+                }
             }
+            expression = previous;
         } else {
             startTime = appointment.getActivityStartTime();
         }
@@ -232,35 +236,39 @@ public class AppointmentSeries {
     }
 
     /**
-     * Returns the Cron expression for this series.
+     * Returns the repeat expression for this series.
      *
-     * @return the Cron expression, or {@code null} if none has been configured
+     * @return the repeat expression, or {@code null} if none has been configured
      */
-    public CronExpression getExpression() {
-        return current;
+    public RepeatExpression getExpression() {
+        return expression;
     }
 
     /**
-     * Sets the Cron expression.
+     * Sets the repeat expression.
      *
-     * @param expression the Cron expression. May be [@code null}
+     * @param expression the repeat expression. May be [@code null}
      */
-    public void setExpression(CronExpression expression) {
-        current = expression;
+    public void setExpression(RepeatExpression expression) {
+        this.expression = expression;
+    }
+
+    public boolean isModified() {
+        return !ObjectUtils.equals(previous, expression);
     }
 
     public boolean save() {
         boolean result = false;
-        if (!ObjectUtils.equals(old, current)) {
-            if (old != null && current == null) {
+        if (isModified()) {
+            if (previous != null && expression == null) {
                 result = deleteNonExpiredAppointments();
-            } else if (old != null && current != null) {
+            } else if (previous != null) {
                 result = updateNonExpiredAppointments();
-            } else if (old == null && current != null) {
+            } else if (expression != null) {
                 createAppointments();
                 result = true;
             }
-            old = current;
+            previous = expression;
         }
         return result;
     }
@@ -305,10 +313,13 @@ public class AppointmentSeries {
         series = (Act) service.create(ScheduleArchetypes.APPOINTMENT_SERIES);
         series.setActivityStartTime(startTime);
         ActBean seriesBean = new ActBean(series, service);
-        seriesBean.setValue("dayOfMonth", current.getDayOfMonth());
-        seriesBean.setValue("month", current.getMonth());
-        seriesBean.setValue("dayOfWeek", current.getDayOfWeek());
-        org.quartz.CronExpression quartz = getQuartzExpression();
+        if (expression instanceof CalendarRepeatExpression) {
+            CalendarRepeatExpression calendar = (CalendarRepeatExpression) expression;
+            seriesBean.setValue("interval", calendar.getInterval());
+            seriesBean.setValue("units", calendar.getUnits().toString());
+        } else {
+            seriesBean.setValue("expression", ((CronRepeatExpression) expression).getExpression());
+        }
 
         List<Act> toSave = new ArrayList<Act>();
         seriesBean.addNodeRelationship("items", appointment);
@@ -317,7 +328,7 @@ public class AppointmentSeries {
         int i = 1;
         Date from = startTime;
         toSave.add(series);
-        while (i < maxAppointments && (from = quartz.getNextValidTimeAfter(from)) != null) {
+        while (i < maxAppointments && (from = expression.getRepeatAfter(from)) != null) {
             Act act = create(from, seriesBean);
             toSave.add(act);
             ++i;
@@ -360,23 +371,8 @@ public class AppointmentSeries {
         return bean;
     }
 
-    /**
-     * Returns a Quartz cron expression corresponding to the current cron expression.
-     *
-     * @return a new Quartz cron expression
-     * @throws IllegalStateException if the expression cannot be parsed
-     */
-    private org.quartz.CronExpression getQuartzExpression() {
-        try {
-            return new org.quartz.CronExpression(current.getExpression());
-        } catch (ParseException exception) {
-            throw new IllegalStateException(exception);
-        }
-    }
-
     private boolean updateNonExpiredAppointments() {
         boolean result = false;
-        org.quartz.CronExpression expression = getQuartzExpression();
 
         Date now = new Date();
         ActBean bean = new ActBean(series, service);
@@ -401,7 +397,7 @@ public class AppointmentSeries {
         Iterator<Act> iterator = acts.listIterator();
         List<Act> toUpdate = new ArrayList<Act>();
         List<Act> toSave = new ArrayList<Act>();
-        while (i < maxAppointments && (from = expression.getNextValidTimeAfter(from)) != null) {
+        while (i < maxAppointments && (from = expression.getRepeatAfter(from)) != null) {
             if (iterator.hasNext()) {
                 Act act = iterator.next();
                 iterator.remove();
