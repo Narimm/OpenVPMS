@@ -96,7 +96,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Center">
-                    <font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="18" isBold="true"/>
                     <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[Tax Invoice]]></text>
@@ -350,7 +350,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="10" isBold="true"/>
                     <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[TOTAL includes GST]]></text>
@@ -371,7 +371,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="10" isBold="true"/>
                     <paragraph lineSpacing="Single"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{tax}]]></textFieldExpression>
@@ -391,7 +391,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="10" isBold="true"/>
                     <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[AMOUNT PAID]]></text>
@@ -409,7 +409,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="10" isBold="true"/>
                     <paragraph lineSpacing="Single"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{allocatedAmount}]]></textFieldExpression>
@@ -428,7 +428,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="10" isBold="true"/>
                     <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[CURRENT BALANCE]]></text>
@@ -447,7 +447,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="10" isBold="true"/>
                     <paragraph lineSpacing="Single"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{[party:getAccountBalance(.)]}]]></textFieldExpression>
@@ -483,7 +483,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right" verticalAlignment="Middle">
-                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="10" isBold="true"/>
                     <paragraph lineSpacing="Single"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$V{TOTAL_DISCOUNT}]]></textFieldExpression>

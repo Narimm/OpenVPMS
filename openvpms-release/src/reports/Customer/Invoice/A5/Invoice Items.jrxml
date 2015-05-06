@@ -46,9 +46,10 @@
     <field name="target.product.entity.printedName" class="java.lang.String"/>
     <field name="target.discount" class="java.math.BigDecimal"/>
     <field name="target.startTime" class="java.sql.Timestamp"/>
-    <field name="target.template.entity.name" class="java.lang.String"/>
-    <field name="target.template.entity.printAggregate" class="java.lang.Boolean"/>
     <field name="target.template" class="java.lang.Object"/>
+    <field name="target.template.entity.name" class="java.lang.String"/>
+    <field name="target.template.entity.printedName" class="java.lang.String"/>
+    <field name="target.template.entity.printAggregate" class="java.lang.Boolean"/>
     <field name="target.print" class="java.lang.Boolean"/>
     <sortField name="target.patient.entity.name"/>
     <sortField name="noTemplate" type="Variable"/>
@@ -83,8 +84,8 @@
                         <bottomPen lineWidth="0.0" lineColor="#000000"/>
                         <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     </box>
-                    <textElement>
-                        <font size="6.75" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <textElement verticalAlignment="Middle">
+                        <font size="6.75" isBold="true"/>
                     </textElement>
                     <textFieldExpression><![CDATA[$F{target.patient.entity.name}]]></textFieldExpression>
                 </textField>
@@ -110,15 +111,16 @@
                         <bottomPen lineWidth="0.0" lineColor="#000000"/>
                         <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     </box>
-                    <textElement>
+                    <textElement verticalAlignment="Middle">
                         <font size="6.75"/>
                     </textElement>
-                    <textFieldExpression><![CDATA[$F{target.template.entity.name}]]></textFieldExpression>
+                    <textFieldExpression>
+                        <![CDATA[($F{target.template.entity.printedName} == null) ? $F{target.template.entity.name}: $F{target.template.entity.printedName}]]></textFieldExpression>
                 </textField>
                 <textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
                     <reportElement key="textField-7" isPrintRepeatedValues="false" x="4" y="2" width="48" height="10"
                                    uuid="f9d8a2f9-ca73-4401-8c9a-4b9033609c45"/>
-                    <textElement>
+                    <textElement verticalAlignment="Middle">
                         <font size="6.75"/>
                     </textElement>
                     <textFieldExpression><![CDATA[$F{target.startTime}]]></textFieldExpression>
@@ -131,7 +133,7 @@
                         <property name="com.jaspersoft.studio.unit.y" value="px"/>
                         <printWhenExpression><![CDATA[$F{target.template.entity.printAggregate}]]></printWhenExpression>
                     </reportElement>
-                    <textElement textAlignment="Right">
+                    <textElement textAlignment="Right" verticalAlignment="Middle">
                         <font size="6.75"/>
                     </textElement>
                     <textFieldExpression><![CDATA[$V{templateTotal}]]></textFieldExpression>
@@ -169,8 +171,8 @@
                     <bottomPen lineWidth="0.0" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement>
-                    <font size="6.75" isBold="true" pdfFontName="Helvetica-Bold"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="6.75" isBold="true"/>
                 </textElement>
                 <text><![CDATA[Service Provided]]></text>
             </staticText>
@@ -183,8 +185,8 @@
                     <bottomPen lineWidth="0.0" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right">
-                    <font size="6.75" isBold="true" pdfFontName="Helvetica-Bold"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font size="6.75" isBold="true"/>
                 </textElement>
                 <text><![CDATA[Amount]]></text>
             </staticText>
@@ -197,8 +199,8 @@
                     <bottomPen lineWidth="0.0" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right">
-                    <font size="6.75" isBold="true" pdfFontName="Helvetica-Bold"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font size="6.75" isBold="true"/>
                 </textElement>
                 <text><![CDATA[Quantity]]></text>
             </staticText>
@@ -211,8 +213,8 @@
                     <bottomPen lineWidth="0.0" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement>
-                    <font size="6.75" isBold="true" pdfFontName="Helvetica-Bold"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="6.75" isBold="true"/>
                 </textElement>
                 <text><![CDATA[Patient]]></text>
             </staticText>
@@ -229,7 +231,7 @@
                                uuid="81ba3aaf-4bac-41af-b085-8324bd30ea36">
                     <printWhenExpression><![CDATA[$F{target.template} == null]]></printWhenExpression>
                 </reportElement>
-                <textElement>
+                <textElement verticalAlignment="Middle">
                     <font size="6.75"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{target.startTime}]]></textFieldExpression>
@@ -243,7 +245,7 @@
                     <bottomPen lineWidth="0.0" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement>
+                <textElement verticalAlignment="Middle">
                     <font size="6.75"/>
                 </textElement>
                 <textFieldExpression>
@@ -258,7 +260,7 @@
                     <bottomPen lineWidth="0.0" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right">
+                <textElement textAlignment="Right" verticalAlignment="Middle">
                     <font size="6.75"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{target.quantity}]]></textFieldExpression>
@@ -272,7 +274,7 @@
                     <bottomPen lineWidth="0.0" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right">
+                <textElement textAlignment="Right" verticalAlignment="Middle">
                     <font size="6.75"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{target.total}]]></textFieldExpression>
@@ -299,7 +301,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="6.75" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="6.75" isBold="true"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$V{SUM_target.total}]]></textFieldExpression>
             </textField>
@@ -318,7 +320,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="6.75" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="6.75" isBold="true"/>
                 </textElement>
                 <text><![CDATA[TOTAL]]></text>
             </staticText>
