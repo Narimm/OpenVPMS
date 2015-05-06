@@ -273,7 +273,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Center">
-                    <font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="18" isBold="true"/>
                     <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[Tax Invoice]]></text>
@@ -338,7 +338,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="10" isBold="true"/>
                     <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[TOTAL includes GST]]></text>
@@ -358,7 +358,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="10" isBold="true"/>
                     <paragraph lineSpacing="Single"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{tax}]]></textFieldExpression>
