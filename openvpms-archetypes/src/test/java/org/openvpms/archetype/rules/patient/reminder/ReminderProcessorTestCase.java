@@ -352,7 +352,7 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
      * @return a new contact
      */
     private Contact createLocation() {
-        return TestHelper.createLocationContact("Foo", "ELTHAM", "VIC", "3095");
+        return TestHelper.createLocationContact("Foo", "ELTHAM", "VIC", "AU", "3095");
     }
 
     /**

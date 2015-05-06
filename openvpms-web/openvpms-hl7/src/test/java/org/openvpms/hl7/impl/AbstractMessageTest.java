@@ -74,7 +74,7 @@ public abstract class AbstractMessageTest extends ArchetypeServiceTest {
         IMObjectBean bean = new IMObjectBean(patient);
         owner.getContacts().clear();
         Contact home = TestHelper.createLocationContact("123 Broadwater Avenue", "CAPE_WOOLAMAI", "Cape Woolamai",
-                                                        "VIC", "VIC", "3058");
+                                                        "VIC", "VIC", "AU", "Australia", "3058");
         Lookup homePurpose = TestHelper.getLookup("lookup.contactPurpose", "HOME");
         Lookup workPurpose = TestHelper.getLookup("lookup.contactPurpose", "WORK");
         home.addClassification(homePurpose);

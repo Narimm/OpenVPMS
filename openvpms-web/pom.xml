@@ -27,6 +27,7 @@
     </parent>
 
     <artifactId>openvpms-web</artifactId>
+    <name>OpenVPMS Web</name>
     <packaging>pom</packaging>
 
     <build>

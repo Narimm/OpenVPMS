@@ -142,7 +142,7 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
         }
 
         Contact address = TestHelper.createLocationContact("Twenty Second Avenue", "SAWTELL",
-                                                           "Sawtell", "NSW", "New South Wales", "2452");
+                                                           "Sawtell", "NSW", "New South Wales", "AU", "Australia", "2452");
         customer.addContact(address);
         customer.addContact(TestHelper.createPhoneContact("03", "1234 5678"));
         Contact mobile = TestHelper.createPhoneContact(null, "5678 1234");

@@ -91,7 +91,7 @@ class ErrorReport {
     public ErrorReport(String message, Throwable exception) {
         this.message = message;
         version = Version.VERSION;
-        revision = Version.BRANCH + " " + Version.REVISION;
+        revision = "Br:" + Version.BRANCH + " Hash:" + Version.REVISION;
         this.exception = (exception != null) ? new ThrowableAdapter(exception) : null;
         freeMemory = Runtime.getRuntime().freeMemory();
         totalMemory = Runtime.getRuntime().totalMemory();

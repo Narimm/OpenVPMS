@@ -49,11 +49,7 @@ import org.openvpms.component.system.common.query.QueryIterator;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -176,24 +172,26 @@ public class TestHelper {
      * Creates a new <em>contact.location</em>
      * <p/>
      * Any required lookups will be created and saved.
-     *
      * @param address    the street address
      * @param suburbCode the <em>lookup.suburb</em> code
      * @param suburbName the suburb name. May be {@code null}
      * @param stateCode  the <em>lookup.state</em> code
      * @param stateName  the state name. May be {@code null}
-     * @param postCode   the post code
-     * @return a new location contact
+     * @param countryCode
+     * @param countryName
+     * @param postCode   the post code  @return a new location contact
      */
     public static Contact createLocationContact(String address, String suburbCode, String suburbName,
-                                                String stateCode, String stateName, String postCode) {
-        Lookup state = getLookup("lookup.state", stateCode, stateName, true);
+                                                String stateCode, String stateName, String countryCode, String countryName, String postCode) {
+        Lookup country = getLookup("lookup.country", countryCode, countryName, true);
+        Lookup state = getLookup("lookup.state", stateCode, stateName, country, "lookupRelationship.countryState");
         Lookup suburb = getLookup("lookup.suburb", suburbCode, suburbName, state, "lookupRelationship.stateSuburb");
         Contact contact = (Contact) create(ContactArchetypes.LOCATION);
         IMObjectBean bean = new IMObjectBean(contact);
         bean.setValue("address", address);
         bean.setValue("suburb", suburb.getCode());
         bean.setValue("state", state.getCode());
+        bean.setValue("country", country.getCode());
         bean.setValue("postcode", postCode);
         return contact;
     }
@@ -254,8 +252,8 @@ public class TestHelper {
      * @param postCode   the post code
      * @return a new location contact
      */
-    public static Contact createLocationContact(String address, String suburbCode, String stateCode, String postCode) {
-        return createLocationContact(address, suburbCode, null, stateCode, null, postCode);
+    public static Contact createLocationContact(String address, String suburbCode, String stateCode, String countryCode, String postCode) {
+        return createLocationContact(address, suburbCode, null, stateCode, null, countryCode, null, postCode);
     }
 
     /**

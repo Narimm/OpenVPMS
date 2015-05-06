@@ -294,7 +294,7 @@ public class OrderMapperTestCase extends AbstractESCITest {
         functions = new ArchetypeServiceFunctions(getArchetypeService(), getLookupService());
         Party practice = getPractice();
         practice.getContacts().clear();
-        practiceContact = TestHelper.createLocationContact("1 Broadwater Avenue", "CAPE_WOOLAMAI", "VIC", "3925");
+        practiceContact = TestHelper.createLocationContact("1 Broadwater Avenue", "CAPE_WOOLAMAI", "VIC","AU", "3925");
         practice.addContact(practiceContact);
 
         phoneContact = createContact(ContactArchetypes.PHONE, "telephoneNumber", "59527054");
@@ -308,7 +308,7 @@ public class OrderMapperTestCase extends AbstractESCITest {
 
         save(practice);
 
-        supplierContact = TestHelper.createLocationContact("2 Peko Rd", "TENNANT_CREEK", "NT", "0862");
+        supplierContact = TestHelper.createLocationContact("2 Peko Rd", "TENNANT_CREEK", "NT","AU", "0862");
         Party supplier = getSupplier();
         supplier.addContact(supplierContact);
 

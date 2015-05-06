@@ -43,12 +43,14 @@
         <node name="state" path="/details/state"
               type="java.lang.String" minCardinality="0">
             <assertion name="lookup">
-                <property name="type" value="lookup"/>
-                <property name="source" value="lookup.state"/>
+                <property name="type" value="targetLookup"/>
+                <property name="relationship"
+                          value="lookupRelationship.countryState"/>
+                <property name="value" value="/details/country"/>
                 <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
-        <!-- node name="country" path="/details/country"
+        <node name="country" path="/details/country"
                   type="java.lang.String" defaultValue="'AU'"
                   minCardinality="0">
                   <assertion name="lookup">
@@ -56,7 +58,7 @@
                       <property name="source" value="lookup.country" />
                       <errorMessage>An error message</errorMessage>
                   </assertion>
-              </node-->
+        </node>
         <node name="preferred" path="/details/preferred"
               type="java.lang.Boolean" defaultValue="true()"/>
         <node name="startDate" path="/activeStartTime"

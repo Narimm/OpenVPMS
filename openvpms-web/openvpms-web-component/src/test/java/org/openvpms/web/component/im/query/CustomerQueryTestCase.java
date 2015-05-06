@@ -57,7 +57,7 @@ public class CustomerQueryTestCase extends AbstractEntityQueryTest<Party> {
         assertEquals(0, results.getResults());
         checkSelects(false, query, customer);
 
-        Contact location = TestHelper.createLocationContact(address, "VIC", "MELBOURNE", "3001");
+        Contact location = TestHelper.createLocationContact(address, "MELBOURNE", "VIC", "AU", "3001");
         customer.addContact(location);
         save(customer);
 

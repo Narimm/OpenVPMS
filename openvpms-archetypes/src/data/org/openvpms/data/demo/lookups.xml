@@ -16,6 +16,8 @@
 
 <archetype>
     <data id="CTY1" archetype="lookup.country" code="AU" name="Australia" defaultLookup="true"/>
+    <data id="CTY2" archetype="lookup.country" code="UK" name="United Kingdom"/>
+    <data id="CTY3" archetype="lookup.country" code="NZ" name="New Zealand"/>
     <data id="VIC" archetype="lookup.state" code="VIC" name="Victoria" defaultLookup="true"/>
     <data id="NSW" archetype="lookup.state" code="NSW" name="New South Wales"/>
     <data id="WA" archetype="lookup.state" code="WA" name="Western Australia"/>
@@ -24,6 +26,7 @@
     <data id="TAS" archetype="lookup.state" code="TAS" name="Tasmania"/>
     <data id="ACT" archetype="lookup.state" code="ACT" name="Australian Capital Territory"/>
     <data id="QLD" archetype="lookup.state" code="QLD" name="Queensland"/>
+    <data id="NZState1" archetype="lookup.state" code="NZ" name="New Zealand"/>
     <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:VIC"/>
     <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:NSW"/>
     <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:WA"/>
@@ -32,6 +35,8 @@
     <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:TAS"/>
     <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ACT"/>
     <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:QLD"/>
+    <data archetype="lookupRelationship.countryState" source="id:CTY3" target="id:NZState1"/>
+    <data id="NZ_THAMES_3500" archetype="lookup.suburb" code="THAMES_3500" name="Thames" postCode="3500"/>
     <data id="BLACK_ROCK_5431" archetype="lookup.suburb" code="BLACK_ROCK_5431" name="Black Rock" postCode="5431"/>
     <data id="CROYDON_3136" archetype="lookup.suburb" code="CROYDON_3136" name="Croydon" postCode="3136"/>
     <data id="CURRIE_7256" archetype="lookup.suburb" code="CURRIE_7256" name="Currie" postCode="7256"/>
