@@ -234,7 +234,12 @@ public class PharmacyOrderPlacer {
         }
     }
 
-
+    /**
+     * Returns the order associated with a charge.
+     *
+     * @param act the charge
+     * @return the order. May be {@code null}
+     */
     private Order getOrder(Act act) {
         Order result = null;
         if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)) {
@@ -258,6 +263,13 @@ public class PharmacyOrderPlacer {
         return result;
     }
 
+    /**
+     * Returns the patient context associated with an order.
+     *
+     * @param order   the order
+     * @param changes the changes
+     * @return the patient context, or {@code null} if there is no corresponding patient event
+     */
     private PatientContext getPatientContext(Order order, PatientHistoryChanges changes) {
         PatientContext result = null;
         List<Act> events = changes.getEvents(order.getPatient().getObjectReference());
@@ -278,6 +290,13 @@ public class PharmacyOrderPlacer {
         return result;
     }
 
+    /**
+     * Returns the patient context associated with an order.
+     *
+     * @param order  the order
+     * @param events the cache of clinical events
+     * @return the patient context, or {@code null} if there is no corresponding patient event
+     */
     private PatientContext getPatientContext(Order order, Map<IMObjectReference, Act> events) {
         PatientContext result = null;
         Act event = events.get(order.getEvent());
@@ -289,8 +308,6 @@ public class PharmacyOrderPlacer {
         }
         if (event != null) {
             events.put(order.getEvent(), event);
-        }
-        if (event != null) {
             result = factory.createContext(order.getPatient(), customer, event, location, order.getClinician());
         }
         return result;
@@ -338,17 +355,22 @@ public class PharmacyOrderPlacer {
 
     /**
      * Cancel an order.
+     * <p/>
+     * Note that if the charge was the result of an order being automatically charged and the charge is then removed,
+     * there will be nothing to cancel.
      *
      * @param order    the order
      * @param changes  the changes
      * @param patients the patients, used to prevent duplicate patient update notifications being sent
      */
     private void cancelOrder(Order order, PatientHistoryChanges changes, Set<Party> patients) {
-        PatientContext context = getPatientContext(order, changes);
-        if (context != null) {
-            notifyPatientInformation(context, changes, patients);
-            service.cancelOrder(context, order.getProduct(), order.getQuantity(), order.getId(), order.getStartTime(),
-                                order.getPharmacy(), user);
+        if (order.getId() != -1) {
+            PatientContext context = getPatientContext(order, changes);
+            if (context != null) {
+                notifyPatientInformation(context, changes, patients);
+                service.cancelOrder(context, order.getProduct(), order.getQuantity(), order.getId(),
+                                    order.getStartTime(), order.getPharmacy(), user);
+            }
         }
     }
 
