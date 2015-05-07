@@ -446,8 +446,9 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
         charger2.charge(editor);
 
         assertTrue(SaveHelper.save(editor));
-        checkItem(invoice, patient, product, ZERO, unitPrice, fixedPrice, ZERO, ZERO, ONE, ONE);
-        checkCharge(invoice, customer, author, clinician, ZERO, ZERO);
+        checkItem(invoice, patient, product, ZERO, unitPrice, fixedPrice, new BigDecimal("0.182"), fixedPrice, ONE,
+                  ONE);
+        checkCharge(invoice, customer, author, clinician, new BigDecimal("0.18"), fixedPrice);
     }
 
     /**
