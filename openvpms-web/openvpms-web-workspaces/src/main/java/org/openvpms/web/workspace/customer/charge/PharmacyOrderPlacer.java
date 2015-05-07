@@ -20,7 +20,6 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
-import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -30,7 +29,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.cache.IMObjectCache;
 import org.openvpms.hl7.patient.PatientContext;
@@ -38,7 +36,6 @@ import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.hl7.pharmacy.Pharmacies;
 import org.openvpms.hl7.pharmacy.PharmacyOrderService;
-import org.openvpms.hl7.util.HL7Archetypes;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -89,9 +86,9 @@ public class PharmacyOrderPlacer {
     private final PharmacyOrderService service;
 
     /**
-     * The pharmacies.
+     * The pharmacy products helper.
      */
-    private final Pharmacies pharmacies;
+    private final PharmacyProducts pharmacies;
 
     /**
      * The patient context factory.
@@ -130,7 +127,7 @@ public class PharmacyOrderPlacer {
         this.user = user;
         this.cache = cache;
         this.service = service;
-        this.pharmacies = pharmacies;
+        this.pharmacies = new PharmacyProducts(pharmacies, location, cache);
         this.factory = factory;
         this.informationService = informationService;
         this.rules = rules;
@@ -235,6 +232,16 @@ public class PharmacyOrderPlacer {
     }
 
     /**
+     * Determines if a product is dispensed via a pharmacy.
+     *
+     * @param product the product. May be {@code null}
+     * @return {@code true} if the product is dispensed via a pharmacy
+     */
+    public boolean isPharmacyProduct(Product product) {
+        return product != null && getPharmacy(product) != null;
+    }
+
+    /**
      * Returns the order associated with a charge.
      *
      * @param act the charge
@@ -245,18 +252,15 @@ public class PharmacyOrderPlacer {
         if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)) {
             ActBean bean = new ActBean(act);
             Product product = (Product) getObject(bean.getNodeParticipantRef("product"));
-            if (product != null && TypeHelper.isA(product, ProductArchetypes.MEDICATION,
-                                                  ProductArchetypes.MERCHANDISE)) {
-                Entity pharmacy = getPharmacy(product);
-                if (pharmacy != null) {
-                    Party patient = (Party) getObject(bean.getNodeParticipantRef("patient"));
-                    if (patient != null) {
-                        BigDecimal quantity = bean.getBigDecimal("quantity", BigDecimal.ZERO);
-                        User clinician = (User) getObject(bean.getNodeParticipantRef("clinician"));
-                        IMObjectReference event = bean.getNodeSourceObjectRef("event");
-                        result = new Order(act.getId(), act.getActivityStartTime(), product, patient, quantity,
-                                           clinician, pharmacy, event);
-                    }
+            Entity pharmacy = getPharmacy(product);
+            if (pharmacy != null) {
+                Party patient = (Party) getObject(bean.getNodeParticipantRef("patient"));
+                if (patient != null) {
+                    BigDecimal quantity = bean.getBigDecimal("quantity", BigDecimal.ZERO);
+                    User clinician = (User) getObject(bean.getNodeParticipantRef("clinician"));
+                    IMObjectReference event = bean.getNodeSourceObjectRef("event");
+                    result = new Order(act.getId(), act.getActivityStartTime(), product, patient, quantity,
+                                       clinician, pharmacy, event);
                 }
             }
         }
@@ -427,24 +431,11 @@ public class PharmacyOrderPlacer {
     /**
      * Returns the pharmacy for a product and location.
      *
-     * @param product the product
+     * @param product the product. May be {@code null}
      * @return the pharmacy, or {@code null} if none is present
      */
     private Entity getPharmacy(Product product) {
-        IMObjectBean bean = new IMObjectBean(product);
-        Entity pharmacy = (Entity) getObject(bean.getNodeTargetObjectRef("pharmacy"));
-        if (pharmacy == null) {
-            // use the pharmacy linked to the product type, if present
-            Entity type = (Entity) getObject(bean.getNodeSourceObjectRef("type"));
-            if (type != null) {
-                IMObjectBean typeBean = new IMObjectBean(type);
-                pharmacy = (Entity) getObject(typeBean.getNodeTargetObjectRef("pharmacy"));
-            }
-        }
-        if (pharmacy != null && TypeHelper.isA(pharmacy, HL7Archetypes.PHARMACY_GROUP)) {
-            pharmacy = pharmacies.getPharmacy(pharmacy, location.getObjectReference());
-        }
-        return pharmacy;
+        return pharmacies.getPharmacy(product);
     }
 
     /**

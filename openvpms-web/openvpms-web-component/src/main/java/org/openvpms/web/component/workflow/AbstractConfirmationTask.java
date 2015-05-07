@@ -11,14 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workflow;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
-import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.help.HelpContext;
 
@@ -34,11 +33,6 @@ import org.openvpms.web.echo.help.HelpContext;
 public abstract class AbstractConfirmationTask extends EvalTask<Boolean> {
 
     /**
-     * Determines if the No button should be displayed.
-     */
-    private final boolean displayNo;
-
-    /**
      * The help context.
      */
     private final HelpContext help;
@@ -48,15 +42,12 @@ public abstract class AbstractConfirmationTask extends EvalTask<Boolean> {
      */
     private ConfirmationDialog dialog;
 
-
     /**
      * Constructs an {@link AbstractConfirmationTask}.
      *
-     * @param displayNo determines if the 'No' button should be displayed
-     * @param help      the help context
+     * @param help the help context
      */
-    public AbstractConfirmationTask(boolean displayNo, HelpContext help) {
-        this.displayNo = displayNo;
+    public AbstractConfirmationTask(HelpContext help) {
         this.help = help;
     }
 
@@ -77,8 +68,7 @@ public abstract class AbstractConfirmationTask extends EvalTask<Boolean> {
      * @param context the task context
      */
     public void start(TaskContext context) {
-        String[] buttons = (displayNo) ? PopupDialog.YES_NO_CANCEL : PopupDialog.OK_CANCEL;
-        dialog = new ConfirmationDialog(getTitle(), getMessage(), buttons, help);
+        dialog = createConfirmationDialog(help);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 String action = dialog.getAction();
@@ -96,16 +86,11 @@ public abstract class AbstractConfirmationTask extends EvalTask<Boolean> {
     }
 
     /**
-     * Returns the title.
+     * Creates a new confirmation dialog.
      *
-     * @return the title
+     * @param help the help context
+     * @return a new confirmation dialog
      */
-    protected abstract String getTitle();
+    protected abstract ConfirmationDialog createConfirmationDialog(HelpContext help);
 
-    /**
-     * Returns the message.
-     *
-     * @return the message
-     */
-    protected abstract String getMessage();
 }

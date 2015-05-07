@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.customer.charge;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
@@ -102,6 +103,25 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         buttons.setEnabled(PREVIEW_ID, enable);
     }
 
+    /**
+     * Confirms that the user wants to post the act.
+     *
+     * @param act      the act to post
+     * @param callback the callback to handle the posting, if the user confirms it
+     */
+    @Override
+    protected void confirmPost(Act act, Runnable callback) {
+        if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE)) {
+            UndispensedOrderChecker checker = new UndispensedOrderChecker(act);
+            if (checker.hasUndispensedItems()) {
+                checker.confirm(getHelpContext(), callback);
+            } else {
+                super.confirmPost(act, callback);
+            }
+        } else {
+            super.confirmPost(act, callback);
+        }
+    }
 
     /**
      * Posts the act. This changes the act's status to POSTED, and saves it.

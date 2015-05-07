@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -28,6 +28,7 @@ import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeDocuments;
+import org.openvpms.web.workspace.customer.charge.UndispensedOrderChecker;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
 
 import java.util.List;
@@ -106,13 +107,7 @@ public class VisitEditorDialog extends PopupDialog {
      */
     @Override
     protected void onApply() {
-        if (editor.getChargeEditor() != null) {
-            CustomerChargeDocuments docs = new CustomerChargeDocuments(editor.getChargeEditor(), getHelpContext());
-            List<Act> existing = docs.getUnprinted();
-            if (editor.save()) {
-                docs.printNew(existing, null);
-            }
-        }
+        prepare(false);
     }
 
     /**
@@ -121,15 +116,7 @@ public class VisitEditorDialog extends PopupDialog {
      */
     @Override
     protected void onOK() {
-        if (editor.getChargeEditor() != null) {
-            CustomerChargeDocuments docs = new CustomerChargeDocuments(editor.getChargeEditor(), getHelpContext());
-            List<Act> existing = docs.getUnprinted();
-            if (editor.save()) {
-                printNew(docs, existing);
-            }
-        } else {
-            super.onOK();
-        }
+        prepare(true);
     }
 
     /**
@@ -178,6 +165,45 @@ public class VisitEditorDialog extends PopupDialog {
         addButton(OK_ID);
         addButton(CANCEL_ID);
         return buttons;
+    }
+
+
+    /**
+     * Prepares to save the charge.
+     * <p/>
+     * This determines if an invoice is being posted, and if so, displays a confirmation dialog if there are
+     * any orders waiting to be dispensed.
+     * <p/>
+     * If not, or the user confirms that the save should go ahead, delegates to {@link #saveCharge(boolean)}.
+     *
+     * @param close if {@code true}, closes the dialog when the save is successful
+     */
+    private void prepare(final boolean close) {
+        VisitChargeEditor chargeEditor = editor.getChargeEditor();
+        if (chargeEditor != null) {
+            UndispensedOrderChecker checker = new UndispensedOrderChecker(chargeEditor);
+            checker.confirm(getHelpContext(), new Runnable() {
+                @Override
+                public void run() {
+                    saveCharge(close);
+                }
+            });
+        } else if (close) {
+            super.onOK();
+        }
+    }
+
+    /**
+     * Saves the current object.
+     * <p/>
+     * Any documents added as part of the save that have a template with an IMMEDIATE print mode will be printed.
+     */
+    private void saveCharge(boolean close) {
+        CustomerChargeDocuments docs = new CustomerChargeDocuments(editor.getChargeEditor(), getHelpContext());
+        List<Act> existing = docs.getUnprinted();
+        if (editor.save()) {
+            printNew(docs, existing, close);
+        }
     }
 
     /**
@@ -273,7 +299,7 @@ public class VisitEditorDialog extends PopupDialog {
         CustomerChargeDocuments docs = new CustomerChargeDocuments(editor.getChargeEditor(), getHelpContext());
         List<Act> existing = docs.getUnprinted();
         if (editor.saveAsCompleted()) {
-            printNew(docs, existing);
+            printNew(docs, existing, true);
         }
     }
 
@@ -284,7 +310,7 @@ public class VisitEditorDialog extends PopupDialog {
         CustomerChargeDocuments docs = new CustomerChargeDocuments(editor.getChargeEditor(), getHelpContext());
         List<Act> existing = docs.getUnprinted();
         if (editor.saveAsInProgress()) {
-            printNew(docs, existing);
+            printNew(docs, existing, true);
         }
     }
 
@@ -300,17 +326,23 @@ public class VisitEditorDialog extends PopupDialog {
      *
      * @param docs     the documents
      * @param existing the existing documents
+     * @param close    if {@code true}, close the dialog
      */
-    private void printNew(CustomerChargeDocuments docs, List<Act> existing) {
-        ActionListener printListener = new ActionListener() {
-            @Override
-            public void onAction(ActionEvent event) {
-                VisitEditorDialog.super.onOK();
-            }
-        };
+    private void printNew(CustomerChargeDocuments docs, List<Act> existing, boolean close) {
+        ActionListener printListener = null;
+        if (close) {
+            printListener = new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    VisitEditorDialog.super.onOK();
+                }
+            };
+        }
         if (!docs.printNew(existing, printListener)) {
-            // nothing to print, so close now
-            super.onOK();
+            if (close) {
+                // nothing to print, so close now
+                super.onOK();
+            }
         }
     }
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkout;
@@ -33,6 +33,7 @@ import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditor;
+import org.openvpms.web.component.workflow.AbstractConfirmationTask;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.ConditionalUpdateTask;
@@ -45,14 +46,18 @@ import org.openvpms.web.component.workflow.RetryableUpdateIMObjectTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.Task;
 import org.openvpms.web.component.workflow.TaskContext;
+import org.openvpms.web.component.workflow.TaskListener;
 import org.openvpms.web.component.workflow.TaskProperties;
 import org.openvpms.web.component.workflow.Tasks;
 import org.openvpms.web.component.workflow.UpdateIMObjectTask;
 import org.openvpms.web.component.workflow.Variable;
 import org.openvpms.web.component.workflow.WorkflowImpl;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.customer.charge.UndispensedOrderChecker;
+import org.openvpms.web.workspace.customer.charge.UndispensedOrderDialog;
 import org.openvpms.web.workspace.workflow.GetClinicalEventTask;
 import org.openvpms.web.workspace.workflow.GetInvoiceTask;
 import org.openvpms.web.workspace.workflow.payment.PaymentWorkflow;
@@ -220,16 +225,21 @@ public class CheckOutWorkflow extends WorkflowImpl {
 
     /**
      * Returns a task to post the invoice.
+     * <p/>
+     * This first confirms that the invoice should be posted, and then checks if there are any undispensed orders.
+     * If so, displays a confirmation dialog before posting.
      *
      * @return a task to post the invoice
      */
     private Task getPostTask() {
-        Tasks postTasks = new Tasks(getHelpContext().subtopic("post"));
+        HelpContext help = getHelpContext().subtopic("post");
+        Tasks postTasks = new Tasks(help);
         postTasks.addTask(new PostInvoiceTask());
         postTasks.setRequired(false);
 
-        EvalTask<Boolean> condition = getPostCondition();
-        ConditionalTask post = new ConditionalTask(condition, postTasks);
+        EvalTask<Boolean> confirmPost = getPostCondition();
+        EvalTask<Boolean> checkUndispensed = new UndispensedOrderTask(help);
+        ConditionalTask post = new ConditionalTask(confirmPost, new ConditionalTask(checkUndispensed, postTasks));
         post.setRequired(false);
         return post;
     }
@@ -237,9 +247,8 @@ public class CheckOutWorkflow extends WorkflowImpl {
     /**
      * Task to post an invoice.
      * <p/>
-     * This uses an editor to ensure that the any HL7 Pharmacy Orders associated with the invoice are discontinued.
-     * <p/>
-     * This is to work-around thefact that
+     * This uses an editor to ensure that any HL7 Pharmacy Orders associated with the invoice are discontinued.
+     * This is workaround for Cubex.
      */
     private class PostInvoiceTask extends EditIMObjectTask {
 
@@ -262,6 +271,60 @@ public class CheckOutWorkflow extends WorkflowImpl {
             ActEditor actEditor = (ActEditor) editor;
             actEditor.setStatus(ActStatus.POSTED);
             actEditor.setStartTime(new Date()); // for OVPMS-734 - TODO
+        }
+    }
+
+    /**
+     * Displays a warning dialog if the invoice is to be finalised, but there are undispensed orders.
+     */
+    private class UndispensedOrderTask extends AbstractConfirmationTask {
+
+        /**
+         * The undispensed order checker.
+         */
+        private UndispensedOrderChecker checker;
+
+        /**
+         * Constructs an {@link UndispensedOrderTask}.
+         *
+         * @param help the help context
+         */
+        public UndispensedOrderTask(HelpContext help) {
+            super(help);
+        }
+
+        /**
+         * Starts the task.
+         * <p/>
+         * The registered {@link TaskListener} will be notified on completion or failure.
+         *
+         * @param context the task context
+         */
+        @Override
+        public void start(TaskContext context) {
+            Act invoice = (Act) context.getObject(CustomerAccountArchetypes.INVOICE);
+            if (invoice != null) {
+                checker = new UndispensedOrderChecker(invoice);
+                if (checker.hasUndispensedItems()) {
+                    // display the confirmation dialog
+                    super.start(context);
+                } else {
+                    setValue(true);
+                }
+            } else {
+                setValue(false);
+            }
+        }
+
+        /**
+         * Creates a new confirmation dialog.
+         *
+         * @param help the help context
+         * @return a new confirmation dialog
+         */
+        @Override
+        protected ConfirmationDialog createConfirmationDialog(HelpContext help) {
+            return new UndispensedOrderDialog(checker.getUndispensedItems(), help);
         }
     }
 

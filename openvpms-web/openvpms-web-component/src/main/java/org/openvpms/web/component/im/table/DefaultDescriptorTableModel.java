@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -79,6 +79,17 @@ public class DefaultDescriptorTableModel<T extends IMObject>
         this.nodeNames = names;
         showActive = (query == null) || query.getActive() == BaseArchetypeConstraint.State.BOTH;
         setTableColumnModel(createColumnModel(shortNames, context));
+    }
+
+    /**
+     * Returns a column, given its node name.
+     *
+     * @param name the node name
+     * @return the descriptor column, or {@code null} if none exists
+     */
+    @Override
+    public DescriptorTableColumn getColumn(String name) {
+        return super.getColumn(name);
     }
 
     /**
