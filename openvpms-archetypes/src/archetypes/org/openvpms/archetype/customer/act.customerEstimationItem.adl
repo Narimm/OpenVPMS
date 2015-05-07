@@ -93,7 +93,7 @@
         <node name="lowTotal" path="/details/lowTotal"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
               derived="true"
-              derivedValue="math:roundAmount(number(//details/lowQty > 0) * /details/fixedPrice - /details/lowDiscount + /details/lowQty * /details/lowUnitPrice)"
+              derivedValue="math:roundAmount(/details/fixedPrice - /details/lowDiscount + /details/lowQty * /details/lowUnitPrice)"
               minCardinality="1">
             <assertion name="nonNegative">
                 <errorMessage>Value must be >= 0.0</errorMessage>
@@ -102,7 +102,7 @@
         <node name="highTotal" path="/details/highTotal"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
               derived="true"
-              derivedValue="math:roundAmount(number(//details/highQty > 0) * /details/fixedPrice - /details/highDiscount + /details/highQty * /details/highUnitPrice)"
+              derivedValue="math:roundAmount(/details/fixedPrice - /details/highDiscount + /details/highQty * /details/highUnitPrice)"
               minCardinality="1">
             <assertion name="nonNegative">
                 <errorMessage>Value must be >= 0.0</errorMessage>
