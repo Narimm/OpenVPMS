@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.merge;
@@ -25,6 +25,7 @@ import org.openvpms.web.component.workflow.SelectIMObjectTask;
 import org.openvpms.web.component.workflow.Task;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.WorkflowImpl;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 
@@ -89,15 +90,11 @@ public abstract class MergeWorkflow<T extends IMObject> extends WorkflowImpl {
         select.setTitle(Messages.format("workflow.merge.select.title", displayName, object.getName()));
         select.setMessage(Messages.format("workflow.merge.select.message", displayName));
         addTask(select);
-        addTask(new AbstractConfirmationTask(false, help) {
+        addTask(new AbstractConfirmationTask(help) {
             @Override
-            protected String getTitle() {
-                return Messages.format("workflow.merge.title", displayName);
-            }
-
-            @Override
-            protected String getMessage() {
-                return getConfirmationMessage();
+            protected ConfirmationDialog createConfirmationDialog(HelpContext help) {
+                String title = Messages.format("workflow.merge.title", displayName);
+                return new ConfirmationDialog(title, getConfirmationMessage(), help);
             }
         });
 
