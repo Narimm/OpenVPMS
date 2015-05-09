@@ -40,6 +40,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -155,6 +156,46 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies that a series with overlapping appointments cannot be saved.
+     */
+    @Test
+    public void testSeriesWithOverlappingAppointments() {
+
+    }
+
+    /**
+     * Verifies a series can be deleted.
+     * <p/>
+     * This deletes all non-expired appointments bar the current one.
+     */
+    @Test
+    public void testDeleteSeriesWithNoExpiredAppointments() {
+        Date startTime = TestHelper.getDatetime("2015-01-01 09:30:00");
+        Date endTime = TestHelper.getDatetime("2015-01-01 09:45:00");
+
+        Act appointment = ScheduleTestHelper.createAppointment(startTime, endTime, schedule, appointmentType, customer,
+                                                               patient, clinician, author);
+
+        AppointmentSeries series = new AppointmentSeries(appointment, service, ruleService, appointmentRules, 10) {
+            @Override
+            protected boolean isExpired(Date startTime, Date now) {
+                return false;
+            }
+        };
+        series.setExpression(RepeatExpressions.yearly());
+        assertTrue(series.save());
+
+        List<Act> appointments = series.getAppointments();
+        assertEquals(10, appointments.size());
+
+        series.setExpression(null);
+        assertTrue(series.save());
+        appointments = series.getAppointments();
+        assertEquals(0, appointments.size());
+        assertNotNull(get(appointment));
+    }
+
+    /**
      * Creates an {@link AppointmentSeries}, and verifies the expected appointments have been created.
      *
      * @param expression the expression
@@ -168,7 +209,11 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         Act appointment = ScheduleTestHelper.createAppointment(startTime, endTime, schedule, appointmentType, customer,
                                                                patient, clinician, author);
 
-        AppointmentSeries series = new AppointmentSeries(appointment, service, ruleService, appointmentRules, 10);
+        AppointmentSeries series = new AppointmentSeries(appointment, service, ruleService, appointmentRules, 10) {
+            protected boolean isExpired(Date startTime, Date now) {
+                return false;
+            }
+        };
         assertEquals(0, series.getAppointments().size());
 
         assertFalse(series.save());

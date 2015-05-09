@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -30,6 +30,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientInformationService;
@@ -42,11 +43,14 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.TabbedBrowserListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.Selection;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.Workflow;
 import org.openvpms.web.echo.button.ButtonSet;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.InformationDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
@@ -148,9 +152,45 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * @param path   the selection path. May be {@code null}
      */
     @Override
-    protected void edit(Act object, List<Selection> path) {
+    protected void edit(final Act object, final List<Selection> path) {
         oldStatus = object.getStatus();
-        super.edit(object, path);
+        ActBean bean = new ActBean(object);
+        if (bean.getNodeSourceObjectRef("repeat") != null) {
+            final ConfirmationDialog dialog = new ConfirmationDialog("Edit series?", "Click Yes to edit the series, no to edit the appointent", ConfirmationDialog.YES_NO);
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onYes() {
+                    edit(object, path, true);
+                }
+
+                @Override
+                public void onNo() {
+                    edit(object, path, false);
+                }
+            });
+            dialog.show();
+        } else {
+            edit(object, path, true);
+        }
+    }
+
+    /**
+     * Edits an appointment.
+     *
+     * @param object     the appointment
+     * @param path       the selection path. May be {@code null}
+     * @param editSeries if {@code true}, edit the appointment series, otherwise edit the appointment
+     */
+    protected void edit(Act object, List<Selection> path, boolean editSeries) {
+        try {
+            HelpContext edit = createEditTopic(object);
+            LayoutContext context = createLayoutContext(edit);
+            IMObjectEditor editor = new AppointmentActEditor(object, null, editSeries, context);
+            editor.getComponent();
+            edit(editor, path);
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
     /**

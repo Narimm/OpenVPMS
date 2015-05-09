@@ -25,6 +25,10 @@ import nextapp.echo2.app.button.ButtonGroup;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.table.AbstractTableModel;
 import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.web.component.property.AbstractModifiable;
+import org.openvpms.web.component.property.ErrorListener;
+import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.TabbedPaneFactory;
 import org.openvpms.web.echo.factory.TableFactory;
@@ -33,6 +37,8 @@ import org.openvpms.web.echo.popup.DropDown;
 import org.openvpms.web.echo.table.EvenOddTableCellRenderer;
 import org.openvpms.web.echo.tabpane.ObjectTabPaneModel;
 import org.openvpms.web.echo.text.TextField;
+import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.workspace.workflow.appointment.AppointmentActEditor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,36 +48,47 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class AppointmentSeriesEditor {
+public class AppointmentSeriesEditor extends AbstractModifiable {
 
     /**
      * The appointment series.
      */
     private final AppointmentSeries series;
 
-    private final TabbedPane tabs;
+    /**
+     * The appointment editor
+     */
+    private final AppointmentActEditor appointmentEditor;
 
-    private TextField label;
-
+    /**
+     * The repeat selector drop-down.
+     */
     private DropDown dropDown;
 
     /**
-     * The selected repeat editor.
+     * The selected repeat editor. May be {@code null}
      */
     private RepeatExpressionEditor editor;
+
+    /**
+     * The label to use if no series is present.
+     */
+    private TextField label;
+
+    /**
+     * The tab pane model.
+     */
+    private ObjectTabPaneModel<ExpressionTab> model;
 
     /**
      * Constructs an {@link AppointmentSeriesEditor}.
      *
      * @param series the appointment series
      */
-    public AppointmentSeriesEditor(AppointmentSeries series) {
+    public AppointmentSeriesEditor(AppointmentSeries series, AppointmentActEditor appointmentEditor) {
         this.series = series;
+        this.appointmentEditor = appointmentEditor;
         label = TextComponentFactory.create();
-        ObjectTabPaneModel<ExpressionTab> model = createModel();
-
-        tabs = TabbedPaneFactory.create(model);
-        dropDown = new DropDown(label, tabs);
 
         RepeatExpression expression = series.getExpression();
         if (expression instanceof CalendarRepeatExpression) {
@@ -89,32 +106,145 @@ public class AppointmentSeriesEditor {
                 editor = new RepeatOnOrdinalDayEditor(series.getStartTime(), cron);
             }
         }
-        if (editor != null) {
-            dropDown.setTarget(editor.getComponent());
-        }
-        dropDown.setBorder(BorderEx.NONE);
-        dropDown.setRolloverBorder(BorderEx.NONE);
-        dropDown.setPopUpAlwaysOnTop(true);
-        dropDown.setFocusOnExpand(true);
     }
 
+    /**
+     * Refreshes the editor.
+     * <p/>
+     * This should be invoked if the appointment start time changes.
+     */
     public void refresh() {
-        //   tabs.setModel(createModel());
-    }
-
-    public boolean isValid() {
-        if (editor == null) {
-            series.setExpression(null);
-        } else {
-            series.setExpression(editor.getExpression());
+        if (model != null) {
+            for (int i = 0; i < model.size(); ++i) {
+                model.getObject(i).refresh();
+            }
         }
-        return editor == null || editor.isValid();
     }
 
+    /**
+     * Returns the editor component.
+     *
+     * @return the component
+     */
     public Component getComponent() {
+        if (dropDown == null) {
+            model = createModel();
+            TabbedPane tabs = TabbedPaneFactory.create(model);
+            dropDown = new DropDown(label, tabs);
+            if (editor != null) {
+                dropDown.setTarget(editor.getComponent());
+            }
+            dropDown.setBorder(BorderEx.NONE);
+            dropDown.setRolloverBorder(BorderEx.NONE);
+            dropDown.setPopUpAlwaysOnTop(true);
+            dropDown.setFocusOnExpand(true);
+        }
         return dropDown;
     }
 
+    /**
+     * Determines if the object has been modified.
+     *
+     * @return {@code true} if the object has been modified
+     */
+    @Override
+    public boolean isModified() {
+        return false;
+    }
+
+    /**
+     * Clears the modified status of the object.
+     */
+    @Override
+    public void clearModified() {
+        // no-op
+    }
+
+    /**
+     * Adds a listener to be notified when this changes.
+     * <p/>
+     * Listeners will be notified in the order they were registered.
+     *
+     * @param listener the listener to add
+     */
+    @Override
+    public void addModifiableListener(ModifiableListener listener) {
+        // no-op
+    }
+
+    /**
+     * Adds a listener to be notified when this changes, specifying the order of the listener.
+     *
+     * @param listener the listener to add
+     * @param index    the index to add the listener at. The 0-index listener is notified first
+     */
+    @Override
+    public void addModifiableListener(ModifiableListener listener, int index) {
+        // no-op
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    @Override
+    public void removeModifiableListener(ModifiableListener listener) {
+        // no-op
+    }
+
+    /**
+     * Sets a listener to be notified of errors.
+     *
+     * @param listener the listener to register. May be {@code null}
+     */
+    @Override
+    public void setErrorListener(ErrorListener listener) {
+        // no-op
+    }
+
+    /**
+     * Returns the listener to be notified of errors.
+     *
+     * @return the listener. May be {@code null}
+     */
+    @Override
+    public ErrorListener getErrorListener() {
+        return null;
+    }
+
+    /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        if (editor == null) {
+            series.setExpression(null);
+        } else {
+            series.setSchedule(appointmentEditor.getSchedule());
+            series.setAppointmentType(appointmentEditor.getAppointmentType());
+            series.setCustomer(appointmentEditor.getCustomer());
+            series.setPatient(appointmentEditor.getPatient());
+            series.setClinician(appointmentEditor.getClinician());
+            series.setAuthor(appointmentEditor.getAuthor());
+            series.setExpression(editor.getExpression());
+        }
+        return editor == null || (editor.validate(validator) && noOverlaps(validator));
+    }
+
+    private boolean noOverlaps(Validator validator) {
+        RepeatExpression expression = series.getExpression();
+        return true;
+    }
+
+    /**
+     * Invoked when an editor is selected.
+     *
+     * @param editor the editor
+     */
     private void onSelected(RepeatExpressionEditor editor) {
         this.editor = editor;
         RepeatExpression expression = editor.getExpression();
@@ -125,8 +255,14 @@ public class AppointmentSeriesEditor {
             label.setText(null);
         }
         series.setExpression(expression);
+        refresh();  // need to refresh the drop-down otherwise the editor appears both selected and in the drop-down
     }
 
+    /**
+     * Creates the tab model.
+     *
+     * @return a new tab model
+     */
     private ObjectTabPaneModel<ExpressionTab> createModel() {
         ObjectTabPaneModel<ExpressionTab> model = new ObjectTabPaneModel<ExpressionTab>(null);
         addTab(model, new Daily());
@@ -136,6 +272,12 @@ public class AppointmentSeriesEditor {
         return model;
     }
 
+    /**
+     * Helper to add a tab.
+     *
+     * @param model the tab model
+     * @param tab   the tab to add
+     */
     private void addTab(ObjectTabPaneModel<ExpressionTab> model, ExpressionTab tab) {
         model.addTab(tab, tab.getDisplayName(), tab.getComponent());
     }
@@ -181,13 +323,27 @@ public class AppointmentSeriesEditor {
         }
     }
 
+    /**
+     * Repeat expression tab.
+     */
     private abstract class ExpressionTab {
 
+        /**
+         * The tab display name.
+         */
         private final String displayName;
 
+        /**
+         * Table of repeat expressions.
+         */
         private Table table;
 
 
+        /**
+         * Constructs an {@link ExpressionTab}.
+         *
+         * @param displayName the tab display name
+         */
         public ExpressionTab(String displayName) {
             this.displayName = displayName;
             table = TableFactory.create(createTableModel());
@@ -197,21 +353,47 @@ public class AppointmentSeriesEditor {
             table.setRolloverEnabled(false);
         }
 
+        /**
+         * Returns the tab display name.
+         *
+         * @return the tab display name
+         */
         public String getDisplayName() {
             return displayName;
         }
 
+        /**
+         * Returns the tab component.
+         *
+         * @return the tab component
+         */
         public Component getComponent() {
             return table;
         }
 
+        /**
+         * Refreshes the tab.
+         */
+        public void refresh() {
+            table.setModel(createTableModel());
+        }
+
+        /**
+         * Creates a new expression table model.
+         *
+         * @return a new model
+         */
         protected abstract RepeatTableModel createTableModel();
+
     }
 
+    /**
+     * Tab for daily repeat expressions.
+     */
     private class Daily extends ExpressionTab {
 
         public Daily() {
-            super("Daily");
+            super(Messages.get("workflow.scheduling.appointment.daily"));
         }
 
         @Override
@@ -225,10 +407,13 @@ public class AppointmentSeriesEditor {
         }
     }
 
+    /**
+     * Tab for weekly repeat expressions.
+     */
     private class Weekly extends ExpressionTab {
 
         public Weekly() {
-            super("Weekly");
+            super(Messages.get("workflow.scheduling.appointment.weekly"));
         }
 
         @Override
@@ -240,10 +425,13 @@ public class AppointmentSeriesEditor {
         }
     }
 
+    /**
+     * Tab for monthly repeat expressions.
+     */
     private class Monthly extends ExpressionTab {
 
         public Monthly() {
-            super("Monthly");
+            super(Messages.get("workflow.scheduling.appointment.monthly"));
         }
 
         @Override
@@ -256,10 +444,13 @@ public class AppointmentSeriesEditor {
         }
     }
 
+    /**
+     * Tab for yearly repeat expressions.
+     */
     private class Yearly extends ExpressionTab {
 
         public Yearly() {
-            super("Yearly");
+            super(Messages.get("workflow.scheduling.appointment.yearly"));
         }
 
         @Override

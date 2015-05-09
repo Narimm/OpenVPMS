@@ -17,27 +17,39 @@
 package org.openvpms.web.workspace.workflow.appointment.repeat;
 
 import nextapp.echo2.app.Component;
-import org.openvpms.web.component.property.Modifiable;
+import nextapp.echo2.app.Label;
+import org.openvpms.web.echo.factory.LabelFactory;
 
 /**
- * An editor for {@link RepeatExpression}s.
+ * A viewer for {@link CalendarRepeatExpression}s.
  *
  * @author Tim Anderson
  */
-public interface RepeatExpressionEditor extends Modifiable {
+class CalendarRepeatExpressionViewer {
 
     /**
-     * Returns the expression.
-     *
-     * @return the expression, or {@code null} if the expression is invalid
+     * The expression.
      */
-    RepeatExpression getExpression();
+    private final CalendarRepeatExpression expression;
+
 
     /**
-     * Returns the component representing the editor.
+     * Constructs an {@link CalendarRepeatExpressionViewer}.
+     *
+     * @param expression the expression
+     */
+    public CalendarRepeatExpressionViewer(CalendarRepeatExpression expression) {
+        this.expression = expression;
+    }
+
+    /**
+     * Returns the expression viewer.
      *
      * @return the component
      */
-    Component getComponent();
-
+    public Component getComponent() {
+        Label label = LabelFactory.create();
+        label.setText(expression.toString());
+        return label;
+    }
 }

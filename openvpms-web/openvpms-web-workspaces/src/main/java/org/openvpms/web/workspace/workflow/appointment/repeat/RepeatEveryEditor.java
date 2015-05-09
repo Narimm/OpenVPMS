@@ -18,26 +18,29 @@ package org.openvpms.web.workspace.workflow.appointment.repeat;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import org.apache.commons.lang.WordUtils;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.property.SimpleProperty;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.text.TextField;
+import org.openvpms.web.resource.i18n.Messages;
 
 /**
  * An editor for repeat expressions that repeat every N days/weeks/months/years.
  *
  * @author Tim Anderson
  */
-class RepeatEveryEditor implements RepeatExpressionEditor {
+class RepeatEveryEditor extends AbstractRepeatExpressionEditor {
 
     /**
      * The interval.
      */
-    private SimpleProperty interval = new SimpleProperty("interval", Integer.class);
+    private SimpleProperty interval = new SimpleProperty("interval", null, Integer.class,
+                                                         Messages.get("workflow.scheduling.appointment.interval"));
 
     /**
      * The date units.
@@ -70,12 +73,12 @@ class RepeatEveryEditor implements RepeatExpressionEditor {
      */
     @Override
     public Component getComponent() {
-        Label every = LabelFactory.create();
-        every.setText("Every");
-        Label days = LabelFactory.create();
-        days.setText(WordUtils.capitalizeFully(units.toString()));
+        Label every = LabelFactory.create("workflow.scheduling.appointment.every");
+        Label label = LabelFactory.create();
+        String unitText = RepeatHelper.toString(units);
+        label.setText(unitText);
         TextField field = BoundTextComponentFactory.create(interval, 5);
-        return RowFactory.create(Styles.CELL_SPACING, every, field, days);
+        return RowFactory.create(Styles.CELL_SPACING, every, field, label);
     }
 
     /**
@@ -89,12 +92,22 @@ class RepeatEveryEditor implements RepeatExpressionEditor {
     }
 
     /**
-     * Determines if the editor is valid.
+     * Validates the object.
      *
-     * @return {@code true} if the editor is valid
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     @Override
-    public boolean isValid() {
-        return interval.isValid() && interval.getInt() > 0;
+    protected boolean doValidation(Validator validator) {
+        boolean result = validator.validate(interval);
+        if (result) {
+            result = interval.getInt() > 0;
+            if (!result) {
+                String message = Messages.get("workflow.scheduling.appointment.invalidInterval");
+                validator.add(interval, new ValidatorError(interval, message));
+            }
+        }
+        return result;
     }
+
 }

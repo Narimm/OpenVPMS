@@ -18,7 +18,6 @@ package org.openvpms.web.workspace.workflow.appointment.repeat;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import org.apache.commons.lang.WordUtils;
 import org.openvpms.web.echo.factory.LabelFactory;
 
 /**
@@ -26,7 +25,7 @@ import org.openvpms.web.echo.factory.LabelFactory;
  *
  * @author Tim Anderson
  */
-class SimpleRepeatEditor implements RepeatExpressionEditor {
+class SimpleRepeatEditor extends AbstractRepeatExpressionEditor {
 
     /**
      * The expression.
@@ -60,17 +59,9 @@ class SimpleRepeatEditor implements RepeatExpressionEditor {
     @Override
     public Component getComponent() {
         Label result = LabelFactory.create();
-        result.setText(WordUtils.capitalizeFully(expression.getType().name()));
+        String text = RepeatHelper.toString(expression.getType());
+        result.setText(text);
         return result;
     }
 
-    /**
-     * Determines if the editor is valid.
-     *
-     * @return {@code true} if the editor is valid
-     */
-    @Override
-    public boolean isValid() {
-        return true;
-    }
 }

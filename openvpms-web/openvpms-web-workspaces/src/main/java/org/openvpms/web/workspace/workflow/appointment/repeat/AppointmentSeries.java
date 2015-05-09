@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -45,6 +46,9 @@ import java.util.List;
  */
 public class AppointmentSeries {
 
+    /**
+     * The default maximum number of appointments.
+     */
     public static final int DEFAULT_MAX_APPOINTMENTS = 365;
 
     /**
@@ -122,6 +126,17 @@ public class AppointmentSeries {
      */
     private final int maxAppointments;
 
+    public static class Times {
+
+        private final Date startTime;
+        private final Date endTime;
+
+        public Times(Date startTime, Date endTime) {
+            this.startTime = startTime;
+            this.endTime = endTime;
+        }
+    }
+
     /**
      * Constructs an {@link AppointmentSeries}.
      *
@@ -155,10 +170,10 @@ public class AppointmentSeries {
         this.rules = rules;
         this.maxAppointments = maxAppointments;
         ActBean bean = new ActBean(appointment, service);
-        customer = (Party) bean.getNodeParticipant("customer");
-        patient = (Party) bean.getNodeParticipant("patient");
         schedule = bean.getNodeParticipant("schedule");
         appointmentType = bean.getNodeParticipant("appointmentType");
+        customer = (Party) bean.getNodeParticipant("customer");
+        patient = (Party) bean.getNodeParticipant("patient");
         clinician = (User) bean.getNodeParticipant("clinician");
         author = (User) bean.getNodeParticipant("author");
         series = (Act) bean.getNodeSourceObject("repeat");
@@ -182,21 +197,21 @@ public class AppointmentSeries {
     }
 
     /**
-     * Sets the appointment type.
-     *
-     * @param appointmentType the appointment type
-     */
-    public void setAppointmentType(Entity appointmentType) {
-        this.appointmentType = appointmentType;
-    }
-
-    /**
      * Sets the schedule.
      *
      * @param schedule the schedule
      */
     public void setSchedule(Entity schedule) {
         this.schedule = schedule;
+    }
+
+    /**
+     * Sets the appointment type.
+     *
+     * @param appointmentType the appointment type
+     */
+    public void setAppointmentType(Entity appointmentType) {
+        this.appointmentType = appointmentType;
     }
 
     /**
@@ -258,10 +273,10 @@ public class AppointmentSeries {
     }
 
     public boolean save() {
-        boolean result = false;
+        boolean result = true;
         if (isModified()) {
             if (previous != null && expression == null) {
-                result = deleteNonExpiredAppointments();
+                result = deleteSeries();
             } else if (previous != null) {
                 result = updateNonExpiredAppointments();
             } else if (expression != null) {
@@ -312,14 +327,7 @@ public class AppointmentSeries {
     private void createAppointments() {
         series = (Act) service.create(ScheduleArchetypes.APPOINTMENT_SERIES);
         series.setActivityStartTime(startTime);
-        ActBean seriesBean = new ActBean(series, service);
-        if (expression instanceof CalendarRepeatExpression) {
-            CalendarRepeatExpression calendar = (CalendarRepeatExpression) expression;
-            seriesBean.setValue("interval", calendar.getInterval());
-            seriesBean.setValue("units", calendar.getUnits().toString());
-        } else {
-            seriesBean.setValue("expression", ((CronRepeatExpression) expression).getExpression());
-        }
+        ActBean seriesBean = updateSeries();
 
         List<Act> toSave = new ArrayList<Act>();
         seriesBean.addNodeRelationship("items", appointment);
@@ -334,6 +342,24 @@ public class AppointmentSeries {
             ++i;
         }
         service.save(toSave);
+    }
+
+    private ActBean updateSeries() {
+        ActBean seriesBean = new ActBean(series, service);
+        String expr = null;
+        Integer interval = null;
+        String units = null;
+        if (expression instanceof CalendarRepeatExpression) {
+            CalendarRepeatExpression calendar = (CalendarRepeatExpression) expression;
+            interval = calendar.getInterval();
+            units = calendar.getUnits().toString();
+        } else {
+            expr = ((CronRepeatExpression) expression).getExpression();
+        }
+        seriesBean.setValue("interval", interval);
+        seriesBean.setValue("units", units);
+        seriesBean.setValue("expression", expr);
+        return seriesBean;
     }
 
     /**
@@ -375,7 +401,7 @@ public class AppointmentSeries {
         boolean result = false;
 
         Date now = new Date();
-        ActBean bean = new ActBean(series, service);
+        ActBean bean = updateSeries();
         List<Act> acts = new ArrayList<Act>();
         int expired = 0;
         Date lastExpired = null;
@@ -392,7 +418,6 @@ public class AppointmentSeries {
         }
         ActHelper.sort(acts);
         int i = acts.size() + expired;
-        ActBean seriesBean = new ActBean(series, service);
         Date from = lastExpired != null ? lastExpired : series.getActivityStartTime();
         Iterator<Act> iterator = acts.listIterator();
         List<Act> toUpdate = new ArrayList<Act>();
@@ -404,19 +429,20 @@ public class AppointmentSeries {
                 update(act, from);
                 toUpdate.add(act);
             } else {
-                Act act = create(from, seriesBean);
+                Act act = create(from, bean);
                 toSave.add(act);
             }
             ++i;
         }
         for (Act act : acts) {
-            ActRelationship relationship = seriesBean.getRelationship(act);
-            seriesBean.removeRelationship(relationship);
+            ActRelationship relationship = bean.getRelationship(act);
+            bean.removeRelationship(relationship);
             act.removeActRelationship(relationship);
             toSave.add(act);
         }
 
         if (!toSave.isEmpty()) {
+            toSave.add(series);
             service.save(toSave);
             result = true;
         }
@@ -434,31 +460,53 @@ public class AppointmentSeries {
     }
 
     /**
-     * Deletes any non-expired appointments.
+     * Deletes a series.
+     * <p/>
+     * Any non-expired appointments bar that passed at construction will be removed.
      *
      * @return {@code true} if changes were made
      */
-    private boolean deleteNonExpiredAppointments() {
+    private boolean deleteSeries() {
         ActBean bean = new ActBean(series, service);
         Date now = new Date();
         int expired = 0;
-        boolean changed = false;
-        for (Act item : bean.getNodeActs("items")) {
-            if (isExpired(item.getActivityStartTime(), now)) {
-                expired++;
+        List<Act> toSave = new ArrayList<Act>();
+        List<Act> toRemove = new ArrayList<Act>();
+        for (ActRelationship relationship : bean.getValues("items", ActRelationship.class)) {
+            Act item;
+            if (!ObjectUtils.equals(appointment.getObjectReference(), relationship.getObjectReference())) {
+                item = get(relationship.getTarget());
+                if (item != null) {
+                    if (isExpired(item.getActivityStartTime(), now)) {
+                        expired++;
+                    } else {
+                        toRemove.add(item);
+                    }
+                }
             } else {
-                changed = true;
-                service.remove(item);
+                item = appointment;
+            }
+            if (item != null) {
+                bean.removeRelationship(relationship);
+                item.removeActRelationship(relationship);
+                toSave.add(item);
             }
         }
-        if (changed) {
+        if (!toSave.isEmpty()) {
+            toSave.add(series);
             if (expired == 0) {
-                service.remove(series);
-            } else {
-                service.save(series);
+                toRemove.add(series);
+            }
+            service.save(toSave);
+            for (Act act : toRemove) {
+                service.remove(act);
             }
         }
-        return changed;
+        return !toRemove.isEmpty();
+    }
+
+    private Act get(IMObjectReference target) {
+        return target != null ? (Act) service.get(target) : null;
     }
 
 }

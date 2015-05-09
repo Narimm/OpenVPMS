@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
@@ -56,6 +57,7 @@ import org.openvpms.web.workspace.customer.CustomerSummary;
 import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeries;
 import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeriesEditor;
+import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeriesViewer;
 import org.openvpms.web.workspace.workflow.scheduling.AbstractScheduleActEditor;
 import org.openvpms.web.workspace.workflow.scheduling.SchedulingHelper;
 
@@ -124,6 +126,18 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      * @param context the layout context
      */
     public AppointmentActEditor(Act act, IMObject parent, LayoutContext context) {
+        this(act, parent, false, context);
+    }
+
+    /**
+     * Constructs an {@link AppointmentActEditor}.
+     *
+     * @param act        the act to edit
+     * @param parent     the parent object. May be {@code null}
+     * @param editSeries if {@code true}, edit the series
+     * @param context    the layout context
+     */
+    public AppointmentActEditor(Act act, IMObject parent, boolean editSeries, LayoutContext context) {
         super(act, parent, context);
         rules = ServiceHelper.getBean(AppointmentRules.class);
         initParticipant("schedule", context.getContext().getSchedule());
@@ -154,7 +168,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         });
         series = new AppointmentSeries(act, ServiceHelper.getArchetypeService(false),
                                        ServiceHelper.getArchetypeService(), rules);
-        seriesEditor = new AppointmentSeriesEditor(series);
+        seriesEditor = (editSeries) ? new AppointmentSeriesEditor(series, this) : null;
         addStartEndTimeListeners();
         updateRelativeDate();
         updateDuration();
@@ -173,6 +187,43 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     }
 
     /**
+     * Returns the schedule.
+     *
+     * @return the schedule. May be {@code null}
+     */
+    public Entity getSchedule() {
+        return (Entity) getParticipant("schedule");
+    }
+
+    /**
+     * Returns the appointment type.
+     *
+     * @return the appointment type. May be {@code null}
+     */
+    public Entity getAppointmentType() {
+        return (Entity) getParticipant("appointmentType");
+    }
+
+    /**
+     * Returns the clinician.
+     *
+     * @return the clinician. May be {@code null}
+     */
+    public User getClinician() {
+        return (User) getParticipant("clinician");
+    }
+
+    /**
+     * Determines if the object has been changed.
+     *
+     * @return {@code true} if the object has been changed
+     */
+    @Override
+    public boolean isModified() {
+        return super.isModified() || series.isModified();
+    }
+
+    /**
      * Validates the object.
      *
      * @param validator the validator
@@ -180,7 +231,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      */
     @Override
     protected boolean doValidation(Validator validator) {
-        return super.doValidation(validator) && seriesEditor.isValid();
+        return super.doValidation(validator) && (seriesEditor == null || seriesEditor.validate(validator));
     }
 
     /**
@@ -235,7 +286,9 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
             if (DateRules.compareTo(start, rounded) != 0) {
                 setStartTime(rounded, true);
             }
-            seriesEditor.refresh();
+            if (seriesEditor != null) {
+                seriesEditor.refresh();
+            }
         }
 
         try {
@@ -541,7 +594,13 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         public AppointmentLayoutStrategy() {
             addComponent(new ComponentState(getStartTimeEditor()));
             addComponent(new ComponentState(getEndTimeEditor()));
-            addComponent(new ComponentState(seriesEditor.getComponent(), getProperty("repeat")));
+            Property repeat = getProperty("repeat");
+            if (seriesEditor != null) {
+                addComponent(new ComponentState(seriesEditor.getComponent(), repeat));
+            } else {
+                AppointmentSeriesViewer viewer = new AppointmentSeriesViewer(series);
+                addComponent(new ComponentState(viewer.getComponent(), repeat));
+            }
         }
 
         /**
@@ -599,6 +658,5 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
             return components.getFocusable("customer");
         }
     }
-
 
 }
