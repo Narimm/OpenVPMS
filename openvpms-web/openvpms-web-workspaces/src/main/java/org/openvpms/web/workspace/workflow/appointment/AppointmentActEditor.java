@@ -33,7 +33,6 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
-import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -584,33 +583,11 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     private class AppointmentLayoutStrategy extends AbstractLayoutStrategy {
 
         /**
-         * The nodes to display.
-         */
-        private final ArchetypeNodes nodes = new ArchetypeNodes().simple("repeat");
-
-        /**
          * Constructs an {@link AppointmentLayoutStrategy}.
          */
         public AppointmentLayoutStrategy() {
             addComponent(new ComponentState(getStartTimeEditor()));
             addComponent(new ComponentState(getEndTimeEditor()));
-            Property repeat = getProperty("repeat");
-            if (seriesEditor != null) {
-                addComponent(new ComponentState(seriesEditor.getComponent(), repeat));
-            } else {
-                AppointmentSeriesViewer viewer = new AppointmentSeriesViewer(series);
-                addComponent(new ComponentState(viewer.getComponent(), repeat));
-            }
-        }
-
-        /**
-         * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-         *
-         * @return the archetype nodes
-         */
-        @Override
-        protected ArchetypeNodes getArchetypeNodes() {
-            return nodes;
         }
 
         /**
@@ -626,6 +603,21 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
             ComponentState state = new ComponentState(duration, null, null,
                                                       Messages.get("workflow.scheduling.appointment.duration"));
             grid.add(state);
+
+            Property repeat = getProperty("repeat");
+            if (seriesEditor != null) {
+                ComponentState repeatState = new ComponentState(seriesEditor.getRepeatEditor(), repeat,
+                                                                seriesEditor.getRepeatFocusGroup());
+                grid.add(repeatState, 2);
+                ComponentState untilState = new ComponentState(seriesEditor.getUntilEditor(),
+                                                               seriesEditor.getUntilFocusGroup());
+                untilState.setLabel(new Label());
+                grid.add(untilState);
+            } else {
+                AppointmentSeriesViewer viewer = new AppointmentSeriesViewer(series);
+                grid.add(new ComponentState(viewer.getComponent(), repeat), 2);
+            }
+
             return grid;
         }
 

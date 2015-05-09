@@ -19,21 +19,19 @@ package org.openvpms.web.workspace.workflow.appointment.repeat;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.ModifiableListener;
-import org.openvpms.web.component.property.Validator;
-import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.focus.FocusGroup;
 
 /**
- * Abstract implementation of the {@link RepeatExpressionEditor} interface.
+ * Abstract implementation of the {@link RepeatUntilEditor} interface.
  *
  * @author Tim Anderson
  */
-public abstract class AbstractRepeatExpressionEditor extends AbstractModifiable implements RepeatExpressionEditor {
+public abstract class AbstractRepeatUntilEditor extends AbstractModifiable implements RepeatUntilEditor {
 
     /**
      * The focus group.
      */
-    private final FocusGroup group = new FocusGroup(getClass().getName());
+    private final FocusGroup group = new FocusGroup(getClass().getSimpleName());
 
     /**
      * Determines if the object has been modified.
@@ -61,7 +59,6 @@ public abstract class AbstractRepeatExpressionEditor extends AbstractModifiable 
      */
     @Override
     public void addModifiableListener(ModifiableListener listener) {
-        // no-op
     }
 
     /**
@@ -72,7 +69,6 @@ public abstract class AbstractRepeatExpressionEditor extends AbstractModifiable 
      */
     @Override
     public void addModifiableListener(ModifiableListener listener, int index) {
-        // no-op
     }
 
     /**
@@ -82,7 +78,6 @@ public abstract class AbstractRepeatExpressionEditor extends AbstractModifiable 
      */
     @Override
     public void removeModifiableListener(ModifiableListener listener) {
-        // no-op
     }
 
     /**
@@ -92,7 +87,6 @@ public abstract class AbstractRepeatExpressionEditor extends AbstractModifiable 
      */
     @Override
     public void setErrorListener(ErrorListener listener) {
-        // no-op
     }
 
     /**
@@ -106,28 +100,12 @@ public abstract class AbstractRepeatExpressionEditor extends AbstractModifiable 
     }
 
     /**
-     * Returns the component focus group.
+     * Returns the focus group.
      *
      * @return the focus group
      */
     @Override
     public FocusGroup getFocusGroup() {
         return group;
-    }
-
-    /**
-     * Validates the object.
-     *
-     * @param validator the validator
-     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
-     */
-    @Override
-    protected boolean doValidation(Validator validator) {
-        RepeatExpression expression = getExpression();
-        boolean result = expression != null;
-        if (!result) {
-            validator.add(this, new ValidatorError("The expression is invalid"));
-        }
-        return result;
     }
 }

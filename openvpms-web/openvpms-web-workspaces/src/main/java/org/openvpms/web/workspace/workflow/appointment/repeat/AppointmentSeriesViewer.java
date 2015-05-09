@@ -17,7 +17,10 @@
 package org.openvpms.web.workspace.workflow.appointment.repeat;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.style.Styles;
 
 /**
  * Appointment series viewer.
@@ -46,17 +49,44 @@ public class AppointmentSeriesViewer {
      * @return a new component
      */
     public Component getComponent() {
+        Component result;
         RepeatExpression expression = series.getExpression();
+        RepeatCondition condition = series.getCondition();
         if (expression == null) {
-            return LabelFactory.create("workflow.scheduling.appointment.norepeat");
-        } else if (expression instanceof CalendarRepeatExpression) {
-            return new CalendarRepeatExpressionViewer((CalendarRepeatExpression) expression).getComponent();
-        } else if (expression instanceof CronRepeatExpression) {
-            CronRepeatExpression cron = (CronRepeatExpression) expression;
-            if (RepeatOnDaysEditor.supports(cron)) {
-                return new RepeatOnDaysViewer(cron).getComponent();
+            result = LabelFactory.create("workflow.scheduling.appointment.norepeat");
+        } else {
+            Component expressionComponent;
+            Label conditionComponent = LabelFactory.create();
+            if (expression instanceof CalendarRepeatExpression) {
+                expressionComponent = getExpression((CalendarRepeatExpression) expression);
+            } else if (expression instanceof CronRepeatExpression) {
+                expressionComponent = getExpression((CronRepeatExpression) expression);
+            } else {
+                expressionComponent = LabelFactory.create();
             }
+
+            if (condition != null) {
+                conditionComponent.setText(condition.toString());
+            }
+            result = ColumnFactory.create(Styles.CELL_SPACING, expressionComponent, conditionComponent);
         }
-        return LabelFactory.create();
+        return result;
+    }
+
+    private Component getExpression(CronRepeatExpression expression) {
+        Component result;
+        if (RepeatOnDaysEditor.supports(expression)) {
+            result = new RepeatOnDaysViewer(expression).getComponent();
+        } else {
+            result = LabelFactory.create();
+        }
+        return result;
+    }
+
+    private Component getExpression(CalendarRepeatExpression expression) {
+        Component result;
+        CalendarRepeatExpressionViewer viewer = new CalendarRepeatExpressionViewer(expression);
+        result = viewer.getComponent();
+        return result;
     }
 }

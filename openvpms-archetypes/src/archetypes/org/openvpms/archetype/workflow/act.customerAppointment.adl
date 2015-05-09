@@ -56,7 +56,7 @@
             </assertion>
         </node>
         <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
-              filter="participation.author" hidden="true"/>
+              filter="participation.author" readOnly="true"/>
         <node name="schedule" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.schedule" hidden="true"/>
         <node name="tasks" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship"

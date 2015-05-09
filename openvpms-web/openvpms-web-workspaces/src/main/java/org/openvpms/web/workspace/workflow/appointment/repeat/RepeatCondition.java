@@ -21,31 +21,23 @@ import org.apache.commons.collections4.Predicate;
 import java.util.Date;
 
 /**
- * Appointment repeat expression.
+ * Appointment repeat-until condition.
  *
  * @author Tim Anderson
  */
-public interface RepeatExpression {
-
-    public enum Type {
-        DAILY, WEEKDAYS, WEEKLY, MONTHLY, YEARLY, CUSTOM
-    }
+public interface RepeatCondition {
 
     /**
-     * Returns the type of the expression.
+     * Creates a predicate for this condition.
      *
-     * @return the type
+     * @return a new predicate
      */
-    Type getType();
+    Predicate<Date> create();
 
     /**
-     * Returns the next repeat time after the specified time.
+     * Returns a string representation of the condition.
      *
-     * @param time      the time
-     * @param condition the condition to evaluate for each date
-     * @return the next repeat time, or {@code null} if there are no more repeats, or the predicate returns
-     *         {@code false}
+     * @return a formatted string
      */
-    Date getRepeatAfter(Date time, Predicate<Date> condition);
-
+    String toString();
 }

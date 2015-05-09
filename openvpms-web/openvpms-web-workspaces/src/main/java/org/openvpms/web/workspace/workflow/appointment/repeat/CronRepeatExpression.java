@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.workflow.appointment.repeat;
 
 import org.apache.commons.collections4.BidiMap;
+import org.apache.commons.collections4.Predicate;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
@@ -183,19 +184,26 @@ public class CronRepeatExpression implements RepeatExpression {
     /**
      * Returns the next repeat time after the specified time.
      *
-     * @param time the time
-     * @return the next repeat time, or {@code null} if there are no more repeats
+     * @param time      the time
+     * @param condition the condition to evaluate for each date
+     * @return the next repeat time, or {@code null} if there are no more repeats, or the predicate returns
+     *         {@code false}
      */
     @Override
-    public Date getRepeatAfter(Date time) {
+    public Date getRepeatAfter(Date time, Predicate<Date> condition) {
+        Date result = null;
         if (expression == null) {
             try {
                 expression = new CronExpression(getExpression());
             } catch (ParseException exception) {
-                // do nopthing
+                // do nothing
             }
         }
-        return (expression != null) ? expression.getNextValidTimeAfter(time) : null;
+        if (expression != null) {
+            time = expression.getNextValidTimeAfter(time);
+            result = (time != null && condition.evaluate(time)) ? time : null;
+        }
+        return result;
     }
 
     /**

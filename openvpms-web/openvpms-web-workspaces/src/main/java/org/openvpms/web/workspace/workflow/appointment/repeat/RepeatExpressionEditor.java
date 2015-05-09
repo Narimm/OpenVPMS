@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.workflow.appointment.repeat;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.echo.focus.FocusGroup;
 
 /**
  * An editor for {@link RepeatExpression}s.
@@ -39,5 +40,12 @@ public interface RepeatExpressionEditor extends Modifiable {
      * @return the component
      */
     Component getComponent();
+
+    /**
+     * Returns the component focus group.
+     *
+     * @return the focus group
+     */
+    FocusGroup getFocusGroup();
 
 }
