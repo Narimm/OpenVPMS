@@ -35,7 +35,7 @@
             </assertion>
         </node>
         <node name="expression" path="/details/expression" type="java.lang.String" minCardinality="0" maxLength="5000"/>
-        <node name="untilCount" path="/details/until" type="java.lang.Integer" minCardinality="0"
+        <node name="times" path="/details/times" type="java.lang.Integer" minCardinality="0"
               defaultValue="0" hidden="true"/>
         <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>

@@ -26,8 +26,10 @@ import nextapp.echo2.app.list.ListCellRenderer;
 import org.openvpms.web.component.bound.BoundSelectFieldFactory;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.property.SimpleProperty;
+import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.resource.i18n.Messages;
 
 import java.text.DateFormatSymbols;
 import java.util.ArrayList;
@@ -39,20 +41,33 @@ import static org.openvpms.web.echo.style.Styles.WIDE_CELL_SPACING;
 import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatExpression.DayOfWeek;
 
 /**
- * A {@link RepeatExpressionEditor} that supports expressions that repeat on the first..fifth/last Sunday-Saturday of the month.
+ * A {@link RepeatExpressionEditor} that supports expressions that repeat on the first..fifth/last Sunday-Saturday of
+ * the month.
  *
  * @author Tim Anderson
  */
-class RepeatOnOrdinalDayEditor implements RepeatExpressionEditor {
+class RepeatOnOrdinalDayEditor extends AbstractRepeatExpressionEditor {
 
     /**
      * The repeat start time.
      */
     private final Date startTime;
 
+    /**
+     * "1".."5" or "L" for first...fifth or last.
+     */
     private SimpleProperty ordinal = new SimpleProperty("ordinal", String.class);
+
+    /**
+     * The day to repeat on.
+     */
     private SimpleProperty day = new SimpleProperty("day", String.class);
-    private SimpleProperty interval = new SimpleProperty("interval", Integer.class);
+
+    /**
+     * The month interval.
+     */
+    private SimpleProperty interval = new SimpleProperty("interval", null, Integer.class,
+                                                         Messages.get("workflow.scheduling.appointment.interval"));
 
 
     /**
@@ -94,12 +109,12 @@ class RepeatOnOrdinalDayEditor implements RepeatExpressionEditor {
     @Override
     public Component getComponent() {
         PairListModel ordinalModel = new PairListModel();
-        ordinalModel.add(1, "First");
-        ordinalModel.add(2, "Second");
-        ordinalModel.add(3, "Third");
-        ordinalModel.add(4, "Fourth");
-        ordinalModel.add(5, "Fifth");
-        ordinalModel.add("L", "Last");
+        ordinalModel.add(1, Messages.get("workflow.scheduling.appointment.first"));
+        ordinalModel.add(2, Messages.get("workflow.scheduling.appointment.second"));
+        ordinalModel.add(3, Messages.get("workflow.scheduling.appointment.third"));
+        ordinalModel.add(4, Messages.get("workflow.scheduling.appointment.fourth"));
+        ordinalModel.add(5, Messages.get("workflow.scheduling.appointment.fifth"));
+        ordinalModel.add("L", Messages.get("workflow.scheduling.appointment.last"));
         PairListModel dayModel = new PairListModel();
         String[] weekdays = DateFormatSymbols.getInstance().getWeekdays();
         for (int i = 0; i < 7; ++i) {
@@ -107,12 +122,10 @@ class RepeatOnOrdinalDayEditor implements RepeatExpressionEditor {
             String name = weekdays[id];
             dayModel.add(id, name);
         }
-        Label the = LabelFactory.create();
-        the.setText("The");
+        Label the = LabelFactory.create("workflow.scheduling.appointment.the");
         Label every = LabelFactory.create();
-        every.setText("every");
-        Label months = LabelFactory.create();
-        months.setText("months");
+        every.setText(Messages.get("workflow.scheduling.appointment.every").toLowerCase());
+        Label months = LabelFactory.create("workflow.scheduling.appointment.months");
         SelectField ordinalField = BoundSelectFieldFactory.create(ordinal, ordinalModel);
         ordinalField.setWidth(new Extent(10, Extent.EM));
         ordinalField.setSelectedIndex(0);
@@ -142,21 +155,27 @@ class RepeatOnOrdinalDayEditor implements RepeatExpressionEditor {
     }
 
     /**
-     * Determines if the editor is valid.
+     * Determines if the editor can edit the supplied expression.
      *
-     * @return {@code true} if the editor is valid
+     * @param expression the expression
+     * @return {@code true} if the editor can edit the expression
      */
-    @Override
-    public boolean isValid() {
-        return false;
-    }
-
     public static boolean supports(CronRepeatExpression expression) {
         DayOfWeek dayOfWeek = expression.getDayOfWeek();
         CronRepeatExpression.DayOfMonth dayOfMonth = expression.getDayOfMonth();
         return dayOfWeek.isOrdinal() && dayOfMonth.isAll();
     }
 
+    /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        return ordinal.validate(validator) && day.validate(validator) && interval.validate(validator);
+    }
 
     private static class PairListModel extends AbstractListModel {
 

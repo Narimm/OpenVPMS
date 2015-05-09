@@ -21,6 +21,7 @@ import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import org.openvpms.web.component.bound.BoundCheckBox;
 import org.openvpms.web.component.property.SimpleProperty;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 
@@ -39,7 +40,7 @@ import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatE
  *
  * @author Tim Anderson
  */
-class RepeatOnDaysEditor implements RepeatExpressionEditor {
+class RepeatOnDaysEditor extends AbstractRepeatExpressionEditor {
 
     /**
      * The repeat start time.
@@ -91,11 +92,16 @@ class RepeatOnDaysEditor implements RepeatExpressionEditor {
             c.setText(day.getDisplayName());
             grid.add(c);
         }
-        Label every = new Label();
-        every.setText("Every");
+        Label every = LabelFactory.create("workflow.scheduling.appointment.every");
         return RowFactory.create(Styles.CELL_SPACING, every, grid);
     }
 
+    /**
+     * Determines if the editor can edit the supplied expression.
+     *
+     * @param expression the expression
+     * @return {@code true} if the editor can edit the expression
+     */
     public static boolean supports(CronRepeatExpression expression) {
         DayOfWeek dayOfWeek = expression.getDayOfWeek();
         DayOfMonth dayOfMonth = expression.getDayOfMonth();
@@ -123,16 +129,6 @@ class RepeatOnDaysEditor implements RepeatExpressionEditor {
             return new CronRepeatExpression(startTime, dayOfWeek);
         }
         return null;
-    }
-
-    /**
-     * Determines if the editor is valid.
-     *
-     * @return {@code true} if the editor is valid
-     */
-    @Override
-    public boolean isValid() {
-        return getExpression() != null;
     }
 
 }

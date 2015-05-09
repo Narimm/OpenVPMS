@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.workflow.appointment.repeat;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.Date;
 
@@ -66,6 +67,28 @@ public class CalendarRepeatExpression implements RepeatExpression {
      */
     public DateUnits getUnits() {
         return units;
+    }
+
+    /**
+     * Returns a string representation of this expression.
+     *
+     * @return a formatted string
+     */
+    @Override
+    public String toString() {
+        String result;
+        if (interval == 1) {
+            result = RepeatHelper.toString(getType());
+        } else {
+            StringBuilder buffer = new StringBuilder();
+            buffer.append(Messages.get("workflow.scheduling.appointment.every"));
+            buffer.append(" ");
+            buffer.append(interval);
+            buffer.append(" ");
+            buffer.append(RepeatHelper.toString(units));
+            result = buffer.toString();
+        }
+        return result;
     }
 
     /**
