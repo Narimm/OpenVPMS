@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.workflow.appointment.repeat;
 
 import net.sf.jasperreports.engine.util.ObjectUtils;
+import org.apache.commons.collections4.Predicate;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -85,6 +86,16 @@ public class AppointmentSeries {
      * The current expression.
      */
     private RepeatExpression expression;
+
+    /**
+     * The previous condition.
+     */
+    private RepeatCondition previousCondition;
+
+    /**
+     * The current condition.
+     */
+    private RepeatCondition condition;
 
     /**
      * The repeat start time.
@@ -191,6 +202,15 @@ public class AppointmentSeries {
                 }
             }
             expression = previous;
+
+            int times = seriesBean.getInt("times", -1);
+            Date endTime = series.getActivityEndTime();
+            if (times > 0) {
+                previousCondition = new RepeatNTimesCondition(times);
+            } else if (endTime != null) {
+                previousCondition = new RepeatUntilDateCondition(endTime);
+            }
+            condition = previousCondition;
         } else {
             startTime = appointment.getActivityStartTime();
         }
@@ -268,14 +288,43 @@ public class AppointmentSeries {
         this.expression = expression;
     }
 
-    public boolean isModified() {
-        return !ObjectUtils.equals(previous, expression);
+    /**
+     * Returns the repeat-until condition for this series.
+     *
+     * @return the condition, or {@code null} if none has been configured
+     */
+    public RepeatCondition getCondition() {
+        return condition;
     }
 
+
+    /**
+     * Sets the repeat condition.
+     *
+     * @param condition the condition. May be {@code null}
+     */
+    public void setCondition(RepeatCondition condition) {
+        this.condition = condition;
+    }
+
+    /**
+     * Determines if the expression or condition has been modified.
+     *
+     * @return {@code true} if the expression or condition has been modified
+     */
+    public boolean isModified() {
+        return !ObjectUtils.equals(previous, expression) || !ObjectUtils.equals(previousCondition, condition);
+    }
+
+    /**
+     * Saves the series.
+     *
+     * @return {@code true} if any changes were made
+     */
     public boolean save() {
         boolean result = true;
         if (isModified()) {
-            if (previous != null && expression == null) {
+            if (previous != null && (expression == null || condition == null)) {
                 result = deleteSeries();
             } else if (previous != null) {
                 result = updateNonExpiredAppointments();
@@ -284,6 +333,7 @@ public class AppointmentSeries {
                 result = true;
             }
             previous = expression;
+            previousCondition = condition;
         }
         return result;
     }
@@ -327,6 +377,7 @@ public class AppointmentSeries {
     private void createAppointments() {
         series = (Act) service.create(ScheduleArchetypes.APPOINTMENT_SERIES);
         series.setActivityStartTime(startTime);
+        Predicate<Date> predicate = condition.create();
         ActBean seriesBean = updateSeries();
 
         List<Act> toSave = new ArrayList<Act>();
@@ -336,7 +387,7 @@ public class AppointmentSeries {
         int i = 1;
         Date from = startTime;
         toSave.add(series);
-        while (i < maxAppointments && (from = expression.getRepeatAfter(from)) != null) {
+        while (i < maxAppointments && (from = expression.getRepeatAfter(from, predicate)) != null) {
             Act act = create(from, seriesBean);
             toSave.add(act);
             ++i;
@@ -349,6 +400,8 @@ public class AppointmentSeries {
         String expr = null;
         Integer interval = null;
         String units = null;
+        Date endTime = null;
+        Integer times = null;
         if (expression instanceof CalendarRepeatExpression) {
             CalendarRepeatExpression calendar = (CalendarRepeatExpression) expression;
             interval = calendar.getInterval();
@@ -356,9 +409,16 @@ public class AppointmentSeries {
         } else {
             expr = ((CronRepeatExpression) expression).getExpression();
         }
+        if (condition instanceof RepeatUntilDateCondition) {
+            endTime = ((RepeatUntilDateCondition) condition).getDate();
+        } else {
+            times = ((RepeatNTimesCondition) condition).getTimes();
+        }
         seriesBean.setValue("interval", interval);
         seriesBean.setValue("units", units);
         seriesBean.setValue("expression", expr);
+        seriesBean.setValue("endTime", endTime);
+        seriesBean.setValue("times", times);
         return seriesBean;
     }
 
@@ -422,7 +482,8 @@ public class AppointmentSeries {
         Iterator<Act> iterator = acts.listIterator();
         List<Act> toUpdate = new ArrayList<Act>();
         List<Act> toSave = new ArrayList<Act>();
-        while (i < maxAppointments && (from = expression.getRepeatAfter(from)) != null) {
+        Predicate<Date> predicate = condition.create();
+        while (i < maxAppointments && (from = expression.getRepeatAfter(from, predicate)) != null) {
             if (iterator.hasNext()) {
                 Act act = iterator.next();
                 iterator.remove();

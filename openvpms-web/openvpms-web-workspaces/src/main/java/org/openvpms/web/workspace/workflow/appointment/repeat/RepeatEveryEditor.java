@@ -78,6 +78,7 @@ class RepeatEveryEditor extends AbstractRepeatExpressionEditor {
         String unitText = RepeatHelper.toString(units);
         label.setText(unitText);
         TextField field = BoundTextComponentFactory.create(interval, 5);
+        getFocusGroup().add(field);
         return RowFactory.create(Styles.CELL_SPACING, every, field, label);
     }
 

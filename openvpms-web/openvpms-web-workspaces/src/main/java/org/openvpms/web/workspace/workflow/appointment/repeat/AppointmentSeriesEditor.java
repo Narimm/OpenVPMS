@@ -19,24 +19,29 @@ package org.openvpms.web.workspace.workflow.appointment.repeat;
 import echopointng.BorderEx;
 import echopointng.TabbedPane;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.RadioButton;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.button.ButtonGroup;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.table.AbstractTableModel;
+import nextapp.echo2.app.table.TableModel;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.TabbedPaneFactory;
 import org.openvpms.web.echo.factory.TableFactory;
-import org.openvpms.web.echo.factory.TextComponentFactory;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.popup.DropDown;
-import org.openvpms.web.echo.table.EvenOddTableCellRenderer;
+import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.table.StyleTableCellRenderer;
 import org.openvpms.web.echo.tabpane.ObjectTabPaneModel;
-import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.workflow.appointment.AppointmentActEditor;
 
@@ -61,24 +66,55 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
     private final AppointmentActEditor appointmentEditor;
 
     /**
+     * Container for the repeat selector.
+     */
+    private Component repeatContainer;
+
+    /**
      * The repeat selector drop-down.
      */
-    private DropDown dropDown;
+    private DropDown repeatSelector;
 
     /**
      * The selected repeat editor. May be {@code null}
      */
-    private RepeatExpressionEditor editor;
-
-    /**
-     * The label to use if no series is present.
-     */
-    private TextField label;
+    private RepeatExpressionEditor repeatEditor;
 
     /**
      * The tab pane model.
      */
-    private ObjectTabPaneModel<ExpressionTab> model;
+    private ObjectTabPaneModel<ExpressionTab> repeatModel;
+
+    /**
+     * Container for the until selector, if there is a repeat expression. Empty otherwise
+     */
+    private Component untilContainer;
+
+    /**
+     * The until selector drop-down.
+     */
+    private DropDown untilSelector;
+
+    /**
+     * The selected until editor. May be {@code null}
+     */
+    private RepeatUntilEditor untilEditor;
+
+    /**
+     * The repeat until table.
+     */
+    private Table untilTable;
+
+    /**
+     * The repeat expression editor focus group.
+     */
+    private final FocusGroup repeatGroup = new FocusGroup(RepeatExpressionEditor.class.getSimpleName());
+
+    /**
+     * The repeat until editor focus group.
+     */
+    private final FocusGroup untilGroup = new FocusGroup(RepeatUntilEditor.class.getSimpleName());
+
 
     /**
      * Constructs an {@link AppointmentSeriesEditor}.
@@ -88,23 +124,34 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
     public AppointmentSeriesEditor(AppointmentSeries series, AppointmentActEditor appointmentEditor) {
         this.series = series;
         this.appointmentEditor = appointmentEditor;
-        label = TextComponentFactory.create();
 
         RepeatExpression expression = series.getExpression();
         if (expression instanceof CalendarRepeatExpression) {
             CalendarRepeatExpression calendar = (CalendarRepeatExpression) expression;
             if (calendar.getInterval() == 1) {
-                editor = new SimpleRepeatEditor(calendar);
+                repeatEditor = new SimpleRepeatEditor(calendar);
             } else {
-                editor = new RepeatEveryEditor(calendar);
+                repeatEditor = new RepeatEveryEditor(calendar);
             }
         } else if (expression instanceof CronRepeatExpression) {
             CronRepeatExpression cron = (CronRepeatExpression) expression;
             if (RepeatOnDaysEditor.supports(cron)) {
-                editor = new RepeatOnDaysEditor(series.getStartTime(), cron);
+                repeatEditor = new RepeatOnDaysEditor(series.getStartTime(), cron);
             } else if (RepeatOnOrdinalDayEditor.supports(cron)) {
-                editor = new RepeatOnOrdinalDayEditor(series.getStartTime(), cron);
+                repeatEditor = new RepeatOnOrdinalDayEditor(series.getStartTime(), cron);
             }
+        }
+        RepeatCondition condition = series.getCondition();
+        if (condition instanceof RepeatUntilDateCondition) {
+            untilEditor = new RepeatUntilDateEditor((RepeatUntilDateCondition) condition);
+        } else if (condition instanceof RepeatNTimesCondition) {
+            untilEditor = new RepeatNTimesEditor((RepeatNTimesCondition) condition);
+        }
+        if (repeatEditor != null) {
+            repeatGroup.add(repeatEditor.getFocusGroup());
+        }
+        if (untilEditor != null) {
+            untilGroup.add(untilEditor.getFocusGroup());
         }
     }
 
@@ -114,11 +161,7 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
      * This should be invoked if the appointment start time changes.
      */
     public void refresh() {
-        if (model != null) {
-            for (int i = 0; i < model.size(); ++i) {
-                model.getObject(i).refresh();
-            }
-        }
+        refreshRepeat();
     }
 
     /**
@@ -126,20 +169,60 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
      *
      * @return the component
      */
-    public Component getComponent() {
-        if (dropDown == null) {
-            model = createModel();
-            TabbedPane tabs = TabbedPaneFactory.create(model);
-            dropDown = new DropDown(label, tabs);
-            if (editor != null) {
-                dropDown.setTarget(editor.getComponent());
+    public Component getRepeatEditor() {
+        if (repeatContainer == null) {
+            repeatContainer = RowFactory.create(Styles.CELL_SPACING);
+            if (repeatSelector == null) {
+                repeatModel = createRepeatModel();
+                TabbedPane tabs = TabbedPaneFactory.create(repeatModel);
+                repeatSelector = createDropDown(null, RowFactory.create(tabs));
+                // need to put the tabs in a row for Chrome, otherwise it renders to the width of the dialog.
+                repeatSelector.setBorder(BorderEx.NONE);
+                repeatSelector.setRolloverBorder(BorderEx.NONE);
+                repeatSelector.setPopUpAlwaysOnTop(true);
+                repeatSelector.setFocusOnExpand(true);
             }
-            dropDown.setBorder(BorderEx.NONE);
-            dropDown.setRolloverBorder(BorderEx.NONE);
-            dropDown.setPopUpAlwaysOnTop(true);
-            dropDown.setFocusOnExpand(true);
+            Component component = (repeatEditor == null)
+                                  ? LabelFactory.create("workflow.scheduling.appointment.norepeat")
+                                  : repeatEditor.getComponent();
+            repeatContainer.add(component);
+            repeatContainer.add(repeatSelector);
         }
-        return dropDown;
+        return repeatContainer;
+    }
+
+    /**
+     * Returns the focus group for the repeat expression editor.
+     *
+     * @return the focus group
+     */
+    public FocusGroup getRepeatFocusGroup() {
+        return repeatGroup;
+    }
+
+    /**
+     * Returns the condition editor component.
+     *
+     * @return the condition editor component
+     */
+    public Component getUntilEditor() {
+        if (untilContainer == null) {
+            untilContainer = RowFactory.create(Styles.CELL_SPACING);
+            if (untilEditor != null) {
+                untilContainer.add(untilEditor.getComponent());
+                untilContainer.add(getUntilSelector());
+            }
+        }
+        return untilContainer;
+    }
+
+    /**
+     * Returns the condition editor focus group.
+     *
+     * @return the focus group
+     */
+    public FocusGroup getUntilFocusGroup() {
+        return untilGroup;
     }
 
     /**
@@ -221,8 +304,10 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
      */
     @Override
     protected boolean doValidation(Validator validator) {
-        if (editor == null) {
+        boolean valid = false;
+        if (repeatEditor == null) {
             series.setExpression(null);
+            series.setCondition(null);
         } else {
             series.setSchedule(appointmentEditor.getSchedule());
             series.setAppointmentType(appointmentEditor.getAppointmentType());
@@ -230,9 +315,15 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
             series.setPatient(appointmentEditor.getPatient());
             series.setClinician(appointmentEditor.getClinician());
             series.setAuthor(appointmentEditor.getAuthor());
-            series.setExpression(editor.getExpression());
+            series.setExpression(repeatEditor.getExpression());
+            series.setCondition(untilEditor.getCondition());
         }
-        return editor == null || (editor.validate(validator) && noOverlaps(validator));
+        if (repeatEditor == null) {
+            valid = true;
+        } else if (untilEditor != null) {
+            valid = repeatEditor.validate(validator) && untilEditor.validate(validator) && noOverlaps(validator);
+        }
+        return valid;
     }
 
     private boolean noOverlaps(Validator validator) {
@@ -240,30 +331,107 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
         return true;
     }
 
-    /**
-     * Invoked when an editor is selected.
-     *
-     * @param editor the editor
-     */
-    private void onSelected(RepeatExpressionEditor editor) {
-        this.editor = editor;
-        RepeatExpression expression = editor.getExpression();
-        if (expression != null) {
-            dropDown.setTarget(editor.getComponent());
-            dropDown.setExpanded(false);
-        } else {
-            label.setText(null);
+    private Component getUntilSelector() {
+        if (untilSelector == null) {
+            untilTable = createTable(createUntilModel());
+            if (untilEditor == null) {
+                untilEditor = new RepeatUntilDateEditor(DateRules.getDate(series.getStartTime(), 1, DateUnits.YEARS));
+            }
+            untilSelector = createDropDown(null, untilTable);
         }
-        series.setExpression(expression);
-        refresh();  // need to refresh the drop-down otherwise the editor appears both selected and in the drop-down
+        return untilSelector;
+    }
+
+
+    private void onSelected(RepeatExpressionEditor editor) {
+        repeatSelector.setExpanded(false);
+        setRepeatEditor(editor);
+        refreshRepeat();
+        // need to refresh the drop-down otherwise the editor appears both selected and in the drop-down
     }
 
     /**
-     * Creates the tab model.
+     * Sets the repeat editor.
+     *
+     * @param editor the editor. May be {@code null}
+     */
+    private void setRepeatEditor(RepeatExpressionEditor editor) {
+        if (repeatEditor != null) {
+            repeatGroup.remove(repeatEditor.getFocusGroup());
+        }
+        this.repeatEditor = editor;
+        repeatContainer.removeAll();
+        if (editor != null) {
+            RepeatExpression expression = editor.getExpression();
+            repeatContainer.add(editor.getComponent());
+            repeatGroup.add(editor.getFocusGroup());
+            series.setExpression(expression);
+            repeatContainer.add(repeatSelector);
+
+            if (untilEditor == null) {
+                setUntilEditor(new RepeatNTimesEditor());
+            }
+        } else {
+            repeatContainer.add(LabelFactory.create("workflow.scheduling.appointment.norepeat"));
+            setUntilEditor(null);
+        }
+        repeatContainer.add(repeatSelector);
+    }
+
+    private void onSelected(RepeatUntilEditor editor) {
+        untilSelector.setExpanded(false);
+        setUntilEditor(editor);
+        refreshUntil();
+        // need to refresh the drop-down otherwise the editor appears both selected and in the drop-down
+    }
+
+    /**
+     * Sets the repeat-until editor.
+     *
+     * @param editor the editor. May be {@code null}
+     */
+    private void setUntilEditor(RepeatUntilEditor editor) {
+        if (untilEditor != null) {
+            untilGroup.remove(untilEditor.getFocusGroup());
+        }
+        untilEditor = editor;
+        untilContainer.removeAll();
+        if (untilEditor != null) {
+            untilContainer.add(editor.getComponent());
+            untilGroup.add(editor.getFocusGroup());
+            untilContainer.add(getUntilSelector());
+        }
+    }
+
+    private void refreshRepeat() {
+        if (repeatModel != null) {
+            for (int i = 0; i < repeatModel.size(); ++i) {
+                repeatModel.getObject(i).refresh();
+            }
+        }
+    }
+
+    private void refreshUntil() {
+        if (untilTable != null) {
+            untilTable.setModel(createUntilModel());
+        }
+    }
+
+    private DropDown createDropDown(Component target, Component dropDown) {
+        DropDown result = new DropDown(target, dropDown);
+        result.setBorder(BorderEx.NONE);
+        result.setRolloverBorder(BorderEx.NONE);
+        result.setPopUpAlwaysOnTop(true);
+        result.setFocusOnExpand(true);
+        return result;
+    }
+
+    /**
+     * Creates the repeat tab model.
      *
      * @return a new tab model
      */
-    private ObjectTabPaneModel<ExpressionTab> createModel() {
+    private ObjectTabPaneModel<ExpressionTab> createRepeatModel() {
         ObjectTabPaneModel<ExpressionTab> model = new ObjectTabPaneModel<ExpressionTab>(null);
         addTab(model, new Daily());
         addTab(model, new Weekly());
@@ -282,23 +450,36 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
         model.addTab(tab, tab.getDisplayName(), tab.getComponent());
     }
 
-    private class RepeatTableModel extends AbstractTableModel {
+    private UntilTableModel createUntilModel() {
+        UntilTableModel model = new UntilTableModel();
+        model.add(new RepeatNTimesEditor());
+        model.add(new RepeatUntilDateEditor(DateRules.getDate(series.getStartTime(), 1, DateUnits.YEARS)));
+        return model;
+    }
 
-        private ButtonGroup group = new ButtonGroup();
+    private static Table createTable(TableModel model) {
+        Table table = TableFactory.create(model, "plain");
+        table.setHeaderVisible(false);
+        table.setInsets(new Insets(10));
+        table.setDefaultRenderer(Object.class, new StyleTableCellRenderer("Table.Row-Inset"));
+        table.setSelectionEnabled(false);
+        table.setRolloverEnabled(false);
+        return table;
+    }
+
+    private static class ButtonTableModel extends AbstractTableModel {
+
+        private final ButtonGroup group = new ButtonGroup();
+
         private List<RadioButton> buttons = new ArrayList<RadioButton>();
-        private List<RepeatExpressionEditor> repeat = new ArrayList<RepeatExpressionEditor>();
+        private List<Component> components = new ArrayList<Component>();
 
-        public void add(final RepeatExpressionEditor repeat) {
+        public RadioButton add(Component component) {
             RadioButton button = new RadioButton();
             button.setGroup(group);
             buttons.add(button);
-            button.addActionListener(new ActionListener() {
-                @Override
-                public void onAction(ActionEvent event) {
-                    onSelected(repeat);
-                }
-            });
-            this.repeat.add(repeat);
+            this.components.add(component);
+            return button;
         }
 
         @Override
@@ -308,7 +489,7 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
 
         @Override
         public int getRowCount() {
-            return repeat.size();
+            return components.size();
         }
 
         @Override
@@ -317,10 +498,25 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
                 case 0:
                     return buttons.get(row);
                 case 1:
-                    return repeat.get(row).getComponent();
+                    return components.get(row);
             }
             return null;
         }
+    }
+
+    private class RepeatTableModel extends ButtonTableModel {
+
+        public RadioButton add(final RepeatExpressionEditor repeat) {
+            RadioButton button = super.add(repeat.getComponent());
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    onSelected(repeat);
+                }
+            });
+            return button;
+        }
+
     }
 
     /**
@@ -336,7 +532,7 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
         /**
          * Table of repeat expressions.
          */
-        private Table table;
+        private final Table table;
 
 
         /**
@@ -346,11 +542,7 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
          */
         public ExpressionTab(String displayName) {
             this.displayName = displayName;
-            table = TableFactory.create(createTableModel());
-            table.setHeaderVisible(false);
-            table.setDefaultRenderer(Object.class, EvenOddTableCellRenderer.INSTANCE);
-            table.setSelectionEnabled(false);
-            table.setRolloverEnabled(false);
+            table = createTable(createTableModel());
         }
 
         /**
@@ -399,6 +591,15 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
         @Override
         protected RepeatTableModel createTableModel() {
             RepeatTableModel model = new RepeatTableModel();
+            if (repeatEditor != null) {
+                RadioButton noRepeat = model.add(LabelFactory.create("workflow.scheduling.appointment.norepeat"));
+                noRepeat.addActionListener(new ActionListener() {
+                    @Override
+                    public void onAction(ActionEvent event) {
+                        onSelected((RepeatExpressionEditor) null);
+                    }
+                });
+            }
             model.add(new SimpleRepeatEditor(RepeatExpressions.daily()));
             model.add(new SimpleRepeatEditor(RepeatExpressions.weekdays(series.getStartTime())));
             model.add(new RepeatEveryEditor(DateUnits.DAYS));
@@ -460,5 +661,20 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
             model.add(new RepeatEveryEditor(DateUnits.YEARS));
             return model;
         }
+    }
+
+    private class UntilTableModel extends ButtonTableModel {
+
+        public RadioButton add(final RepeatUntilEditor until) {
+            RadioButton button = super.add(until.getComponent());
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    onSelected(until);
+                }
+            });
+            return button;
+        }
+
     }
 }

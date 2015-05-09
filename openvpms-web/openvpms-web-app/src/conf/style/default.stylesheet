@@ -1393,6 +1393,19 @@
         </properties>
     </style>
 
+    <style name="Table.Row-Inset" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="insets" value="${padding.medium}"/>
+                        <property name="background" value="#ffffff"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
 
     <!-- =================================================================== -->
     <!--  SpinBox                                                            -->

@@ -16,36 +16,35 @@
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
 
-import org.apache.commons.collections4.Predicate;
-
-import java.util.Date;
+import nextapp.echo2.app.Component;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.echo.focus.FocusGroup;
 
 /**
- * Appointment repeat expression.
+ * Editor to limit a repeat expression.
  *
  * @author Tim Anderson
  */
-public interface RepeatExpression {
-
-    public enum Type {
-        DAILY, WEEKDAYS, WEEKLY, MONTHLY, YEARLY, CUSTOM
-    }
+public interface RepeatUntilEditor extends Modifiable {
 
     /**
-     * Returns the type of the expression.
+     * Returns the condition.
      *
-     * @return the type
+     * @return the condition, or {@code null} if the condition is invalid
      */
-    Type getType();
+    RepeatCondition getCondition();
 
     /**
-     * Returns the next repeat time after the specified time.
+     * Returns the editor component.
      *
-     * @param time      the time
-     * @param condition the condition to evaluate for each date
-     * @return the next repeat time, or {@code null} if there are no more repeats, or the predicate returns
-     *         {@code false}
+     * @return the component
      */
-    Date getRepeatAfter(Date time, Predicate<Date> condition);
+    Component getComponent();
 
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group
+     */
+    FocusGroup getFocusGroup();
 }

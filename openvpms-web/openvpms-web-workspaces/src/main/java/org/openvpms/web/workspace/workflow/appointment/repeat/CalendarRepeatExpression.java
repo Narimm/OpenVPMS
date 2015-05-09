@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
 
+import org.apache.commons.collections4.Predicate;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -116,12 +117,15 @@ public class CalendarRepeatExpression implements RepeatExpression {
     /**
      * Returns the next repeat time after the specified time.
      *
-     * @param time the time
-     * @return the next repeat time, or {@code null} if there are no more repeats
+     * @param time      the time
+     * @param condition the condition to evaluate for each date
+     * @return the next repeat time, or {@code null} if there are no more repeats, or the predicate returns
+     *         {@code false}
      */
     @Override
-    public Date getRepeatAfter(Date time) {
-        return DateRules.getDate(time, interval, units);
+    public Date getRepeatAfter(Date time, Predicate<Date> condition) {
+        Date date = DateRules.getDate(time, interval, units);
+        return condition.evaluate(date) ? date : null;
     }
 
     /**

@@ -23,6 +23,7 @@ import org.openvpms.web.component.bound.BoundCheckBox;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
 
 import java.text.DateFormatSymbols;
@@ -87,10 +88,12 @@ class RepeatOnDaysEditor extends AbstractRepeatExpressionEditor {
     @Override
     public Component getComponent() {
         Grid grid = new Grid(4);
+        FocusGroup group = getFocusGroup();
         for (SimpleProperty day : days) {
-            BoundCheckBox c = new BoundCheckBox(day);
-            c.setText(day.getDisplayName());
-            grid.add(c);
+            BoundCheckBox box = new BoundCheckBox(day);
+            box.setText(day.getDisplayName());
+            grid.add(box);
+            group.add(box);
         }
         Label every = LabelFactory.create("workflow.scheduling.appointment.every");
         return RowFactory.create(Styles.CELL_SPACING, every, grid);

@@ -25,10 +25,12 @@ import nextapp.echo2.app.list.AbstractListModel;
 import nextapp.echo2.app.list.ListCellRenderer;
 import org.openvpms.web.component.bound.BoundSelectFieldFactory;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
+import org.openvpms.web.component.property.NumericPropertyTransformer;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.text.DateFormatSymbols;
@@ -37,7 +39,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import static org.openvpms.web.echo.style.Styles.WIDE_CELL_SPACING;
 import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatExpression.DayOfWeek;
 
 /**
@@ -56,18 +57,19 @@ class RepeatOnOrdinalDayEditor extends AbstractRepeatExpressionEditor {
     /**
      * "1".."5" or "L" for first...fifth or last.
      */
-    private SimpleProperty ordinal = new SimpleProperty("ordinal", String.class);
+    private final SimpleProperty ordinal = new SimpleProperty("ordinal", String.class);
 
     /**
      * The day to repeat on.
      */
-    private SimpleProperty day = new SimpleProperty("day", String.class);
+    private final SimpleProperty day = new SimpleProperty("day", String.class);
 
     /**
      * The month interval.
      */
-    private SimpleProperty interval = new SimpleProperty("interval", null, Integer.class,
-                                                         Messages.get("workflow.scheduling.appointment.interval"));
+    private final SimpleProperty interval
+            = new SimpleProperty("interval", null, Integer.class,
+                                 Messages.get("workflow.scheduling.appointment.interval"));
 
 
     /**
@@ -98,6 +100,8 @@ class RepeatOnOrdinalDayEditor extends AbstractRepeatExpressionEditor {
                 ordinal.setValue(dayOfWeek.getOrdindal());
             }
         }
+        interval.setRequired(true);
+        interval.setTransformer(new NumericPropertyTransformer(interval, true));
         interval.setValue(1);
     }
 
@@ -118,11 +122,11 @@ class RepeatOnOrdinalDayEditor extends AbstractRepeatExpressionEditor {
         PairListModel dayModel = new PairListModel();
         String[] weekdays = DateFormatSymbols.getInstance().getWeekdays();
         for (int i = 0; i < 7; ++i) {
-            int id = Calendar.SUNDAY + i;
-            String name = weekdays[id];
-            dayModel.add(id, name);
+            int day = Calendar.SUNDAY + i;
+            String name = weekdays[day];
+            dayModel.add(DayOfWeek.getDay(day), name);
         }
-        Label the = LabelFactory.create("workflow.scheduling.appointment.the");
+        Label the = LabelFactory.create("workflow.scheduling.appointment.onthe");
         Label every = LabelFactory.create();
         every.setText(Messages.get("workflow.scheduling.appointment.every").toLowerCase());
         Label months = LabelFactory.create("workflow.scheduling.appointment.months");
@@ -134,7 +138,7 @@ class RepeatOnOrdinalDayEditor extends AbstractRepeatExpressionEditor {
         dayField.setCellRenderer(PairListModel.RENDERER);
         dayField.setWidth(new Extent(10, Extent.EM));
         dayField.setSelectedIndex(0);
-        return RowFactory.create(WIDE_CELL_SPACING, the, ordinalField, dayField, every,
+        return RowFactory.create(Styles.CELL_SPACING, the, ordinalField, dayField, every,
                                  BoundTextComponentFactory.create(interval, 5), months);
     }
 
