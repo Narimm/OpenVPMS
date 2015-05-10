@@ -32,6 +32,7 @@ import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
@@ -47,6 +48,9 @@ import org.openvpms.web.workspace.workflow.appointment.AppointmentActEditor;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.openvpms.web.resource.i18n.format.DateFormatter.formatDateTime;
+import static org.openvpms.web.resource.i18n.format.DateFormatter.formatDateTimeAbbrev;
 
 /**
  * An editor for {@link AppointmentSeries}.
@@ -327,8 +331,22 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
     }
 
     private boolean noOverlaps(Validator validator) {
-        RepeatExpression expression = series.getExpression();
-        return true;
+        boolean result;
+        AppointmentSeries.Overlap overlap = series.getFirstOverlap();
+        if (overlap != null) {
+            result = false;
+            AppointmentSeries.Times appointment1 = overlap.getAppointment1();
+            AppointmentSeries.Times appointment2 = overlap.getAppointment2();
+            String startTime1 = formatDateTime(appointment1.getStartTime(), false);
+            String endTime1 = formatDateTimeAbbrev(appointment1.getEndTime(), appointment1.getStartTime());
+            String startTime2 = formatDateTime(appointment2.getStartTime(), false);
+            String endTime2 = formatDateTimeAbbrev(appointment2.getEndTime(), appointment2.getStartTime());
+            validator.add(this, new ValidatorError(Messages.format("workflow.scheduling.appointment.overlap",
+                                                                   startTime1, endTime1, startTime2, endTime2)));
+        } else {
+            result = true;
+        }
+        return result;
     }
 
     private Component getUntilSelector() {
@@ -600,8 +618,8 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
                     }
                 });
             }
-            model.add(new SimpleRepeatEditor(RepeatExpressions.daily()));
-            model.add(new SimpleRepeatEditor(RepeatExpressions.weekdays(series.getStartTime())));
+            model.add(new SimpleRepeatEditor(Repeats.daily()));
+            model.add(new SimpleRepeatEditor(Repeats.weekdays(series.getStartTime())));
             model.add(new RepeatEveryEditor(DateUnits.DAYS));
             model.add(new RepeatOnDaysEditor(series.getStartTime()));
             return model;
@@ -620,7 +638,7 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
         @Override
         protected RepeatTableModel createTableModel() {
             RepeatTableModel model = new RepeatTableModel();
-            model.add(new SimpleRepeatEditor(RepeatExpressions.weekly()));
+            model.add(new SimpleRepeatEditor(Repeats.weekly()));
             model.add(new RepeatEveryEditor(DateUnits.WEEKS));
             return model;
         }
@@ -638,7 +656,7 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
         @Override
         protected RepeatTableModel createTableModel() {
             RepeatTableModel model = new RepeatTableModel();
-            model.add(new SimpleRepeatEditor(RepeatExpressions.monthly()));
+            model.add(new SimpleRepeatEditor(Repeats.monthly()));
             model.add(new RepeatEveryEditor(DateUnits.MONTHS));
             model.add(new RepeatOnOrdinalDayEditor(series.getStartTime()));
             return model;
@@ -657,7 +675,7 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
         @Override
         protected RepeatTableModel createTableModel() {
             RepeatTableModel model = new RepeatTableModel();
-            model.add(new SimpleRepeatEditor(RepeatExpressions.yearly()));
+            model.add(new SimpleRepeatEditor(Repeats.yearly()));
             model.add(new RepeatEveryEditor(DateUnits.YEARS));
             return model;
         }

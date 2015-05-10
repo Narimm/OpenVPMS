@@ -28,12 +28,25 @@ import java.util.Date;
  */
 class RepeatNTimesCondition implements RepeatCondition {
 
+    /**
+     * The no. of times to repeat.
+     */
     private final int times;
 
+    /**
+     * Constructs an {@link RepeatNTimesCondition}.
+     *
+     * @param times the no. of times to repeat
+     */
     public RepeatNTimesCondition(int times) {
         this.times = times;
     }
 
+    /**
+     * Returns the number of times to repeat.
+     *
+     * @return the no. of times
+     */
     public int getTimes() {
         return times;
     }
@@ -57,18 +70,12 @@ class RepeatNTimesCondition implements RepeatCondition {
     /**
      * Creates a predicate for this condition.
      *
+     * @param count the number of existing appointments in the series
      * @return a new predicate
      */
     @Override
-    public Predicate<Date> create() {
-        return new Predicate<Date>() {
-            int count = 0;
-
-            @Override
-            public boolean evaluate(Date object) {
-                return count++ < times;
-            }
-        };
+    public Predicate<Date> create(int count) {
+        return new TimesPredicate<Date>(times - count);
     }
 
     /**
