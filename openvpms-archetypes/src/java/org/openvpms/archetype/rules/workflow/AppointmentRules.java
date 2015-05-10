@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -172,8 +172,7 @@ public class AppointmentRules {
      * @return the appointment end time
      * @throws OpenVPMSException for any error
      */
-    public Date calculateEndTime(Date startTime, Party schedule,
-                                 Entity appointmentType) {
+    public Date calculateEndTime(Date startTime, Entity schedule, Entity appointmentType) {
         EntityBean schedBean = new EntityBean(schedule, service);
         int noSlots = getSlots(schedBean, appointmentType);
         int minutes = getSlotSize(schedBean) * noSlots;

@@ -28,7 +28,7 @@ import java.util.Date;
  *
  * @author Tim Anderson
  */
-public class RepeatUntilDateCondition implements RepeatCondition {
+class RepeatUntilDateCondition implements RepeatCondition {
 
     private final Date date;
 
@@ -59,10 +59,11 @@ public class RepeatUntilDateCondition implements RepeatCondition {
     /**
      * Creates a predicate for this condition.
      *
+     * @param count the number of existing appointments in the series
      * @return a new predicate
      */
     @Override
-    public Predicate<Date> create() {
+    public Predicate<Date> create(int count) {
         return new Predicate<Date>() {
             @Override
             public boolean evaluate(Date object) {

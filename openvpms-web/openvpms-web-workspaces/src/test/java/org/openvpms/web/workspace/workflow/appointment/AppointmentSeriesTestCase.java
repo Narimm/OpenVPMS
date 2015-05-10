@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.workflow.appointment;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -32,8 +33,9 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeries;
+import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatCondition;
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatExpression;
-import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatExpressions;
+import org.openvpms.web.workspace.workflow.appointment.repeat.Repeats;
 
 import java.util.Date;
 import java.util.List;
@@ -41,6 +43,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -49,6 +52,16 @@ import static org.junit.Assert.assertTrue;
  * @author Tim Anderson
  */
 public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
+
+    /**
+     * Appointment start time.
+     */
+    private Date startTime;
+
+    /**
+     * Appointment end time.
+     */
+    private Date endTime;
 
     /**
      * The schedule.
@@ -95,11 +108,14 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
      */
     private IArchetypeRuleService ruleService;
 
+
     /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
+        startTime = TestHelper.getDatetime("2015-01-01 09:30:00");
+        endTime = TestHelper.getDatetime("2015-01-01 09:45:00");
         customer = TestHelper.createCustomer();
         patient = TestHelper.createPatient();
         clinician = TestHelper.createClinician();
@@ -116,10 +132,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testRepeatDaily() {
-        Date startTime = TestHelper.getDatetime("2015-01-01 09:30:00");
-        Date endTime = TestHelper.getDatetime("2015-01-01 09:45:00");
-
-        checkCreateSeries(RepeatExpressions.daily(), startTime, endTime, 1, DateUnits.DAYS);
+        checkCreateSeries(Repeats.daily(), startTime, endTime, 1, DateUnits.DAYS);
     }
 
     /**
@@ -127,10 +140,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testRepeatWeekly() {
-        Date startTime = TestHelper.getDatetime("2015-01-01 09:30:00");
-        Date endTime = TestHelper.getDatetime("2015-01-01 09:45:00");
-
-        checkCreateSeries(RepeatExpressions.weekly(), startTime, endTime, 1, DateUnits.WEEKS);
+        checkCreateSeries(Repeats.weekly(), startTime, endTime, 1, DateUnits.WEEKS);
     }
 
     /**
@@ -138,10 +148,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testRepeatMonthly() {
-        Date startTime = TestHelper.getDatetime("2015-01-01 09:30:00");
-        Date endTime = TestHelper.getDatetime("2015-01-01 09:45:00");
-
-        checkCreateSeries(RepeatExpressions.monthly(), startTime, endTime, 1, DateUnits.MONTHS);
+        checkCreateSeries(Repeats.monthly(), startTime, endTime, 1, DateUnits.MONTHS);
     }
 
     /**
@@ -149,16 +156,92 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testRepeatYearly() {
-        Date startTime = TestHelper.getDatetime("2015-01-01 09:30:00");
-        Date endTime = TestHelper.getDatetime("2015-01-01 09:45:00");
+        checkCreateSeries(Repeats.yearly(), startTime, endTime, 1, DateUnits.YEARS);
+    }
 
-        checkCreateSeries(RepeatExpressions.yearly(), startTime, endTime, 1, DateUnits.YEARS);
+    /**
+     * Verifies that changing the series expression updates the appointment times.
+     */
+    @Test
+    public void testChangeSeriesExpression() {
+        Act appointment = createAppointment(startTime, endTime);
+
+        AppointmentSeries series = createSeries(appointment, Repeats.monthly(), Repeats.times(11));
+
+        checkSeries(series, appointment, 1, DateUnits.MONTHS, 12);
+        series.setExpression(Repeats.yearly());
+        assertTrue(series.save());
+        checkSeries(series, appointment, 1, DateUnits.YEARS, 12);
+    }
+
+    /**
+     * Verifies that changing the series condition to fewer appointments deletes those no longer included.
+     */
+    @Test
+    public void testChangeSeriesConditionToFewerAppointments() {
+        Act appointment = createAppointment(startTime, endTime);
+
+        AppointmentSeries series = createSeries(appointment, Repeats.monthly(), Repeats.times(11));
+        checkSeries(series, appointment, 1, DateUnits.MONTHS, 12);
+        List<Act> oldAppointments = series.getAppointments();
+        assertEquals(12, oldAppointments.size());
+
+        List<Act> toRemove = oldAppointments.subList(10, 12);
+
+        series.setCondition(Repeats.times(9));
+        assertTrue(series.save());
+        checkSeries(series, appointment, 1, DateUnits.MONTHS, 10);
+        List<Act> newAppointments = series.getAppointments();
+        assertEquals(10, newAppointments.size());
+
+        for (Act act : oldAppointments) {
+            if (!toRemove.contains(act)) {
+                assertTrue(newAppointments.contains(act));
+            } else {
+                // verify it has been deleted
+                assertNull(get(act));
+            }
+        }
+    }
+
+    /**
+     * Verifies that changing the series condition to more appointments adds new appointments on save.
+     */
+    @Test
+    public void testChangeSeriesConditionToMoreAppointments() {
+        Act appointment = createAppointment(startTime, endTime);
+
+        AppointmentSeries series = createSeries(appointment, Repeats.monthly(), Repeats.times(9));
+        checkSeries(series, appointment, 1, DateUnits.MONTHS, 10);
+        List<Act> oldAppointments = series.getAppointments();
+        assertEquals(10, oldAppointments.size());
+
+        series.setCondition(Repeats.times(11));
+        assertTrue(series.save());
+        checkSeries(series, appointment, 1, DateUnits.MONTHS, 12);
+        List<Act> newAppointments = series.getAppointments();
+        assertEquals(12, newAppointments.size());
+
+        // verify the original appointments have been retained
+        for (Act act : oldAppointments) {
+            assertTrue(newAppointments.contains(act));
+        }
+    }
+
+    /**
+     * Verifies that attempting to save the series is ignored if it would delete the current appointment.
+     */
+    @Test
+    @Ignore("not yet implemented")
+    public void testChangeSeriesConditionToFewerAppointmentsDoesNotDeleteCurrent() {
+
     }
 
     /**
      * Verifies that a series with overlapping appointments cannot be saved.
      */
     @Test
+    @Ignore("not yet implemented")
     public void testSeriesWithOverlappingAppointments() {
 
     }
@@ -170,29 +253,152 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testDeleteSeriesWithNoExpiredAppointments() {
-        Date startTime = TestHelper.getDatetime("2015-01-01 09:30:00");
-        Date endTime = TestHelper.getDatetime("2015-01-01 09:45:00");
-
-        Act appointment = ScheduleTestHelper.createAppointment(startTime, endTime, schedule, appointmentType, customer,
-                                                               patient, clinician, author);
-
-        AppointmentSeries series = new AppointmentSeries(appointment, service, ruleService, appointmentRules, 10) {
-            @Override
-            protected boolean isExpired(Date startTime, Date now) {
-                return false;
-            }
-        };
-        series.setExpression(RepeatExpressions.yearly());
-        assertTrue(series.save());
+        Act appointment = createAppointment(startTime, endTime);
+        AppointmentSeries series = createSeries(appointment, Repeats.yearly(), Repeats.times(9));
+        Act act = series.getSeries();
+        assertNotNull(act);
 
         List<Act> appointments = series.getAppointments();
         assertEquals(10, appointments.size());
 
         series.setExpression(null);
+        series.setCondition(null);
         assertTrue(series.save());
+        assertNull(series.getSeries());
         appointments = series.getAppointments();
         assertEquals(0, appointments.size());
         assertNotNull(get(appointment));
+        assertNull(get(act));
+    }
+
+    /**
+     * Verifies that the schedule can be updated.
+     */
+    @Test
+    public void testChangeSchedule() {
+        Act appointment = ScheduleTestHelper.createAppointment(startTime, endTime, schedule, appointmentType, customer,
+                                                               patient, clinician, author);
+
+        AppointmentSeries series = createSeries(appointment, Repeats.yearly(), Repeats.times(2));
+        checkSeries(series, appointment, 1, DateUnits.YEARS, 3);
+
+        Entity schedule2 = ScheduleTestHelper.createSchedule(15, DateUnits.MINUTES.toString(), 1, appointmentType);
+
+        ActBean bean = new ActBean(appointment);
+        bean.setNodeParticipant("schedule", schedule2);
+
+        series.setSchedule(schedule2);
+        assertTrue(series.save());
+        assertEquals(schedule2, bean.getNodeParticipant("schedule"));
+        checkSeries(series, appointment, 1, DateUnits.YEARS, 3);
+    }
+
+    /**
+     * Verifies that the appointment type can be updated.
+     */
+    @Test
+    public void testChangeAppointmentType() {
+        Entity appointmentType2 = ScheduleTestHelper.createAppointmentType();
+        ScheduleTestHelper.addAppointmentType(schedule, appointmentType2, 1, false);
+        save(schedule, appointmentType2);
+
+        Act appointment = ScheduleTestHelper.createAppointment(startTime, endTime, schedule, appointmentType, customer,
+                                                               patient, clinician, author);
+
+        AppointmentSeries series = createSeries(appointment, Repeats.weekly(), Repeats.times(2));
+        checkSeries(series, appointment, 1, DateUnits.WEEKS, 3);
+
+        ActBean bean = new ActBean(appointment);
+        bean.setNodeParticipant("appointmentType", appointmentType2);
+
+        series.setAppointmentType(appointmentType2);
+        assertTrue(series.save());
+        assertEquals(appointmentType2, bean.getNodeParticipant("appointmentType"));
+        checkSeries(series, appointment, 1, DateUnits.WEEKS, 3);
+    }
+
+    /**
+     * Verifies that the customer can be updated.
+     */
+    @Test
+    public void testChangeCustomer() {
+        Act appointment = ScheduleTestHelper.createAppointment(startTime, endTime, schedule, appointmentType, customer,
+                                                               null, clinician, author);
+
+        AppointmentSeries series = createSeries(appointment, Repeats.monthly(), Repeats.times(2));
+        checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
+
+        Party customer2 = TestHelper.createCustomer();
+        ActBean bean = new ActBean(appointment);
+        bean.setNodeParticipant("customer", customer2);
+
+        series.setCustomer(customer2);
+        assertTrue(series.save());
+        assertEquals(customer2, bean.getNodeParticipant("customer"));
+        checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
+    }
+
+    /**
+     * Verifies that the patient can be updated.
+     */
+    @Test
+    public void testChangePatient() {
+        Act appointment = ScheduleTestHelper.createAppointment(startTime, endTime, schedule, appointmentType, customer,
+                                                               null, clinician, author);
+
+        AppointmentSeries series = createSeries(appointment, Repeats.monthly(), Repeats.times(2));
+        checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
+
+        ActBean bean = new ActBean(appointment);
+        bean.setNodeParticipant("patient", patient);
+
+        series.setPatient(patient);
+        assertTrue(series.save());
+        assertEquals(patient, bean.getNodeParticipant("patient"));
+        checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
+    }
+
+    /**
+     * Verifies that the clinician can be updated.
+     */
+    @Test
+    public void testChangeClinician() {
+        Act appointment = ScheduleTestHelper.createAppointment(startTime, endTime, schedule, appointmentType, customer,
+                                                               null, clinician, author);
+
+        AppointmentSeries series = createSeries(appointment, Repeats.monthly(), Repeats.times(2));
+        checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
+
+        User clinician2 = TestHelper.createClinician();
+        ActBean bean = new ActBean(appointment);
+        bean.setNodeParticipant("clinician", clinician2);
+
+        series.setClinician(clinician2);
+        assertTrue(series.save());
+        assertEquals(clinician2, bean.getNodeParticipant("clinician"));
+        checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
+    }
+
+    /**
+     * Verifies that the author can be updated.
+     */
+    @Test
+    public void testCannotChangeAuthor() {
+        Act appointment = ScheduleTestHelper.createAppointment(startTime, endTime, schedule, appointmentType, customer,
+                                                               null, clinician, author);
+
+        AppointmentSeries series = createSeries(appointment, Repeats.monthly(), Repeats.times(2));
+        checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
+
+        User author2 = TestHelper.createUser();
+
+        series.setAuthor(author2);
+        assertTrue(series.save());
+
+        ActBean bean = new ActBean(appointment);
+        assertEquals(author, bean.getNodeParticipant("author"));
+
+        checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
     }
 
     /**
@@ -206,33 +412,65 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
      */
     private void checkCreateSeries(RepeatExpression expression, Date startTime, Date endTime, int interval,
                                    DateUnits units) {
-        Act appointment = ScheduleTestHelper.createAppointment(startTime, endTime, schedule, appointmentType, customer,
-                                                               patient, clinician, author);
+        Act appointment = createAppointment(startTime, endTime);
 
-        AppointmentSeries series = new AppointmentSeries(appointment, service, ruleService, appointmentRules, 10) {
-            protected boolean isExpired(Date startTime, Date now) {
-                return false;
-            }
-        };
-        assertEquals(0, series.getAppointments().size());
+        AppointmentSeries series = createSeries(appointment, expression, Repeats.times(9));
+        checkSeries(series, appointment, interval, units, 10);
+        assertFalse(series.save());  // no modifications
+    }
 
-        assertFalse(series.save());
-
-        series.setExpression(expression);
-        assertTrue(series.save());
-
+    /**
+     * Checks a series that was generated using calendar intervals.
+     *
+     * @param series      the series
+     * @param appointment the initial appointment
+     * @param interval    the interval
+     * @param units       the interval units
+     * @param count       the expected no. of appointments int the series
+     */
+    private void checkSeries(AppointmentSeries series, Act appointment, int interval, DateUnits units, int count) {
         List<Act> acts = series.getAppointments();
-        assertEquals(10, acts.size());
-        Date from = startTime;
-        Date to = endTime;
+        assertEquals(count, acts.size());
+        Date from = appointment.getActivityStartTime();
+        Date to = appointment.getActivityEndTime();
         assertEquals(appointment, acts.get(0));
+        ActBean bean = new ActBean(appointment);
+        Entity schedule = bean.getNodeParticipant("schedule");
+        Entity appointmentType = bean.getNodeParticipant("appointmentType");
+        Party customer = (Party) bean.getNodeParticipant("customer");
+        Party patient = (Party) bean.getNodeParticipant("patient");
+        User clinician = (User) bean.getNodeParticipant("clinician");
+        User author = (User) bean.getNodeParticipant("author");
         for (Act act : acts) {
             checkAppointment(act, from, to, schedule, appointmentType, customer, patient, clinician, author);
             from = DateRules.getDate(from, interval, units);
             to = DateRules.getDate(to, interval, units);
         }
+    }
 
+    /**
+     * Creates a new series, generating appointments.
+     * <p/>
+     * The behaviour for determining if an appointment has expired is disabled.
+     *
+     * @param appointment the first appointment
+     * @param expression  the repeat expression
+     * @param condition   the repeat condition
+     * @return the series
+     */
+    private AppointmentSeries createSeries(Act appointment, RepeatExpression expression, RepeatCondition condition) {
+        AppointmentSeries series = new AppointmentSeries(appointment, service, ruleService, appointmentRules) {
+            protected boolean isExpired(Date startTime, Date now) {
+                return false;
+            }
+        };
+        assertEquals(0, series.getAppointments().size());
         assertFalse(series.save());
+
+        series.setExpression(expression);
+        series.setCondition(condition);
+        assertTrue(series.save());
+        return series;
     }
 
     /**
@@ -260,4 +498,17 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         assertEquals(clinician, bean.getNodeParticipant("clinician"));
         assertEquals(author, bean.getNodeParticipant("author"));
     }
+
+    /**
+     * Helper to create an appointment.
+     *
+     * @param startTime the appointment start time
+     * @param endTime   the appointment end time
+     * @return a new appointment
+     */
+    private Act createAppointment(Date startTime, Date endTime) {
+        return ScheduleTestHelper.createAppointment(startTime, endTime, schedule, appointmentType, customer,
+                                                    patient, clinician, author);
+    }
+
 }

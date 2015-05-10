@@ -21,11 +21,11 @@ import org.openvpms.archetype.rules.util.DateUnits;
 import java.util.Date;
 
 /**
- * Factory for {@link RepeatExpression} instances.
+ * Factory for {@link RepeatExpression} and {@link RepeatCondition} instances.
  *
  * @author Tim Anderson
  */
-public class RepeatExpressions {
+public class Repeats {
 
     /**
      * Helper to create a daily repeat expression.
@@ -72,4 +72,25 @@ public class RepeatExpressions {
     public static RepeatExpression weekdays(Date startTime) {
         return CronRepeatExpression.weekdays(startTime);
     }
+
+    /**
+     * Helper to create a condition that repeats {@code count} times.
+     *
+     * @param times the no. of times to repeat
+     * @return a new condition
+     */
+    public static RepeatCondition times(int times) {
+        return new RepeatNTimesCondition(times);
+    }
+
+    /**
+     * Helper to create a condition that repeats until the specified date (inclusive).
+     *
+     * @param date the date to repeat until
+     * @return a new condition
+     */
+    public static RepeatCondition until(Date date) {
+        return new RepeatUntilDateCondition(date);
+    }
+
 }

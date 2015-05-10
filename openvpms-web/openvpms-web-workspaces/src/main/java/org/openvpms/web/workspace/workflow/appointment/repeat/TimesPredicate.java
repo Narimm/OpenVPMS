@@ -18,27 +18,40 @@ package org.openvpms.web.workspace.workflow.appointment.repeat;
 
 import org.apache.commons.collections4.Predicate;
 
-import java.util.Date;
-
 /**
- * Appointment repeat-until condition.
+ * A predicate that evaluates true for the first {@code count} invocations, then returns {@code false}.
  *
  * @author Tim Anderson
  */
-public interface RepeatCondition {
+class TimesPredicate<T> implements Predicate<T> {
 
     /**
-     * Creates a predicate for this condition.
-     *
-     * @param count the number of existing appointments in the series
-     * @return a new predicate
+     * The maximum no. of invocations.
      */
-    Predicate<Date> create(int count);
+    private final int count;
 
     /**
-     * Returns a string representation of the condition.
-     *
-     * @return a formatted string
+     * The current no. of invocations.
      */
-    String toString();
+    private int i;
+
+    /**
+     * Constructs a {@link TimesPredicate}.
+     *
+     * @param count the maximum no. of invocations
+     */
+    public TimesPredicate(int count) {
+        this.count = count;
+    }
+
+    /**
+     * Use the specified parameter to perform a test that returns true or false.
+     *
+     * @param object the object to evaluate
+     * @return true or false
+     */
+    @Override
+    public boolean evaluate(T object) {
+        return i++ < count;
+    }
 }
