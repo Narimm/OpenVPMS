@@ -166,7 +166,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
             }
         });
         series = new AppointmentSeries(act, ServiceHelper.getArchetypeService());
-        seriesEditor = (editSeries) ? new AppointmentSeriesEditor(series, this) : null;
+        seriesEditor = (editSeries) ? new AppointmentSeriesEditor(series) : null;
         addStartEndTimeListeners();
         updateRelativeDate();
         updateDuration();
@@ -363,8 +363,6 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     private AppointmentTypeParticipationEditor onScheduleChanged(Entity schedule) {
         AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
         editor.setSchedule(schedule);
-        series.setSchedule(schedule);
-        series.setAppointmentType(editor.getEntity());
         if (schedule != null) {
             slotSize = rules.getSlotSize((Party) schedule);
         }
@@ -481,7 +479,6 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     private void onAppointmentTypeChanged() {
         try {
             calculateEndTime();
-            series.setAppointmentType(getAppointmentTypeEditor().getEntity());
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }

@@ -30,10 +30,9 @@ public interface RepeatCondition {
     /**
      * Creates a predicate for this condition.
      *
-     * @param count the number of existing appointments in the series
      * @return a new predicate
      */
-    Predicate<Date> create(int count);
+    Predicate<Date> create();
 
     /**
      * Returns a string representation of the condition.
