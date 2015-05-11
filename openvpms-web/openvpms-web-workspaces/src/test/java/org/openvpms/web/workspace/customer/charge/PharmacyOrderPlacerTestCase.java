@@ -59,6 +59,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelper.checkOrder;
+import static org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelper.createProduct;
 import static org.openvpms.web.workspace.customer.charge.TestPharmacyOrderService.Order.Type.CANCEL;
 import static org.openvpms.web.workspace.customer.charge.TestPharmacyOrderService.Order.Type.CREATE;
 import static org.openvpms.web.workspace.customer.charge.TestPharmacyOrderService.Order.Type.UPDATE;
@@ -499,20 +500,6 @@ public class PharmacyOrderPlacerTestCase extends AbstractAppTest {
         item.setQuantity(quantity);
         save(item);
         return item;
-    }
-
-    /**
-     * Creates a product dispensed via a pharmacy.
-     *
-     * @param pharmacy the pharmacy
-     * @return a new product
-     */
-    private Product createProduct(Entity pharmacy) {
-        Product product = TestHelper.createProduct();
-        EntityBean bean = new EntityBean(product);
-        bean.addNodeTarget("pharmacy", pharmacy);
-        bean.save();
-        return product;
     }
 
     private Entity createProductType(Entity pharmacy) {
