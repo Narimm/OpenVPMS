@@ -46,6 +46,16 @@ public class RepeatNTimesEditor extends AbstractRepeatUntilEditor {
     }
 
     /**
+     * Constructs a {@link RepeatNTimesEditor}.
+     *
+     * @param times the no. of times to repeat
+     */
+    public RepeatNTimesEditor(int times) {
+        this(null);
+        this.times.setValue(times);
+    }
+
+    /**
      * Constructs an {@link RepeatNTimesEditor}.
      *
      * @param condition the condition. May be {@code null}

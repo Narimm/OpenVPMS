@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype
             name="actRelationship.customerAppointmentSeries.1.0"
@@ -47,5 +48,7 @@
                 </propertyList>
             </assertion>
         </node>
+        <node name="parentChild" path="/parentChildRelationship" type="java.lang.Boolean" readOnly="true" hidden="true"
+              defaultValue="false()"/>
     </archetype>
 </archetypes>

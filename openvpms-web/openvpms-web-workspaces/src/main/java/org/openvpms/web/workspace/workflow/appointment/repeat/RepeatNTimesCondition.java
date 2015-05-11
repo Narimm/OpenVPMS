@@ -86,9 +86,18 @@ class RepeatNTimesCondition implements RepeatCondition {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-        result.append(times);
-        result.append(" ");
-        result.append(Messages.get("workflow.scheduling.appointment.times"));
+        switch (times) {
+            case 1:
+                result.append(Messages.get("workflow.scheduling.appointment.once"));
+                break;
+            case 2:
+                result.append(Messages.get("workflow.scheduling.appointment.twice"));
+                break;
+            default:
+                result.append(times);
+                result.append(" ");
+                result.append(Messages.get("workflow.scheduling.appointment.times"));
+        }
         return result.toString();
     }
 }

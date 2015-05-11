@@ -129,7 +129,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
      * The default deletion listener.
      */
     private static final IMObjectDeletionListener<IMObject> DEFAULT_DELETION_LISTENER
-            = new DefaultIMObjectDeletionListener();
+            = new DefaultIMObjectDeletionListener<IMObject>();
 
 
     /**

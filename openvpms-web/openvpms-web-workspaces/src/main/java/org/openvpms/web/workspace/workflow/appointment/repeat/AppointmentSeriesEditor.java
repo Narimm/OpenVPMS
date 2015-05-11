@@ -20,6 +20,7 @@ import echopointng.BorderEx;
 import echopointng.TabbedPane;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Insets;
+import nextapp.echo2.app.Label;
 import nextapp.echo2.app.RadioButton;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.button.ButtonGroup;
@@ -470,6 +471,8 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
 
     private UntilTableModel createUntilModel() {
         UntilTableModel model = new UntilTableModel();
+        model.add(Messages.get("workflow.scheduling.appointment.once"), new RepeatNTimesEditor(1));
+        model.add(Messages.get("workflow.scheduling.appointment.twice"), new RepeatNTimesEditor(2));
         model.add(new RepeatNTimesEditor());
         model.add(new RepeatUntilDateEditor(DateRules.getDate(series.getStartTime(), 1, DateUnits.YEARS)));
         return model;
@@ -683,12 +686,22 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
 
     private class UntilTableModel extends ButtonTableModel {
 
+        public RadioButton add(String displayName, final RepeatUntilEditor editor) {
+            Label label = LabelFactory.create();
+            label.setText(displayName);
+            return add(editor, label);
+        }
+
         public RadioButton add(final RepeatUntilEditor until) {
-            RadioButton button = super.add(until.getComponent());
+            return add(until, until.getComponent());
+        }
+
+        private RadioButton add(final RepeatUntilEditor editor, Component component) {
+            RadioButton button = add(component);
             button.addActionListener(new ActionListener() {
                 @Override
                 public void onAction(ActionEvent event) {
-                    onSelected(until);
+                    onSelected(editor);
                 }
             });
             return button;

@@ -21,9 +21,10 @@ import org.apache.commons.collections4.Predicate;
 import org.apache.commons.collections4.PredicateUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
-import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
@@ -33,7 +34,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.web.component.im.act.ActHelper;
 
 import java.util.ArrayList;
@@ -139,24 +139,14 @@ public class AppointmentSeries {
     private final IArchetypeService service;
 
     /**
-     * The rule-based archetype service.
-     */
-    private final IArchetypeRuleService ruleService;
-
-    /**
-     * The appointment rules.
-     */
-    private final AppointmentRules rules;
-
-    /**
      * The series or {@code null}, if the appointment isn't associated with a series.
      */
     private Act series;
 
     /**
-     * The repeat start time.
+     * The acts in the series.
      */
-    private Date startTime;
+    private List<Act> acts;
 
     /**
      * The prior state.
@@ -179,12 +169,9 @@ public class AppointmentSeries {
      *
      * @param appointment the appointment
      * @param service     the archetype service
-     * @param ruleService the rule-based archetype service
-     * @param rules       the appointment rules
      */
-    public AppointmentSeries(Act appointment, IArchetypeService service, IArchetypeRuleService ruleService,
-                             AppointmentRules rules) {
-        this(appointment, service, ruleService, rules, DEFAULT_MAX_APPOINTMENTS);
+    public AppointmentSeries(Act appointment, IArchetypeService service) {
+        this(appointment, service, DEFAULT_MAX_APPOINTMENTS);
     }
 
     /**
@@ -192,26 +179,20 @@ public class AppointmentSeries {
      *
      * @param appointment     the appointment
      * @param service         the archetype service
-     * @param ruleService     the rule-based archetype service
-     * @param rules           the appointment rules
      * @param maxAppointments the maximum no. of appointments in a series
      */
-    public AppointmentSeries(Act appointment, IArchetypeService service, IArchetypeRuleService ruleService,
-                             AppointmentRules rules, int maxAppointments) {
-        if (service instanceof IArchetypeRuleService) {
-            throw new IllegalArgumentException("Argument 'service' must not implement IArchetypeRuleService");
-        }
+    public AppointmentSeries(Act appointment, IArchetypeService service,
+                             int maxAppointments) {
         this.appointment = appointment;
         this.service = service;
-        this.ruleService = ruleService;
-        this.rules = rules;
         this.maxAppointments = maxAppointments;
         ActBean bean = new ActBean(appointment, service);
         series = (Act) bean.getNodeSourceObject("repeat");
         if (series != null) {
             previous = new State(bean);
-            startTime = series.getActivityStartTime();
             ActBean seriesBean = new ActBean(series, service);
+            acts = getAppointments(appointment, seriesBean);
+
             int interval = seriesBean.getInt("interval", -1);
             DateUnits units = DateUnits.fromString(seriesBean.getString("units"));
             if (interval != -1 && units != null) {
@@ -226,14 +207,19 @@ public class AppointmentSeries {
             int times = seriesBean.getInt("times", -1);
             Date endTime = series.getActivityEndTime();
             if (times > 0) {
+                int index = acts.indexOf(appointment);
+                if (index > 0) {
+                    // if the series isn't being edited from the start, adjust the no. of repeats
+                    times -= index;
+                }
                 previous.setCondition(Repeats.times(times));
             } else if (endTime != null) {
                 previous.setCondition(Repeats.until(endTime));
             }
             current = new State(previous);
         } else {
-            startTime = appointment.getActivityStartTime();
             current = new State(bean);
+            acts = new ArrayList<Act>();
         }
     }
 
@@ -333,8 +319,7 @@ public class AppointmentSeries {
      * @return the first overlapping appointments, or {@code null} if none overlap
      */
     public Overlap getFirstOverlap() {
-        List<Times> expired = getExpired(null);
-        return calculateSeries(getStartTime(), new ArrayList<Times>(), expired);
+        return calculateSeries(new ArrayList<Times>());
     }
 
     /**
@@ -357,10 +342,10 @@ public class AppointmentSeries {
             if (previous != null && !current.repeats()) {
                 result = deleteSeries();
             } else if (previous != null && current.repeats()) {
-                result = updateEntireSeries();
+                result = updateSeries();
             } else if (current.repeats()) {
                 List<Times> series = new ArrayList<Times>();
-                Overlap overlap = calculateSeries(getStartTime(), series, Collections.<Times>emptyList());
+                Overlap overlap = calculateSeries(series);
                 if (overlap == null) {
                     createAppointments(series);
                     result = true;
@@ -405,25 +390,15 @@ public class AppointmentSeries {
     }
 
     /**
-     * Determines if an appointment has expired.
-     *
-     * @param startTime the appointment start time
-     * @param now       the current time
-     * @return {@code true} if the appointment has expired
-     */
-    protected boolean isExpired(Date startTime, Date now) {
-        return DateRules.compareTo(startTime, now) <= 0;
-    }
-
-    /**
      * Calculates the times for the appointment series.
      *
-     * @param startTime the series start time
-     * @param series    used to collect the times
-     * @param expired   the expired appointment times
+     * @param series used to collect the times
      * @return the first overlapping appointment, or {@code null} if there are no overlaps
      */
-    private Overlap calculateSeries(Date startTime, List<Times> series, List<Times> expired) {
+    private Overlap calculateSeries(List<Times> series) {
+        Date startTime = appointment.getActivityStartTime();
+        Date endTime = appointment.getActivityEndTime();
+        Duration duration = new Duration(new DateTime(startTime), new DateTime(endTime));
         Overlap overlap = null;
         Entity schedule = current.getSchedule();
         Entity appointmentType = current.getAppointmentType();
@@ -431,15 +406,12 @@ public class AppointmentSeries {
         if (current.repeats() && schedule != null && appointmentType != null) {
             RepeatExpression expression = current.getExpression();
             RepeatCondition condition = current.getCondition();
-            Predicate<Date> max = new TimesPredicate<Date>(maxAppointments - 1 - expired.size());
-            Predicate<Date> predicate = PredicateUtils.andPredicate(max, condition.create(expired.size()));
+            Predicate<Date> max = new TimesPredicate<Date>(maxAppointments - 1);
+            Predicate<Date> predicate = PredicateUtils.andPredicate(max, condition.create(0));
             while ((startTime = expression.getRepeatAfter(startTime, predicate)) != null) {
-                Date endTime = rules.calculateEndTime(startTime, schedule, appointmentType);
+                endTime = new DateTime(startTime).plus(duration).toDate();
                 Times appointment = new Times(startTime, endTime);
                 overlap = getOverlap(series, appointment);
-                if (overlap == null && !expired.isEmpty()) {
-                    overlap = getOverlap(expired, appointment);
-                }
                 if (overlap != null) {
                     break;
                 }
@@ -464,9 +436,10 @@ public class AppointmentSeries {
      * @param times the appointment times
      */
     private void createAppointments(List<Times> times) {
-        series = (Act) service.create(ScheduleArchetypes.APPOINTMENT_SERIES);
-        series.setActivityStartTime(startTime);
-        ActBean seriesBean = updateSeries();
+        acts.clear();
+        acts.add(appointment);
+        series = createSeries();
+        ActBean seriesBean = populateSeries(series);
 
         List<Act> toSave = new ArrayList<Act>();
         seriesBean.addNodeRelationship("items", appointment);
@@ -475,12 +448,19 @@ public class AppointmentSeries {
         toSave.add(series);
         for (Times appointment : times) {
             Act act = create(appointment, seriesBean);
+            acts.add(act);
             toSave.add(act);
         }
         service.save(toSave);
     }
 
-    private ActBean updateSeries() {
+    private Act createSeries() {
+        series = (Act) service.create(ScheduleArchetypes.APPOINTMENT_SERIES);
+        series.setActivityStartTime(appointment.getActivityStartTime());
+        return series;
+    }
+
+    private ActBean populateSeries(Act series) {
         ActBean seriesBean = new ActBean(series, service);
         String expr = null;
         Integer interval = null;
@@ -553,59 +533,58 @@ public class AppointmentSeries {
         return bean;
     }
 
-    private List<Times> getExpired(List<Act> acts) {
-        List<Times> times;
-        if (series != null) {
-            ActBean bean = new ActBean(series, service);
-            Date now = new Date();
-            Date lastExpired = null;
-            times = new ArrayList<Times>();
-            for (Act item : bean.getNodeActs("items")) {
-                Date startTime = item.getActivityStartTime();
-                if (isExpired(startTime, now)) {
-                    if (lastExpired == null || DateRules.compareTo(startTime, lastExpired) > 0) {
-                        lastExpired = startTime;
-                        times.add(new Times(item.getActivityStartTime(), item.getActivityEndTime()));
-                    }
-                } else if (acts != null) {
-                    acts.add(item);
-                }
+    private boolean updateSeries() {
+        boolean result;
+        int index = acts.indexOf(appointment);
+        if (index == 0) {
+            result = updateSeries(acts, false);
+        } else if (index > 0) {
+            // the appointment is not the first in the series
+            List<Act> newSeries = acts.subList(index, acts.size());
+            if (!ObjectUtils.equals(previous.getExpression(), current.getExpression())
+                || !ObjectUtils.equals(previous.getCondition(), current.getCondition())) {
+                // the repeat expression has changed, so need to detach the previous series and create a new one
+                result = updateSeries(newSeries, true);
+            } else {
+                result = updateSeries(newSeries, false);
             }
-            ActHelper.sort(acts);
-            Collections.sort(times);
+            if (result) {
+                acts = new ArrayList<Act>(newSeries);
+            }
         } else {
-            times = Collections.emptyList();
+            // shouldn't occur
+            result = false;
         }
-        return times;
+        return result;
     }
 
     /**
-     * Updates the entire series from the first act.
+     * Updates an appointment series.
      *
+     * @param acts         the acts to update
+     * @param createSeries if {@code true}, create a new series
      * @return {@code true} if changes were made
      */
-    private boolean updateEntireSeries() {
+    private boolean updateSeries(List<Act> acts, boolean createSeries) {
         boolean result = false;
-        ActBean bean = updateSeries();
-        List<Act> acts = new ArrayList<Act>();
-        Date lastExpired = null;
-        List<Times> expiredTimes = getExpired(acts);
-        if (!expiredTimes.isEmpty()) {
-            lastExpired = expiredTimes.get(expiredTimes.size() - 1).getStartTime();
-        }
-        Date from = lastExpired != null ? lastExpired : series.getActivityStartTime();
+        Act oldSeries = series;
+        Act currentSeries = (createSeries) ? createSeries() : series;
+        ActBean bean = populateSeries(currentSeries);
+        ActBean oldBean = (createSeries) ? new ActBean(oldSeries, service) : bean;
+
+        acts = new ArrayList<Act>(acts);                 // copy to avoid modifying source
         List<Times> times = new ArrayList<Times>();
-        Overlap overlap = calculateSeries(from, times, expiredTimes);
+        Overlap overlap = calculateSeries(times);
         if (overlap == null) {
             Iterator<Times> timesIterator = times.iterator();
             Iterator<Act> iterator = acts.listIterator();
-            List<Act> toUpdate = new ArrayList<Act>();
             List<Act> toSave = new ArrayList<Act>();
             boolean first = true;
 
             while (timesIterator.hasNext()) {
+                Act act;
                 if (iterator.hasNext()) {
-                    Act act = iterator.next();
+                    act = iterator.next();
                     iterator.remove();
                     if (!first) {
                         update(act, timesIterator.next());
@@ -613,26 +592,28 @@ public class AppointmentSeries {
                         update(act);
                         first = false;
                     }
-                    toUpdate.add(act);
+                    if (oldSeries != currentSeries) {
+                        oldBean.removeNodeRelationships("items", act);
+                        bean.addNodeRelationship("items", act);
+                    }
                 } else {
-                    Act act = create(timesIterator.next(), bean);
-                    toSave.add(act);
+                    act = create(timesIterator.next(), bean);
                 }
+                toSave.add(act);
             }
+
+            // any remaining acts need to be removed. Detach them from their series
             for (Act act : acts) {
-                ActRelationship relationship = bean.getRelationship(act);
-                bean.removeRelationship(relationship);
-                act.removeActRelationship(relationship);
+                oldBean.removeNodeRelationships("items", act);
                 toSave.add(act);
             }
 
             if (!toSave.isEmpty()) {
-                toSave.add(series);
+                if (oldSeries != currentSeries) {
+                    toSave.add(oldSeries);
+                }
+                toSave.add(currentSeries);
                 service.save(toSave);
-                result = true;
-            }
-            if (!toUpdate.isEmpty()) {
-                ruleService.save(toUpdate); // don't fire rules for updated appointments
                 result = true;
             }
             if (!acts.isEmpty()) {
@@ -654,7 +635,6 @@ public class AppointmentSeries {
      */
     private boolean deleteSeries() {
         ActBean bean = new ActBean(series, service);
-        Date now = new Date();
         int expired = 0;
         List<Act> toSave = new ArrayList<Act>();
         List<Act> toRemove = new ArrayList<Act>();
@@ -663,11 +643,7 @@ public class AppointmentSeries {
             if (!ObjectUtils.equals(appointment.getObjectReference(), relationship.getTarget())) {
                 item = get(relationship.getTarget());
                 if (item != null) {
-                    if (isExpired(item.getActivityStartTime(), now)) {
-                        expired++;
-                    } else {
-                        toRemove.add(item);
-                    }
+                    toRemove.add(item);
                 }
             } else {
                 item = appointment;
@@ -692,6 +668,22 @@ public class AppointmentSeries {
             }
         }
         return !toRemove.isEmpty();
+    }
+
+    /**
+     * Returns all of the acts in the series.
+     *
+     * @param appointment the appointment
+     * @param series      the series
+     * @return all of the acts in the series
+     */
+    private List<Act> getAppointments(Act appointment, ActBean series) {
+        List<IMObjectReference> items = series.getNodeTargetObjectRefs("items");
+        items.remove(appointment.getObjectReference());
+        List<Act> result;
+        result = ActHelper.getActs(items);
+        result.add(appointment);
+        return ActHelper.sort(result);
     }
 
     /**

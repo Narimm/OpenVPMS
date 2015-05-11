@@ -21,6 +21,7 @@ import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import org.openvpms.web.component.bound.BoundCheckBox;
 import org.openvpms.web.component.property.SimpleProperty;
+import org.openvpms.web.echo.factory.ComponentFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
@@ -91,6 +92,7 @@ class RepeatOnDaysEditor extends AbstractRepeatExpressionEditor {
         FocusGroup group = getFocusGroup();
         for (SimpleProperty day : days) {
             BoundCheckBox box = new BoundCheckBox(day);
+            ComponentFactory.setStyle(box, Styles.EDIT);
             box.setText(day.getDisplayName());
             grid.add(box);
             group.add(box);
