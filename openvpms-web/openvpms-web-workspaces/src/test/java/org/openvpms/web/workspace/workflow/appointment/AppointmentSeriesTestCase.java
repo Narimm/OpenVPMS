@@ -211,15 +211,6 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Verifies that attempting to save the series is ignored if it would delete the current appointment.
-     */
-    @Test
-    @Ignore("not yet implemented")
-    public void testChangeSeriesConditionToFewerAppointmentsDoesNotDeleteCurrent() {
-
-    }
-
-    /**
      * Verifies that a series with overlapping appointments cannot be saved.
      */
     @Test
@@ -269,7 +260,6 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         ActBean bean = new ActBean(appointment);
         bean.setNodeParticipant("schedule", schedule2);
 
-        series.setSchedule(schedule2);
         assertTrue(series.save());
         assertEquals(schedule2, bean.getNodeParticipant("schedule"));
         checkSeries(series, appointment, 1, DateUnits.YEARS, 3);
@@ -293,7 +283,6 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         ActBean bean = new ActBean(appointment);
         bean.setNodeParticipant("appointmentType", appointmentType2);
 
-        series.setAppointmentType(appointmentType2);
         assertTrue(series.save());
         assertEquals(appointmentType2, bean.getNodeParticipant("appointmentType"));
         checkSeries(series, appointment, 1, DateUnits.WEEKS, 3);
@@ -314,7 +303,6 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         ActBean bean = new ActBean(appointment);
         bean.setNodeParticipant("customer", customer2);
 
-        series.setCustomer(customer2);
         assertTrue(series.save());
         assertEquals(customer2, bean.getNodeParticipant("customer"));
         checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
@@ -334,7 +322,6 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         ActBean bean = new ActBean(appointment);
         bean.setNodeParticipant("patient", patient);
 
-        series.setPatient(patient);
         assertTrue(series.save());
         assertEquals(patient, bean.getNodeParticipant("patient"));
         checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
@@ -355,7 +342,6 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         ActBean bean = new ActBean(appointment);
         bean.setNodeParticipant("clinician", clinician2);
 
-        series.setClinician(clinician2);
         assertTrue(series.save());
         assertEquals(clinician2, bean.getNodeParticipant("clinician"));
         checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
@@ -373,14 +359,15 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
 
         User author2 = TestHelper.createUser();
+        ActBean bean = new ActBean(appointment);
+        bean.setNodeParticipant("author", author2);
 
-        series.setAuthor(author2);
         assertTrue(series.save());
 
-        ActBean bean = new ActBean(appointment);
-        assertEquals(author, bean.getNodeParticipant("author"));
+        assertEquals(author2, bean.getNodeParticipant("author"));
 
-        checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
+        // series appointments should have the original author
+        checkSeries(series, appointment, 1, DateUnits.MONTHS, 3, author);
     }
 
     /**
@@ -437,6 +424,23 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
      * @return the appointments
      */
     private List<Act> checkSeries(AppointmentSeries series, Act appointment, int interval, DateUnits units, int count) {
+        ActBean bean = new ActBean(appointment);
+        return checkSeries(series, appointment, interval, units, count, (User) bean.getNodeParticipant("author"));
+    }
+
+    /**
+     * Checks a series that was generated using calendar intervals.
+     *
+     * @param series      the series
+     * @param appointment the initial appointment
+     * @param interval    the interval
+     * @param units       the interval units
+     * @param count       the expected no. of appointments int the series
+     * @param author      the expected author
+     * @return the appointments
+     */
+    private List<Act> checkSeries(AppointmentSeries series, Act appointment, int interval, DateUnits units, int count,
+                                  User author) {
         List<Act> acts = series.getAppointments();
         assertEquals(count, acts.size());
         Date from = appointment.getActivityStartTime();
@@ -448,9 +452,14 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         Party customer = (Party) bean.getNodeParticipant("customer");
         Party patient = (Party) bean.getNodeParticipant("patient");
         User clinician = (User) bean.getNodeParticipant("clinician");
-        User author = (User) bean.getNodeParticipant("author");
         for (Act act : acts) {
-            checkAppointment(act, from, to, schedule, appointmentType, customer, patient, clinician, author);
+            if (act.equals(appointment)) {
+                User appointmentAuthor = (User) bean.getNodeParticipant("author");
+                checkAppointment(act, from, to, schedule, appointmentType, customer, patient, clinician,
+                                 appointmentAuthor);
+            } else {
+                checkAppointment(act, from, to, schedule, appointmentType, customer, patient, clinician, author);
+            }
             from = DateRules.getDate(from, interval, units);
             to = DateRules.getDate(to, interval, units);
         }

@@ -39,7 +39,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatExpression.DayOfMonth;
 import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatExpression.DayOfWeek;
+import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatExpression.Month;
 
 /**
  * A {@link RepeatExpressionEditor} that supports expressions that repeat on the first..fifth/last Sunday-Saturday of
@@ -91,6 +93,8 @@ class RepeatOnOrdinalDayEditor extends AbstractRepeatExpressionEditor {
         this.startTime = startTime;
         ordinal.setRequired(true);
         day.setRequired(true);
+        interval.setRequired(true);
+        interval.setTransformer(new NumericPropertyTransformer(interval, true));
         if (expression != null) {
             DayOfWeek dayOfWeek = expression.getDayOfWeek();
             day.setValue(dayOfWeek.getDay());
@@ -99,10 +103,11 @@ class RepeatOnOrdinalDayEditor extends AbstractRepeatExpressionEditor {
             } else {
                 ordinal.setValue(dayOfWeek.getOrdindal());
             }
+            Month month = expression.getMonth();
+            interval.setValue(month.getInterval());
+        } else {
+            interval.setValue(1);
         }
-        interval.setRequired(true);
-        interval.setTransformer(new NumericPropertyTransformer(interval, true));
-        interval.setValue(1);
     }
 
     /**
@@ -153,7 +158,7 @@ class RepeatOnOrdinalDayEditor extends AbstractRepeatExpressionEditor {
         String day = this.day.getString();
         if (nth != null && day != null) {
             DayOfWeek dayOfWeek = "L".equals(nth) ? DayOfWeek.lastDay(day) : new DayOfWeek(day, Integer.parseInt(nth));
-            return new CronRepeatExpression(startTime, dayOfWeek);
+            return new CronRepeatExpression(startTime, Month.every(interval.getInt()), dayOfWeek);
         }
         return null;
     }
@@ -166,7 +171,7 @@ class RepeatOnOrdinalDayEditor extends AbstractRepeatExpressionEditor {
      */
     public static boolean supports(CronRepeatExpression expression) {
         DayOfWeek dayOfWeek = expression.getDayOfWeek();
-        CronRepeatExpression.DayOfMonth dayOfMonth = expression.getDayOfMonth();
+        DayOfMonth dayOfMonth = expression.getDayOfMonth();
         return dayOfWeek.isOrdinal() && dayOfMonth.isAll();
     }
 

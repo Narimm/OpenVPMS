@@ -31,6 +31,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Simplified cron expression.
@@ -83,6 +85,17 @@ public class CronRepeatExpression implements RepeatExpression {
      */
     public CronRepeatExpression(Date startTime, DayOfWeek dayOfWeek) {
         this(startTime, DayOfMonth.NO_VALUE, Month.ALL, dayOfWeek, Type.CUSTOM);
+    }
+
+    /**
+     * Constructs a {@link CronRepeatExpression}.
+     *
+     * @param startTime the time the expression starts
+     * @param month     the month
+     * @param dayOfWeek the day-of-week
+     */
+    public CronRepeatExpression(Date startTime, Month month, DayOfWeek dayOfWeek) {
+        this(startTime, DayOfMonth.NO_VALUE, month, dayOfWeek, Type.CUSTOM);
     }
 
     /**
@@ -274,7 +287,7 @@ public class CronRepeatExpression implements RepeatExpression {
             throws ParseException {
         CronRepeatExpression result;
         DayOfMonth dom = new DayOfMonth(dayOfMonth);
-        Month m = new Month(month);
+        Month m = Month.parse(month);
         DayOfWeek dow = DayOfWeek.parse(dayOfWeek);
         boolean allDayOfMonth = dom.isAll();
         boolean allMonth = m.isAll();
@@ -369,6 +382,14 @@ public class CronRepeatExpression implements RepeatExpression {
     public static class Month extends Field {
 
         public static Month ALL = new Month("*");
+        private int interval = -1;
+
+        private static final Pattern INTERVAL_PATTERN = Pattern.compile("\\*\\/(\\d+)");
+
+        public Month(int interval) {
+            this("*/" + interval);
+            this.interval = interval;
+        }
 
         public Month(String value) {
             super(value);
@@ -377,6 +398,24 @@ public class CronRepeatExpression implements RepeatExpression {
         public boolean singleMonth() {
             return StringUtils.isNumeric(value);
         }
+
+        public int getInterval() {
+            return interval;
+        }
+
+        public static Month every(int interval) {
+            return new Month(interval);
+        }
+
+        public static Month parse(String value) {
+            Matcher matcher = INTERVAL_PATTERN.matcher(value);
+            if (matcher.matches()) {
+                int interval = Integer.parseInt(matcher.group(1));
+                return new Month(interval);
+            }
+            return new Month(value);
+        }
+
     }
 
     public static class DayOfWeek extends Field {

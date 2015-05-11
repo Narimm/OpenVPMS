@@ -59,11 +59,10 @@ class RepeatUntilDateCondition implements RepeatCondition {
     /**
      * Creates a predicate for this condition.
      *
-     * @param count the number of existing appointments in the series
      * @return a new predicate
      */
     @Override
-    public Predicate<Date> create(int count) {
+    public Predicate<Date> create() {
         return new Predicate<Date>() {
             @Override
             public boolean evaluate(Date object) {

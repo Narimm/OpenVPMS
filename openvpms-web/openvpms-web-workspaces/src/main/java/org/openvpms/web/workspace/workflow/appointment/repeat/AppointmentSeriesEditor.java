@@ -45,7 +45,6 @@ import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.table.StyleTableCellRenderer;
 import org.openvpms.web.echo.tabpane.ObjectTabPaneModel;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.workspace.workflow.appointment.AppointmentActEditor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,11 +63,6 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
      * The appointment series.
      */
     private final AppointmentSeries series;
-
-    /**
-     * The appointment editor
-     */
-    private final AppointmentActEditor appointmentEditor;
 
     /**
      * Container for the repeat selector.
@@ -126,9 +120,8 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
      *
      * @param series the appointment series
      */
-    public AppointmentSeriesEditor(AppointmentSeries series, AppointmentActEditor appointmentEditor) {
+    public AppointmentSeriesEditor(AppointmentSeries series) {
         this.series = series;
-        this.appointmentEditor = appointmentEditor;
 
         RepeatExpression expression = series.getExpression();
         if (expression instanceof CalendarRepeatExpression) {
@@ -314,12 +307,7 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
             series.setExpression(null);
             series.setCondition(null);
         } else {
-            series.setSchedule(appointmentEditor.getSchedule());
-            series.setAppointmentType(appointmentEditor.getAppointmentType());
-            series.setCustomer(appointmentEditor.getCustomer());
-            series.setPatient(appointmentEditor.getPatient());
-            series.setClinician(appointmentEditor.getClinician());
-            series.setAuthor(appointmentEditor.getAuthor());
+            series.refresh();
             series.setExpression(repeatEditor.getExpression());
             series.setCondition(untilEditor.getCondition());
         }

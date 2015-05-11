@@ -70,12 +70,11 @@ class RepeatNTimesCondition implements RepeatCondition {
     /**
      * Creates a predicate for this condition.
      *
-     * @param count the number of existing appointments in the series
      * @return a new predicate
      */
     @Override
-    public Predicate<Date> create(int count) {
-        return new TimesPredicate<Date>(times - count);
+    public Predicate<Date> create() {
+        return new TimesPredicate<Date>(times);
     }
 
     /**
