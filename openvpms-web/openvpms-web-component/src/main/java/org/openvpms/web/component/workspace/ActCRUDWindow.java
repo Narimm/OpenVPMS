@@ -138,30 +138,41 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
         if (act == null && previous != null) {
             ErrorDialog.show(Messages.format("imobject.noexist", DescriptorHelper.getDisplayName(previous)));
         } else if (act != null && getActions().canPost(act)) {
-            try {
-                final ConfirmationDialog dialog = createPostConfirmationDialog(act);
-                dialog.addWindowPaneListener(new PopupDialogListener() {
-                    @Override
-                    public void onOK() {
-                        try {
-                            boolean saved = post(act);
-                            if (saved) {
-                                // act was saved. Need to refresh
-                                saved(act);
-                                onPosted(act);
-                            } else {
-                                onRefresh(act);
-                            }
-                        } catch (OpenVPMSException exception) {
-                            ErrorHelper.show(exception);
-                        }
+            confirmPost(act, new Runnable() {
+                @Override
+                public void run() {
+                    boolean saved = post(act);
+                    if (saved) {
+                        // act was saved. Need to refresh
+                        saved(act);
+                        onPosted(act);
+                    } else {
+                        onRefresh(act);
                     }
-                });
-                dialog.show();
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
+                }
+            });
         }
+    }
+
+    /**
+     * Confirms that the user wants to post the act.
+     *
+     * @param act      the act to post
+     * @param callback the callback to handle the posting, if the user confirms it
+     */
+    protected void confirmPost(final Act act, final Runnable callback) {
+        final ConfirmationDialog dialog = createPostConfirmationDialog(act);
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                try {
+                    callback.run();
+                } catch (OpenVPMSException exception) {
+                    ErrorHelper.show(exception);
+                }
+            }
+        });
+        dialog.show();
     }
 
     /**

@@ -11,11 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workflow;
 
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.help.HelpContext;
 
 
@@ -41,6 +43,12 @@ public class ConfirmationTask extends AbstractConfirmationTask {
     private final String message;
 
     /**
+     * Determines if the No button should be displayed.
+     */
+    private final boolean displayNo;
+
+
+    /**
      * Constructs a {@link ConfirmationTask}.
      *
      * @param title   the dialog title
@@ -57,30 +65,24 @@ public class ConfirmationTask extends AbstractConfirmationTask {
      * @param title     the dialog title
      * @param message   the dialog message
      * @param displayNo determines if the 'No' button should be displayed
+     * @param help      the help context
      */
     public ConfirmationTask(String title, String message, boolean displayNo, HelpContext help) {
-        super(displayNo, help);
+        super(help);
         this.title = title;
         this.message = message;
+        this.displayNo = displayNo;
     }
 
     /**
-     * Returns the title.
+     * Creates a new confirmation dialog.
      *
-     * @return the title
+     * @param help the help context
+     * @return a new confirmation dialog
      */
     @Override
-    protected String getTitle() {
-        return title;
-    }
-
-    /**
-     * Returns the message.
-     *
-     * @return the message
-     */
-    @Override
-    protected String getMessage() {
-        return message;
+    protected ConfirmationDialog createConfirmationDialog(HelpContext help) {
+        String[] buttons = (displayNo) ? PopupDialog.YES_NO_CANCEL : PopupDialog.OK_CANCEL;
+        return new ConfirmationDialog(title, message, buttons, help);
     }
 }

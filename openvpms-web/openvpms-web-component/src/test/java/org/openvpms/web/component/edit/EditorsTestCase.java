@@ -11,18 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.edit;
 
 import nextapp.echo2.app.Component;
+import org.apache.commons.lang.mutable.MutableInt;
 import org.junit.Test;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.SimpleProperty;
+import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.echo.focus.FocusGroup;
 
 import static org.junit.Assert.assertEquals;
@@ -91,6 +93,41 @@ public class EditorsTestCase {
 
         property.setValue("foo");
         assertEquals(3, editorsListener.getCount());
+    }
+
+    /**
+     * Verifies that if editors are added or removed during validation, validation returns false.
+     */
+    @Test
+    public void testEditorChangeDurationValidation() {
+        SimpleProperty property1 = new SimpleProperty("p1", String.class);
+        SimpleProperty property2 = new SimpleProperty("p2", String.class);
+        PropertySet set = new PropertySet(property1, property2);
+        ModifiableListeners listeners = new ModifiableListeners();
+        final MutableInt flag = new MutableInt(0);
+        final Editors editors = new Editors(set, listeners);
+        final SimplePropertyEditor propertyEditor2 = new SimplePropertyEditor(property2);
+        SimplePropertyEditor propertyEditor1 = new SimplePropertyEditor(property1) {
+            @Override
+            public boolean validate(Validator validator) {
+                if (flag.intValue() == 0) {
+                    editors.add(propertyEditor2);
+                } else if (flag.intValue() == 1) {
+                    editors.remove(propertyEditor2);
+                }
+                flag.setValue(flag.intValue() + 1);
+                return super.validate(validator);
+            }
+        };
+        editors.add(propertyEditor1);
+
+        assertFalse(editors.isValid());   // propertyEditor2 added
+        assertEquals(1, flag.intValue());
+
+        assertFalse(editors.isValid());   // propertyEditor2 removed
+        assertEquals(2, flag.intValue());
+
+        assertTrue(editors.isValid());
     }
 
 

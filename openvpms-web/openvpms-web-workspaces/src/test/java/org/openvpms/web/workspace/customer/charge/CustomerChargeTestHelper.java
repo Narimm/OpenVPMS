@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -296,5 +297,17 @@ public class CustomerChargeTestHelper {
         assertEquals(date, order.getDate());
         assertEquals(clinician, order.getClinician());
         assertEquals(pharmacy, order.getPharmacy());
+    }
+
+    /**
+     * Creates a product dispensed via a pharmacy.
+     *
+     * @param pharmacy the pharmacy
+     * @return a new product
+     */
+    public static Product createProduct(Entity pharmacy) {
+        Product product = TestHelper.createProduct();
+        ProductTestHelper.addPharmacy(product, pharmacy);
+        return product;
     }
 }
