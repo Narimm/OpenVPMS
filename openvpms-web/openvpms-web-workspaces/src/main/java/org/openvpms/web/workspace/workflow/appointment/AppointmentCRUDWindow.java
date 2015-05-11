@@ -18,6 +18,10 @@ package org.openvpms.web.workspace.workflow.appointment;
 
 import echopointng.KeyStrokes;
 import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Column;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.RadioButton;
+import nextapp.echo2.app.button.ButtonGroup;
 import nextapp.echo2.app.event.ActionEvent;
 import org.joda.time.DateTime;
 import org.joda.time.Minutes;
@@ -48,17 +52,21 @@ import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.Workflow;
 import org.openvpms.web.echo.button.ButtonSet;
-import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.InformationDialog;
+import org.openvpms.web.echo.dialog.MessageDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.info.PatientContextHelper;
 import org.openvpms.web.workspace.workflow.LocalClinicianContext;
 import org.openvpms.web.workspace.workflow.WorkflowFactory;
+import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeriesState;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleCRUDWindow;
 
 import java.util.Date;
@@ -136,6 +144,38 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     }
 
     /**
+     * Deletes an object.
+     *
+     * @param object the object to delete
+     */
+    @Override
+    protected void delete(final Act object) {
+        final AppointmentSeriesState state = new AppointmentSeriesState(object, ServiceHelper.getArchetypeService());
+        if (state.hasSeries() && state.canEditFuture()) {
+            final DeleteSeriesDialog dialog = new DeleteSeriesDialog(state);
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onOK() {
+                    boolean deleted = false;
+                    if (dialog.single()) {
+                        deleted = state.delete();
+                    } else if (dialog.future()) {
+                        deleted = state.deleteFuture();
+                    } else if (dialog.all()) {
+                        deleted = state.deleteSeries();
+                    }
+                    if (deleted) {
+                        onDeleted(object);
+                    }
+                }
+            });
+            dialog.show();
+        } else {
+            super.delete(object);
+        }
+    }
+
+    /**
      * Determines the actions that may be performed on the selected object.
      *
      * @return the actions
@@ -154,22 +194,29 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     @Override
     protected void edit(final Act object, final List<Selection> path) {
         oldStatus = object.getStatus();
-        ActBean bean = new ActBean(object);
-        if (bean.getNodeSourceObjectRef("repeat") != null) {
-            final ConfirmationDialog dialog = new ConfirmationDialog("Edit series?", "Click Yes to edit the series, no to edit the appointent", ConfirmationDialog.YES_NO);
-            dialog.addWindowPaneListener(new PopupDialogListener() {
-                @Override
-                public void onYes() {
-                    edit(object, path, true);
-                }
-
-                @Override
-                public void onNo() {
-                    edit(object, path, false);
-                }
-            });
-            dialog.show();
+        final AppointmentSeriesState state = new AppointmentSeriesState(object, ServiceHelper.getArchetypeService());
+        if (state.hasSeries()) {
+            if (state.canEditFuture()) {
+                final EditSeriesDialog dialog = new EditSeriesDialog(state);
+                dialog.addWindowPaneListener(new PopupDialogListener() {
+                    @Override
+                    public void onOK() {
+                        if (dialog.single()) {
+                            edit(object, path, false);
+                        } else if (dialog.future()) {
+                            edit(object, path, true);
+                        } else if (dialog.all()) {
+                            edit(state.getFirst(), path, true);
+                        }
+                    }
+                });
+                dialog.show();
+            } else {
+                // can't edit the future appointments, so disable series editing
+                edit(object, path, false);
+            }
         } else {
+            // not part of a series, so enable series editing
             edit(object, path, true);
         }
     }
@@ -559,4 +606,82 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                    || AppointmentStatus.BILLED.equals(status);
         }
     }
+
+    private static class SeriesDialog extends MessageDialog {
+
+        private RadioButton single;
+        private RadioButton future;
+        private RadioButton all;
+
+        public SeriesDialog(String title, String message, AppointmentSeriesState series) {
+            super(title, message, OK_CANCEL);
+            ButtonGroup group = new ButtonGroup();
+            ActionListener listener = new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    onOK();
+                }
+            };
+            single = ButtonFactory.create("workflow.scheduling.appointment.series.single", group, listener);
+            single.setSelected(true);
+            if (series.canEditFuture()) {
+                future = ButtonFactory.create("workflow.scheduling.appointment.series.future", group, listener);
+            }
+            if (series.canEditSeries()) {
+                all = ButtonFactory.create("workflow.scheduling.appointment.series.all", group, listener);
+            }
+        }
+
+        public boolean single() {
+            return single.isSelected();
+        }
+
+        public boolean future() {
+            return future != null && future.isSelected();
+        }
+
+        public boolean all() {
+            return all != null && all.isSelected();
+        }
+
+        /**
+         * Lays out the component prior to display.
+         */
+        @Override
+        protected void doLayout() {
+            Label message = LabelFactory.create(true, true);
+            message.setText(getMessage());
+            Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, message, single);
+            if (future != null) {
+                column.add(future);
+            }
+            if (all != null) {
+                column.add(all);
+            }
+            getLayout().add(ColumnFactory.create(Styles.LARGE_INSET, column));
+        }
+    }
+
+    private static class EditSeriesDialog extends SeriesDialog {
+
+        /**
+         * Constructs a {@link EditSeriesDialog}.
+         */
+        public EditSeriesDialog(AppointmentSeriesState series) {
+            super(Messages.get("workflow.scheduling.appointment.editseries.title"),
+                  Messages.get("workflow.scheduling.appointment.editseries.message"), series);
+        }
+    }
+
+    private static class DeleteSeriesDialog extends SeriesDialog {
+
+        /**
+         * Constructs a {@link DeleteSeriesDialog}.
+         */
+        public DeleteSeriesDialog(AppointmentSeriesState series) {
+            super(Messages.get("workflow.scheduling.appointment.deleteseries.title"),
+                  Messages.get("workflow.scheduling.appointment.deleteseries.message"), series);
+        }
+    }
+
 }

@@ -74,6 +74,24 @@ public class Repeats {
     }
 
     /**
+     * Helper to create a condition that repeats once.
+     *
+     * @return a new condition
+     */
+    public static RepeatCondition once() {
+        return times(1);
+    }
+
+    /**
+     * Helper to create a condition that repeats twice.
+     *
+     * @return a new condition
+     */
+    public static RepeatCondition twice() {
+        return times(2);
+    }
+
+    /**
      * Helper to create a condition that repeats {@code count} times.
      *
      * @param times the no. of times to repeat

@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.IsA;
+import org.openvpms.component.business.service.archetype.functor.RefEquals;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -206,6 +207,24 @@ public class ActBean extends IMObjectBean {
     public ActRelationship addNodeRelationship(String name, Act target) {
         String shortName = getRelationshipShortName(name, target, "target");
         return addRelationship(shortName, target);
+    }
+
+    /**
+     * Removes all relationships between the current act (the source), and the supplied target for the specified
+     * node.
+     *
+     * @param name   the act relationship node name
+     * @param target the target act
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if {@code name} is an invalid node
+     */
+    public void removeNodeRelationships(String name, Act target) {
+        List<ActRelationship> relationships = getValues(name, RefEquals.getTargetEquals(target.getObjectReference()),
+                                                        ActRelationship.class);
+        for (ActRelationship relationship : relationships) {
+            removeRelationship(relationship);
+            target.removeTargetActRelationship(relationship);
+        }
     }
 
     /**

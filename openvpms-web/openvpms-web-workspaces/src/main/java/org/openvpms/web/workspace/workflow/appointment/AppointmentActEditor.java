@@ -165,8 +165,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
                 onStatusChanged();
             }
         });
-        series = new AppointmentSeries(act, ServiceHelper.getArchetypeService(false),
-                                       ServiceHelper.getArchetypeService(), rules);
+        series = new AppointmentSeries(act, ServiceHelper.getArchetypeService());
         seriesEditor = (editSeries) ? new AppointmentSeriesEditor(series, this) : null;
         addStartEndTimeListeners();
         updateRelativeDate();
@@ -392,7 +391,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     }
 
     /**
-     * Creates a component representing the customerr and patient alerts.
+     * Creates a component representing the customer and patient alerts.
      *
      * @return the alerts component or {@code null} if neither has alerts
      */

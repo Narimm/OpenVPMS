@@ -30,6 +30,7 @@ import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -200,6 +201,21 @@ public class ActHelper {
         for (Act act : getActs(references)) {
             result.put(act.getObjectReference(), act);
         }
+        return result;
+    }
+
+    /**
+     * Creates a sorted list of identifiers suitable for use in an {@link Constraints#in} constraint.
+     *
+     * @param references the object references. Must refer to the same base type
+     * @return a sorted list of identifiers
+     */
+    public static Long[] getIds(List<IMObjectReference> references) {
+        Long[] result = new Long[references.size()];
+        for (int i = 0; i < references.size(); ++i) {
+            result[i] = references.get(i).getId();
+        }
+        Arrays.sort(result);
         return result;
     }
 
