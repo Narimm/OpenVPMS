@@ -192,6 +192,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
             if (product.getZeroPrice()) {
                 setFixedPrice(BigDecimal.ZERO);
                 setUnitPrice(BigDecimal.ZERO);
+                setDiscount(BigDecimal.ZERO);
             }
         } else {
             setProduct(null);

@@ -62,6 +62,18 @@ public class ProductTestHelper {
     }
 
     /**
+     * Adds a pharmacy to a product.
+     *
+     * @param product  the product
+     * @param pharmacy the pharmacy
+     */
+    public static void addPharmacy(Product product, Entity pharmacy) {
+        EntityBean bean = new EntityBean(product);
+        bean.addNodeTarget("pharmacy", pharmacy);
+        bean.save();
+    }
+
+    /**
      * Creates a template.
      *
      * @param name the template name

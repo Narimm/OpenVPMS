@@ -51,7 +51,7 @@ public class DescriptorTableColumn extends TableColumn {
     /**
      * The default value, if the node doesn't have one.
      */
-    private final Object defaultValue;
+    private Object defaultValue;
 
     /**
      * Node descriptors, keyed on short name.
@@ -154,6 +154,15 @@ public class DescriptorTableColumn extends TableColumn {
     public List<IMObject> getValues(IMObject object) {
         NodeDescriptor node = getDescriptor(object);
         return (node != null) ? node.getChildren(object) : null;
+    }
+
+    /**
+     * Sets the default value to use, if the node doesn't have one.
+     *
+     * @param defaultValue the default value. May be {@code null}
+     */
+    public void setDefaultValue(Object defaultValue) {
+        this.defaultValue = defaultValue;
     }
 
     /**

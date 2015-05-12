@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -155,13 +155,13 @@ public class RDEMessageFactory extends AbstractMessageFactory {
             RXO rxo = rde.getORDER().getORDER_DETAIL().getRXO();
             PopulateHelper.populateProduct(rxo.getRequestedGiveCode(), product);
             IMObjectBean bean = new IMObjectBean(product, getArchetypeService());
-            String dispensingCode = bean.getString(DISPENSING_UNITS);
+            String dispensingCode = getOptional(bean, DISPENSING_UNITS);
             if (dispensingCode != null) {
                 String dispensingName = getLookupService().getName(product, DISPENSING_UNITS);
                 PopulateHelper.populateCE(rxo.getRequestedGiveUnits(), dispensingCode, dispensingName);
             }
             String sellingCode = bean.getString(SELLING_UNITS);
-            String dispensingInstructions = bean.getString("dispInstructions");
+            String dispensingInstructions = getOptional(bean, "dispInstructions");
             if (dispensingInstructions != null) {
                 rxo.getProviderSAdministrationInstructions(0).getText().setValue(dispensingInstructions);
             }
@@ -177,5 +177,15 @@ public class RDEMessageFactory extends AbstractMessageFactory {
         return rde;
     }
 
+    /**
+     * Returns the value of a node, if it is present.
+     *
+     * @param bean the bean
+     * @param node the node
+     * @return the node value. May be {@code null}
+     */
+    private String getOptional(IMObjectBean bean, String node) {
+        return bean.hasNode(node) ? bean.getString(node) : null;
+    }
 
 }

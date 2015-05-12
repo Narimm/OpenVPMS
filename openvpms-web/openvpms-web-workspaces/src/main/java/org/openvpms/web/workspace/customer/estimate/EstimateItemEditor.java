@@ -286,6 +286,17 @@ public class EstimateItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Sets the discount.
+     *
+     * @param discount the discount
+     */
+    @Override
+    public void setDiscount(BigDecimal discount) {
+        setLowDiscount(discount);
+        setHighDiscount(discount);
+    }
+
+    /**
      * Sets the low discount.
      *
      * @param lowDiscount the low discount

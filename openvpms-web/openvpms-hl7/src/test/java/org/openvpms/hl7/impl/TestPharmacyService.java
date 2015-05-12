@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -86,6 +86,11 @@ public class TestPharmacyService {
     private final int dispenses;
 
     /**
+     * The time in seconds to wait between dispenses for the one order.
+     */
+    private final int wait;
+
+    /**
      * If {@code true}, generate a return after a dispense.
      */
     private final boolean returnAfterDispense;
@@ -103,13 +108,15 @@ public class TestPharmacyService {
      * @param outboundHost        the host that OpenVPMS is running on
      * @param outboundPort        the port that OpenVPMS is listening on
      * @param dispenses           the number of dispenses for an order
+     * @param wait                whe time in seconds to wait between dispenses for the one order
      * @param returnAfterDispense if {@code true}, generate a return after a dispense
      */
-    public TestPharmacyService(int port, String outboundHost, int outboundPort, int dispenses,
+    public TestPharmacyService(int port, String outboundHost, int outboundPort, int dispenses, int wait,
                                boolean returnAfterDispense) {
         this.outboundHost = outboundHost;
         this.outboundPort = outboundPort;
         this.dispenses = dispenses;
+        this.wait = wait;
         this.returnAfterDispense = returnAfterDispense;
         executor = Executors.newSingleThreadScheduledExecutor();
         server = new SimpleServer(port);
@@ -149,6 +156,7 @@ public class TestPharmacyService {
                                                                       config.getString("outboundhost"),
                                                                       config.getInt("outboundport"),
                                                                       config.getInt("dispenses"),
+                                                                      config.getInt("wait"),
                                                                       config.getBoolean("return"));
                 service.start();
             } else {
@@ -219,6 +227,13 @@ public class TestPharmacyService {
                 for (int i = 0; i < dispenses; ++i) {
                     BigDecimal qty = (i == 0) ? decimals[0].add(decimals[1]) : decimals[0];
                     RDS_O13 dispense = createRDS(order, qty);
+                    if (i != 0 && wait != 0) {
+                        try {
+                            Thread.sleep(wait * 1000);
+                        } catch (InterruptedException ignore) {
+                            // do nothing
+                        }
+                    }
                     send(dispense, connection);
                 }
             } else {
@@ -353,6 +368,10 @@ public class TestPharmacyService {
                                          .setStringParser(JSAP.INTEGER_PARSER).setDefault("1")
                                          .setShortFlag('d').setLongFlag("dispenses")
                                          .setHelp("The number of dispenses for an order, if the order quantity > 1"));
+        parser.registerParameter(new FlaggedOption("wait")
+                                         .setStringParser(JSAP.INTEGER_PARSER).setDefault("0")
+                                         .setShortFlag('w').setLongFlag("wait")
+                                         .setHelp("The time to wait between dispenses"));
         parser.registerParameter(new Switch("return")
                                          .setShortFlag('r').setLongFlag("return")
                                          .setHelp("Generate a return after dispense."));

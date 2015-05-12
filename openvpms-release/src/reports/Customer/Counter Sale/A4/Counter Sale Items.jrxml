@@ -16,7 +16,7 @@
   -->
 
 <!-- Created with Jaspersoft Studio version 6.0.3.final using JasperReports Library version 6.0.3  -->
-<!-- 2015-04-27T11:09:28 -->
+<!-- 2015-05-06T09:51:37 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
@@ -44,9 +44,10 @@
     <field name="target.product.entity.name" class="java.lang.String"/>
     <field name="target.product.entity.displayName" class="java.lang.String"/>
     <field name="target.product.entity.printedName" class="java.lang.String"/>
-    <field name="target.template.entity.name" class="java.lang.String"/>
-    <field name="target.template.entity.printAggregate" class="java.lang.Boolean"/>
     <field name="target.template" class="java.lang.Object"/>
+    <field name="target.template.entity.name" class="java.lang.String"/>
+    <field name="target.template.entity.printedName" class="java.lang.String"/>
+    <field name="target.template.entity.printAggregate" class="java.lang.Boolean"/>
     <field name="target.print" class="java.lang.Boolean"/>
     <sortField name="noTemplate" type="Variable"/>
     <sortField name="target.template.entity.name"/>
@@ -68,11 +69,13 @@
                 <property name="local_mesure_unitheight" value="pixel"/>
                 <property name="com.jaspersoft.studio.unit.height" value="px"/>
                 <printWhenExpression><![CDATA[$F{target.template} != null]]></printWhenExpression>
-                <textField isStretchWithOverflow="true" isBlankWhenNull="false">
+                <textField isStretchWithOverflow="true" isBlankWhenNull="true">
                     <reportElement key="textField-4" x="6" y="2" width="298" height="16"
                                    uuid="b94badfa-b4a7-4264-a130-334cc982fa59">
                         <property name="local_mesure_unitx" value="pixel"/>
                         <property name="com.jaspersoft.studio.unit.x" value="px"/>
+                        <property name="local_mesure_unitheight" value="pixel"/>
+                        <property name="com.jaspersoft.studio.unit.height" value="px"/>
                     </reportElement>
                     <box>
                         <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -80,10 +83,11 @@
                         <bottomPen lineWidth="0.0" lineColor="#000000"/>
                         <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     </box>
-                    <textElement>
+                    <textElement verticalAlignment="Middle">
                         <font size="10"/>
                     </textElement>
-                    <textFieldExpression><![CDATA[$F{target.template.entity.name}]]></textFieldExpression>
+                    <textFieldExpression>
+                        <![CDATA[($F{target.template.entity.printedName} == null) ? $F{target.template.entity.name}: $F{target.template.entity.printedName}]]></textFieldExpression>
                 </textField>
                 <textField evaluationTime="Group" evaluationGroup="templateGroup">
                     <reportElement x="467" y="2" width="61" height="16" uuid="7c1788e0-7efd-4524-a8a0-ffe225b2ef27">
@@ -93,7 +97,7 @@
                         <property name="com.jaspersoft.studio.unit.y" value="px"/>
                         <printWhenExpression><![CDATA[$F{target.template.entity.printAggregate}]]></printWhenExpression>
                     </reportElement>
-                    <textElement textAlignment="Right">
+                    <textElement textAlignment="Right" verticalAlignment="Middle">
                         <font size="10"/>
                     </textElement>
                     <textFieldExpression><![CDATA[$V{templateTotal}]]></textFieldExpression>
@@ -133,12 +137,14 @@
                 </reportElement>
             </line>
             <staticText>
-                <reportElement key="staticText-7" x="6" y="1" width="125" height="16"
+                <reportElement key="staticText-7" x="6" y="2" width="125" height="16"
                                uuid="6cc4f19e-803a-4f18-967b-7984e272cb29">
                     <property name="local_mesure_unitheight" value="pixel"/>
                     <property name="com.jaspersoft.studio.unit.height" value="px"/>
                     <property name="local_mesure_unitx" value="pixel"/>
                     <property name="com.jaspersoft.studio.unit.x" value="px"/>
+                    <property name="local_mesure_unity" value="pixel"/>
+                    <property name="com.jaspersoft.studio.unit.y" value="px"/>
                 </reportElement>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -146,19 +152,21 @@
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement>
-                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="10" isBold="true"/>
                 </textElement>
                 <text><![CDATA[Product]]></text>
             </staticText>
             <staticText>
-                <reportElement key="staticText-8" x="467" y="1" width="61" height="16"
+                <reportElement key="staticText-8" x="467" y="2" width="61" height="16"
                                uuid="123ce48d-2195-4034-b97a-79b934a335f1">
                     <property name="com.jaspersoft.studio.unit.height" value="px"/>
                     <property name="local_mesure_unitwidth" value="pixel"/>
                     <property name="com.jaspersoft.studio.unit.width" value="px"/>
                     <property name="local_mesure_unitx" value="pixel"/>
                     <property name="com.jaspersoft.studio.unit.x" value="px"/>
+                    <property name="local_mesure_unity" value="pixel"/>
+                    <property name="com.jaspersoft.studio.unit.y" value="px"/>
                 </reportElement>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -166,19 +174,21 @@
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right">
-                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font size="10" isBold="true"/>
                 </textElement>
                 <text><![CDATA[Amount]]></text>
             </staticText>
             <staticText>
-                <reportElement key="staticText-9" x="381" y="1" width="47" height="16"
+                <reportElement key="staticText-9" x="381" y="2" width="47" height="16"
                                uuid="7b7a723c-dfe6-41b5-b244-001b13acf0b4">
                     <property name="com.jaspersoft.studio.unit.height" value="px"/>
                     <property name="local_mesure_unitx" value="pixel"/>
                     <property name="com.jaspersoft.studio.unit.x" value="px"/>
                     <property name="local_mesure_unitwidth" value="pixel"/>
                     <property name="com.jaspersoft.studio.unit.width" value="px"/>
+                    <property name="local_mesure_unity" value="pixel"/>
+                    <property name="com.jaspersoft.studio.unit.y" value="px"/>
                 </reportElement>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -186,22 +196,25 @@
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right">
-                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font size="10" isBold="true"/>
                 </textElement>
                 <text><![CDATA[Quantity]]></text>
             </staticText>
         </band>
     </columnHeader>
     <detail>
-        <band height="19" splitType="Stretch">
+        <band height="20" splitType="Stretch">
+            <property name="local_mesure_unitheight" value="pixel"/>
+            <property name="com.jaspersoft.studio.unit.height" value="px"/>
             <printWhenExpression>
                 <![CDATA[($F{target.template} == null || !$F{target.template.entity.printAggregate}) && ($F{target.print} || $F{target.total}.compareTo(BigDecimal.ZERO) != 0)]]></printWhenExpression>
             <textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-                <reportElement key="textField-2" x="467" y="2" width="61" height="15"
+                <reportElement key="textField-2" x="467" y="2" width="61" height="16"
                                uuid="d13133a1-86c0-43c4-9d74-84b39008951f">
                     <property name="com.jaspersoft.studio.unit.width" value="px"/>
                     <property name="com.jaspersoft.studio.unit.x" value="px"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
                 </reportElement>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -209,17 +222,18 @@
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right">
+                <textElement textAlignment="Right" verticalAlignment="Middle">
                     <font size="10"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{target.total}]]></textFieldExpression>
             </textField>
             <textField pattern="###0.00" isBlankWhenNull="false">
-                <reportElement key="textField-3" x="381" y="2" width="47" height="15"
+                <reportElement key="textField-3" x="381" y="2" width="47" height="16"
                                uuid="1b2dcc32-d740-4cd1-a007-bfba76809af4">
                     <property name="local_mesure_unitx" value="pixel"/>
                     <property name="com.jaspersoft.studio.unit.x" value="px"/>
                     <property name="com.jaspersoft.studio.unit.width" value="px"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
                 </reportElement>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -227,16 +241,17 @@
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right">
+                <textElement textAlignment="Right" verticalAlignment="Middle">
                     <font size="10"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{target.quantity}]]></textFieldExpression>
             </textField>
-            <textField isStretchWithOverflow="true" isBlankWhenNull="false">
+            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
                 <reportElement key="textField-4" x="6" y="2" width="298" height="16"
                                uuid="4cb2a9ac-ea5a-4845-b200-4a21a005e35c">
                     <property name="local_mesure_unitx" value="pixel"/>
                     <property name="com.jaspersoft.studio.unit.x" value="px"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
                 </reportElement>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -244,7 +259,7 @@
                     <bottomPen lineWidth="0.0" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement>
+                <textElement verticalAlignment="Middle">
                     <font size="10"/>
                 </textElement>
                 <textFieldExpression>
@@ -278,7 +293,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="10" isBold="true"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$V{SUM_target.total}]]></textFieldExpression>
             </textField>
@@ -296,7 +311,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="10" isBold="true"/>
                 </textElement>
                 <text><![CDATA[TOTAL]]></text>
             </staticText>

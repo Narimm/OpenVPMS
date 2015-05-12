@@ -16,8 +16,10 @@
 
 package org.openvpms.web.workspace.workflow.appointment;
 
+import echopointng.LabelEx;
 import echopointng.TabbedPane;
 import echopointng.TableEx;
+import echopointng.xhtml.XhtmlFragment;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
@@ -42,6 +44,7 @@ import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.factory.TabbedPaneFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.table.StyleTableCellRenderer;
+import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.echo.tabpane.TabPaneModel;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -312,7 +315,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
         layout.setAlignment(Alignment.ALIGN_CENTER);
         title.setLayoutData(layout);
 
-        Component column = ColumnFactory.create(INSET, ColumnFactory.create(WIDE_CELL_SPACING, layoutQuery()));
+        Component column = ColumnFactory.create(INSET, ColumnFactory.create(WIDE_CELL_SPACING, title, layoutQuery()));
 
         appointmentsTab = addTab(Messages.get("workflow.scheduling.appointment.title"), column);
         freeSlotsTab = addTab(Messages.get("workflow.scheduling.appointment.find.title"),
@@ -343,7 +346,9 @@ public class AppointmentBrowser extends ScheduleBrowser {
      */
     @Override
     protected void addTable(Table table, Component component) {
-        component.add(ColumnFactory.create(Styles.INSET_CELL_SPACING, title, table));
+        LabelEx spacer = new LabelEx(new XhtmlFragment(TableHelper.SPACER));
+        // add a spacer so that popup notes in the first line of the table won't be clipped
+        component.add(ColumnFactory.create(Styles.INSET_CELL_SPACING, spacer, table));
     }
 
     /**
