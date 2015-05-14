@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -137,6 +137,20 @@ class ScheduleEventCache {
             throw new CacheException("Could not fetch object for cache entry with key \"" + key + "\".", throwable);
         }
         return result.getEvents();
+    }
+
+    /**
+     * Returns events for the specified schedule and day, if they are in the cache.
+     *
+     * @param schedule the schedule
+     * @param day      the day
+     * @return the events, or {@code null} if they are not in the cache
+     */
+    public List<PropertySet> getCached(IMObjectReference schedule, Date day) {
+        day = DateRules.getDate(day);
+        Key key = new Key(schedule.getId(), day);
+        Element element = cache.getQuiet(key);
+        return (element != null) ? ((ScheduleDay) element.getObjectValue()).getEvents() : null;
     }
 
     /**

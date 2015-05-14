@@ -45,11 +45,6 @@ import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatE
 class RepeatOnDaysEditor extends AbstractRepeatExpressionEditor {
 
     /**
-     * The repeat start time.
-     */
-    private final Date startTime;
-
-    /**
      * The days to repeat on.
      */
     private SimpleProperty[] days = new SimpleProperty[7];
@@ -57,21 +52,17 @@ class RepeatOnDaysEditor extends AbstractRepeatExpressionEditor {
 
     /**
      * Constructs an {@link RepeatOnDaysEditor}.
-     *
-     * @param startTime the repeat start time
      */
-    public RepeatOnDaysEditor(Date startTime) {
-        this(startTime, null);
+    public RepeatOnDaysEditor() {
+        this(null);
     }
 
     /**
      * Constructs an {@link RepeatOnDaysEditor}.
      *
-     * @param startTime  the repeat start time
      * @param expression the source expression. May be {@code null}
      */
-    public RepeatOnDaysEditor(Date startTime, CronRepeatExpression expression) {
-        this.startTime = startTime;
+    public RepeatOnDaysEditor(CronRepeatExpression expression) {
         DayOfWeek dayOfWeek = (expression != null) ? expression.getDayOfWeek() : null;
         for (int i = 0; i < days.length; ++i) {
             int day = Calendar.SUNDAY + i;
@@ -117,21 +108,24 @@ class RepeatOnDaysEditor extends AbstractRepeatExpressionEditor {
     /**
      * Returns the expression.
      *
-     * @return the expression
+     * @param startTime the date to start the expression on. May be {@code null}
+     * @return the expression, or {@code null} if the expression is invalid
      */
     @Override
-    public RepeatExpression getExpression() {
+    public RepeatExpression getExpression(Date startTime) {
         List<String> list = new ArrayList<String>();
-        for (int i = 0; i < days.length; ++i) {
-            boolean selected = days[i].getBoolean();
-            if (selected) {
-                String day = DayOfWeek.getDay(Calendar.SUNDAY + i);
-                list.add(day);
+        if (startTime != null) {
+            for (int i = 0; i < days.length; ++i) {
+                boolean selected = days[i].getBoolean();
+                if (selected) {
+                    String day = DayOfWeek.getDay(Calendar.SUNDAY + i);
+                    list.add(day);
+                }
             }
-        }
-        if (!list.isEmpty()) {
-            DayOfWeek dayOfWeek = new DayOfWeek(list);
-            return new CronRepeatExpression(startTime, dayOfWeek);
+            if (!list.isEmpty()) {
+                DayOfWeek dayOfWeek = new DayOfWeek(list);
+                return new CronRepeatExpression(startTime, dayOfWeek);
+            }
         }
         return null;
     }

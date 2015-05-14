@@ -35,15 +35,37 @@ import static org.openvpms.archetype.test.TestHelper.getDatetime;
 public class CronRepeatExpressionTestCase {
 
     /**
-     * Tests the {@link CronRepeatExpression#parse(String)} method.
+     * Tests the {@link CronRepeatExpression#parse(String)} method when a day-of-week has an ordinal value.
      */
     @Test
-    public void testParse() {
+    public void testParseOfExpressionWithOrdinal() {
         CronRepeatExpression expression = CronRepeatExpression.parse("0 0 12 ? */2 MON#1");
         assertTrue(expression.getDayOfMonth().isAll());
         assertEquals(2, expression.getMonth().getInterval());
         assertEquals(1, expression.getDayOfWeek().getOrdindal());
         assertEquals("MON", expression.getDayOfWeek().getDay());
+    }
+
+    /**
+     * Tests the {@link CronRepeatExpression#parse(String)} method when the expression specifies weekdays.
+     */
+    @Test
+    public void testParseWeekdays() {
+        CronRepeatExpression expression = CronRepeatExpression.parse("0 0 12 ? * MON-FRI");
+        assertTrue(expression.getDayOfMonth().isAll());
+        assertTrue(expression.getMonth().isAll());
+        assertTrue(expression.getDayOfWeek().weekDays());
+    }
+
+    /**
+     * Tests the {@link CronRepeatExpression#parse(String)} method when the expression specifies weekends.
+     */
+    @Test
+    public void testParseWeekends() {
+        CronRepeatExpression expression = CronRepeatExpression.parse("0 0 12 ? * SUN,SAT");
+        assertTrue(expression.getDayOfMonth().isAll());
+        assertTrue(expression.getMonth().isAll());
+        assertTrue(expression.getDayOfWeek().weekends());
     }
 
     /**

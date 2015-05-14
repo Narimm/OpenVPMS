@@ -23,35 +23,21 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import java.util.Date;
 
 /**
- * An {@link RepeatExpressionEditor} that simply displays the expression type.
+ * Repeat on weekdays expression editor.
  *
  * @author Tim Anderson
  */
-class SimpleRepeatEditor extends AbstractRepeatExpressionEditor {
-
-    /**
-     * The expression.
-     */
-    private final RepeatExpression expression;
-
-    /**
-     * Constructs an {@link SimpleRepeatEditor}.
-     *
-     * @param expression the expression
-     */
-    public SimpleRepeatEditor(RepeatExpression expression) {
-        this.expression = expression;
-    }
+public class RepeatOnWeekdaysEditor extends AbstractRepeatExpressionEditor {
 
     /**
      * Returns the expression.
      *
      * @param startTime the date to start the expression on. May be {@code null}
-     * @return the expression
+     * @return the expression, or {@code null} if the expression is invalid
      */
     @Override
     public RepeatExpression getExpression(Date startTime) {
-        return expression;
+        return (startTime != null) ? Repeats.weekdays(startTime) : null;
     }
 
     /**
@@ -62,9 +48,19 @@ class SimpleRepeatEditor extends AbstractRepeatExpressionEditor {
     @Override
     public Component getComponent() {
         Label result = LabelFactory.create();
-        String text = RepeatHelper.toString(expression.getType());
+        String text = RepeatHelper.toString(RepeatExpression.Type.WEEKDAYS);
         result.setText(text);
         return result;
     }
 
+    /**
+     * Determines if the editor can edit the supplied expression.
+     *
+     * @param expression the expression
+     * @return {@code true} if the editor can edit the expression
+     */
+    public static boolean supports(CronRepeatExpression expression) {
+        return expression.getDayOfMonth().isAll() && expression.getMonth().isAll()
+               && expression.getDayOfWeek().weekDays();
+    }
 }

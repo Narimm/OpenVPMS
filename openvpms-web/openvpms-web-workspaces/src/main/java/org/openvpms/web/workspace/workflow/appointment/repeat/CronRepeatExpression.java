@@ -105,6 +105,18 @@ public class CronRepeatExpression implements RepeatExpression {
      * @param dayOfMonth the day-of-month
      * @param month      the month
      * @param dayOfWeek  the day-of-week
+     */
+    public CronRepeatExpression(Date startTime, DayOfMonth dayOfMonth, Month month, DayOfWeek dayOfWeek) {
+        this(startTime, dayOfMonth, month, dayOfWeek, Type.CUSTOM);
+    }
+
+    /**
+     * Constructs a {@link CronRepeatExpression}.
+     *
+     * @param startTime  the time the expression starts
+     * @param dayOfMonth the day-of-month
+     * @param month      the month
+     * @param dayOfWeek  the day-of-week
      * @param type       the expression type
      */
     private CronRepeatExpression(Date startTime, DayOfMonth dayOfMonth, Month month, DayOfWeek dayOfWeek, Type type) {
@@ -457,7 +469,9 @@ public class CronRepeatExpression implements RepeatExpression {
             ID_DAY = DAY_ID.inverseBidiMap();
             NO_VALUE = new DayOfWeek("?");
             ALL = new DayOfWeek("*");
-            WEEKDAYS = new DayOfWeek("MON-FRI");
+            BitSet set = new BitSet(Calendar.SATURDAY);
+            set.set(Calendar.MONDAY, Calendar.SATURDAY, true);
+            WEEKDAYS = new DayOfWeek("MON-FRI", set);
 
         }
 
@@ -513,7 +527,7 @@ public class CronRepeatExpression implements RepeatExpression {
                 if (parts.length == 2) {
                     int start = getDay(parts[0]);
                     int end = getDay(parts[1]);
-                    set.set(start, end, true);
+                    set.set(start, end + 1, true);
                 } else {
                     throw new IllegalArgumentException("Invalid day of week: " + value);
                 }
@@ -568,8 +582,13 @@ public class CronRepeatExpression implements RepeatExpression {
         }
 
         public boolean weekDays() {
-            return set.get(Calendar.MONDAY, Calendar.FRIDAY + 1).cardinality() == 5 &&
+            return set.get(Calendar.MONDAY, Calendar.SATURDAY).cardinality() == 5 &&
                    !(set.get(Calendar.SUNDAY) || set.get(Calendar.SATURDAY));
+        }
+
+        public boolean weekends() {
+            return set.get(Calendar.MONDAY, Calendar.SATURDAY).cardinality() == 0 &&
+                   set.get(Calendar.SUNDAY) && set.get(Calendar.SATURDAY);
         }
 
 
@@ -597,6 +616,7 @@ public class CronRepeatExpression implements RepeatExpression {
         public boolean isOrdinal() {
             return ordindal > 0 || ordindal == LAST;
         }
+
     }
 
 }

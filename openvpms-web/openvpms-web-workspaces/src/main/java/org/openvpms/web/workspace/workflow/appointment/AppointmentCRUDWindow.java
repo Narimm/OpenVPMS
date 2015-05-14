@@ -256,7 +256,6 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         return super.edit(editor, path);
     }
 
-
     /**
      * Invoked when the object has been saved.
      *
@@ -373,7 +372,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      */
     @Override
     protected EditDialog createEditDialog(IMObjectEditor editor) {
-        return new AppointmentEditDialog(editor, getContext());
+        return new AppointmentEditDialog((AppointmentActEditor) editor, getContext());
     }
 
     /**

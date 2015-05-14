@@ -26,6 +26,7 @@ import org.joda.time.Duration;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
+import org.openvpms.archetype.rules.workflow.Times;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -38,6 +39,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * Appointment series.
@@ -45,64 +47,6 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class AppointmentSeries {
-
-    /**
-     * Appointment start and end times.
-     */
-    public static class Times implements Comparable<Times> {
-
-        private final Date startTime;
-        private final Date endTime;
-
-        public Times(Date startTime, Date endTime) {
-            this.startTime = startTime;
-            this.endTime = endTime;
-        }
-
-        public Date getStartTime() {
-            return startTime;
-        }
-
-        public Date getEndTime() {
-            return endTime;
-        }
-
-        /**
-         * Indicates whether some other object is "equal to" this one.
-         *
-         * @param obj the reference object with which to compare.
-         * @return {@code true} if this object is the same as the obj argument; {@code false} otherwise.
-         */
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == this) {
-                return true;
-            } else if (obj instanceof Times) {
-                return compareTo((Times) obj) == 0;
-            }
-            return false;
-        }
-
-        /**
-         * Compares this object with the specified object for order.  Returns a
-         * negative integer, zero, or a positive integer as this object is less
-         * than, equal to, or greater than the specified object.
-         *
-         * @param object the object to be compared.
-         */
-        @Override
-        public int compareTo(Times object) {
-            Date startTime2 = object.getStartTime();
-            Date endTime2 = object.getEndTime();
-            if (DateRules.compareTo(startTime, startTime2) < 0 && DateRules.compareTo(endTime, startTime2) <= 0) {
-                return -1;
-            }
-            if (DateRules.compareTo(startTime, endTime2) >= 0 && DateRules.compareTo(endTime, endTime2) > 0) {
-                return 1;
-            }
-            return 0;
-        }
-    }
 
     /**
      * Used to indicate overlapping appointments.
@@ -289,30 +233,23 @@ public class AppointmentSeries {
 
     /**
      * Saves the series.
-     *
-     * @return {@code true} if any changes were made
      */
-    public boolean save() {
-        boolean result = false;
+    public void save() {
         refresh();
         if (isModified()) {
             if (previous != null && !current.repeats()) {
-                result = deleteSeries();
-            } else if (previous != null && current.repeats()) {
-                result = updateSeries();
-            } else if (current.repeats()) {
-                List<Times> series = new ArrayList<Times>();
-                Overlap overlap = calculateSeries(series);
-                if (overlap == null) {
-                    createAppointments(series);
-                    result = true;
+                deleteSeries();
+            } else if (previous != null) {
+                if (!previous.repeats() && current.repeats()) {
+                    createAppointments();
+                } else {
+                    updateSeries();
                 }
+            } else if (current.repeats()) {
+                createAppointments();
             }
-            if (result) {
-                previous = new State(current);
-            }
+            previous = new State(current);
         }
-        return result;
     }
 
     /**
@@ -338,6 +275,18 @@ public class AppointmentSeries {
     }
 
     /**
+     * Calculates the series.
+     *
+     * @return the series, or {@code null} if the appointments overlap
+     */
+    public List<Times> getAppointmentTimes() {
+        ArrayList<Times> result = new ArrayList<Times>();
+        result.add(Times.create(appointment));
+        Overlap overlap = calculateSeries(result);
+        return overlap == null ? result : null;
+    }
+
+    /**
      * Returns the time that the series starts.
      *
      * @return the time
@@ -353,26 +302,38 @@ public class AppointmentSeries {
      * @return the first overlapping appointment, or {@code null} if there are no overlaps
      */
     private Overlap calculateSeries(List<Times> series) {
-        Date startTime = appointment.getActivityStartTime();
-        Date endTime = appointment.getActivityEndTime();
-        Duration duration = new Duration(new DateTime(startTime), new DateTime(endTime));
         Overlap overlap = null;
-        IMObjectReference schedule = current.getSchedule();
-        IMObjectReference appointmentType = current.getAppointmentType();
+        int index = acts.indexOf(appointment);
+        if (current.repeats() && (acts.isEmpty() || index >= 0)) {
+            Date startTime = appointment.getActivityStartTime();
+            Date endTime = appointment.getActivityEndTime();
+            Duration duration = new Duration(new DateTime(startTime), new DateTime(endTime));
+            IMObjectReference schedule = current.getSchedule();
+            IMObjectReference appointmentType = current.getAppointmentType();
 
-        if (current.repeats() && schedule != null && appointmentType != null) {
-            RepeatExpression expression = current.getExpression();
-            RepeatCondition condition = current.getCondition();
-            Predicate<Date> max = new TimesPredicate<Date>(maxAppointments - 1);
-            Predicate<Date> predicate = PredicateUtils.andPredicate(max, condition.create());
-            while ((startTime = expression.getRepeatAfter(startTime, predicate)) != null) {
-                endTime = new DateTime(startTime).plus(duration).toDate();
-                Times appointment = new Times(startTime, endTime);
-                overlap = getOverlap(series, appointment);
-                if (overlap != null) {
-                    break;
+            if (schedule != null && appointmentType != null) {
+                List<Times> times = new ArrayList<Times>();
+                times.add(Times.create(appointment));
+                ListIterator<Act> iterator = (index + 1 < acts.size()) ? acts.listIterator(index + 1) : null;
+                RepeatExpression expression = current.getExpression();
+                RepeatCondition condition = current.getCondition();
+                Predicate<Date> max = new TimesPredicate<Date>(maxAppointments - 1);
+                Predicate<Date> predicate = PredicateUtils.andPredicate(max, condition.create());
+                while ((startTime = expression.getRepeatAfter(startTime, predicate)) != null) {
+                    endTime = new DateTime(startTime).plus(duration).toDate();
+                    long id = -1;
+                    if (iterator != null && iterator.hasNext()) {
+                        Act act = iterator.next();
+                        id = act.getId();
+                    }
+                    Times newAppointment = new Times(id, startTime, endTime);
+                    overlap = getOverlap(times, newAppointment);
+                    if (overlap != null) {
+                        break;
+                    }
+                    times.add(newAppointment);
+                    series.add(newAppointment);
                 }
-                series.add(appointment);
             }
         }
         return overlap;
@@ -389,10 +350,10 @@ public class AppointmentSeries {
 
     /**
      * Creates appointments corresponding to the expression.
-     *
-     * @param times the appointment times
      */
-    private void createAppointments(List<Times> times) {
+    private void createAppointments() {
+        List<Times> times = new ArrayList<Times>();
+        calculateSeries(times);
         acts.clear();
         acts.add(appointment);
         series = createSeries();
@@ -559,11 +520,8 @@ public class AppointmentSeries {
     /**
      * Deletes the appointments after the current appointment, and unlinks it from the series.
      * If no acts reference the series act, it is also removed.
-     *
-     * @return {@code true} if changes were made
      */
-    private boolean deleteSeries() {
-        boolean result = false;
+    private void deleteSeries() {
         int index = acts.indexOf(appointment);
         if (index >= 0) {
             List<Act> future = Collections.emptyList();
@@ -572,10 +530,8 @@ public class AppointmentSeries {
                 future = acts.subList(index + 1, acts.size());
             }
             deleteSeries(future);
-            result = true;
             acts.clear();
         }
-        return result;
     }
 
     /**
@@ -660,6 +616,16 @@ public class AppointmentSeries {
     private static class State {
 
         /**
+         * The appointment start time.
+         */
+        private Date startTime;
+
+        /**
+         * The appointment end time.
+         */
+        private Date endTime;
+
+        /**
          * The appointment type.
          */
         private IMObjectReference appointmentType;
@@ -725,6 +691,9 @@ public class AppointmentSeries {
          * @param appointment the appointment
          */
         public void update(ActBean appointment) {
+            Act act = appointment.getAct();
+            startTime = act.getActivityStartTime();
+            endTime = act.getActivityEndTime();
             schedule = appointment.getNodeParticipantRef("schedule");
             appointmentType = appointment.getNodeParticipantRef("appointmentType");
             customer = appointment.getNodeParticipantRef("customer");
@@ -741,6 +710,8 @@ public class AppointmentSeries {
          * @param state the state to copy
          */
         public State(State state) {
+            this.startTime = state.startTime;
+            this.endTime = state.endTime;
             this.schedule = state.schedule;
             this.appointmentType = state.appointmentType;
             this.customer = state.customer;
@@ -840,25 +811,32 @@ public class AppointmentSeries {
          */
         @Override
         public boolean equals(Object obj) {
+            boolean result;
             if (obj == this) {
-                return true;
+                result = true;
+            } else if (!(obj instanceof State)) {
+                result = false;
+            } else {
+                State other = (State) obj;
+                if (DateRules.compareTo(startTime, other.startTime) != 0
+                    || DateRules.compareTo(endTime, other.endTime) != 0) {
+                    result = false;
+                } else {
+                    result = new EqualsBuilder()
+                            .append(schedule, other.schedule)
+                            .append(appointmentType, other.appointmentType)
+                            .append(customer, other.customer)
+                            .append(patient, other.patient)
+                            .append(clinician, other.clinician)
+                            .append(author, other.author)
+                            .append(reason, other.reason)
+                            .append(notes, other.notes)
+                            .append(expression, other.expression)
+                            .append(condition, other.condition)
+                            .isEquals();
+                }
             }
-            if (!(obj instanceof State)) {
-                return false;
-            }
-            State other = (State) obj;
-            return new EqualsBuilder()
-                    .append(schedule, other.schedule)
-                    .append(appointmentType, other.appointmentType)
-                    .append(customer, other.customer)
-                    .append(patient, other.patient)
-                    .append(clinician, other.clinician)
-                    .append(author, other.author)
-                    .append(reason, other.reason)
-                    .append(notes, other.notes)
-                    .append(expression, other.expression)
-                    .append(condition, other.condition)
-                    .isEquals();
+            return result;
         }
 
     }

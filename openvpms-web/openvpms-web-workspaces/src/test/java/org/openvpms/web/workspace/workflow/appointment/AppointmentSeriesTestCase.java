@@ -17,11 +17,11 @@
 package org.openvpms.web.workspace.workflow.appointment;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
+import org.openvpms.archetype.rules.workflow.Times;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -42,7 +42,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.web.workspace.workflow.appointment.repeat.Repeats.daily;
 import static org.openvpms.web.workspace.workflow.appointment.repeat.Repeats.monthly;
+import static org.openvpms.web.workspace.workflow.appointment.repeat.Repeats.once;
 import static org.openvpms.web.workspace.workflow.appointment.repeat.Repeats.times;
 import static org.openvpms.web.workspace.workflow.appointment.repeat.Repeats.yearly;
 
@@ -152,7 +154,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
 
         checkSeries(series, appointment, 1, DateUnits.MONTHS, 12);
         series.setExpression(Repeats.yearly());
-        assertTrue(series.save());
+        series.save();
         checkSeries(series, appointment, 1, DateUnits.YEARS, 12);
     }
 
@@ -171,7 +173,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         List<Act> toRemove = oldAppointments.subList(10, 12);
 
         series.setCondition(times(9));
-        assertTrue(series.save());
+        series.save();
         checkSeries(series, appointment, 1, DateUnits.MONTHS, 10);
         List<Act> newAppointments = series.getAppointments();
         assertEquals(10, newAppointments.size());
@@ -199,7 +201,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         assertEquals(10, oldAppointments.size());
 
         series.setCondition(times(11));
-        assertTrue(series.save());
+        series.save();
         checkSeries(series, appointment, 1, DateUnits.MONTHS, 12);
         List<Act> newAppointments = series.getAppointments();
         assertEquals(12, newAppointments.size());
@@ -211,12 +213,19 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Verifies that a series with overlapping appointments cannot be saved.
+     * Verifies that a series with overlapping appointments is detected.
+     * <p/>
+     * Note that this only checks overlaps with appointments in the series, not with existing appointments.
      */
     @Test
-    @Ignore("not yet implemented")
     public void testSeriesWithOverlappingAppointments() {
-
+        Act appointment = createAppointment(startTime, DateRules.getDate(startTime, 2, DateUnits.DAYS));
+        AppointmentSeries series = createSeries(appointment);
+        series.setExpression(daily());  // the next appointment overlaps the previous
+        series.setCondition(once());
+        AppointmentSeries.Overlap overlap = series.getFirstOverlap();
+        assertNotNull(overlap);
+        assertEquals(overlap.getAppointment1(), Times.create(appointment));
     }
 
     /**
@@ -236,7 +245,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
 
         series.setExpression(null);
         series.setCondition(null);
-        assertTrue(series.save());
+        series.save();
         appointments = series.getAppointments();
         assertEquals(0, appointments.size());
         assertNull(series.getSeries());
@@ -260,7 +269,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         ActBean bean = new ActBean(appointment);
         bean.setNodeParticipant("schedule", schedule2);
 
-        assertTrue(series.save());
+        checkSave(series);
         assertEquals(schedule2, bean.getNodeParticipant("schedule"));
         checkSeries(series, appointment, 1, DateUnits.YEARS, 3);
     }
@@ -283,7 +292,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         ActBean bean = new ActBean(appointment);
         bean.setNodeParticipant("appointmentType", appointmentType2);
 
-        assertTrue(series.save());
+        checkSave(series);
         assertEquals(appointmentType2, bean.getNodeParticipant("appointmentType"));
         checkSeries(series, appointment, 1, DateUnits.WEEKS, 3);
     }
@@ -303,7 +312,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         ActBean bean = new ActBean(appointment);
         bean.setNodeParticipant("customer", customer2);
 
-        assertTrue(series.save());
+        checkSave(series);
         assertEquals(customer2, bean.getNodeParticipant("customer"));
         checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
     }
@@ -322,7 +331,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         ActBean bean = new ActBean(appointment);
         bean.setNodeParticipant("patient", patient);
 
-        assertTrue(series.save());
+        checkSave(series);
         assertEquals(patient, bean.getNodeParticipant("patient"));
         checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
     }
@@ -342,7 +351,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         ActBean bean = new ActBean(appointment);
         bean.setNodeParticipant("clinician", clinician2);
 
-        assertTrue(series.save());
+        checkSave(series);
         assertEquals(clinician2, bean.getNodeParticipant("clinician"));
         checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
     }
@@ -362,7 +371,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         ActBean bean = new ActBean(appointment);
         bean.setNodeParticipant("author", author2);
 
-        assertTrue(series.save());
+        checkSave(series);
 
         assertEquals(author2, bean.getNodeParticipant("author"));
 
@@ -387,12 +396,32 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
 
         // change the expression
         series2.setExpression(yearly());
-        assertTrue(series2.save());
+        checkSave(series2);
         checkSeries(series2, third, 1, DateUnits.YEARS, 3);
 
         // verify the original series is now shortened
         series1 = createSeries(first);
         checkSeries(series1, first, 1, DateUnits.MONTHS, 2);
+    }
+
+    /**
+     * Verifies that changing the date on the first appointment moves the entire series.
+     */
+    @Test
+    public void testChangeAppointmentDate() {
+        Act appointment = createAppointment(startTime, endTime);
+
+        AppointmentSeries series = createSeries(appointment, monthly(), times(11));
+
+        checkSeries(series, appointment, 1, DateUnits.MONTHS, 12);
+
+        startTime = DateRules.getDate(startTime, 1, DateUnits.WEEKS);
+        endTime = DateRules.getDate(this.endTime, 1, DateUnits.WEEKS);
+        appointment.setActivityStartTime(startTime);
+        appointment.setActivityEndTime(endTime);
+
+        checkSave(series);
+        checkSeries(series, appointment, 1, DateUnits.MONTHS, 12);
     }
 
     /**
@@ -410,7 +439,7 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
 
         AppointmentSeries series = createSeries(appointment, expression, times(9));
         checkSeries(series, appointment, interval, units, 10);
-        assertFalse(series.save());  // no modifications
+        assertFalse(series.isModified());
     }
 
     /**
@@ -467,6 +496,16 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Saves an appointment series if there are no overlaps detected.
+     *
+     * @param series the series
+     */
+    private void checkSave(AppointmentSeries series) {
+        assertNull(series.getFirstOverlap());
+        series.save();
+    }
+
+    /**
      * Creates a new series, generating appointments.
      *
      * @param appointment the first appointment
@@ -477,11 +516,15 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
     private AppointmentSeries createSeries(Act appointment, RepeatExpression expression, RepeatCondition condition) {
         AppointmentSeries series = createSeries(appointment);
         assertEquals(0, series.getAppointments().size());
-        assertFalse(series.save());
+        assertTrue(series.isModified());
+        assertNull(series.getSeries());
 
         series.setExpression(expression);
         series.setCondition(condition);
-        assertTrue(series.save());
+        assertTrue(series.isModified());
+        checkSave(series);
+        assertFalse(series.isModified());
+        assertNotNull(series.getSeries());
         return series;
     }
 
