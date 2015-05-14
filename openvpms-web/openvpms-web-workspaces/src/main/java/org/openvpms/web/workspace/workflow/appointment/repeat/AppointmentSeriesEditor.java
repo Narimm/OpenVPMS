@@ -29,6 +29,7 @@ import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.table.TableModel;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.archetype.rules.workflow.Times;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -133,10 +134,12 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
             }
         } else if (expression instanceof CronRepeatExpression) {
             CronRepeatExpression cron = (CronRepeatExpression) expression;
-            if (RepeatOnDaysEditor.supports(cron)) {
-                repeatEditor = new RepeatOnDaysEditor(series.getStartTime(), cron);
+            if (RepeatOnWeekdaysEditor.supports(cron)) {
+                repeatEditor = new RepeatOnWeekdaysEditor();
+            } else if (RepeatOnDaysEditor.supports(cron)) {
+                repeatEditor = new RepeatOnDaysEditor(cron);
             } else if (RepeatOnOrdinalDayEditor.supports(cron)) {
-                repeatEditor = new RepeatOnOrdinalDayEditor(series.getStartTime(), cron);
+                repeatEditor = new RepeatOnOrdinalDayEditor(cron);
             }
         }
         RepeatCondition condition = series.getCondition();
@@ -230,7 +233,7 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
      */
     @Override
     public boolean isModified() {
-        return false;
+        return series.isModified();
     }
 
     /**
@@ -308,7 +311,7 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
             series.setCondition(null);
         } else {
             series.refresh();
-            series.setExpression(repeatEditor.getExpression());
+            series.setExpression(repeatEditor.getExpression(series.getStartTime()));
             series.setCondition(untilEditor.getCondition());
         }
         if (repeatEditor == null) {
@@ -324,8 +327,8 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
         AppointmentSeries.Overlap overlap = series.getFirstOverlap();
         if (overlap != null) {
             result = false;
-            AppointmentSeries.Times appointment1 = overlap.getAppointment1();
-            AppointmentSeries.Times appointment2 = overlap.getAppointment2();
+            Times appointment1 = overlap.getAppointment1();
+            Times appointment2 = overlap.getAppointment2();
             String startTime1 = formatDateTime(appointment1.getStartTime(), false);
             String endTime1 = formatDateTimeAbbrev(appointment1.getEndTime(), appointment1.getStartTime());
             String startTime2 = formatDateTime(appointment2.getStartTime(), false);
@@ -369,7 +372,7 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
         this.repeatEditor = editor;
         repeatContainer.removeAll();
         if (editor != null) {
-            RepeatExpression expression = editor.getExpression();
+            RepeatExpression expression = editor.getExpression(series.getStartTime());
             repeatContainer.add(editor.getComponent());
             repeatGroup.add(editor.getFocusGroup());
             series.setExpression(expression);
@@ -612,7 +615,7 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
             model.add(new SimpleRepeatEditor(Repeats.daily()));
             model.add(new SimpleRepeatEditor(Repeats.weekdays(series.getStartTime())));
             model.add(new RepeatEveryEditor(DateUnits.DAYS));
-            model.add(new RepeatOnDaysEditor(series.getStartTime()));
+            model.add(new RepeatOnDaysEditor());
             return model;
         }
     }
@@ -649,7 +652,7 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
             RepeatTableModel model = new RepeatTableModel();
             model.add(new SimpleRepeatEditor(Repeats.monthly()));
             model.add(new RepeatEveryEditor(DateUnits.MONTHS));
-            model.add(new RepeatOnOrdinalDayEditor(series.getStartTime()));
+            model.add(new RepeatOnOrdinalDayEditor());
             return model;
         }
     }

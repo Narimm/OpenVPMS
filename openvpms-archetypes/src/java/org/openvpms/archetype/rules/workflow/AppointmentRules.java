@@ -16,7 +16,6 @@
 
 package org.openvpms.archetype.rules.workflow;
 
-import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.act.DefaultActCopyHandler;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -28,7 +27,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -48,7 +46,6 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
-import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -154,12 +151,11 @@ public class AppointmentRules {
      *
      * @param schedule the schedule
      * @return the default appointment type, or the the first appointment type
-     *         if there is no default, or <tt>null</tt> if none is found
+     *         if there is no default, or {@code null} if none is found
      * @throws OpenVPMSException for any error
      */
     public Entity getDefaultAppointmentType(Party schedule) {
-        return EntityRelationshipHelper.getDefaultTarget(
-                schedule, "appointmentTypes", service);
+        return EntityRelationshipHelper.getDefaultTarget(schedule, "appointmentTypes", service);
     }
 
     /**
@@ -177,42 +173,6 @@ public class AppointmentRules {
         int noSlots = getSlots(schedBean, appointmentType);
         int minutes = getSlotSize(schedBean) * noSlots;
         return DateRules.getDate(startTime, minutes, DateUnits.MINUTES);
-    }
-
-    /**
-     * Determines if there are acts that overlap with an appointment.
-     *
-     * @param appointment        the appointment
-     * @param appointmentService the appointment service
-     * @return <tt>true</tt> if there are overlapping appointments
-     * @throws OpenVPMSException for any error
-     */
-    public boolean hasOverlappingAppointments(
-            Act appointment, ScheduleService appointmentService) {
-        ActBean bean = new ActBean(appointment, service);
-        Party schedule = (Party) bean.getNodeParticipant("schedule");
-        Date startTime = appointment.getActivityStartTime();
-        Date endTime = appointment.getActivityEndTime();
-
-        if (startTime != null && endTime != null && schedule != null) {
-            List<PropertySet> appointments = appointmentService.getEvents(
-                    schedule, startTime, endTime);
-            if (!appointments.isEmpty()) {
-                if (appointment.isNew()) {
-                    return true;
-                } else {
-                    IMObjectReference actRef = appointment.getObjectReference();
-                    for (PropertySet set : appointments) {
-                        IMObjectReference ref
-                                = set.getReference(ScheduleEvent.ACT_REFERENCE);
-                        if (!ObjectUtils.equals(ref, actRef)) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     /**
@@ -253,7 +213,7 @@ public class AppointmentRules {
      * Determines if a patient has an active appointment.
      *
      * @param patient the patient
-     * @return an active appointment, or <tt>null</tt> if none exists
+     * @return an active appointment, or {@code null} if none exists
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Act getActiveAppointment(Party patient) {

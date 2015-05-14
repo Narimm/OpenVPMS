@@ -52,11 +52,6 @@ import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatE
 class RepeatOnOrdinalDayEditor extends AbstractRepeatExpressionEditor {
 
     /**
-     * The repeat start time.
-     */
-    private final Date startTime;
-
-    /**
      * "1".."5" or "L" for first...fifth or last.
      */
     private final SimpleProperty ordinal = new SimpleProperty("ordinal", String.class);
@@ -76,21 +71,17 @@ class RepeatOnOrdinalDayEditor extends AbstractRepeatExpressionEditor {
 
     /**
      * Constructs an {@link RepeatOnOrdinalDayEditor}.
-     *
-     * @param startTime the repeat start time
      */
-    public RepeatOnOrdinalDayEditor(Date startTime) {
-        this(startTime, null);
+    public RepeatOnOrdinalDayEditor() {
+        this(null);
     }
 
     /**
      * Constructs an {@link RepeatOnOrdinalDayEditor}.
      *
-     * @param startTime  the repeat start time
      * @param expression the source expression. May be {@code null}
      */
-    public RepeatOnOrdinalDayEditor(Date startTime, CronRepeatExpression expression) {
-        this.startTime = startTime;
+    public RepeatOnOrdinalDayEditor(CronRepeatExpression expression) {
         ordinal.setRequired(true);
         day.setRequired(true);
         interval.setRequired(true);
@@ -150,10 +141,11 @@ class RepeatOnOrdinalDayEditor extends AbstractRepeatExpressionEditor {
     /**
      * Returns the expression.
      *
-     * @return the expression
+     * @param startTime the date to start the expression on. May be {@code null}
+     * @return the expression, or {@code null} if the expression is invalid
      */
     @Override
-    public RepeatExpression getExpression() {
+    public RepeatExpression getExpression(Date startTime) {
         String nth = ordinal.getString();
         String day = this.day.getString();
         if (nth != null && day != null) {

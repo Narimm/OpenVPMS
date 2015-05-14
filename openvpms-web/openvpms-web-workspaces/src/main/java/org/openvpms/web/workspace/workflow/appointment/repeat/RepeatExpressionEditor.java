@@ -20,6 +20,8 @@ import nextapp.echo2.app.Component;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.echo.focus.FocusGroup;
 
+import java.util.Date;
+
 /**
  * An editor for {@link RepeatExpression}s.
  *
@@ -30,9 +32,10 @@ public interface RepeatExpressionEditor extends Modifiable {
     /**
      * Returns the expression.
      *
+     * @param startTime the date to start the expression on. May be {@code null}
      * @return the expression, or {@code null} if the expression is invalid
      */
-    RepeatExpression getExpression();
+    RepeatExpression getExpression(Date startTime);
 
     /**
      * Returns the component representing the editor.

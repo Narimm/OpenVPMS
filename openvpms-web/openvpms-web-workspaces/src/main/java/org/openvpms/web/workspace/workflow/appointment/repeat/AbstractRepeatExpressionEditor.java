@@ -23,6 +23,8 @@ import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.focus.FocusGroup;
 
+import java.util.Date;
+
 /**
  * Abstract implementation of the {@link RepeatExpressionEditor} interface.
  *
@@ -34,6 +36,20 @@ public abstract class AbstractRepeatExpressionEditor extends AbstractModifiable 
      * The focus group.
      */
     private final FocusGroup group = new FocusGroup(getClass().getName());
+
+    /**
+     * The date to start the expression on.
+     */
+    private Date startTime;
+
+    /**
+     * Sets the expression start time.
+     *
+     * @param startTime the start time
+     */
+    public void setStartTime(Date startTime) {
+        this.startTime = startTime;
+    }
 
     /**
      * Determines if the object has been modified.
@@ -123,7 +139,7 @@ public abstract class AbstractRepeatExpressionEditor extends AbstractModifiable 
      */
     @Override
     protected boolean doValidation(Validator validator) {
-        RepeatExpression expression = getExpression();
+        RepeatExpression expression = getExpression(startTime);
         boolean result = expression != null;
         if (!result) {
             validator.add(this, new ValidatorError("The expression is invalid"));

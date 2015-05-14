@@ -57,7 +57,7 @@ class RepeatOnDaysViewer {
     public Component getComponent() {
         Grid grid = new Grid(4);
         String[] days = DateFormatSymbols.getInstance().getWeekdays();
-        for (int i = Calendar.SUNDAY; i < Calendar.SATURDAY; ++i) {
+        for (int i = Calendar.SUNDAY; i <= Calendar.SATURDAY; ++i) {
             boolean selected = expression.getDayOfWeek().isSelected(i);
             CheckBox checkBox = CheckBoxFactory.create(selected);
             checkBox.setText(days[i]);

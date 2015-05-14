@@ -212,6 +212,15 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     }
 
     /**
+     * Returns the appointment series.
+     *
+     * @return the series
+     */
+    public AppointmentSeries getSeries() {
+        return series;
+    }
+
+    /**
      * Determines if the object has been changed.
      *
      * @return {@code true} if the object has been changed
@@ -239,7 +248,11 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      */
     @Override
     protected boolean doSave() {
-        return super.doSave() && series.save();
+        boolean result = super.doSave();
+        if (result) {
+            series.save();
+        }
+        return result;
     }
 
     /**
@@ -534,8 +547,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     private void calculateEndTime() {
         Date start = getStartTime();
         Party schedule = (Party) getParticipant("schedule");
-        AppointmentTypeParticipationEditor editor
-                = getAppointmentTypeEditor();
+        AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
         Entity appointmentType = editor.getEntity();
         if (start != null && schedule != null && appointmentType != null) {
             Date end = rules.calculateEndTime(start, schedule, appointmentType);

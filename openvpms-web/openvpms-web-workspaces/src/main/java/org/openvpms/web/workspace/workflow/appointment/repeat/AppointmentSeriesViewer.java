@@ -75,7 +75,11 @@ public class AppointmentSeriesViewer {
 
     private Component getExpression(CronRepeatExpression expression) {
         Component result;
-        if (RepeatOnDaysEditor.supports(expression)) {
+        if (RepeatOnWeekdaysEditor.supports(expression)) {
+            Label label = LabelFactory.create();
+            label.setText(RepeatHelper.toString(RepeatExpression.Type.WEEKDAYS));
+            result = label;
+        } else if (RepeatOnDaysEditor.supports(expression)) {
             result = new RepeatOnDaysViewer(expression).getComponent();
         } else {
             result = LabelFactory.create();
