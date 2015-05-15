@@ -16,19 +16,20 @@
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Extent;
+import nextapp.echo2.app.Grid;
+import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Row;
+import nextapp.echo2.app.layout.GridLayoutData;
 import org.openvpms.web.echo.button.ToggleButton;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.resource.i18n.Messages;
 
-import java.text.DateFormatSymbols;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -37,38 +38,42 @@ import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatE
 import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatExpression.Month;
 
 /**
- * An editor for expressions that repeat on Sunday-Saturday.
+ * A {@link RepeatExpressionEditor} that supports expressions that repeat on days of the month.
  *
  * @author Tim Anderson
  */
-class RepeatOnDaysEditor extends AbstractRepeatExpressionEditor {
+class RepeatOnDaysOfMonthEditor extends AbstractRepeatExpressionEditor {
 
     /**
      * The days to repeat on.
      */
-    private ToggleButton[] days = new ToggleButton[7];
+    private final ToggleButton[] days = new ToggleButton[31];
 
+    private final ToggleButton lastDay;
 
     /**
-     * Constructs an {@link RepeatOnDaysEditor}.
+     * Constructs an {@link RepeatOnDaysOfMonthEditor}.
      */
-    public RepeatOnDaysEditor() {
+    public RepeatOnDaysOfMonthEditor() {
         this(null);
     }
 
     /**
-     * Constructs an {@link RepeatOnDaysEditor}.
+     * Constructs an {@link RepeatOnDaysOfMonthEditor}.
      *
      * @param expression the source expression. May be {@code null}
      */
-    public RepeatOnDaysEditor(CronRepeatExpression expression) {
-        DayOfWeek dayOfWeek = (expression != null) ? expression.getDayOfWeek() : null;
+    public RepeatOnDaysOfMonthEditor(CronRepeatExpression expression) {
+        DayOfMonth dayOfMonth = (expression != null) ? expression.getDayOfMonth() : null;
         for (int i = 0; i < days.length; ++i) {
-            int day = Calendar.SUNDAY + i;
-            String name = DateFormatSymbols.getInstance().getShortWeekdays()[day];
-            boolean selected = (dayOfWeek != null) && dayOfWeek.isSelected(day);
-            days[i] = new ToggleButton(name, selected);
+            int day = i + 1;
+            boolean selected = (dayOfMonth != null) && dayOfMonth.isSelected(day);
+            final ToggleButton button = new ToggleButton("" + (day), selected);
+            button.setAlignment(Alignment.ALIGN_RIGHT);
+            days[i] = button;
         }
+        boolean last = (dayOfMonth != null) && dayOfMonth.hasLast();
+        lastDay = new ToggleButton(Messages.get("workflow.scheduling.appointment.lastday"), last);
     }
 
     /**
@@ -78,15 +83,20 @@ class RepeatOnDaysEditor extends AbstractRepeatExpressionEditor {
      */
     @Override
     public Component getComponent() {
-        Row row = new Row();
-        row.setCellSpacing(new Extent(1));
+        Grid grid = new Grid(7);
+        grid.setInsets(new Insets(1));
         FocusGroup group = getFocusGroup();
         for (ToggleButton day : days) {
-            row.add(day);
+            grid.add(day);
             group.add(day);
         }
+        GridLayoutData layout = new GridLayoutData();
+        layout.setColumnSpan(4);
+        lastDay.setLayoutData(layout);
+        lastDay.setAlignment(Alignment.ALIGN_CENTER);
+        grid.add(lastDay);
         Label every = LabelFactory.create("workflow.scheduling.appointment.every");
-        return RowFactory.create(Styles.CELL_SPACING, every, row);
+        return RowFactory.create(Styles.CELL_SPACING, every, grid);
     }
 
     /**
@@ -99,7 +109,7 @@ class RepeatOnDaysEditor extends AbstractRepeatExpressionEditor {
         DayOfWeek dayOfWeek = expression.getDayOfWeek();
         DayOfMonth dayOfMonth = expression.getDayOfMonth();
         Month month = expression.getMonth();
-        return !dayOfWeek.isAll() && !dayOfWeek.isOrdinal() && dayOfMonth.isAll() && month.isAll();
+        return dayOfWeek.isAll() && !dayOfMonth.isAll() && month.isAll();
     }
 
     /**
@@ -109,22 +119,21 @@ class RepeatOnDaysEditor extends AbstractRepeatExpressionEditor {
      */
     @Override
     public RepeatExpression getExpression() {
-        List<String> list = new ArrayList<String>();
+        List<Integer> list = new ArrayList<Integer>();
         Date startTime = getStartTime();
         if (startTime != null) {
             for (int i = 0; i < days.length; ++i) {
                 boolean selected = days[i].isSelected();
                 if (selected) {
-                    String day = DayOfWeek.getDay(Calendar.SUNDAY + i);
-                    list.add(day);
+                    list.add(i + 1);
                 }
             }
-            if (!list.isEmpty()) {
-                DayOfWeek dayOfWeek = new DayOfWeek(list);
-                return new CronRepeatExpression(startTime, dayOfWeek);
+            boolean last = lastDay.isSelected();
+            if (!list.isEmpty() || last) {
+                DayOfMonth dayOfMonth = new DayOfMonth(list, last);
+                return new CronRepeatExpression(startTime, dayOfMonth, Month.ALL, DayOfWeek.NO_VALUE);
             }
         }
         return null;
     }
-
 }

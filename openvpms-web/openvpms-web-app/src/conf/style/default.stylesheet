@@ -2509,6 +2509,33 @@
         </properties>
     </style>
 
+    <style name="default" type="org.openvpms.web.echo.button.ToggleButton">
+        <properties>
+            <property name="foreground" value="#000000"/>
+            <property name="background" value="#e8e8e8"/>
+            <!-- grey -->
+            <property name="font">
+                <font size="${font.size}">
+                    <typeface name="${font.typeface}"/>
+                </font>
+            </property>
+            <property name="border">
+                <border size="1px" style="outset" color="#a0a0a0"/>
+            </property>
+            <property name="insets" value="${padding.medium} ${padding.small} "/>
+        </properties>
+    </style>
+
+    <style name="pressed" base-name="default" type="org.openvpms.web.echo.button.ToggleButton">
+        <properties>
+            <property name="foreground" value="#ffffff"/>
+            <property name="background" value="${theme.button.colour}"/>
+            <property name="border">
+                <border size="1px" style="solid" color="#a0a0a0"/>
+            </property>
+        </properties>
+    </style>
+
     <!-- =================================================================== -->
     <!--  Text component defaults                                            -->
     <!-- =================================================================== -->

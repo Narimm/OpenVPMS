@@ -298,7 +298,7 @@ public class CronRepeatExpression implements RepeatExpression {
     private static CronRepeatExpression parse(int minute, int hour, String dayOfMonth, String month, String dayOfWeek)
             throws ParseException {
         CronRepeatExpression result;
-        DayOfMonth dom = new DayOfMonth(dayOfMonth);
+        DayOfMonth dom = DayOfMonth.parse(dayOfMonth);
         Month m = Month.parse(month);
         DayOfWeek dow = DayOfWeek.parse(dayOfWeek);
         boolean allDayOfMonth = dom.isAll();
@@ -382,13 +382,79 @@ public class CronRepeatExpression implements RepeatExpression {
 
         public static DayOfMonth NO_VALUE = new DayOfMonth("?");
 
+        private final BitSet set;
+
+        private final boolean last;
+
         public DayOfMonth(String value) {
+            this(value, new BitSet(), false);
+        }
+
+        public DayOfMonth(String value, BitSet set, boolean last) {
             super(value);
+            this.set = set;
+            this.last = last;
+        }
+
+        public DayOfMonth(List<Integer> days, boolean last) {
+            this(format(days, last), new BitSet(), last);
+            for (int day : days) {
+                set.set(day, true);
+            }
+        }
+
+        private static String format(List<Integer> days, boolean last) {
+            String result = StringUtils.join(days.iterator(), ',');
+            if (last) {
+                if (result.length() != 0) {
+                    result = result + ",";
+                }
+                result = result + "L";
+            }
+            return result;
         }
 
         public boolean singleDay() {
-            return StringUtils.isNumeric(value);
+            return set.cardinality() == 1;
         }
+
+        public boolean isSelected(int day) {
+            return set.get(day);
+        }
+
+        public boolean hasLast() {
+            return last;
+        }
+
+        public static DayOfMonth parse(String value) {
+            boolean last = false;
+            BitSet set = new BitSet();
+            if (value.contains("-")) {
+                String[] parts = value.split("-");
+                if (parts.length == 2) {
+                    int start = Integer.parseInt(parts[0]);
+                    int end = Integer.parseInt(parts[1]);
+                    set.set(start, end + 1, true);
+                } else {
+                    throw new IllegalArgumentException("Invalid day of week: " + value);
+                }
+            } else if (value.contains(",")) {
+                String[] parts = value.split(",");
+                for (String part : parts) {
+                    if ("L".equals(part)) {
+                        last = true;
+                    } else {
+                        set.set(Integer.parseInt(part), true);
+                    }
+                }
+            } else if (StringUtils.isNumeric(value)) {
+                set.set(Integer.parseInt(value), true);
+            } else if ("L".equals(value)) {
+                last = true;
+            }
+            return new DayOfMonth(value, set, last);
+        }
+
     }
 
     public static class Month extends Field {
@@ -438,6 +504,8 @@ public class CronRepeatExpression implements RepeatExpression {
 
         public static final int LAST = -1;
 
+        private final BitSet set;
+
         private final int ordindal;
 
         private static final String SUN = "SUN";
@@ -472,10 +540,7 @@ public class CronRepeatExpression implements RepeatExpression {
             BitSet set = new BitSet(Calendar.SATURDAY);
             set.set(Calendar.MONDAY, Calendar.SATURDAY, true);
             WEEKDAYS = new DayOfWeek("MON-FRI", set);
-
         }
-
-        private final BitSet set;
 
 
         private DayOfWeek(String value) {
@@ -521,8 +586,8 @@ public class CronRepeatExpression implements RepeatExpression {
         }
 
         public static DayOfWeek parse(String value) throws ParseException {
+            BitSet set = new BitSet();
             if (value.contains("-")) {
-                BitSet set = new BitSet(Calendar.SATURDAY);
                 String[] parts = value.split("-");
                 if (parts.length == 2) {
                     int start = getDay(parts[0]);
@@ -533,7 +598,6 @@ public class CronRepeatExpression implements RepeatExpression {
                 }
                 return new DayOfWeek(value, set);
             } else if (value.contains(",")) {
-                BitSet set = new BitSet(Calendar.SATURDAY);
                 String[] parts = value.split(",");
                 for (String part : parts) {
                     set.set(getDay(part), true);
@@ -550,6 +614,12 @@ public class CronRepeatExpression implements RepeatExpression {
             } else if (value.endsWith("L")) {
                 value = value.substring(0, value.length() - 1);
                 return new DayOfWeek(value, LAST);
+            } else {
+                Integer day = parseDay(value);
+                if (day != null) {
+                    set.set(day);
+                    return new DayOfWeek(value, set);
+                }
             }
             return new DayOfWeek(value);
         }
@@ -605,16 +675,20 @@ public class CronRepeatExpression implements RepeatExpression {
             return set.cardinality() == 1;
         }
 
+        public boolean isOrdinal() {
+            return ordindal > 0 || ordindal == LAST;
+        }
+
         private static int getDay(String value) {
-            Integer result = DAY_ID.get(value.toUpperCase());
+            Integer result = parseDay(value);
             if (result == null) {
                 throw new IllegalArgumentException("Invalid day: " + value);
             }
             return result;
         }
 
-        public boolean isOrdinal() {
-            return ordindal > 0 || ordindal == LAST;
+        private static Integer parseDay(String value) {
+            return DAY_ID.get(value.toUpperCase());
         }
 
     }
