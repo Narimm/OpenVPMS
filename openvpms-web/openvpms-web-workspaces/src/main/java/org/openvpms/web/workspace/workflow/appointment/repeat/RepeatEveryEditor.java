@@ -29,8 +29,6 @@ import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 
-import java.util.Date;
-
 /**
  * An editor for repeat expressions that repeat every N days/weeks/months/years.
  *
@@ -87,11 +85,10 @@ class RepeatEveryEditor extends AbstractRepeatExpressionEditor {
     /**
      * Returns the expression.
      *
-     * @param startTime the date to start the expression on. May be {@code null}
      * @return the expression, or {@code null} if the expression is invalid
      */
     @Override
-    public RepeatExpression getExpression(Date startTime) {
+    public RepeatExpression getExpression() {
         return new CalendarRepeatExpression(interval.getInt(), units);
     }
 

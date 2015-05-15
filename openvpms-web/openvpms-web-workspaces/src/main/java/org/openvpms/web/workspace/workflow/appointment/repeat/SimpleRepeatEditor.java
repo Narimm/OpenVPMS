@@ -20,8 +20,6 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.openvpms.web.echo.factory.LabelFactory;
 
-import java.util.Date;
-
 /**
  * An {@link RepeatExpressionEditor} that simply displays the expression type.
  *
@@ -46,11 +44,10 @@ class SimpleRepeatEditor extends AbstractRepeatExpressionEditor {
     /**
      * Returns the expression.
      *
-     * @param startTime the date to start the expression on. May be {@code null}
      * @return the expression
      */
     @Override
-    public RepeatExpression getExpression(Date startTime) {
+    public RepeatExpression getExpression() {
         return expression;
     }
 

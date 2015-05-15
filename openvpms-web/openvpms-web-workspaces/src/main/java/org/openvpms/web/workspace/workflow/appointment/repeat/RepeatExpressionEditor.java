@@ -30,12 +30,25 @@ import java.util.Date;
 public interface RepeatExpressionEditor extends Modifiable {
 
     /**
+     * Sets the time to start the expression.
+     *
+     * @param startTime the expression start time. May be {@code null}
+     */
+    void setStartTime(Date startTime);
+
+    /**
+     * Returns the time to start the expression.
+     *
+     * @return the start time. May be {@code null}
+     */
+    Date getStartTime();
+
+    /**
      * Returns the expression.
      *
-     * @param startTime the date to start the expression on. May be {@code null}
      * @return the expression, or {@code null} if the expression is invalid
      */
-    RepeatExpression getExpression(Date startTime);
+    RepeatExpression getExpression();
 
     /**
      * Returns the component representing the editor.

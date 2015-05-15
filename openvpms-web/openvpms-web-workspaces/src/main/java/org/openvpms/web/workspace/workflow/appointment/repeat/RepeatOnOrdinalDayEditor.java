@@ -141,14 +141,14 @@ class RepeatOnOrdinalDayEditor extends AbstractRepeatExpressionEditor {
     /**
      * Returns the expression.
      *
-     * @param startTime the date to start the expression on. May be {@code null}
      * @return the expression, or {@code null} if the expression is invalid
      */
     @Override
-    public RepeatExpression getExpression(Date startTime) {
+    public RepeatExpression getExpression() {
+        Date startTime = getStartTime();
         String nth = ordinal.getString();
         String day = this.day.getString();
-        if (nth != null && day != null) {
+        if (startTime != null && nth != null && day != null) {
             DayOfWeek dayOfWeek = "L".equals(nth) ? DayOfWeek.lastDay(day) : new DayOfWeek(day, Integer.parseInt(nth));
             return new CronRepeatExpression(startTime, Month.every(interval.getInt()), dayOfWeek);
         }

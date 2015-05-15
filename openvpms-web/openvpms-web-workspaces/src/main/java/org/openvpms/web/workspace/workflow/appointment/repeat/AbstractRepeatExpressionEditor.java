@@ -38,7 +38,7 @@ public abstract class AbstractRepeatExpressionEditor extends AbstractModifiable 
     private final FocusGroup group = new FocusGroup(getClass().getName());
 
     /**
-     * The date to start the expression on.
+     * The time to start the expression on.
      */
     private Date startTime;
 
@@ -49,6 +49,16 @@ public abstract class AbstractRepeatExpressionEditor extends AbstractModifiable 
      */
     public void setStartTime(Date startTime) {
         this.startTime = startTime;
+    }
+
+    /**
+     * Returns the time to start the expression.
+     *
+     * @return the start time. May be {@code null}
+     */
+    @Override
+    public Date getStartTime() {
+        return startTime;
     }
 
     /**
@@ -139,7 +149,7 @@ public abstract class AbstractRepeatExpressionEditor extends AbstractModifiable 
      */
     @Override
     protected boolean doValidation(Validator validator) {
-        RepeatExpression expression = getExpression(startTime);
+        RepeatExpression expression = getExpression();
         boolean result = expression != null;
         if (!result) {
             validator.add(this, new ValidatorError("The expression is invalid"));

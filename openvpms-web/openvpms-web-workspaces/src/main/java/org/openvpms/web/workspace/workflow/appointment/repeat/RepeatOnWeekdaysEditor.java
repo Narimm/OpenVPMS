@@ -32,11 +32,11 @@ public class RepeatOnWeekdaysEditor extends AbstractRepeatExpressionEditor {
     /**
      * Returns the expression.
      *
-     * @param startTime the date to start the expression on. May be {@code null}
      * @return the expression, or {@code null} if the expression is invalid
      */
     @Override
-    public RepeatExpression getExpression(Date startTime) {
+    public RepeatExpression getExpression() {
+        Date startTime = getStartTime();
         return (startTime != null) ? Repeats.weekdays(startTime) : null;
     }
 

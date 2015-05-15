@@ -16,24 +16,26 @@
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Extent;
+import nextapp.echo2.app.Grid;
+import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Row;
+import nextapp.echo2.app.layout.GridLayoutData;
 import org.openvpms.web.echo.button.ToggleButton;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.resource.i18n.Messages;
 
-import java.text.DateFormatSymbols;
-import java.util.Calendar;
+import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatExpression.DayOfMonth;
 
 /**
- * A viewer for repeat expressions produced by {@link RepeatOnDaysEditor}.
+ * A viewer for repeat expressions produced by {@link RepeatOnDaysOfMonthEditor}.
  *
  * @author Tim Anderson
  */
-class RepeatOnDaysViewer {
+class RepeatOnDaysOfMonthViewer {
 
     /**
      * The expression.
@@ -41,11 +43,11 @@ class RepeatOnDaysViewer {
     private final CronRepeatExpression expression;
 
     /**
-     * Constructs a {@link RepeatOnDaysViewer}.
+     * Constructs a {@link RepeatOnDaysOfMonthViewer}.
      *
      * @param expression the expression
      */
-    public RepeatOnDaysViewer(CronRepeatExpression expression) {
+    public RepeatOnDaysOfMonthViewer(CronRepeatExpression expression) {
         this.expression = expression;
     }
 
@@ -55,16 +57,27 @@ class RepeatOnDaysViewer {
      * @return a new component
      */
     public Component getComponent() {
-        Row row = new Row();
-        row.setCellSpacing(new Extent(1));
-        String[] days = DateFormatSymbols.getInstance().getShortWeekdays();
-        for (int i = Calendar.SUNDAY; i <= Calendar.SATURDAY; ++i) {
-            boolean selected = expression.getDayOfWeek().isSelected(i);
-            ToggleButton button = new ToggleButton(days[i], selected);
+        DayOfMonth dayOfMonth = expression.getDayOfMonth();
+        Grid grid = new Grid(7);
+        grid.setInsets(new Insets(1));
+        for (int i = 0; i < 31; ++i) {
+            int day = i + 1;
+            boolean selected = dayOfMonth.isSelected(day);
+            ToggleButton button = new ToggleButton("" + day, selected);
+            button.setAlignment(Alignment.ALIGN_RIGHT);
             button.setEnabled(false);
-            row.add(button);
+            grid.add(button);
         }
+        GridLayoutData layout = new GridLayoutData();
+        layout.setColumnSpan(4);
+        ToggleButton lastDay = new ToggleButton(Messages.get("workflow.scheduling.appointment.lastday"),
+                                                dayOfMonth.hasLast());
+        lastDay.setLayoutData(layout);
+        lastDay.setAlignment(Alignment.ALIGN_CENTER);
+        grid.add(lastDay);
+
         Label every = LabelFactory.create("workflow.scheduling.appointment.every");
-        return RowFactory.create(Styles.CELL_SPACING, every, row);
+        return RowFactory.create(Styles.CELL_SPACING, every, grid);
     }
+
 }

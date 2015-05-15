@@ -140,6 +140,8 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
                 repeatEditor = new RepeatOnDaysEditor(cron);
             } else if (RepeatOnOrdinalDayEditor.supports(cron)) {
                 repeatEditor = new RepeatOnOrdinalDayEditor(cron);
+            } else if (RepeatOnDaysOfMonthEditor.supports(cron)) {
+                repeatEditor = new RepeatOnDaysOfMonthEditor(cron);
             }
         }
         RepeatCondition condition = series.getCondition();
@@ -311,7 +313,8 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
             series.setCondition(null);
         } else {
             series.refresh();
-            series.setExpression(repeatEditor.getExpression(series.getStartTime()));
+            repeatEditor.setStartTime(series.getStartTime());
+            series.setExpression(repeatEditor.getExpression());
             series.setCondition(untilEditor.getCondition());
         }
         if (repeatEditor == null) {
@@ -372,7 +375,7 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
         this.repeatEditor = editor;
         repeatContainer.removeAll();
         if (editor != null) {
-            RepeatExpression expression = editor.getExpression(series.getStartTime());
+            RepeatExpression expression = editor.getExpression();
             repeatContainer.add(editor.getComponent());
             repeatGroup.add(editor.getFocusGroup());
             series.setExpression(expression);
@@ -653,6 +656,7 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
             model.add(new SimpleRepeatEditor(Repeats.monthly()));
             model.add(new RepeatEveryEditor(DateUnits.MONTHS));
             model.add(new RepeatOnOrdinalDayEditor());
+            model.add(new RepeatOnDaysOfMonthEditor());
             return model;
         }
     }
