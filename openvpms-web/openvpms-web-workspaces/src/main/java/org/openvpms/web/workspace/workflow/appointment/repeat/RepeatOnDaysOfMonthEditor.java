@@ -30,7 +30,9 @@ import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatExpression.DayOfMonth;
@@ -49,13 +51,21 @@ class RepeatOnDaysOfMonthEditor extends AbstractRepeatExpressionEditor {
      */
     private final ToggleButton[] days = new ToggleButton[31];
 
+    /**
+     * The last day of the month button.
+     */
     private final ToggleButton lastDay;
 
     /**
      * Constructs an {@link RepeatOnDaysOfMonthEditor}.
      */
-    public RepeatOnDaysOfMonthEditor() {
-        this(null);
+    public RepeatOnDaysOfMonthEditor(Date startTime) {
+        this((CronRepeatExpression) null);
+        if (startTime != null) {
+            Calendar calendar = new GregorianCalendar();
+            calendar.setTime(startTime);
+            days[calendar.get(Calendar.DATE) - 1].setSelected(true);
+        }
     }
 
     /**

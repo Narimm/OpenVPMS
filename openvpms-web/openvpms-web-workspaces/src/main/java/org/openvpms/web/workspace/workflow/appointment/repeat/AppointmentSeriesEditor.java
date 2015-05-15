@@ -618,7 +618,7 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
             model.add(new SimpleRepeatEditor(Repeats.daily()));
             model.add(new SimpleRepeatEditor(Repeats.weekdays(series.getStartTime())));
             model.add(new RepeatEveryEditor(DateUnits.DAYS));
-            model.add(new RepeatOnDaysEditor());
+            model.add(new RepeatOnDaysEditor(series.getStartTime()));
             return model;
         }
     }
@@ -656,7 +656,7 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
             model.add(new SimpleRepeatEditor(Repeats.monthly()));
             model.add(new RepeatEveryEditor(DateUnits.MONTHS));
             model.add(new RepeatOnOrdinalDayEditor());
-            model.add(new RepeatOnDaysOfMonthEditor());
+            model.add(new RepeatOnDaysOfMonthEditor(series.getStartTime()));
             return model;
         }
     }
