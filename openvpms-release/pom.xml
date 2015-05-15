@@ -84,6 +84,21 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <doCheck>false</doCheck>
+                    <doUpdate>false</doUpdate>
+                    <shortRevisionLength>5</shortRevisionLength>
+                    <revisionOnScmFailure>-1</revisionOnScmFailure>
+                </configuration>
             </plugin>
             <plugin>
                 <!-- use the dependency plugin to get the .adl files from archetypes and sms-->

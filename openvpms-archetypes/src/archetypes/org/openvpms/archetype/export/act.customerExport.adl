@@ -1,0 +1,64 @@
+<!--
+  ~ Copyright (c) 2015.
+  ~
+  ~ Copy Charlton IT
+  ~
+  ~ All rights reserved.
+  -->
+<archetypes>
+    <archetype name="act.customerExport.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.act.Act" displayName="Customer Export">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
+              derivedValue="'Customer Export'"/>
+        <node name="description" type="java.lang.String" path="/description" maxLength="255"
+              derivedValue="concat('Export Date:',/details/exportTime,' ','Country:',' ',/details/exportCountry)"/>
+        <node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"
+              defaultValue="java.util.Date.new()" hidden="true"/>
+        <node name="patients" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="*"
+              filter="participation.patient"/>
+        <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+              filter="participation.author" hidden="true"/>
+        <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+              filter="participation.clinician"/>
+        <node name="exportDate" displayName="Export Date" path="/details/exportTime" type="java.util.Date"
+              minCardinality="1" maxCardinality="1" defaultValue="java.util.Date.new()"/>
+        <node name="exportCountry" displayName="Destination Country" path="/details/exportCountry" type="java.lang.String" minCardinality="1">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.country"/>
+            </assertion>
+        </node>
+        <node name="customer" path="/participations" type="java.util.HashSet"
+              filter="participation.customer" minCardinality="1" maxCardinality="1" displayName="Exporter"/>
+        <node displayName="Records" name="items" path="/sourceActRelationships" type="java.util.HashSet"
+              baseName="SourceActRelationship"
+              minCardinality="0" maxCardinality="*" filter="actRelationship.exportItem">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="actRelationship.exportItem"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+        <node name="exporterAgent" path="details/agent" displayName="Acting as Agent for"
+              minCardinality="0" maxCardinality="1" maxLength="50" type="java.lang.String"/>
+        <node name="importer" path="/participations" type="java.util.HashSet"
+              filter="participation.importer" minCardinality="0" maxCardinality="1" displayName="Importer / Owner"/>
+        <node name="location" path="/participations" type="java.util.HashSet"
+              minCardinality="0" maxCardinality="1" hidden="true"
+              filter="participation.location"/>
+        <node name="status" path="/status" type="java.lang.String"
+              minCardinality="1" defaultValue="'IN_PROGRESS'">
+        <assertion name="lookup.local">
+            <propertyList name="entries">
+                <property name="IN_PROGRESS" value="In Progress"/>
+                <property name="COMPLETED" value="Completed"/>
+            </propertyList>
+            <errorMessage>An error message</errorMessage>
+        </assertion>
+        </node>
+   </archetype>
+</archetypes>

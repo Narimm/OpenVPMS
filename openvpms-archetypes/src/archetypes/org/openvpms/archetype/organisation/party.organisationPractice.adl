@@ -81,6 +81,8 @@
               defaultValue="false()"/>
         <node name="showCustomerAccountSummary" path="/details/showCustomerAccountSummary" type="java.lang.Boolean"
               defaultValue="true()"/>
+        <node name="abn" path="/details/abn" type="java.lang.String" displayName="Australian Business Number:"
+              minCardinality="0" maxCardinality="1" />
         <node name="contacts" path="/contacts"
               type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
             <assertion name="archetypeRange">

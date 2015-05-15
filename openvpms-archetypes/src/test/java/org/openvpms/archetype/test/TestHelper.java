@@ -18,6 +18,7 @@ package org.openvpms.archetype.test;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
+import org.openvpms.archetype.rules.export.ExportArchetypes;
 import org.openvpms.archetype.rules.finance.till.TillArchetypes;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.PartyRules;
@@ -27,6 +28,7 @@ import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
@@ -38,6 +40,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
@@ -49,11 +52,7 @@ import org.openvpms.component.system.common.query.QueryIterator;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -170,6 +169,30 @@ public class TestHelper {
         bean.addNodeTarget("practice", location);
         bean.save();
         return customer;
+    }
+
+    public static Party createImporter(Boolean save) {
+        Party importer = (Party) create(ExportArchetypes.IMPORTER);
+        IMObjectBean importerbean = new IMObjectBean(importer);
+        Lookup mrs = TestHelper.getLookup("lookup.personTitle", "MRS");
+        importerbean.setValue("title", mrs.getCode());
+        importerbean.setValue("firstName", "Jane");
+        importerbean.setValue("lastName", "Doe");
+        if (save) {
+            importerbean.save();
+        }
+        return importer;
+    }
+
+    public static Act createExport(Date exportDate, Party customer, Date startDate, String country) {
+        Act export = (Act) create(ExportArchetypes.EXPORT);
+        ActBean bean = new ActBean(export);
+        bean.addParticipation(ExportArchetypes.EXPORTER_PARTICIPATION, customer);
+        bean.setValue("exportDate", exportDate);
+        bean.setValue("startTime", startDate);
+        bean.setValue("exportCountry", country);
+        bean.save();
+        return bean.getAct();
     }
 
     /**

@@ -44,6 +44,8 @@
                     <property name="act.patientMedication" value="Patient Medication Label"/>
                     <property name="act.patientPrescription" value="Prescription"/>
                     <property name="act.patientReminder" value="Reminder Report"/>
+                    <property name="act.exportDocumentForm" value="Export Form"/>
+                    <property name="act.exportDocumentLetter" value="Export Letter"/>
                     <property name="act.patientClinicalEvent" value="Patient Visit"/>
                     <property name="act.patientClinicalProblem" value="Patient Problem"/>
                     <property name="act.tillBalance" value="Till Balance"/>

@@ -20,6 +20,7 @@ import org.apache.commons.jxpath.ClassFunctions;
 import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.Functions;
 import org.apache.commons.lang.WordUtils;
+import org.openvpms.archetype.function.export.ExportFunctions;
 import org.openvpms.archetype.function.expression.ExpressionFunctions;
 import org.openvpms.archetype.function.history.HistoryFunctions;
 import org.openvpms.archetype.function.list.ListFunctions;
@@ -54,6 +55,7 @@ import org.openvpms.component.system.common.jxpath.ObjectFunctions;
  * <li><em>party</em> - {@link PartyFunctions}</li>
  * <li><em>reminder</em> - {@link ReminderFunctions}</li>
  * <li><em>word</em> - {@code WordUtils}</li>
+ * <li><em>export</em> - {@code ExportFunctions}</li>
  * </ul>
  *
  * @author Tim Anderson
@@ -96,6 +98,7 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
         library.addFunctions(create("party", new PartyFunctions(service, lookups, patientRules)));
         library.addFunctions(create("reminder", new ReminderFunctions(service, reminderRules, customerRules)));
         library.addFunctions(create("word", WordUtils.class));
+        library.addFunctions(create("export", new ExportFunctions(service, lookups)));
         return library;
     }
 

@@ -47,6 +47,10 @@
                         <property name="shortName"
                                   value="act.supplierDocument*"/>
                     </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="act.exportDocument*"/>
+                    </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
