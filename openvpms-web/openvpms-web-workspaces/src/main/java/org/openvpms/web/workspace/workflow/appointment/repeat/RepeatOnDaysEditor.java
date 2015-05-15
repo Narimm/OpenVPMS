@@ -30,6 +30,7 @@ import java.text.DateFormatSymbols;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatExpression.DayOfMonth;
@@ -51,9 +52,16 @@ class RepeatOnDaysEditor extends AbstractRepeatExpressionEditor {
 
     /**
      * Constructs an {@link RepeatOnDaysEditor}.
+     *
+     * @param startTime the series start time. May be {@code null}
      */
-    public RepeatOnDaysEditor() {
-        this(null);
+    public RepeatOnDaysEditor(Date startTime) {
+        this((CronRepeatExpression) null);
+        if (startTime != null) {
+            Calendar calendar = new GregorianCalendar();
+            calendar.setTime(startTime);
+            days[calendar.get(Calendar.DAY_OF_WEEK) - 1].setSelected(true);
+        }
     }
 
     /**
