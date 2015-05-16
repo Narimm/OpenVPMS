@@ -22,6 +22,7 @@ import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.GridLayoutData;
+import org.joda.time.DateTime;
 import org.openvpms.web.component.bound.SpinBox;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.echo.button.ToggleButton;
@@ -67,9 +68,19 @@ class RepeatOnDaysOfMonthEditor extends AbstractRepeatExpressionEditor {
 
     /**
      * Constructs an {@link RepeatOnDaysOfMonthEditor}.
+     *
+     * @param startTime time to start the expression on. May be {@code null}
      */
     public RepeatOnDaysOfMonthEditor(Date startTime) {
-        this((CronRepeatExpression) null);
+        super(startTime);
+        interval.setRequired(true);
+        for (int i = 0; i < days.length; ++i) {
+            int day = i + 1;
+            ToggleButton button = new ToggleButton("" + day, false);
+            button.setAlignment(Alignment.ALIGN_RIGHT);
+            days[i] = button;
+        }
+        lastDay = new ToggleButton(Messages.get("workflow.scheduling.appointment.lastday"));
         if (startTime != null) {
             Calendar calendar = new GregorianCalendar();
             calendar.setTime(startTime);
@@ -81,22 +92,21 @@ class RepeatOnDaysOfMonthEditor extends AbstractRepeatExpressionEditor {
     /**
      * Constructs an {@link RepeatOnDaysOfMonthEditor}.
      *
-     * @param expression the source expression. May be {@code null}
+     * @param expression the source expression
      */
     public RepeatOnDaysOfMonthEditor(CronRepeatExpression expression) {
-        DayOfMonth dayOfMonth = (expression != null) ? expression.getDayOfMonth() : null;
+        this((Date) null);
+        DayOfMonth dayOfMonth = expression.getDayOfMonth();
         for (int i = 0; i < days.length; ++i) {
             int day = i + 1;
-            boolean selected = (dayOfMonth != null) && dayOfMonth.isSelected(day);
-            final ToggleButton button = new ToggleButton("" + (day), selected);
-            button.setAlignment(Alignment.ALIGN_RIGHT);
-            days[i] = button;
+            if (dayOfMonth.isSelected(day)) {
+                days[i].setSelected(true);
+            }
         }
-        boolean last = (dayOfMonth != null) && dayOfMonth.hasLast();
-        lastDay = new ToggleButton(Messages.get("workflow.scheduling.appointment.lastday"), last);
-        if (expression != null) {
-            interval.setValue(expression.getMonth().getInterval());
+        if (dayOfMonth.hasLast()) {
+            lastDay.setSelected(true);
         }
+        interval.setValue(expression.getMonth().getInterval());
     }
 
     /**
@@ -158,7 +168,9 @@ class RepeatOnDaysOfMonthEditor extends AbstractRepeatExpressionEditor {
             boolean last = lastDay.isSelected();
             if (!list.isEmpty() || last) {
                 DayOfMonth dayOfMonth = DayOfMonth.days(list, last);
-                return new CronRepeatExpression(startTime, dayOfMonth, Month.every(interval.getInt()));
+                DateTime time = new DateTime(startTime);
+                return new CronRepeatExpression(startTime, dayOfMonth, Month.every(time.getMonthOfYear(),
+                                                                                   interval.getInt()));
             }
         }
         return null;

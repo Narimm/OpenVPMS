@@ -81,14 +81,14 @@ public class AppointmentSeriesViewer {
             result = label;
         } else if (RepeatOnDaysEditor.supports(expression)) {
             result = new RepeatOnDaysViewer(expression).getComponent();
-        } else if (RepeatOnOrdinalDayEditor.supports(expression)) {
-            result = new RepeatOnOrdinalDayViewer(expression).getComponent();
+        } else if (RepeatOnNthDayEditor.supports(expression)) {
+            result = new RepeatOnNthDayViewer(expression).getComponent();
         } else if (RepeatOnDaysOfMonthEditor.supports(expression)) {
             result = new RepeatOnDaysOfMonthViewer(expression).getComponent();
         } else if (RepeatOnDateEditor.supports(expression)) {
             result = new RepeatOnDateViewer(expression).getComponent();
-        } else if (RepeatOnOrdinalDayInMonthEditor.supports(expression)) {
-            result = new RepeatOnOrdinalDayInMonthViewer(expression).getComponent();
+        } else if (RepeatOnNthDayInMonthEditor.supports(expression)) {
+            result = new RepeatOnNthDayInMonthViewer(expression).getComponent();
         } else {
             result = LabelFactory.create();
         }

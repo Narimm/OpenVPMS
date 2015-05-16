@@ -37,7 +37,7 @@ import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatE
  *
  * @author Tim Anderson
  */
-public abstract class AbstractRepeatOnOrdinalDayEditor extends AbstractRepeatExpressionEditor {
+public abstract class AbstractRepeatOnNthDayEditor extends AbstractRepeatExpressionEditor {
 
     /**
      * "1".."5" or "L" for first...fifth or last.
@@ -56,12 +56,13 @@ public abstract class AbstractRepeatOnOrdinalDayEditor extends AbstractRepeatExp
             "interval", null, Integer.class, Messages.get("workflow.scheduling.appointment.interval"));
 
     /**
-     * Constructs an {@link AbstractRepeatOnOrdinalDayEditor}.
+     * Constructs an {@link AbstractRepeatOnNthDayEditor}.
      *
      * @param startTime the expression start time. May be {@code null}
      */
-    public AbstractRepeatOnOrdinalDayEditor(Date startTime) {
+    public AbstractRepeatOnNthDayEditor(Date startTime) {
         this();
+        setStartTime(startTime);
         if (startTime != null) {
             Calendar calendar = new GregorianCalendar();
             calendar.setTime(startTime);
@@ -71,11 +72,11 @@ public abstract class AbstractRepeatOnOrdinalDayEditor extends AbstractRepeatExp
     }
 
     /**
-     * Constructs an {@link AbstractRepeatOnOrdinalDayEditor}.
+     * Constructs an {@link AbstractRepeatOnNthDayEditor}.
      *
      * @param expression the source expression
      */
-    public AbstractRepeatOnOrdinalDayEditor(CronRepeatExpression expression) {
+    public AbstractRepeatOnNthDayEditor(CronRepeatExpression expression) {
         this();
         DayOfWeek dayOfWeek = expression.getDayOfWeek();
         day.setValue(dayOfWeek.getDay());
@@ -89,7 +90,7 @@ public abstract class AbstractRepeatOnOrdinalDayEditor extends AbstractRepeatExp
     /**
      * Default constructor.
      */
-    private AbstractRepeatOnOrdinalDayEditor() {
+    private AbstractRepeatOnNthDayEditor() {
         ordinal.setRequired(true);
         day.setRequired(true);
         interval.setRequired(true);

@@ -43,6 +43,22 @@ public abstract class AbstractRepeatExpressionEditor extends AbstractModifiable 
     private Date startTime;
 
     /**
+     * Constructs an {@link AbstractRepeatExpressionEditor}.
+     */
+    public AbstractRepeatExpressionEditor() {
+        this(null);
+    }
+
+    /**
+     * Constructs an {@link AbstractRepeatExpressionEditor}.
+     *
+     * @param startTime time to start the expression on. May be {@code null}
+     */
+    public AbstractRepeatExpressionEditor(Date startTime) {
+        this.startTime = startTime;
+    }
+
+    /**
      * Sets the expression start time.
      *
      * @param startTime the start time

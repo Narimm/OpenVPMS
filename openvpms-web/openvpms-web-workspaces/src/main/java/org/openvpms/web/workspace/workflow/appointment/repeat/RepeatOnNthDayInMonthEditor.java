@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.workflow.appointment.repeat;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
+import org.joda.time.DateTime;
 import org.openvpms.web.component.bound.SpinBox;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -42,7 +43,7 @@ import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatE
  *
  * @author Tim Anderson
  */
-class RepeatOnOrdinalDayInMonthEditor extends AbstractRepeatOnOrdinalDayEditor {
+class RepeatOnNthDayInMonthEditor extends AbstractRepeatOnNthDayEditor {
 
     /**
      * The month to repeat on.
@@ -50,25 +51,26 @@ class RepeatOnOrdinalDayInMonthEditor extends AbstractRepeatOnOrdinalDayEditor {
     private SimpleProperty month = new SimpleProperty("month", Integer.class);
 
     /**
-     * Constructs an {@link RepeatOnOrdinalDayInMonthEditor}.
+     * Constructs an {@link RepeatOnNthDayInMonthEditor}.
      *
      * @param startTime the expression start time. May be {@code null}
      */
-    public RepeatOnOrdinalDayInMonthEditor(Date startTime) {
+    public RepeatOnNthDayInMonthEditor(Date startTime) {
         super(startTime);
         if (startTime != null) {
             Calendar calendar = new GregorianCalendar();
             calendar.setTime(startTime);
             month.setValue(calendar.get(Calendar.MONTH) + 1); // cron months go from 1..12
+            setInterval(1);
         }
     }
 
     /**
-     * Constructs an {@link RepeatOnOrdinalDayInMonthEditor}.
+     * Constructs an {@link RepeatOnNthDayInMonthEditor}.
      *
      * @param expression the source expression
      */
-    public RepeatOnOrdinalDayInMonthEditor(CronRepeatExpression expression) {
+    public RepeatOnNthDayInMonthEditor(CronRepeatExpression expression) {
         super(expression);
         month.setValue(expression.getMonth().month());
         setInterval(expression.getYear().getInterval());
@@ -109,8 +111,9 @@ class RepeatOnOrdinalDayInMonthEditor extends AbstractRepeatOnOrdinalDayEditor {
         Date startTime = getStartTime();
         DayOfWeek dayOfWeek = getDayOfWeek();
         if (startTime != null && dayOfWeek != null) {
+            DateTime time = new DateTime(startTime);
             return new CronRepeatExpression(startTime, Month.month(month.getInt()), dayOfWeek,
-                                            Year.every(getInterval()));
+                                            Year.every(time.getYear(), getInterval()));
         }
         return null;
     }

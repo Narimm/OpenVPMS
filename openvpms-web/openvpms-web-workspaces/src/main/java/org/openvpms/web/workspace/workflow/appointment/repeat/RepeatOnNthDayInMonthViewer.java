@@ -22,18 +22,18 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.resource.i18n.Messages;
 
 /**
- * A viewer for repeat expressions produced by {@link RepeatOnOrdinalDayInMonthEditor}.
+ * A viewer for repeat expressions produced by {@link RepeatOnNthDayInMonthEditor}.
  *
  * @author Tim Anderson
  */
-class RepeatOnOrdinalDayInMonthViewer extends AbstractRepeatOnOrdinalDayViewer {
+class RepeatOnNthDayInMonthViewer extends AbstractRepeatOnNthDayViewer {
 
     /**
-     * Constructs an {@link RepeatOnOrdinalDayInMonthViewer}.
+     * Constructs an {@link RepeatOnNthDayInMonthViewer}.
      *
      * @param expression the expression
      */
-    public RepeatOnOrdinalDayInMonthViewer(CronRepeatExpression expression) {
+    public RepeatOnNthDayInMonthViewer(CronRepeatExpression expression) {
         super(expression);
     }
 

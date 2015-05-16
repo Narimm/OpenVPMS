@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.workflow.appointment.repeat;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
+import org.joda.time.DateTime;
 import org.openvpms.web.component.bound.SpinBox;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -65,6 +66,10 @@ class RepeatOnDateEditor extends AbstractRepeatExpressionEditor {
      * @param startTime the series start time. May be {@code null}
      */
     public RepeatOnDateEditor(Date startTime) {
+        super(startTime);
+        day.setRequired(true);
+        interval.setRequired(true);
+        month.setRequired(true);
         if (startTime != null) {
             Calendar calendar = new GregorianCalendar();
             calendar.setTime(startTime);
@@ -80,6 +85,7 @@ class RepeatOnDateEditor extends AbstractRepeatExpressionEditor {
      * @param expression the source expression
      */
     public RepeatOnDateEditor(CronRepeatExpression expression) {
+        this((Date) null);
         DayOfMonth dayOfMonth = expression.getDayOfMonth();
         int selectedDay = dayOfMonth.day();
         if (selectedDay != -1) {
@@ -143,8 +149,9 @@ class RepeatOnDateEditor extends AbstractRepeatExpressionEditor {
         Date startTime = getStartTime();
         if (startTime != null) {
             DayOfMonth dayOfMonth = DayOfMonth.day(day.getInt());
+            DateTime time = new DateTime(startTime);
             return new CronRepeatExpression(startTime, dayOfMonth, Month.month(month.getInt()),
-                                            Year.every(interval.getInt()));
+                                            Year.every(time.getYear(), interval.getInt()));
         }
         return null;
     }

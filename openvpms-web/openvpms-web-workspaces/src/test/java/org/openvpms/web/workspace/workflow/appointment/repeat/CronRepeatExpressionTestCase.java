@@ -17,7 +17,6 @@
 package org.openvpms.web.workspace.workflow.appointment.repeat;
 
 import org.apache.commons.collections4.Predicate;
-import org.apache.commons.collections4.PredicateUtils;
 import org.junit.Test;
 
 import java.util.BitSet;
@@ -26,7 +25,6 @@ import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.test.TestHelper.getDatetime;
 import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatExpression.DayOfMonth;
@@ -37,24 +35,24 @@ import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatE
  *
  * @author Tim Anderson
  */
-public class CronRepeatExpressionTestCase {
+public class CronRepeatExpressionTestCase extends AbstractRepeatExpressionTest {
 
     /**
      * Tests the {@link CronRepeatExpression#parse(String)} method when a days of the week are specified.
      */
     @Test
     public void testParseDayOfWeek() {
-        CronRepeatExpression expression1 = CronRepeatExpression.parse("0 0 12 ? * MON");
+        CronRepeatExpression expression1 = parse("0 0 12 ? * MON");
         assertTrue(expression1.getDayOfMonth().isAll());
         assertTrue(expression1.getMonth().isAll());
         checkSelected(expression1.getDayOfWeek(), Calendar.MONDAY);
 
-        CronRepeatExpression expression2 = CronRepeatExpression.parse("0 0 12 ? * TUE-THU");
+        CronRepeatExpression expression2 = parse("0 0 12 ? * TUE-THU");
         assertTrue(expression2.getDayOfMonth().isAll());
         assertTrue(expression2.getMonth().isAll());
         checkSelected(expression2.getDayOfWeek(), Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY);
 
-        CronRepeatExpression expression3 = CronRepeatExpression.parse("0 0 12 ? * FRI,SAT");
+        CronRepeatExpression expression3 = parse("0 0 12 ? * FRI,SAT");
         assertTrue(expression3.getDayOfMonth().isAll());
         assertTrue(expression3.getMonth().isAll());
         checkSelected(expression3.getDayOfWeek(), Calendar.FRIDAY, Calendar.SATURDAY);
@@ -65,8 +63,9 @@ public class CronRepeatExpressionTestCase {
      */
     @Test
     public void testParseDayOfWeekWithOrdinal() {
-        CronRepeatExpression expression = CronRepeatExpression.parse("0 0 12 ? */2 MON#1");
+        CronRepeatExpression expression = parse("0 0 12 ? 1/2 MON#1");
         assertTrue(expression.getDayOfMonth().isAll());
+        assertEquals(1, expression.getMonth().month());
         assertEquals(2, expression.getMonth().getInterval());
         assertEquals(1, expression.getDayOfWeek().getOrdinal());
         assertEquals("MON", expression.getDayOfWeek().getDay());
@@ -77,7 +76,7 @@ public class CronRepeatExpressionTestCase {
      */
     @Test
     public void testParseWeekdays() {
-        CronRepeatExpression expression = CronRepeatExpression.parse("0 0 12 ? * MON-FRI");
+        CronRepeatExpression expression = parse("0 0 12 ? * MON-FRI");
         assertTrue(expression.getDayOfMonth().isAll());
         assertTrue(expression.getMonth().isAll());
         assertTrue(expression.getDayOfWeek().weekdays());
@@ -88,7 +87,7 @@ public class CronRepeatExpressionTestCase {
      */
     @Test
     public void testParseWeekends() {
-        CronRepeatExpression expression = CronRepeatExpression.parse("0 0 12 ? * SUN,SAT");
+        CronRepeatExpression expression = parse("0 0 12 ? * SUN,SAT");
         assertTrue(expression.getDayOfMonth().isAll());
         assertTrue(expression.getMonth().isAll());
         assertTrue(expression.getDayOfWeek().weekends());
@@ -99,19 +98,19 @@ public class CronRepeatExpressionTestCase {
      */
     @Test
     public void testParseMonthDays() {
-        CronRepeatExpression expression1 = CronRepeatExpression.parse("0 0 12 1,3,5,7 * ?");
+        CronRepeatExpression expression1 = parse("0 0 12 1,3,5,7 * ?");
         checkSelected(expression1.getDayOfMonth(), 1, 3, 5, 7);
         assertFalse(expression1.getDayOfMonth().hasLast());
         assertTrue(expression1.getMonth().isAll());
         assertTrue(expression1.getDayOfWeek().isAll());
 
-        CronRepeatExpression expression2 = CronRepeatExpression.parse("0 0 12 20-24 * ?");
+        CronRepeatExpression expression2 = parse("0 0 12 20-24 * ?");
         checkSelected(expression2.getDayOfMonth(), 20, 21, 22, 23, 24);
         assertFalse(expression2.getDayOfMonth().hasLast());
         assertTrue(expression2.getMonth().isAll());
         assertTrue(expression2.getDayOfWeek().isAll());
 
-        CronRepeatExpression expression3 = CronRepeatExpression.parse("0 0 12 L * ?");
+        CronRepeatExpression expression3 = parse("0 0 12 L * ?");
         checkSelected(expression3.getDayOfMonth());
         assertTrue(expression3.getDayOfMonth().hasLast());
         assertTrue(expression3.getMonth().isAll());
@@ -151,20 +150,29 @@ public class CronRepeatExpressionTestCase {
     }
 
     /**
-     * Tests the {@link CronRepeatExpression#getRepeatAfter(Date, Predicate)} method.
+     * Tests the {@link CronRepeatExpression#getRepeatAfter(Date, Predicate)} method for an expression
+     * that repeats on the first monday every two months.
      */
     @Test
-    public void testGetRepeatAfter() {
-        Date startTime = getDatetime("2015-01-01 12:00:00");
-        CronRepeatExpression expression = CronRepeatExpression.parse("0 0 12 ? */2 MON#1");
-        Date date1 = expression.getRepeatAfter(startTime, PredicateUtils.<Date>truePredicate());
-        Date date2 = expression.getRepeatAfter(date1, PredicateUtils.<Date>truePredicate());
-        Date date3 = expression.getRepeatAfter(date2, PredicateUtils.<Date>truePredicate());
-        Date date4 = expression.getRepeatAfter(date3, PredicateUtils.<Date>falsePredicate());
+    public void testGetRepeatAfterForOrdinalDay() {
+        Date startTime = getDatetime("2015-01-05 12:00:00");
+        CronRepeatExpression expression = parse("0 0 12 ? 1/2 MON#1");
+        Date date1 = checkNext(startTime, expression, "2015-03-02 12:00:00");
+        Date date2 = checkNext(date1, expression, "2015-05-04 12:00:00");
+        checkNext(date2, expression, "2015-07-06 12:00:00");
+    }
 
-        assertEquals(getDatetime("2015-01-05 12:00:00"), date1);
-        assertEquals(getDatetime("2015-03-02 12:00:00"), date2);
-        assertEquals(getDatetime("2015-05-04 12:00:00"), date3);
-        assertNull(date4);
+    /**
+     * Tests the {@link CronRepeatExpression#getRepeatAfter(Date, Predicate)} method for an expression
+     * that repeats every two years.
+     */
+    @Test
+    public void testGetRepeatAfterForDate() {
+        Date startTime = getDatetime("2015-01-01 12:00:00");
+        CronRepeatExpression expression = parse("0 0 12 1 1 ? 2015/2");
+
+        Date date1 = checkNext(startTime, expression, "2017-01-01 12:00:00");
+        Date date2 = checkNext(date1, expression, "2019-01-01 12:00:00");
+        checkNext(date2, expression, "2021-01-01 12:00:00");
     }
 }

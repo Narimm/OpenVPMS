@@ -19,18 +19,18 @@ package org.openvpms.web.workspace.workflow.appointment.repeat;
 import org.openvpms.web.resource.i18n.Messages;
 
 /**
- * A viewer for expressions produced by {@link AbstractRepeatOnOrdinalDayEditor}.
+ * A viewer for expressions produced by {@link AbstractRepeatOnNthDayEditor}.
  *
  * @author Tim Anderson
  */
-public abstract class AbstractRepeatOnOrdinalDayViewer extends CronRepeatExpressionViewer {
+public abstract class AbstractRepeatOnNthDayViewer extends CronRepeatExpressionViewer {
 
     /**
-     * Constructs an {@link AbstractRepeatOnOrdinalDayViewer}.
+     * Constructs an {@link AbstractRepeatOnNthDayViewer}.
      *
      * @param expression the expression
      */
-    public AbstractRepeatOnOrdinalDayViewer(CronRepeatExpression expression) {
+    public AbstractRepeatOnNthDayViewer(CronRepeatExpression expression) {
         super(expression);
     }
 
