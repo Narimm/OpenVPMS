@@ -29,18 +29,14 @@ import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 
 import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatExpression.DayOfMonth;
+import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatExpression.Month;
 
 /**
  * A viewer for repeat expressions produced by {@link RepeatOnDaysOfMonthEditor}.
  *
  * @author Tim Anderson
  */
-class RepeatOnDaysOfMonthViewer {
-
-    /**
-     * The expression.
-     */
-    private final CronRepeatExpression expression;
+class RepeatOnDaysOfMonthViewer extends CronRepeatExpressionViewer {
 
     /**
      * Constructs a {@link RepeatOnDaysOfMonthViewer}.
@@ -48,7 +44,7 @@ class RepeatOnDaysOfMonthViewer {
      * @param expression the expression
      */
     public RepeatOnDaysOfMonthViewer(CronRepeatExpression expression) {
-        this.expression = expression;
+        super(expression);
     }
 
     /**
@@ -57,6 +53,7 @@ class RepeatOnDaysOfMonthViewer {
      * @return a new component
      */
     public Component getComponent() {
+        CronRepeatExpression expression = getExpression();
         DayOfMonth dayOfMonth = expression.getDayOfMonth();
         Grid grid = new Grid(7);
         grid.setInsets(new Insets(1));
@@ -76,8 +73,12 @@ class RepeatOnDaysOfMonthViewer {
         lastDay.setAlignment(Alignment.ALIGN_CENTER);
         grid.add(lastDay);
 
-        Label every = LabelFactory.create("workflow.scheduling.appointment.every");
-        return RowFactory.create(Styles.CELL_SPACING, every, grid);
+        Label interval = LabelFactory.create();
+        Month month = expression.getMonth();
+        interval.setText(Messages.format("workflow.scheduling.appointment.everymonth", month.getInterval()));
+
+        return RowFactory.create(Styles.CELL_SPACING, LabelFactory.create("workflow.scheduling.appointment.onthe"),
+                                 grid, interval);
     }
 
 }

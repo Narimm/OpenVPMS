@@ -128,7 +128,7 @@ class RepeatOnDaysEditor extends AbstractRepeatExpressionEditor {
                 }
             }
             if (!list.isEmpty()) {
-                DayOfWeek dayOfWeek = new DayOfWeek(list);
+                DayOfWeek dayOfWeek = DayOfWeek.days(list);
                 return new CronRepeatExpression(startTime, dayOfWeek);
             }
         }

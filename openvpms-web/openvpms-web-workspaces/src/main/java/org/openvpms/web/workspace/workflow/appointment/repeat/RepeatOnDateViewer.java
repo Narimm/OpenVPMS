@@ -17,30 +17,23 @@
 package org.openvpms.web.workspace.workflow.appointment.repeat;
 
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Row;
-import org.openvpms.web.echo.button.ToggleButton;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.factory.RowFactory;
-import org.openvpms.web.echo.style.Styles;
-
-import java.text.DateFormatSymbols;
-import java.util.Calendar;
+import org.openvpms.web.resource.i18n.Messages;
 
 /**
- * A viewer for repeat expressions produced by {@link RepeatOnDaysEditor}.
+ * A viewer for repeat expressions produced by {@link RepeatOnDateEditor}.
  *
  * @author Tim Anderson
  */
-class RepeatOnDaysViewer extends CronRepeatExpressionViewer {
+class RepeatOnDateViewer extends CronRepeatExpressionViewer {
 
     /**
-     * Constructs a {@link RepeatOnDaysViewer}.
+     * Constructs a {@link RepeatOnDateViewer}.
      *
      * @param expression the expression
      */
-    public RepeatOnDaysViewer(CronRepeatExpression expression) {
+    public RepeatOnDateViewer(CronRepeatExpression expression) {
         super(expression);
     }
 
@@ -50,17 +43,17 @@ class RepeatOnDaysViewer extends CronRepeatExpressionViewer {
      * @return a new component
      */
     public Component getComponent() {
-        Row row = new Row();
-        row.setCellSpacing(new Extent(1));
+        StringBuilder buffer = new StringBuilder();
         CronRepeatExpression expression = getExpression();
-        String[] days = DateFormatSymbols.getInstance().getShortWeekdays();
-        for (int i = Calendar.SUNDAY; i <= Calendar.SATURDAY; ++i) {
-            boolean selected = expression.getDayOfWeek().isSelected(i);
-            ToggleButton button = new ToggleButton(days[i], selected);
-            button.setEnabled(false);
-            row.add(button);
-        }
-        Label every = LabelFactory.create("workflow.scheduling.appointment.every");
-        return RowFactory.create(Styles.CELL_SPACING, every, row);
+        buffer.append(Messages.get("workflow.scheduling.appointment.onthe"));
+        buffer.append(" ");
+        buffer.append(expression.getDayOfMonth().day());
+        buffer.append(" ");
+        buffer.append(getMonth());
+        buffer.append(" ");
+        buffer.append(Messages.format("workflow.scheduling.appointment.everyyear", expression.getYear().getInterval()));
+        Label label = LabelFactory.create();
+        label.setText(buffer.toString());
+        return label;
     }
 }

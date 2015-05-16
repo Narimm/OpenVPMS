@@ -364,8 +364,8 @@ public class AppointmentSeries {
         toSave.add(appointment);
 
         toSave.add(series);
-        for (Times appointment : times) {
-            Act act = create(appointment, seriesBean);
+        for (Times t : times) {
+            Act act = create(t, seriesBean);
             acts.add(act);
             toSave.add(act);
         }

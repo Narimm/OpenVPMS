@@ -20,44 +20,58 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import org.openvpms.web.component.bound.SpinBox;
+import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatExpression.DayOfMonth;
 import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatExpression.DayOfWeek;
 import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatExpression.Month;
+import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatExpression.Year;
 
 /**
  * A {@link RepeatExpressionEditor} that supports expressions that repeat on the first..fifth/last Sunday-Saturday of
- * the month.
+ * a particular month every N years.
  *
  * @author Tim Anderson
  */
-class RepeatOnOrdinalDayEditor extends AbstractRepeatOnOrdinalDayEditor {
+class RepeatOnOrdinalDayInMonthEditor extends AbstractRepeatOnOrdinalDayEditor {
 
     /**
-     * Constructs an {@link RepeatOnOrdinalDayEditor}.
+     * The month to repeat on.
+     */
+    private SimpleProperty month = new SimpleProperty("month", Integer.class);
+
+    /**
+     * Constructs an {@link RepeatOnOrdinalDayInMonthEditor}.
      *
      * @param startTime the expression start time. May be {@code null}
      */
-    public RepeatOnOrdinalDayEditor(Date startTime) {
+    public RepeatOnOrdinalDayInMonthEditor(Date startTime) {
         super(startTime);
+        if (startTime != null) {
+            Calendar calendar = new GregorianCalendar();
+            calendar.setTime(startTime);
+            month.setValue(calendar.get(Calendar.MONTH) + 1); // cron months go from 1..12
+        }
     }
 
     /**
-     * Constructs an {@link RepeatOnOrdinalDayEditor}.
+     * Constructs an {@link RepeatOnOrdinalDayInMonthEditor}.
      *
      * @param expression the source expression
      */
-    public RepeatOnOrdinalDayEditor(CronRepeatExpression expression) {
+    public RepeatOnOrdinalDayInMonthEditor(CronRepeatExpression expression) {
         super(expression);
-        Month month = expression.getMonth();
-        setInterval(month.getInterval());
+        month.setValue(expression.getMonth().month());
+        setInterval(expression.getYear().getInterval());
     }
 
     /**
@@ -69,17 +83,20 @@ class RepeatOnOrdinalDayEditor extends AbstractRepeatOnOrdinalDayEditor {
     public Component getComponent() {
         SelectField ordinalField = createOrdinalSelector();
         SelectField dayField = createDaySelector();
+        SelectField monthField = new MonthSelectField(month);
 
-        Label the = LabelFactory.create("workflow.scheduling.appointment.onthe");
         Label every = LabelFactory.create();
         every.setText(Messages.get("workflow.scheduling.appointment.every").toLowerCase());
-        Label label = LabelFactory.create("workflow.scheduling.appointment.months");
         SpinBox intervalField = createIntervalField();
         FocusGroup focusGroup = getFocusGroup();
         focusGroup.add(ordinalField);
         focusGroup.add(dayField);
+        focusGroup.add(monthField);
         focusGroup.add(intervalField);
-        return RowFactory.create(Styles.CELL_SPACING, the, ordinalField, dayField, every, intervalField, label);
+        return RowFactory.create(Styles.CELL_SPACING, LabelFactory.create("workflow.scheduling.appointment.onthe"),
+                                 ordinalField, dayField, LabelFactory.create("workflow.scheduling.appointment.of"),
+                                 monthField, every, intervalField,
+                                 LabelFactory.create("workflow.scheduling.appointment.years"));
     }
 
     /**
@@ -92,7 +109,8 @@ class RepeatOnOrdinalDayEditor extends AbstractRepeatOnOrdinalDayEditor {
         Date startTime = getStartTime();
         DayOfWeek dayOfWeek = getDayOfWeek();
         if (startTime != null && dayOfWeek != null) {
-            return new CronRepeatExpression(startTime, Month.every(getInterval()), dayOfWeek);
+            return new CronRepeatExpression(startTime, Month.month(month.getInt()), dayOfWeek,
+                                            Year.every(getInterval()));
         }
         return null;
     }
@@ -107,7 +125,8 @@ class RepeatOnOrdinalDayEditor extends AbstractRepeatOnOrdinalDayEditor {
         DayOfWeek dayOfWeek = expression.getDayOfWeek();
         DayOfMonth dayOfMonth = expression.getDayOfMonth();
         Month month = expression.getMonth();
-        return dayOfWeek.isOrdinal() && dayOfMonth.isAll() && month.getInterval() != -1;
+        Year year = expression.getYear();
+        return dayOfWeek.isOrdinal() && dayOfMonth.isAll() && month.singleMonth() && year.getInterval() != -1;
     }
 
 }

@@ -85,6 +85,10 @@ public class AppointmentSeriesViewer {
             result = new RepeatOnOrdinalDayViewer(expression).getComponent();
         } else if (RepeatOnDaysOfMonthEditor.supports(expression)) {
             result = new RepeatOnDaysOfMonthViewer(expression).getComponent();
+        } else if (RepeatOnDateEditor.supports(expression)) {
+            result = new RepeatOnDateViewer(expression).getComponent();
+        } else if (RepeatOnOrdinalDayInMonthEditor.supports(expression)) {
+            result = new RepeatOnOrdinalDayInMonthViewer(expression).getComponent();
         } else {
             result = LabelFactory.create();
         }

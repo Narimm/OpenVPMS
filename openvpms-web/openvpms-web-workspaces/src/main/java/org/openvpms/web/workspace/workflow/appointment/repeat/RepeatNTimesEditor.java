@@ -17,14 +17,13 @@
 package org.openvpms.web.workspace.workflow.appointment.repeat;
 
 import nextapp.echo2.app.Component;
-import org.openvpms.web.component.bound.BoundTextComponentFactory;
+import org.openvpms.web.component.bound.SpinBox;
 import org.openvpms.web.component.property.NumericPropertyTransformer;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
-import org.openvpms.web.echo.text.TextField;
 
 /**
  * A {@link RepeatUntilEditor} that limits an expression to repeat a specified number of times.
@@ -85,7 +84,7 @@ public class RepeatNTimesEditor extends AbstractRepeatUntilEditor {
      */
     @Override
     public Component getComponent() {
-        TextField field = BoundTextComponentFactory.create(times, 5);
+        SpinBox field = new SpinBox(times, 1, 999);
         getFocusGroup().add(field);
         return RowFactory.create(Styles.CELL_SPACING, field,
                                  LabelFactory.create("workflow.scheduling.appointment.times"));
