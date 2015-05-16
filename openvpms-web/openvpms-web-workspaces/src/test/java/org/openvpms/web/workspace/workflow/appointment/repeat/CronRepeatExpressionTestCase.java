@@ -68,7 +68,7 @@ public class CronRepeatExpressionTestCase {
         CronRepeatExpression expression = CronRepeatExpression.parse("0 0 12 ? */2 MON#1");
         assertTrue(expression.getDayOfMonth().isAll());
         assertEquals(2, expression.getMonth().getInterval());
-        assertEquals(1, expression.getDayOfWeek().getOrdindal());
+        assertEquals(1, expression.getDayOfWeek().getOrdinal());
         assertEquals("MON", expression.getDayOfWeek().getDay());
     }
 
@@ -80,7 +80,7 @@ public class CronRepeatExpressionTestCase {
         CronRepeatExpression expression = CronRepeatExpression.parse("0 0 12 ? * MON-FRI");
         assertTrue(expression.getDayOfMonth().isAll());
         assertTrue(expression.getMonth().isAll());
-        assertTrue(expression.getDayOfWeek().weekDays());
+        assertTrue(expression.getDayOfWeek().weekdays());
     }
 
     /**

@@ -61,6 +61,6 @@ public class RepeatOnWeekdaysEditor extends AbstractRepeatExpressionEditor {
      */
     public static boolean supports(CronRepeatExpression expression) {
         return expression.getDayOfMonth().isAll() && expression.getMonth().isAll()
-               && expression.getDayOfWeek().weekDays();
+               && expression.getDayOfWeek().weekdays();
     }
 }

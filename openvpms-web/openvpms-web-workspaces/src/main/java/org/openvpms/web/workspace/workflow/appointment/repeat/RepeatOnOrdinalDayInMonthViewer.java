@@ -22,18 +22,18 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.resource.i18n.Messages;
 
 /**
- * A viewer for repeat expressions produced by {@link RepeatOnOrdinalDayEditor}.
+ * A viewer for repeat expressions produced by {@link RepeatOnOrdinalDayInMonthEditor}.
  *
  * @author Tim Anderson
  */
-class RepeatOnOrdinalDayViewer extends AbstractRepeatOnOrdinalDayViewer {
+class RepeatOnOrdinalDayInMonthViewer extends AbstractRepeatOnOrdinalDayViewer {
 
     /**
-     * Constructs a {@link RepeatOnOrdinalDayViewer}.
+     * Constructs an {@link RepeatOnOrdinalDayInMonthViewer}.
      *
      * @param expression the expression
      */
-    public RepeatOnOrdinalDayViewer(CronRepeatExpression expression) {
+    public RepeatOnOrdinalDayInMonthViewer(CronRepeatExpression expression) {
         super(expression);
     }
 
@@ -43,15 +43,19 @@ class RepeatOnOrdinalDayViewer extends AbstractRepeatOnOrdinalDayViewer {
      * @return a new component
      */
     public Component getComponent() {
-        int interval = getExpression().getMonth().getInterval();
         StringBuilder text = new StringBuilder();
+        int interval = getExpression().getYear().getInterval();
         text.append(Messages.get("workflow.scheduling.appointment.onthe"));
         text.append(" ");
         text.append(getOrdinal().toLowerCase());
         text.append(" ");
         text.append(getDay());
         text.append(" ");
-        text.append(Messages.format("workflow.scheduling.appointment.everymonth", interval));
+        text.append(Messages.get("workflow.scheduling.appointment.of"));
+        text.append(" ");
+        text.append(getMonth());
+        text.append(" ");
+        text.append(Messages.format("workflow.scheduling.appointment.everyyear", interval));
         Label result = LabelFactory.create();
         result.setText(text.toString());
         return result;

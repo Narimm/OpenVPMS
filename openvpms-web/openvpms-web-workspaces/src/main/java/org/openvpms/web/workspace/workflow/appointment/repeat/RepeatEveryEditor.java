@@ -19,14 +19,13 @@ package org.openvpms.web.workspace.workflow.appointment.repeat;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.openvpms.archetype.rules.util.DateUnits;
-import org.openvpms.web.component.bound.BoundTextComponentFactory;
+import org.openvpms.web.component.bound.SpinBox;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
-import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 
 /**
@@ -77,7 +76,7 @@ class RepeatEveryEditor extends AbstractRepeatExpressionEditor {
         Label label = LabelFactory.create();
         String unitText = RepeatHelper.toString(units);
         label.setText(unitText);
-        TextField field = BoundTextComponentFactory.create(interval, 5);
+        SpinBox field = new SpinBox(interval, 1, 999);
         getFocusGroup().add(field);
         return RowFactory.create(Styles.CELL_SPACING, every, field, label);
     }

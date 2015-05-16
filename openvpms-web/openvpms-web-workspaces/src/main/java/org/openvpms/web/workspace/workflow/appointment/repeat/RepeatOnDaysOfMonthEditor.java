@@ -22,6 +22,8 @@ import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.GridLayoutData;
+import org.openvpms.web.component.bound.SpinBox;
+import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.echo.button.ToggleButton;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
@@ -57,6 +59,13 @@ class RepeatOnDaysOfMonthEditor extends AbstractRepeatExpressionEditor {
     private final ToggleButton lastDay;
 
     /**
+     * The month interval.
+     */
+    private final SimpleProperty interval
+            = new SimpleProperty("interval", null, Integer.class,
+                                 Messages.get("workflow.scheduling.appointment.interval"));
+
+    /**
      * Constructs an {@link RepeatOnDaysOfMonthEditor}.
      */
     public RepeatOnDaysOfMonthEditor(Date startTime) {
@@ -66,6 +75,7 @@ class RepeatOnDaysOfMonthEditor extends AbstractRepeatExpressionEditor {
             calendar.setTime(startTime);
             days[calendar.get(Calendar.DATE) - 1].setSelected(true);
         }
+        interval.setValue(1);
     }
 
     /**
@@ -84,6 +94,9 @@ class RepeatOnDaysOfMonthEditor extends AbstractRepeatExpressionEditor {
         }
         boolean last = (dayOfMonth != null) && dayOfMonth.hasLast();
         lastDay = new ToggleButton(Messages.get("workflow.scheduling.appointment.lastday"), last);
+        if (expression != null) {
+            interval.setValue(expression.getMonth().getInterval());
+        }
     }
 
     /**
@@ -105,8 +118,12 @@ class RepeatOnDaysOfMonthEditor extends AbstractRepeatExpressionEditor {
         lastDay.setLayoutData(layout);
         lastDay.setAlignment(Alignment.ALIGN_CENTER);
         grid.add(lastDay);
-        Label every = LabelFactory.create("workflow.scheduling.appointment.every");
-        return RowFactory.create(Styles.CELL_SPACING, every, grid);
+        Label onthe = LabelFactory.create("workflow.scheduling.appointment.onthe");
+        Label every = LabelFactory.create();
+        every.setText(Messages.get("workflow.scheduling.appointment.every").toLowerCase());
+        SpinBox intervalField = new SpinBox(interval, 1, 12);
+        Label months = LabelFactory.create("workflow.scheduling.appointment.months");
+        return RowFactory.create(Styles.CELL_SPACING, onthe, grid, every, intervalField, months);
     }
 
     /**
@@ -119,7 +136,7 @@ class RepeatOnDaysOfMonthEditor extends AbstractRepeatExpressionEditor {
         DayOfWeek dayOfWeek = expression.getDayOfWeek();
         DayOfMonth dayOfMonth = expression.getDayOfMonth();
         Month month = expression.getMonth();
-        return dayOfWeek.isAll() && !dayOfMonth.isAll() && month.isAll();
+        return dayOfWeek.isAll() && !dayOfMonth.isAll() && month.getInterval() != -1;
     }
 
     /**
@@ -140,8 +157,8 @@ class RepeatOnDaysOfMonthEditor extends AbstractRepeatExpressionEditor {
             }
             boolean last = lastDay.isSelected();
             if (!list.isEmpty() || last) {
-                DayOfMonth dayOfMonth = new DayOfMonth(list, last);
-                return new CronRepeatExpression(startTime, dayOfMonth, Month.ALL, DayOfWeek.NO_VALUE);
+                DayOfMonth dayOfMonth = DayOfMonth.days(list, last);
+                return new CronRepeatExpression(startTime, dayOfMonth, Month.every(interval.getInt()));
             }
         }
         return null;
