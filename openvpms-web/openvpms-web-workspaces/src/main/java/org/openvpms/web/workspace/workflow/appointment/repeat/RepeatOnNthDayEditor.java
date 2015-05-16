@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.workflow.appointment.repeat;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
+import org.joda.time.DateTime;
 import org.openvpms.web.component.bound.SpinBox;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
@@ -38,23 +39,23 @@ import static org.openvpms.web.workspace.workflow.appointment.repeat.CronRepeatE
  *
  * @author Tim Anderson
  */
-class RepeatOnOrdinalDayEditor extends AbstractRepeatOnOrdinalDayEditor {
+class RepeatOnNthDayEditor extends AbstractRepeatOnNthDayEditor {
 
     /**
-     * Constructs an {@link RepeatOnOrdinalDayEditor}.
+     * Constructs an {@link RepeatOnNthDayEditor}.
      *
      * @param startTime the expression start time. May be {@code null}
      */
-    public RepeatOnOrdinalDayEditor(Date startTime) {
+    public RepeatOnNthDayEditor(Date startTime) {
         super(startTime);
     }
 
     /**
-     * Constructs an {@link RepeatOnOrdinalDayEditor}.
+     * Constructs an {@link RepeatOnNthDayEditor}.
      *
      * @param expression the source expression
      */
-    public RepeatOnOrdinalDayEditor(CronRepeatExpression expression) {
+    public RepeatOnNthDayEditor(CronRepeatExpression expression) {
         super(expression);
         Month month = expression.getMonth();
         setInterval(month.getInterval());
@@ -92,7 +93,8 @@ class RepeatOnOrdinalDayEditor extends AbstractRepeatOnOrdinalDayEditor {
         Date startTime = getStartTime();
         DayOfWeek dayOfWeek = getDayOfWeek();
         if (startTime != null && dayOfWeek != null) {
-            return new CronRepeatExpression(startTime, Month.every(getInterval()), dayOfWeek);
+            DateTime time = new DateTime(startTime);
+            return new CronRepeatExpression(startTime, Month.every(time.getMonthOfYear(), getInterval()), dayOfWeek);
         }
         return null;
     }

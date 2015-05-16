@@ -241,13 +241,19 @@ public class CronRepeatExpression implements RepeatExpression {
         private final int interval;
 
         /**
+         * Pattern to match month intervals.
+         */
+        private static final Pattern MONTH_INTERVAL = Pattern.compile("(\\d+)\\/(\\d+)");
+
+
+        /**
          * Constructs a {@link Month}.
          *
-         * @param month    the month, {@code -1} if there is no month
+         * @param month    the month
          * @param interval the interval, or {@code -1} if there is no interval
          */
         private Month(int month, int interval) {
-            this((month != -1) ? "" + month : "*/" + interval, interval);
+            this((interval != -1) ? "" + month + "/" + interval : "" + month, interval);
             if (month != -1) {
                 set.set(month, true);
             }
@@ -314,11 +320,12 @@ public class CronRepeatExpression implements RepeatExpression {
         /**
          * Creates a new month interval.
          *
+         * @param month    the start month
          * @param interval the interval
          * @return a new month interval
          */
-        public static Month every(int interval) {
-            return new Month(-1, interval);
+        public static Month every(int month, int interval) {
+            return new Month(month, interval);
         }
 
         /**
@@ -328,10 +335,11 @@ public class CronRepeatExpression implements RepeatExpression {
          * @return a new {@link Month}
          */
         public static Month parse(String value) {
-            Matcher matcher = INTERVAL_PATTERN.matcher(value);
+            Matcher matcher = MONTH_INTERVAL.matcher(value);
             if (matcher.matches()) {
-                int interval = Integer.parseInt(matcher.group(1));
-                return new Month(-1, interval);
+                int month = Integer.parseInt(matcher.group(1));
+                int interval = Integer.parseInt(matcher.group(2));
+                return new Month(month, interval);
             } else if (StringUtils.isNumeric(value)) {
                 return new Month(Integer.parseInt(value), -1);
             }
@@ -709,6 +717,11 @@ public class CronRepeatExpression implements RepeatExpression {
     public static class Year extends Field {
 
         /**
+         * The start year, or {@code -1} if none is specified
+         */
+        private final int year;
+
+        /**
          * The repeat interval, or {@code -1} if none is specified
          */
         private final int interval;
@@ -719,23 +732,40 @@ public class CronRepeatExpression implements RepeatExpression {
         public static final Year ALL = new Year("*");
 
         /**
+         * Pattern to match a year and interval.
+         */
+        private static final Pattern YEAR_INTERVAL = Pattern.compile("(\\d+)\\/(\\d+)");
+
+        /**
          * Constructs a {@link Year}.
          *
          * @param value the field pattern
          */
         private Year(String value) {
             super(value);
+            year = -1;
             interval = -1;
         }
 
         /**
          * Constructs a {@link Year}.
          *
+         * @param year     the start year
          * @param interval the repeat interval
          */
-        private Year(int interval) {
-            super("*/" + interval);
+        private Year(int year, int interval) {
+            super(year + "/" + interval);
+            this.year = year;
             this.interval = interval;
+        }
+
+        /**
+         * Returns the year.
+         *
+         * @return the year, or {@code -1} if none is specified
+         */
+        public int year() {
+            return year;
         }
 
         /**
@@ -748,13 +778,14 @@ public class CronRepeatExpression implements RepeatExpression {
         }
 
         /**
-         * Creates a new year interval.
+         * Creates a new interval starting at the specified year.
          *
+         * @param year     the start year
          * @param interval the interval
          * @return a new year interval
          */
-        public static Year every(int interval) {
-            return new Year(interval);
+        public static Year every(int year, int interval) {
+            return new Year(year, interval);
         }
 
         /**
@@ -764,10 +795,11 @@ public class CronRepeatExpression implements RepeatExpression {
          * @return a new {@link Year}
          */
         public static Year parse(String value) {
-            Matcher matcher = INTERVAL_PATTERN.matcher(value);
+            Matcher matcher = YEAR_INTERVAL.matcher(value);
             if (matcher.matches()) {
-                int interval = Integer.parseInt(matcher.group(1));
-                return new Year(interval);
+                int year = Integer.parseInt(matcher.group(1));
+                int interval = Integer.parseInt(matcher.group(2));
+                return new Year(year, interval);
             }
             return new Year(value);
         }
@@ -817,11 +849,6 @@ public class CronRepeatExpression implements RepeatExpression {
      * The logger.
      */
     private static final Log log = LogFactory.getLog(CronRepeatExpression.class);
-
-    /**
-     * Pattern to match Cron intervals.
-     */
-    private static final Pattern INTERVAL_PATTERN = Pattern.compile("\\*\\/(\\d+)");
 
     /**
      * Constructs a {@link CronRepeatExpression}.
@@ -921,6 +948,24 @@ public class CronRepeatExpression implements RepeatExpression {
         this.dayOfWeek = dayOfWeek;
         this.type = type;
         this.year = year;
+    }
+
+    /**
+     * Returns the minutes field.
+     *
+     * @return the minutes field
+     */
+    public String getMinutes() {
+        return minutes;
+    }
+
+    /**
+     * Returns the hours field.
+     *
+     * @return the hours field
+     */
+    public String getHours() {
+        return hours;
     }
 
     /**

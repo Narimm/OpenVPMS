@@ -56,7 +56,14 @@ class RepeatOnDaysEditor extends AbstractRepeatExpressionEditor {
      * @param startTime the series start time. May be {@code null}
      */
     public RepeatOnDaysEditor(Date startTime) {
-        this((CronRepeatExpression) null);
+        super(startTime);
+        String[] weekdays = DateFormatSymbols.getInstance().getShortWeekdays();
+        for (int i = 0; i < days.length; ++i) {
+            int day = Calendar.SUNDAY + i;
+            String name = weekdays[day];
+            days[i] = new ToggleButton(name, false);
+        }
+
         if (startTime != null) {
             Calendar calendar = new GregorianCalendar();
             calendar.setTime(startTime);
@@ -67,15 +74,16 @@ class RepeatOnDaysEditor extends AbstractRepeatExpressionEditor {
     /**
      * Constructs an {@link RepeatOnDaysEditor}.
      *
-     * @param expression the source expression. May be {@code null}
+     * @param expression the source expression
      */
     public RepeatOnDaysEditor(CronRepeatExpression expression) {
-        DayOfWeek dayOfWeek = (expression != null) ? expression.getDayOfWeek() : null;
+        this((Date) null);
+        DayOfWeek dayOfWeek = expression.getDayOfWeek();
         for (int i = 0; i < days.length; ++i) {
             int day = Calendar.SUNDAY + i;
-            String name = DateFormatSymbols.getInstance().getShortWeekdays()[day];
-            boolean selected = (dayOfWeek != null) && dayOfWeek.isSelected(day);
-            days[i] = new ToggleButton(name, selected);
+            if (dayOfWeek.isSelected(day)) {
+                days[i].setSelected(true);
+            }
         }
     }
 

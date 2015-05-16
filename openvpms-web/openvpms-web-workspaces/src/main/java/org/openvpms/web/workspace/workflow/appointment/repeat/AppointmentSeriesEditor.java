@@ -138,14 +138,14 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
                 repeatEditor = new RepeatOnWeekdaysEditor();
             } else if (RepeatOnDaysEditor.supports(cron)) {
                 repeatEditor = new RepeatOnDaysEditor(cron);
-            } else if (RepeatOnOrdinalDayEditor.supports(cron)) {
-                repeatEditor = new RepeatOnOrdinalDayEditor(cron);
+            } else if (RepeatOnNthDayEditor.supports(cron)) {
+                repeatEditor = new RepeatOnNthDayEditor(cron);
             } else if (RepeatOnDaysOfMonthEditor.supports(cron)) {
                 repeatEditor = new RepeatOnDaysOfMonthEditor(cron);
             } else if (RepeatOnDateEditor.supports(cron)) {
                 repeatEditor = new RepeatOnDateEditor(cron);
-            } else if (RepeatOnOrdinalDayInMonthEditor.supports(cron)) {
-                repeatEditor = new RepeatOnOrdinalDayInMonthEditor(cron);
+            } else if (RepeatOnNthDayInMonthEditor.supports(cron)) {
+                repeatEditor = new RepeatOnNthDayInMonthEditor(cron);
             }
         }
         RepeatCondition condition = series.getCondition();
@@ -659,7 +659,7 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
             RepeatTableModel model = new RepeatTableModel();
             model.add(new SimpleRepeatEditor(Repeats.monthly()));
             model.add(new RepeatEveryEditor(DateUnits.MONTHS));
-            model.add(new RepeatOnOrdinalDayEditor(series.getStartTime()));
+            model.add(new RepeatOnNthDayEditor(series.getStartTime()));
             model.add(new RepeatOnDaysOfMonthEditor(series.getStartTime()));
             return model;
         }
@@ -680,7 +680,7 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
             model.add(new SimpleRepeatEditor(Repeats.yearly()));
             model.add(new RepeatEveryEditor(DateUnits.YEARS));
             model.add(new RepeatOnDateEditor(series.getStartTime()));
-            model.add(new RepeatOnOrdinalDayInMonthEditor(series.getStartTime()));
+            model.add(new RepeatOnNthDayInMonthEditor(series.getStartTime()));
             return model;
         }
     }
