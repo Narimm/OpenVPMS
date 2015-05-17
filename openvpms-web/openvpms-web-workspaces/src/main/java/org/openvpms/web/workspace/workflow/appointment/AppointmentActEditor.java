@@ -57,6 +57,8 @@ import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeries;
 import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeriesEditor;
 import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeriesViewer;
+import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatCondition;
+import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatExpression;
 import org.openvpms.web.workspace.workflow.scheduling.AbstractScheduleActEditor;
 import org.openvpms.web.workspace.workflow.scheduling.SchedulingHelper;
 
@@ -221,13 +223,35 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     }
 
     /**
+     * Sets the series repeat expression.
+     *
+     * @param expression the expression. May be {@code null}
+     */
+    public void setExpression(RepeatExpression expression) {
+        if (seriesEditor != null) {
+            seriesEditor.setExpression(expression);
+        }
+    }
+
+    /**
+     * Sets the series repeat condition.
+     *
+     * @param condition the condition. May be {@code null}
+     */
+    public void setCondition(RepeatCondition condition) {
+        if (seriesEditor != null) {
+            seriesEditor.setCondition(condition);
+        }
+    }
+
+    /**
      * Determines if the object has been changed.
      *
      * @return {@code true} if the object has been changed
      */
     @Override
     public boolean isModified() {
-        return super.isModified() || series.isModified();
+        return super.isModified() || (seriesEditor != null && seriesEditor.isModified());
     }
 
     /**
@@ -249,8 +273,8 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     @Override
     protected boolean doSave() {
         boolean result = super.doSave();
-        if (result) {
-            series.save();
+        if (result && seriesEditor != null) {
+            seriesEditor.save();
         }
         return result;
     }

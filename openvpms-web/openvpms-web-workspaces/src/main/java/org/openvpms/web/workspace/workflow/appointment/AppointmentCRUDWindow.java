@@ -67,6 +67,8 @@ import org.openvpms.web.workspace.patient.info.PatientContextHelper;
 import org.openvpms.web.workspace.workflow.LocalClinicianContext;
 import org.openvpms.web.workspace.workflow.WorkflowFactory;
 import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeriesState;
+import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatCondition;
+import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatExpression;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleCRUDWindow;
 
 import java.util.Date;
@@ -461,9 +463,9 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                 InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
                                        Messages.get("workflow.scheduling.appointment.paste.select"));
             } else {
-                Act appointment = browser.getAct(browser.getMarked());
-                Entity schedule = browser.getSelectedSchedule();
-                Date startTime = browser.getSelectedTime();
+                final Act appointment = browser.getAct(browser.getMarked());
+                final Entity schedule = browser.getSelectedSchedule();
+                final Date startTime = browser.getSelectedTime();
                 if (appointment == null) {
                     InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
                                            Messages.get("workflow.scheduling.appointment.paste.noexist"));
@@ -477,10 +479,48 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                 } else if (schedule == null || startTime == null) {
                     InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
                                            Messages.get("workflow.scheduling.appointment.paste.noslot"));
-                } else if (browser.isCut()) {
-                    cut(appointment, schedule, startTime);
                 } else {
-                    copy(appointment, schedule, startTime);
+                    final AppointmentSeriesState state = new AppointmentSeriesState(
+                            appointment, ServiceHelper.getArchetypeService());
+                    if (browser.isCut()) {
+                        if (state.hasSeries() && state.canEditFuture()) {
+                            final MoveSeriesDialog dialog = new MoveSeriesDialog(state);
+                            dialog.addWindowPaneListener(new PopupDialogListener() {
+                                @Override
+                                public void onOK() {
+                                    if (dialog.single()) {
+                                        cut(appointment, schedule, startTime, null);
+                                    } else if (dialog.future()) {
+                                        cut(appointment, schedule, startTime, state);
+                                    } else if (dialog.all()) {
+                                        cut(state.getFirst(), schedule, startTime, state);
+                                    }
+                                }
+                            });
+                            dialog.show();
+                        } else {
+                            cut(appointment, schedule, startTime, null);
+                        }
+                    } else {
+                        if (state.hasSeries() && state.canEditFuture()) {
+                            final CopySeriesDialog dialog = new CopySeriesDialog(state);
+                            dialog.addWindowPaneListener(new PopupDialogListener() {
+                                @Override
+                                public void onOK() {
+                                    if (dialog.single()) {
+                                        copy(appointment, schedule, startTime, null, 0);
+                                    } else if (dialog.future()) {
+                                        copy(appointment, schedule, startTime, state, state.getIndex());
+                                    } else if (dialog.all()) {
+                                        copy(state.getFirst(), schedule, startTime, state, 0);
+                                    }
+                                }
+                            });
+                            dialog.show();
+                        } else {
+                            copy(appointment, schedule, startTime, null, 0);
+                        }
+                    }
                 }
             }
         }
@@ -492,10 +532,11 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * @param appointment the appointment
      * @param schedule    the new schedule
      * @param startTime   the new start time
+     * @param series      the appointment series. May be {@code null}
      */
-    private void cut(Act appointment, Entity schedule, Date startTime) {
+    private void cut(Act appointment, Entity schedule, Date startTime, AppointmentSeriesState series) {
         int duration = getDuration(appointment.getActivityStartTime(), appointment.getActivityEndTime());
-        paste(appointment, schedule, startTime, duration);
+        paste(appointment, schedule, startTime, duration, series, null, null);
         browser.clearMarked();
     }
 
@@ -505,15 +546,19 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * @param appointment the appointment
      * @param schedule    the new schedule
      * @param startTime   the new start time
+     * @param series      the appointment series. May be {@code null}
+     * @param index       the index of the appointment in the series
      */
-    private void copy(Act appointment, Entity schedule, Date startTime) {
+    private void copy(Act appointment, Entity schedule, Date startTime, AppointmentSeriesState series, int index) {
         int duration = getDuration(appointment.getActivityStartTime(), appointment.getActivityEndTime());
         appointment = rules.copy(appointment);
         ActBean bean = new ActBean(appointment);
         bean.setValue("status", AppointmentStatus.PENDING);
         bean.setValue("arrivalTime", null);
         bean.setParticipant(UserArchetypes.AUTHOR_PARTICIPATION, getContext().getUser());
-        paste(appointment, schedule, startTime, duration);
+        RepeatExpression expression = (series != null) ? series.getExpression() : null;
+        RepeatCondition condition = (series != null) ? series.getCondition(index) : null;
+        paste(appointment, schedule, startTime, duration, series, expression, condition);
     }
 
     /**
@@ -523,11 +568,15 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * @param schedule    the new schedule
      * @param startTime   the new start time
      * @param duration    the duration of the appointment, in minutes
+     * @param series      the appointment series. May be {@code null}
+     * @param expression  the new repeat expression. May be {@code null}
+     * @param condition   the new repeat condition. May be {@code null}
      */
-    private void paste(Act appointment, Entity schedule, Date startTime, int duration) {
+    private void paste(Act appointment, Entity schedule, Date startTime, int duration, AppointmentSeriesState series,
+                       RepeatExpression expression, RepeatCondition condition) {
         HelpContext edit = createEditTopic(appointment);
         DefaultLayoutContext context = new DefaultLayoutContext(getContext(), edit);
-        AppointmentActEditor editor = new AppointmentActEditor(appointment, null, context);
+        AppointmentActEditor editor = new AppointmentActEditor(appointment, null, series != null, context);
         EditDialog dialog = edit(editor, null);  // NOTE: need to update the start time after dialog is created
         editor.setSchedule(schedule);            //       See AppointmentEditDialog.timesModified().
         editor.setStartTime(startTime);   // will recalc end time. May be rounded to nearest slot
@@ -539,6 +588,12 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
             if (newLength < duration) {
                 editor.setEndTime(DateRules.getDate(startTime, duration, DateUnits.MINUTES));
             }
+        }
+        if (expression != null) {
+            editor.setExpression(expression);
+        }
+        if (condition != null) {
+            editor.setCondition(condition);
         }
         dialog.save(true);              // checks for overlapping appointments
         browser.setSelected(browser.getEvent(appointment));
@@ -680,6 +735,28 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         public DeleteSeriesDialog(AppointmentSeriesState series) {
             super(Messages.get("workflow.scheduling.appointment.deleteseries.title"),
                   Messages.get("workflow.scheduling.appointment.deleteseries.message"), series);
+        }
+    }
+
+    private static class CopySeriesDialog extends SeriesDialog {
+
+        /**
+         * Constructs a {@link CopySeriesDialog}.
+         */
+        public CopySeriesDialog(AppointmentSeriesState series) {
+            super(Messages.get("workflow.scheduling.appointment.copyseries.title"),
+                  Messages.get("workflow.scheduling.appointment.copyseries.message"), series);
+        }
+    }
+
+    private static class MoveSeriesDialog extends SeriesDialog {
+
+        /**
+         * Constructs a {@link MoveSeriesDialog}.
+         */
+        public MoveSeriesDialog(AppointmentSeriesState series) {
+            super(Messages.get("workflow.scheduling.appointment.moveseries.title"),
+                  Messages.get("workflow.scheduling.appointment.moveseries.message"), series);
         }
     }
 

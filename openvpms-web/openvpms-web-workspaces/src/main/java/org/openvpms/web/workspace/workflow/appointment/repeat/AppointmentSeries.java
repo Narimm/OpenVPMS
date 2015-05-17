@@ -19,12 +19,10 @@ package org.openvpms.web.workspace.workflow.appointment.repeat;
 import net.sf.jasperreports.engine.util.ObjectUtils;
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.collections4.PredicateUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.Times;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -139,29 +137,9 @@ public class AppointmentSeries {
             ActBean seriesBean = new ActBean(series, service);
             acts = getAppointments(appointment, seriesBean);
 
-            int interval = seriesBean.getInt("interval", -1);
-            DateUnits units = DateUnits.fromString(seriesBean.getString("units"));
-            if (interval != -1 && units != null) {
-                previous.setExpression(new CalendarRepeatExpression(interval, units));
-            } else {
-                String expression = seriesBean.getString("expression");
-                if (!StringUtils.isEmpty(expression)) {
-                    previous.setExpression(CronRepeatExpression.parse(expression));
-                }
-            }
-
-            int times = seriesBean.getInt("times", -1);
-            Date endTime = series.getActivityEndTime();
-            if (times > 0) {
-                int index = acts.indexOf(appointment);
-                if (index > 0) {
-                    // if the series isn't being edited from the start, adjust the no. of repeats
-                    times -= index;
-                }
-                previous.setCondition(Repeats.times(times));
-            } else if (endTime != null) {
-                previous.setCondition(Repeats.until(endTime));
-            }
+            previous.setExpression(RepeatHelper.getExpression(seriesBean));
+            int index = acts.indexOf(appointment);
+            previous.setCondition(RepeatHelper.getCondition(seriesBean, index));
             current = new State(previous);
         } else {
             current = new State(bean);
