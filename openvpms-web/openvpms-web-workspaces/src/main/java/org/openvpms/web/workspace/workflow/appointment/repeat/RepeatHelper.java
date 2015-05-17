@@ -16,9 +16,13 @@
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.resource.i18n.Messages;
+
+import java.util.Date;
 
 /**
  * Appointment repeat helper methods.
@@ -26,6 +30,50 @@ import org.openvpms.web.resource.i18n.Messages;
  * @author Tim Anderson
  */
 class RepeatHelper {
+
+    /**
+     * Returns the repeat expression associated with a series.
+     *
+     * @param series the series bean
+     * @return the expression, or {@code null} if there is no repeat expression
+     */
+    public static RepeatExpression getExpression(ActBean series) {
+        RepeatExpression result = null;
+        int interval = series.getInt("interval", -1);
+        DateUnits units = DateUnits.fromString(series.getString("units"));
+        if (interval != -1 && units != null) {
+            result = new CalendarRepeatExpression(interval, units);
+        } else {
+            String expression = series.getString("expression");
+            if (!StringUtils.isEmpty(expression)) {
+                result = CronRepeatExpression.parse(expression);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the repeat condition associated with a series.
+     *
+     * @param series the series bean
+     * @param count  the no. of appointments in the series prior to the current
+     * @return the condition, or {@code null} if there is no repeat condition
+     */
+    public static RepeatCondition getCondition(ActBean series, int count) {
+        RepeatCondition result = null;
+        int times = series.getInt("times", -1);
+        Date endTime = series.getAct().getActivityEndTime();
+        if (times > 0) {
+            if (count > 0) {
+                // if the series isn't being edited from the start, adjust the no. of repeats
+                times -= count;
+            }
+            result = Repeats.times(times);
+        } else if (endTime != null) {
+            result = Repeats.until(endTime);
+        }
+        return result;
+    }
 
     /**
      * Returns a string representation of a repeat expression type.
@@ -85,4 +133,5 @@ class RepeatHelper {
         }
         return result;
     }
+
 }

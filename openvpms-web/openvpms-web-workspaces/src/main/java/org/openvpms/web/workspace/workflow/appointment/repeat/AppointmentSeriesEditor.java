@@ -123,43 +123,57 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
      */
     public AppointmentSeriesEditor(AppointmentSeries series) {
         this.series = series;
+        setExpression(series.getExpression());
+        setCondition(series.getCondition());
+    }
 
-        RepeatExpression expression = series.getExpression();
+    /**
+     * Sets the repeat expression.
+     *
+     * @param expression the expression. May be {@code null}
+     */
+    public void setExpression(RepeatExpression expression) {
+        RepeatExpressionEditor editor = null;
         if (expression instanceof CalendarRepeatExpression) {
             CalendarRepeatExpression calendar = (CalendarRepeatExpression) expression;
             if (calendar.getInterval() == 1) {
-                repeatEditor = new SimpleRepeatEditor(calendar);
+                editor = new SimpleRepeatEditor(calendar);
             } else {
-                repeatEditor = new RepeatEveryEditor(calendar);
+                editor = new RepeatEveryEditor(calendar);
             }
         } else if (expression instanceof CronRepeatExpression) {
             CronRepeatExpression cron = (CronRepeatExpression) expression;
             if (RepeatOnWeekdaysEditor.supports(cron)) {
-                repeatEditor = new RepeatOnWeekdaysEditor();
+                editor = new RepeatOnWeekdaysEditor();
             } else if (RepeatOnDaysEditor.supports(cron)) {
-                repeatEditor = new RepeatOnDaysEditor(cron);
+                editor = new RepeatOnDaysEditor(cron);
             } else if (RepeatOnNthDayEditor.supports(cron)) {
-                repeatEditor = new RepeatOnNthDayEditor(cron);
+                editor = new RepeatOnNthDayEditor(cron);
             } else if (RepeatOnDaysOfMonthEditor.supports(cron)) {
-                repeatEditor = new RepeatOnDaysOfMonthEditor(cron);
+                editor = new RepeatOnDaysOfMonthEditor(cron);
             } else if (RepeatOnDateEditor.supports(cron)) {
-                repeatEditor = new RepeatOnDateEditor(cron);
+                editor = new RepeatOnDateEditor(cron);
             } else if (RepeatOnNthDayInMonthEditor.supports(cron)) {
-                repeatEditor = new RepeatOnNthDayInMonthEditor(cron);
+                editor = new RepeatOnNthDayInMonthEditor(cron);
             }
         }
-        RepeatCondition condition = series.getCondition();
+        setRepeatEditor(editor);
+    }
+
+    /**
+     * Sets the repeat condition.
+     *
+     * @param condition the repeat condition. May be {@code null}
+     */
+    public void setCondition(RepeatCondition condition) {
+        RepeatUntilEditor editor = null;
+
         if (condition instanceof RepeatUntilDateCondition) {
-            untilEditor = new RepeatUntilDateEditor((RepeatUntilDateCondition) condition);
+            editor = new RepeatUntilDateEditor((RepeatUntilDateCondition) condition);
         } else if (condition instanceof RepeatNTimesCondition) {
-            untilEditor = new RepeatNTimesEditor((RepeatNTimesCondition) condition);
+            editor = new RepeatNTimesEditor((RepeatNTimesCondition) condition);
         }
-        if (repeatEditor != null) {
-            repeatGroup.add(repeatEditor.getFocusGroup());
-        }
-        if (untilEditor != null) {
-            untilGroup.add(untilEditor.getFocusGroup());
-        }
+        setUntilEditor(editor);
     }
 
     /**
@@ -304,6 +318,13 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
     }
 
     /**
+     * Saves the series.
+     */
+    public void save() {
+        series.save();
+    }
+
+    /**
      * Validates the object.
      *
      * @param validator the validator
@@ -377,22 +398,24 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
             repeatGroup.remove(repeatEditor.getFocusGroup());
         }
         this.repeatEditor = editor;
-        repeatContainer.removeAll();
-        if (editor != null) {
-            RepeatExpression expression = editor.getExpression();
-            repeatContainer.add(editor.getComponent());
-            repeatGroup.add(editor.getFocusGroup());
-            series.setExpression(expression);
-            repeatContainer.add(repeatSelector);
+        if (repeatContainer != null) {
+            repeatContainer.removeAll();
+            if (editor != null) {
+                RepeatExpression expression = editor.getExpression();
+                repeatContainer.add(editor.getComponent());
+                repeatGroup.add(editor.getFocusGroup());
+                series.setExpression(expression);
+                repeatContainer.add(repeatSelector);
 
-            if (untilEditor == null) {
-                setUntilEditor(new RepeatNTimesEditor());
+                if (untilEditor == null) {
+                    setUntilEditor(new RepeatNTimesEditor());
+                }
+            } else {
+                repeatContainer.add(LabelFactory.create("workflow.scheduling.appointment.norepeat"));
+                setUntilEditor(null);
             }
-        } else {
-            repeatContainer.add(LabelFactory.create("workflow.scheduling.appointment.norepeat"));
-            setUntilEditor(null);
+            repeatContainer.add(repeatSelector);
         }
-        repeatContainer.add(repeatSelector);
     }
 
     private void onSelected(RepeatUntilEditor editor) {
@@ -412,11 +435,13 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
             untilGroup.remove(untilEditor.getFocusGroup());
         }
         untilEditor = editor;
-        untilContainer.removeAll();
-        if (untilEditor != null) {
-            untilContainer.add(editor.getComponent());
-            untilGroup.add(editor.getFocusGroup());
-            untilContainer.add(getUntilSelector());
+        if (untilContainer != null) {
+            untilContainer.removeAll();
+            if (untilEditor != null) {
+                untilContainer.add(editor.getComponent());
+                untilGroup.add(editor.getFocusGroup());
+                untilContainer.add(getUntilSelector());
+            }
         }
     }
 

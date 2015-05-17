@@ -70,6 +70,11 @@ public class AppointmentSeriesState {
     private final Act series;
 
     /**
+     * The repeat expression. May be {@code null}
+     */
+    private final RepeatExpression expression;
+
+    /**
      * The series items.
      */
     private final List<ObjectSet> items;
@@ -107,14 +112,17 @@ public class AppointmentSeriesState {
             } else {
                 first = null;
             }
+            expression = RepeatHelper.getExpression(seriesBean);
         } else {
             items = Collections.emptyList();
             first = null;
+            expression = null;
         }
     }
 
     /**
      * Determines if the appointment is associated with a series.
+     * +
      *
      * @return {@code true} if the appointment is associated with a series
      */
@@ -129,6 +137,30 @@ public class AppointmentSeriesState {
      */
     public Act getFirst() {
         return first;
+    }
+
+    /**
+     * Returns the series repeat expression.
+     *
+     * @return the series repeat expression. May be {@code null}
+     */
+    public RepeatExpression getExpression() {
+        return expression;
+    }
+
+    /**
+     * Returns the series repeat condition, for the nth appointment in the series
+     *
+     * @param index the index of the nth appointment (0-based)
+     * @return the series repeat condition. May be {@code null}
+     */
+    public RepeatCondition getCondition(int index) {
+        RepeatCondition condition = null;
+        if (series != null) {
+            ActBean bean = new ActBean(series, service);
+            condition = RepeatHelper.getCondition(bean, index);
+        }
+        return condition;
     }
 
     /**
@@ -174,19 +206,7 @@ public class AppointmentSeriesState {
                 }
             }
         };
-        return delete(callback);
-    }
-
-    private boolean delete(TransactionCallbackWithoutResult callback) {
-        boolean deleted = false;
-        TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
-        try {
-            template.execute(callback);
-            deleted = true;
-        } catch (Throwable exception) {
-            ErrorHelper.show(exception);
-        }
-        return deleted;
+        return execute(callback);
     }
 
     /**
@@ -206,6 +226,21 @@ public class AppointmentSeriesState {
      */
     public boolean deleteSeries() {
         return series != null && delete(0);
+    }
+
+    /**
+     * Returns the index of the appointment in the series.
+     *
+     * @return the index, or {@code -1} if not found
+     */
+    public int getIndex() {
+        for (int i = 0; i < items.size(); ++i) {
+            ObjectSet set = items.get(i);
+            if (getId(set) == appointment.getId()) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**
@@ -240,7 +275,25 @@ public class AppointmentSeriesState {
                 }
             }
         };
-        return delete(callback);
+        return execute(callback);
+    }
+
+    /**
+     * Executes a callback in a transaction, logging any error.
+     *
+     * @param callback the callback to execute
+     * @return {@code true} if the execution was successful
+     */
+    private boolean execute(TransactionCallbackWithoutResult callback) {
+        boolean result = false;
+        TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
+        try {
+            template.execute(callback);
+            result = true;
+        } catch (Throwable exception) {
+            ErrorHelper.show(exception);
+        }
+        return result;
     }
 
     /**
@@ -252,7 +305,6 @@ public class AppointmentSeriesState {
      * @param now   the current time
      * @return {@code true} if the series can be edited from the specified index
      */
-
     private boolean canEditFrom(int index, Date now) {
         boolean edit = true;
         for (int i = index + 1; i < items.size(); ++i) {
@@ -278,25 +330,22 @@ public class AppointmentSeriesState {
     }
 
     /**
-     * Returns the index of the appointment in the series.
+     * Returns an appointment reference for the specified index.
      *
-     * @return the index, or {@code -1} if not found
+     * @param index the appointment index
+     * @return the corresponding appointment reference
      */
-    private int getIndex() {
-        for (int i = 0; i < items.size(); ++i) {
-            ObjectSet set = items.get(i);
-            if (getId(set) == appointment.getId()) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
     private IMObjectReference getReference(int index) {
         long id = getId(items.get(index));
         return new IMObjectReference(APPOINTMENT, id);
     }
 
+    /**
+     * Returns the appointment id from a set.
+     *
+     * @param set the set
+     * @return the appointment id
+     */
     private long getId(ObjectSet set) {
         return set.getLong("act.id");
     }
