@@ -108,6 +108,10 @@ public class AppointmentSeries {
      */
     private final int maxAppointments;
 
+    /**
+     * If {@code true} only update the times of existing appointments in the series.
+     */
+    private boolean updateTimesOnly;
 
     /**
      * Constructs an {@link AppointmentSeries}.
@@ -197,6 +201,17 @@ public class AppointmentSeries {
      */
     public Overlap getFirstOverlap() {
         return calculateSeries(new ArrayList<Times>());
+    }
+
+    /**
+     * Determines if only the times of existing appointments should be updated.
+     * <p/>
+     * This should be set {@code true} when moving an appointment series.
+     *
+     * @param updateTimesOnly if {@code true}, only update the times, otherwise update all appointment fields
+     */
+    public void setUpdateTimesOnly(boolean updateTimesOnly) {
+        this.updateTimesOnly = updateTimesOnly;
     }
 
     /**
@@ -381,24 +396,18 @@ public class AppointmentSeries {
     private ActBean update(Act act, Times times) {
         act.setActivityStartTime(times.getStartTime());
         act.setActivityEndTime(times.getEndTime());
-        return update(act);
-    }
 
-    /**
-     * Updates an appointment.
-     *
-     * @param act the appointment
-     * @return the appointment
-     */
-    private ActBean update(Act act) {
         ActBean bean = new ActBean(act, service);
-        bean.setNodeParticipant("schedule", current.getSchedule());
-        bean.setNodeParticipant("appointmentType", current.getAppointmentType());
-        bean.setNodeParticipant("customer", current.getCustomer());
-        bean.setNodeParticipant("patient", current.getPatient());
-        bean.setNodeParticipant("clinician", current.getClinician());
-        bean.setValue("reason", current.getReason());
-        bean.setValue("description", current.getNotes());
+        if (!updateTimesOnly) {
+            bean.setNodeParticipant("schedule", current.getSchedule());
+            bean.setNodeParticipant("appointmentType", current.getAppointmentType());
+            act.setStatus(current.getStatus());
+            bean.setNodeParticipant("customer", current.getCustomer());
+            bean.setNodeParticipant("patient", current.getPatient());
+            bean.setNodeParticipant("clinician", current.getClinician());
+            act.setReason(current.getReason());
+            act.setDescription(current.getNotes());
+        }
         return bean;
     }
 
@@ -614,6 +623,11 @@ public class AppointmentSeries {
         private IMObjectReference schedule;
 
         /**
+         * The status.
+         */
+        private String status;
+
+        /**
          * The customer.
          */
         private IMObjectReference customer;
@@ -674,6 +688,7 @@ public class AppointmentSeries {
             endTime = act.getActivityEndTime();
             schedule = appointment.getNodeParticipantRef("schedule");
             appointmentType = appointment.getNodeParticipantRef("appointmentType");
+            status = act.getStatus();
             customer = appointment.getNodeParticipantRef("customer");
             patient = appointment.getNodeParticipantRef("patient");
             clinician = appointment.getNodeParticipantRef("clinician");
@@ -692,6 +707,7 @@ public class AppointmentSeries {
             this.endTime = state.endTime;
             this.schedule = state.schedule;
             this.appointmentType = state.appointmentType;
+            this.status = state.status;
             this.customer = state.customer;
             this.patient = state.patient;
             this.clinician = state.clinician;
@@ -750,6 +766,10 @@ public class AppointmentSeries {
             return appointmentType;
         }
 
+        public String getStatus() {
+            return status;
+        }
+
         public IMObjectReference getAuthor() {
             return author;
         }
@@ -803,6 +823,7 @@ public class AppointmentSeries {
                     result = new EqualsBuilder()
                             .append(schedule, other.schedule)
                             .append(appointmentType, other.appointmentType)
+                            .append(status, other.status)
                             .append(customer, other.customer)
                             .append(patient, other.patient)
                             .append(clinician, other.clinician)

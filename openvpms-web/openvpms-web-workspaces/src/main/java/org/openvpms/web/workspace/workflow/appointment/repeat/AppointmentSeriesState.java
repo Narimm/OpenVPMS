@@ -185,6 +185,24 @@ public class AppointmentSeriesState {
     }
 
     /**
+     * Returns all non-pending appointment statuses after the first appointment in the series.
+     *
+     * @return the statuses
+     */
+    public List<String> getNonPendingStatuses() {
+        return getNonPendingStatuses(0);
+    }
+
+    /**
+     * Returns all non-pending appointment statuses after the current appointment in the series.
+     *
+     * @return the statuses
+     */
+    public List<String> getFutureNonPendingStatuses() {
+        return getNonPendingStatuses(getIndex());
+    }
+
+    /**
      * Deletes the appointment.
      * <p/>
      * If it is the only appointment in the series, the series will be deleted, otherwise the series will remain.
@@ -324,9 +342,25 @@ public class AppointmentSeriesState {
      * @return {@code true} if the appointment can be edited
      */
     private boolean canEdit(ObjectSet set, Date now) {
-        String status = set.getString("act.status");
         Date startTime = set.getDate("act.startTime");
-        return WorkflowStatus.PENDING.equals(status) && DateRules.compareTo(startTime, now) > 0;
+        return DateRules.compareTo(startTime, now) > 0;
+    }
+
+    /**
+     * Returns any appointment statuses after the specified index that are not PENDING.
+     *
+     * @param index the appointment index
+     * @return the statuses
+     */
+    private List<String> getNonPendingStatuses(int index) {
+        List<String> result = new ArrayList<String>();
+        for (int i = index + 1; i < items.size(); ++i) {
+            String status = items.get(i).getString("act.status");
+            if (!WorkflowStatus.PENDING.equals(status) && !result.contains(status)) {
+                result.add(status);
+            }
+        }
+        return result;
     }
 
     /**
