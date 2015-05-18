@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.workflow.appointment;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
@@ -357,6 +358,24 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies that the status can be updated.
+     */
+    @Test
+    public void testChangeStatus() {
+        Act appointment = ScheduleTestHelper.createAppointment(startTime, endTime, schedule, appointmentType, customer,
+                                                               null, clinician, author);
+
+        AppointmentSeries series = createSeries(appointment, monthly(), times(2));
+        checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
+
+        appointment.setStatus(ActStatus.COMPLETED);
+
+        checkSave(series);
+        assertEquals(ActStatus.COMPLETED, appointment.getStatus());
+        checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
+    }
+
+    /**
      * Verifies that the author can be updated.
      */
     @Test
@@ -478,16 +497,17 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         ActBean bean = new ActBean(appointment);
         Entity schedule = bean.getNodeParticipant("schedule");
         Entity appointmentType = bean.getNodeParticipant("appointmentType");
+        String status = appointment.getStatus();
         Party customer = (Party) bean.getNodeParticipant("customer");
         Party patient = (Party) bean.getNodeParticipant("patient");
         User clinician = (User) bean.getNodeParticipant("clinician");
         for (Act act : acts) {
             if (act.equals(appointment)) {
                 User appointmentAuthor = (User) bean.getNodeParticipant("author");
-                checkAppointment(act, from, to, schedule, appointmentType, customer, patient, clinician,
+                checkAppointment(act, from, to, schedule, appointmentType, status, customer, patient, clinician,
                                  appointmentAuthor);
             } else {
-                checkAppointment(act, from, to, schedule, appointmentType, customer, patient, clinician, author);
+                checkAppointment(act, from, to, schedule, appointmentType, status, customer, patient, clinician, author);
             }
             from = DateRules.getDate(from, interval, units);
             to = DateRules.getDate(to, interval, units);
@@ -546,18 +566,20 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
      * @param endTime         the expected end time
      * @param schedule        the expected schedule
      * @param appointmentType the expected appointment type
+     * @param status          the expected status
      * @param customer        the expected customer
      * @param patient         the expected patient
      * @param clinician       the expected clinician
      * @param author          the expected author
      */
     private void checkAppointment(Act act, Date startTime, Date endTime, Entity schedule, Entity appointmentType,
-                                  Party customer, Party patient, User clinician, User author) {
+                                  String status, Party customer, Party patient, User clinician, User author) {
         assertEquals(0, DateRules.compareTo(startTime, act.getActivityStartTime()));
         assertEquals(0, DateRules.compareTo(endTime, act.getActivityEndTime()));
         ActBean bean = new ActBean(act);
         assertEquals(schedule, bean.getNodeParticipant("schedule"));
         assertEquals(appointmentType, bean.getNodeParticipant("appointmentType"));
+        assertEquals(status, act.getStatus());
         assertEquals(customer, bean.getNodeParticipant("customer"));
         assertEquals(patient, bean.getNodeParticipant("patient"));
         assertEquals(clinician, bean.getNodeParticipant("clinician"));
