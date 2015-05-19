@@ -133,6 +133,15 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
     }
 
     /**
+     * Checks if there are orders pending for the customer.
+     * <br/>
+     * If so, displays a message. If not, removes any existing message.
+     */
+    public void checkOrders() {
+        manager.check();
+    }
+
+    /**
      * Saves the current object.
      * <p/>
      * This delegates to {@link #prepare(boolean)}.

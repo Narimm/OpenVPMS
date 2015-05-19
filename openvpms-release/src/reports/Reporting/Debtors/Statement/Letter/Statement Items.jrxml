@@ -12,22 +12,31 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
-              name="Statement Items" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0"
-              topMargin="0" bottomMargin="0">
+              name="Statement Items" pageWidth="612" pageHeight="792" columnWidth="552" leftMargin="0" rightMargin="60"
+              topMargin="0" bottomMargin="0" uuid="b36217aa-446f-4875-a121-c2089af80062">
     <property name="ireport.scriptlethandling" value="0"/>
     <property name="ireport.encoding" value="UTF-8"/>
     <property name="ireport.zoom" value="1.0"/>
     <property name="ireport.x" value="0"/>
     <property name="ireport.y" value="0"/>
-    <import value="org.openvpms.component.business.domain.im.party.Party"/>
+    <property name="com.jaspersoft.studio.unit." value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
     <import value="net.sf.jasperreports.engine.*"/>
     <import value="java.util.*"/>
+    <import value="org.openvpms.component.business.domain.im.party.Party"/>
     <import value="net.sf.jasperreports.engine.data.*"/>
     <field name="target.patient.entity.name" class="java.lang.String"/>
     <field name="target.product.entity" class="java.lang.Object"/>
@@ -45,20 +54,20 @@
     <group name="patientGroup">
         <groupExpression><![CDATA[$F{target.patient.entity.name}]]></groupExpression>
         <groupHeader>
-            <band height="18" splitType="Stretch">
+            <band height="19" splitType="Stretch">
                 <textField isBlankWhenNull="false">
-                    <reportElement key="textField-1" x="48" y="0" width="141" height="15"/>
+                    <reportElement key="textField-1" x="91" y="2" width="145" height="15"
+                                   uuid="b8f99209-1465-4983-b070-710aa1fa5a86"/>
                     <box>
                         <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                         <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                         <bottomPen lineWidth="0.0" lineColor="#000000"/>
                         <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     </box>
-                    <textElement>
-                        <font isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <textElement verticalAlignment="Middle">
+                        <font size="10.32" isBold="true"/>
                     </textElement>
-                    <textFieldExpression class="java.lang.String">
-                        <![CDATA[$F{target.patient.entity.name}]]></textFieldExpression>
+                    <textFieldExpression><![CDATA[$F{target.patient.entity.name}]]></textFieldExpression>
                 </textField>
             </band>
         </groupHeader>
@@ -79,31 +88,44 @@
         <band splitType="Stretch"/>
     </columnHeader>
     <detail>
-        <band height="17" splitType="Stretch">
+        <band height="18" splitType="Stretch">
+            <property name="local_mesure_unitheight" value="pixel"/>
             <textField pattern="#,##0.00" isBlankWhenNull="false">
-                <reportElement key="textField-2" x="348" y="2" width="62" height="15"/>
+                <reportElement key="textField-2" x="398" y="1" width="66" height="15"
+                               uuid="ccd7925c-fd69-40f7-bfd3-85ad16da4d3e">
+                    <property name="local_mesure_unitwidth" value="pixel"/>
+                    <property name="com.jaspersoft.studio.unit.width" value="px"/>
+                    <property name="local_mesure_unitx" value="pixel"/>
+                    <property name="com.jaspersoft.studio.unit.x" value="px"/>
+                </reportElement>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <bottomPen lineWidth="0.0" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right"/>
-                <textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{target.total}]]></textFieldExpression>
+                <textElement textAlignment="Right">
+                    <font size="10.32"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{target.total}]]></textFieldExpression>
             </textField>
             <textField pattern="###0.00" isBlankWhenNull="false">
-                <reportElement key="textField-3" x="241" y="2" width="39" height="15"/>
+                <reportElement key="textField-3" x="290" y="1" width="40" height="15"
+                               uuid="2b0e309c-c26c-4961-b9cd-6d38cd211fcb"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <bottomPen lineWidth="0.0" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right"/>
-                <textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{target.quantity}]]></textFieldExpression>
+                <textElement textAlignment="Right">
+                    <font size="10.32"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{target.quantity}]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="false">
-                <reportElement key="textField-4" x="48" y="2" width="203" height="15"/>
+                <reportElement key="textField-4" x="91" y="1" width="209" height="15"
+                               uuid="6281e259-23f7-40fb-b96b-e287169ee283"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -111,17 +133,18 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font isItalic="true" pdfFontName="Helvetica-Oblique"/>
+                    <font size="10.32" isItalic="true"/>
                 </textElement>
-                <textFieldExpression class="java.lang.String">
+                <textFieldExpression>
                     <![CDATA[($F{target.product.entity.printedName} == null) ? $F{target.product.entity.name}: $F{target.product.entity.printedName}]]></textFieldExpression>
             </textField>
             <textField pattern="MM/dd" isBlankWhenNull="false">
-                <reportElement key="textField-5" x="0" y="2" width="48" height="15"/>
+                <reportElement key="textField-5" x="41" y="1" width="49" height="15"
+                               uuid="98a323b2-51af-452b-a458-07d956a2b6cf"/>
                 <textElement>
-                    <font isItalic="true" pdfFontName="Helvetica-Oblique"/>
+                    <font size="10.32" isItalic="true"/>
                 </textElement>
-                <textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{target.startTime}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$F{target.startTime}]]></textFieldExpression>
             </textField>
         </band>
     </detail>

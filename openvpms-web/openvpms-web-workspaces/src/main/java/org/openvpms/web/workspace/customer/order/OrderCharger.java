@@ -372,6 +372,7 @@ public class OrderCharger {
         });
         if (ActStatus.POSTED.equals(act.getStatus())) {
             charged.add(act);
+            dialog.checkOrders();
         }
     }
 
