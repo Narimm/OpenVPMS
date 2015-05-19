@@ -29,6 +29,7 @@ import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeries;
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatCondition;
@@ -135,11 +136,15 @@ public class AppointmentEditDialog extends EditDialog {
                     result = true;
                     if (!allowDoubleBooking(schedule)) {
                         String title = Messages.get("workflow.scheduling.nodoubleschedule.title");
-                        String message = Messages.get("workflow.scheduling.nodoubleschedule.message");
+                        String message = Messages.format("workflow.scheduling.nodoubleschedule.message",
+                                                         DateFormatter.formatDate(overlap.getStartTime(), false),
+                                                         DateFormatter.formatTime(overlap.getStartTime(), false));
                         ErrorDialog.show(title, message);
                     } else {
                         String title = Messages.get("workflow.scheduling.doubleschedule.title");
-                        String message = Messages.get("workflow.scheduling.doubleschedule.message");
+                        String message = Messages.format("workflow.scheduling.doubleschedule.message",
+                                                         DateFormatter.formatDate(overlap.getStartTime(), false),
+                                                         DateFormatter.formatTime(overlap.getStartTime(), false));
                         final ConfirmationDialog dialog = new ConfirmationDialog(title, message);
                         dialog.addWindowPaneListener(new PopupDialogListener() {
                             @Override

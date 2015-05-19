@@ -20,7 +20,6 @@ import echopointng.DateField;
 import nextapp.echo2.app.Component;
 import org.openvpms.web.component.bound.BoundDateFieldFactory;
 import org.openvpms.web.component.property.SimpleProperty;
-import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
@@ -35,16 +34,13 @@ import java.util.Date;
 public class RepeatUntilDateEditor extends AbstractRepeatUntilEditor {
 
     /**
-     * The date to repeat until.
-     */
-    private final SimpleProperty property = new SimpleProperty("date", Date.class);
-
-    /**
      * Constructs a {@link RepeatUntilDateEditor}.
      *
      * @param date the date to repeat until
      */
     public RepeatUntilDateEditor(Date date) {
+        super(new SimpleProperty("date", Date.class));
+        SimpleProperty property = (SimpleProperty) getProperty();
         property.setRequired(true);
         property.setValue(date);
     }
@@ -65,7 +61,7 @@ public class RepeatUntilDateEditor extends AbstractRepeatUntilEditor {
      */
     @Override
     public RepeatCondition getCondition() {
-        return property.isValid() ? new RepeatUntilDateCondition(property.getDate()) : null;
+        return isValid() ? new RepeatUntilDateCondition(getProperty().getDate()) : null;
     }
 
     /**
@@ -75,21 +71,11 @@ public class RepeatUntilDateEditor extends AbstractRepeatUntilEditor {
      */
     @Override
     public Component getComponent() {
-        DateField field = BoundDateFieldFactory.create(property);
+        DateField field = BoundDateFieldFactory.create(getProperty());
         field.setPopUpAlwaysOnTop(true);
         getFocusGroup().add(field);
         return RowFactory.create(Styles.CELL_SPACING, LabelFactory.create("workflow.scheduling.appointment.until"),
                                  field);
     }
 
-    /**
-     * Validates the object.
-     *
-     * @param validator the validator
-     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
-     */
-    @Override
-    protected boolean doValidation(Validator validator) {
-        return property.validate(validator);
-    }
 }

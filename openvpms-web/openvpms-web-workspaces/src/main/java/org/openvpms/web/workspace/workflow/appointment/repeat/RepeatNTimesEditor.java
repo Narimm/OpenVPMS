@@ -19,11 +19,14 @@ package org.openvpms.web.workspace.workflow.appointment.repeat;
 import nextapp.echo2.app.Component;
 import org.openvpms.web.component.bound.SpinBox;
 import org.openvpms.web.component.property.NumericPropertyTransformer;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.resource.i18n.Messages;
 
 /**
  * A {@link RepeatUntilEditor} that limits an expression to repeat a specified number of times.
@@ -33,9 +36,10 @@ import org.openvpms.web.echo.style.Styles;
 public class RepeatNTimesEditor extends AbstractRepeatUntilEditor {
 
     /**
-     * The number of times to repeat.
+     * The maximum no. of repeats. This limits appointment series to 365 appointments, corresponding to a years
+     * worth of daily appointments.
      */
-    private final SimpleProperty times = new SimpleProperty("times", Integer.class);
+    private static final int MAX_REPEATS = 364;
 
     /**
      * Constructs an {@link RepeatNTimesEditor}.
@@ -51,7 +55,7 @@ public class RepeatNTimesEditor extends AbstractRepeatUntilEditor {
      */
     public RepeatNTimesEditor(int times) {
         this(null);
-        this.times.setValue(times);
+        getProperty().setValue(times);
     }
 
     /**
@@ -60,6 +64,8 @@ public class RepeatNTimesEditor extends AbstractRepeatUntilEditor {
      * @param condition the condition. May be {@code null}
      */
     public RepeatNTimesEditor(RepeatNTimesCondition condition) {
+        super(new SimpleProperty("times", Integer.class));
+        SimpleProperty times = (SimpleProperty) getProperty();
         times.setRequired(true);
         times.setTransformer(new NumericPropertyTransformer(times, true));
         if (condition != null) {
@@ -74,6 +80,7 @@ public class RepeatNTimesEditor extends AbstractRepeatUntilEditor {
      */
     @Override
     public RepeatCondition getCondition() {
+        Property times = getProperty();
         return times.isValid() ? new RepeatNTimesCondition(times.getInt()) : null;
     }
 
@@ -84,7 +91,7 @@ public class RepeatNTimesEditor extends AbstractRepeatUntilEditor {
      */
     @Override
     public Component getComponent() {
-        SpinBox field = new SpinBox(times, 1, 999);
+        SpinBox field = new SpinBox(getProperty(), 1, MAX_REPEATS);
         getFocusGroup().add(field);
         return RowFactory.create(Styles.CELL_SPACING, field,
                                  LabelFactory.create("workflow.scheduling.appointment.times"));
@@ -98,6 +105,12 @@ public class RepeatNTimesEditor extends AbstractRepeatUntilEditor {
      */
     @Override
     protected boolean doValidation(Validator validator) {
-        return times.validate(validator);
+        boolean result = super.doValidation(validator);
+        if (result && getProperty().getInt() > MAX_REPEATS) {
+            validator.add(this, new ValidatorError(Messages.format("workflow.scheduling.appointment.maxrepeats",
+                                                                   MAX_REPEATS)));
+            result = false;
+        }
+        return result;
     }
 }
