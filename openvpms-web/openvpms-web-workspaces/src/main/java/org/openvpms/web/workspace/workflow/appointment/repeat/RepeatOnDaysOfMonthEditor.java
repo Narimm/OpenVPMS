@@ -25,6 +25,8 @@ import nextapp.echo2.app.layout.GridLayoutData;
 import org.joda.time.DateTime;
 import org.openvpms.web.component.bound.SpinBox;
 import org.openvpms.web.component.property.SimpleProperty;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.button.ToggleButton;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
@@ -174,5 +176,38 @@ class RepeatOnDaysOfMonthEditor extends AbstractRepeatExpressionEditor {
             }
         }
         return null;
+    }
+
+    /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        return validateDays(validator) && interval.validate(validator);
+    }
+
+    /**
+     * Ensures that one or more days are selected.
+     *
+     * @param validator the validator
+     * @return {@code true} if one or more days are selected
+     */
+    private boolean validateDays(Validator validator) {
+        boolean result = lastDay.isSelected();
+        if (!result) {
+            for (ToggleButton button : days) {
+                if (button.isSelected()) {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        if (!result) {
+            validator.add(this, new ValidatorError(Messages.get("workflow.scheduling.appointment.selectdays")));
+        }
+        return result;
     }
 }

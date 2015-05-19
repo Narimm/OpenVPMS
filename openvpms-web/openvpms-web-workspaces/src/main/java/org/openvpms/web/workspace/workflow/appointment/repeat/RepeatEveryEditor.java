@@ -99,7 +99,7 @@ class RepeatEveryEditor extends AbstractRepeatExpressionEditor {
      */
     @Override
     protected boolean doValidation(Validator validator) {
-        boolean result = validator.validate(interval);
+        boolean result = interval.validate(validator);
         if (result) {
             result = interval.getInt() > 0;
             if (!result) {

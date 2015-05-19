@@ -16,9 +16,8 @@
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
 
-import org.openvpms.web.component.property.AbstractModifiable;
-import org.openvpms.web.component.property.ErrorListener;
-import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.edit.AbstractPropertyEditor;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.focus.FocusGroup;
 
 /**
@@ -26,7 +25,7 @@ import org.openvpms.web.echo.focus.FocusGroup;
  *
  * @author Tim Anderson
  */
-public abstract class AbstractRepeatUntilEditor extends AbstractModifiable implements RepeatUntilEditor {
+public abstract class AbstractRepeatUntilEditor extends AbstractPropertyEditor implements RepeatUntilEditor {
 
     /**
      * The focus group.
@@ -34,69 +33,12 @@ public abstract class AbstractRepeatUntilEditor extends AbstractModifiable imple
     private final FocusGroup group = new FocusGroup(getClass().getSimpleName());
 
     /**
-     * Determines if the object has been modified.
+     * Constructs an {@link AbstractRepeatUntilEditor}.
      *
-     * @return {@code true} if the object has been modified
+     * @param property the property being edited
      */
-    @Override
-    public boolean isModified() {
-        return false;
-    }
-
-    /**
-     * Clears the modified status of the object.
-     */
-    @Override
-    public void clearModified() {
-    }
-
-    /**
-     * Adds a listener to be notified when this changes.
-     * <p/>
-     * Listeners will be notified in the order they were registered.
-     *
-     * @param listener the listener to add
-     */
-    @Override
-    public void addModifiableListener(ModifiableListener listener) {
-    }
-
-    /**
-     * Adds a listener to be notified when this changes, specifying the order of the listener.
-     *
-     * @param listener the listener to add
-     * @param index    the index to add the listener at. The 0-index listener is notified first
-     */
-    @Override
-    public void addModifiableListener(ModifiableListener listener, int index) {
-    }
-
-    /**
-     * Removes a listener.
-     *
-     * @param listener the listener to remove
-     */
-    @Override
-    public void removeModifiableListener(ModifiableListener listener) {
-    }
-
-    /**
-     * Sets a listener to be notified of errors.
-     *
-     * @param listener the listener to register. May be {@code null}
-     */
-    @Override
-    public void setErrorListener(ErrorListener listener) {
-    }
-
-    /**
-     * Returns the listener to be notified of errors.
-     *
-     * @return the listener. May be {@code null}
-     */
-    @Override
-    public ErrorListener getErrorListener() {
-        return null;
+    public AbstractRepeatUntilEditor(Property property) {
+        super(property);
     }
 
     /**
