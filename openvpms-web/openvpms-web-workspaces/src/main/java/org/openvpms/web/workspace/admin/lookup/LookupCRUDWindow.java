@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.lookup;
@@ -31,12 +31,10 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.AbstractIMObjectDeletionListener;
 import org.openvpms.web.component.im.util.DefaultIMObjectDeleter;
 import org.openvpms.web.component.im.util.IMObjectDeleter;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.ResultSetCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
-import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
@@ -72,17 +70,14 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
     }
 
     /**
-     * Deletes the current object.
+     * Deletes an object.
+     *
+     * @param object the object to delete
      */
     @Override
-    public void delete() {
-        Lookup object = IMObjectHelper.reload(getObject());
-        if (object == null) {
-            ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
-        } else {
-            IMObjectDeleter deletor = new DefaultIMObjectDeleter(getContext());
-            deletor.delete(object, getHelpContext().subtopic("delete"), new LookupDeletorListener());
-        }
+    protected void delete(Lookup object) {
+        IMObjectDeleter deletor = new DefaultIMObjectDeleter(getContext());
+        deletor.delete(object, getHelpContext().subtopic("delete"), new LookupDeletorListener());
     }
 
     /**

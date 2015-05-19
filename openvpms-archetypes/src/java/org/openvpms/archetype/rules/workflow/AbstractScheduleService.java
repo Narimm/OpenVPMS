@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
@@ -149,6 +150,17 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
         }
 
         return results;
+    }
+
+    /**
+     * Returns all events for the specified schedule and day, if they are cached.
+     *
+     * @param schedule the schedule
+     * @param day      the day
+     * @return the events, or {@code null} if they are not in the cache
+     */
+    protected List<PropertySet> getCached(IMObjectReference schedule, Date day) {
+        return cache.getCached(schedule, day);
     }
 
     /**

@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -56,21 +56,12 @@
             </assertion>
         </node>
         <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
-              filter="participation.author" hidden="true"/>
+              filter="participation.author" readOnly="true"/>
         <node name="schedule" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.schedule" hidden="true"/>
-        <node name="tasks" path="/sourceActRelationships"
-              type="java.util.HashSet" baseName="SourceActRelationship" hidden="true" minCardinality="0"
-              maxCardinality="1">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="actRelationship.customerAppointmentTask"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
+        <node name="tasks" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship"
+              hidden="true" minCardinality="0" maxCardinality="1" filter="actRelationship.customerAppointmentTask"/>
+        <node name="repeat" path="/targetActRelationships" type="java.util.HashSet" baseName="TargetActRelationship"
+              hidden="true" minCardinality="0" maxCardinality="1" filter="actRelationship.customerAppointmentSeries"/>
     </archetype>
 </archetypes>

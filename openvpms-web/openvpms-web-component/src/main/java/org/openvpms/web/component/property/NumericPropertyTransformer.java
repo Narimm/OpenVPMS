@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -26,25 +26,39 @@ import java.math.BigDecimal;
 /**
  * Validator for numeric nodes.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class NumericPropertyTransformer extends AbstractPropertyTransformer {
 
     /**
+     * Determines if the value must be positive.
+     */
+    private final boolean positive;
+
+    /**
      * The type converter.
      */
-    private static final OpenVPMSTypeConverter CONVERTER
-            = new OpenVPMSTypeConverter();
+    private static final OpenVPMSTypeConverter CONVERTER = new OpenVPMSTypeConverter();
 
 
     /**
-     * Constructs a new <tt>NumericPropertyTransformer</tt>.
+     * Constructs a {@link NumericPropertyTransformer|.
      *
      * @param property the property
      */
     public NumericPropertyTransformer(Property property) {
+        this(property, false);
+    }
+
+    /**
+     * Constructs a {@link NumericPropertyTransformer}.
+     *
+     * @param property the property
+     * @param positive if {@code true}, the value must be {@code >= 0}.
+     */
+    public NumericPropertyTransformer(Property property, boolean positive) {
         super(property);
+        this.positive = positive;
     }
 
     /**
@@ -63,8 +77,7 @@ public class NumericPropertyTransformer extends AbstractPropertyTransformer {
      * </ul>
      *
      * @param object the object to convert
-     * @return the transformed object, or <code>object</code> if no
-     *         transformation is required
+     * @return the transformed object, or {@code object} if no transformation is required
      * @throws PropertyException if the object is invalid
      */
     public Object apply(Object object) {
@@ -80,6 +93,10 @@ public class NumericPropertyTransformer extends AbstractPropertyTransformer {
             String message = Messages.format("property.error.invalidnumeric",
                                              property.getDisplayName());
             throw new PropertyException(property, message, exception);
+        }
+        if (positive && result instanceof Number && ((Number) result).doubleValue() < 0) {
+            String msg = Messages.format("property.error.positive", property.getDisplayName());
+            throw new PropertyException(property, msg);
         }
 
         return result;

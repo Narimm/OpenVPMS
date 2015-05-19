@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.system;
@@ -50,16 +50,17 @@ public final class ServiceHelper {
      *
      * @return the archetype service
      */
-    public static IArchetypeService getArchetypeService() {
-        return (ApplicationInstance.getActive() instanceof SpringApplicationInstance) ?
-               getBean(IArchetypeRuleService.class) : ArchetypeServiceHelper.getArchetypeService();
+    public static IArchetypeRuleService getArchetypeService() {
+        if (ApplicationInstance.getActive() instanceof SpringApplicationInstance) {
+            return getBean(IArchetypeRuleService.class);
+        }
+        return (IArchetypeRuleService) ArchetypeServiceHelper.getArchetypeService();
     }
 
     /**
      * Helper to get the archetype service.
      *
-     * @param rules if <tt>true</tt> return an instance with business rules
-     *              enabled
+     * @param rules if {@code true} return an instance with business rules enabled
      * @return the archetype service
      */
     public static IArchetypeService getArchetypeService(boolean rules) {

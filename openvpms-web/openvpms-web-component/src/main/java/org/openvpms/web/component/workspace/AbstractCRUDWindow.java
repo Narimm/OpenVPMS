@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -306,17 +306,9 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
         if (object == null) {
             ErrorDialog.show(Messages.format("imobject.noexist", archetypes.getDisplayName()));
         } else if (getActions().canDelete(object)) {
-            IMObjectDeleter deleter = createDeleter(object);
-            HelpContext delete = getHelpContext().subtopic("delete");
-            deleter.delete(object, delete, new AbstractIMObjectDeletionListener<T>() {
-                public void deleted(T object) {
-                    onDeleted(object);
-                }
-
-                public void deactivated(T object) {
-                    onSaved(object, false);
-                }
-            });
+            delete(object);
+        } else {
+            deleteDisallowed(object);
         }
     }
 
@@ -565,6 +557,35 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
+    }
+
+    /**
+     * Deletes an object.
+     *
+     * @param object the object to delete
+     */
+    protected void delete(T object) {
+        IMObjectDeleter deleter = createDeleter(object);
+        HelpContext delete = getHelpContext().subtopic("delete");
+        deleter.delete(object, delete, new AbstractIMObjectDeletionListener<T>() {
+            public void deleted(T object) {
+                onDeleted(object);
+            }
+
+            public void deactivated(T object) {
+                onSaved(object, false);
+            }
+        });
+    }
+
+    /**
+     * Invoked if an object may not be deleted.
+     * <p/>
+     * This implementation is a no-op
+     *
+     * @param object the object
+     */
+    protected void deleteDisallowed(T object) {
     }
 
     /**
