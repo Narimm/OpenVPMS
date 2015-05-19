@@ -1,23 +1,25 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007-2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
@@ -37,7 +39,6 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 
@@ -48,6 +49,9 @@ import static org.junit.Assert.fail;
  */
 public class NameLoaderTestCase extends AbstractLoaderTest {
 
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
+
     /**
      * Tests the {@link NameLoader}.
      *
@@ -55,9 +59,8 @@ public class NameLoaderTestCase extends AbstractLoaderTest {
      */
     @Test
     public void testNameLoader() throws IOException {
-        File source = new File("target/sdocs" + System.currentTimeMillis());
-        File target = new File("target/tdocs" + System.currentTimeMillis());
-        assertTrue(source.mkdirs());
+        File source = folder.newFolder("sdocs");
+        File target = folder.newFolder("tdocs");
 
         DocumentAct act1 = createPatientDocAct("file1.gif");
         DocumentAct act2 = createPatientDocAct("file2.pdf");
@@ -109,10 +112,8 @@ public class NameLoaderTestCase extends AbstractLoaderTest {
      */
     @Test
     public void testLoadDocumentTemplate() throws Exception {
-        File source = new File("target/sdocs" + System.currentTimeMillis());
-        File target = new File("target/tdocs" + System.currentTimeMillis());
-        assertTrue(source.mkdirs());
-        assertTrue(target.mkdirs());
+        File source = folder.newFolder("sdocs");
+        File target = folder.newFolder("tdocs");
 
         // verify that the loader cannot be constructed to load act.documentTemplate acts
         try {
