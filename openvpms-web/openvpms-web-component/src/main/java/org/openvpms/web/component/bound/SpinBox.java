@@ -137,7 +137,7 @@ public class SpinBox extends Row implements BoundProperty {
     /**
      * Sets the displayed value.
      * <p/>
-     * If the value exceeds the minumum or maximum values, it will be restricted accordingly.
+     * If the value exceeds the minimum or maximum values, it will be restricted accordingly.
      *
      * @param newValue the new value
      */
@@ -159,8 +159,7 @@ public class SpinBox extends Row implements BoundProperty {
      * @return the value
      */
     public int getValue() {
-        Object result = value.getValue();
-        return (result != null) ? (Integer) result : min;
+        return value.getInt(min);
     }
 
     /**
@@ -184,11 +183,17 @@ public class SpinBox extends Row implements BoundProperty {
 
     /**
      * Increments the value, stopping at the maximum.
+     * <p/>
+     * If the value is currently unset, defaults to the minimum
      */
     private void increment() {
-        int value = getValue();
-        if (value < max) {
-            setValue(value + increment);
+        if (value.getValue() == null) {
+            setValue(min);
+        } else {
+            int value = getValue();
+            if (value < max) {
+                setValue(value + increment);
+            }
         }
     }
 

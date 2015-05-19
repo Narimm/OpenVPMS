@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -110,7 +110,7 @@ public class ChargeContext implements CollectionPropertyEditor.RemoveHandler {
         boolean result = false;
         try {
             changes.save();
-            DefaultIMObjectDeletionListener listener = new DefaultIMObjectDeletionListener();
+            DefaultIMObjectDeletionListener<IMObject> listener = new DefaultIMObjectDeletionListener<IMObject>();
             for (IMObject object : toRemove.toArray(new IMObject[toRemove.size()])) {
                 if (!SaveHelper.delete(object, listener)) {
                     return false;

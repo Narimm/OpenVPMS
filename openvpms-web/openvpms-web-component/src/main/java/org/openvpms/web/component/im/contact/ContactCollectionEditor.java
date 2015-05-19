@@ -13,6 +13,7 @@
  *
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.im.contact;
 
 import org.openvpms.component.business.domain.im.common.IMObject;

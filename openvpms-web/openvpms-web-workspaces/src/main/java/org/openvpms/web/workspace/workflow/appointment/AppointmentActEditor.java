@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
@@ -42,6 +43,7 @@ import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -52,6 +54,11 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.alert.AlertSummary;
 import org.openvpms.web.workspace.customer.CustomerSummary;
 import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
+import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeries;
+import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeriesEditor;
+import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeriesViewer;
+import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatCondition;
+import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatExpression;
 import org.openvpms.web.workspace.workflow.scheduling.AbstractScheduleActEditor;
 import org.openvpms.web.workspace.workflow.scheduling.SchedulingHelper;
 
@@ -88,6 +95,16 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     private int slotSize;
 
     /**
+     * The appointment series.
+     */
+    private AppointmentSeries series;
+
+    /**
+     * The appointment series editor.
+     */
+    private AppointmentSeriesEditor seriesEditor;
+
+    /**
      * The appointment rules.
      */
     private final AppointmentRules rules;
@@ -110,6 +127,18 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      * @param context the layout context
      */
     public AppointmentActEditor(Act act, IMObject parent, LayoutContext context) {
+        this(act, parent, false, context);
+    }
+
+    /**
+     * Constructs an {@link AppointmentActEditor}.
+     *
+     * @param act        the act to edit
+     * @param parent     the parent object. May be {@code null}
+     * @param editSeries if {@code true}, edit the series
+     * @param context    the layout context
+     */
+    public AppointmentActEditor(Act act, IMObject parent, boolean editSeries, LayoutContext context) {
         super(act, parent, context);
         rules = ServiceHelper.getBean(AppointmentRules.class);
         initParticipant("schedule", context.getContext().getSchedule());
@@ -138,6 +167,8 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
                 onStatusChanged();
             }
         });
+        series = new AppointmentSeries(act, ServiceHelper.getArchetypeService());
+        seriesEditor = (editSeries) ? new AppointmentSeriesEditor(series) : null;
         addStartEndTimeListeners();
         updateRelativeDate();
         updateDuration();
@@ -153,6 +184,99 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         setParticipant("schedule", schedule);
         onScheduleChanged(schedule);
         calculateEndTime();
+    }
+
+    /**
+     * Returns the schedule.
+     *
+     * @return the schedule. May be {@code null}
+     */
+    public Entity getSchedule() {
+        return (Entity) getParticipant("schedule");
+    }
+
+    /**
+     * Returns the appointment type.
+     *
+     * @return the appointment type. May be {@code null}
+     */
+    public Entity getAppointmentType() {
+        return (Entity) getParticipant("appointmentType");
+    }
+
+    /**
+     * Returns the clinician.
+     *
+     * @return the clinician. May be {@code null}
+     */
+    public User getClinician() {
+        return (User) getParticipant("clinician");
+    }
+
+    /**
+     * Returns the appointment series.
+     *
+     * @return the series
+     */
+    public AppointmentSeries getSeries() {
+        return series;
+    }
+
+    /**
+     * Sets the series repeat expression.
+     *
+     * @param expression the expression. May be {@code null}
+     */
+    public void setExpression(RepeatExpression expression) {
+        if (seriesEditor != null) {
+            seriesEditor.setExpression(expression);
+        }
+    }
+
+    /**
+     * Sets the series repeat condition.
+     *
+     * @param condition the condition. May be {@code null}
+     */
+    public void setCondition(RepeatCondition condition) {
+        if (seriesEditor != null) {
+            seriesEditor.setCondition(condition);
+        }
+    }
+
+    /**
+     * Determines if the object has been changed.
+     *
+     * @return {@code true} if the object has been changed
+     */
+    @Override
+    public boolean isModified() {
+        return super.isModified() || (seriesEditor != null && seriesEditor.isModified());
+    }
+
+    /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        return super.doValidation(validator) && (seriesEditor == null || seriesEditor.validate(validator));
+    }
+
+    /**
+     * Save any edits.
+     *
+     * @return {@code true} if the save was successful
+     */
+    @Override
+    protected boolean doSave() {
+        boolean result = super.doSave();
+        if (result && seriesEditor != null) {
+            seriesEditor.save();
+        }
+        return result;
     }
 
     /**
@@ -196,6 +320,9 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
             Date rounded = SchedulingHelper.getSlotTime(start, slotSize, false);
             if (DateRules.compareTo(start, rounded) != 0) {
                 setStartTime(rounded, true);
+            }
+            if (seriesEditor != null) {
+                seriesEditor.refresh();
             }
         }
 
@@ -299,7 +426,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     }
 
     /**
-     * Creates a component representing the customerr and patient alerts.
+     * Creates a component representing the customer and patient alerts.
      *
      * @return the alerts component or {@code null} if neither has alerts
      */
@@ -444,8 +571,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     private void calculateEndTime() {
         Date start = getStartTime();
         Party schedule = (Party) getParticipant("schedule");
-        AppointmentTypeParticipationEditor editor
-                = getAppointmentTypeEditor();
+        AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
         Entity appointmentType = editor.getEntity();
         if (start != null && schedule != null && appointmentType != null) {
             Date end = rules.calculateEndTime(start, schedule, appointmentType);
@@ -509,6 +635,21 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
             ComponentState state = new ComponentState(duration, null, null,
                                                       Messages.get("workflow.scheduling.appointment.duration"));
             grid.add(state);
+
+            Property repeat = getProperty("repeat");
+            if (seriesEditor != null) {
+                ComponentState repeatState = new ComponentState(seriesEditor.getRepeatEditor(), repeat,
+                                                                seriesEditor.getRepeatFocusGroup());
+                grid.add(repeatState, 2);
+                ComponentState untilState = new ComponentState(seriesEditor.getUntilEditor(),
+                                                               seriesEditor.getUntilFocusGroup());
+                untilState.setLabel(new Label());
+                grid.add(untilState);
+            } else {
+                AppointmentSeriesViewer viewer = new AppointmentSeriesViewer(series);
+                grid.add(new ComponentState(viewer.getComponent(), repeat), 2);
+            }
+
             return grid;
         }
 
@@ -541,4 +682,5 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
             return components.getFocusable("customer");
         }
     }
+
 }

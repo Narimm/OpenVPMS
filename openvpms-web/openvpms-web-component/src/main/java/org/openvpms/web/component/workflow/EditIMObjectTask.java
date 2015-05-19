@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workflow;
@@ -429,7 +429,7 @@ public class EditIMObjectTask extends AbstractTask {
                 if (object != null) {
                     // make sure the the last saved instance is being deleted to avoid validation errors
                     IMObjectDeleter deleter = new SilentIMObjectDeleter(context);
-                    deleter.delete(object, context.getHelpContext(), new DefaultIMObjectDeletionListener());
+                    deleter.delete(object, context.getHelpContext(), new DefaultIMObjectDeletionListener<IMObject>());
                 }
             } catch (OpenVPMSException exception) {
                 ErrorHelper.show(exception);

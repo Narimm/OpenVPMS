@@ -110,18 +110,13 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
     }
 
     /**
-     * Deletes the current object.
+     * Invoked if an object may not be deleted.
+     *
+     * @param object the object
      */
     @Override
-    public void delete() {
-        T act = getObject();
-        if (act != null) {
-            if (getActions().canDelete(act)) {
-                super.delete();
-            } else {
-                showStatusError(act, "act.nodelete.title", "act.nodelete.message");
-            }
-        }
+    protected void deleteDisallowed(T object) {
+        showStatusError(object, "act.nodelete.title", "act.nodelete.message");
     }
 
     /**
