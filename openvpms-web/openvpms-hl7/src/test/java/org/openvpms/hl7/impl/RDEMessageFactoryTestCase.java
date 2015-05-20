@@ -206,7 +206,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
         productBean.setValue("sellingUnits", TestHelper.getLookup("lookup.uom", "BOX", "Box", true).getCode());
         product.setId(4001);
 
-        MessageConfig config = new MessageConfig();
+        HL7Mapping config = new HL7Mapping();
         Date date = getDatetime("2014-08-25 09:02:00.110").getTime();
         Message order = messageFactory.createOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, config);
         MSH msh = (MSH) order.get("MSH");
