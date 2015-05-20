@@ -11,21 +11,26 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Message;
+import ca.uhn.hl7v2.model.Structure;
 import ca.uhn.hl7v2.model.v25.datatype.CWE;
 import ca.uhn.hl7v2.model.v25.datatype.MSG;
-import ca.uhn.hl7v2.model.v25.message.ACK;
 import ca.uhn.hl7v2.model.v25.segment.ERR;
+import ca.uhn.hl7v2.model.v25.segment.MSA;
 import ca.uhn.hl7v2.model.v25.segment.MSH;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * HL7 Message helper methods.
@@ -51,39 +56,50 @@ public class HL7MessageHelper {
     }
 
     /**
+     * Returns the MSA (message acknowledgement) segment from a message, if it has one.
+     *
+     * @param message the message
+     * @return the segment, or {@code null} if none is found
+     */
+    public static MSA getMSA(Message message) {
+        return get(message, "MSA");
+    }
+
+    /**
      * Generates an error message from an acknowledgement.
      *
      * @param ack the acknowledgement
      * @return the error message
      */
-    public static String getErrorMessage(ACK ack) {
+    public static String getErrorMessage(Message ack) {
+        MSA msa = getMSA(ack);
+        List<ERR> errors = getAll(ack, "ERR");
+
         StringBuilder buffer = new StringBuilder();
-        String text = ack.getMSA().getTextMessage().getValue(); // deprecated in HL7 2.4
+        String text = msa.getTextMessage().getValue(); // deprecated in HL7 2.4
         if (!StringUtils.isEmpty(text)) {
             buffer.append(text);
         }
-        try {
-            for (ERR err : ack.getERRAll()) {
-                String hl7ErrorCode = formatCWE(err.getHL7ErrorCode());
-                if (hl7ErrorCode != null) {
-                    append(buffer, "HL7 Error Code: ", hl7ErrorCode);
-                }
-                String errorCode = formatCWE(err.getApplicationErrorCode());
-                if (!StringUtils.isEmpty(errorCode)) {
-                    append(buffer, "Application Error Code: ", errorCode);
-                }
-                String diagnostic = err.getDiagnosticInformation().getValue();
-                if (!StringUtils.isEmpty(diagnostic)) {
-                    append(buffer, "Diagnostic Information: ", diagnostic);
-                }
-                String userMessage = err.getUserMessage().getValue();
-                if (!StringUtils.isEmpty(userMessage)) {
-                    append(buffer, "User Message: ", userMessage);
-                }
+
+        for (ERR err : errors) {
+            String hl7ErrorCode = formatCWE(err.getHL7ErrorCode());
+            if (hl7ErrorCode != null) {
+                append(buffer, "HL7 Error Code: ", hl7ErrorCode);
             }
-        } catch (HL7Exception exception) {
-            log.error("Failed to access ERR segments", exception);
+            String errorCode = formatCWE(err.getApplicationErrorCode());
+            if (!StringUtils.isEmpty(errorCode)) {
+                append(buffer, "Application Error Code: ", errorCode);
+            }
+            String diagnostic = err.getDiagnosticInformation().getValue();
+            if (!StringUtils.isEmpty(diagnostic)) {
+                append(buffer, "Diagnostic Information: ", diagnostic);
+            }
+            String userMessage = err.getUserMessage().getValue();
+            if (!StringUtils.isEmpty(userMessage)) {
+                append(buffer, "User Message: ", userMessage);
+            }
         }
+
         if (buffer.length() == 0) {
             buffer.append("Message body: ");
             try {
@@ -94,6 +110,55 @@ public class HL7MessageHelper {
             }
         }
         return buffer.toString();
+    }
+
+    /**
+     * Returns the named structure from a message.
+     *
+     * @param message the message
+     * @param name    the structure name
+     * @return the structure, or {@code null} if none exists
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends Structure> T get(Message message, String name) {
+        try {
+            for (String n : message.getNames()) {
+                if (name.equals(n)) {
+                    return (T) message.get(name);
+                }
+            }
+        } catch (HL7Exception exception) {
+            log.error("Failed to access " + name, exception);
+        }
+        return null;
+    }
+
+    /**
+     * Returns all instances of the named structure from a message.
+     *
+     * @param message the message
+     * @param name    the structure name
+     * @return all instances the structure
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends Structure> List<T> getAll(Message message, String name) {
+        List<T> result = Collections.emptyList();
+        try {
+            for (String n : message.getNames()) {
+                if (name.equals(n)) {
+                    Structure[] list = message.getAll(name);
+                    if (list.length != 0) {
+                        result = new ArrayList<T>();
+                        for (Structure s : list) {
+                            result.add((T) s);
+                        }
+                    }
+                }
+            }
+        } catch (HL7Exception exception) {
+            log.error("Failed to access " + name, exception);
+        }
+        return result;
     }
 
     /**

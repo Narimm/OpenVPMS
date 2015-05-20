@@ -1564,7 +1564,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 Component component = RowFactory.create(Styles.CELL_SPACING, state.getComponent(), sellingUnits);
                 state = new ComponentState(component, property);
             } else if (("patient".equals(name) || "product".equals(name)) && isOrdered()) {
-                // the item has been ordered via an HL7 pharmacy. The patient and product cannot be changed
+                // the item has been ordered via an HL7 service. The patient and product cannot be changed
                 state = super.createComponent(createReadOnly(property), parent, context);
             } else {
                 state = super.createComponent(property, parent, context);
