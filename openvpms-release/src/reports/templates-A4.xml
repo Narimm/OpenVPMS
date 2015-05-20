@@ -148,6 +148,22 @@
     <template name="Clinician Sales Report" archetype="REPORT" reportType="FINANCIAL"
               description="Clinician Sales Report" path="Reporting/Reports/Financial/A4/Clinician Sales Report.jrxml"
               mimeType="text/xml" docType="document.other"/>
+    <template name="Export Customer Addresses" archetype="REPORT" reportType="CUSTOMER"
+              description="Customer addresses for use with mail merge"
+              path="Reporting/Reports/Customer/A4/Export Customer Addresses.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Export Customer Email Addresses" archetype="REPORT" reportType="CUSTOMER"
+              description="Customer email addresses for use with mail merge"
+              path="Reporting/Reports/Customer/A4/Export Customer Email Addresses.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Export Customer Addresses for Sales" archetype="REPORT" reportType="CUSTOMER"
+              description="Customer addresses for Sales for use with mail merge"
+              path="Reporting/Reports/Customer/A4/Export Customer Addresses for Sales.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Export Customer Email Addresses for Sales" archetype="REPORT" reportType="CUSTOMER"
+              description="Customer email addresses for Sales for use with mail merge"
+              path="Reporting/Reports/Customer/A4/Export Customer Email Addresses for Sales.jrxml" mimeType="text/xml"
+              docType="document.other"/>
     <template name="Practice Clinician Sales Report" archetype="REPORT" reportType="FINANCIAL"
               description="Practice Clinician Sales Report"
               path="Reporting/Reports/Financial/A4/Practice Clinician Sales Report.jrxml" mimeType="text/xml"
