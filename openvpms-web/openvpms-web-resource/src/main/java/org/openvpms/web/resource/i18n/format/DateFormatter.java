@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.resource.i18n.format;
@@ -235,8 +235,19 @@ public class DateFormatter {
      * @return the formatted date-time
      */
     public static String formatDateTimeAbbrev(Date dateTime) {
+        return formatDateTimeAbbrev(dateTime, DateRules.getToday());
+    }
+
+    /**
+     * Formats a date-time, abbreviating it to just the time if it falls on the same day as {@code date}.
+     *
+     * @param dateTime the date-time to format
+     * @param date     the date to compare with
+     * @return the formatted date-time
+     */
+    public static String formatDateTimeAbbrev(Date dateTime, Date date) {
         String result;
-        if (DateRules.compareDateToToday(dateTime) == 0) {
+        if (DateRules.dateEquals(dateTime, date)) {
             result = DateFormatter.formatTime(dateTime, false);
         } else {
             result = DateFormatter.formatDateTime(dateTime, false);

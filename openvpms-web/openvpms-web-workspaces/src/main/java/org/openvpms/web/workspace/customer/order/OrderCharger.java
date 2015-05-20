@@ -288,20 +288,20 @@ public class OrderCharger {
             if (TypeHelper.isA(order, OrderArchetypes.PHARMACY_ORDER, OrderArchetypes.PHARMACY_RETURN)) {
                 PharmacyOrderCharger charger = new PharmacyOrderCharger((FinancialAct) order, rules);
                 if (!charger.isValid()) {
-                    messages.append(Messages.format("customer.order.incomplete", order.getId(),
-                                                    DescriptorHelper.getDisplayName(order)));
+                    append(messages, Messages.format("customer.order.incomplete", order.getId(),
+                                                     DescriptorHelper.getDisplayName(order)));
                 } else if (patient != null && !charger.canCharge(patient)) {
-                    messages.append(Messages.format("customer.order.multiplePatient", order.getId(),
-                                                    DescriptorHelper.getDisplayName(order)));
+                    append(messages, Messages.format("customer.order.multiplePatient", order.getId(),
+                                                     DescriptorHelper.getDisplayName(order)));
                 } else if (!charger.canCharge(editor)) {
                     FinancialAct invoice = charger.getInvoice();
                     if (invoice != null && invoice.getId() != editor.getObject().getId()) {
-                        messages.append(Messages.format("customer.order.differentInvoice", order.getId(),
-                                                        DescriptorHelper.getDisplayName(order), invoice.getId()));
+                        append(messages, Messages.format("customer.order.differentInvoice", order.getId(),
+                                                         DescriptorHelper.getDisplayName(order), invoice.getId()));
                     } else {
-                        messages.append(Messages.format("customer.order.cannotcharge", order.getId(),
-                                                        DescriptorHelper.getDisplayName(order),
-                                                        editor.getDisplayName()));
+                        append(messages, Messages.format("customer.order.cannotcharge", order.getId(),
+                                                         DescriptorHelper.getDisplayName(order),
+                                                         editor.getDisplayName()));
                     }
                 } else {
                     charger.charge(editor);
@@ -372,6 +372,7 @@ public class OrderCharger {
         });
         if (ActStatus.POSTED.equals(act.getStatus())) {
             charged.add(act);
+            dialog.checkOrders();
         }
     }
 
@@ -384,6 +385,19 @@ public class OrderCharger {
             }
         });
         dialog.show();
+    }
+
+    /**
+     * Helper to append a message to a buffer, inserting a new-line if required.
+     *
+     * @param buffer  the buffer
+     * @param message the message to append
+     */
+    private void append(StringBuilder buffer, String message) {
+        if (buffer.length() != 0) {
+            buffer.append("\n");
+        }
+        buffer.append(message);
     }
 
     private static class SelectChargeDialog extends ConfirmationDialog {

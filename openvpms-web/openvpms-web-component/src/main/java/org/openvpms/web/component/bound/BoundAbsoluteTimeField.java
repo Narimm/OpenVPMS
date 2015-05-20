@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
@@ -32,7 +32,7 @@ import java.util.Date;
  *
  * @author Tim Anderson
  */
-public class BoundAbsoluteTimeField extends TextField {
+public class BoundAbsoluteTimeField extends TextField implements BoundProperty {
 
     /**
      * The component binder.
@@ -72,6 +72,16 @@ public class BoundAbsoluteTimeField extends TextField {
     public void dispose() {
         super.dispose();
         binder.unbind();
+    }
+
+    /**
+     * Returns the property.
+     *
+     * @return the property
+     */
+    @Override
+    public Property getProperty() {
+        return binder.getProperty();
     }
 
     private class FormattingBinder extends TextComponentBinder {

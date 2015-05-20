@@ -21,6 +21,7 @@ import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
@@ -299,6 +300,32 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
+     * Returns invoice items that have been ordered via a pharmacy but have not been dispensed or have been partially
+     * dispensed.
+     *
+     * @return invoice items that have
+     */
+    public List<Act> getNonDispensedItems() {
+        List<Act> result = new ArrayList<Act>();
+        if (orderPlacer != null) {
+            for (Act item : getItems().getCurrentActs()) {
+                IMObjectEditor editor = getItems().getEditor(item);
+                if (editor instanceof CustomerChargeActItemEditor) {
+                    CustomerChargeActItemEditor itemEditor = (CustomerChargeActItemEditor) editor;
+                    if (itemEditor.isOrdered() || orderPlacer.isPharmacyProduct(itemEditor.getProduct())) {
+                        BigDecimal quantity = itemEditor.getQuantity();
+                        BigDecimal received = itemEditor.getReceivedQuantity();
+                        if (!MathRules.equals(quantity, received)) {
+                            result.add(item);
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Queues a popup dialog to display after any other dialog queued by the editor.
      *
      * @param dialog the dialog to display
@@ -366,6 +393,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                         }
                     }
                     if (FinancialActStatus.POSTED.equals(getStatus())) {
+                        // need to discontinue orders as Cubex will leave them visible, even after patient check-out
                         orderPlacer.discontinue();
                     }
                 }

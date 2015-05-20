@@ -35,9 +35,11 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
 import org.openvpms.web.component.im.product.ProductHelper;
+import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
@@ -175,6 +177,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      */
     @Override
     protected void productModified(Product product) {
+        super.productModified(product);
         serviceRatio = getServiceRatio(product, getLocation());
         if (!TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
             fixedEditor.setProduct(product, serviceRatio);
@@ -447,6 +450,19 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     protected BigDecimal calculateTax(Party customer) {
         FinancialAct act = (FinancialAct) getObject();
         return taxRules.calculateTax(act, customer);
+    }
+
+    /**
+     * Helper to move the focus to the product editor.
+     */
+    protected void moveFocusToProduct() {
+        ProductParticipationEditor productEditor = getProductEditor();
+        if (productEditor != null) {
+            FocusGroup group = productEditor.getFocusGroup();
+            if (group != null) {
+                group.setFocus();
+            }
+        }
     }
 
     /**

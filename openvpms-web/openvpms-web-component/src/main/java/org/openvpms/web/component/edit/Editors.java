@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.edit;
@@ -75,6 +75,11 @@ public class Editors extends AbstractModifiable {
      */
     private final Map<String, Editor> propertyEditors = new HashMap<String, Editor>();
 
+    /**
+     * Used to determine if the editors have changed while validation is in progress. If so, validation needs
+     * to be redone.
+     */
+    private int modCount = 0;
 
     /**
      * Constructs an {@link Editors}.
@@ -140,6 +145,7 @@ public class Editors extends AbstractModifiable {
      * @param editor the editor to remove
      */
     public void remove(Editor editor) {
+        modCount++;
         resetValid(false);
         editor.removeModifiableListener(listener);
         editor.getErrorListener();
@@ -292,6 +298,7 @@ public class Editors extends AbstractModifiable {
      * Disposes of the editors.
      */
     public void dispose() {
+        modCount++;
         for (Editor editor : editors) {
             editor.dispose();
         }
@@ -303,10 +310,12 @@ public class Editors extends AbstractModifiable {
      * @param validator the validator
      * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
+    @Override
     protected boolean doValidation(Validator validator) {
         boolean result = true;
+        int count = modCount;
         for (Modifiable modifiable : editors) {
-            if (!validator.validate(modifiable)) {
+            if (!validator.validate(modifiable) || count != modCount) {
                 result = false;
                 break;
             }
@@ -366,6 +375,7 @@ public class Editors extends AbstractModifiable {
      * @param editor the editor to add
      */
     private void addEditor(Editor editor) {
+        modCount++;
         resetValid(false);
         if (editor instanceof PropertyEditor) {
             PropertyEditor p = (PropertyEditor) editor;

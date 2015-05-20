@@ -1393,6 +1393,19 @@
         </properties>
     </style>
 
+    <style name="Table.Row-Inset" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="insets" value="${padding.medium}"/>
+                        <property name="background" value="#ffffff"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
 
     <!-- =================================================================== -->
     <!--  SpinBox                                                            -->
@@ -2209,7 +2222,7 @@
     </style>
 
     <!-- =================================================================== -->
-    <!--  CheckBox defaults                                                     -->
+    <!--  CheckBox defaults                                                  -->
     <!-- =================================================================== -->
 
     <style name="default" type="nextapp.echo2.app.CheckBox">
@@ -2218,6 +2231,23 @@
                 <font size="${font.size}">
                     <typeface name="${font.typeface}"/>
                 </font>
+            </property>
+            <property name="stateIcon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/checkbox-off.png"/>
+            </property>
+            <property name="selectedStateIcon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/checkbox-on.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="disabled" type="nextapp.echo2.app.CheckBox" base-name="default">
+        <properties>
+            <property name="stateIcon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/checkbox-off-disabled.png"/>
+            </property>
+            <property name="selectedStateIcon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/checkbox-on-disabled.png"/>
             </property>
         </properties>
     </style>
@@ -2475,6 +2505,33 @@
                       type="nextapp.echo2.app.ResourceImageReference">
                 <resource-image-reference
                         resource="/org/openvpms/web/resource/image/buttons/select.gif"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="default" type="org.openvpms.web.echo.button.ToggleButton">
+        <properties>
+            <property name="foreground" value="#000000"/>
+            <property name="background" value="#e8e8e8"/>
+            <!-- grey -->
+            <property name="font">
+                <font size="${font.size}">
+                    <typeface name="${font.typeface}"/>
+                </font>
+            </property>
+            <property name="border">
+                <border size="1px" style="outset" color="#a0a0a0"/>
+            </property>
+            <property name="insets" value="${padding.medium} ${padding.small} "/>
+        </properties>
+    </style>
+
+    <style name="pressed" base-name="default" type="org.openvpms.web.echo.button.ToggleButton">
+        <properties>
+            <property name="foreground" value="#ffffff"/>
+            <property name="background" value="${theme.button.colour}"/>
+            <property name="border">
+                <border size="1px" style="solid" color="#a0a0a0"/>
             </property>
         </properties>
     </style>

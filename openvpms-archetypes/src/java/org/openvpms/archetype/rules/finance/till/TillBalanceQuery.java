@@ -11,18 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.till;
 
-import org.apache.commons.collections.comparators.NullComparator;
+import org.apache.commons.collections4.comparators.NullComparator;
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.IPage;
@@ -49,8 +48,7 @@ import java.util.List;
  * into account any credit flag.</li>
  * </ul>
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TillBalanceQuery {
 
@@ -91,14 +89,7 @@ public class TillBalanceQuery {
 
 
     /**
-     * Constructs a new <code>TillBalanceQuery</code>.
-     */
-    public TillBalanceQuery(FinancialAct tillBalance) {
-        this(tillBalance, ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Constructs a new <code>TillBalanceQuery</code>.
+     * Constructs a {@link TillBalanceQuery}.
      *
      * @param service the archetype service
      */
@@ -111,7 +102,6 @@ public class TillBalanceQuery {
 
     /**
      * Executes the query.
-     * Returns an empty page if any of the schedule, from or to dates are null.
      *
      * @return the query results.
      * @throws ArchetypeServiceException if the query fails
@@ -121,7 +111,7 @@ public class TillBalanceQuery {
         ActBean bean = new ActBean(tillBalance, service);
         for (Act tillBalanceItem : bean.getActs()) {
             ActBean tillBalanceItemBean = new ActBean(tillBalanceItem, service);
-            if (tillBalanceItemBean.isA("act.tillBalanceAdjustment")) {
+            if (tillBalanceItemBean.isA(TillArchetypes.TILL_BALANCE_ADJUSTMENT)) {
                 ObjectSet set = new ObjectSet();
                 set.set(TILL_BALANCE, tillBalance);
                 set.set(ACT, tillBalanceItem);
@@ -129,16 +119,13 @@ public class TillBalanceQuery {
                 set.set(AMOUNT, getAmount(tillBalanceItem).negate());
                 result.add(set);
             } else {
-                for (Act item : tillBalanceItemBean.getActs()) {
-                    ActBean itemBean = new ActBean(item);
-                    if (!itemBean.isA("act.customerAccountPayment")) {
-                        ObjectSet set = new ObjectSet();
-                        set.set(TILL_BALANCE, tillBalance);
-                        set.set(ACT, tillBalanceItem);
-                        set.set(ACT_ITEM, item);
-                        set.set(AMOUNT, getAmount(item).negate());
-                        result.add(set);
-                    }
+                for (Act item : tillBalanceItemBean.getNodeActs("items")) {
+                    ObjectSet set = new ObjectSet();
+                    set.set(TILL_BALANCE, tillBalance);
+                    set.set(ACT, tillBalanceItem);
+                    set.set(ACT_ITEM, item);
+                    set.set(AMOUNT, getAmount(item).negate());
+                    result.add(set);
                 }
             }
         }
@@ -148,9 +135,8 @@ public class TillBalanceQuery {
             public int compare(ObjectSet o1, ObjectSet o2) {
                 Act a1 = (Act) o1.get(ACT);
                 Act a2 = (Act) o2.get(ACT);
-                Comparator<Date> compator = new NullComparator();
-                return compator.compare(a1.getActivityStartTime(),
-                                        a2.getActivityStartTime());
+                Comparator<Date> comparator = new NullComparator<Date>();
+                return comparator.compare(a1.getActivityStartTime(), a2.getActivityStartTime());
             }
         });
         return new Page<ObjectSet>(result, 0, result.size(), result.size());
@@ -160,7 +146,7 @@ public class TillBalanceQuery {
      * Returns an amount, taking into account any credit node.
      *
      * @param act the act
-     * @return the amount corresponding to <code>node</code>
+     * @return the amount corresponding to {@code node}
      * @throws ArchetypeServiceException for any archetype service error
      */
     private BigDecimal getAmount(Act act) {

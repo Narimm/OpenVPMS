@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
@@ -32,12 +30,11 @@ import java.util.Date;
 
 
 /**
- * Binds a {@link Property} to a <code>DateField</code>.
+ * Binds a {@link Property} to a {@code DateField}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
-public class BoundDateField extends DateFieldImpl {
+public class BoundDateField extends DateFieldImpl implements BoundProperty {
 
     /**
      * A 'sensible' minimum for dates.
@@ -50,16 +47,16 @@ public class BoundDateField extends DateFieldImpl {
     private final DateBinder binder;
 
     /**
-     * If <tt>true</tt>, include the current time if the date is today.
+     * If {@code true}, include the current time if the date is today.
      */
     private boolean includeTimeForToday = true;
 
 
     /**
-     * Construct a new <code>BoundDateField</code>.
+     * Constructs a {@link BoundDateField}.
      * <p/>
      * If the property doesn't already have a {@link PropertyTransformer} registered, one will be added that
-     * restricts entered dates to the range <tt>{@link #MIN_DATE}..now + 100 years</tt>.
+     * restricts entered dates to the range {@code {@link #MIN_DATE}..now + 100 years}.
      * This a workaround for OVPMS-1006.
      *
      * @param property the property to bind
@@ -79,11 +76,11 @@ public class BoundDateField extends DateFieldImpl {
 
     /**
      * Includes the current time if the selected date is today.
-     * For all other days, the time is set to <tt>0:0:0</tt>.
-     * Defaults to <tt>true</tt>.
+     * For all other days, the time is set to {@code 0:0:0}.
+     * Defaults to {@code true}.
      *
-     * @param include if <tt>true</tt>, include the current time if the date is
-     *                today; otherwise set it to <tt>0:0:0</tt>
+     * @param include if {@code true}, include the current time if the date is
+     *                today; otherwise set it to {@code 0:0:0}
      */
     public void setIncludeTimeForToday(boolean include) {
         includeTimeForToday = include;
@@ -92,7 +89,7 @@ public class BoundDateField extends DateFieldImpl {
     /**
      * Returns the minimum date allowed for this field.
      *
-     * @return the minimum date, or <tt>null</tt> if there is no minimum date
+     * @return the minimum date, or {@code null} if there is no minimum date
      */
     public Date getMinDate() {
         Date result = null;
@@ -107,7 +104,7 @@ public class BoundDateField extends DateFieldImpl {
     /**
      * Returns the maximum date allowed for this field.
      *
-     * @return the maximum date, or <tt>null</tt> if there is no maximum date
+     * @return the maximum date, or {@code null} if there is no maximum date
      */
     public Date getMaxDate() {
         Date result = null;
@@ -122,14 +119,14 @@ public class BoundDateField extends DateFieldImpl {
     /**
      * Sets the date.
      *
-     * @param date the date. May be <tt>null</tt>
+     * @param date the date. May be {@code null}
      */
     public void setDate(Date date) {
         binder.getProperty().setValue(date);
     }
 
     /**
-     * Life-cycle method invoked when the <tt>Component</tt> is added to a registered hierarchy.
+     * Life-cycle method invoked when the {@code Component} is added to a registered hierarchy.
      */
     @Override
     public void init() {
@@ -138,12 +135,22 @@ public class BoundDateField extends DateFieldImpl {
     }
 
     /**
-     * Life-cycle method invoked when the <tt>Component</tt> is removed from a registered hierarchy.
+     * Life-cycle method invoked when the {@code Component} is removed from a registered hierarchy.
      */
     @Override
     public void dispose() {
         super.dispose();
         binder.unbind();
+    }
+
+    /**
+     * Returns the property.
+     *
+     * @return the property
+     */
+    @Override
+    public Property getProperty() {
+        return binder.getProperty();
     }
 
     /**
