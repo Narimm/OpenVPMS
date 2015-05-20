@@ -104,6 +104,10 @@ public class OrderServices {
         return rules;
     }
 
+    public Pharmacies getPharmacies() {
+        return pharmacies;
+    }
+
     public Entity getService(Entity group, Party location) {
         if (TypeHelper.isA(group, HL7Archetypes.PHARMACY_GROUP)) {
             return pharmacies.getService(group, location.getObjectReference());
