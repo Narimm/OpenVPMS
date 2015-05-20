@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -80,34 +80,6 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
     }
 
     /**
-     * Deletes the current object.
-     */
-    @Override
-    public void delete() {
-        Act act = getObject();
-        if (getActions().canDelete(act)) {
-            super.delete();
-        } else {
-            String name = getArchetypes().getDisplayName();
-            String status = act.getStatus();
-            String title = Messages.format("act.nodelete.title", name);
-            String message = Messages.format("act.nodelete.message", name, status);
-            ErrorDialog.show(title, message);
-        }
-    }
-
-    /**
-     * Lays out the buttons.
-     *
-     * @param buttons the button row
-     */
-    @Override
-    protected void layoutButtons(ButtonSet buttons) {
-        super.layoutButtons(buttons);
-        buttons.add(createPrintButton());
-    }
-
-    /**
      * Returns the mail context.
      *
      * @return the mail context. May be {@code null}
@@ -132,6 +104,17 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
     @Override
     protected ScheduleActions getActions() {
         return (ScheduleActions) super.getActions();
+    }
+
+    /**
+     * Lays out the buttons.
+     *
+     * @param buttons the button row
+     */
+    @Override
+    protected void layoutButtons(ButtonSet buttons) {
+        super.layoutButtons(buttons);
+        buttons.add(createPrintButton());
     }
 
     /**
@@ -161,6 +144,19 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
         if (listener != null) {
             listener.refresh(object); // won't be null
         }
+    }
+
+    /**
+     * Invoked if an object may not be deleted.
+     *
+     * @param act the act
+     */
+    protected void deleteDisallowed(Act act) {
+        String name = getArchetypes().getDisplayName();
+        String status = act.getStatus();
+        String title = Messages.format("act.nodelete.title", name);
+        String message = Messages.format("act.nodelete.message", name, status);
+        ErrorDialog.show(title, message);
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -30,7 +30,6 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 
 import java.util.Calendar;
@@ -39,7 +38,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -56,12 +54,6 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      * The appointment rules.
      */
     private AppointmentRules rules;
-
-    /**
-     * The appointment service.
-     */
-    private ScheduleService appointmentService;
-
 
     /**
      * Tests the {@link AppointmentRules#getSlotSize(Party)} method.
@@ -125,78 +117,6 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         Date end = rules.calculateEndTime(start, schedule, appointmentType);
         Date expected = createTime(12, 0);
         assertEquals(expected, end);
-    }
-
-    /**
-     * Tests the behaviour of
-     * {@link AppointmentRules#hasOverlappingAppointments}.
-     */
-    @Test
-    public void testHasOverlappingAppointments() {
-        Date start = createTime(9, 0);
-        Date end = createTime(9, 15);
-
-        Entity appointmentType = createAppointmentType();
-        Party schedule1 = createSchedule(15, "MINUTES", 2, appointmentType);
-        Party schedule2 = createSchedule(15, "MINUTES", 2, appointmentType);
-        save(schedule1);
-        save(schedule2);
-
-        Act appointment = createAppointment(start, end, schedule1);
-        assertFalse(rules.hasOverlappingAppointments(appointment,
-                                                     appointmentService));
-        save(appointment);
-        assertFalse(rules.hasOverlappingAppointments(appointment,
-                                                     appointmentService));
-
-        Act exactOverlap = createAppointment(start, end, schedule1);
-        assertTrue(rules.hasOverlappingAppointments(exactOverlap,
-                                                    appointmentService));
-
-        Act overlap = createAppointment(createTime(9, 5), createTime(9, 10),
-                                        schedule1);
-        assertTrue(rules.hasOverlappingAppointments(overlap,
-                                                    appointmentService));
-
-        Act after = createAppointment(createTime(9, 15), createTime(9, 30),
-                                      schedule1);
-        assertFalse(rules.hasOverlappingAppointments(after,
-                                                     appointmentService));
-
-        Act before = createAppointment(createTime(8, 45), createTime(9, 0),
-                                       schedule1);
-        assertFalse(rules.hasOverlappingAppointments(before,
-                                                     appointmentService));
-
-        // now verify there are no overlaps for the same time but different
-        // schedule
-        Act appointment2 = createAppointment(start, end, schedule2);
-        assertFalse(rules.hasOverlappingAppointments(appointment2,
-                                                     appointmentService));
-        save(appointment2);
-        assertFalse(rules.hasOverlappingAppointments(appointment2,
-                                                     appointmentService));
-    }
-
-    /**
-     * Tests the behaviour of {@link AppointmentRules#hasOverlappingAppointments}
-     * for an unpopulated appointment.
-     */
-    @Test
-    public void testHasOverlappingAppointmentsForEmptyAct() {
-        Date start = createTime(9, 0);
-        Date end = createTime(9, 15);
-        Entity appointmentType = createAppointmentType();
-        Party schedule = createSchedule(15, "MINUTES", 2, appointmentType);
-        Act appointment = createAppointment(start, end, schedule);
-        save(appointment);
-
-        Act empty = createAct(ScheduleArchetypes.APPOINTMENT);
-        empty.setActivityStartTime(null);
-        empty.setActivityEndTime(null);
-
-        assertFalse(rules.hasOverlappingAppointments(empty,
-                                                     appointmentService));
     }
 
     /**
@@ -386,9 +306,6 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     public void setUp() {
         removeActs();
         rules = new AppointmentRules(getArchetypeService());
-        appointmentService = new AppointmentService(getArchetypeService(),
-                                                    applicationContext.getBean(ILookupService.class),
-                                                    ScheduleTestHelper.createCache(30));
     }
 
     /**

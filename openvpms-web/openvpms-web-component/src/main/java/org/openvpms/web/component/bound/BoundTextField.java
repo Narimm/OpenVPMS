@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
@@ -24,11 +24,11 @@ import org.openvpms.web.echo.text.TextField;
 
 
 /**
- * Binds a {@link Property} to a <code>TextField</code>.
+ * Binds a {@link Property} to a {@code TextField}.
  *
  * @author Tim Anderson
  */
-public class BoundTextField extends TextField {
+public class BoundTextField extends TextField implements BoundProperty {
 
     /**
      * The binder.
@@ -65,7 +65,7 @@ public class BoundTextField extends TextField {
     }
 
     /**
-     * Life-cycle method invoked when the <tt>Component</tt> is added to a registered hierarchy.
+     * Life-cycle method invoked when the {@code Component} is added to a registered hierarchy.
      */
     @Override
     public void init() {
@@ -74,12 +74,22 @@ public class BoundTextField extends TextField {
     }
 
     /**
-     * Life-cycle method invoked when the <tt>Component</tt> is removed from a registered hierarchy.
+     * Life-cycle method invoked when the {@code Component} is removed from a registered hierarchy.
      */
     @Override
     public void dispose() {
         super.dispose();
         binder.unbind();
+    }
+
+    /**
+     * Returns the property.
+     *
+     * @return the property
+     */
+    @Override
+    public Property getProperty() {
+        return binder.getProperty();
     }
 
 }

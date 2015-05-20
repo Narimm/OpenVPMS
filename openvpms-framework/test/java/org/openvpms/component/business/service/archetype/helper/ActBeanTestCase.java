@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -158,11 +158,13 @@ public class ActBeanTestCase extends AbstractArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ActBean#addNodeRelationship} method.
+     * Tests the {@link ActBean#addNodeRelationship} and {@link ActBean#removeNodeRelationships(String, Act)} methods.
      */
     @Test
-    public void testAddNodeRelationship() {
+    public void testAddRemoveNodeRelationship() {
         ActBean bean = createActBean("act.customerEstimation");
+        Act act = bean.getAct();
+        act.setStatus("IN_PROGRESS");
         Act[] expected = new Act[3];
         for (int i = 0; i < 3; ++i) {
             Act target = (Act) create("act.customerEstimationItem");
@@ -174,11 +176,20 @@ public class ActBeanTestCase extends AbstractArchetypeServiceTest {
             assertEquals(bean.getReference(), r.getSource());
             assertEquals(target.getObjectReference(), r.getTarget());
         }
-        List<Act> acts = bean.getNodeActs("items");
-        assertEquals(expected.length, acts.size());
+        bean.save();
+        assertEquals(expected.length, act.getSourceActRelationships().size());
+        List<Act> items = bean.getNodeActs("items");
+        assertEquals(expected.length, items.size());
         for (Act exp : expected) {
-            assertTrue(acts.contains(exp));
+            assertTrue(items.contains(exp));
         }
+
+        for (Act item : items) {
+            assertEquals(1, item.getTargetActRelationships().size());
+            bean.removeNodeRelationships("items", item);
+            assertEquals(0, item.getTargetActRelationships().size());
+        }
+        assertEquals(0, act.getSourceActRelationships().size());
 
         try {
             Act target = (Act) create("act.customerEstimation");

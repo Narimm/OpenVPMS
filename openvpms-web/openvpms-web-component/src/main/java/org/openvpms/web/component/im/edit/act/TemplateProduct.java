@@ -48,6 +48,11 @@ public class TemplateProduct {
      */
     private final boolean zeroPrice;
 
+    /**
+     * Determines if zero-priced products should be printed in charges.
+     */
+    private boolean print;
+
 
     /**
      * Constructs a {@link TemplateProduct}.
@@ -55,12 +60,15 @@ public class TemplateProduct {
      * @param product      the product
      * @param lowQuantity  the low quantity
      * @param highQuantity the high quantity
+     * @param print        if {@code true}, print zero-price products
      */
-    public TemplateProduct(Product product, BigDecimal lowQuantity, BigDecimal highQuantity, boolean zeroPrice) {
+    public TemplateProduct(Product product, BigDecimal lowQuantity, BigDecimal highQuantity, boolean zeroPrice,
+                           boolean print) {
         this.product = product;
         this.lowQuantity = lowQuantity;
         this.highQuantity = highQuantity;
         this.zeroPrice = zeroPrice;
+        this.print = print;
     }
 
     /**
@@ -108,6 +116,15 @@ public class TemplateProduct {
      */
     public boolean getZeroPrice() {
         return zeroPrice;
+    }
+
+    /**
+     * Determines if zero-priced products should be printed in charges.
+     *
+     * @return {@code true} if they should be printed
+     */
+    public boolean getPrint() {
+        return print;
     }
 
     /**

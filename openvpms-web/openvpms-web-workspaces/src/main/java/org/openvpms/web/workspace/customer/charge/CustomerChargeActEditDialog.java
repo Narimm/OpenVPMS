@@ -133,29 +133,24 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
     }
 
     /**
+     * Checks if there are orders pending for the customer.
+     * <br/>
+     * If so, displays a message. If not, removes any existing message.
+     */
+    public void checkOrders() {
+        manager.check();
+    }
+
+    /**
      * Saves the current object.
      * <p/>
-     * Any documents added as part of the save that have a template with an IMMEDIATE print mode will be printed.
+     * This delegates to {@link #prepare(boolean)}.
      */
     @Override
     protected void onOK() {
-        CustomerChargeDocuments docs = new CustomerChargeDocuments(getEditor(), getHelpContext());
-        List<Act> existing = docs.getUnprinted();
-        if (save()) {
-            ActionListener printListener = new ActionListener() {
-                @Override
-                public void onAction(ActionEvent event) {
-                    close(OK_ID);
-                }
-            };
-            if (!docs.printNew(existing, printListener)) {
-                // nothing to print, so close now
-                close(OK_ID);
-            }
-        } else {
-            manager.check();
-        }
+        prepare(true);
     }
+
 
     /**
      * Saves the current object.
@@ -164,12 +159,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      */
     @Override
     protected void onApply() {
-        CustomerChargeDocuments docs = new CustomerChargeDocuments(getEditor(), getHelpContext());
-        List<Act> existing = docs.getUnprinted();
-        if (save()) {
-            docs.printNew(existing, null);
-        }
-        manager.check();
+        prepare(false);
     }
 
     /**
@@ -242,6 +232,56 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
         Column container = getEditorContainer();
         container.removeAll();
         super.removeComponent(container, group);
+    }
+
+    /**
+     * Prepares to save the charge.
+     * <p/>
+     * This determines if an invoice is being posted, and if so, displays a confirmation dialog if there are
+     * any orders waiting to be dispensed.
+     * <p/>
+     * If not, or the user confirms that the save should go ahead, delegates to {@link #saveCharge(boolean)}.
+     *
+     * @param close if {@code true}, closes the dialog when the save is successful
+     */
+    private void prepare(final boolean close) {
+        UndispensedOrderChecker checker = new UndispensedOrderChecker(getEditor());
+        checker.confirm(getHelpContext(), new Runnable() {
+            @Override
+            public void run() {
+                saveCharge(close);
+            }
+        });
+    }
+
+    /**
+     * Saves the current object.
+     * <p/>
+     * Any documents added as part of the save that have a template with an IMMEDIATE print mode will be printed.
+     */
+    private void saveCharge(boolean close) {
+        CustomerChargeActEditor editor = getEditor();
+        CustomerChargeDocuments docs = new CustomerChargeDocuments(editor, getHelpContext());
+        List<Act> existing = docs.getUnprinted();
+        if (save()) {
+            ActionListener printListener = null;
+            if (close) {
+                printListener = new ActionListener() {
+                    @Override
+                    public void onAction(ActionEvent event) {
+                        close(OK_ID);
+                    }
+                };
+            }
+            if (!docs.printNew(existing, printListener)) {
+                if (close) {
+                    // nothing to print, so close now
+                    close(OK_ID);
+                }
+            }
+        } else {
+            manager.check();
+        }
     }
 
     /**

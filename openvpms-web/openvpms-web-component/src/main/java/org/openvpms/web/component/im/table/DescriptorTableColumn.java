@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -26,6 +26,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.property.DelegatingProperty;
 import org.openvpms.web.component.property.IMObjectProperty;
 import org.openvpms.web.component.property.Property;
 
@@ -48,21 +49,37 @@ public class DescriptorTableColumn extends TableColumn {
     private final String name;
 
     /**
-     * Node descriptors, keyed on short name.
+     * The default value, if the node doesn't have one.
      */
-    private final Map<String, NodeDescriptor> descriptors
-            = new HashMap<String, NodeDescriptor>();
-
+    private Object defaultValue;
 
     /**
-     * Creates a new <tt>DescriptorTableColumn</tt>.
+     * Node descriptors, keyed on short name.
+     */
+    private final Map<String, NodeDescriptor> descriptors = new HashMap<String, NodeDescriptor>();
+
+    /**
+     * Constructs a {@link DescriptorTableColumn}.
      *
      * @param modelIndex the column index of model data visualized by this
      *                   column
      * @param name       the node name
      * @param archetypes the archetype descriptors
      */
-    public DescriptorTableColumn(int modelIndex, String name,
+    public DescriptorTableColumn(int modelIndex, String name, List<ArchetypeDescriptor> archetypes) {
+        this(modelIndex, name, null, archetypes);
+    }
+
+
+    /**
+     * Constructs a {@link DescriptorTableColumn}.
+     *
+     * @param modelIndex   the column index of model data visualized by this column
+     * @param name         the node name
+     * @param defaultValue the default value, if the node doesn't have one
+     * @param archetypes   the archetype descriptors
+     */
+    public DescriptorTableColumn(int modelIndex, String name, Object defaultValue,
                                  List<ArchetypeDescriptor> archetypes) {
         super(modelIndex);
         for (ArchetypeDescriptor archetype : archetypes) {
@@ -75,18 +92,30 @@ public class DescriptorTableColumn extends TableColumn {
             }
         }
         this.name = name;
+        this.defaultValue = defaultValue;
     }
 
     /**
-     * Creates a new <tt>DescriptorTableColumn</tt>.
+     * Constructs a {@link DescriptorTableColumn}.
      *
      * @param modelIndex the column index of model data visualized by this
      *                   column
      * @param name       the node name
      * @param archetype  the archetype descriptor
      */
-    public DescriptorTableColumn(int modelIndex, String name,
-                                 ArchetypeDescriptor archetype) {
+    public DescriptorTableColumn(int modelIndex, String name, ArchetypeDescriptor archetype) {
+        this(modelIndex, name, null, archetype);
+    }
+
+    /**
+     * Constructs a {@link DescriptorTableColumn}.
+     *
+     * @param modelIndex the column index of model data visualized by this
+     *                   column
+     * @param name       the node name
+     * @param archetype  the archetype descriptor
+     */
+    public DescriptorTableColumn(int modelIndex, String name, Object defaultValue, ArchetypeDescriptor archetype) {
         super(modelIndex);
         NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
         if (descriptor != null) {
@@ -94,24 +123,32 @@ public class DescriptorTableColumn extends TableColumn {
             setHeaderValue(descriptor.getDisplayName());
         }
         this.name = name;
+        this.defaultValue = defaultValue;
     }
 
     /**
      * Returns the value of the cell.
      *
      * @param object the object
-     * @return the value of the cell, or <tt>null</tt> if the object doesn't have node
+     * @return the value of the cell, or {@code null} if the object doesn't have node
      */
     public Object getValue(IMObject object) {
+        Object result = null;
         NodeDescriptor node = getDescriptor(object);
-        return (node != null) ? node.getValue(object) : null;
+        if (node != null) {
+            result = node.getValue(object);
+            if (result == null) {
+                result = defaultValue;
+            }
+        }
+        return result;
     }
 
     /**
      * Returns the values of the cell.
      *
      * @param object the object
-     * @return the values of the cell, or <tt>null</tt> if the object doesn't have node or the node isn't a collection
+     * @return the values of the cell, or {@code null} if the object doesn't have node or the node isn't a collection
      *         node
      */
     public List<IMObject> getValues(IMObject object) {
@@ -120,11 +157,20 @@ public class DescriptorTableColumn extends TableColumn {
     }
 
     /**
+     * Sets the default value to use, if the node doesn't have one.
+     *
+     * @param defaultValue the default value. May be {@code null}
+     */
+    public void setDefaultValue(Object defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
+    /**
      * Returns the value of the cell, as a component.
      *
      * @param object  the object
      * @param context the context
-     * @return the value of the cell, or <tt>null</tt> if the object doesn't have node
+     * @return the value of the cell, or {@code null} if the object doesn't have node
      */
     public Component getComponent(IMObject object, LayoutContext context) {
         Component result;
@@ -132,6 +178,15 @@ public class DescriptorTableColumn extends TableColumn {
         if (node != null) {
             IMObjectComponentFactory factory = context.getComponentFactory();
             Property property = new IMObjectProperty(object, node);
+            if (defaultValue != null) {
+                property = new DelegatingProperty(property) {
+                    @Override
+                    public Object getValue() {
+                        Object value = super.getValue();
+                        return value == null ? defaultValue : value;
+                    }
+                };
+            }
             result = factory.create(property, object).getComponent();
         } else {
             result = null;
@@ -151,8 +206,8 @@ public class DescriptorTableColumn extends TableColumn {
     /**
      * Determines if this column can be sorted on.
      *
-     * @return <tt>true</tt> if this column can be sorted on, otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if this column can be sorted on, otherwise
+     *         {@code false}
      */
     public boolean isSortable() {
         boolean sortable = true;
@@ -183,7 +238,7 @@ public class DescriptorTableColumn extends TableColumn {
      * Returns the descriptor for a specific object.
      *
      * @param object the object
-     * @return the descriptor for <tt>object</tt>, or <tt>null</tt> if
+     * @return the descriptor for {@code object}, or {@code null} if
      *         no descriptor is registered
      */
     protected NodeDescriptor getDescriptor(IMObject object) {

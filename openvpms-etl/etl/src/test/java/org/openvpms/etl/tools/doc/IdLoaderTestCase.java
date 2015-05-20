@@ -1,23 +1,25 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009-2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentHelper;
@@ -45,6 +47,9 @@ import static org.junit.Assert.fail;
  */
 public class IdLoaderTestCase extends AbstractLoaderTest {
 
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
+
     /**
      * Tests the loader.
      *
@@ -52,10 +57,8 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
      */
     @Test
     public void testLoad() throws Exception {
-        File source = new File("target/sdocs" + System.currentTimeMillis());
-        File target = new File("target/tdocs" + System.currentTimeMillis());
-        assertTrue(source.mkdirs());
-        assertTrue(target.mkdirs());
+        File source = folder.newFolder("sdocs");
+        File target = folder.newFolder("tdocs");
 
         DocumentAct act1 = createPatientDocAct("file1.gif");
         DocumentAct act2 = createPatientDocAct("file2.pdf");
@@ -96,10 +99,8 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
      */
     @Test
     public void testMissingAct() throws Exception {
-        File source = new File("target/sdocs" + System.currentTimeMillis());
-        File target = new File("target/tdocs" + System.currentTimeMillis());
-        assertTrue(source.mkdirs());
-        assertTrue(target.mkdirs());
+        File source = folder.newFolder("sdocs");
+        File target = folder.newFolder("tdocs");
 
         // create files with no corresponding acts.
         File noAct1 = new File(source, "0000.gif");
@@ -131,10 +132,8 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
      */
     @Test
     public void testSkipProcessed() throws Exception {
-        File source = new File("target/sdocs" + System.currentTimeMillis());
-        File target = new File("target/tdocs" + System.currentTimeMillis());
-        assertTrue(source.mkdirs());
-        assertTrue(target.mkdirs());
+        File source = folder.newFolder("sdocs");
+        File target = folder.newFolder("tdocs");
 
         // create a file and associate it with the act. The loader will skip it
         DocumentAct preLoaded = createPatientDocAct();
@@ -163,10 +162,8 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
     @Test
     public void testTimestampOrdering() throws Exception {
         final int count = 3;
-        File source = new File("target/sdocs" + System.currentTimeMillis());
-        File target = new File("target/tdocs" + System.currentTimeMillis());
-        assertTrue(source.mkdirs());
-        assertTrue(target.mkdirs());
+        File source = folder.newFolder("sdocs");
+        File target = folder.newFolder("tdocs");
 
         DocumentAct act = createPatientDocAct();
 
@@ -233,10 +230,8 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
      */
     @Test
     public void testDuplicates() throws Exception {
-        File source = new File("target/sdocs" + System.currentTimeMillis());
-        File target = new File("target/tdocs" + System.currentTimeMillis());
-        assertTrue(source.mkdirs());
-        assertTrue(target.mkdirs());
+        File source = folder.newFolder("sdocs");
+        File target = folder.newFolder("tdocs");
 
         DocumentAct act = createPatientDocAct();
 
@@ -304,10 +299,8 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
      */
     @Test
     public void testLoadByType() throws Exception {
-        File source = new File("target/sdocs" + System.currentTimeMillis());
-        File target = new File("target/tdocs" + System.currentTimeMillis());
-        assertTrue(source.mkdirs());
-        assertTrue(target.mkdirs());
+        File source = folder.newFolder("sdocs");
+        File target = folder.newFolder("tdocs");
 
         DocumentAct act1 = createPatientDocAct("file1.gif");
         DocumentAct act2 = createPatientDocAct("file2.pdf");
@@ -350,10 +343,8 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
      */
     @Test
     public void testLoadDocumentTemplate() throws Exception {
-        File source = new File("target/sdocs" + System.currentTimeMillis());
-        File target = new File("target/tdocs" + System.currentTimeMillis());
-        assertTrue(source.mkdirs());
-        assertTrue(target.mkdirs());
+        File source = folder.newFolder("sdocs");
+        File target = folder.newFolder("tdocs");
 
         // verify that the loader cannot be constructed to load act.documentTemplate acts
         String[] shortNames = {DocumentArchetypes.DOCUMENT_TEMPLATE_ACT};

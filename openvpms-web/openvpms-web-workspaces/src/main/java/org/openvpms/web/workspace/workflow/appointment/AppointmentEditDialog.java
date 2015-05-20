@@ -11,28 +11,32 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.archetype.rules.workflow.AppointmentRules;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.workflow.AppointmentService;
+import org.openvpms.archetype.rules.workflow.Times;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.EditDialog;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeries;
+import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatCondition;
+import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatExpression;
 
-import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -52,16 +56,36 @@ public class AppointmentEditDialog extends EditDialog {
      */
     private Date endTime;
 
+    /**
+     * The repeat expression.
+     */
+    private RepeatExpression expression;
 
     /**
-     * Constructs a {@code AppointmentEditDialog}.
+     * The repeat condition.
+     */
+    private RepeatCondition condition;
+
+
+    /**
+     * Constructs a {@link AppointmentEditDialog}.
      *
      * @param editor  the editor
      * @param context the context
      */
-    public AppointmentEditDialog(IMObjectEditor editor, Context context) {
+    public AppointmentEditDialog(AppointmentActEditor editor, Context context) {
         super(editor, context);
-        getAppointmentTimes();
+        getState();
+    }
+
+    /**
+     * Returns the editor.
+     *
+     * @return the editor, or {@code null} if none has been set
+     */
+    @Override
+    public AppointmentActEditor getEditor() {
+        return (AppointmentActEditor) super.getEditor();
     }
 
     /**
@@ -73,7 +97,7 @@ public class AppointmentEditDialog extends EditDialog {
             save();
         } else if (!checkForOverlappingAppointment(false)) {
             if (save()) {
-                getAppointmentTimes();
+                getState();
             }
         }
     }
@@ -92,110 +116,102 @@ public class AppointmentEditDialog extends EditDialog {
 
     /**
      * Determines if the appointment overlaps an existing appointment.
-     * If so, and double scheduling is allowed, a confirmation dialog is shown
-     * prompting to save or continue editing. If double scheduling is not
-     * allowed, an error dialog is shown and no save is performed.
+     * <p/>
+     * If so, and double scheduling is allowed, a confirmation dialog is shown prompting to save or continue editing.
+     * If double scheduling is not allowed, an error dialog is shown and no save is performed.
      *
-     * @param close determines if the dialog should close if the user OKs
-     *              overlapping appointments
-     * @return {@code true} if there are overlapping appointments, otherwise
-     *         {@code false}
+     * @param close determines if the dialog should close if the user OKs overlapping appointments
+     * @return {@code true} if there are overlapping appointments, otherwise {@code false}
      */
     private boolean checkForOverlappingAppointment(final boolean close) {
-        final IMObjectEditor editor = getEditor();
-        IMObject object = editor.getObject();
-        boolean overlap = false;
+        final AppointmentActEditor editor = getEditor();
+        boolean result = false;
         if (editor.isValid()) {
-            Act act = (Act) object;
-            ActBean appointment = new ActBean(act);
-            AppointmentRules rules = ServiceHelper.getBean(AppointmentRules.class);
-            overlap = rules.hasOverlappingAppointments(
-                    act, ServiceHelper.getAppointmentService());
-            if (overlap) {
-                if (!allowDoubleBooking(appointment)) {
-                    String title = Messages.get(
-                            "workflow.scheduling.nodoubleschedule.title");
-                    String message = Messages.get(
-                            "workflow.scheduling.nodoubleschedule.message");
-                    ErrorDialog.show(title, message);
-                } else {
-                    String title = Messages.get(
-                            "workflow.scheduling.doubleschedule.title");
-                    String message = Messages.get(
-                            "workflow.scheduling.doubleschedule.message");
-                    final ConfirmationDialog dialog = new ConfirmationDialog(
-                            title, message);
-                    dialog.addWindowPaneListener(new PopupDialogListener() {
-                        @Override
-                        public void onOK() {
-                            if (save()) {
-                                if (close) {
-                                    close(OK_ID);
-                                } else {
-                                    getAppointmentTimes();
+            List<Times> times = editor.getSeries().getAppointmentTimes();
+            if (times != null) {
+                AppointmentService rules = ServiceHelper.getBean(AppointmentService.class);
+                Entity schedule = editor.getSchedule();
+                Times overlap = rules.getOverlappingAppointment(times, schedule.getObjectReference());
+                if (overlap != null) {
+                    result = true;
+                    if (!allowDoubleBooking(schedule)) {
+                        String title = Messages.get("workflow.scheduling.nodoubleschedule.title");
+                        String message = Messages.format("workflow.scheduling.nodoubleschedule.message",
+                                                         DateFormatter.formatDate(overlap.getStartTime(), false),
+                                                         DateFormatter.formatTime(overlap.getStartTime(), false));
+                        ErrorDialog.show(title, message);
+                    } else {
+                        String title = Messages.get("workflow.scheduling.doubleschedule.title");
+                        String message = Messages.format("workflow.scheduling.doubleschedule.message",
+                                                         DateFormatter.formatDate(overlap.getStartTime(), false),
+                                                         DateFormatter.formatTime(overlap.getStartTime(), false));
+                        final ConfirmationDialog dialog = new ConfirmationDialog(title, message);
+                        dialog.addWindowPaneListener(new PopupDialogListener() {
+                            @Override
+                            public void onOK() {
+                                if (save()) {
+                                    if (close) {
+                                        close(OK_ID);
+                                    } else {
+                                        getState();
+                                    }
                                 }
                             }
-                        }
-                    });
-                    dialog.show();
+                        });
+                        dialog.show();
+                    }
                 }
             }
-        }
-        return overlap;
-    }
-
-    /**
-     * Determines if double booking is allowed.
-     *
-     * @param appointment the appointment
-     * @return {@code true} if double booking is allowed, otherwise
-     *         {@code false}
-     */
-    private boolean allowDoubleBooking(ActBean appointment) {
-        boolean result;
-        IMObject schedule = appointment.getParticipant(
-                "participation.schedule");
-        if (schedule != null) {
-            IMObjectBean bean = new IMObjectBean(schedule);
-            result = bean.getBoolean("allowDoubleBooking");
-        } else {
-            result = false;
         }
         return result;
     }
 
     /**
+     * Determines if double booking is allowed.
+     *
+     * @param schedule the appointment schedule
+     * @return {@code true} if double booking is allowed, otherwise {@code false}
+     */
+    private boolean allowDoubleBooking(Entity schedule) {
+        IMObjectBean bean = new IMObjectBean(schedule);
+        return bean.getBoolean("allowDoubleBooking");
+    }
+
+    /**
      * Determines if the appointment can be saved without checking for overlaps.
      *
-     * @return <tt>true</tt> if the appointment can be saved
+     * @return {@code true} if the appointment can be saved
      */
     private boolean canSave() {
         Act appointment = getAppointment();
-        return !appointment.isNew() && !timesModified();
+        return !appointment.isNew() && !timeSeriesModified();
     }
 
     /**
      * Caches the appointment start and end times.
      */
-    private void getAppointmentTimes() {
+    private void getState() {
         Act appointment = getAppointment();
         startTime = appointment.getActivityStartTime();
         endTime = appointment.getActivityEndTime();
+        AppointmentSeries series = getEditor().getSeries();
+        expression = series.getExpression();
+        condition = series.getCondition();
     }
 
     /**
-     * Determines if the appointment times have been modified since the
-     * act was saved.
+     * Determines if the appointment times or series have been modified since the act was saved.
      *
      * @return {@code true} if the appointment times have been modified,
      *         otherwise {@code false}
      */
-    private boolean timesModified() {
+    private boolean timeSeriesModified() {
+        AppointmentSeries series = getEditor().getSeries();
         Act act = getAppointment();
-        return !ObjectUtils.equals(getDate(startTime),
-                                   getDate(act.getActivityStartTime()))
-               || !ObjectUtils.equals(getDate(endTime),
-                                      getDate(act.getActivityEndTime()));
+        return DateRules.compareTo(startTime, act.getActivityStartTime()) != 0
+               || DateRules.compareTo(endTime, act.getActivityEndTime()) != 0
+               || !ObjectUtils.equals(expression, series.getExpression())
+               || !ObjectUtils.equals(condition, series.getCondition());
     }
 
     /**
@@ -207,14 +223,4 @@ public class AppointmentEditDialog extends EditDialog {
         return (Act) getEditor().getObject();
     }
 
-    /**
-     * Helper to convert a Timestamp to a Date so comparisons work correctly.
-     *
-     * @param date the date. May be an instance/subclass of {@code Date} or
-     *             null
-     * @return the date, or {@code null}
-     */
-    private Date getDate(Date date) {
-        return (date instanceof Timestamp) ? new Date(date.getTime()) : date;
-    }
 }

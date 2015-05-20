@@ -24,9 +24,11 @@ import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
@@ -47,6 +49,7 @@ import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelper;
 import org.openvpms.web.workspace.customer.charge.TestChargeEditor;
+import org.openvpms.web.workspace.customer.charge.TestPharmacyOrderService;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -121,13 +124,20 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
         super.setUp();
         fixedPrice = BigDecimal.valueOf(2);
         unitPrice = TEN;
+
+        // create a product linked to a pharmacy
+        Party location = TestHelper.createLocation();
+        Entity pharmacy = CustomerChargeTestHelper.createPharmacy(location);
         product = createProduct(ProductArchetypes.MEDICATION, fixedPrice, unitPrice);
+        ProductTestHelper.addPharmacy(product, pharmacy);
+
         clinician = TestHelper.createClinician();
         customer = TestHelper.createCustomer();
         patient = TestHelper.createPatient(customer);
         context = new LocalContext();
         context.setPractice(getPractice());
-        context.setLocation(TestHelper.createLocation());
+
+        context.setLocation(location);
         author = TestHelper.createUser();
         context.setUser(author);
         context.setClinician(clinician);
@@ -436,8 +446,9 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
         charger2.charge(editor);
 
         assertTrue(SaveHelper.save(editor));
-        checkItem(invoice, patient, product, ZERO, unitPrice, fixedPrice, ZERO, ZERO, ONE, ONE);
-        checkCharge(invoice, customer, author, clinician, ZERO, ZERO);
+        checkItem(invoice, patient, product, ZERO, unitPrice, fixedPrice, new BigDecimal("0.182"), fixedPrice, ONE,
+                  ONE);
+        checkCharge(invoice, customer, author, clinician, new BigDecimal("0.18"), fixedPrice);
     }
 
     /**
@@ -475,6 +486,41 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
         assertTrue(TypeHelper.isA(charge, CustomerAccountArchetypes.CREDIT));
         checkItem(charge, patient, product, quantity, unitPrice, fixedPrice, tax, total, null, null);
         checkCharge(charge, customer, author, clinician, tax, total);
+    }
+
+    /**
+     * Verifies that if an existing order is charged and the created invoice item deleted prior to being saved,
+     * no cancellation is generated.
+     */
+    @Test
+    public void testRemoveUnsavedInvoiceItemLinkedToOrder() {
+        BigDecimal quantity = BigDecimal.valueOf(2);
+
+        TestChargeEditor editor = createEditor();
+        editor.setStatus(ActStatus.IN_PROGRESS);
+
+        FinancialAct order = createOrder(customer, patient, product, quantity, null); // not linked to an invoice item
+
+        // charge the order
+        PharmacyOrderCharger charger = new TestPharmacyOrderCharger(order, rules);
+        assertTrue(charger.canCharge(editor));
+        charger.charge(editor);
+
+        // remove the new item
+        List<Act> items = editor.getItems().getCurrentActs();
+        assertEquals(1, items.size());
+        editor.getItems().remove(items.get(0));
+
+        assertTrue(SaveHelper.save(editor));
+
+        // verify no orders were submitted
+        TestPharmacyOrderService pharmacyOrderService = editor.getPharmacyOrderService();
+        assertTrue(pharmacyOrderService.getOrders().isEmpty());
+
+        // verifies that the unsaved order is POSTED, but that the saved version is still IN_PROGRESS
+        assertEquals(ActStatus.POSTED, order.getStatus());
+        order = get(order);
+        assertEquals(ActStatus.IN_PROGRESS, order.getStatus());
     }
 
     /**
@@ -545,11 +591,21 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
      * @return the invoice editor
      */
     private TestChargeEditor createInvoice(Product product, BigDecimal quantity) {
+        TestChargeEditor editor = createEditor();
+        addItem(editor, patient, product, quantity, editor.getQueue());
+        return editor;
+    }
+
+    /**
+     * Creates a new invoice editor.
+     *
+     * @return a new editor
+     */
+    private TestChargeEditor createEditor() {
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
         LayoutContext layoutContext = new DefaultLayoutContext(context, new HelpContext("foo", null));
         TestChargeEditor editor = new TestChargeEditor(charge, layoutContext, false);
         editor.getComponent();
-        addItem(editor, patient, product, quantity, editor.getQueue());
         return editor;
     }
 
@@ -592,7 +648,7 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
      * @param product     the product. May be {@code null}
      * @param quantity    the order quantity
      * @param invoiceItem the related invoice item. May be {@code null}
-     * @return a new order/rr
+     * @return a new order
      */
     private FinancialAct createOrderReturn(boolean isOrder, Party customer, Party patient, Product product,
                                            BigDecimal quantity, FinancialAct invoiceItem) {
@@ -682,8 +738,8 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
     private void checkItem(List<FinancialAct> items, Party patient, Product product, BigDecimal quantity,
                            BigDecimal unitPrice, BigDecimal fixedPrice, BigDecimal tax, BigDecimal total,
                            int childActs) {
-        checkItem(items, patient, product, author, clinician, quantity, ZERO, unitPrice, ZERO, fixedPrice, ZERO, tax,
-                  total, null, childActs);
+        checkItem(items, patient, product, null, author, clinician, quantity, ZERO, unitPrice, ZERO, fixedPrice, ZERO,
+                  tax, total, null, childActs);
     }
 
     private static class TestPharmacyOrderCharger extends PharmacyOrderCharger {
