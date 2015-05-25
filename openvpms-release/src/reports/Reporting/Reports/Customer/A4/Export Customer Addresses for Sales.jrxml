@@ -16,7 +16,7 @@
   -->
 
 <!-- Created with Jaspersoft Studio version 6.0.4.final using JasperReports Library version 6.0.4  -->
-<!-- 2015-05-17T17:57:39 -->
+<!-- 2015-05-22T15:38:05 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
@@ -65,7 +65,7 @@
         <defaultValueExpression><![CDATA[]]></defaultValueExpression>
     </parameter>
     <parameter name="PracticeLocation" class="java.lang.String">
-        <parameterDescription><![CDATA[Acct Type or Category]]></parameterDescription>
+        <parameterDescription><![CDATA[Practice Location]]></parameterDescription>
         <defaultValueExpression><![CDATA[]]></defaultValueExpression>
     </parameter>
     <parameter name="Explain" class="java.lang.Boolean">
