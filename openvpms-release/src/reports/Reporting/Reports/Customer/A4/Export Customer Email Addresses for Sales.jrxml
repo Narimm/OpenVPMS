@@ -16,7 +16,7 @@
   -->
 
 <!-- Created with Jaspersoft Studio version 6.0.4.final using JasperReports Library version 6.0.4  -->
-<!-- 2015-05-17T17:57:30 -->
+<!-- 2015-05-22T15:52:48 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
@@ -65,7 +65,7 @@
         <defaultValueExpression><![CDATA[]]></defaultValueExpression>
     </parameter>
     <parameter name="PracticeLocation" class="java.lang.String">
-        <parameterDescription><![CDATA[Acct Type or Category]]></parameterDescription>
+        <parameterDescription><![CDATA[Practice Location]]></parameterDescription>
         <defaultValueExpression><![CDATA[]]></defaultValueExpression>
     </parameter>
     <parameter name="Explain" class="java.lang.Boolean">
@@ -452,7 +452,7 @@ order by c.name, c.entity_id,rank desc, ce.contact_id desc]]>
                 <text><![CDATA[No Data Found - Check Parameters]]></text>
             </staticText>
             <staticText>
-                <reportElement x="0" y="180" width="532" height="240" isRemoveLineWhenBlank="true"
+                <reportElement x="0" y="180" width="532" height="260" isRemoveLineWhenBlank="true"
                                uuid="ebe0be71-0c06-4f2e-831b-24df43077ee8">
                     <printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
                 </reportElement>
@@ -576,8 +576,8 @@ The cell below this one contains all the addresses contatenated. See http://chan
                 </textField>
             </frame>
             <textField isStretchWithOverflow="true" evaluationTime="Report">
-                <reportElement positionType="Float" stretchType="RelativeToBandHeight" x="3" y="420" width="796"
-                               height="174" isPrintWhenDetailOverflows="true"
+                <reportElement positionType="Float" stretchType="RelativeToBandHeight" x="2" y="440" width="796"
+                               height="140" isPrintWhenDetailOverflows="true"
                                uuid="2c8ec37c-b238-4a45-a127-a6518b4cee43"/>
                 <textFieldExpression><![CDATA[$V{AllEmailAddresses}]]></textFieldExpression>
             </textField>
