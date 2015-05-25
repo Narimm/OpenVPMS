@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.patient.visit;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.patient.history.PatientHistoryCRUDWindow;
 
@@ -52,5 +53,16 @@ public class VisitCRUDWindow extends PatientHistoryCRUDWindow {
         return new Row();
     }
 
-
+    /**
+     * Lays out the buttons.
+     *
+     * @param buttons the button row
+     */
+    @Override
+    protected void layoutButtons(ButtonSet buttons) {
+        buttons.add(createNewButton());
+        buttons.add(createEditButton());
+        buttons.add(createDeleteButton());
+        buttons.add(createPrintButton());
+    }
 }

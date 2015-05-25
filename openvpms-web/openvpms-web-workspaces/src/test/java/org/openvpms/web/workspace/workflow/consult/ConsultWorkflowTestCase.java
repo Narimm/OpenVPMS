@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.consult;
@@ -19,7 +19,6 @@ package org.openvpms.web.workspace.workflow.consult;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
@@ -31,7 +30,6 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.echo.dialog.PopupDialog;
@@ -222,55 +220,6 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     @Test
     public void testCancelInvoiceByCancelButtonAfterSave() {
         checkCancelInvoice(true, false);
-    }
-
-    /**
-     * Runs the consult workflow, verifying that the "Add Visit & Note" operation creates a note with a new visit,
-     * selecting the note.
-     */
-    @Test
-    public void testAddVisitAndNote() {
-        Act act = createAppointment(customer, patient, clinician);
-        ConsultWorkflowRunner workflow1 = new ConsultWorkflowRunner(act, getPractice(), context);
-        workflow1.start();
-
-        // verify the event has been created with IN_PROGRESS status
-        VisitEditorDialog visitEditorDialog1 = workflow1.editVisit();
-        VisitEditor editor1 = visitEditorDialog1.getEditor();
-        Act event = editor1.getHistoryWindow().getObject();
-        assertEquals(ActStatus.IN_PROGRESS, event.getStatus());
-
-        // verify the event is selected
-        checkSelectedHistory(editor1, event, event);
-
-        // add visit and note
-        Act note = workflow1.addVisitAndNote();
-        ActBean bean = new ActBean(note);
-        Act newEvent = bean.getSourceAct(PatientArchetypes.CLINICAL_EVENT_ITEM);
-        assertNotNull(newEvent);
-        assertEquals(ActStatus.COMPLETED, newEvent.getStatus());
-
-        // the note should now be selected, with newEvent as the selected event
-        checkSelectedHistory(editor1, note, newEvent);
-
-        // complete the workflow
-        fireDialogButton(visitEditorDialog1, PopupDialog.OK_ID);
-        workflow1.checkComplete(ActStatus.IN_PROGRESS);
-        workflow1.checkContext(context, customer, patient, null);
-
-        // start a new workflow
-        ConsultWorkflowRunner workflow2 = new ConsultWorkflowRunner(act, getPractice(), context);
-        workflow2.start();
-
-        // verify the original event is selected (as its timestamp is closest to that of the appointment)
-        VisitEditorDialog visitEditorDialog2 = workflow2.editVisit();
-        VisitEditor editor2 = visitEditorDialog2.getEditor();
-        checkSelectedHistory(editor2, event, event);
-
-        // complete the workflow
-        fireDialogButton(visitEditorDialog2, PopupDialog.OK_ID);
-        workflow1.checkComplete(ActStatus.IN_PROGRESS);
-        workflow1.checkContext(context, customer, patient, null);
     }
 
     /**
