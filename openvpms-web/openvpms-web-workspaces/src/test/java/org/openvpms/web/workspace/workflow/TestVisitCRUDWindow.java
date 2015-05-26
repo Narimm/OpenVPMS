@@ -11,14 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow;
 
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -32,9 +31,7 @@ import org.openvpms.web.workspace.patient.visit.VisitCRUDWindow;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 
@@ -49,19 +46,6 @@ public class TestVisitCRUDWindow extends VisitCRUDWindow {
 
     public TestVisitCRUDWindow(Context context) {
         super(context, new HelpContext("foo", null));
-    }
-
-    /**
-     * Performs the "Add Visit & Note" operation.
-     *
-     * @return the added note
-     */
-    public Act addVisitAndNote() {
-        saved.clear();
-        onAddNote();
-        assertEquals(1, saved.size());
-        assertTrue(TypeHelper.isA(saved.get(0), PatientArchetypes.CLINICAL_NOTE));
-        return saved.get(0);
     }
 
     /**

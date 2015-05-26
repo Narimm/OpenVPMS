@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -313,6 +313,16 @@ public class VisitEditor {
      */
     public void selectCharges() {
         selectTab(INVOICE_TAB);
+    }
+
+    /**
+     * Returns the selected tab index.
+     *
+     * @return the tab model index, or {@code -1} if no tab is selected
+     */
+    public int getSelectedTab() {
+        int index = tabbedPane.getSelectedIndex();
+        return index != -1 ? getModelIndex(index) : -1;
     }
 
     /**

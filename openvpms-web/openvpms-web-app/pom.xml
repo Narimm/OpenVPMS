@@ -143,9 +143,27 @@
                 <artifactId>maven-source-plugin</artifactId>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>tomcat-maven-plugin</artifactId>
-                <version>1.0-beta-1</version>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat6-maven-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <server>openvpms-tomcat</server>
+                    <!--port>${maven.tomcat.port}</port-->
+                    <path>/${project.build.finalName}</path>
+                    <warSourceDirectory>${basedir}/src/webapp</warSourceDirectory>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>${jdbc.groupId}</groupId>
+                        <artifactId>${jdbc.artifactId}</artifactId>
+                        <version>${jdbc.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <version>2.2</version>
                 <configuration>
                     <server>openvpms-tomcat</server>
                     <!--port>${maven.tomcat.port}</port-->
@@ -184,6 +202,8 @@
                             <keyPassword>password</keyPassword>
                         </connector>
                     </connectors>
+                    <stopKey/>
+                    <stopPort/>
                 </configuration>
                 <dependencies>
                     <dependency>
