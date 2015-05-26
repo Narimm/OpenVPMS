@@ -16,10 +16,12 @@
 
 package org.openvpms.web.workspace.patient.visit;
 
+import echopointng.KeyStrokes;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.web.component.macro.MacroDialog;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
@@ -79,6 +81,11 @@ public class VisitEditorDialog extends PopupDialog {
             }
         });
         setHistoryButtons();
+        getButtons().addKeyListener(KeyStrokes.ALT_MASK | KeyStrokes.VK_M, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onMacro();
+            }
+        });
     }
 
     /**
@@ -392,4 +399,13 @@ public class VisitEditorDialog extends PopupDialog {
         editor.setButtons(buttons);
     }
 
+    /**
+     * Displays the macros, if the invoice editor is displayed.
+     */
+    private void onMacro() {
+        if (editor.getSelectedTab() == VisitEditor.INVOICE_TAB && editor.getChargeEditor() != null) {
+            MacroDialog dialog = new MacroDialog(editor.getContext(), getHelpContext());
+            dialog.show();
+        }
+    }
 }

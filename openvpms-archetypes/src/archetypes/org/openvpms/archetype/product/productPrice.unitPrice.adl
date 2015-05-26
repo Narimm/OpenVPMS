@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -30,14 +30,16 @@
         <node name="markup" path="/details/markup" type="java.math.BigDecimal" minCardinality="0" defaultValue="100.0"/>
         <node name="price" path="/price" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
               minCardinality="1"/>
-        <node name="uom" displayName="Selling Units" path="/details/qtyUom" type="java.lang.String" minCardinality="0">
+        <!-- Quantity Break Discounts not implemented so fields hidden -->
+        <node name="quantity" displayName="Qty Break Qty" path="/details/quantity" type="java.lang.Integer"
+              hidden="true" defaultValue="99999" minCardinality="0"/>
+        <node name="uom" displayName="Qty Break Units" path="/details/qtyUom" type="java.lang.String" hidden="true"
+              minCardinality="0">
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
                 <property name="source" value="lookup.uom"/>
-                <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
-        <node name="quantity" path="/details/quantity" type="java.lang.Integer" defaultVale="99999" minCardinality="0"/>
         <node name="maxDiscount" displayName="Max. Discount" path="/details/maxDiscount" type="java.math.BigDecimal"
               minCardinality="0" defaultValue="100.0"/>
         <node displayName="From Date" name="fromDate" path="/fromDate"

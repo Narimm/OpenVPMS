@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.consult;
@@ -70,23 +70,6 @@ class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunne
         TestVisitCRUDWindow window = (TestVisitCRUDWindow) visitEditor.getHistoryWindow();
         assertNotNull(window);
         window.addNote();
-    }
-
-    /**
-     * Performs the "Add Visit & Note" operation.
-     *
-     * @return the added note
-     */
-    public Act addVisitAndNote() {
-        TestEditVisitTask task = (TestEditVisitTask) getTask();
-        VisitEditorDialog dialog = task.getVisitDialog();
-
-        // get the editor
-        VisitEditor visitEditor = dialog.getEditor();
-        TestVisitCRUDWindow window = (TestVisitCRUDWindow) visitEditor.getHistoryWindow();
-        assertNotNull(window);
-        Act note = window.addVisitAndNote();
-        return get(note);  // need to reload as the Retryer loads it before linking it to the event
     }
 
     /**

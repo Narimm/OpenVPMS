@@ -227,12 +227,8 @@ public class TestPharmacyService {
                 for (int i = 0; i < dispenses; ++i) {
                     BigDecimal qty = (i == 0) ? decimals[0].add(decimals[1]) : decimals[0];
                     RDS_O13 dispense = createRDS(order, qty);
-                    if (i != 0 && wait != 0) {
-                        try {
-                            Thread.sleep(wait * 1000);
-                        } catch (InterruptedException ignore) {
-                            // do nothing
-                        }
+                    if (i != 0) {
+                        pause();
                     }
                     send(dispense, connection);
                 }
@@ -243,6 +239,7 @@ public class TestPharmacyService {
             if (returnAfterDispense) {
                 quantity = quantity.negate();
                 RDS_O13 dispense = createRDS(order, quantity);
+                pause();
                 send(dispense, connection);
             }
         } catch (Throwable exception) {
@@ -267,6 +264,19 @@ public class TestPharmacyService {
         log.info("sending: " + HL7MessageHelper.toString(message));
         Message response = connection.getInitiator().sendAndReceive(message);
         log.info("received: " + HL7MessageHelper.toString(response));
+    }
+
+    /**
+     * Pauses for {@code wait} seconds.
+     */
+    private void pause() {
+        if (wait != 0) {
+            try {
+                Thread.sleep(wait * 1000);
+            } catch (InterruptedException ignore) {
+                // do nothing
+            }
+        }
     }
 
     /**
