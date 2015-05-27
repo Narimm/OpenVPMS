@@ -30,6 +30,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.functor.IsA;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -52,6 +53,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
+import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_LOCATION;
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_WEIGHT;
 import static org.openvpms.component.system.common.query.ParticipationConstraint.Field.ActShortName;
 
@@ -141,6 +143,21 @@ public class PatientRules {
     }
 
     /**
+     * Adds a patient-location relationship between the supplied customer and patient.
+     *
+     * @param customer the customer
+     * @param patient  the patient
+     * @return the relationship
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public EntityRelationship addPatientLocationRelationship(Party customer, Party patient) {
+        EntityBean bean = factory.createEntityBean(customer);
+        EntityRelationship relationship = bean.addRelationship(PatientArchetypes.PATIENT_LOCATION, patient);
+        relationship.setActiveStartTime(new Date());
+        return relationship;
+    }
+
+    /**
      * Returns the owner of a patient associated with an act.
      * If a patient has had multiple owners, then the returned owner will be
      * that whose ownership period encompasses the act start time. If there is
@@ -153,7 +170,7 @@ public class PatientRules {
      */
     public Party getOwner(Act act) {
         ActBean bean = factory.createActBean(act);
-        Party patient = (Party) bean.getParticipant("participation.patient");
+        Party patient = (Party) bean.getParticipant(PatientArchetypes.PATIENT_PARTICIPATION);
         Date startTime = act.getActivityStartTime();
         return getOwner(patient, startTime, false);
     }
@@ -192,36 +209,7 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getOwner(Party patient, Date startTime, boolean active) {
-        Party owner = null;
-        if (patient != null && startTime != null) {
-            EntityBean patientBean = factory.createEntityBean(patient);
-            owner = (Party) patientBean.getSourceEntity(PatientArchetypes.PATIENT_OWNER, startTime, false);
-            if (owner == null && !active) {
-                // no match for the start time, so try and find an owner close
-                // to the start time
-                EntityRelationship match = null;
-                List<EntityRelationship> relationships
-                        = patientBean.getRelationships(PatientArchetypes.PATIENT_OWNER, false);
-
-                for (EntityRelationship relationship : relationships) {
-                    if (match == null) {
-                        owner = get(relationship.getSource());
-                        if (owner != null) {
-                            match = relationship;
-                        }
-                    } else {
-                        if (closerTime(startTime, relationship, match)) {
-                            Party party = get(relationship.getSource());
-                            if (party != null) {
-                                owner = party;
-                                match = relationship;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return owner;
+        return getSourceParty(patient, startTime, active, PatientArchetypes.PATIENT_OWNER);
     }
 
     /**
@@ -232,9 +220,8 @@ public class PatientRules {
      */
     public IMObjectReference getOwnerReference(Party patient) {
         EntityBean bean = factory.createEntityBean(patient);
-        List<IMObjectReference> refs
-                = bean.getNodeSourceEntityRefs("customers", new Date());
-        return refs.isEmpty() ? null : refs.get(0);
+        EntityRelationship er = bean.getNodeRelationship("customers", new IsA(PatientArchetypes.PATIENT_OWNER));
+        return (er != null && er.isActive()) ? er.getSource() : null;
     }
 
     /**
@@ -248,6 +235,56 @@ public class PatientRules {
     public boolean isOwner(Party customer, Party patient) {
         Party owner = getOwner(patient);
         return (owner != null && owner.equals(customer));
+    }
+
+    /**
+     * Returns the location of a patient associated with an act.
+     *
+     * @param act the act
+     * @return the patient location, or {@code null} if none is found
+     */
+    public Party getLocation(Act act) {
+        ActBean bean = factory.createActBean(act);
+        Party patient = (Party) bean.getParticipant(PatientArchetypes.PATIENT_PARTICIPATION);
+        Date startTime = act.getActivityStartTime();
+        return getLocation(patient, startTime, false);
+    }
+
+    /**
+     * Returns the location of a patient.
+     *
+     * @param patient the patient
+     * @return the patient's location, or {@code null} if none can be found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Party getLocation(Party patient) {
+        return getLocation(patient, new Date(), true);
+    }
+
+    /**
+     * Returns the current location of a patient associated with an act.
+     *
+     * @param act the act
+     * @return the patient's location, or {@code null} if none can be found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Party getCurrentLocation(Act act) {
+        ActBean bean = factory.createActBean(act);
+        Party patient = (Party) bean.getParticipant("participation.patient");
+        return getLocation(patient, new Date(), true);
+    }
+
+    /**
+     * Returns the location of a patient for a specified date.
+     *
+     * @param patient   the patient
+     * @param startTime the date to search for the location relationships
+     * @param active    if {@code true}, only check active relationships
+     * @return the patient's location, or {@code null} if none can be found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Party getLocation(Party patient, Date startTime, boolean active) {
+        return getSourceParty(patient, startTime, active, PATIENT_LOCATION);
     }
 
     /**
@@ -618,6 +655,46 @@ public class PatientRules {
     public void mergePatients(Party from, Party to) {
         PatientMerger merger = new PatientMerger(service);
         merger.merge(from, to);
+    }
+
+    /**
+     * Returns the source of a patient relationship closest to the specified start time.
+     *
+     * @param patient   the patient. May be {@code null}
+     * @param startTime the relationship start time. May be {@code null}
+     * @param active    determines if the party must be active or not
+     * @param shortName the relationship short name
+     * @return the source, or {@code null} if none is found
+     */
+    private Party getSourceParty(Party patient, Date startTime, boolean active, String shortName) {
+        Party result = null;
+        if (patient != null && startTime != null) {
+            EntityBean bean = factory.createEntityBean(patient);
+            result = (Party) bean.getSourceEntity(shortName, startTime, false);
+            if (result == null && !active) {
+                // no match for the start time, so try and find a source close to the start time
+                EntityRelationship match = null;
+                List<EntityRelationship> relationships = bean.getRelationships(shortName, false);
+
+                for (EntityRelationship relationship : relationships) {
+                    if (match == null) {
+                        result = get(relationship.getSource());
+                        if (result != null) {
+                            match = relationship;
+                        }
+                    } else {
+                        if (closerTime(startTime, relationship, match)) {
+                            Party party = get(relationship.getSource());
+                            if (party != null) {
+                                result = party;
+                                match = relationship;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     /**

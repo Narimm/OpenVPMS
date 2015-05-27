@@ -179,13 +179,43 @@ public class PartyFunctions {
     }
 
     /**
-     * Returns the most current owner of a patient associated with an act.
+     * Returns the current owner of a patient associated with an act.
      *
      * @param act the act
      * @return the associated patients owner, or {@code null}
      */
     public Party getPatientCurrentOwner(Act act) {
         return patientRules.getCurrentOwner(act);
+    }
+
+    /**
+     * Returns the location for the patient associated with an act.
+     *
+     * @param patient the patient
+     * @return the associated party at the patient location, or {@code null}
+     */
+    public Party getPatientLocation(Party patient) {
+        return patientRules.getLocation(patient);
+    }
+
+    /**
+     * Returns the location for the patient associated with an act.
+     *
+     * @param act
+     * @return the associated party at the patient location, or {@code null}
+     */
+    public Party getPatientLocation(Act act) {
+        return patientRules.getLocation(act);
+    }
+
+    /**
+     * Returns the current location party for the patient associated with an act.
+     *
+     * @param act
+     * @return the associated party at the patient location, or {@code null}
+     */
+    public Party getPatientCurrentLocation(Act act) {
+        return patientRules.getCurrentLocation(act);
     }
 
     /**
@@ -687,7 +717,7 @@ public class PartyFunctions {
      * Returns the referral vet for a patient.
      * <p/>
      * This is the patient's associated party from the first matching <em>entityRelationship.referredFrom</em> or
-     * <em>entityrRelationship.referredTo</em> that matches the:
+     * <em>entityRelationship.referredTo</em> that matches the:
      * <ul>
      * <li>act's start time, if the context refers to an act; or</li>
      * <li>the current time, if it refers to a patient</li>
