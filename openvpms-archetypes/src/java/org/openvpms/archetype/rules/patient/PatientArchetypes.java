@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -54,6 +54,11 @@ public class PatientArchetypes {
      */
     public static final String PATIENT_OWNER
             = "entityRelationship.patientOwner";
+
+    /**
+     * Patient location relationship short name.
+     */
+    public static final String PATIENT_LOCATION = "entityRelationship.patientLocation";
 
     /**
      * Patient clinical event act short name.
