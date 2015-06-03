@@ -79,7 +79,14 @@ class PIDPopulator {
     public void populate(PID pid, PatientContext context, HL7Mapping config) throws HL7Exception {
         pid.getSetIDPID().setValue("1");
 
-        pid.getPatientID().getIDNumber().setValue(Long.toString(context.getPatientId()));
+        String patientId = Long.toString(context.getPatientId());
+        if (config.getPopulatePID3() || !config.getPopulatePID2()) {
+            // always populate an identifier
+            pid.getPatientIdentifierList(0).getIDNumber().setValue(patientId);
+        }
+        if (config.getPopulatePID2()) {
+            pid.getPatientID().getIDNumber().setValue(patientId);
+        }
 
         XPN patientName = pid.getPatientName(0);
         patientName.getFamilyName().getSurname().setValue(context.getPatientLastName());

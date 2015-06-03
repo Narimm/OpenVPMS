@@ -20,6 +20,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.laboratory.Laboratories;
+import org.openvpms.hl7.patient.PatientEventServices;
 import org.openvpms.hl7.util.HL7Archetypes;
 
 /**
@@ -30,14 +31,43 @@ import org.openvpms.hl7.util.HL7Archetypes;
 public class LaboratoriesImpl extends ServicesImpl implements Laboratories {
 
     /**
+     * The services that receive patient events.
+     */
+    private final PatientEventServices services;
+
+    /**
      * Constructs a {@link LaboratoriesImpl}.
      *
      * @param service    the archetype service
      * @param connectors the connectors
+     * @param services   the patient event services
      */
-    public LaboratoriesImpl(IArchetypeService service, Connectors connectors) {
+    public LaboratoriesImpl(IArchetypeService service, Connectors connectors, PatientEventServices services) {
         super(service, HL7Archetypes.LABORATORY, Entity.class, false, connectors);
+        this.services = services;
         load();
+    }
+
+    /**
+     * Adds an object to the cache, if it active, and newer than the existing instance, if any.
+     *
+     * @param object the object to add
+     */
+    @Override
+    protected void addObject(Entity object) {
+        services.add(object);  // register the pharmacy to receive patient information
+        super.addObject(object);
+    }
+
+    /**
+     * Removes an object.
+     *
+     * @param object the object to remove
+     */
+    @Override
+    protected void removeObject(Entity object) {
+        services.remove(object);  // de-register the service so it no longer receives patient events
+        super.removeObject(object);
     }
 
 }

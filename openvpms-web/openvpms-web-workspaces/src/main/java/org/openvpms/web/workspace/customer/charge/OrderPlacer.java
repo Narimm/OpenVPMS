@@ -343,7 +343,9 @@ public class OrderPlacer {
             notifyPatientInformation(context, changes, patients);
             if (order.create(context, services, user)) {
                 ActBean bean = new ActBean(act);
-                bean.setValue("ordered", true);
+                if (bean.hasNode("ordered")) {
+                    bean.setValue("ordered", true);
+                }
                 result = true;
             }
         }

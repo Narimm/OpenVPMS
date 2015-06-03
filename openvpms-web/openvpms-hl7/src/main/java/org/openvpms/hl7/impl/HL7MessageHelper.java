@@ -19,6 +19,7 @@ package org.openvpms.hl7.impl;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.Structure;
+import ca.uhn.hl7v2.model.v25.datatype.CE;
 import ca.uhn.hl7v2.model.v25.datatype.CWE;
 import ca.uhn.hl7v2.model.v25.datatype.MSG;
 import ca.uhn.hl7v2.model.v25.segment.ERR;
@@ -100,6 +101,11 @@ public class HL7MessageHelper {
             }
         }
 
+        String condition = formatCE(msa.getErrorCondition());
+        if (!StringUtils.isEmpty(condition)) {
+            append(buffer, "Error Condition: ", condition);
+        }
+
         if (buffer.length() == 0) {
             buffer.append("Message body: ");
             try {
@@ -179,9 +185,36 @@ public class HL7MessageHelper {
      * @return the formatted field, or {@code null} if there is nothing to format
      */
     private static String formatCWE(CWE field) {
+        String result = formatIdText(field.getIdentifier().getValue(), field.getText().getValue());
+        if (result != null) {
+            String originalText = field.getOriginalText().getValue();
+            if (!StringUtils.isEmpty(originalText)) {
+                result += "\nOriginal Text: ";
+                result += originalText;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Formats a Coded Element field.
+     *
+     * @param field the field to format
+     * @return the formatted field, or {@code null} if there is nothing to format
+     */
+    private static String formatCE(CE field) {
+        return formatIdText(field.getIdentifier().getValue(), field.getText().getValue());
+    }
+
+    /**
+     * Formats an identifier and text.
+     *
+     * @param id   the identifier. May be {@code null}
+     * @param text the text. May be {@code null}
+     * @return the formatted text. May be {@code null}
+     */
+    private static String formatIdText(String id, String text) {
         String result = null;
-        String id = field.getIdentifier().getValue();
-        String text = field.getText().getValue();
         if (!StringUtils.isEmpty(id) || !StringUtils.isEmpty(text)) {
             if (!StringUtils.isEmpty(id) && !StringUtils.isEmpty(text)) {
                 result = id + " - " + text;
@@ -189,12 +222,6 @@ public class HL7MessageHelper {
                 result = id;
             } else {
                 result = text;
-            }
-
-            String originalText = field.getOriginalText().getValue();
-            if (!StringUtils.isEmpty(originalText)) {
-                result += "\nOriginal Text: ";
-                result += originalText;
             }
         }
         return result;

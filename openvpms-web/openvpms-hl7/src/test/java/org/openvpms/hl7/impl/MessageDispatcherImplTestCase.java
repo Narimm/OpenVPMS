@@ -82,7 +82,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        sender = HL7TestHelper.createSender(-1); // dummy port
+        sender = HL7TestHelper.createSender(-1, HL7TestHelper.createCubexMapping()); // dummy port
         context = HapiContextFactory.create();
         user = TestHelper.createUser();
         ConnectorsImpl connectors = new ConnectorsImpl(getArchetypeService()) {

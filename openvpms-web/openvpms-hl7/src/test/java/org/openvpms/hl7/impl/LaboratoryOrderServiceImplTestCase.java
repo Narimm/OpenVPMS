@@ -27,6 +27,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.hl7.laboratory.Laboratories;
 import org.openvpms.hl7.laboratory.LaboratoryOrderService;
 import org.openvpms.hl7.patient.PatientContext;
+import org.openvpms.hl7.patient.PatientEventServices;
 import org.openvpms.hl7.util.HL7Archetypes;
 
 import java.util.Date;
@@ -67,7 +68,8 @@ public class LaboratoryOrderServiceImplTestCase extends AbstractServiceTest {
         bean.addNodeTarget("sender", getSender().getReference());
         bean.addNodeTarget("location", getContext().getLocation());
 
-        Laboratories labs = new LaboratoriesImpl(getArchetypeService(), getConnectors()) {
+        PatientEventServices eventServices = Mockito.mock(PatientEventServices.class);
+        Laboratories labs = new LaboratoriesImpl(getArchetypeService(), getConnectors(), eventServices) {
 
             @Override
             public Entity getService(Entity group, IMObjectReference location) {
@@ -91,17 +93,27 @@ public class LaboratoryOrderServiceImplTestCase extends AbstractServiceTest {
      */
     @Test
     public void testCreateOrder() throws Exception {
-        String expected = "MSH|^~\\&|VPMS|Main Clinic|Cubex|Cubex|20140825085900+1000||ORM^O01^ORM_O01|1200022|P|2.5||||||UTF-8\r" +
-                          "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
-                          "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
+        String expected = "MSH|^~\\&|VPMS|Main Clinic|Cubex|Cubex|20140825085900||ORM^O01^ORM_O01|1200022|P|2.5||||||UTF-8\r" +
+                          "PID|1||1001||Bar^Fido||20140701000000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500\r" +
                           "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
                           "AL1|2|MA|^Pollen|U|Produces hives\r" +
-                          "ORC|NW|10231|||||||20140825090200+1000|2001^Blogs^Joe\r" +
-                          "OBR||10231||SERVICE_ID||20140825090200+1000\r";
+                          "ORC|NW|10231|||||||20140825090200|2001^Blogs^Joe\r" +
+                          "OBR||10231||SERVICE_ID||20140825090200\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
         assertTrue(orderService.createOrder(getContext(), 10231, "SERVICE_ID", date, lab, user));
         assertTrue(getDispatcher().waitForMessage());
         checkMessage(expected);
+    }
+
+    /**
+     * Creates an MLLP sender.
+     *
+     * @return a new sender
+     */
+    @Override
+    protected MLLPSender createSender() {
+        return HL7TestHelper.createSender(-1, HL7TestHelper.createIDEXXMapping());
     }
 }

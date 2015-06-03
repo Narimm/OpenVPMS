@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -70,7 +70,7 @@ public abstract class AbstractServiceTest extends AbstractMessageTest {
         super.setUp();
 
         IMObjectReference senderRef = new IMObjectReference(HL7Archetypes.MLLP_SENDER, -1);
-        sender = HL7TestHelper.createSender(-1);    // use an invalid port
+        sender = createSender();    // use an invalid port
         Entity service = (Entity) create(HL7Archetypes.PATIENT_EVENT_SERVICE);
         EntityBean bean = new EntityBean(service);
         bean.addNodeTarget("sender", senderRef);
@@ -96,10 +96,24 @@ public abstract class AbstractServiceTest extends AbstractMessageTest {
         dispatcher.setMessageControlID(1200022);
     }
 
+    /**
+     * Cleans up after the test.
+     *
+     * @throws Exception for any error
+     */
     @After
     public void tearDown() throws Exception {
         dispatcher.destroy();
         HL7TestHelper.disable(sender);
+    }
+
+    /**
+     * Creates an MLLP sender.
+     *
+     * @return a new sender
+     */
+    protected MLLPSender createSender() {
+        return HL7TestHelper.createSender(-1, HL7TestHelper.createCubexMapping());
     }
 
     /**

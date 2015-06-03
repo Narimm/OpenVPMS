@@ -28,6 +28,16 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 public class HL7Mapping {
 
     /**
+     * Determines if PID-3 should be populated with the patient identifier.
+     */
+    private boolean populatePID3 = true;
+
+    /**
+     * Determines if PID-2 should be populated with the patient identifier.
+     */
+    private boolean populatePID2;
+
+    /**
      * Male code.
      */
     private String male = "M";
@@ -76,9 +86,15 @@ public class HL7Mapping {
 
     /**
      * Constructs an {@link HL7Mapping}.
+     *
+     * @param populatePID3 if {@code true} populate PID-3 with the patient identifier
+     * @param populatePID2 if {@code true} populate PID-2 with the patient identifier
      */
-    public HL7Mapping(String male, String maleDesexed, String female, String femaleDesexed, String unknownSex,
-                      String speciesLookup, boolean includeMillis, boolean includeTimeZone) {
+    public HL7Mapping(boolean populatePID3, boolean populatePID2, String male, String maleDesexed, String female,
+                      String femaleDesexed, String unknownSex, String speciesLookup, boolean includeMillis,
+                      boolean includeTimeZone) {
+        this.populatePID3 = populatePID3;
+        this.populatePID2 = populatePID2;
         this.male = male;
         this.maleDesexed = maleDesexed;
         this.female = female;
@@ -87,6 +103,42 @@ public class HL7Mapping {
         this.speciesLookup = speciesLookup;
         this.includeMillis = includeMillis;
         this.includeTimeZone = includeTimeZone;
+    }
+
+    /**
+     * Determines if PID-3 should be populated with the patient identifier.
+     *
+     * @return {@code true} if PID-3 should be populated
+     */
+    public boolean getPopulatePID3() {
+        return populatePID3;
+    }
+
+    /**
+     * Determines if PID-3 should be populated with the patient identifier.
+     *
+     * @param populatePID3 if {@code true} populate PID-3
+     */
+    public void setPopulatePID3(boolean populatePID3) {
+        this.populatePID3 = populatePID3;
+    }
+
+    /**
+     * Determines if PID-2 should be populated with the patient identifier.
+     *
+     * @return {@code true} if PID-2 should be populated
+     */
+    public boolean getPopulatePID2() {
+        return populatePID2;
+    }
+
+    /**
+     * Determines if PID-2 should be populated with the patient identifier.
+     *
+     * @param populatePID2 if {@code true} populate PID-2
+     */
+    public void setPopulatePID2(boolean populatePID2) {
+        this.populatePID2 = populatePID2;
     }
 
     /**
@@ -188,7 +240,8 @@ public class HL7Mapping {
      */
     public static HL7Mapping create(Entity mapping, IArchetypeService service) {
         IMObjectBean bean = new IMObjectBean(mapping, service);
-        return new HL7Mapping(bean.getString("male"), bean.getString("maleDesexed"), bean.getString("female"),
+        return new HL7Mapping(bean.getBoolean("populatePID3"), bean.getBoolean("populatePID2"), bean.getString("male"),
+                              bean.getString("maleDesexed"), bean.getString("female"),
                               bean.getString("femaleDesexed"), bean.getString("unknownSex"),
                               bean.getString("speciesMapping"), bean.getBoolean("includeMillis"),
                               bean.getBoolean("includeTimeZone"));

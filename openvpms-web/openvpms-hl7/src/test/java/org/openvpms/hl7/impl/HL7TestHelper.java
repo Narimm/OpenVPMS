@@ -38,12 +38,43 @@ import java.io.IOException;
 public class HL7TestHelper {
 
     /**
-     * Creates a MLLP sender.
+     * Creates a mapping for Cubex.
      *
-     * @param port the port
+     * @return a new <em>entity.HL7Mapping</em> for Cubex
+     */
+    public static Entity createCubexMapping() {
+        Entity mapping = (Entity) TestHelper.create(HL7Archetypes.MAPPING);
+        IMObjectBean mappingBean = new IMObjectBean(mapping);
+        mappingBean.setValue("name", "Cubex mapping");
+        mappingBean.setValue("populatePID2", true);  // support Cubex
+        mappingBean.setValue("populatePID3", false);
+        mappingBean.save();
+        return mapping;
+    }
+
+    /**
+     * Creates a mapping for IDEXX.
+     *
+     * @return a new <em>entity.HL7Mapping</em> for IDEXX
+     */
+    public static Entity createIDEXXMapping() {
+        Entity mapping = (Entity) TestHelper.create(HL7Archetypes.MAPPING);
+        IMObjectBean mappingBean = new IMObjectBean(mapping);
+        mappingBean.setValue("name", "IDEXX mapping");
+        mappingBean.setValue("populatePID3", true);
+        mappingBean.setValue("populatePID2", false);
+        mappingBean.save();
+        return mapping;
+    }
+
+    /**
+     * Creates an MLLP sender.
+     *
+     * @param port    the port
+     * @param mapping the mapping. May be {@code null}
      * @return a new sender
      */
-    public static MLLPSender createSender(int port) {
+    public static MLLPSender createSender(int port, Entity mapping) {
         Entity sender = (Entity) TestHelper.create(HL7Archetypes.MLLP_SENDER);
         EntityBean bean = new EntityBean(sender);
         bean.setValue("name", "ZTest MLLP Sender");
@@ -53,6 +84,9 @@ public class HL7TestHelper {
         bean.setValue("sendingFacility", "Main Clinic");
         bean.setValue("receivingApplication", "Cubex");
         bean.setValue("receivingFacility", "Cubex");
+        if (mapping != null) {
+            bean.addNodeTarget("mapping", mapping);
+        }
         bean.save();
         return MLLPSender.create(sender, ArchetypeServiceHelper.getArchetypeService());
     }

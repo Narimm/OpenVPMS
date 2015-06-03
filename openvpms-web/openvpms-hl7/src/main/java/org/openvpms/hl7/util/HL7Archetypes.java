@@ -79,6 +79,11 @@ public class HL7Archetypes {
     public static final String[] CONNECTORS = {SENDERS, RECEIVERS};
 
     /**
+     * The default mapping archetype short name.
+     */
+    public static final String MAPPING = "entity.HL7Mapping";
+
+    /**
      * The mapping archetype short names.
      */
     public static final String MAPPINGS = "entity.HL7Mapping*";

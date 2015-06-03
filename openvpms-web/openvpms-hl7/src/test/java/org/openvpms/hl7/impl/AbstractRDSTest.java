@@ -76,6 +76,8 @@ public abstract class AbstractRDSTest extends AbstractMessageTest {
         });
 
         HL7Mapping config = new HL7Mapping();
+        config.setPopulatePID2(true);
+        config.setPopulatePID3(false);
         String fillerOrderNumber = "90032145";
         RDS_O13 message = new RDS_O13(hapiContext.getModelClassFactory());
         message.setParser(hapiContext.getGenericParser());

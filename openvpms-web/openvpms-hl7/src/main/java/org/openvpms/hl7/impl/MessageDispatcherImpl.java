@@ -458,7 +458,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
             if (debug) {
                 long end = System.currentTimeMillis();
                 log.debug("response received in " + (end - start) + "ms");
-                log.debug(toString(message));
+                log.debug(toString(response));
             }
         } finally {
             if (connection != null) {

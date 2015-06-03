@@ -72,7 +72,7 @@ public class ADTMessageFactoryTestCase extends AbstractMessageTest {
     @Test
     public void testCreateAdmit() throws HL7Exception {
         String expected = "MSH|^~\\&|||||20140825090000.105+1000||ADT^A01^ADT_A01|1200022|P|2.5\r" +
-                          "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r" +
                           "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
@@ -93,7 +93,7 @@ public class ADTMessageFactoryTestCase extends AbstractMessageTest {
     @Test
     public void testCreateCancelAdmit() throws HL7Exception {
         String expected = "MSH|^~\\&|||||20140825090000+1000||ADT^A11^ADT_A09|1200022|P|2.5\r" +
-                          "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r";
         HL7Mapping config = new HL7Mapping();
@@ -119,6 +119,8 @@ public class ADTMessageFactoryTestCase extends AbstractMessageTest {
                           "AL1|2|MA|^Pollen|U|Produces hives\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700\r";
         HL7Mapping config = new HL7Mapping();
+        config.setPopulatePID2(true);
+        config.setPopulatePID3(false);
         config.setIncludeMillis(false);
         config.setIncludeTimeZone(false);
         PatientContext context = getContext();
@@ -139,7 +141,7 @@ public class ADTMessageFactoryTestCase extends AbstractMessageTest {
     @Test
     public void testCreateUpdate() throws HL7Exception {
         String expected = "MSH|^~\\&|||||20140825090000+1000||ADT^A08^ADT_A01|1200022|P|2.5\r" +
-                          "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "OBX|1|NM|3141-9^BODY WEIGHT MEASURED^LN||10|kg^kilogram||||||||20140825085700+1000\r" +
                           "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
