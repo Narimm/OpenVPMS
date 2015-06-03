@@ -130,16 +130,26 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
             });
 
             orderPlacer = createOrderPlacer(customer, location, context.getContext().getUser());
-            for (Act item : getItems().getActs()) {
-                IMObjectEditor editor = getItems().getEditor(item);
-                if (editor instanceof CustomerChargeActItemEditor) {
-                    List<Act> acts = new ArrayList<Act>();
-                    acts.add(item);
-                    acts.addAll(((CustomerChargeActItemEditor) editor).getInvestigations());
-                    orderPlacer.initialise(acts);
-                }
+            List<Act> acts = getOrderActs();
+            orderPlacer.initialise(acts);
+        }
+    }
+
+    /**
+     * Returns all acts that may be associated with pharmacy or laboratory orders.
+     *
+     * @return the acts
+     */
+    private List<Act> getOrderActs() {
+        List<Act> acts = new ArrayList<Act>();
+        for (Act item : getItems().getActs()) {
+            IMObjectEditor editor = getItems().getEditor(item);
+            if (editor instanceof CustomerChargeActItemEditor) {
+                acts.add(item);
+                acts.addAll(((CustomerChargeActItemEditor) editor).getInvestigations());
             }
         }
+        return acts;
     }
 
     /**
@@ -287,7 +297,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
-     * Flags an invoice item as being ordered via a pharmacy.
+     * Flags an invoice item as being ordered via a pharmacy/laboratory.
      * <p/>
      * This suppresses it from being ordered again when the invoice is saved.
      *
@@ -379,16 +389,18 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                 }
 
                 if (TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE)) {
-                    List<Act> updated = orderPlacer.order(getItems().getActs(), changes);
+                    List<Act> updated = orderPlacer.order(getOrderActs(), changes);
                     if (!updated.isEmpty()) {
                         // need to save the items again. This time do it skipping rules
                         ServiceHelper.getArchetypeService(false).save(updated);
 
                         // notify the editors that orders have been placed
                         for (Act item : updated) {
-                            IMObjectEditor editor = getItems().getEditor(item);
-                            if (editor instanceof CustomerChargeActItemEditor) {
-                                ((CustomerChargeActItemEditor) editor).ordered();
+                            if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
+                                IMObjectEditor editor = getItems().getEditor(item);
+                                if (editor instanceof CustomerChargeActItemEditor) {
+                                    ((CustomerChargeActItemEditor) editor).ordered();
+                                }
                             }
                         }
                     }

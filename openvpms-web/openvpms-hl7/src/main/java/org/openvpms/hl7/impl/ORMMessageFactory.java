@@ -72,11 +72,12 @@ public class ORMMessageFactory extends AbstractMessageFactory {
             orc.getPlacerOrderNumber().getEntityIdentifier().setValue(number);
             populateDTM(orc.getDateTimeOfTransaction().getTime(), date, config);
             OBR obr = orm.getORDER().getORDER_DETAIL().getOBR();
+            obr.getSetIDOBR().setValue("1");
             obr.getPlacerOrderNumber().getEntityIdentifier().setValue(number);
             obr.getUniversalServiceIdentifier().getIdentifier().setValue(serviceIdentifier);
             populateDTM(obr.getRequestedDateTime().getTime(), date, config);
             if (context.getClinicianId() != -1) {
-                PopulateHelper.populateClinician(orc.getEnteredBy(0), context);
+                PopulateHelper.populateClinician(orc.getOrderingProvider(0), context);
             }
             populateAllergies(orm.getPATIENT(), context);
         } catch (Throwable exception) {

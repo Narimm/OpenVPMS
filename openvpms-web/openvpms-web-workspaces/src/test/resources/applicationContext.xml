@@ -340,6 +340,7 @@
     <bean id="hl7Laboratories" class="org.openvpms.hl7.impl.LaboratoriesImpl">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="hl7Connectors"/>
+        <constructor-arg ref="hl7PatientEventServices"/>
     </bean>
 
     <bean id="hl7messageDispatcher" class="org.mockito.Mockito" factory-method="mock">

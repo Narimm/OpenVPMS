@@ -23,6 +23,10 @@
         </node>
         <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="populatePID3" path="/details/populatePID3" displayName="Populate PID-3"
+              type="java.lang.Boolean" defaultValue="true()" description="Populate PID-3 with the patient identifier"/>
+        <node name="populatePID2" path="/details/populatePID2" displayName="Populate PID-2"
+              type="java.lang.Boolean" defaultValue="false()" description="Populate PID-2 with the patient identifier"/>
         <node name="male" displayName="Sex: Male" path="/details/male" type="java.lang.String" minCardinality="0"
               defaultValue="'M'"/>
         <node name="maleDesexed" displayName="Sex: Male - desexed" path="/details/maleDesexed" type="java.lang.String"

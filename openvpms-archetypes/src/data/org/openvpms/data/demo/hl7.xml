@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetype>
@@ -26,6 +26,25 @@
         <data collection="receiver" archetype="entityLink.HL7ServiceReceiver" source="id:HL7P1" target="id:HL7R1"/>
         <data collection="location" archetype="entityLink.HL7ServiceLocation" source="id:HL7P1" target="id:OL1"/>
         <data collection="user" archetype="entityLink.HL7ServiceUser" source="id:HL7P1" target="id:ADMIN"/>
+    </data>
+
+    <data id="HL7IM" archetype="entity.HL7Mapping" name="IDEXX Mapping" male="M" maleDesexed="M"
+          female="F" femaleDesexed="F" includeMillis="false" includeTimeZone="false"/>
+
+    <data id="HL7S2" archetype="entity.HL7SenderMLLP" name="Laboratory Order Connector"
+          host="mercury" port="10003" sendingApplication="PIMS" sendingFacility="PIMS"
+          receivingApplication="IDEXX" receivingFacility="IVLS">
+        <data collection="mapping" archetype="entityLink.HL7Mapping" source="id:HL7S2" target="id:HL7IM"/>
+    </data>
+
+    <data id="HL7R2" archetype="entity.HL7ReceiverMLLP" name="Laboratory Cancellation Connector"
+          port="10002" sendingApplication="Laboratory" sendingFacility="Main Clinic"
+          receivingApplication="OpenVPMS" receivingFacility="Main Clinic"/>
+    <data id="HL7L1" archetype="entity.HL7ServiceLaboratory" name="Main Clinic Laboratory" active="true">
+        <data collection="sender" archetype="entityLink.HL7ServiceSender" source="id:HL7L1" target="id:HL7S2"/>
+        <data collection="receiver" archetype="entityLink.HL7ServiceReceiver" source="id:HL7L1" target="id:HL7R2"/>
+        <data collection="location" archetype="entityLink.HL7ServiceLocation" source="id:HL7L1" target="id:OL1"/>
+        <data collection="user" archetype="entityLink.HL7ServiceUser" source="id:HL7L1" target="id:ADMIN"/>
     </data>
 
 </archetype>
