@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -29,6 +29,7 @@ import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.text.TextComponent;
 import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.text.DateFormat;
 
@@ -61,7 +62,7 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
      * @param style   the style name to use
      */
     public ReadOnlyComponentFactory(LayoutContext context, String style) {
-        super(context, new ViewLayoutStrategyFactory(), style);
+        super(context, ServiceHelper.getBean(ViewLayoutStrategyFactory.class), style);
     }
 
     /**

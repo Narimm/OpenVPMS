@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -24,6 +24,7 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -57,7 +58,7 @@ public class IMObjectViewer extends AbstractIMObjectView {
      * @param context the layout context
      */
     public IMObjectViewer(IMObject object, IMObject parent, LayoutContext context) {
-        this(object, parent, new ViewLayoutStrategyFactory().create(object), context);
+        this(object, parent, ServiceHelper.getBean(ViewLayoutStrategyFactory.class).create(object), context);
     }
 
     /**
