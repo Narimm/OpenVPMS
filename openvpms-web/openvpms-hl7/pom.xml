@@ -24,7 +24,7 @@
     <parent>
         <artifactId>openvpms-web</artifactId>
         <groupId>org.openvpms</groupId>
-        <version>1.8-beta-2</version>
+        <version>1.8-SNAPSHOT</version>
     </parent>
 
     <artifactId>openvpms-hl7</artifactId>
