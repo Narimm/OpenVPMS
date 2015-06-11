@@ -109,6 +109,7 @@
     <!-- ================================================================== -->
     <!--                        FACTORIES                                   -->
     <!-- ================================================================== -->
+    <bean id="viewLayoutStrategyFactory" class="org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory"/>
     <bean id="editorFactory" class="org.openvpms.web.component.im.edit.IMObjectEditorFactory"/>
 
 </beans>
