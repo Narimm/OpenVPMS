@@ -23,7 +23,6 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -35,6 +34,7 @@ import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.echo.text.PasswordField;
 import org.openvpms.web.resource.i18n.Messages;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Dialog that prompts the user to re-enter their password to unlock their screen.
@@ -97,7 +97,7 @@ class LockScreenDialog extends PopupDialog {
      */
     @Override
     protected void onOK() {
-        User user = getUser();
+        UserDetails user = getUser();
         if (user != null) {
             if (StringUtils.equals(password.getText(), user.getPassword())) {
                 super.onOK();
@@ -117,7 +117,7 @@ class LockScreenDialog extends PopupDialog {
     protected void doLayout() {
         Label loggedIn = LabelFactory.create("lockscreen.loggedin");
         Label name = LabelFactory.create(null, Styles.BOLD);
-        User user = getUser();
+        UserDetails user = getUser();
         if (user != null) {
             name.setText(user.getUsername());
         }
@@ -133,10 +133,10 @@ class LockScreenDialog extends PopupDialog {
     /**
      * Returns the current user.
      *
-     * @return the current user, or {@code null} if there is no user
+     * @return the current user
      */
-    private User getUser() {
+    private UserDetails getUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return (principal instanceof User) ? (User) principal : null;
+        return (principal instanceof UserDetails) ? (UserDetails) principal : null;
     }
 }
