@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -21,6 +21,7 @@ import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -40,6 +41,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -47,8 +49,7 @@ import static org.junit.Assert.fail;
 /**
  * Tests the {@link IMObjectProperty} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class IMObjectPropertyTestCase extends AbstractPropertyTest {
 
@@ -355,6 +356,29 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
     }
 
     /**
+     * Verifies that assertions are evaluated by {@link IMObjectProperty#validate(Validator)}.
+     */
+    @Test
+    public void testValidateAssertions() {
+        IMObjectProperty property = createProperty("name", String.class);
+        NodeDescriptor descriptor = property.getDescriptor();
+        descriptor.setPath("/name");
+        AssertionDescriptor assertion = new AssertionDescriptor();
+        assertion.setDescriptor(getArchetypeService().getAssertionTypeDescriptor("regularExpression"));
+        assertNotNull(assertion.getDescriptor());
+        assertion.setName("regularExpression");
+        AssertionProperty ap = new AssertionProperty();
+        ap.setName("expression");
+        ap.setValue("\\d+");
+        assertion.addProperty(ap);
+        descriptor.addAssertionDescriptor(assertion);
+        property.setValue("abc");
+        assertFalse(property.validate(new DefaultValidator()));
+        property.setValue("123");
+        assertTrue(property.validate(new DefaultValidator()));
+    }
+
+    /**
      * Creates a boolean property.
      *
      * @param name the property name
@@ -388,6 +412,7 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
      */
     protected IMObjectProperty createProperty(String name, Class type) {
         IMObject object = new IMObject();
+        object.setArchetypeId(new ArchetypeId(CustomerArchetypes.PERSON));
         NodeDescriptor descriptor = new NodeDescriptor();
         descriptor.setName(name);
         descriptor.setType(type.getName());
@@ -493,7 +518,7 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
         try {
             descriptor = (NodeDescriptor) descriptor.clone(); // clone it to avoid affecting cached descriptor
         } catch (CloneNotSupportedException exception) {
-            fail("Failed to clone descriiptor");
+            fail("Failed to clone descriptor");
         }
         descriptor.setName(name);
         return descriptor;

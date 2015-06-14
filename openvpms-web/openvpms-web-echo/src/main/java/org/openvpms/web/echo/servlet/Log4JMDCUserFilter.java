@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.servlet;
 
 import org.apache.log4j.MDC;
-import org.openvpms.component.business.domain.im.security.User;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -50,8 +50,8 @@ public class Log4JMDCUserFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
                                                                                                      ServletException {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof User) {
-            principal = ((User) principal).getUsername();
+        if (principal instanceof UserDetails) {
+            principal = ((UserDetails) principal).getUsername();
         }
         MDC.put("user", principal);
         try {
