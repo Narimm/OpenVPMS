@@ -206,7 +206,7 @@
             <property name="local_mesure_unitheight" value="pixel"/>
             <property name="com.jaspersoft.studio.unit.height" value="px"/>
             <printWhenExpression>
-                <![CDATA[($F{target.template} == null || !$F{target.template.entity.printAggregate}) && ($F{target.print} || $F{target.total}.compareTo(BigDecimal.ZERO) != 0)]]></printWhenExpression>
+                <![CDATA[($F{target.template} == null || !$F{target.template.entity.printAggregate}) && ($F{target.print} == null || $F{target.print} || $F{target.total}.compareTo(BigDecimal.ZERO) != 0)]]></printWhenExpression>
             <textField pattern="¤ #,##0.00" isBlankWhenNull="false">
                 <reportElement key="textField-2" x="482" y="2" width="62" height="16"
                                uuid="d13133a1-86c0-43c4-9d74-84b39008951f">
