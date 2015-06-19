@@ -982,6 +982,28 @@ public class PartyFunctions {
     }
 
     /**
+     * Returns the patient rabies tag.
+     *
+     * @param patient the patient
+     * @return the rabies tag, or an empty string if none is found
+     */
+    public String getPatientRabiesTag(Party patient) {
+        String result = patientRules.getRabiesTag(patient);
+        return (result != null) ? result : "";
+    }
+
+    /**
+     * Returns the rabies tag of a patient associated with an act.
+     *
+     * @param act the act
+     * @return the rabies tag, or an empty string if none is found
+     */
+    public String getPatientRabiesTag(Act act) {
+        Party patient = getPatient(act);
+        return (patient != null) ? getPatientRabiesTag(patient) : "";
+    }
+
+    /**
      * Returns the most recent weight in string format for a patient.
      *
      * @param context the expression context. Expected to reference a party or
