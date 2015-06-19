@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.note;
@@ -81,8 +81,8 @@ public class CustomerAlertQuery extends DateRangeActQuery<Act> {
      * The default sort constraint.
      */
     private static final SortConstraint[] DEFAULT_SORT = {
-        new VirtualNodeSortConstraint("alertType.priority", true, AlertPriorityTransformer.INSTANCE),
-        new NodeSortConstraint("id")
+            new VirtualNodeSortConstraint("alertType.priority", true, AlertPriorityTransformer.INSTANCE),
+            new NodeSortConstraint("id")
     };
 
 
@@ -129,6 +129,15 @@ public class CustomerAlertQuery extends DateRangeActQuery<Act> {
             result = filterOnAlertType(result, sort);
         }
         return result;
+    }
+
+    /**
+     * Sets the alert type to filter on.
+     *
+     * @param alertType the <em>lookup.customerAlertType</em> code, or {@code null} to return alerts of any type
+     */
+    public void setAlertType(String alertType) {
+        this.alertType = alertType;
     }
 
     /**
@@ -198,7 +207,7 @@ public class CustomerAlertQuery extends DateRangeActQuery<Act> {
      * Invoked when the alert type changes.
      */
     private void onAlertTypeChanged() {
-        alertType = alertTypes.getSelectedCode();
+        setAlertType(alertTypes.getSelectedCode());
         onQuery();
     }
 
