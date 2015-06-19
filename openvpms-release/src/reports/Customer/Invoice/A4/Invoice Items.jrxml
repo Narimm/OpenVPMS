@@ -16,7 +16,7 @@
   -->
 
 <!-- Created with Jaspersoft Studio version 6.0.3.final using JasperReports Library version 6.0.3  -->
-<!-- 2015-05-06T10:02:38 -->
+<!-- 2015-06-19T12:29:28 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
@@ -76,7 +76,6 @@
             <band height="20" splitType="Stretch">
                 <property name="local_mesure_unitheight" value="pixel"/>
                 <property name="com.jaspersoft.studio.unit.height" value="px"/>
-                <printWhenExpression><![CDATA[$F{target.template} != null]]></printWhenExpression>
                 <textField isBlankWhenNull="false">
                     <reportElement key="textField-1" x="6" y="2" width="147" height="16"
                                    uuid="88d78e45-0a4b-44c1-84aa-881141ce879a"/>
@@ -227,7 +226,7 @@
             <property name="local_mesure_unitheight" value="pixel"/>
             <property name="com.jaspersoft.studio.unit.height" value="px"/>
             <printWhenExpression>
-                <![CDATA[($F{target.template} == null || !$F{target.template.entity.printAggregate}) && ($F{target.print} || $F{target.total}.compareTo(BigDecimal.ZERO) != 0)]]></printWhenExpression>
+                <![CDATA[($F{target.template} == null || !$F{target.template.entity.printAggregate}) && ($F{target.print} == null || $F{target.print} || $F{target.total}.compareTo(BigDecimal.ZERO) != 0)]]></printWhenExpression>
             <textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
                 <reportElement key="textField-7" isPrintRepeatedValues="false" x="6" y="2" width="72" height="16"
                                uuid="81ba3aaf-4bac-41af-b085-8324bd30ea36">
