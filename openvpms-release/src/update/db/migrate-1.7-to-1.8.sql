@@ -3184,3 +3184,16 @@ UPDATE act_details d
   JOIN acts a
     ON a.arch_short_name = "act.customerEstimationItem" AND a.act_id = d.act_id AND d.name = "discount"
 SET d.name = "highDiscount";
+
+#
+# OVPMS-1627 Migrate date details nodes to sql-timestamp
+#
+update act_details d
+set d.value=substring(value, 1, 21),
+    d.type="sql-timestamp"
+where d.type = "date";
+
+update entity_details d
+set d.value=substring(value, 1, 21),
+    d.type="sql-timestamp"
+where d.type = "date";
