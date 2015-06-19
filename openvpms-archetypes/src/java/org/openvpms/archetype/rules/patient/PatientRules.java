@@ -645,6 +645,16 @@ public class PatientRules {
     }
 
     /**
+     * Returns the most recent active rabies tag for a patient.
+     *
+     * @param patient the patient
+     * @return the most recent rabies tag, or {@code null} if none is found
+     */
+    public String getRabiesTag(Party patient) {
+        return getIdentity(patient, "entityIdentity.rabiesTag");
+    }
+
+    /**
      * Merges two patients.
      *
      * @param from the patient to merge

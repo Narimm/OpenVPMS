@@ -328,6 +328,23 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link PatientRules#getRabiesTag(Party)} method.
+     */
+    @Test
+    public void testGetRabiesTag() {
+        Party patient = TestHelper.createPatient(false);
+        assertNull(rules.getRabiesTag(patient));
+
+        EntityIdentity tag = (EntityIdentity) create("entityIdentity.rabiesTag");
+        tag.setIdentity("1234567");
+        patient.addIdentity(tag);
+        assertEquals("1234567", rules.getRabiesTag(patient));
+
+        tag.setActive(false);
+        assertNull(rules.getRabiesTag(patient));
+    }
+
+    /**
      * Tests {@link PatientRules#getPatientAge} for a patient with no birth date.
      */
     @Test
