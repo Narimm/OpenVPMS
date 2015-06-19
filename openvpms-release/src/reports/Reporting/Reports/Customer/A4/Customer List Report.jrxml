@@ -16,13 +16,13 @@
   -->
 
 <!-- Created with Jaspersoft Studio version 6.0.4.final using JasperReports Library version 6.0.4  -->
-<!-- 2015-05-19T18:42:26 -->
+<!-- 2015-06-15T05:50:19 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
               name="Customer List Report" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail"
               columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20"
-              uuid="7d6508a7-fdb6-43ed-bbc0-5844c561862d">
+              uuid="f402c6a6-4eb6-42f3-8d38-84883e7ac956">
     <property name="ireport.scriptlethandling" value="0"/>
     <property name="ireport.encoding" value="UTF-8"/>
     <property name="ireport.zoom" value="1.0"/>
@@ -66,7 +66,8 @@ from entities e
 left join (entity_classifications ec, lookups l) on (ec.entity_id = e.entity_id
  and ec.lookup_id = l.lookup_id and l.arch_short_name = 'lookup.customerAccountType')
 left join (entity_classifications ec2, lookups l2) on (ec2.entity_id = e.entity_id
-  and ec2.lookup_id = l2.lookup_id and l2.arch_short_name = 'lookup.customerType')left join entity_links el on el.source_id = e.entity_id and el.arch_short_name = 'entityLink.customerLocation'
+  and ec2.lookup_id = l2.lookup_id and l2.arch_short_name = 'lookup.customerType')
+left join entity_links el on el.source_id = e.entity_id and el.arch_short_name = 'entityLink.customerLocation'
 left join entities loc on loc.entity_id = el.target_id
 where
   e.arch_short_name = 'party.customerperson'
@@ -112,19 +113,20 @@ where
         <groupHeader>
             <band height="19">
                 <textField>
-                    <reportElement x="0" y="0" width="310" height="17" uuid="d5e81a32-42b9-4367-8750-8a95c9ddd2d1">
+                    <reportElement x="0" y="0" width="310" height="17" uuid="2fce9345-fff8-4df8-adc3-55a5471a65c6">
                         <property name="local_mesure_unitheight" value="pixel"/>
                         <property name="com.jaspersoft.studio.unit.height" value="px"/>
                     </reportElement>
                     <textElement>
                         <font isBold="true"/>
+                        <paragraph lineSpacing="Single"/>
                     </textElement>
                     <textFieldExpression>
                         <![CDATA[$F{location}+" / "+$F{accountType}+(($V{acType1}==null)?"":" (cont)")]]></textFieldExpression>
                 </textField>
                 <staticText>
                     <reportElement key="staticText-12" x="320" y="0" width="50" height="17"
-                                   uuid="a0cca338-c4eb-4ac9-91bc-bef8dad31c06">
+                                   uuid="3f203b8b-7a0b-40a8-a2ea-a015c684a4ce">
                         <printWhenExpression><![CDATA[($V{acType1}==null)]]></printWhenExpression>
                     </reportElement>
                     <box>
@@ -135,30 +137,33 @@ where
                     </box>
                     <textElement textAlignment="Right">
                         <font isBold="true"/>
+                        <paragraph lineSpacing="Single"/>
                     </textElement>
                     <text><![CDATA[Counts:]]></text>
                 </staticText>
                 <textField evaluationTime="Group" evaluationGroup="Location">
-                    <reportElement x="378" y="0" width="42" height="17" uuid="b42fce6f-2062-47ce-8893-0afbef63e374">
+                    <reportElement x="378" y="0" width="42" height="17" uuid="0c90b156-c2df-4aab-be95-3856fe00f27f">
                         <printWhenExpression><![CDATA[($V{acType1}==null)]]></printWhenExpression>
                     </reportElement>
                     <textElement textAlignment="Right">
                         <font isBold="true"/>
+                        <paragraph lineSpacing="Single"/>
                     </textElement>
                     <textFieldExpression><![CDATA[$V{Location_COUNT}]]></textFieldExpression>
                 </textField>
                 <textField evaluationTime="Group" evaluationGroup="acType">
-                    <reportElement x="427" y="0" width="100" height="17" uuid="d4961514-7457-44fc-b80a-9342ec39bd48">
+                    <reportElement x="427" y="0" width="100" height="17" uuid="d8e3650c-837d-40bc-a529-2ec6b74b6524">
                         <printWhenExpression><![CDATA[($V{acType1}==null)]]></printWhenExpression>
                     </reportElement>
                     <textElement>
                         <font isBold="true"/>
+                        <paragraph lineSpacing="Single"/>
                     </textElement>
                     <textFieldExpression><![CDATA[$V{acType_COUNT}]]></textFieldExpression>
                 </textField>
                 <staticText>
                     <reportElement key="staticText-12" x="420" y="0" width="7" height="17"
-                                   uuid="00979233-e5f4-481e-9535-5cfd7ce48662">
+                                   uuid="36c17248-bffa-4239-badc-323c684d0d38">
                         <property name="local_mesure_unitwidth" value="pixel"/>
                         <property name="com.jaspersoft.studio.unit.width" value="px"/>
                         <printWhenExpression><![CDATA[($V{acType1}==null)]]></printWhenExpression>
@@ -171,6 +176,7 @@ where
                     </box>
                     <textElement textAlignment="Center">
                         <font isBold="true"/>
+                        <paragraph lineSpacing="Single"/>
                     </textElement>
                     <text><![CDATA[/]]></text>
                 </staticText>
@@ -187,7 +193,7 @@ where
         <band height="81" splitType="Stretch">
             <staticText>
                 <reportElement key="staticText-1" x="156" y="0" width="222" height="24"
-                               uuid="91a21774-ecd2-4f50-8974-23d2b2afe106"/>
+                               uuid="3e6c54a8-8f2c-45fc-ac29-e8b0943a492e"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -196,47 +202,55 @@ where
                 </box>
                 <textElement textAlignment="Center">
                     <font size="18" isBold="true" isUnderline="true"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[Customer List Report]]></text>
             </staticText>
             <staticText>
                 <reportElement key="staticText-9" x="11" y="37" width="85" height="17"
-                               uuid="97a37d4e-fb74-46af-9295-ec57b1ce3069"/>
+                               uuid="1524bbb4-a177-4f08-ad6d-55b108954756"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
                 <text><![CDATA[Account Type: ]]></text>
             </staticText>
             <textField isBlankWhenNull="false">
                 <reportElement key="textField-1" x="400" y="36" width="79" height="18"
-                               uuid="3b2a78e8-21bc-4d24-bf34-4e03421159d4"/>
+                               uuid="d75b8b89-900e-4270-b9c9-0438e4ca024f"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
                 <textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
             </textField>
             <textField evaluationTime="Report" isBlankWhenNull="false">
                 <reportElement key="textField-2" x="480" y="36" width="54" height="18"
-                               uuid="7a41aa91-09cb-4614-a41b-b246159514dc"/>
+                               uuid="bd59144b-0d1c-46a0-a2d2-59561e8ebd63"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
                 <textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="false">
                 <reportElement key="textField" x="96" y="37" width="100" height="17"
-                               uuid="efdbed3d-e34e-4ce2-ac39-4010609e3305">
+                               uuid="eded55e4-0841-4fe4-b266-fe4ca9591076">
                     <property name="local_mesure_unitheight" value="pixel"/>
                     <property name="com.jaspersoft.studio.unit.height" value="px"/>
                 </reportElement>
@@ -246,31 +260,37 @@ where
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
                 <textFieldExpression><![CDATA[($P{acType}==null)?"%":$P{acType}+"%"]]></textFieldExpression>
             </textField>
-            <textField pattern="dd/MM/yyyy h.mm a">
-                <reportElement x="435" y="0" width="100" height="11" uuid="39660702-c94f-49bf-b19a-973aa0f3655a"/>
+            <textField pattern="">
+                <reportElement x="435" y="0" width="100" height="11" uuid="d8d4df95-edc1-46b6-b025-c5130b7746ed"/>
                 <textElement textAlignment="Right">
                     <font fontName="SansSerif" size="8"/>
                     <paragraph lineSpacing="Single"/>
                 </textElement>
-                <textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
+                <textFieldExpression>
+                    <![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
             </textField>
             <staticText>
                 <reportElement key="staticText-9" x="205" y="37" width="85" height="17"
-                               uuid="0d57c012-cc62-4b35-9366-dd5b98527e2c"/>
+                               uuid="dc31f293-397e-4cc5-835a-1b4095f20a9a"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
                 <text><![CDATA[Customer Type: ]]></text>
             </staticText>
             <textField isBlankWhenNull="false">
                 <reportElement key="textField" x="290" y="37" width="100" height="17"
-                               uuid="3977b3b2-ba76-4f1c-89db-7a2655437195">
+                               uuid="b08a8138-5872-435c-9d54-28f88a662c1d">
                     <property name="local_mesure_unitheight" value="pixel"/>
                     <property name="com.jaspersoft.studio.unit.height" value="px"/>
                 </reportElement>
@@ -280,23 +300,28 @@ where
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
                 <textFieldExpression><![CDATA[($P{custType}==null)?"%":$P{custType}+"%"]]></textFieldExpression>
             </textField>
             <staticText>
                 <reportElement key="staticText-9" x="11" y="55" width="85" height="17"
-                               uuid="dcad1b7f-2a20-436a-ae1d-7f47a28f134b"/>
+                               uuid="3ac9749a-47f4-4c78-af3d-c8eea4eeece5"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
                 <text><![CDATA[Practice Locn: ]]></text>
             </staticText>
             <textField isBlankWhenNull="false">
                 <reportElement key="textField" x="96" y="55" width="100" height="17"
-                               uuid="cc0a1db6-dffc-41c2-93e6-791cb3de6ffb">
+                               uuid="515fadd1-8864-4619-aa7a-537ed6c6cc5a">
                     <property name="local_mesure_unitheight" value="pixel"/>
                     <property name="com.jaspersoft.studio.unit.height" value="px"/>
                 </reportElement>
@@ -306,24 +331,29 @@ where
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
                 <textFieldExpression>
                     <![CDATA[($P{PracticeLocation}==null)?"%":$P{PracticeLocation}+"%"]]></textFieldExpression>
             </textField>
             <staticText>
                 <reportElement key="staticText-9" x="205" y="55" width="85" height="17"
-                               uuid="2e53d395-417a-4983-961c-af89fa0d781f"/>
+                               uuid="6726d430-19b6-475e-b309-087d0ad828af"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
-                <textElement textAlignment="Right"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
                 <text><![CDATA[Incl Inactive: ]]></text>
             </staticText>
             <textField isBlankWhenNull="false">
                 <reportElement key="textField" x="290" y="55" width="100" height="17"
-                               uuid="41d7c817-1b02-4a3a-8bf5-7e9a575f3b9f">
+                               uuid="5f23b2f8-2bb2-4b29-87d9-40c1502e8606">
                     <property name="local_mesure_unitheight" value="pixel"/>
                     <property name="com.jaspersoft.studio.unit.height" value="px"/>
                 </reportElement>
@@ -333,6 +363,9 @@ where
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
                 <textFieldExpression><![CDATA[$P{IncInactive}]]></textFieldExpression>
             </textField>
         </band>
@@ -341,7 +374,7 @@ where
         <band height="43" splitType="Stretch">
             <staticText>
                 <reportElement key="staticText-12" x="460" y="20" width="74" height="17" isRemoveLineWhenBlank="true"
-                               uuid="fe9a0fd6-f045-42b7-a2dd-513172f89fea">
+                               uuid="e94edaa3-2ec3-46f4-bbc1-9f14195fb97b">
                     <printWhenExpression><![CDATA[!$P{countsOnly}]]></printWhenExpression>
                 </reportElement>
                 <box>
@@ -352,12 +385,13 @@ where
                 </box>
                 <textElement>
                     <font isBold="true"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[CustomerType]]></text>
             </staticText>
             <line>
                 <reportElement key="line-1" x="0" y="38" width="535" height="1"
-                               uuid="ec527789-747b-45e9-b284-72a4fadbbb17">
+                               uuid="abb63689-3b7d-49d6-84b3-2a655899c846">
                     <property name="local_mesure_unitwidth" value="pixel"/>
                     <property name="com.jaspersoft.studio.unit.width" value="px"/>
                     <property name="local_mesure_unitx" value="pixel"/>
@@ -366,7 +400,7 @@ where
             </line>
             <staticText>
                 <reportElement key="staticText-15" x="0" y="20" width="159" height="17" isRemoveLineWhenBlank="true"
-                               uuid="bd283e7f-b77f-4a4e-8d7a-66a7624a8445">
+                               uuid="66db8925-e1a7-4ab2-ada8-17706ecc4916">
                     <printWhenExpression><![CDATA[!$P{countsOnly}]]></printWhenExpression>
                 </reportElement>
                 <box>
@@ -377,12 +411,13 @@ where
                 </box>
                 <textElement>
                     <font isBold="true"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[Customer]]></text>
             </staticText>
             <staticText>
                 <reportElement key="staticText-16" x="160" y="20" width="300" height="17" isRemoveLineWhenBlank="true"
-                               uuid="a990c5a6-d944-4e84-b221-f19e016690ce">
+                               uuid="9efde03a-a9ed-4e38-b81f-f413c4be1456">
                     <printWhenExpression><![CDATA[!$P{countsOnly}]]></printWhenExpression>
                 </reportElement>
                 <box>
@@ -393,12 +428,13 @@ where
                 </box>
                 <textElement>
                     <font isBold="true"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[Contact]]></text>
             </staticText>
             <staticText>
                 <reportElement key="staticText-15" x="0" y="3" width="159" height="17"
-                               uuid="a5e640e6-d3f4-4f3f-9435-1d1735382cae"/>
+                               uuid="6311215d-c824-43c6-9207-c76e890e339e"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -407,6 +443,7 @@ where
                 </box>
                 <textElement>
                     <font isBold="true"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[Location/Account Type]]></text>
             </staticText>
@@ -417,7 +454,7 @@ where
             <printWhenExpression><![CDATA[(!$P{countsOnly})]]></printWhenExpression>
             <textField isStretchWithOverflow="true" isBlankWhenNull="false">
                 <reportElement key="textField" isPrintRepeatedValues="false" x="11" y="0" width="141" height="14"
-                               uuid="27102dc9-dbce-4f8b-84a6-991a4979ee2b">
+                               uuid="380e6bdb-da5f-4f74-b587-d4a6ac72aad0">
                     <property name="local_mesure_unity" value="pixel"/>
                     <property name="com.jaspersoft.studio.unit.y" value="px"/>
                 </reportElement>
@@ -427,11 +464,14 @@ where
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
                 <textFieldExpression><![CDATA[$F{customerName}+" ("+$F{cid}.toString()+")"]]></textFieldExpression>
             </textField>
             <textField isStretchWithOverflow="true" isBlankWhenNull="true">
                 <reportElement key="textField" isPrintRepeatedValues="false" mode="Opaque" x="160" y="0" width="300"
-                               height="14" uuid="cc2ff5c3-d7b7-413b-9229-8a03c612d013">
+                               height="14" uuid="d455c8eb-7687-44cd-aa3f-9645c9bf45af">
                     <property name="local_mesure_unity" value="pixel"/>
                     <property name="com.jaspersoft.studio.unit.y" value="px"/>
                 </reportElement>
@@ -441,11 +481,14 @@ where
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
                 <textFieldExpression><![CDATA[$F{contact}.replaceAll("\n"," ")]]></textFieldExpression>
             </textField>
             <textField pattern="" isBlankWhenNull="false">
                 <reportElement key="textField" x="0" y="0" width="11" height="14"
-                               uuid="909c88d6-e636-48ec-97a8-ce214792a530">
+                               uuid="a2c92efe-a46b-4bfc-8d78-aafa115ad57e">
                     <property name="local_mesure_unitwidth" value="pixel"/>
                     <property name="com.jaspersoft.studio.unit.width" value="px"/>
                 </reportElement>
@@ -457,12 +500,13 @@ where
                 </box>
                 <textElement>
                     <font size="10"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{active}.booleanValue()?" ":"#"]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="false">
                 <reportElement key="textField" x="460" y="0" width="74" height="14"
-                               uuid="f90579dc-f8e4-4eb5-90f1-20862af14047">
+                               uuid="b6d4028c-03dd-46cd-8108-291f161000db">
                     <property name="local_mesure_unity" value="pixel"/>
                     <property name="com.jaspersoft.studio.unit.y" value="px"/>
                 </reportElement>
@@ -472,6 +516,9 @@ where
                     <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
                 <textFieldExpression><![CDATA[$F{customerType}]]></textFieldExpression>
             </textField>
         </band>
@@ -481,11 +528,9 @@ where
     </columnFooter>
     <summary>
         <band height="228" splitType="Stretch">
-            <property name="local_mesure_unitheight" value="pixel"/>
-            <property name="com.jaspersoft.studio.unit.height" value="px"/>
             <line>
                 <reportElement key="line-3" x="0" y="5" width="535" height="1"
-                               uuid="ede3a4e1-d210-4e46-a219-094d50fafd7c">
+                               uuid="5db1d330-04f1-4b13-8cfa-4b44c5449c02">
                     <property name="local_mesure_unitx" value="pixel"/>
                     <property name="com.jaspersoft.studio.unit.x" value="px"/>
                     <property name="local_mesure_unitwidth" value="pixel"/>
@@ -494,7 +539,7 @@ where
             </line>
             <staticText>
                 <reportElement key="staticText-17" x="10" y="12" width="140" height="20"
-                               uuid="fea364f8-7167-4668-b74b-5212cce09e9b"/>
+                               uuid="eaccc63a-ffc2-4716-bb2b-946c5968d2d4"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -503,12 +548,13 @@ where
                 </box>
                 <textElement>
                     <font isBold="true"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[Total Customers :]]></text>
             </staticText>
             <textField isBlankWhenNull="false">
                 <reportElement key="textField" x="150" y="12" width="100" height="20"
-                               uuid="bd8b9cef-4964-42bd-b6ba-d35382e1d7d8"/>
+                               uuid="b35156e5-4d80-4412-80d1-20b3be1b28eb"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -517,26 +563,31 @@ where
                 </box>
                 <textElement>
                     <font isBold="true"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
             </textField>
             <staticText>
                 <reportElement x="104" y="34" width="327" height="20" isRemoveLineWhenBlank="true"
-                               uuid="79ba5364-c15e-4ea2-93f4-9df52937dcaa">
+                               uuid="8fe3334b-0f49-4cad-9bd6-91d3f90ecc88">
                     <printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
                 </reportElement>
                 <textElement textAlignment="Center">
                     <font size="14" isBold="true"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[No Data Found - Check Parameters]]></text>
             </staticText>
             <staticText>
                 <reportElement x="0" y="57" width="535" height="171" isRemoveLineWhenBlank="true"
-                               uuid="7437468e-fc10-430e-910b-a2f2fd65151c">
+                               uuid="4b25e5c6-6e79-4be5-844a-60769ffa0c66">
                     <printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
                 </reportElement>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
                 <text><![CDATA[This report shows customers grouped by Practice Location/Account Type.
-The selection fields entered have % added so that leaving them blank will find all, and entering say account type 'n' will include all customers with account types starting 'n' or 'N', and entering practice location '%branch' will find all customers with locations containing 'branch' or 'Branch'.
+The selection fields entered have % added so that leaving them blank will find all, and entering say account type 'n' will include all customers with account types starting 'n', and entering practice location '%branch' will find all customers with locations containing 'branch'. The selection is case-insensitive.
 Null practice locations and account types will be shown as '--NONE--' and using the selection '-' will find these; ie setting the account type selection to '-' will find customers with no account type. 
 You can also use a selection string starting ! to use a 'not like' selection - so account type '!c' will find customers with account types not starting with c, and  setting the customer type to '!-' will find all customers with a non-null customer type.
 The counts shown in the Location/Account Type header lines are number of customers with the location and account type respectively.

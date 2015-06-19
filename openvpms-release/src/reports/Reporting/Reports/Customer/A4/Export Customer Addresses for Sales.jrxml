@@ -16,13 +16,13 @@
   -->
 
 <!-- Created with Jaspersoft Studio version 6.0.4.final using JasperReports Library version 6.0.4  -->
-<!-- 2015-05-22T15:38:05 -->
+<!-- 2015-06-15T05:47:36 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
               name="Export Customer Addresses for Sales" pageWidth="842" pageHeight="595" orientation="Landscape"
               whenNoDataType="AllSectionsNoDetail" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0"
-              bottomMargin="0" uuid="9086cff4-54f6-4fca-987f-dde6cbdadf12">
+              bottomMargin="0" uuid="b7a73773-6547-48a8-bf68-62960b22c5f5">
     <property name="ireport.scriptlethandling" value="0"/>
     <property name="ireport.encoding" value="UTF-8"/>
     <property name="ireport.zoom" value="0.75"/>
@@ -129,8 +129,8 @@ where
   pt.name like concat(ifnull($P{Product Type},""),"%") and
   p.active = 1 and
   c.active = 1 and
-  l.name like concat(ifnull($P{Classification},""),"%") and
-  loc.name like concat(ifnull($P{PracticeLocation} ,""),"%") and
+  ifnull(l.name,"-") like concat(ifnull($P{Classification},""),"%") and
+  ifnull(loc.name,"-") like concat(ifnull($P{PracticeLocation},""),"%") and
   l4.name like concat(ifnull($P{Species},""),"%") and
   d5.value like concat(ifnull($P{Breed},""),"%") and
   (d1.value between $P{DOB Start} and date_add($P{DOB End}, INTERVAL '23:59:59' HOUR_SECOND) or d1.value is null)
@@ -151,11 +151,9 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
         <groupExpression><![CDATA[$F{id}]]></groupExpression>
         <groupHeader>
             <band height="18">
-                <property name="local_mesure_unitheight" value="pixel"/>
-                <property name="com.jaspersoft.studio.unit.height" value="px"/>
                 <textField isStretchWithOverflow="true" isBlankWhenNull="true">
                     <reportElement key="textField" x="0" y="0" width="80" height="13"
-                                   uuid="23eece8c-d2d1-42fc-80f3-9be72cb1109a"/>
+                                   uuid="6112a9af-964f-4910-abd1-ac1bfeb1ef03"/>
                     <box>
                         <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                         <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -164,12 +162,13 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
                     </box>
                     <textElement>
                         <font size="8"/>
+                        <paragraph lineSpacing="Single"/>
                     </textElement>
                     <textFieldExpression><![CDATA[$F{id}]]></textFieldExpression>
                 </textField>
                 <textField isStretchWithOverflow="true" isBlankWhenNull="true">
                     <reportElement key="textField" x="80" y="0" width="80" height="13"
-                                   uuid="40548f0b-1425-4668-beb4-7bec01a88aee"/>
+                                   uuid="f6768be3-c167-4a78-9336-af730c268454"/>
                     <box>
                         <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                         <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -178,12 +177,13 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
                     </box>
                     <textElement>
                         <font size="8"/>
+                        <paragraph lineSpacing="Single"/>
                     </textElement>
                     <textFieldExpression><![CDATA[$F{title}]]></textFieldExpression>
                 </textField>
                 <textField isStretchWithOverflow="true" isBlankWhenNull="true">
                     <reportElement key="textField" x="160" y="0" width="80" height="13"
-                                   uuid="2ceff0e1-aec0-4661-8e80-a3bd3dacb022"/>
+                                   uuid="8d3011cf-92e2-42a6-baa0-d0675f093bfe"/>
                     <box>
                         <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                         <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -192,12 +192,13 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
                     </box>
                     <textElement>
                         <font size="8"/>
+                        <paragraph lineSpacing="Single"/>
                     </textElement>
                     <textFieldExpression><![CDATA[$F{lastname}]]></textFieldExpression>
                 </textField>
                 <textField isStretchWithOverflow="true" isBlankWhenNull="true">
                     <reportElement key="textField" x="240" y="0" width="80" height="13"
-                                   uuid="14e02b86-9a27-45e1-94a6-43782ba680ff"/>
+                                   uuid="b9dd2104-d0df-4e02-97a5-95ab1220a8aa"/>
                     <box>
                         <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                         <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -206,12 +207,13 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
                     </box>
                     <textElement>
                         <font size="8"/>
+                        <paragraph lineSpacing="Single"/>
                     </textElement>
                     <textFieldExpression><![CDATA[$F{firstname}]]></textFieldExpression>
                 </textField>
                 <textField isStretchWithOverflow="true" isBlankWhenNull="true">
                     <reportElement key="textField" x="320" y="0" width="80" height="13"
-                                   uuid="8104d923-90e3-49e0-a515-d74410190713"/>
+                                   uuid="26146af9-650d-436b-b74a-86e5e326eb66"/>
                     <box>
                         <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                         <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -220,12 +222,13 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
                     </box>
                     <textElement>
                         <font fontName="SansSerif" size="8"/>
+                        <paragraph lineSpacing="Single"/>
                     </textElement>
                     <textFieldExpression><![CDATA[$F{address}]]></textFieldExpression>
                 </textField>
                 <textField isStretchWithOverflow="true" isBlankWhenNull="true">
                     <reportElement key="textField" x="400" y="0" width="80" height="13"
-                                   uuid="e4324906-14e6-4192-a18a-14b70532116f"/>
+                                   uuid="1135e15e-e5df-4e02-81c3-9d0c08f4c917"/>
                     <box>
                         <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                         <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -234,12 +237,13 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
                     </box>
                     <textElement>
                         <font size="8"/>
+                        <paragraph lineSpacing="Single"/>
                     </textElement>
                     <textFieldExpression><![CDATA[$F{suburb}]]></textFieldExpression>
                 </textField>
                 <textField isStretchWithOverflow="true" isBlankWhenNull="true">
                     <reportElement key="textField" x="480" y="0" width="80" height="13"
-                                   uuid="b04f816e-772a-4ad3-bf36-a08dd264d3a3"/>
+                                   uuid="a2484a0c-5e6c-4598-a464-59e85eef1404"/>
                     <box>
                         <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                         <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -248,12 +252,13 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
                     </box>
                     <textElement>
                         <font size="8"/>
+                        <paragraph lineSpacing="Single"/>
                     </textElement>
                     <textFieldExpression><![CDATA[$F{postcode}]]></textFieldExpression>
                 </textField>
                 <textField isStretchWithOverflow="true" isBlankWhenNull="true">
                     <reportElement key="textField" x="560" y="0" width="80" height="13"
-                                   uuid="97fa8dbe-06c4-4d50-9665-cfc967c4d704"/>
+                                   uuid="170e1971-e475-4aa0-b118-35fb459c9a03"/>
                     <box>
                         <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                         <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -262,12 +267,13 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
                     </box>
                     <textElement>
                         <font size="8"/>
+                        <paragraph lineSpacing="Single"/>
                     </textElement>
                     <textFieldExpression><![CDATA[$F{state}]]></textFieldExpression>
                 </textField>
                 <textField isStretchWithOverflow="true" pattern="dd/MM/yyyy" isBlankWhenNull="true">
                     <reportElement key="textField-2" x="640" y="0" width="80" height="13"
-                                   uuid="7f6dc075-a67f-44c8-96f2-3340e58a4986"/>
+                                   uuid="88df95a2-8277-4574-a00c-269ce221f346"/>
                     <box>
                         <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                         <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -276,12 +282,14 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
                     </box>
                     <textElement>
                         <font size="8"/>
+                        <paragraph lineSpacing="Single"/>
                     </textElement>
-                    <textFieldExpression><![CDATA[$F{lastsale}]]></textFieldExpression>
+                    <textFieldExpression>
+                        <![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{lastsale})]]></textFieldExpression>
                 </textField>
                 <textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
                     <reportElement key="textField-2" x="720" y="0" width="80" height="13"
-                                   uuid="a4279197-9af2-4183-becd-d98a35db495d">
+                                   uuid="013dd3ab-5faf-4df2-9f15-fd05d3600edb">
                         <property name="local_mesure_unity" value="pixel"/>
                         <property name="com.jaspersoft.studio.unit.y" value="px"/>
                     </reportElement>
@@ -293,6 +301,7 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
                     </box>
                     <textElement>
                         <font size="8"/>
+                        <paragraph lineSpacing="Single"/>
                     </textElement>
                     <textFieldExpression><![CDATA[$F{rank}]]></textFieldExpression>
                 </textField>
@@ -312,7 +321,7 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
         <band height="20" splitType="Stretch">
             <staticText>
                 <reportElement key="staticText-1" x="0" y="4" width="80" height="11"
-                               uuid="738f2761-4a92-4703-9101-c2c842b4d762"/>
+                               uuid="b722fa15-641d-4bbb-94af-c5ada4b1849e"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -321,12 +330,13 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
                 </box>
                 <textElement>
                     <font size="8"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[CLIENTID]]></text>
             </staticText>
             <staticText>
                 <reportElement key="staticText-2" x="80" y="4" width="80" height="11"
-                               uuid="89d7a522-075f-4020-9476-c5ccc88e3034"/>
+                               uuid="22abe4d2-c534-4d8f-972e-37a9ffbda7a3"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -335,12 +345,13 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
                 </box>
                 <textElement>
                     <font size="8"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[TITLE]]></text>
             </staticText>
             <staticText>
                 <reportElement key="staticText-3" x="160" y="4" width="80" height="11"
-                               uuid="fec85637-5107-4017-b30a-6c753b03a18e"/>
+                               uuid="9783d49b-5896-4b04-9ae1-8853d36cc94e"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -349,12 +360,13 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
                 </box>
                 <textElement>
                     <font size="8"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[LASTNAME]]></text>
             </staticText>
             <staticText>
                 <reportElement key="staticText-4" x="240" y="4" width="80" height="11"
-                               uuid="83538c6f-0f8c-4c33-b8f9-b1df8c50c338"/>
+                               uuid="1a08fba1-c128-4680-8ed5-20fd150fefa9"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -363,12 +375,13 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
                 </box>
                 <textElement>
                     <font size="8"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[FIRSTNAME]]></text>
             </staticText>
             <staticText>
                 <reportElement key="staticText-5" x="320" y="4" width="80" height="11"
-                               uuid="2cf48f77-bdd9-4871-bca5-5d7cf2037212"/>
+                               uuid="45bba900-e93b-4098-8105-033c94034e14"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -377,12 +390,13 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
                 </box>
                 <textElement>
                     <font size="8"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[ADDRESS]]></text>
             </staticText>
             <staticText>
                 <reportElement key="staticText-6" x="400" y="4" width="80" height="11"
-                               uuid="d3d8e268-6406-45fb-afe6-b1c14cb6fda4"/>
+                               uuid="0d1ba18a-e4ad-4a07-b44a-72a8dffc69ba"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -391,12 +405,13 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
                 </box>
                 <textElement>
                     <font size="8"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[SUBURB]]></text>
             </staticText>
             <staticText>
                 <reportElement key="staticText-7" x="480" y="4" width="80" height="11"
-                               uuid="a7ce3750-8915-49c9-a8a0-6eb9d56c4f24"/>
+                               uuid="9e7946d7-2bb5-46ad-8658-a0c38058c81e"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -405,12 +420,13 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
                 </box>
                 <textElement>
                     <font size="8"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[POSTCODE]]></text>
             </staticText>
             <staticText>
                 <reportElement key="staticText-8" x="560" y="4" width="80" height="11"
-                               uuid="48498b99-da92-4c4f-9bc5-7bcddf77fe05"/>
+                               uuid="92c7f4e9-f6c2-4876-a835-548d0a13a095"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -419,12 +435,13 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
                 </box>
                 <textElement>
                     <font size="8"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[STATE]]></text>
             </staticText>
             <staticText>
                 <reportElement key="staticText-10" x="640" y="4" width="80" height="11"
-                               uuid="825e6e76-8b90-49bf-b4ef-e3a2c1e249fa"/>
+                               uuid="cb933471-fda1-4ff9-910e-47c509ef3c1e"/>
                 <box>
                     <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -433,12 +450,13 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
                 </box>
                 <textElement>
                     <font size="8"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[LASTSALE]]></text>
             </staticText>
             <staticText>
                 <reportElement key="staticText-10" x="720" y="4" width="80" height="11"
-                               uuid="35b87bcb-3372-4719-b1e8-2f72099ce4ae">
+                               uuid="3ceba6d9-286e-4cbc-b200-7c4b97f2f324">
                     <property name="local_mesure_unity" value="pixel"/>
                     <property name="com.jaspersoft.studio.unit.y" value="px"/>
                 </reportElement>
@@ -450,6 +468,7 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
                 </box>
                 <textElement>
                     <font size="8"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[RANK]]></text>
             </staticText>
@@ -462,26 +481,32 @@ order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
         <band splitType="Stretch"/>
     </pageFooter>
     <summary>
-        <band height="457" splitType="Stretch">
+        <band height="425" splitType="Stretch">
             <staticText>
                 <reportElement x="0" y="10" width="327" height="20" isRemoveLineWhenBlank="true"
-                               uuid="694f5d66-6398-457b-9c1e-015397f95e8c">
+                               uuid="90e89fbb-ddcc-46a8-9b93-19786c26bed8">
                     <printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
                 </reportElement>
                 <textElement textAlignment="Center">
                     <font size="14" isBold="true"/>
+                    <paragraph lineSpacing="Single"/>
                 </textElement>
                 <text><![CDATA[No Data Found - Check Parameters]]></text>
             </staticText>
             <staticText>
-                <reportElement x="0" y="180" width="532" height="180" uuid="ebe0be71-0c06-4f2e-831b-24df43077ee8">
+                <reportElement x="0" y="180" width="680" height="240" uuid="b0cc9e30-f9d2-4330-8ed2-449675ccb36f">
                     <printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
                 </reportElement>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
                 <text><![CDATA[This report is designed for exporting customer contact data for use with mail merge facilities.
 It finds the customers to whom the specified products were sold in the specified period.
 The period is inclusive - ie sales from 00:00 on the start date through 23:59:59 on the end date.
-All the text selection fields entered have % added so that leaving them blank will find all, and entering say breed %terrier will find all species containing 'terrier' in their species name, and account type C will include all types starting C.
+All the text selection fields entered have % added so that leaving them blank will find all, and entering say breed %terrier will find all species containing 'terrier' in their species name, and account type 'c' will include all types starting C. The selection is case-insensitive.
 The Patient DOB selection is inclusive (ie from <= DOB<= to), but where Patients have no DOB they will be included.
+If there is no Practice Location selection then customers with no Practice Location set will be included. Using the selection '-' will select just those with no Practice Location set.
+The same applies for the Account Type/Category selection.
 Only active customers with active patients are included.
 Where the customer has multiple contacts, these are ranked as follows:
   If preferred and purpose Correspondence - score 30
@@ -493,102 +518,176 @@ The highest rank contact is used, and if more than one has the highest rank, the
 Note that prior to using in mail-merge or other programs, you must remove the information and explanation lines following the data lines.]]></text>
             </staticText>
             <frame>
-                <reportElement x="0" y="40" width="557" height="140" uuid="6797b7e1-776c-44e8-904b-b10e7bffa56e"/>
+                <reportElement x="0" y="40" width="557" height="140" uuid="4259498f-3139-4eca-9e3a-a71964952609"/>
                 <textField>
-                    <reportElement x="79" y="28" width="100" height="20" uuid="c848ca5b-1567-4484-b41c-f78dd340d1a3"/>
+                    <reportElement x="79" y="28" width="100" height="20" uuid="4ac9f963-326d-4ac0-96aa-94edc1abf577"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
                     <textFieldExpression><![CDATA[($P{Species}==null)?"%":$P{Species}+"%"]]></textFieldExpression>
                 </textField>
                 <textField>
-                    <reportElement x="258" y="28" width="100" height="20" uuid="6a60249c-7dc1-4efa-a635-97397843e7ab"/>
+                    <reportElement x="258" y="28" width="100" height="20" uuid="6c4b3c71-c8a8-4412-b5ed-50eedec051c6"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
                     <textFieldExpression><![CDATA[($P{Breed}==null)?"%":$P{Breed}+"%"]]></textFieldExpression>
                 </textField>
                 <textField pattern="dd/MM/yyyy">
-                    <reportElement x="79" y="48" width="100" height="20" uuid="ce5882c4-6a77-4488-85a7-245b0e467bae"/>
-                    <textFieldExpression><![CDATA[$P{DOB Start}]]></textFieldExpression>
+                    <reportElement x="79" y="48" width="100" height="20" uuid="0a8b3549-4867-4684-bf0a-294aed2837c6"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
+                    <textFieldExpression>
+                        <![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{DOB Start})]]></textFieldExpression>
                 </textField>
                 <textField pattern="dd/MM/yyyy">
-                    <reportElement x="258" y="48" width="100" height="20" uuid="4d3ba473-d11d-4504-bf9a-3f55e8746ee7"/>
-                    <textFieldExpression><![CDATA[$P{DOB End}]]></textFieldExpression>
+                    <reportElement x="258" y="48" width="100" height="20" uuid="55ba679f-bccb-4b9c-b73a-decdee450438"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
+                    <textFieldExpression>
+                        <![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{DOB End})]]></textFieldExpression>
                 </textField>
                 <textField pattern="dd/MM/yyyy">
-                    <reportElement x="79" y="68" width="100" height="20" uuid="378db2ff-3f1f-4edb-ba3d-9ef12e70e0a2"/>
-                    <textFieldExpression><![CDATA[$P{Sale Start}]]></textFieldExpression>
+                    <reportElement x="79" y="68" width="100" height="20" uuid="224655b7-ef24-49df-ad33-4e753046e586"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
+                    <textFieldExpression>
+                        <![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{Sale Start})]]></textFieldExpression>
                 </textField>
                 <textField pattern="dd/MM/yyyy">
-                    <reportElement x="258" y="68" width="100" height="20" uuid="e43097cd-7449-43ce-bdd3-f2f8e7169238"/>
-                    <textFieldExpression><![CDATA[$P{Sale End}]]></textFieldExpression>
+                    <reportElement x="258" y="68" width="100" height="20" uuid="0c927b3f-91eb-4d0a-ba2b-ceee1ee1fd44"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
+                    <textFieldExpression>
+                        <![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{Sale End})]]></textFieldExpression>
                 </textField>
                 <textField>
-                    <reportElement x="79" y="88" width="100" height="20" uuid="01cb689e-553b-49aa-a7d9-49ce679c11c8"/>
+                    <reportElement x="79" y="88" width="100" height="20" uuid="87081c1c-1c09-42cb-8d74-76778531585e"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
                     <textFieldExpression>
                         <![CDATA[($P{Product Type}==null)?"%":$P{Product Type}+"%"]]></textFieldExpression>
                 </textField>
                 <textField>
-                    <reportElement x="258" y="88" width="100" height="20" uuid="42bdee59-77e4-4bf8-b6f3-3ad21455adff"/>
+                    <reportElement x="258" y="88" width="100" height="20" uuid="f474baec-1e6f-4f16-89cb-afc067ac4fa3"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
                     <textFieldExpression><![CDATA[($P{Product}==null)?"%":$P{Product}+"%"]]></textFieldExpression>
                 </textField>
                 <staticText>
-                    <reportElement x="0" y="0" width="79" height="20" uuid="fea37f56-0be7-45c8-88ca-360cea15572e"/>
+                    <reportElement x="0" y="0" width="79" height="20" uuid="d88b871f-d6ce-450d-bc64-3a64c2d8542f"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
                     <text><![CDATA[Parameters]]></text>
                 </staticText>
                 <staticText>
-                    <reportElement x="0" y="28" width="79" height="20" uuid="0cab0e75-b65a-4509-92d5-c1c0fe1752ee"/>
+                    <reportElement x="0" y="28" width="79" height="20" uuid="24b14d94-7b53-48a5-a691-8c8d48e23300"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
                     <text><![CDATA[Species]]></text>
                 </staticText>
                 <staticText>
-                    <reportElement x="0" y="48" width="79" height="20" uuid="2a6aec34-a0e8-441c-aace-ac9e46a76281"/>
+                    <reportElement x="0" y="48" width="79" height="20" uuid="a5314355-9a2b-4fc5-9dca-664bd07a6a35"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
                     <text><![CDATA[DOB From]]></text>
                 </staticText>
                 <staticText>
-                    <reportElement x="0" y="68" width="79" height="20" uuid="22bbe0b7-695b-440a-af1c-2588e1b734b8"/>
+                    <reportElement x="0" y="68" width="79" height="20" uuid="0c0f4241-e6a7-4291-b958-50b11090a053"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
                     <text><![CDATA[Sales From]]></text>
                 </staticText>
                 <staticText>
-                    <reportElement x="0" y="88" width="79" height="20" uuid="033ef071-880d-42f4-a31f-336046bd8e97"/>
+                    <reportElement x="0" y="88" width="79" height="20" uuid="af468f12-6160-4e56-a705-24cef4031374"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
                     <text><![CDATA[Product Type]]></text>
                 </staticText>
                 <staticText>
-                    <reportElement x="179" y="28" width="79" height="20" uuid="1d77183c-4208-4e74-a00b-b4a015e0ab99"/>
+                    <reportElement x="179" y="28" width="79" height="20" uuid="94698a5a-0790-4ef6-83a2-ff9fb372d3c4"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
                     <text><![CDATA[Breed]]></text>
                 </staticText>
                 <staticText>
-                    <reportElement x="179" y="48" width="79" height="20" uuid="53502142-0016-443d-b9bc-405bf13714e3"/>
+                    <reportElement x="179" y="48" width="79" height="20" uuid="78036ab7-5eca-4b46-a18c-48ffe99333cb"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
                     <text><![CDATA[DOB To]]></text>
                 </staticText>
                 <staticText>
-                    <reportElement x="179" y="68" width="79" height="20" uuid="04b822c7-2044-42da-82b5-f772eccc16a8"/>
+                    <reportElement x="179" y="68" width="79" height="20" uuid="8a0f115a-e599-4a32-97e6-b26404f5e4b2"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
                     <text><![CDATA[Sales To]]></text>
                 </staticText>
                 <staticText>
-                    <reportElement x="179" y="88" width="79" height="20" uuid="3738eb55-39cc-470c-bacc-8b772e882a90"/>
+                    <reportElement x="179" y="88" width="79" height="20" uuid="fae57577-f8e4-46b7-a834-ec3f322459f3"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
                     <text><![CDATA[Product]]></text>
                 </staticText>
                 <staticText>
-                    <reportElement x="365" y="28" width="55" height="20" uuid="a3100c54-cc2f-46ac-8459-9e9eb1bb7e44"/>
+                    <reportElement x="365" y="28" width="55" height="20" uuid="58803508-cadc-4766-91e0-19f6c012e415"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
                     <text><![CDATA[Generated]]></text>
                 </staticText>
                 <textField pattern="dd/MM/yyyy h.mm a">
-                    <reportElement x="420" y="28" width="100" height="20" uuid="6df842d8-c02a-4224-babc-8a610e669063">
+                    <reportElement x="420" y="28" width="100" height="20" uuid="950786aa-638b-42aa-965e-4b4c6b2c5c4c">
                         <property name="local_mesure_unity" value="pixel"/>
                         <property name="com.jaspersoft.studio.unit.y" value="px"/>
                     </reportElement>
-                    <textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
+                    <textFieldExpression>
+                        <![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
                 </textField>
                 <staticText>
-                    <reportElement x="0" y="108" width="79" height="20" uuid="213c8d1a-c2ce-4a3f-917e-17a5cf0742e2"/>
+                    <reportElement x="0" y="108" width="79" height="20" uuid="ee51db40-8ecc-4ab1-9820-bce4b09f55e0"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
                     <text><![CDATA[Acct.Type/Cat]]></text>
                 </staticText>
                 <textField>
-                    <reportElement x="79" y="108" width="100" height="20" uuid="79145302-1d71-43ec-942b-588cc9584f56"/>
+                    <reportElement x="79" y="108" width="100" height="20" uuid="37338186-b418-435d-beea-9398e0e3d562"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
                     <textFieldExpression>
                         <![CDATA[($P{Classification}==null)?"%":$P{Classification}+"%"]]></textFieldExpression>
                 </textField>
                 <staticText>
-                    <reportElement x="179" y="108" width="79" height="20" uuid="00d8134d-cebd-4d42-992c-b8befc392642"/>
+                    <reportElement x="179" y="108" width="79" height="20" uuid="7ccd6fa6-fec1-4663-aef0-8a52df9fe9f5"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
                     <text><![CDATA[Practice Locn]]></text>
                 </staticText>
                 <textField>
-                    <reportElement x="258" y="108" width="100" height="20" uuid="38402d9c-933d-4499-9254-9f7305f4ebea"/>
+                    <reportElement x="258" y="108" width="100" height="20" uuid="396f7c01-ec76-4c8c-a68b-99d11e15c38e"/>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
                     <textFieldExpression>
                         <![CDATA[($P{PracticeLocation}==null)?"%":$P{PracticeLocation}+"%"]]></textFieldExpression>
                 </textField>
