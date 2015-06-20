@@ -11,18 +11,23 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.delivery;
 
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
+import org.openvpms.web.system.ServiceHelper;
 
 /**
  * Layout strategy for <em>act.supplierDeliveryItem</em> acts.
  * <p/>
- * This suppresses the order and supplierInvoiceLineId nodes if they are empty.
+ * This suppresses the order nodes if is empty and the and supplierInvoiceLineId if it is empty and the node is
+ * read-only.
  *
  * @author Tim Anderson
  */
@@ -31,13 +36,22 @@ public class DeliveryItemLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * The nodes to display.
      */
-    private static final ArchetypeNodes NODES
-            = new ArchetypeNodes().excludeIfEmpty("order", "supplierInvoiceLineId");
+    private final ArchetypeNodes nodes = new ArchetypeNodes().excludeIfEmpty("order");
+
+    /**
+     * Supplier invoice line identifier node.
+     */
+    private static final String SUPPLIER_INVOICE_LINE_ID = "supplierInvoiceLineId";
 
     /**
      * Default constructor.
      */
     public DeliveryItemLayoutStrategy() {
+        NodeDescriptor node = DescriptorHelper.getNode(SupplierArchetypes.DELIVERY_ITEM, SUPPLIER_INVOICE_LINE_ID,
+                                                       ServiceHelper.getArchetypeService());
+        if (node != null && node.isReadOnly()) {
+            nodes.excludeIfEmpty(SUPPLIER_INVOICE_LINE_ID);
+        }
     }
 
     /**
@@ -47,6 +61,6 @@ public class DeliveryItemLayoutStrategy extends AbstractLayoutStrategy {
      */
     @Override
     protected ArchetypeNodes getArchetypeNodes() {
-        return NODES;
+        return nodes;
     }
 }
