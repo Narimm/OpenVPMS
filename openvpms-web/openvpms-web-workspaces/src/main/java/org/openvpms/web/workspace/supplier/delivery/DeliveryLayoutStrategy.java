@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.delivery;
@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.supplier.delivery;
 import nextapp.echo2.app.Component;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -28,7 +29,9 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.text.TitledTextArea;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
 
@@ -41,15 +44,25 @@ import java.util.List;
 public class DeliveryLayoutStrategy extends ActLayoutStrategy {
 
     /**
-     * Excludes the supplierNotes node.
+     * The nodes to display.
      */
-    private static final ArchetypeNodes NODES
-            = new ArchetypeNodes().exclude("supplierNotes").excludeIfEmpty("supplierInvoiceId");
+    private final ArchetypeNodes nodes;
+
+    /**
+     * The supplier invoice identifier node.
+     */
+    private static final String SUPPLIER_INVOICE_ID = "supplierInvoiceId";
+
+    /**
+     * The supplier notes node.
+     */
+    private static final String SUPPLIER_NOTES = "supplierNotes";
 
     /**
      * Constructs a {@link DeliveryLayoutStrategy} for viewing deliveries.
      */
     public DeliveryLayoutStrategy() {
+        nodes = getNodes();
     }
 
     /**
@@ -59,6 +72,7 @@ public class DeliveryLayoutStrategy extends ActLayoutStrategy {
      */
     public DeliveryLayoutStrategy(IMObjectCollectionEditor editor) {
         super(editor);
+        nodes = getNodes();
     }
 
     /**
@@ -75,10 +89,10 @@ public class DeliveryLayoutStrategy extends ActLayoutStrategy {
                                   Component container, LayoutContext context) {
         super.doSimpleLayout(object, parent, properties, container, context);
         IMObjectBean bean = new IMObjectBean(object);
-        if (bean.hasNode("supplierNotes")) {
-            String notes = bean.getString("supplierNotes");
+        if (bean.hasNode(SUPPLIER_NOTES)) {
+            String notes = bean.getString(SUPPLIER_NOTES);
             if (!StringUtils.isEmpty(notes)) {
-                container.add(ColumnFactory.create("InsetX", getSupplierNotes(notes)));
+                container.add(ColumnFactory.create(Styles.INSET_X, getSupplierNotes(notes)));
             }
         }
     }
@@ -90,7 +104,7 @@ public class DeliveryLayoutStrategy extends ActLayoutStrategy {
      */
     @Override
     protected ArchetypeNodes getArchetypeNodes() {
-        return NODES;
+        return nodes;
     }
 
     /**
@@ -100,10 +114,27 @@ public class DeliveryLayoutStrategy extends ActLayoutStrategy {
      * @return a new component
      */
     private Component getSupplierNotes(String notes) {
-        String displayName = DescriptorHelper.getDisplayName(SupplierArchetypes.DELIVERY, "supplierNotes");
+        String displayName = DescriptorHelper.getDisplayName(SupplierArchetypes.DELIVERY, SUPPLIER_NOTES);
         TitledTextArea supplierNotes = new TitledTextArea(displayName);
         supplierNotes.setEnabled(false);
         supplierNotes.setText(notes);
         return supplierNotes;
     }
+
+    /**
+     * Determines the nodes to display.
+     *
+     * @return the nodes to display
+     */
+    private ArchetypeNodes getNodes() {
+        // exclude the supplier notes, as these are added manually
+        ArchetypeNodes result = new ArchetypeNodes().exclude(SUPPLIER_NOTES);
+        NodeDescriptor node = DescriptorHelper.getNode(SupplierArchetypes.DELIVERY, SUPPLIER_INVOICE_ID,
+                                                       ServiceHelper.getArchetypeService());
+        if (node != null && node.isReadOnly()) {
+            result.excludeIfEmpty(SUPPLIER_INVOICE_ID);
+        }
+        return result;
+    }
+
 }
