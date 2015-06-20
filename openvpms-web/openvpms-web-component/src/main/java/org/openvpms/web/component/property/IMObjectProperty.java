@@ -438,7 +438,8 @@ public class IMObjectProperty extends AbstractProperty
      */
     protected boolean doValidation(Validator validator) {
         List<ValidatorError> errors = null;
-        if (validationErrors == null) {
+        if (validationErrors == null || isDerived()) {
+            validationErrors = null;
             // determine if this is valid
             int minSize = getMinCardinality();
             if (minSize == 1 && getValue() == null) {
