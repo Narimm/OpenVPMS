@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -268,9 +268,10 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
      * @param patient   the expected patient. May be {@code null}
      * @param clinician the expected clinician. May be {@code null}
      * @param status    the expected status
+     * @param location  the expected location. May be {@code null}
      * @return the event
      */
-    public Act checkEvent(Party patient, User clinician, String status) {
+    public Act checkEvent(Party patient, User clinician, String status, Party location) {
         Act event = (Act) getContext().getObject(PatientArchetypes.CLINICAL_EVENT);
         assertNotNull(event);
         assertFalse(event.isNew());  // should be saved
@@ -280,6 +281,7 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
         assertEquals(patient, bean.getNodeParticipant("patient"));
         assertEquals(clinician, bean.getNodeParticipant("clinician"));
         assertEquals(status, event.getStatus());
+        assertEquals(location, bean.getNodeParticipant("location"));
         return event;
     }
 
@@ -344,9 +346,10 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
      * @param workList    the work list
      * @param arrivalTime the customer arrival time
      * @param clinician   the clinician
+     * @param location    the location
      * @return the event
      */
-    public Act runWorkflow(Party patient, Party customer, Party workList, Date arrivalTime, User clinician) {
+    public Act runWorkflow(Party patient, Party customer, Party workList, Date arrivalTime, User clinician, Party location) {
         setPatient(patient);                              // need to pre-set patient and work list
         setWorkList(workList);                            // so they can be selected in popups
         setArrivalTime(arrivalTime);
@@ -369,7 +372,7 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
         // edit the clinical event
         PopupDialog eventDialog = editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
-        return checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
+        return checkEvent(patient, clinician, ActStatus.IN_PROGRESS, location);
     }
 
     /**
