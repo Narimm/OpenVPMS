@@ -75,6 +75,11 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     private User clinician;
 
     /**
+     * The practice location.
+     */
+    private Party location;
+
+    /**
      * The context.
      */
     private Context context;
@@ -97,7 +102,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         Party workList = createWorkList(taskType, 1);
         CheckInWorkflowRunner runner = new CheckInWorkflowRunner(appointment, getPractice(), context);
 
-        Act event = runner.runWorkflow(patient, customer, workList, date, clinician);
+        Act event = runner.runWorkflow(patient, customer, workList, date, clinician, location);
         assertNotEquals(previousEvent, event); // new event should have been created
 
         checkConsultWorkflow(appointment, event);
@@ -122,7 +127,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         Party workList = createWorkList(taskType, 1);
         CheckInWorkflowRunner runner = new CheckInWorkflowRunner(appointment, getPractice(), context);
 
-        Act event = runner.runWorkflow(patient, customer, workList, date, clinician);
+        Act event = runner.runWorkflow(patient, customer, workList, date, clinician, location);
         assertNotEquals(previousEvent, event); // new event should have been created
 
         Act task = runner.checkTask(workList, customer, patient, TaskStatus.PENDING);
@@ -232,7 +237,8 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         patient = TestHelper.createPatient(customer);
         clinician = TestHelper.createClinician();
         context = new LocalContext();
-        context.setLocation(TestHelper.createLocation());
+        location = TestHelper.createLocation();
+        context.setLocation(location);
         context.setUser(TestHelper.createUser());
     }
 

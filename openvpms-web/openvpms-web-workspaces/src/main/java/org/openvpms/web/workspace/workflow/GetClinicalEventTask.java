@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow;
@@ -21,6 +21,7 @@ import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.app.ContextException;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.TaskContext;
@@ -34,8 +35,7 @@ import java.util.Date;
  * Queries the most recent <em>act.patientClinicalEvent</em> for the context patient,
  * creating one if it doesn't exist.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class GetClinicalEventTask extends SynchronousTask {
 
@@ -45,12 +45,12 @@ public class GetClinicalEventTask extends SynchronousTask {
     private final Date date;
 
     /**
-     * Properties to populate the created object with. May be <tt>null</tt>
+     * Properties to populate the created object with. May be {@code null}
      */
     private final TaskProperties properties;
 
     /**
-     * Constructs a <tt>GetClinicalEventTask</tt>.
+     * Constructs a {@link GetClinicalEventTask}.
      *
      * @param date the date to use to locate the event
      */
@@ -59,16 +59,15 @@ public class GetClinicalEventTask extends SynchronousTask {
     }
 
     /**
-     * Constructs a <tt>GetClinicalEventTask</tt>.
+     * Constructs a {@link GetClinicalEventTask}.
      *
      * @param date       the date to use to locate the event
-     * @param properties properties to populate any created event. May be <tt>null</tt>
+     * @param properties properties to populate any created event. May be {@code null}
      */
     public GetClinicalEventTask(Date date, TaskProperties properties) {
         this.date = date;
         this.properties = properties;
     }
-
 
     /**
      * Executes the task.
@@ -89,6 +88,8 @@ public class GetClinicalEventTask extends SynchronousTask {
             if (properties != null) {
                 populate(event, properties, context);
             }
+            ActBean bean = new ActBean(event, ServiceHelper.getArchetypeService());
+            bean.addNodeParticipation("location", context.getLocation());
             ServiceHelper.getArchetypeService().save(event);
         }
         context.addObject(event);

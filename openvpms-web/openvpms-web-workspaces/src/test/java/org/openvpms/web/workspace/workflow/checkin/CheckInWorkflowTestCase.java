@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -100,6 +100,11 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     private Context context;
 
     /**
+     * The practice location.
+     */
+    private Party location;
+
+    /**
      * The work list.
      */
     private Party workList;
@@ -138,7 +143,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
-        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
+        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS, location);
 
         // verify the workflow is complete
         workflow.checkComplete(true, customer, patient, context);
@@ -161,7 +166,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
-        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
+        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS, location);
         workflow.checkComplete(true, customer, patient, context);
     }
 
@@ -193,7 +198,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
 
         PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
-        workflow.checkEvent(newPatient, clinician, ActStatus.IN_PROGRESS);
+        workflow.checkEvent(newPatient, clinician, ActStatus.IN_PROGRESS, location);
 
         workflow.checkComplete(true, customer, newPatient, context);
     }
@@ -276,7 +281,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
-        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
+        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS, location);
 
         // verify the workflow is complete
         workflow.checkComplete(true, customer, patient, context);
@@ -369,7 +374,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
-        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
+        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS, location);
 
         workflow.checkComplete(true, customer, patient, context);
     }
@@ -447,7 +452,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         // close the dialog
         PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
-        Act event2 = workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
+        Act event2 = workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS, location);
         workflow.checkComplete(true, customer, patient, context);
 
         // verify the second item is linked to event2
@@ -506,7 +511,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         assertEquals(clinician2, getClinician(documents2.get(0)));
         assertEquals(clinician2, getClinician(documents2.get(1)));
 
-        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
+        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS, location);
         workflow.checkComplete(true, customer, patient, context);
 
         assertTrue(errors.isEmpty());
@@ -525,7 +530,8 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         Entity taskType = ScheduleTestHelper.createTaskType();
         workList = createWorkList(taskType, 1);
         context = new LocalContext();
-        context.setLocation(TestHelper.createLocation());
+        location = TestHelper.createLocation();
+        context.setLocation(location);
         context.setUser(user);
 
         // register an ErrorHandler to collect errors
@@ -610,7 +616,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         WorkflowTestHelper.cancelDialog(eventDialog, userClose);
 
         // event is saved regardless of cancel
-        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
+        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS, location);
         workflow.checkInvoice(clinician, BigDecimal.ZERO, ActStatus.IN_PROGRESS, false);
         workflow.checkComplete(false, null, null, context);
     }
@@ -675,7 +681,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
-        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
+        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS, location);
         workflow.checkInvoice(clinician, BigDecimal.ZERO, ActStatus.IN_PROGRESS, true);
         workflow.checkComplete(true, customer, patient, context);
     }
