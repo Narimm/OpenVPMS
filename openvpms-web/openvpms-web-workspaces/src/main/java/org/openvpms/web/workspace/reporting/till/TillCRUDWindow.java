@@ -416,7 +416,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
             reverser.reverse(act, balance, new Reverser.Listener() {
                 @Override
                 public void completed() {
-                    onRefresh(act);
+                    onRefresh(balance);
                 }
             });
         }
