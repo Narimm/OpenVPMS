@@ -194,8 +194,20 @@ public class PatientEditor extends AbstractIMObjectEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        strategy = new PatientLayoutStrategy(breedEditor, customFieldEditor);
+        strategy = createLayoutStrategy(breedEditor, customFieldEditor);
         return strategy;
+    }
+
+    /**
+     * Creates the layout strategy.
+     *
+     * @param breedEditor       the breed editor
+     * @param customFieldEditor the customField node editor
+     * @return a new layout strategy
+     */
+    protected PatientLayoutStrategy createLayoutStrategy(BreedEditor breedEditor,
+                                                         RelationshipCollectionTargetEditor customFieldEditor) {
+        return new PatientLayoutStrategy(breedEditor, customFieldEditor);
     }
 
     /**

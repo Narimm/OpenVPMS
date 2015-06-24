@@ -118,6 +118,15 @@ public class PropertySet {
      *
      * @param properties the properties
      */
+    public PropertySet(Collection<Property> properties) {
+        this(properties.toArray(new Property[properties.size()]));
+    }
+
+    /**
+     * Constructs a {@link PropertySet} from a list of properties.
+     *
+     * @param properties the properties
+     */
     public PropertySet(Property... properties) {
         object = null;
         setProperties(properties);

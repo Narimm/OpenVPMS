@@ -2953,7 +2953,7 @@ FROM node_descriptors n, archetype_descriptors a
 WHERE n.archetype_desc_id = a.archetype_desc_id AND a.name = "contact.faxNumber.1.0";
 
 #
-# Security authorities for OVPMS-1523 HL7 Pharmacy Orders
+# Security authorities for OVPMS-1523 HL7 Pharmacy Orders, and OVPMS-1624 Add security authorities for 1.8 archetypes
 #
 DROP TABLE IF EXISTS new_authorities;
 CREATE TABLE new_authorities (
@@ -2971,7 +2971,19 @@ INSERT INTO new_authorities (name, description, method, archetype)
   ("Customer Returns Remove", "Authority to Remove Customer Returns", "remove", "act.customerReturn*"),
   ("HL7 Message Act Create", "Authority to Create HL7 Message Act", "create", "act.HL7Message"),
   ("HL7 Message Act Save", "Authority to Save HL7 Message Act", "save", "act.HL7Message"),
-  ("HL7 Message Act Remove", "Authority to Remove HL7 Message Act", "remove", "act.HL7Message");
+  ("HL7 Message Act Remove", "Authority to Remove HL7 Message Act", "remove", "act.HL7Message"),
+  ("Entity Links Create", "Authority to Create Entity Links", "create", "entityLink.*"),
+  ("Entity Links Save", "Authority to Save Entity Links", "save", "entityLink.*"),
+  ("Entity Links Remove", "Authority to Remove Entity Links", "remove", "entityLink.*"),
+  ("Patient Customer Note Create", "Authority to Create Patient Customer Notes", "create", "act.patientCustomerNote"),
+  ("Patient Customer Note Save", "Authority to Save Patient Customer Notes", "save", "act.patientCustomerNote"),
+  ("Patient Customer Note Remove", "Authority to Remove Patient Customer Notes", "remove", "act.patientCustomerNote"),
+  ("Product Batch Create", "Authority to Create Product Batches", "create", "entity.productBatch"),
+  ("Product Batch Save", "Authority to Save Product Batches", "save", "entity.productBatch"),
+  ("Product Batch Remove", "Authority to Remove Product Batches", "remove", "entity.productBatch"),
+  ("Appointment Series Create", "Authority to Create Appointment Series", "create", "act.customerAppointmentSeries"),
+  ("Appointment Series Save", "Authority to Save Appointment Series", "save", "act.customerAppointmentSeries"),
+  ("Appointment Series Remove", "Authority to Remove Appointment Series", "remove", "act.customerAppointmentSeries");
 
 INSERT INTO granted_authorities (version, linkId, arch_short_name, arch_version, name, description, active, service_name, method, archetype)
   SELECT
@@ -3184,3 +3196,16 @@ UPDATE act_details d
   JOIN acts a
     ON a.arch_short_name = "act.customerEstimationItem" AND a.act_id = d.act_id AND d.name = "discount"
 SET d.name = "highDiscount";
+
+#
+# OVPMS-1627 Migrate date details nodes to sql-timestamp
+#
+update act_details d
+set d.value=substring(value, 1, 21),
+    d.type="sql-timestamp"
+where d.type = "date";
+
+update entity_details d
+set d.value=substring(value, 1, 21),
+    d.type="sql-timestamp"
+where d.type = "date";

@@ -316,7 +316,7 @@
     <detail>
         <band height="15" splitType="Stretch">
             <printWhenExpression>
-                <![CDATA[($F{target.template} == null || !$F{target.template.entity.printAggregate}) && ($F{target.print} || $F{target.lowTotal}.compareTo(BigDecimal.ZERO) != 0 || $F{target.highTotal}.compareTo(BigDecimal.ZERO) != 0)]]></printWhenExpression>
+                <![CDATA[($F{target.template} == null || !$F{target.template.entity.printAggregate}) && ($F{target.print} == null || $F{target.print} || $F{target.lowTotal}.compareTo(BigDecimal.ZERO) != 0 || $F{target.highTotal}.compareTo(BigDecimal.ZERO) != 0)]]></printWhenExpression>
             <textField isBlankWhenNull="false">
                 <reportElement key="textField-4" x="37" y="1" width="189" height="11"
                                uuid="1fb858b2-8a48-4c1e-b7d4-6b7216522417">

@@ -16,7 +16,7 @@
   -->
 
 <!-- Created with Jaspersoft Studio version 6.0.3.final using JasperReports Library version 6.0.3  -->
-<!-- 2015-05-06T09:51:37 -->
+<!-- 2015-06-19T12:42:40 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
@@ -208,7 +208,7 @@
             <property name="local_mesure_unitheight" value="pixel"/>
             <property name="com.jaspersoft.studio.unit.height" value="px"/>
             <printWhenExpression>
-                <![CDATA[($F{target.template} == null || !$F{target.template.entity.printAggregate}) && ($F{target.print} || $F{target.total}.compareTo(BigDecimal.ZERO) != 0)]]></printWhenExpression>
+                <![CDATA[($F{target.template} == null || !$F{target.template.entity.printAggregate}) && ($F{target.print} == null || $F{target.print} || $F{target.total}.compareTo(BigDecimal.ZERO) != 0)]]></printWhenExpression>
             <textField pattern="¤ #,##0.00" isBlankWhenNull="false">
                 <reportElement key="textField-2" x="467" y="2" width="61" height="16"
                                uuid="d13133a1-86c0-43c4-9d74-84b39008951f">

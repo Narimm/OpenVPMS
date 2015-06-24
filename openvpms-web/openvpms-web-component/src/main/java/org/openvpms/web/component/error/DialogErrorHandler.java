@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.error;
@@ -23,6 +23,7 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.error.ErrorHandler;
 
@@ -68,7 +69,7 @@ public class DialogErrorHandler extends ErrorHandler {
         log.error(message, cause);
         if (canDisplay() && !inError()) {
             ErrorDialog dialog;
-            if (cause != null) {
+            if (cause != null && ApplicationInstance.getActive() instanceof ContextApplicationInstance) {
                 if (title != null) {
                     dialog = new ErrorReportingDialog(title, message, cause);
                 } else {

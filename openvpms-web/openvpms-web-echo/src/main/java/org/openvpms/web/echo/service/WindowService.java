@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.service;
@@ -87,6 +87,16 @@ public class WindowService implements Service {
         BaseHtmlDocument baseDoc = new BaseHtmlDocument(ROOT_ID);
         baseDoc.setGenarator(ApplicationInstance.ID_STRING);
         baseDoc.addJavaScriptInclude(ci.getServiceUri(CLIENT_ENGINE));
+
+        // Add support for full screen on iOS
+        Element appleMeta = baseDoc.getDocument().createElement("meta");
+        appleMeta.setAttribute("name", "apple-mobile-web-app-capable");
+        appleMeta.setAttribute("content", "yes");
+        baseDoc.getHeadElement().appendChild(appleMeta);
+        Element viewport = baseDoc.getDocument().createElement("meta");
+        viewport.setAttribute("name", "viewport");
+        viewport.setAttribute("content", "initial-scale = 1.0");
+        baseDoc.getHeadElement().appendChild(viewport);
 
         // Add initialization directive.
         baseDoc.getBodyElement().setAttribute("onload", "EchoClientEngine.init('" + ci.getServletUri() + "', "
