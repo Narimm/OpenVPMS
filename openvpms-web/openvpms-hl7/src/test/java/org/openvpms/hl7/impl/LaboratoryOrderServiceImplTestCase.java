@@ -98,8 +98,8 @@ public class LaboratoryOrderServiceImplTestCase extends AbstractServiceTest {
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500\r" +
                           "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
                           "AL1|2|MA|^Pollen|U|Produces hives\r" +
-                          "ORC|NW|10231|||||||20140825090200|2001^Blogs^Joe\r" +
-                          "OBR||10231||SERVICE_ID||20140825090200\r";
+                          "ORC|NW|10231|||||||20140825090200|||2001^Blogs^Joe\r" +
+                          "OBR|1|10231||SERVICE_ID||20140825090200\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
         assertTrue(orderService.createOrder(getContext(), 10231, "SERVICE_ID", date, lab, user));

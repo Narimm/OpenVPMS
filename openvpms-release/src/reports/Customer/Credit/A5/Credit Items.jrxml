@@ -74,7 +74,6 @@
             <band height="14" splitType="Stretch">
                 <property name="local_mesure_unitheight" value="pixel"/>
                 <property name="com.jaspersoft.studio.unit.height" value="px"/>
-                <printWhenExpression><![CDATA[$F{target.template} != null]]></printWhenExpression>
                 <textField isBlankWhenNull="false">
                     <reportElement key="textField-1" x="4" y="2" width="99" height="10"
                                    uuid="88d78e45-0a4b-44c1-84aa-881141ce879a">
@@ -227,7 +226,7 @@
             <property name="local_mesure_unitheight" value="pixel"/>
             <property name="com.jaspersoft.studio.unit.height" value="px"/>
             <printWhenExpression>
-                <![CDATA[($F{target.template} == null || !$F{target.template.entity.printAggregate}) && ($F{target.print} || $F{target.total}.compareTo(BigDecimal.ZERO) != 0)]]></printWhenExpression>
+                <![CDATA[($F{target.template} == null || !$F{target.template.entity.printAggregate}) && ($F{target.print} == null || $F{target.print} || $F{target.total}.compareTo(BigDecimal.ZERO) != 0)]]></printWhenExpression>
             <textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
                 <reportElement key="textField-7" isPrintRepeatedValues="false" x="4" y="2" width="48" height="10"
                                uuid="81ba3aaf-4bac-41af-b085-8324bd30ea36">

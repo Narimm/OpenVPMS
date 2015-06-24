@@ -484,6 +484,32 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link PartyFunctions#getPatientRabiesTag(Party) and {@link PartyFunctions#getPatientRabiesTag(Act)}}
+     * methods.
+     */
+    @Test
+    public void testGetPatientRabiesTag() {
+        Party patient = TestHelper.createPatient();
+        Act visit = (Act) create(PatientArchetypes.CLINICAL_EVENT);
+        ActBean bean = new ActBean(visit);
+        bean.addNodeParticipation("patient", patient);
+
+        JXPathContext patientCtx = createContext(patient);
+        JXPathContext visitCtx = createContext(visit);
+        assertEquals("", patientCtx.getValue("party:getPatientRabiesTag(.)"));
+        assertEquals("", visitCtx.getValue("party:getPatientRabiesTag(.)"));
+
+        EntityIdentity tag = (EntityIdentity) create("entityIdentity.rabiesTag");
+        String identity = "1234567890";
+        tag.setIdentity(identity);
+        patient.addIdentity(tag);
+        getArchetypeService().save(patient, false);  // need to disabled validation as rabies tags are not enabled
+
+        assertEquals(identity, patientCtx.getValue("party:getPatientRabiesTag(.)"));
+        assertEquals(identity, visitCtx.getValue("party:getPatientRabiesTag(.)"));
+    }
+
+    /**
      * Creates a new <em>contact.phoneNumber</em>.
      *
      * @param number    the phone number

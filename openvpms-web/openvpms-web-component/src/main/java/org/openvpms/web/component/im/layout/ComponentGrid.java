@@ -321,6 +321,15 @@ public class ComponentGrid {
     }
 
     /**
+     * Returns the number of columns at the specified row.
+     *
+     * @return the number of columns at the specified row
+     */
+    public int getColumns(int row) {
+        return row < cells.size() ? cells.get(row).size() : 0;
+    }
+
+    /**
      * Returns the number of rows.
      *
      * @return the no. of rows

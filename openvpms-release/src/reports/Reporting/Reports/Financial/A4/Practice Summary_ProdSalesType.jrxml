@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<!-- Created with Jaspersoft Studio version 6.0.4.final using JasperReports Library version 6.0.4  -->
+<!-- 2015-06-15T05:54:28 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="Practice Summary_ProdSalesType" pageWidth="535" pageHeight="754"
+              whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="0" rightMargin="0" topMargin="0"
+              bottomMargin="0" uuid="4ff80f04-507b-4c07-9fa8-d196b00e910a">
+    <property name="ireport.zoom" value="1.5"/>
+    <property name="ireport.x" value="0"/>
+    <property name="ireport.y" value="0"/>
+    <property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
+    <property name="com.jaspersoft.studio.unit." value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+    <parameter name="DateFrom" class="java.util.Date"/>
+    <parameter name="DateTo" class="java.util.Date"/>
+    <queryString language="SQL">
+        <![CDATA[select
+(
+select count(distinct ep.entity_id) as prodCount
+from entities ep
+where ep.arch_short_name in('product.medication','product.merchandise','product.service')
+and ep.active = 1
+) as activeProdCount,
+(
+select count(distinct product.entity_id) as prodCount
+from acts parent join act_relationships r on parent.act_id = r.source_id
+    join acts child on r.target_id = child.act_id and child.arch_short_name like 'act.customerAccount%Item'
+    join participations pp on pp.act_id = child.act_id and pp.arch_short_name = 'participation.product'
+    join entities product on product.entity_id = pp.entity_id
+    left join participations pl ON parent.act_id = pl.act_id and pl.arch_short_name = 'participation.location'
+    left join entities l ON pl.entity_id = l.entity_id
+where parent.activity_start_time between  $P{DateFrom} and DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
+        and parent.arch_short_name like 'act.customerAccountCharges%'
+) as seenProdCount,
+    ifnull(producttype.name,'--None--') as prodType,
+	sum(if(f.credit,-f.quantity, f.quantity)) as quantity,
+	sum(if(f.credit,-f.quantity*(f.fixed_cost+f.unit_cost), f.quantity*(f.fixed_cost+f.unit_cost))) as cost,
+	sum(if(f.credit,-(f.total - f.tax_amount),(f.total - f.tax_amount))) as sales,
+	count(distinct product.entity_id) as prodCount
+from acts parent join act_relationships r on parent.act_id = r.source_id
+    join acts child on r.target_id = child.act_id and child.arch_short_name like 'act.customerAccount%Item'
+    join participations pp on pp.act_id = child.act_id and pp.arch_short_name = 'participation.product'
+    join entities product on product.entity_id = pp.entity_id
+    join financial_acts f on f.financial_act_id = child.act_id
+    left join participations pl ON parent.act_id = pl.act_id and pl.arch_short_name = 'participation.location'
+    left join entities l ON pl.entity_id = l.entity_id
+    left join entity_relationships rpt on rpt.target_id = product.entity_id and rpt.arch_short_name = 'entityRelationship.productTypeProduct'
+    left join entities producttype on producttype.entity_id = rpt.source_id
+where parent.activity_start_time between  $P{DateFrom} and DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
+        and parent.arch_short_name like 'act.customerAccountCharges%'
+group by producttype.name
+order by producttype.name]]>
+    </queryString>
+    <field name="activeProdCount" class="java.lang.Long"/>
+    <field name="seenProdCount" class="java.lang.Long"/>
+    <field name="prodType" class="java.lang.String"/>
+    <field name="quantity" class="java.math.BigDecimal"/>
+    <field name="cost" class="java.math.BigDecimal"/>
+    <field name="sales" class="java.math.BigDecimal"/>
+    <field name="prodCount" class="java.lang.Long"/>
+    <variable name="ProductCountTot" class="java.lang.Long" calculation="Sum">
+        <variableExpression><![CDATA[$F{prodCount}]]></variableExpression>
+    </variable>
+    <variable name="SalesLocTot" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression><![CDATA[$F{sales}]]></variableExpression>
+    </variable>
+    <variable name="CostLocTot" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression><![CDATA[$F{cost}]]></variableExpression>
+    </variable>
+    <background>
+        <band splitType="Stretch"/>
+    </background>
+    <title>
+        <band/>
+    </title>
+    <columnHeader>
+        <band height="39">
+            <staticText>
+                <reportElement x="21" y="20" width="129" height="14" uuid="79255a07-17e9-4787-92d8-122ff7bf9b62"/>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[Product Type]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="166" y="20" width="75" height="14" uuid="ad77fb06-c437-4dca-a5c0-398c6946b5f5"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[Product Count]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="384" y="20" width="75" height="14" uuid="36044cc8-54d6-4b87-bcc5-1830a7e05fa5"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[Sales]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="291" y="20" width="75" height="14" uuid="35f46be2-8ebe-483e-8e38-9e346b282808"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[Cost]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="0" y="0" width="321" height="19" uuid="c8b9d14a-9127-4d09-9a02-35e66b99c8d9"/>
+                <textElement>
+                    <font size="12" isBold="true"/>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[Product Sales by Product Type (all Locations)]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="489" y="20" width="46" height="14" uuid="16e4b929-864a-4ca7-a96e-0c1630e126c8"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[Markup]]></text>
+            </staticText>
+        </band>
+    </columnHeader>
+    <detail>
+        <band height="17" splitType="Stretch">
+            <textField>
+                <reportElement x="166" y="0" width="75" height="15" uuid="c75e39fe-0f06-4dc2-af35-447910fec39c"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{prodCount}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="21" y="0" width="129" height="15" uuid="4bcd664c-22fc-45d8-8f66-419a83b90956"/>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{prodType}]]></textFieldExpression>
+            </textField>
+            <textField pattern="¤#,##0">
+                <reportElement x="384" y="0" width="75" height="15" uuid="0d9a5f9d-b045-4f71-a126-fae761e64e14"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{sales}]]></textFieldExpression>
+            </textField>
+            <textField evaluationTime="Auto" pattern="#,##0%">
+                <reportElement x="241" y="0" width="30" height="15" uuid="c36d9469-e5e1-4912-b014-82bd797afc8c"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression>
+                    <![CDATA[$F{prodCount}.doubleValue()/$V{ProductCountTot}.doubleValue()]]></textFieldExpression>
+            </textField>
+            <textField evaluationTime="Auto" pattern="#,##0%">
+                <reportElement x="459" y="0" width="30" height="15" uuid="0bcba628-da3f-4e01-a767-bd5e455945f2"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression>
+                    <![CDATA[$F{sales}.doubleValue()/$V{SalesLocTot}.doubleValue()]]></textFieldExpression>
+            </textField>
+            <textField pattern="¤#,##0">
+                <reportElement x="291" y="0" width="75" height="15" uuid="66f18f9c-a3e5-4f3e-862d-ddc2cba69b09"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{cost}]]></textFieldExpression>
+            </textField>
+            <textField evaluationTime="Auto" pattern="#,##0%">
+                <reportElement x="489" y="0" width="46" height="15" uuid="1acf36a0-bab1-4541-94a7-e6843bcf764e"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{sales}.doubleValue()/$F{cost}.doubleValue()]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+    <summary>
+        <band height="150">
+            <textField evaluationTime="Auto" pattern="¤#,##0">
+                <reportElement x="384" y="3" width="75" height="15" uuid="07473a52-87cd-4e31-934e-28d0c6384151"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$V{SalesLocTot}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="166" y="3" width="75" height="15" uuid="78c2e47b-b966-4f61-b6fc-d1df9ab1c7dd"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$V{ProductCountTot}]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="21" y="4" width="129" height="14" uuid="f4056daf-8696-47bf-abbb-3a44e766d694"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[Overall Totals]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="21" y="19" width="129" height="14" uuid="cdd5fc0d-2693-436f-b066-63b2ae336f8d"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[Total products seen:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="166" y="19" width="75" height="14" uuid="78a92b22-723f-46fb-94e9-87054b72074a"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{seenProdCount}]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="0" y="57" width="535" height="83" uuid="24eb0540-3193-4f8e-ad47-1f133504d669"/>
+                <textElement>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[In the product type lines, the percentages show the ratios to the Overall totals.
+All amounts are ex-tax. Only Finalised transactions are included.
+The Product Counts give the number of different products, not the product quantities.
+The Total products seen Percentage is the ratio of the seen count to the active count (the number of active products at the current time).
+The Markup is calculated as (Sales-Cost)/Cost expressed as a percentage.]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="166" y="34" width="75" height="14" uuid="3050a2f1-c986-46dc-bad6-1bfb22eb2122"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{activeProdCount}]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="21" y="34" width="129" height="14" uuid="e3e20893-4ade-4143-b54f-5a5c7feab5ec"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[Active products:]]></text>
+            </staticText>
+            <textField evaluationTime="Auto" pattern="#,##0%">
+                <reportElement x="241" y="19" width="30" height="14" uuid="adda6e1e-8b3b-40fc-b690-4f9a7a1686ec"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression>
+                    <![CDATA[$F{seenProdCount}.doubleValue()/$F{activeProdCount}.doubleValue()]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="284" y="19" width="251" height="20" uuid="b07dd0d9-4cd9-4b39-9dac-a0579c452437">
+                    <printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
+                </reportElement>
+                <textElement textAlignment="Center">
+                    <font size="14" isBold="true"/>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <text><![CDATA[No Data Found - Check Parameters]]></text>
+            </staticText>
+            <textField evaluationTime="Auto" pattern="¤#,##0">
+                <reportElement x="291" y="3" width="75" height="15" uuid="2a5be324-a7cf-42cf-9a58-3f71da531e0d"/>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$V{CostLocTot}]]></textFieldExpression>
+            </textField>
+            <line>
+                <reportElement positionType="Float" x="0" y="145" width="535" height="1"
+                               uuid="f773020f-d4bc-430f-8055-666c64512229"/>
+                <graphicElement>
+                    <pen lineStyle="Double"/>
+                </graphicElement>
+            </line>
+            <textField evaluationTime="Auto" pattern="#,##0%">
+                <reportElement x="489" y="3" width="46" height="15" uuid="ec9ec1e7-b15b-4c02-9fd6-b46592176be6">
+                    <property name="local_mesure_unity" value="pixel"/>
+                    <property name="com.jaspersoft.studio.unit.y" value="px"/>
+                </reportElement>
+                <textElement textAlignment="Right">
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression>
+                    <![CDATA[$V{SalesLocTot}.doubleValue()/$V{CostLocTot}.doubleValue()]]></textFieldExpression>
+            </textField>
+        </band>
+    </summary>
+</jasperReport>

@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.bound;
 
+import net.sf.jasperreports.engine.util.ObjectUtils;
 import nextapp.echo2.app.RadioButton;
 import nextapp.echo2.app.button.ButtonGroup;
 import nextapp.echo2.app.event.ActionEvent;
@@ -34,6 +35,11 @@ import org.openvpms.web.echo.event.ActionListener;
 public class BoundRadioButton extends RadioButton implements BoundProperty {
 
     /**
+     * The value to set when the button is selected.
+     */
+    private final Object selectionValue;
+
+    /**
      * The property binder.
      */
     private final Binder binder;
@@ -50,12 +56,14 @@ public class BoundRadioButton extends RadioButton implements BoundProperty {
 
 
     /**
-     * Constructs a {@link BoundCheckBox}.
+     * Constructs a {@link BoundRadioButton}.
      *
      * @param property the property to bind
      * @param group    the button group
+     * @param value    the value to set when the button is selected
      */
-    public BoundRadioButton(Property property, ButtonGroup group) {
+    public BoundRadioButton(Property property, ButtonGroup group, Object value) {
+        this.selectionValue = value;
         setGroup(group);
 
         listener = new ChangeListener() {
@@ -71,18 +79,33 @@ public class BoundRadioButton extends RadioButton implements BoundProperty {
         addActionListener(actionListener);
 
         binder = new Binder(property) {
+
+            /**
+             * Updates the property from the field, if the button is selected.
+             *
+             * @param property the property to update
+             * @return {@code true} if the property was updated
+             */
+            @Override
+            protected boolean setProperty(Property property) {
+                boolean result = false;
+                if (isSelected()) {
+                    result = super.setProperty(property);
+                }
+                return result;
+            }
+
             protected Object getFieldValue() {
-                return isSelected();
+                return isSelected() ? BoundRadioButton.this.selectionValue : null;
             }
 
             protected void setFieldValue(Object value) {
-                if (value != null) {
-                    removeActionListener(actionListener);
-                    removeChangeListener(listener);
-                    setSelected((Boolean) value);
-                    addChangeListener(listener);
-                    addActionListener(actionListener);
-                }
+                boolean selected = ObjectUtils.equals(value, selectionValue);
+                removeActionListener(actionListener);
+                removeChangeListener(listener);
+                setSelected(selected);
+                addChangeListener(listener);
+                addActionListener(actionListener);
             }
         };
         if (!StringUtils.isEmpty(property.getDescription())) {

@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
 
+import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -23,6 +24,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.ContextException;
 import org.openvpms.web.component.retry.Retryer;
@@ -148,7 +150,11 @@ class PatientWeightTask extends Tasks {
                 units = bean.getString("units");
             } else {
                 weight = BigDecimal.ZERO;
-                units = "KILOGRAMS";
+                IArchetypeRuleService service = ServiceHelper.getArchetypeService();
+                act = (Act) service.create(PATIENT_WEIGHT);
+                ActBean bean = new ActBean(act);
+                Object value = bean.getDefaultValue("weight");
+                units = (value != null) ? value.toString() : WeightUnits.KILOGRAMS.toString();
             }
         }
     }

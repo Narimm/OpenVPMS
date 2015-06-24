@@ -82,7 +82,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
     /**
      * The layout strategy factory.
      */
-    private IMObjectLayoutStrategyFactory layoutFactory = DEFAULT_LAYOUT_FACTORY;
+    private IMObjectLayoutStrategyFactory layoutFactory;
 
     /**
      * The layout depth.
@@ -118,12 +118,6 @@ public abstract class AbstractLayoutContext implements LayoutContext {
      * The variables for macro expansion.
      */
     private Variables variables;
-
-    /**
-     * The default layout strategy factory.
-     */
-    private static final IMObjectLayoutStrategyFactory DEFAULT_LAYOUT_FACTORY
-            = new ViewLayoutStrategyFactory();
 
     /**
      * The default deletion listener.
@@ -168,6 +162,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
         NodeFilter id = new ValueNodeFilter("id", -1);
         NodeFilter showOptional = new BasicNodeFilter(true);
         filter = new ChainedNodeFilter(id, showOptional);
+        layoutFactory = ServiceHelper.getBean(ViewLayoutStrategyFactory.class); // TODO - smelly
     }
 
     /**

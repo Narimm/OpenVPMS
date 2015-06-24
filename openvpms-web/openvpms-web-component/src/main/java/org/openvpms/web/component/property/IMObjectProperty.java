@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -19,6 +19,7 @@ package org.openvpms.web.component.property;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -437,7 +438,8 @@ public class IMObjectProperty extends AbstractProperty
      */
     protected boolean doValidation(Validator validator) {
         List<ValidatorError> errors = null;
-        if (validationErrors == null) {
+        if (validationErrors == null || isDerived()) {
+            validationErrors = null;
             // determine if this is valid
             int minSize = getMinCardinality();
             if (minSize == 1 && getValue() == null) {
@@ -467,7 +469,7 @@ public class IMObjectProperty extends AbstractProperty
                         }
                     }
                 }
-            } else {
+            } else if (validateAssertions()) {
                 PropertyTransformer transformer = getTransformer();
                 try {
                     transformer.apply(getValue());
@@ -483,6 +485,38 @@ public class IMObjectProperty extends AbstractProperty
             validator.add(this, errors);
         }
         return (errors == null);
+    }
+
+    /**
+     * Validates any assertions linked to the property.
+     *
+     * @return {@code true} if the assertions are valid
+     */
+    private boolean validateAssertions() {
+        boolean result = true;
+        Collection<AssertionDescriptor> assertions = descriptor.getAssertionDescriptors().values();
+        Object value = getValue();
+        if (value != null && !assertions.isEmpty()) {
+            for (AssertionDescriptor assertion : assertions) {
+                try {
+                    if (!assertion.validate(value, object, descriptor)) {
+                        String message = assertion.getErrorMessage();
+                        if (message == null) {
+                            message = "Validation failed for assertion " + assertion.getName();
+                        }
+                        addError(message);
+                        result = false;
+                        break;
+                    }
+                } catch (Exception exception) {
+                    log.error("Assertion " + assertion.getName() + " failed for node " + descriptor, exception);
+                    addError(exception.getMessage());
+                    result = false;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     /**
