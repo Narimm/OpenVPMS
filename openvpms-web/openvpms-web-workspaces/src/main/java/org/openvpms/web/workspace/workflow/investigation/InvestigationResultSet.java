@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.investigation;
@@ -67,13 +67,14 @@ public class InvestigationResultSet extends ActResultSet<Act> {
      * @param from         the act start-from date. May be {@code null}
      * @param to           the act start-to date. May be {@code null}
      * @param statuses     the act statuses. If empty, indicates all acts
+     * @param exclude      if {@code true} exclude acts with status in {@code statuses}; otherwise include them.
      * @param pageSize     the maximum no. of results per page
      * @param sort         the sort criteria. May be {@code null}
      */
     public InvestigationResultSet(ShortNameConstraint archetypes, String value, ParticipantConstraint[] participants,
                                   Party location, List<Party> locations, Date from, Date to, String[] statuses,
-                                  int pageSize, SortConstraint[] sort) {
-        super(archetypes, value, participants, from, to, statuses, false, null, pageSize, sort);
+                                  boolean exclude, int pageSize, SortConstraint[] sort) {
+        super(archetypes, value, participants, from, to, statuses, exclude, null, pageSize, sort);
         this.location = location;
         this.locations = locations;
         setDistinct(true);
