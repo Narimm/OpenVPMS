@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="lookup.species.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.lookup.Lookup"
@@ -37,27 +38,11 @@
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="customFields" type="java.lang.String" path="/details/customFields"
               minCardinality="0" maxCardinality="1"/>
-        <node name="source" path="/sourceLookupRelationships" type="java.util.HashSet"
-              baseName="sourceLookupRelationship"
-              minCardinality="0" maxCardinality="*" filter="lookupRelationship.speciesBreed">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="lookupRelationship.speciesBreed"/>
-                    </propertyMap>
-                </propertyList>
-            </assertion>
-        </node>
+        <node name="source" displayName="Breeds" path="/sourceLookupRelationships" type="java.util.HashSet"
+              baseName="sourceLookupRelationship" minCardinality="0" maxCardinality="*"
+              filter="lookupRelationship.speciesBreed"/>
         <node name="mapping" path="/sourceLookupRelationships" type="java.util.HashSet"
-              baseName="sourceLookupRelationship"
-              minCardinality="0" maxCardinality="*" filter="lookupRelationship.speciesMapping">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="lookupRelationship.speciesMapping"/>
-                    </propertyMap>
-                </propertyList>
-            </assertion>
-        </node>
+              baseName="sourceLookupRelationship" minCardinality="0" maxCardinality="*"
+              filter="lookupRelationship.speciesMapping*"/>
     </archetype>
 </archetypes>
