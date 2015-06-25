@@ -55,7 +55,7 @@ public class LaboratoriesImpl extends ServicesImpl implements Laboratories {
      */
     @Override
     protected void addObject(Entity object) {
-        services.add(object);  // register the pharmacy to receive patient information
+        services.add(object);  // register the laboratory to receive patient information
         super.addObject(object);
     }
 

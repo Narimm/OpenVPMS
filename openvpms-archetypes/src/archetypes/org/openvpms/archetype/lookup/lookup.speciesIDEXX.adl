@@ -26,6 +26,9 @@
               derivedValue="/name"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup" defaultValue="false()"/>
+        <node name="mapping" path="/targetLookupRelationships"
+              type="java.util.HashSet" baseName="targetLookupRelationship"
+              minCardinality="0" maxCardinality="*" filter="lookupRelationship.speciesMappingIDEXX"/>
         <node name="target" path="/targetLookupRelationships"
               type="java.util.HashSet" baseName="targetLookupRelationship"
               minCardinality="0" maxCardinality="*" hidden="true"/>
