@@ -85,6 +85,9 @@ public class PatientInformationServiceImpl implements PatientInformationService 
 
     /**
      * Notifies that an admission has been cancelled.
+     * <p/>
+     * If a connector doesn't support Cancel Admit messages (ADT A11), a Discharge (ADT A03) message will be sent
+     * instead.
      *
      * @param context the patient context
      * @param user    the user that triggered the notification
@@ -94,7 +97,12 @@ public class PatientInformationServiceImpl implements PatientInformationService 
         Collection<Connector> senders = services.getConnections(context.getLocation());
         for (Connector connector : senders) {
             HL7Mapping config = connector.getMapping();
-            Message message = factory.createCancelAdmit(context, config);
+            Message message;
+            if (config.sendCancelAdmit()) {
+                message = factory.createCancelAdmit(context, config);
+            } else {
+                message = factory.createDischarge(context, config);
+            }
             queue(message, connector, config, user);
         }
     }
@@ -126,8 +134,10 @@ public class PatientInformationServiceImpl implements PatientInformationService 
         Collection<Connector> senders = services.getConnections(context.getLocation());
         for (Connector connector : senders) {
             HL7Mapping config = connector.getMapping();
-            Message message = factory.createUpdate(context, config);
-            queue(message, connector, config, user);
+            if (config.sendUpdatePatient()) {
+                Message message = factory.createUpdate(context, config);
+                queue(message, connector, config, user);
+            }
         }
     }
 

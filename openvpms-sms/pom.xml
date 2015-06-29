@@ -100,12 +100,10 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-framework</artifactId>
-            <version>${pom.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-archetypes</artifactId>
-            <version>${pom.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -125,9 +123,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>commons-dbcp</groupId>
-            <artifactId>commons-dbcp</artifactId>
-            <version>${commons.dbcp.version}</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-dbcp2</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -144,7 +141,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <version>${spring.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

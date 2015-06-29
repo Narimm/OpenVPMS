@@ -50,11 +50,6 @@
             <artifactId>openvpms-framework</artifactId>
             <exclusions>
                 <exclusion>
-                    <!-- only used by the deprecated ArchetypeDataLoader -->
-                    <groupId>jdom</groupId>
-                    <artifactId>jdom</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.springframework</groupId>
                     <artifactId>spring-webmvc</artifactId>
                 </exclusion>
