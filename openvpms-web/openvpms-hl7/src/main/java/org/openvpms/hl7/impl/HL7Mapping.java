@@ -28,6 +28,16 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 public class HL7Mapping {
 
     /**
+     * Determines if ADT A08 (Update Patient Information) should be sent.
+     */
+    private boolean sendUpdatePatient = true;
+
+    /**
+     * Determines if ADT A11 (Cancel Admit) should be sent.
+     */
+    private boolean sendCancelAdmit = true;
+
+    /**
      * Determines if PID-3 should be populated with the patient identifier.
      */
     private boolean populatePID3 = true;
@@ -68,6 +78,11 @@ public class HL7Mapping {
     private String speciesLookup;
 
     /**
+     * The unmapped species code.
+     */
+    private String unmappedSpecies;
+
+    /**
      * Determines if date/times should include milliseconds.
      */
     private boolean includeMillis = true;
@@ -85,24 +100,39 @@ public class HL7Mapping {
     }
 
     /**
-     * Constructs an {@link HL7Mapping}.
+     * Determines if Update Patient Information (ADT A08) should be sent.
      *
-     * @param populatePID3 if {@code true} populate PID-3 with the patient identifier
-     * @param populatePID2 if {@code true} populate PID-2 with the patient identifier
+     * @return {@code true} if ADT A08 messages should be sent
      */
-    public HL7Mapping(boolean populatePID3, boolean populatePID2, String male, String maleDesexed, String female,
-                      String femaleDesexed, String unknownSex, String speciesLookup, boolean includeMillis,
-                      boolean includeTimeZone) {
-        this.populatePID3 = populatePID3;
-        this.populatePID2 = populatePID2;
-        this.male = male;
-        this.maleDesexed = maleDesexed;
-        this.female = female;
-        this.femaleDesexed = femaleDesexed;
-        this.unknownSex = unknownSex;
-        this.speciesLookup = speciesLookup;
-        this.includeMillis = includeMillis;
-        this.includeTimeZone = includeTimeZone;
+    public boolean sendUpdatePatient() {
+        return sendUpdatePatient;
+    }
+
+    /**
+     * Determines if Update Patient Information (ADT A08) should be sent.
+     *
+     * @param sendUpdatePatient if {@code true} send ADT A08 messages
+     */
+    public void setSendUpdatePatient(boolean sendUpdatePatient) {
+        this.sendUpdatePatient = sendUpdatePatient;
+    }
+
+    /**
+     * Determines if Cancel Admit (ADT A11) should be sent.
+     *
+     * @return {@code true} if ADT A11 messages should be sent
+     */
+    public boolean sendCancelAdmit() {
+        return sendCancelAdmit;
+    }
+
+    /**
+     * Determines if Cancel Admit (ADT A11) should be sent.
+     *
+     * @param sendCancelAdmit if {@code true} send ADT A11 messages
+     */
+    public void setSendCancelAdmit(boolean sendCancelAdmit) {
+        this.sendCancelAdmit = sendCancelAdmit;
     }
 
     /**
@@ -151,12 +181,30 @@ public class HL7Mapping {
     }
 
     /**
+     * Sets the administrative sex code for a male patient.
+     *
+     * @param male the administrative sex code. May be {@code null}
+     */
+    public void setMale(String male) {
+        this.male = male;
+    }
+
+    /**
      * Returns the administrative sex code for a desexed male patient.
      *
      * @return the administrative sex code. May be {@code null}
      */
     public String getMaleDesexed() {
         return maleDesexed;
+    }
+
+    /**
+     * Sets the administrative sex code for a desexed male patient.
+     *
+     * @param maleDesexed the administrative sex code. May be {@code null}
+     */
+    public void setMaleDesexed(String maleDesexed) {
+        this.maleDesexed = maleDesexed;
     }
 
     /**
@@ -169,6 +217,15 @@ public class HL7Mapping {
     }
 
     /**
+     * Sets the administrative sex code for a female patient.
+     *
+     * @param female the administrative sex code. May be {@code null}
+     */
+    public void setFemale(String female) {
+        this.female = female;
+    }
+
+    /**
      * Returns the administrative sex code for a female desexed patient.
      *
      * @return the administrative sex code. May be {@code null}
@@ -178,12 +235,66 @@ public class HL7Mapping {
     }
 
     /**
+     * Sets the administrative sex code for a female desexed patient.
+     *
+     * @param femaleDesexed the administrative sex code. May be {@code null}
+     */
+    public void setFemaleDesexed(String femaleDesexed) {
+        this.femaleDesexed = femaleDesexed;
+    }
+
+    /**
+     * Sets the administrative sex code for a patient of unknown sex.
+     *
+     * @param unknownSex the administrative sex code. May be {@code null}
+     */
+    public void setUnknownSex(String unknownSex) {
+        this.unknownSex = unknownSex;
+    }
+
+    /**
      * Returns the administrative sex code for a patient of unknown sex.
      *
      * @return the administrative sex code. May be {@code null}
      */
     public String getUnknownSex() {
         return unknownSex;
+    }
+
+    /**
+     * Returns the species mapping lookup archetype.
+     *
+     * @return the species mapping lookup. May be {@code null}
+     */
+    public String getSpeciesLookup() {
+        return speciesLookup;
+    }
+
+    /**
+     * Sets the species mapping lookup archetype.
+     *
+     * @param speciesLookup the species mapping lookup. May be {@code null}
+     */
+    public void setSpeciesLookup(String speciesLookup) {
+        this.speciesLookup = speciesLookup;
+    }
+
+    /**
+     * Returns the code to use if no mapping exists for a species.
+     *
+     * @return the unmapped species code. May be {@code null}
+     */
+    public String getUnmappedSpecies() {
+        return unmappedSpecies;
+    }
+
+    /**
+     * Sets the code to use if no mapping exists for a species.
+     *
+     * @param unmappedSpecies the unmapped species code. May be {@code null}
+     */
+    public void setUnmappedSpecies(String unmappedSpecies) {
+        this.unmappedSpecies = unmappedSpecies;
     }
 
     /**
@@ -223,15 +334,6 @@ public class HL7Mapping {
     }
 
     /**
-     * Returns the species mapping lookup archetype.
-     *
-     * @return the species mapping lookup. May be {@code null}
-     */
-    public String getSpeciesLookup() {
-        return speciesLookup;
-    }
-
-    /**
      * Creates a mapping from an <em>entity.HL7Mapping*</em> entity.
      *
      * @param mapping the mapping
@@ -240,10 +342,26 @@ public class HL7Mapping {
      */
     public static HL7Mapping create(Entity mapping, IArchetypeService service) {
         IMObjectBean bean = new IMObjectBean(mapping, service);
-        return new HL7Mapping(bean.getBoolean("populatePID3"), bean.getBoolean("populatePID2"), bean.getString("male"),
-                              bean.getString("maleDesexed"), bean.getString("female"),
-                              bean.getString("femaleDesexed"), bean.getString("unknownSex"),
-                              bean.getString("speciesMapping"), bean.getBoolean("includeMillis"),
-                              bean.getBoolean("includeTimeZone"));
+        HL7Mapping result = new HL7Mapping();
+        result.setSendUpdatePatient(bean.getBoolean("sendUpdatePatient", true));
+        result.setSendCancelAdmit(bean.getBoolean("sendCancelAdmit", true));
+
+        // This is deprecated, but included as Cubex uses it.
+        result.setPopulatePID2(bean.getBoolean("populatePID2", true));
+
+        // PID-3 should be used by default, but in the absence of any configuration defaults to off.
+        result.setPopulatePID3(bean.getBoolean("populatePID3", false));
+
+        result.setMale(bean.getString("male"));
+        result.setMaleDesexed(bean.getString("maleDesexed"));
+        result.setFemale(bean.getString("female"));
+        result.setFemaleDesexed(bean.getString("femaleDesexed"));
+        result.setUnknownSex(bean.getString("unknownSex"));
+
+        result.setSpeciesLookup(bean.getString("speciesMapping"));
+
+        result.setIncludeMillis(bean.getBoolean("includeMillis"));
+        result.setIncludeTimeZone(bean.getBoolean("includeTimeZone"));
+        return result;
     }
 }

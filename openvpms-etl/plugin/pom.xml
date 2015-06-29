@@ -38,7 +38,10 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-etl-load</artifactId>
-            <version>${pom.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-dbcp2</artifactId>
         </dependency>
         <dependency>
             <!-- required by xstream. Include it here so the version in plugin.xml corresponds to the jar -->

@@ -22,6 +22,9 @@ import ca.uhn.hl7v2.model.v25.datatype.XAD;
 import ca.uhn.hl7v2.model.v25.datatype.XPN;
 import ca.uhn.hl7v2.model.v25.segment.PID;
 import org.apache.commons.collections.Predicate;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -56,6 +59,11 @@ class PIDPopulator {
      * The default coding system.
      */
     private static final String CODING_SYSTEM = "OpenVPMS";
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(PIDPopulator.class);
 
     /**
      * Constructs a {@link PIDPopulator}.
@@ -107,8 +115,11 @@ class PIDPopulator {
         pid.getPhoneNumberHome(0).getTelephoneNumber().setValue(context.getHomePhone());
         pid.getPhoneNumberBusiness(0).getTelephoneNumber().setValue(context.getWorkPhone());
 
-        populateSpecies(pid, context, config);
-        populateBreed(pid, context);
+        if (!populateSpecies(pid, context, config)) {
+            // at this stage, mapping breeds is unsupported, so only populate the breed if the OpenVPMS species
+            // was used
+            populateBreed(pid, context);
+        }
     }
 
     /**
@@ -153,15 +164,18 @@ class PIDPopulator {
      * @param pid     the segment
      * @param context the patient context
      * @param mapping the mapping
+     * @return {@code true} if the species was mapped, {@code false} if the OpenVPMS species was used
      * @throws HL7Exception for any error
      */
-    private void populateSpecies(PID pid, PatientContext context, HL7Mapping mapping) throws HL7Exception {
+    private boolean populateSpecies(PID pid, PatientContext context, HL7Mapping mapping) throws HL7Exception {
+        boolean mapped = false;
         String species = context.getSpeciesCode();
         String name = context.getSpeciesName();
         String system = CODING_SYSTEM;
         if (species != null && mapping.getSpeciesLookup() != null) {
+            mapped = true;
             final String archetype = mapping.getSpeciesLookup();
-            Lookup source = lookups.getLookup("lookup.species", species);
+            Lookup source = lookups.getLookup(PatientArchetypes.SPECIES, species);
             if (source != null) {
                 IMObjectBean bean = new IMObjectBean(source, service);
                 Lookup target = (Lookup) bean.getNodeTargetObject("mapping", new Predicate() {
@@ -174,10 +188,15 @@ class PIDPopulator {
                 if (target != null) {
                     species = target.getCode();
                     name = target.getName();
+                } else if (mapping.getUnmappedSpecies() != null) {
+                    species = mapping.getUnmappedSpecies();
+                    name = species;
                 } else {
+                    log.warn("No mapping for species=" + species + " for " + archetype);
                     species = null;
                     name = null;
                 }
+                // Don't populate a coding system if its mapped
                 system = null;
             }
         }
@@ -187,6 +206,7 @@ class PIDPopulator {
             code.getText().setValue(name);
             code.getNameOfCodingSystem().setValue(system);
         }
+        return mapped;
     }
 
     /**

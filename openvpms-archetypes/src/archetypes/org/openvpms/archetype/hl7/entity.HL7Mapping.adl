@@ -23,6 +23,10 @@
         </node>
         <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="sendUpdatePatient" displayName="Send Update Patient (ADT A08)" path="/details/sendUpdatePatient"
+              type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="sendCancelAdmit" displayName="Send Cancel Admit (ADT A11)" path="/details/sendCancelAdmit"
+              type="java.lang.Boolean" defaultValue="true()"/>
         <node name="populatePID3" path="/details/populatePID3" displayName="Populate PID-3"
               type="java.lang.Boolean" defaultValue="true()" description="Populate PID-3 with the patient identifier"/>
         <node name="populatePID2" path="/details/populatePID2" displayName="Populate PID-2"
@@ -38,13 +42,8 @@
               type="java.lang.String" minCardinality="0" defaultValue="'S'"/>
         <node name="unknownSex" displayName="Sex: Unknown" path="/details/unknownSex" type="java.lang.String"
               minCardinality="0" defaultValue="'U'"/>
-        <node name="speciesMapping" path="/details/speciesMapping" type="java.lang.String" minCardinality="0">
-            <assertion name="lookup.local">
-                <propertyList name="entries">
-                    <property name="lookup.speciesIDEXX" value="IDEXX Species"/>
-                </propertyList>
-            </assertion>
-        </node>
+        <node name="speciesMapping" path="/details/speciesMapping" type="java.lang.String" minCardinality="0"/>
+        <node name="unmappedSpecies" path="/details/unmappedSpecies" type="java.lang.String" minCardinality="0"/>
         <node name="includeMillis" displayName="Include Milliseconds" type="java.lang.Boolean"
               path="/details/includeMillis" minCardinality="0" defaultValue="false()"/>
         <node name="includeTimeZone" type="java.lang.Boolean" path="/details/includeTimeZone" minCardinality="0"

@@ -30,6 +30,16 @@ public class PatientArchetypes {
     public static final String PATIENT = "party.patientpet";
 
     /**
+     * Species lookup.
+     */
+    public static final String SPECIES = "lookup.species";
+
+    /**
+     * Breed lookup.
+     */
+    public static final String BREED = "lookup.breed";
+
+    /**
      * Referred from relationship short name.
      */
     public static final String REFERRED_FROM = "entityRelationship.referredFrom";

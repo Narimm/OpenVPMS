@@ -30,7 +30,7 @@
     </bean>
 
     <!--  The MySQL DataSource -->
-    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+    <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
         <property name="driverClassName"
                   value="${hibernate.connection.driver_class}"/>
         <property name="url" value="${hibernate.connection.url}"/>

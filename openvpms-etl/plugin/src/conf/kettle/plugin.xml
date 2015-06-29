@@ -29,7 +29,9 @@
         <library name="castor-core-${castor.version}.jar"/>
         <library name="castor-xml-${castor.version}.jar"/>
         <library name="commons-jxpath-${commons.jxpath.version}.jar"/>
-        <library name="commons-beanutils-core-${commons.beanutils.version}.jar"/>
+        <library name="commons-beanutils-${commons.beanutils.version}.jar"/>
+        <library name="commons-dbcp2-${commons.dbcp.version}.jar"/>
+        <library name="commons-pool2-${commons.pool.version}.jar"/>
         <library name="commons-resources-${commons.resources.version}.jar"/>
         <library name="commons-collections4-${commons.collections4.version}.jar"/>
         <library name="dom4j-${dom4j.version}.jar"/>
@@ -54,7 +56,8 @@
         <library name="spring-tx-${spring.version}.jar"/>
         <library name="xstream-${xstream.version}.jar"/>
         <library name="xpp3_min-${xpp3.version}.jar"/>
-        <library name="xercesImpl-${xerces.version}.jar"/>
+        <library name="org.apache.servicemix.bundles.xerces-${xerces.version}.jar"/>
+        <library name="xml-apis-${xmlapis.version}.jar"/>
     </libraries>
 
 </plugin>
