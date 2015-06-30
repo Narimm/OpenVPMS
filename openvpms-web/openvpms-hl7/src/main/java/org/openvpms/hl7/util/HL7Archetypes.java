@@ -84,6 +84,16 @@ public class HL7Archetypes {
     public static final String MAPPING = "entity.HL7Mapping";
 
     /**
+     * Cubex mapping archetype short name.
+     */
+    public static final String CUBEX_MAPPING = "entity.HL7MappingCubex";
+
+    /**
+     * IDEXX mapping archetype short name.
+     */
+    public static final String IDEXX_MAPPING = "entity.HL7MappingIDEXX";
+
+    /**
      * The mapping archetype short names.
      */
     public static final String MAPPINGS = "entity.HL7Mapping*";

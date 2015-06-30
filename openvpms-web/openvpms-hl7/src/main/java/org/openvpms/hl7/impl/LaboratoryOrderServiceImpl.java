@@ -90,4 +90,25 @@ public class LaboratoryOrderServiceImpl implements LaboratoryOrderService {
         }
         return result;
     }
+
+    /**
+     * Cancels an order.
+     *
+     * @param context           the patient context
+     * @param placerOrderNumber the placer order number, to uniquely identify the order
+     * @param serviceId         the universal service identifier
+     * @param date              the order date
+     * @param laboratory        the laboratory. An <em>entity.HL7ServiceLaboratory</em>
+     * @param user              the user that generated the cancellation
+     */
+    @Override
+    public void cancelOrder(PatientContext context, long placerOrderNumber, String serviceId, Date date,
+                            Entity laboratory, User user) {
+        Connector connector = laboratories.getSender(laboratory);
+        if (connector != null) {
+            HL7Mapping config = connector.getMapping();
+            Message message = factory.cancelOrder(context, placerOrderNumber, serviceId, date, config);
+            dispatcher.queue(message, connector, config, user);
+        }
+    }
 }

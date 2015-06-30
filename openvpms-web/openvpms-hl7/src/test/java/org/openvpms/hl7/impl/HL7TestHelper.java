@@ -21,6 +21,9 @@ import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.v25.message.RDE_O11;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -29,6 +32,8 @@ import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.util.HL7Archetypes;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * HL7 test helper.
@@ -40,31 +45,23 @@ public class HL7TestHelper {
     /**
      * Creates a mapping for Cubex.
      *
-     * @return a new <em>entity.HL7Mapping</em> for Cubex
+     * @return a new <em>entity.HL7MappingCubex</em>
      */
     public static Entity createCubexMapping() {
-        Entity mapping = (Entity) TestHelper.create(HL7Archetypes.MAPPING);
-        IMObjectBean mappingBean = new IMObjectBean(mapping);
-        mappingBean.setValue("name", "Cubex mapping");
-        mappingBean.setValue("populatePID2", true);  // support Cubex
-        mappingBean.setValue("populatePID3", false);
-        mappingBean.save();
-        return mapping;
+        Entity entity = (Entity) TestHelper.create(HL7Archetypes.CUBEX_MAPPING);
+        TestHelper.save(entity);
+        return entity;
     }
 
     /**
      * Creates a mapping for IDEXX.
      *
-     * @return a new <em>entity.HL7Mapping</em> for IDEXX
+     * @return a new <em>entity.HL7MappingIDEXX</em>
      */
     public static Entity createIDEXXMapping() {
-        Entity mapping = (Entity) TestHelper.create(HL7Archetypes.MAPPING);
-        IMObjectBean mappingBean = new IMObjectBean(mapping);
-        mappingBean.setValue("name", "IDEXX mapping");
-        mappingBean.setValue("populatePID3", true);
-        mappingBean.setValue("populatePID2", false);
-        mappingBean.save();
-        return mapping;
+        Entity entity = (Entity) TestHelper.create(HL7Archetypes.IDEXX_MAPPING);
+        TestHelper.save(entity);
+        return entity;
     }
 
     /**
@@ -75,6 +72,19 @@ public class HL7TestHelper {
      * @return a new sender
      */
     public static MLLPSender createSender(int port, Entity mapping) {
+        return createSender(port, mapping, "Cubex", "Cubex");
+    }
+
+    /**
+     * Creates an MLLP sender.
+     *
+     * @param port              the port
+     * @param mapping           the mapping. May be {@code null}
+     * @param receivingApp      the receiving application
+     * @param receivingFacility the receiving facility
+     * @return a new sender
+     */
+    public static MLLPSender createSender(int port, Entity mapping, String receivingApp, String receivingFacility) {
         Entity sender = (Entity) TestHelper.create(HL7Archetypes.MLLP_SENDER);
         EntityBean bean = new EntityBean(sender);
         bean.setValue("name", "ZTest MLLP Sender");
@@ -82,8 +92,8 @@ public class HL7TestHelper {
         bean.setValue("port", port);
         bean.setValue("sendingApplication", "VPMS");
         bean.setValue("sendingFacility", "Main Clinic");
-        bean.setValue("receivingApplication", "Cubex");
-        bean.setValue("receivingFacility", "Cubex");
+        bean.setValue("receivingApplication", receivingApp);
+        bean.setValue("receivingFacility", receivingFacility);
         if (mapping != null) {
             bean.addNodeTarget("mapping", mapping);
         }
@@ -155,4 +165,39 @@ public class HL7TestHelper {
         return message;
     }
 
+    /**
+     * Removes mapping relationships from a species.
+     * @param species      the species
+     */
+    public static void removeRelationships(Lookup species) {
+        IMObjectBean bean = new IMObjectBean(species);
+        List<LookupRelationship> mappings = bean.getValues("mapping", LookupRelationship.class);
+        List<IMObject> toSave = new ArrayList<IMObject>();
+        for (LookupRelationship mapping : mappings) {
+            species.removeLookupRelationship(mapping);
+            Lookup target = (Lookup) ArchetypeServiceHelper.getArchetypeService().get(mapping.getTarget());
+            target.removeLookupRelationship(mapping);
+            toSave.add(target);
+        }
+        if (!toSave.isEmpty()) {
+            toSave.add(species);
+            TestHelper.save(toSave);
+        }
+    }
+
+    /**
+     * Adds a mapping relationship.
+     *
+     * @param species      the species
+     * @param idexxSpecies the species to map to
+     */
+    public static void addMapping(Lookup species, Lookup idexxSpecies) {
+        LookupRelationship relationship
+                = (LookupRelationship) TestHelper.create("lookupRelationship.speciesMappingIDEXX");
+        relationship.setSource(species.getObjectReference());
+        relationship.setTarget(idexxSpecies.getObjectReference());
+        species.addLookupRelationship(relationship);
+        idexxSpecies.addLookupRelationship(relationship);
+        TestHelper.save(species, idexxSpecies);
+    }
 }

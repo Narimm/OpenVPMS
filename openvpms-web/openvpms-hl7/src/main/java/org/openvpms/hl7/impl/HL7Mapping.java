@@ -302,7 +302,7 @@ public class HL7Mapping {
      *
      * @return {@code true} if date/times should include milliseconds
      */
-    public boolean isIncludeMillis() {
+    public boolean includeMillis() {
         return includeMillis;
     }
 
@@ -320,7 +320,7 @@ public class HL7Mapping {
      *
      * @return {@code true} if date/times should include time zones
      */
-    public boolean isIncludeTimeZone() {
+    public boolean includeTimeZone() {
         return includeTimeZone;
     }
 
@@ -347,10 +347,10 @@ public class HL7Mapping {
         result.setSendCancelAdmit(bean.getBoolean("sendCancelAdmit", true));
 
         // This is deprecated, but included as Cubex uses it.
-        result.setPopulatePID2(bean.getBoolean("populatePID2", true));
+        result.setPopulatePID2(bean.getBoolean("setPID2", true));
 
         // PID-3 should be used by default, but in the absence of any configuration defaults to off.
-        result.setPopulatePID3(bean.getBoolean("populatePID3", false));
+        result.setPopulatePID3(bean.getBoolean("setPID3", false));
 
         result.setMale(bean.getString("male"));
         result.setMaleDesexed(bean.getString("maleDesexed"));
@@ -359,6 +359,7 @@ public class HL7Mapping {
         result.setUnknownSex(bean.getString("unknownSex"));
 
         result.setSpeciesLookup(bean.getString("speciesMapping"));
+        result.setUnmappedSpecies(bean.getString("unmappedSpecies"));
 
         result.setIncludeMillis(bean.getBoolean("includeMillis"));
         result.setIncludeTimeZone(bean.getBoolean("includeTimeZone"));

@@ -42,4 +42,17 @@ public interface LaboratoryOrderService {
      */
     boolean createOrder(PatientContext context, long placerOrderNumber, String serviceId, Date date, Entity laboratory,
                         User user);
+
+    /**
+     * Cancels an order.
+     *
+     * @param context           the patient context
+     * @param placerOrderNumber the placer order number, to uniquely identify the order
+     * @param serviceId         the universal service identifier
+     * @param date              the order date
+     * @param laboratory        the laboratory. An <em>entity.HL7ServiceLaboratory</em>
+     * @param user              the user that generated the cancellation
+     */
+    void cancelOrder(PatientContext context, long placerOrderNumber, String serviceId, Date date, Entity laboratory,
+                     User user);
 }

@@ -28,8 +28,7 @@
         <data collection="user" archetype="entityLink.HL7ServiceUser" source="id:HL7P1" target="id:ADMIN"/>
     </data>
 
-    <data id="HL7IM" archetype="entity.HL7Mapping" name="IDEXX Mapping" male="M" maleDesexed="M"
-          female="F" femaleDesexed="F" includeMillis="false" includeTimeZone="false"/>
+    <data id="HL7IM" archetype="entity.HL7MappingIDEXX" name="IDEXX Mapping"/>
 
     <data id="HL7S2" archetype="entity.HL7SenderMLLP" name="Laboratory Order Connector"
           host="mercury" port="10003" sendingApplication="PIMS" sendingFacility="PIMS"

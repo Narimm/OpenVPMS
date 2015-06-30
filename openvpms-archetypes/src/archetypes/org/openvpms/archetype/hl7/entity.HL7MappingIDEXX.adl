@@ -1,0 +1,55 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="entity.HL7MappingIDEXX.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.common.Entity" displayName="IDEXX HL7 Mapping">
+        <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" minCardinality="1" defaultValue="'IDEXX HL7 Mapping'">
+            <assertion name="propercase"/>
+        </node>
+        <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="sendUpdatePatient" displayName="Send Update Patient (ADT A08)" path="/details/sendUpdatePatient"
+              type="java.lang.Boolean" defaultValue="false()" readOnly="true"/>
+        <node name="sendCancelAdmit" displayName="Send Cancel Admit (ADT A11)" path="/details/sendCancelAdmit"
+              type="java.lang.Boolean" defaultValue="false()" readOnly="true"/>
+        <node name="setPID3" path="/details/setPID3" displayName="Set PID-3"
+              type="java.lang.Boolean" defaultValue="true()" description="Populate PID-3 with the patient identifier"
+              readOnly="true"/>
+        <node name="setPID2" path="/details/setPID2" displayName="Set PID-2"
+              type="java.lang.Boolean" defaultValue="false()" description="Populate PID-2 with the patient identifier"
+              readOnly="true"/>
+        <node name="male" displayName="Sex: Male" path="/details/male" type="java.lang.String" minCardinality="1"
+              defaultValue="'M'" readOnly="true"/>
+        <node name="maleDesexed" displayName="Sex: Male - desexed" path="/details/maleDesexed" type="java.lang.String"
+              minCardinality="1" defaultValue="'C'" readOnly="true"/>
+        <node name="female" displayName="Sex: Female" path="/details/female" type="java.lang.String" minCardinality="1"
+              defaultValue="'F'" readOnly="true"/>
+        <node name="femaleDesexed" displayName="Sex: Female - desexed" path="/details/femaleDesexed"
+              type="java.lang.String" minCardinality="1" defaultValue="'S'" readOnly="true"/>
+        <node name="unknownSex" displayName="Sex: Unknown" path="/details/unknownSex" type="java.lang.String"
+              minCardinality="1" defaultValue="'U'" readOnly="true"/>
+        <node name="speciesMapping" path="/details/speciesMapping" type="java.lang.String" minCardinality="1"
+              defaultValue="'lookup.speciesIDEXX'" readOnly="true"/>
+        <node name="unmappedSpecies" path="/details/unmappedSpecies" type="java.lang.String" minCardinality="1"
+              defaultValue="'OTHER'" readOnly="true"/>
+        <node name="includeMillis" displayName="Include Milliseconds" type="java.lang.Boolean"
+              path="/details/includeMillis" minCardinality="1" defaultValue="false()" readOnly="true"/>
+        <node name="includeTimeZone" type="java.lang.Boolean" path="/details/includeTimeZone" minCardinality="1"
+              defaultValue="false()" readOnly="true"/>
+    </archetype>
+</archetypes>

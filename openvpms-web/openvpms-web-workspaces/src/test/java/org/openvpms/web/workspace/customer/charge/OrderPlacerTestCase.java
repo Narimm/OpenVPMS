@@ -51,6 +51,7 @@ import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -183,7 +184,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
         item.setQuantity(TEN);
 
-        placer.order(Arrays.<Act>asList(item), changes);
+        placer.order(Collections.<Act>singletonList(item), changes);
 
         List<TestPharmacyOrderService.Order> orders = service.getOrders();
         assertEquals(1, orders.size());
@@ -204,7 +205,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         FinancialAct item = createItem(product, ONE, event1);
         Party patient2 = TestHelper.createPatient(true);
 
-        List<Act> items = Arrays.<Act>asList(item);
+        List<Act> items = Collections.<Act>singletonList(item);
         placer.initialise(item);
 
         PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
@@ -238,7 +239,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         Act event = PatientTestHelper.createEvent(patient, clinician);
         FinancialAct item = createItem(product1, ONE, event);
 
-        List<Act> items = Arrays.<Act>asList(item);
+        List<Act> items = Collections.<Act>singletonList(item);
         placer.initialise(item);
 
         PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
@@ -271,7 +272,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         Act event = PatientTestHelper.createEvent(patient, clinician);
         FinancialAct item = createItem(product1, ONE, event);
 
-        List<Act> items = Arrays.<Act>asList(item);
+        List<Act> items = Collections.<Act>singletonList(item);
         placer.initialise(item);
 
         PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
@@ -302,7 +303,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         Act event = PatientTestHelper.createEvent(patient, clinician);
         FinancialAct item = createItem(product1, ONE, event);
 
-        List<Act> items = Arrays.<Act>asList(item);
+        List<Act> items = Collections.<Act>singletonList(item);
         placer.initialise(item);
 
         Entity pharmacy2 = CustomerChargeTestHelper.createPharmacy(location);
@@ -335,7 +336,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         Act event = PatientTestHelper.createEvent(patient, clinician);
         FinancialAct item = createItem(product, ONE, event);
 
-        List<Act> items = Arrays.<Act>asList(item);
+        List<Act> items = Collections.<Act>singletonList(item);
         placer.initialise(item);
 
         PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
@@ -368,7 +369,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         placer.initialise(item1);
 
         PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
-        placer.order(Arrays.asList(item2), changes);
+        placer.order(Collections.singletonList(item2), changes);
 
         List<TestPharmacyOrderService.Order> orders = service.getOrders();
         assertEquals(2, orders.size());
@@ -421,9 +422,9 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         FinancialAct item = createItem(product, ONE);
         PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
         ChargeItemEventLinker linker = new ChargeItemEventLinker(getArchetypeService());
-        linker.prepare(Arrays.asList(item), changes);
+        linker.prepare(Collections.singletonList(item), changes);
         changes.save();
-        placer.order(Arrays.asList((Act) item), changes);
+        placer.order(Collections.<Act>singletonList(item), changes);
 
         List<TestPharmacyOrderService.Order> orders = service.getOrders();
         assertEquals(1, orders.size());
@@ -448,9 +449,9 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         FinancialAct item = createItem(product, ONE);
         PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
         ChargeItemEventLinker linker = new ChargeItemEventLinker(getArchetypeService());
-        linker.prepare(Arrays.asList(item), changes);
+        linker.prepare(Collections.singletonList(item), changes);
         changes.save();
-        placer.order(Arrays.asList((Act) item), changes);
+        placer.order(Collections.<Act>singletonList(item), changes);
 
         List<TestPharmacyOrderService.Order> orders = service.getOrders();
         assertEquals(1, orders.size());
