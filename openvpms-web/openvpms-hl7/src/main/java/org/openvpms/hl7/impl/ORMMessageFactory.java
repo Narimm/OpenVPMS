@@ -18,7 +18,6 @@ package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.v25.message.ORM_O01;
-import ca.uhn.hl7v2.model.v25.message.ORR_O02;
 import ca.uhn.hl7v2.model.v25.segment.OBR;
 import ca.uhn.hl7v2.model.v25.segment.ORC;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -47,19 +46,53 @@ public class ORMMessageFactory extends AbstractMessageFactory {
         super(messageContext, service, lookups);
     }
 
-
     /**
      * Creates an order.
      *
      * @param context           the patient context
      * @param placerOrderNumber the placer order number
-     * @param serviceIdentifier the universal service identifier
+     * @param serviceId         the universal service identifier
      * @param date              the order date
      * @param config            the mapping configuration
      * @return new order
      */
-    public ORM_O01 createOrder(PatientContext context, long placerOrderNumber, String serviceIdentifier,
-                               Date date, HL7Mapping config) {
+    public ORM_O01 createOrder(PatientContext context, long placerOrderNumber, String serviceId, Date date,
+                               HL7Mapping config) {
+        ORM_O01 orm;
+        orm = create(context, "NW", placerOrderNumber, serviceId, date, config);
+        return orm;
+    }
+
+    /**
+     * Cancels an order.
+     *
+     * @param context           the patient context
+     * @param placerOrderNumber the placer order number
+     * @param serviceId         the universal service identifier
+     * @param date              the order date
+     * @param config            the mapping configuration
+     * @return new order
+     */
+    public ORM_O01 cancelOrder(PatientContext context, long placerOrderNumber, String serviceId, Date date,
+                               HL7Mapping config) {
+        ORM_O01 orm;
+        orm = create(context, "CA", placerOrderNumber, serviceId, date, config);
+        return orm;
+    }
+
+    /**
+     * Creates an order.
+     *
+     * @param context           the patient context
+     * @param orderControl      the type of order
+     * @param placerOrderNumber the placer order number
+     * @param serviceId         the universal service identifier
+     * @param date              the order date
+     * @param config            the mapping configuration
+     * @return new order
+     */
+    private ORM_O01 create(PatientContext context, String orderControl, long placerOrderNumber, String serviceId,
+                           Date date, HL7Mapping config) {
         ORM_O01 orm;
         try {
             orm = new ORM_O01(getModelClassFactory());
@@ -67,14 +100,14 @@ public class ORMMessageFactory extends AbstractMessageFactory {
             populate(orm.getPATIENT().getPID(), context, config);
             populate(orm.getPATIENT().getPATIENT_VISIT().getPV1(), context, config);
             ORC orc = orm.getORDER().getORC();
-            orc.getOrderControl().setValue("NW");
+            orc.getOrderControl().setValue(orderControl);
             String number = Long.toString(placerOrderNumber);
             orc.getPlacerOrderNumber().getEntityIdentifier().setValue(number);
             populateDTM(orc.getDateTimeOfTransaction().getTime(), date, config);
             OBR obr = orm.getORDER().getORDER_DETAIL().getOBR();
             obr.getSetIDOBR().setValue("1");
             obr.getPlacerOrderNumber().getEntityIdentifier().setValue(number);
-            obr.getUniversalServiceIdentifier().getIdentifier().setValue(serviceIdentifier);
+            obr.getUniversalServiceIdentifier().getIdentifier().setValue(serviceId);
             populateDTM(obr.getRequestedDateTime().getTime(), date, config);
             if (context.getClinicianId() != -1) {
                 PopulateHelper.populateClinician(orc.getOrderingProvider(0), context);
@@ -84,17 +117,6 @@ public class ORMMessageFactory extends AbstractMessageFactory {
             throw new IllegalStateException(exception);
         }
         return orm;
-    }
-
-    public ORR_O02 createResponse() {
-        ORR_O02 orr;
-        try {
-            orr = new ORR_O02(getModelClassFactory());
-            init(orr, "ORR", "O02");
-        } catch (Throwable exception) {
-            throw new IllegalStateException(exception);
-        }
-        return orr;
     }
 
 }

@@ -20,16 +20,12 @@ import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.v25.message.ADT_A01;
 import ca.uhn.hl7v2.util.idgenerator.IDGenerator;
-import org.apache.commons.collections.Predicate;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.hl7.patient.PatientContext;
 
 import java.io.IOException;
@@ -61,7 +57,7 @@ public class PIDPopulatorTestCase extends AbstractMessageTest {
     @Test
     public void testSpeciesMapping() throws HL7Exception, IOException {
         String noMap = "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||OTHER^OTHER";
-        String withMap = "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||IDEXX_CANINE^Dog";
+        String withMap = "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Dog";
 
         // map species to IDEXX species
         HL7Mapping mapping = new HL7Mapping();
@@ -81,8 +77,8 @@ public class PIDPopulatorTestCase extends AbstractMessageTest {
 
         // set up the lookups. Ensure there is no mapping
         Lookup canine = TestHelper.getLookup(PatientArchetypes.SPECIES, "CANINE");
-        final Lookup idexxCanine = TestHelper.getLookup("lookup.speciesIDEXX", "IDEXX_CANINE", "Dog", true);
-        removeRelationship(canine, idexxCanine); // remove any existing relationship
+        HL7TestHelper.removeRelationships(canine); // remove any existing relationship
+        Lookup idexxCanine = TestHelper.getLookup("lookup.speciesIDEXX", "CANINE", "Dog", true);
 
         // populate the PID segment
         PIDPopulator populator = new PIDPopulator(getArchetypeService(), getLookupService());
@@ -93,7 +89,7 @@ public class PIDPopulatorTestCase extends AbstractMessageTest {
         assertEquals(noMap, encode);
 
         // set up mapping relationship
-        addMapping(canine, idexxCanine);
+        HL7TestHelper.addMapping(canine, idexxCanine);
 
         // verify the species is populated correctly
         populator.populate(adt.getPID(), getContext(), mapping);
@@ -101,40 +97,4 @@ public class PIDPopulatorTestCase extends AbstractMessageTest {
         assertEquals(withMap, encode);
     }
 
-    /**
-     * Adds a mppaing relationship.
-     *
-     * @param species      the species
-     * @param idexxSpecies the species to map to
-     */
-    private void addMapping(Lookup species, Lookup idexxSpecies) {
-        LookupRelationship relationship = (LookupRelationship) create("lookupRelationship.speciesMappingIDEXX");
-        relationship.setSource(species.getObjectReference());
-        relationship.setTarget(idexxSpecies.getObjectReference());
-        species.addLookupRelationship(relationship);
-        idexxSpecies.addLookupRelationship(relationship);
-        save(species, idexxSpecies);
-    }
-
-    /**
-     * Removes a mapping relationship.
-     *
-     * @param species      the species
-     * @param idexxSpecies the species to map to
-     */
-    private void removeRelationship(Lookup species, final Lookup idexxSpecies) {
-        IMObjectBean bean = new IMObjectBean(species);
-        LookupRelationship relationship = (LookupRelationship) bean.getValue("mapping", new Predicate() {
-            @Override
-            public boolean evaluate(Object object) {
-                IMObjectRelationship relationship = (IMObjectRelationship) object;
-                return relationship.getTarget().equals(idexxSpecies.getObjectReference());
-            }
-        });
-        if (relationship != null) {
-            species.removeLookupRelationship(relationship);
-            idexxSpecies.removeLookupRelationship(relationship);
-            save(species, idexxSpecies);
-        }
-    }
 }

@@ -81,7 +81,7 @@ public class OrderPlacer {
     /**
      * The orders, keyed on act reference.
      */
-    private Map<IMObjectReference, Order> orders = new HashMap<IMObjectReference, Order>();
+    private Map<IMObjectReference, Order> orders = new HashMap<>();
 
     /**
      * The order services.
@@ -92,6 +92,7 @@ public class OrderPlacer {
      * The pharmacy products helper.
      */
     private final PharmacyProducts pharmacies;
+
 
     /**
      * Constructs an {@link OrderPlacer}.
@@ -139,15 +140,31 @@ public class OrderPlacer {
      * <p/>
      * If items have been removed since initialisation, those items will be cancelled.
      *
-     * @param items   the charge items
+     * @param items   the charge and investigation items
      * @param changes patient history changes, used to obtain patient events
-     * @return the list of updated charge items
+     * @return the set of updated charge items
      */
-    public List<Act> order(List<Act> items, PatientHistoryChanges changes) {
-        List<IMObjectReference> ids = new ArrayList<IMObjectReference>(orders.keySet());
-        List<Act> updated = new ArrayList<Act>();
-        Set<Party> patients = new HashSet<Party>();
+    public Set<Act> order(List<Act> items, PatientHistoryChanges changes) {
+        Map<IMObjectReference, Act> charges = new HashMap<>();
+        for (Act item : items) {
+            if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
+                charges.put(item.getObjectReference(), item);
+            }
+        }
+        List<IMObjectReference> ids = new ArrayList<>(orders.keySet());
+        Set<Act> updated = new HashSet<>();
+        Set<Party> patients = new HashSet<>();
         for (Act act : items) {
+            Act charge;
+            if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)) {
+                charge = act;
+            } else {
+                ActBean bean = new ActBean(act);
+                charge = charges.get(bean.getNodeSourceObjectRef("invoiceItem"));
+                if (charge == null) {
+                    throw new IllegalStateException("No invoice item found for " + act);
+                }
+            }
             IMObjectReference id = act.getObjectReference();
             ids.remove(id);
             Order order = getOrder(act);
@@ -157,16 +174,14 @@ public class OrderPlacer {
                     if (existing.needsCancel(order)) {
                         // TODO - need to prevent this, as PlacerOrderNumbers should not be reused.
                         cancelOrder(existing, changes, patients);
-                        if (createOrder(act, order, changes, patients)) {
-                            updated.add(act);
+                        if (createOrder(charge, order, changes, patients)) {
+                            updated.add(charge);
                         }
                     } else if (existing.needsUpdate(order)) {
                         updateOrder(changes, order, patients);
                     }
-                } else {
-                    if (createOrder(act, order, changes, patients)) {
-                        updated.add(act);
-                    }
+                } else if (createOrder(charge, order, changes, patients)) {
+                    updated.add(charge);
                 }
                 orders.put(id, order);
             } else if (existing != null) {
@@ -185,7 +200,7 @@ public class OrderPlacer {
      * Cancel orders.
      */
     public void cancel() {
-        Map<IMObjectReference, Act> events = new HashMap<IMObjectReference, Act>();
+        Map<IMObjectReference, Act> events = new HashMap<>();
         for (Order order : orders.values()) {
             PatientContext context = getPatientContext(order, events);
             if (context != null) {
@@ -198,7 +213,7 @@ public class OrderPlacer {
      * Discontinue orders.
      */
     public void discontinue() {
-        Map<IMObjectReference, Act> events = new HashMap<IMObjectReference, Act>();
+        Map<IMObjectReference, Act> events = new HashMap<>();
         for (Order order : orders.values()) {
             PatientContext context = getPatientContext(order, events);
             if (context != null) {
@@ -343,9 +358,7 @@ public class OrderPlacer {
             notifyPatientInformation(context, changes, patients);
             if (order.create(context, services, user)) {
                 ActBean bean = new ActBean(act);
-                if (bean.hasNode("ordered")) {
-                    bean.setValue("ordered", true);
-                }
+                bean.setValue("ordered", true);
                 result = true;
             }
         }
@@ -404,7 +417,7 @@ public class OrderPlacer {
         Act visit = context.getVisit();
         if (!patients.contains(context.getPatient())) {
             if (changes.isNew(visit)
-                || (visit.getActivityEndTime() != null
+                    || (visit.getActivityEndTime() != null
                     && DateRules.compareTo(visit.getActivityEndTime(), new Date()) < 0)) {
                 services.getInformationService().updated(context, user);
                 patients.add(context.getPatient());
@@ -580,14 +593,14 @@ public class OrderPlacer {
         public boolean needsCancel(Order newOrder) {
             PharmacyOrder other = (PharmacyOrder) newOrder;
             return !ObjectUtils.equals(getPatient(), newOrder.getPatient())
-                   || !ObjectUtils.equals(product, other.getProduct())
-                   || !ObjectUtils.equals(pharmacy, other.getPharmacy());
+                    || !ObjectUtils.equals(product, other.getProduct())
+                    || !ObjectUtils.equals(pharmacy, other.getPharmacy());
         }
 
         public boolean needsUpdate(Order newOrder) {
             PharmacyOrder other = (PharmacyOrder) newOrder;
             return quantity.compareTo(other.getQuantity()) != 0
-                   || !ObjectUtils.equals(getClinician(), other.getClinician());
+                    || !ObjectUtils.equals(getClinician(), other.getClinician());
         }
     }
 
@@ -606,12 +619,14 @@ public class OrderPlacer {
 
         @Override
         public boolean create(PatientContext context, OrderServices services, User user) {
-            return services.getLaboratoryService().createOrder(context, getPlacerOrderNumber(), serviceId,
-                                                               getStartTime(), lab, user);
+            LaboratoryOrderService service = services.getLaboratoryService();
+            return service.createOrder(context, getPlacerOrderNumber(), serviceId, getStartTime(), lab, user);
         }
 
         @Override
         public void cancel(PatientContext context, OrderServices services, User user) {
+            LaboratoryOrderService service = services.getLaboratoryService();
+            service.cancelOrder(context, getPlacerOrderNumber(), serviceId, getStartTime(), lab, user);
         }
 
         @Override
@@ -630,7 +645,10 @@ public class OrderPlacer {
          */
         @Override
         public boolean needsCancel(Order newOrder) {
-            return false;
+            LaboratoryOrder other = (LaboratoryOrder) newOrder;
+            return !ObjectUtils.equals(getPatient(), newOrder.getPatient())
+                    || !ObjectUtils.equals(serviceId, other.serviceId)
+                    || !ObjectUtils.equals(lab, other.lab);
         }
 
         /**

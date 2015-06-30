@@ -43,11 +43,11 @@ public class PopulateHelper {
      * @throws DataTypeException for any error
      */
     public static void populateDTM(DTM dtm, Calendar value, HL7Mapping config) throws DataTypeException {
-        if (!config.isIncludeMillis()) {
+        if (!config.includeMillis()) {
             value.set(Calendar.MILLISECOND, 0);
         }
         dtm.setValue(value);
-        if (!config.isIncludeTimeZone()) {
+        if (!config.includeTimeZone()) {
             // TODO - doesn't appear to be a clean way of doing this
             String formatted = dtm.getValue();
             int index = formatted.indexOf("+");

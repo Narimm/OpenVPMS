@@ -29,7 +29,7 @@ import org.openvpms.hl7.io.MessageService;
 import org.openvpms.hl7.patient.PatientEventServices;
 import org.openvpms.hl7.util.HL7Archetypes;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -80,7 +80,7 @@ public abstract class AbstractServiceTest extends AbstractMessageTest {
 
             @Override
             public List<Connector> getConnectors() {
-                return Arrays.<Connector>asList(sender);
+                return Collections.<Connector>singletonList(sender);
             }
 
             @Override

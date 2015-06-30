@@ -27,6 +27,10 @@
               type="java.lang.Boolean" defaultValue="true()"/>
         <node name="sendCancelAdmit" displayName="Send Cancel Admit (ADT A11)" path="/details/sendCancelAdmit"
               type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="setPID3" path="/details/setPID3" displayName="Set PID-3"
+              type="java.lang.Boolean" defaultValue="true()" description="Populate PID-3 with the patient identifier"/>
+        <node name="setPID2" path="/details/setPID2" displayName="Set PID-2"
+              type="java.lang.Boolean" defaultValue="false()" description="Populate PID-2 with the patient identifier"/>
         <node name="populatePID3" path="/details/populatePID3" displayName="Populate PID-3"
               type="java.lang.Boolean" defaultValue="true()" description="Populate PID-3 with the patient identifier"/>
         <node name="populatePID2" path="/details/populatePID2" displayName="Populate PID-2"

@@ -284,7 +284,7 @@ class MessageReceiver implements ReceivingApplication, ReceivingApplicationExcep
         Message response;
         try {
             response = receiver.processMessage(message, metaData);
-            if (!mapping.isIncludeMillis() || !mapping.isIncludeTimeZone()) {
+            if (!mapping.includeMillis() || !mapping.includeTimeZone()) {
                 // correct the date/time format
                 try {
                     MSH msh = (MSH) response.get("MSH");
@@ -385,7 +385,7 @@ class MessageReceiver implements ReceivingApplication, ReceivingApplicationExcep
      */
     private String getError(Message response) {
         if (response instanceof ACK) {
-            return HL7MessageHelper.getErrorMessage((ACK) response);
+            return HL7MessageHelper.getErrorMessage(response);
         }
         return "Unknown error";
     }

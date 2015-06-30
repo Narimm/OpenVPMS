@@ -389,7 +389,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                 }
 
                 if (TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE)) {
-                    List<Act> updated = orderPlacer.order(getOrderActs(), changes);
+                    Set<Act> updated = orderPlacer.order(getOrderActs(), changes);
                     if (!updated.isEmpty()) {
                         // need to save the items again. This time do it skipping rules
                         ServiceHelper.getArchetypeService(false).save(updated);

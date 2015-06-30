@@ -19,9 +19,11 @@ package org.openvpms.hl7.impl;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.hl7.laboratory.Laboratories;
@@ -81,6 +83,11 @@ public class LaboratoryOrderServiceImplTestCase extends AbstractServiceTest {
 
         user = TestHelper.createUser();
 
+        Lookup canine = TestHelper.getLookup(PatientArchetypes.SPECIES, "CANINE");
+        HL7TestHelper.removeRelationships(canine);
+        Lookup idexxCanine = TestHelper.getLookup("lookup.speciesIDEXX", "CANINE", "Canine", true);
+        HL7TestHelper.addMapping(canine, idexxCanine);
+
         PatientContext context = getContext();
         Mockito.when(context.getPatientId()).thenReturn(1001L);
         Mockito.when(context.getClinicianId()).thenReturn(2001L);
@@ -93,16 +100,37 @@ public class LaboratoryOrderServiceImplTestCase extends AbstractServiceTest {
      */
     @Test
     public void testCreateOrder() throws Exception {
-        String expected = "MSH|^~\\&|VPMS|Main Clinic|Cubex|Cubex|20140825085900||ORM^O01^ORM_O01|1200022|P|2.5||||||UTF-8\r" +
-                          "PID|1||1001||Bar^Fido||20140701000000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
-                          "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500\r" +
-                          "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
-                          "AL1|2|MA|^Pollen|U|Produces hives\r" +
-                          "ORC|NW|10231|||||||20140825090200|||2001^Blogs^Joe\r" +
-                          "OBR|1|10231||SERVICE_ID||20140825090200\r";
+        String expected = "MSH|^~\\&|VPMS|Main Clinic|IDEXX|IDEXX|20140825085900||ORM^O01^ORM_O01|1200022|P|2.5||||||UTF-8\r" +
+                "PID|1||1001||Bar^Fido||20140701000000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine\r" +
+                "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500\r" +
+                "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
+                "AL1|2|MA|^Pollen|U|Produces hives\r" +
+                "ORC|NW|10231|||||||20140825090200|||2001^Blogs^Joe\r" +
+                "OBR|1|10231||SERVICE_ID||20140825090200\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
         assertTrue(orderService.createOrder(getContext(), 10231, "SERVICE_ID", date, lab, user));
+        assertTrue(getDispatcher().waitForMessage());
+        checkMessage(expected);
+    }
+
+    /**
+     * Tests the {@link LaboratoryOrderService#createOrder(PatientContext, long, String, Date, Entity, User)} method.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testCancelOrder() throws Exception {
+        String expected = "MSH|^~\\&|VPMS|Main Clinic|IDEXX|IDEXX|20140825085900||ORM^O01^ORM_O01|1200022|P|2.5||||||UTF-8\r" +
+                "PID|1||1001||Bar^Fido||20140701000000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine\r" +
+                "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500\r" +
+                "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
+                "AL1|2|MA|^Pollen|U|Produces hives\r" +
+                "ORC|CA|10231|||||||20140825090200|||2001^Blogs^Joe\r" +
+                "OBR|1|10231||SERVICE_ID||20140825090200\r";
+
+        Date date = getDatetime("2014-08-25 09:02:00").getTime();
+        orderService.cancelOrder(getContext(), 10231, "SERVICE_ID", date, lab, user);
         assertTrue(getDispatcher().waitForMessage());
         checkMessage(expected);
     }
@@ -114,6 +142,6 @@ public class LaboratoryOrderServiceImplTestCase extends AbstractServiceTest {
      */
     @Override
     protected MLLPSender createSender() {
-        return HL7TestHelper.createSender(-1, HL7TestHelper.createIDEXXMapping());
+        return HL7TestHelper.createSender(-1, HL7TestHelper.createIDEXXMapping(), "IDEXX", "IDEXX");
     }
 }
