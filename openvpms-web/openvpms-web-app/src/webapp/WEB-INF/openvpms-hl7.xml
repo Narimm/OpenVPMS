@@ -74,6 +74,15 @@
         <constructor-arg ref="hl7messageDispatcher"/>
     </bean>
 
+    <bean class="org.openvpms.hl7.impl.LaboratoryCancellationServiceImpl">
+        <constructor-arg ref="hl7Laboratories"/>
+        <constructor-arg ref="hl7Connectors"/>
+        <constructor-arg ref="hl7messageDispatcher"/>
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="patientRules"/>
+        <constructor-arg ref="userRules"/>
+    </bean>
+
     <bean id="hl7Laboratories" class="org.openvpms.hl7.impl.LaboratoriesImpl">
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="hl7Connectors"/>

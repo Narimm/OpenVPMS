@@ -18,46 +18,42 @@ package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.model.v25.message.RDS_O13;
+import ca.uhn.hl7v2.model.v25.message.ORM_O01;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.user.UserRules;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.io.MessageDispatcher;
-import org.openvpms.hl7.pharmacy.Pharmacies;
-
-import java.util.List;
+import org.openvpms.hl7.laboratory.Laboratories;
 
 /**
- * Service to process pharmacy dispense events.
+ * Service to process laboratory investigation cancellation events.
  *
  * @author Tim Anderson
  */
-public class PharmacyDispenseServiceImpl extends ServicesMessageReceiver {
+public class LaboratoryCancellationServiceImpl extends ServicesMessageReceiver {
 
     /**
-     * The payment processor.
+     * The message processor.
      */
-    private final RDSProcessor processor;
+    private final ORMProcessor processor;
 
 
     /**
-     * Constructs an {@link PharmacyDispenseServiceImpl}.
+     * Constructs an {@link LaboratoryCancellationServiceImpl}.
      *
-     * @param pharmacies the services
-     * @param dispatcher the dispatcher
-     * @param connectors the connectors
-     * @param service    the archetype service
-     * @param rules      the patient rules
+     * @param laboratories the laboratories
+     * @param dispatcher   the dispatcher
+     * @param connectors   the connectors
+     * @param service      the archetype service
+     * @param rules        the patient rules
      */
-    public PharmacyDispenseServiceImpl(Pharmacies pharmacies, MessageDispatcher dispatcher,
-                                       Connectors connectors, IArchetypeService service,
-                                       PatientRules rules, UserRules userRules) {
-        super(pharmacies, service, dispatcher, connectors);
-        processor = new RDSProcessor(service, rules, userRules);
-
+    public LaboratoryCancellationServiceImpl(Laboratories laboratories, MessageDispatcher dispatcher,
+                                             Connectors connectors, IArchetypeService service,
+                                             PatientRules rules, UserRules userRules) {
+        super(laboratories, service, dispatcher, connectors);
+        processor = new ORMProcessor(service, rules, userRules);
         listen();
     }
 
@@ -69,7 +65,7 @@ public class PharmacyDispenseServiceImpl extends ServicesMessageReceiver {
      */
     @Override
     public boolean canProcess(Message message) {
-        return message instanceof RDS_O13;
+        return message instanceof ORM_O01;
     }
 
     /**
@@ -81,22 +77,6 @@ public class PharmacyDispenseServiceImpl extends ServicesMessageReceiver {
      */
     @Override
     public void process(Message message, IMObjectReference location) throws HL7Exception {
-        process((RDS_O13) message, location);
-    }
-
-    /**
-     * Processes an RDS message, returning the corresponding <em>act.customerOrderPharmacy</em> and child item
-     * acts.
-     *
-     * @param message  the message
-     * @param location the practice location reference
-     * @return the pharmacy order acts
-     * @throws HL7Exception any HL7 error
-     */
-    protected List<Act> process(RDS_O13 message, IMObjectReference location) throws HL7Exception {
-        List<Act> order = processor.process(message, location);
-        getService().save(order);
-        return order;
     }
 
 }

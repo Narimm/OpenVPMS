@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -19,11 +19,13 @@ package org.openvpms.hl7.impl;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.v25.message.ACK;
+import ca.uhn.hl7v2.model.v25.segment.MSH;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import ca.uhn.hl7v2.protocol.ReceivingApplicationException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.security.User;
@@ -77,10 +79,10 @@ public class MessageReceiverTestCase extends AbstractRDSTest {
     @Override
     public void setUp() {
         super.setUp();
-        connector = HL7TestHelper.createReceiver(-1);
+        connector = HL7TestHelper.createReceiver(-1, "VPMS", "VPMS");
         user = TestHelper.createUser();
 
-        acts = new ArrayList<DocumentAct>();
+        acts = new ArrayList<>();
         service = new MessageServiceImpl(getArchetypeService()) {
             @Override
             public DocumentAct save(Message message, Connector connector, User user) throws HL7Exception {
@@ -175,5 +177,25 @@ public class MessageReceiverTestCase extends AbstractRDSTest {
         assertEquals(HL7MessageStatuses.ERROR, act.getStatus());
         IMObjectBean bean = new IMObjectBean(act);
         assertEquals("Simulated ReceivingApplication Exception", bean.getString("error"));
+    }
+
+    /**
+     * Verifies that messages are rejected if the message header has details that don't match the connector.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testUnknownSender() throws Exception {
+        ReceivingApplication application = Mockito.mock(ReceivingApplication.class);
+        MessageReceiver receiver = new MessageReceiver(application, connector, service, user);
+        Message message = createRDS(createProduct());
+        MSH msh = (MSH) message.get("MSH");
+        msh.getSendingApplication().getNamespaceID().setValue("Foobar");
+
+        Message response = receiver.processMessage(message, new HashMap<String, Object>());
+        assertTrue(response instanceof ACK);
+        ACK ack = (ACK) response;
+        assertEquals("AR", ack.getMSA().getAcknowledgmentCode().getValue());
+        assertEquals("Unrecognised application details", ack.getERR().getHL7ErrorCode().getOriginalText().getValue());
     }
 }

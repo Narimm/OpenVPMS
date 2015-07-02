@@ -107,15 +107,15 @@ public class HL7TestHelper {
      * @param port the port
      * @return a new receiver
      */
-    public static MLLPReceiver createReceiver(int port) {
+    public static MLLPReceiver createReceiver(int port, String receivingApplication, String receivingFacility) {
         Entity receiver = (Entity) TestHelper.create(HL7Archetypes.MLLP_RECEIVER);
         EntityBean bean = new EntityBean(receiver);
         bean.setValue("name", "ZTest MLLP Receiver");
         bean.setValue("port", port);
         bean.setValue("sendingApplication", "Cubex");
         bean.setValue("sendingFacility", "Cubex");
-        bean.setValue("receivingApplication", "OpenVPMS");
-        bean.setValue("receivingFacility", "Main Clinic");
+        bean.setValue("receivingApplication", receivingApplication);
+        bean.setValue("receivingFacility", receivingFacility);
         bean.save();
         return MLLPReceiver.create(receiver, ArchetypeServiceHelper.getArchetypeService());
     }

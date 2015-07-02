@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -115,7 +115,7 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
     }
 
     /**
-     * Determines if the product should be read-only.
+     * Determines if the product and investigation type should be read-only.
      *
      * @param readOnly if {@code true} display the product read-only
      */
@@ -143,6 +143,7 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
             }
             if (showProductReadOnly) {
                 addComponent(factory.create(properties.get("product"), object));
+                addComponent(factory.create(properties.get("investigationType"), object));
             }
         }
         return super.apply(object, properties, parent, context);

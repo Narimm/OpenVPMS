@@ -107,7 +107,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
     /**
      * The listeners, keyed on port.
      */
-    private final Map<Integer, HL7Service> services = new HashMap<Integer, HL7Service>();
+    private final Map<Integer, HL7Service> services = new HashMap<>();
 
     /**
      * The service to schedule dispatching.
@@ -544,7 +544,7 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
             processed = false;
             waiting = 0;
             minWait = 0;
-            List<MessageQueue> queues = new ArrayList<MessageQueue>(queueMap.values());
+            List<MessageQueue> queues = new ArrayList<>(queueMap.values());
             for (MessageQueue queue : queues) {
                 // process each queue in a round robin fashion
                 if (queue.isSuspended()) {
