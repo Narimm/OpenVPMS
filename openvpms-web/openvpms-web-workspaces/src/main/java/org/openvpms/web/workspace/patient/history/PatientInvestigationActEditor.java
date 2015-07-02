@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -202,7 +202,7 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
 
 
     /**
-     * Determines if the product should be read-only.
+     * Determines if the product and investigation type should be read-only.
      *
      * @return {@code true} if the parent act is an invoice item, or the investigation is linked to an invoice item
      */

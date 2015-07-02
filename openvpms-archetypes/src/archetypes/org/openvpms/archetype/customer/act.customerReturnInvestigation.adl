@@ -1,0 +1,54 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="act.customerReturnInvestigation.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Investigation Return">
+        <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1"
+              defaultValue="'Customer Investigation Return'"/>
+        <node name="description" type="java.lang.String" path="/description" hidden="true" minCardinality="0"/>
+        <node displayName="Date" name="startTime" path="/activityStartTime"
+              type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" readOnly="true"/>
+        <node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'IN_PROGRESS'"
+              readOnly="true">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="IN_PROGRESS" value="In Progress"/>
+                    <property name="POSTED" value="Finalised"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="customer" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+              filter="participation.customer"/>
+        <node name="clinician" path="/participations" type="java.util.HashSet"
+              minCardinality="0" maxCardinality="1"
+              filter="participation.clinician"/>
+        <node name="author" path="/participations" type="java.util.HashSet"
+              minCardinality="0" maxCardinality="1"
+              filter="participation.author" hidden="true"/>
+        <node name="location" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+              filter="participation.location" readOnly="true"/>
+        <node name="notes" displayName="Notes" path="/details/notes" type="java.lang.String" minCardinality="0"
+              maxLength="5000"/>
+        <node name="credit" path="/credit" type="java.lang.Boolean" defaultValue="true()" readOnly="true"
+              hidden="true"/>
+        <node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="items" path="/sourceActRelationships"
+              type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
+              filter="actRelationship.customerReturnItemInvestigation"/>
+    </archetype>
+</archetypes>

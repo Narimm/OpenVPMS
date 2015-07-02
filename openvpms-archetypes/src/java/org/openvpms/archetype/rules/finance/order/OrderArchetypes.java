@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.order;
@@ -42,6 +42,16 @@ public class OrderArchetypes {
      * Pharmacy return item archetype short name.
      */
     public static final String PHARMACY_RETURN_ITEM = "act.customerReturnItemPharmacy";
+
+    /**
+     * Investigation return archetype short name.
+     */
+    public static final String INVESTIGATION_RETURN = "act.customerReturnInvestigation";
+
+    /**
+     * Investigation return item archetype short name.
+     */
+    public static final String INVESTIGATION_RETURN_ITEM = "act.customerReturnItemInvestigation";
 
     /**
      * Order archetype short names.

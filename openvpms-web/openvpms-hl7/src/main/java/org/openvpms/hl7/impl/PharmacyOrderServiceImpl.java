@@ -39,7 +39,7 @@ import java.util.Date;
 public class PharmacyOrderServiceImpl implements PharmacyOrderService {
 
     /**
-     * The pharmacies.
+     * The services.
      */
     private final Pharmacies pharmacies;
 
@@ -58,7 +58,7 @@ public class PharmacyOrderServiceImpl implements PharmacyOrderService {
      *
      * @param service    the archetype service
      * @param lookups    the lookup service
-     * @param pharmacies the pharmacies
+     * @param pharmacies the services
      * @param dispatcher the message dispatcher
      */
     public PharmacyOrderServiceImpl(IArchetypeService service, ILookupService lookups, Pharmacies pharmacies,
