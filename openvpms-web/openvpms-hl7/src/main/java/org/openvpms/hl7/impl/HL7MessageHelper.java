@@ -21,6 +21,8 @@ import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.Structure;
 import ca.uhn.hl7v2.model.v25.datatype.CE;
 import ca.uhn.hl7v2.model.v25.datatype.CWE;
+import ca.uhn.hl7v2.model.v25.datatype.CX;
+import ca.uhn.hl7v2.model.v25.datatype.EI;
 import ca.uhn.hl7v2.model.v25.datatype.MSG;
 import ca.uhn.hl7v2.model.v25.segment.ERR;
 import ca.uhn.hl7v2.model.v25.segment.MSA;
@@ -176,6 +178,54 @@ public class HL7MessageHelper {
      */
     public static String toString(Message message) throws HL7Exception {
         return message.encode().replaceAll("\r", "\n");
+    }
+
+    /**
+     * Helper to parse an id from a coded element.
+     *
+     * @param value the value
+     * @return the id, or {@code -1} if one doesn't exist or can't be parsed
+     */
+    public static long getId(CE value) {
+        return getId(value.getIdentifier().getValue());
+    }
+
+    /**
+     * Helper to parse an id from an extended composite id.
+     *
+     * @param value the value
+     * @return the id, or {@code -1} if one doesn't exist or can't be parsed
+     */
+    public static long getId(CX value) {
+        return getId(value.getIDNumber().getValue());
+    }
+
+    /**
+     * Helper to parse an id from an entity identifier.
+     *
+     * @param value the value
+     * @return the id, or {@code -1} if one doesn't exist or can't be parsed
+     */
+    public static long getId(EI value) {
+        return getId(value.getEntityIdentifier().getValue());
+    }
+
+    /**
+     * Helper to parse an id from a string.
+     *
+     * @param value the value to parse
+     * @return the id, or {@code -1} if one doesn't exist or can't be parsed
+     */
+    public static long getId(String value) {
+        long id = -1;
+        if (!StringUtils.isEmpty(value)) {
+            try {
+                id = Long.valueOf(value);
+            } catch (NumberFormatException ignore) {
+                // do nothing
+            }
+        }
+        return id;
     }
 
     /**

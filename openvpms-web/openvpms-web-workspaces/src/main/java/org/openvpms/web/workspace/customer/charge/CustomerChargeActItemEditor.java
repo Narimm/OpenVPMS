@@ -452,6 +452,17 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         return (investigations != null) ? investigations.getActs() : Collections.<Act>emptyList();
     }
 
+    public PatientInvestigationActEditor getInvestigation(IMObjectReference investigationRef) {
+        if (investigations != null) {
+            for (PatientInvestigationActEditor editor : getInvestigationActEditors()) {
+                if (editor.getObject().getObjectReference().equals(investigationRef)) {
+                    return editor;
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * Disposes of the editor.
      * <br/>

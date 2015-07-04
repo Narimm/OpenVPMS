@@ -99,7 +99,7 @@ public class OrderCharger {
     /**
      * The orders that have been charged, but not saved.
      */
-    private List<Act> charged = new ArrayList<Act>();
+    private List<Act> charged = new ArrayList<>();
 
     /**
      * Constructs an {@link OrderCharger}.
@@ -190,9 +190,9 @@ public class OrderCharger {
      * @param listener the listener to notify when charging completes
      */
     public void charge(FinancialAct act, final CompletionListener listener) {
-        final PharmacyOrderCharger charger = new PharmacyOrderCharger(act, rules);
+        final OrderInvoicer charger = createInvoicer(act);
         Validator validator = new DefaultValidator();
-        if (charger.validate(validator)) {
+        if (charger != null && charger.validate(validator)) {
             FinancialAct invoice = charger.getInvoice();
             if (invoice == null || ActStatus.POSTED.equals(invoice.getStatus())) {
                 // the order doesn't relate to an invoice, or the invoice is POSTED
@@ -265,14 +265,28 @@ public class OrderCharger {
         PendingOrderQuery query = new PendingOrderQuery(customer, null, charged);
         List<Act> orders = QueryHelper.query(query);
         for (Act order : orders) {
-            if (TypeHelper.isA(order, OrderArchetypes.PHARMACY_ORDER, OrderArchetypes.PHARMACY_RETURN)) {
-                PharmacyOrderCharger charger = new PharmacyOrderCharger((FinancialAct) order, rules);
-                if (charger.isValid() && charger.canCharge(editor) && (patient == null || charger.canCharge(patient))) {
-                    charger.charge(editor);
-                    charged.add(order);
-                }
+            OrderInvoicer invoicer = createInvoicer(order);
+            if (invoicer != null && invoicer.isValid() && invoicer.canCharge(editor)
+                && (patient == null || invoicer.canCharge(patient))) {
+                invoicer.charge(editor);
+                charged.add(order);
             }
         }
+    }
+
+    /**
+     * Creates an invoicer for an order or return.
+     *
+     * @param act the order/return
+     * @return a new invoicer, or {@code null} if the act is not supported
+     */
+    private OrderInvoicer createInvoicer(Act act) {
+        if (TypeHelper.isA(act, OrderArchetypes.PHARMACY_ORDER, OrderArchetypes.PHARMACY_RETURN)) {
+            return new PharmacyOrderInvoicer((FinancialAct) act, rules);
+        } else if (TypeHelper.isA(act, OrderArchetypes.INVESTIGATION_RETURN)) {
+            return new InvestigationOrderInvoicer((FinancialAct) act, rules);
+        }
+        return null;
     }
 
     /**
@@ -285,8 +299,8 @@ public class OrderCharger {
     private void charge(List<Act> orders, AbstractCustomerChargeActEditor editor, final CompletionListener listener) {
         StringBuilder messages = new StringBuilder();
         for (Act order : orders) {
-            if (TypeHelper.isA(order, OrderArchetypes.PHARMACY_ORDER, OrderArchetypes.PHARMACY_RETURN)) {
-                PharmacyOrderCharger charger = new PharmacyOrderCharger((FinancialAct) order, rules);
+            OrderInvoicer charger = createInvoicer(order);
+            if (charger != null) {
                 if (!charger.isValid()) {
                     append(messages, Messages.format("customer.order.incomplete", order.getId(),
                                                      DescriptorHelper.getDisplayName(order)));
@@ -316,19 +330,19 @@ public class OrderCharger {
         }
     }
 
-    private void invoice(FinancialAct act, final PharmacyOrderCharger charger, CompletionListener listener) {
+    private void invoice(FinancialAct act, OrderInvoicer charger, CompletionListener listener) {
         CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
         final FinancialAct current = rules.getInvoice(charger.getCustomer());
         charge(act, current, charger, listener);
     }
 
-    private void credit(FinancialAct act, final PharmacyOrderCharger charger, CompletionListener listener) {
+    private void credit(FinancialAct act, OrderInvoicer charger, CompletionListener listener) {
         CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
         final FinancialAct current = rules.getCredit(charger.getCustomer());
         charge(act, current, charger, listener);
     }
 
-    private void charge(final FinancialAct act, final FinancialAct current, final PharmacyOrderCharger charger,
+    private void charge(final FinancialAct act, final FinancialAct current, final OrderInvoicer charger,
                         final CompletionListener listener) {
         final DefaultLayoutContext context = new DefaultLayoutContext(this.context, help);
         if (current == null) {
@@ -361,7 +375,7 @@ public class OrderCharger {
         }
     }
 
-    private void doCharge(FinancialAct act, PharmacyOrderCharger charger, FinancialAct current,
+    private void doCharge(FinancialAct act, OrderInvoicer charger, FinancialAct current,
                           DefaultLayoutContext context, final CompletionListener listener) {
         CustomerChargeActEditDialog dialog = charger.charge(current, this, context);
         dialog.addWindowPaneListener(new WindowPaneListener() {
