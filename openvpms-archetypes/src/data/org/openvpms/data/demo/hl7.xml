@@ -37,7 +37,7 @@
     </data>
 
     <data id="HL7R2" archetype="entity.HL7ReceiverMLLP" name="Laboratory Cancellation Connector"
-          port="10002" sendingApplication="IDEXX" sendingFacility="IVLS"
+          port="10002" sendingApplication="IVLS" sendingFacility="IDEXX"
           receivingApplication="OpenVPMS" receivingFacility="Main Clinic"/>
 
     <data id="HL7L1" archetype="entity.HL7ServiceLaboratory" name="Main Clinic Laboratory" active="true">

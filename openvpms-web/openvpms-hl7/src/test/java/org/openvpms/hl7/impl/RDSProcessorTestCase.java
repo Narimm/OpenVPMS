@@ -180,7 +180,7 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
         List<Act> acts = processor.process(rds, context.getLocation().getObjectReference());
         assertEquals(2, acts.size());
         ActBean order = new ActBean(acts.get(0));
-        assertEquals("Patient is different to that in the original invoice. Was '" + patient2.getName()
+        assertEquals("Patient is different to that in the original Customer Invoice Item. Was '" + patient2.getName()
                      + "' (" + patient2.getId() + "). Now '" + patient1.getName() + "' (" + patient1.getId() + ")",
                      order.getString("notes"));
         save(acts);

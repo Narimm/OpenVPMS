@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.workflow.order;
 
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.ArrayUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -44,6 +45,8 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.order.OrderCharger;
 
+import static org.openvpms.archetype.rules.finance.order.OrderArchetypes.INVESTIGATION_RETURN;
+
 /**
  * CRUD window for customer orders.
  *
@@ -67,7 +70,7 @@ public class CustomerOrderCRUDWindow extends ResultSetCRUDWindow<FinancialAct> {
      */
     public CustomerOrderCRUDWindow(Archetypes<FinancialAct> archetypes, Query<FinancialAct> query,
                                    ResultSet<FinancialAct> set, Context context, HelpContext help) {
-        super(archetypes, OrderActions.INSTANCE, query, set, context, help);
+        super(filter(archetypes), OrderActions.INSTANCE, query, set, context, help);
     }
 
     /**
@@ -171,6 +174,27 @@ public class CustomerOrderCRUDWindow extends ResultSetCRUDWindow<FinancialAct> {
             }
         });
         return printer;
+    }
+
+    /**
+     * Excludes <em>act.customerReturnInvestigation</em> from the list of archetypes that may be created.
+     * This is required as investigation returns can only be used to cancel an existing investigation linked to
+     * an invoice item.
+     *
+     * @param archetypes the archetypes
+     * @return the archetypes with <em>act.customerReturnInvestigation</em> removed
+     */
+    private static Archetypes<FinancialAct> filter(Archetypes<FinancialAct> archetypes) {
+        Archetypes<FinancialAct> result;
+        if (archetypes.contains(INVESTIGATION_RETURN)) {
+            String[] shortNames = (String[]) ArrayUtils.removeElement(archetypes.getShortNames(), INVESTIGATION_RETURN);
+            result = new Archetypes<>(shortNames, FinancialAct.class, archetypes.getDefaultShortName(),
+                                      archetypes.getDisplayName());
+        } else {
+            result = archetypes;
+        }
+
+        return result;
     }
 
 

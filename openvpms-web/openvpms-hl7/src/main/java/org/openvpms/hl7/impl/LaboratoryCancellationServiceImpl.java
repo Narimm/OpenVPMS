@@ -21,11 +21,14 @@ import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.v25.message.ORM_O01;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.user.UserRules;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.io.MessageDispatcher;
 import org.openvpms.hl7.laboratory.Laboratories;
+
+import java.util.List;
 
 /**
  * Service to process laboratory investigation cancellation events.
@@ -77,6 +80,8 @@ public class LaboratoryCancellationServiceImpl extends ServicesMessageReceiver {
      */
     @Override
     public void process(Message message, IMObjectReference location) throws HL7Exception {
+        List<Act> order = processor.process((ORM_O01) message, location);
+        getService().save(order);
     }
 
 }
