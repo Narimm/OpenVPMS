@@ -20,6 +20,7 @@ import ca.uhn.hl7v2.AcknowledgmentCode;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.v25.datatype.DTM;
+import ca.uhn.hl7v2.model.v25.datatype.HD;
 import ca.uhn.hl7v2.model.v25.message.ACK;
 import ca.uhn.hl7v2.model.v25.segment.MSA;
 import ca.uhn.hl7v2.model.v25.segment.MSH;
@@ -38,7 +39,6 @@ import org.openvpms.hl7.io.MessageService;
 import org.openvpms.hl7.io.Statistics;
 import org.openvpms.hl7.util.HL7MessageStatuses;
 
-import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
@@ -156,34 +156,22 @@ class MessageReceiver implements ReceivingApplication, ReceivingApplicationExcep
             throws ReceivingApplicationException, HL7Exception {
         Message response;
         MSH msh = getMSH(message);
-        String sendingFacility = msh.getSendingFacility().getNamespaceID().getValue();
-        String sendingApplication = msh.getSendingApplication().getNamespaceID().getValue();
-        String receivingFacility = msh.getReceivingFacility().getNamespaceID().getValue();
-        String receivingApplication = msh.getReceivingApplication().getNamespaceID().getValue();
-        if (!ObjectUtils.equals(sendingFacility, connector.getSendingFacility())
-            || !ObjectUtils.equals(sendingApplication, connector.getSendingApplication())
-            || !ObjectUtils.equals(receivingFacility, connector.getReceivingFacility())
-            || !ObjectUtils.equals(receivingApplication, connector.getReceivingApplication())) {
-            try {
-                response = message.generateACK(AcknowledgmentCode.AR,
-                                               new HL7Exception("Unrecognised application details"));
-            } catch (IOException exception) {
-                throw new HL7Exception(exception);
+        check("MSH-3: Sending Application", connector.getSendingApplication(), msh.getSendingApplication());
+        check("MSH-4: Sending Facility", connector.getSendingFacility(), msh.getSendingFacility());
+        check("MSH-5: Receiving Application", connector.getReceivingApplication(), msh.getReceivingApplication());
+        check("MSH-6: Receiving Facility", connector.getReceivingFacility(), msh.getReceivingFacility());
+        Callable<Message> callable = new Callable<Message>() {
+            @Override
+            public Message call() throws Exception {
+                return process(message, metaData);
             }
-        } else {
-            Callable<Message> callable = new Callable<Message>() {
-                @Override
-                public Message call() throws Exception {
-                    return process(message, metaData);
-                }
-            };
-            try {
-                response = RunAs.run(user, callable);
-            } catch (HL7Exception | ReceivingApplicationException exception) {
-                throw exception;
-            } catch (Exception exception) {
-                throw new HL7Exception(exception);
-            }
+        };
+        try {
+            response = RunAs.run(user, callable);
+        } catch (HL7Exception | ReceivingApplicationException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new HL7Exception(exception);
         }
         return response;
     }
@@ -281,6 +269,22 @@ class MessageReceiver implements ReceivingApplication, ReceivingApplicationExcep
     @Override
     public Connector getConnector() {
         return connector;
+    }
+
+    /**
+     * Checks a header field against its expected value.
+     *
+     * @param name     the header field name
+     * @param expected the expected value
+     * @param actual   the actual value
+     * @throws HL7Exception if they don't match
+     */
+    private void check(String name, String expected, HD actual) throws HL7Exception {
+        String value = actual.getNamespaceID().getValue();
+        if (!ObjectUtils.equals(expected, value)) {
+            log.error("Unrecognised value for " + name + ": '" + value + "'");
+            throw new HL7Exception("Unrecognised application details");
+        }
     }
 
     /**

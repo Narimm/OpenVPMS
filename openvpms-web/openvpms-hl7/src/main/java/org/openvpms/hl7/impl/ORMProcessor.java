@@ -37,17 +37,13 @@ import java.util.List;
  * <p/>
  * This generates <em>act.customerReturnInvestigation</em> messages for each ORM message received that has a CA
  * orderType.
- * <p/>
- * Note that an ORM message may relate to a specific <em>act.customerAccountInvoiceItem</em>, and could be
- * be used to update its receivedQuantity and cancelledQuantity nodes. This is not done as it would lead to
- * version conflicts if users are editing invoices when the message is received.
  *
  * @author Tim Anderson
  */
 public class ORMProcessor extends OrderMessageProcessor {
 
     /**
-     * Constructs a {@link ORMProcessor}.
+     * Constructs an {@link ORMProcessor}.
      *
      * @param service the archetype service
      * @param rules   the patient rules
@@ -89,6 +85,9 @@ public class ORMProcessor extends OrderMessageProcessor {
         if (investigation != null) {
             itemBean.setValue("sourceInvestigation", investigation.getObjectReference());
             ActBean investigationBean = new ActBean(investigation, getService());
+            itemBean.setNodeParticipant("product", investigationBean.getNodeParticipantRef("product"));
+            itemBean.setNodeParticipant("investigationType",
+                                        investigationBean.getNodeParticipantRef("investigationType"));
             itemBean.setValue("sourceInvoiceItem", investigationBean.getNodeSourceObjectRef("invoiceItem"));
         }
     }

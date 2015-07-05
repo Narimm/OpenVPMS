@@ -25,9 +25,9 @@
         <node displayName="Date" name="startTime" path="/activityStartTime"
               type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" readOnly="true"/>
 
-        <!-- source system reference -->
-        <node name="reference" displayName="Reference" path="/details/reference" type="java.lang.String"
-              minCardinality="0" maxLength="50" readOnly="true"/>
+        <!-- source system reference. Not populated at present as not supported by IDEXX -->
+        <!-- node name="reference" displayName="Reference" path="/details/reference" type="java.lang.String"
+              minCardinality="0" maxLength="50" readOnly="true"/ -->
 
         <!-- source invoice item, if the return is in response to an invoice item -->
         <node name="sourceInvoiceItem" path="/details/sourceInvoiceItem"
@@ -66,6 +66,11 @@
               filter="participation.author" hidden="true"/>
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.clinician"/>
+        <node name="quantity" path="/quantity" type="java.math.BigDecimal" defaultValue="1.0" readOnly="true">
+            <assertion name="nonNegative">
+                <errorMessage>Quantity must be >= 0</errorMessage>
+            </assertion>
+        </node>
         <node name="credit" path="/credit" type="java.lang.Boolean" defaultValue="true()" readOnly="true"
               hidden="true"/>
     </archetype>
