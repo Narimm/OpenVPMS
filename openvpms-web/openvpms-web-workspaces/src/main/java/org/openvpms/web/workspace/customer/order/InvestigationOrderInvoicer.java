@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.customer.order;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -58,8 +59,7 @@ public class InvestigationOrderInvoicer extends OrderInvoicer {
         public InvestigationItem(FinancialAct orderItem, FinancialAct invoiceItem, FinancialAct invoice) {
             super(orderItem, invoiceItem, invoice);
             ActBean bean = new ActBean(orderItem);
-            this.investigation = bean.getNodeParticipantRef("sourceInvestigation");
-
+            this.investigation = bean.getReference("sourceInvestigation");
         }
 
         @Override
@@ -89,6 +89,11 @@ public class InvestigationOrderInvoicer extends OrderInvoicer {
                     investigation.setStatus(ActStatus.CANCELLED);
                 }
             }
+        }
+
+        @Override
+        protected String[] getProductArchetypes() {
+            return new String[]{ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE, ProductArchetypes.SERVICE};
         }
     }
 }

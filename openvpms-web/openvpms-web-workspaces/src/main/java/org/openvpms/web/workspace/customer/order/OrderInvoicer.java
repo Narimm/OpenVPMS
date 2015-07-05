@@ -415,6 +415,10 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
             return invoiceItem;
         }
 
+        public IMObjectReference getProduct() {
+            return product;
+        }
+
         public boolean isValid() {
             return validate(new DefaultValidator());
         }
@@ -423,6 +427,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
         public boolean validate(Validator validator) {
             return validateRequired(validator, "patient", patient)
                    && validateRequired(validator, "quantity", quantity)
+                   && validateRequired(validator, "product", product)
                    && validateProduct(validator);
         }
 
@@ -519,18 +524,26 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
             return OrderInvoicer.validateRequired(validator, properties, name, value);
         }
 
-        private boolean validateProduct(Validator validator) {
+        /**
+         * Ensures that the product is one of {@link #getProductArchetypes()}.
+         *
+         * @param validator the validator
+         * @return {@code true} if the product is valid
+         */
+        protected boolean validateProduct(Validator validator) {
             boolean valid = false;
-            if (validateRequired(validator, "product", product)) {
-                if (TypeHelper.isA(product, ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE)) {
-                    valid = true;
-                } else {
-                    Property property = properties.get("product");
-                    String msg = Messages.format(property.getDisplayName(), "imobject.invalidreference");
-                    validator.add(property, new ValidatorError(property, msg));
-                }
+            if (TypeHelper.isA(product, getProductArchetypes())) {
+                valid = true;
+            } else {
+                Property property = properties.get("product");
+                String msg = Messages.format("imobject.invalidreference", property.getDisplayName());
+                validator.add(property, new ValidatorError(property, msg));
             }
             return valid;
+        }
+
+        protected String[] getProductArchetypes() {
+            return new String[]{ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE};
         }
 
     }

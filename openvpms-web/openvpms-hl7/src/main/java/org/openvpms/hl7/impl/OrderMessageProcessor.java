@@ -43,6 +43,7 @@ import static org.openvpms.hl7.impl.OrderState.addNote;
  * @author Tim Anderson
  */
 abstract class OrderMessageProcessor {
+
     /**
      * The archetype service.
      */
@@ -114,7 +115,14 @@ abstract class OrderMessageProcessor {
     protected OrderState createState(PID pid, IMObjectReference location) throws HL7Exception {
         Party patient = null;
         Party customer = null;
-        long id = HL7MessageHelper.getId(pid.getPatientID());
+        long id;
+        if (pid.getPatientIdentifierListReps() != 0) {
+            // use PID-3
+            id = HL7MessageHelper.getId(pid.getPatientIdentifierList(0));
+        } else {
+            // use PID-2
+            id = HL7MessageHelper.getId(pid.getPatientID());
+        }
         if (id != -1) {
             IMObjectReference reference = new IMObjectReference(PatientArchetypes.PATIENT, id);
             patient = getPatient(reference);
