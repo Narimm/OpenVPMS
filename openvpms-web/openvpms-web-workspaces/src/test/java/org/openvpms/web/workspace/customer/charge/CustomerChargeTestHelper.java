@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -274,6 +275,22 @@ public class CustomerChargeTestHelper {
     }
 
     /**
+     * Creates a new <em>entity.HL7ServiceLaboratory</em>.
+     *
+     * @param location the practice location
+     * @return a new laboratory
+     */
+    public static Entity createLaboratory(Party location) {
+        Entity laboratory = (Entity) TestHelper.create(HL7Archetypes.LABORATORY);
+        laboratory.setName("ZLaboratory");
+        EntityBean bean = new EntityBean(laboratory);
+        bean.addNodeTarget("location", location);
+        bean.addNodeTarget("user", TestHelper.createUser());
+        TestHelper.save(laboratory);
+        return laboratory;
+    }
+
+    /**
      * Verifies an order matches that expected.
      *
      * @param order             the order
@@ -297,6 +314,28 @@ public class CustomerChargeTestHelper {
         assertEquals(date, order.getDate());
         assertEquals(clinician, order.getClinician());
         assertEquals(pharmacy, order.getPharmacy());
+    }
+
+    /**
+     * Verifies a laboratory order matches that expected.
+     *
+     * @param order             the order
+     * @param type              the expected type
+     * @param patient           the expected patient
+     * @param placerOrderNumber the expected placer order number
+     * @param date              the expected date
+     * @param clinician         the expected clinician
+     * @param laboratory        the expected laboratory
+     */
+    public static void checkOrder(TestLaboratoryOrderService.LabOrder order,
+                                  TestLaboratoryOrderService.LabOrder.Type type, Party patient, long placerOrderNumber,
+                                  Date date, User clinician, Entity laboratory) {
+        assertEquals(type, order.getType());
+        assertEquals(patient, order.getPatient());
+        assertEquals(placerOrderNumber, order.getPlacerOrderNumber());
+        assertEquals(0, DateRules.compareTo(date, order.getDate(), true));
+        assertEquals(clinician, order.getClinician());
+        assertEquals(laboratory, order.getLaboratory());
     }
 
     /**

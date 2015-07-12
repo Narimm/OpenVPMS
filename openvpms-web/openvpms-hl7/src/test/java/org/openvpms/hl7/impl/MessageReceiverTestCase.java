@@ -192,10 +192,11 @@ public class MessageReceiverTestCase extends AbstractRDSTest {
         MSH msh = (MSH) message.get("MSH");
         msh.getSendingApplication().getNamespaceID().setValue("Foobar");
 
-        Message response = receiver.processMessage(message, new HashMap<String, Object>());
-        assertTrue(response instanceof ACK);
-        ACK ack = (ACK) response;
-        assertEquals("AR", ack.getMSA().getAcknowledgmentCode().getValue());
-        assertEquals("Unrecognised application details", ack.getERR().getHL7ErrorCode().getOriginalText().getValue());
+        try {
+            receiver.processMessage(message, new HashMap<String, Object>());
+            fail("Expected receiver to throw exception");
+        } catch (HL7Exception expected) {
+            assertEquals("Unrecognised application details", expected.getMessage());
+        }
     }
 }
