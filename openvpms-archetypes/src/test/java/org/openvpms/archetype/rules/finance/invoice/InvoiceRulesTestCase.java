@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.invoice;
@@ -26,6 +26,7 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -371,7 +372,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         patient = TestHelper.createPatient();
         investigationTypes = new HashSet<Entity>();
         for (int i = 0; i < 4; ++i) {
-            investigationTypes.add(PatientTestHelper.createInvestigationType());
+            investigationTypes.add(ProductTestHelper.createInvestigationType());
         }
         template = createDocumentTemplate();
     }

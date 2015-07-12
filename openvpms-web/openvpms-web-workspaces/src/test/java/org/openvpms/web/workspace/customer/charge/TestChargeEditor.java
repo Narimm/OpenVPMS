@@ -22,7 +22,6 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.hl7.laboratory.Laboratories;
-import org.openvpms.hl7.laboratory.LaboratoryOrderService;
 import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.hl7.pharmacy.Pharmacies;
@@ -46,7 +45,12 @@ public class TestChargeEditor extends CustomerChargeActEditor {
     /**
      * The pharmacy order service.
      */
-    private TestPharmacyOrderService service;
+    private TestPharmacyOrderService pharmacyOrderService;
+
+    /**
+     * The laboratory order service.
+     */
+    private TestLaboratoryOrderService laboratoryOrderService;
 
     /**
      * Constructs a {@link TestChargeEditor}.
@@ -105,7 +109,16 @@ public class TestChargeEditor extends CustomerChargeActEditor {
      * @return the test pharmacy order service
      */
     public TestPharmacyOrderService getPharmacyOrderService() {
-        return service;
+        return pharmacyOrderService;
+    }
+
+    /**
+     * Returns the test laboratory order service.
+     *
+     * @return the test laboratory order service
+     */
+    public TestLaboratoryOrderService getLaboratoryOrderService() {
+        return laboratoryOrderService;
     }
 
     /**
@@ -135,10 +148,10 @@ public class TestChargeEditor extends CustomerChargeActEditor {
      */
     @Override
     protected OrderPlacer createOrderPlacer(Party customer, Party location, User user) {
-        service = new TestPharmacyOrderService();
-        OrderServices services = new OrderServices(service, ServiceHelper.getBean(Pharmacies.class),
-                                                   ServiceHelper.getBean(LaboratoryOrderService.class),
-                                                   ServiceHelper.getBean(Laboratories.class),
+        pharmacyOrderService = new TestPharmacyOrderService();
+        laboratoryOrderService = new TestLaboratoryOrderService();
+        OrderServices services = new OrderServices(pharmacyOrderService, ServiceHelper.getBean(Pharmacies.class),
+                                                   laboratoryOrderService, ServiceHelper.getBean(Laboratories.class),
                                                    ServiceHelper.getBean(PatientContextFactory.class),
                                                    ServiceHelper.getBean(PatientInformationService.class),
                                                    ServiceHelper.getBean(MedicalRecordRules.class));

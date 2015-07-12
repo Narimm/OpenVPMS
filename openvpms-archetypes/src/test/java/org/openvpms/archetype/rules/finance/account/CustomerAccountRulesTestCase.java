@@ -970,7 +970,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         invoice.setStatus(IN_PROGRESS);
         Act item1 = invoice1.get(1);
         Act medication = PatientTestHelper.createMedication(patient, getProduct());
-        Act investigation = PatientTestHelper.createInvestigation(patient, PatientTestHelper.createInvestigationType());
+        Act investigation = PatientTestHelper.createInvestigation(patient, ProductTestHelper.createInvestigationType());
         Act document = PatientTestHelper.createDocumentForm(patient);
         ActBean itemBean = new ActBean(item1);
         itemBean.addNodeRelationship("dispensing", medication);
