@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.investigation;
@@ -21,6 +21,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -102,9 +103,9 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
                                                          Messages.get("investigation.incomplete"));
 
     /**
-     * The incomplete investigation statuses.
+     * The 'complete' investigation statuses.
      */
-    private static final String[] INCOMPLETE_CODES = {"IN_PROGRESS", "RECEIVED", "PRELIMINARY", "FINAL"};
+    private static final String[] COMPLETE_CODES = {ActStatus.COMPLETED, ActStatus.CANCELLED};
 
 
     /**
@@ -170,7 +171,7 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     protected String[] getStatuses() {
         String[] statuses = super.getStatuses();
         if (statuses.length == 1 && statuses[0].equals(INCOMPLETE_STATUS.getCode())) {
-            statuses = INCOMPLETE_CODES;
+            statuses = COMPLETE_CODES;
         }
         return statuses;
     }
@@ -210,6 +211,16 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     }
 
     /**
+     * Determines if act statuses are being excluded.
+     *
+     * @return {@code true} to exclude acts with status in {@link #getStatuses()}; otherwise include them.
+     */
+    @Override
+    protected boolean excludeStatuses() {
+        return (getStatuses() == COMPLETE_CODES);
+    }
+
+    /**
      * Creates a new result set.
      *
      * @param sort the sort constraint. May be {@code null}
@@ -231,7 +242,7 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         Party location = (Party) this.location.getSelectedItem();
         return new InvestigationResultSet(getArchetypeConstraint(), getValue(), participants, location,
                                           this.location.getLocations(), getFrom(), getTo(), getStatuses(),
-                                          getMaxResults(), sort);
+                                          excludeStatuses(), getMaxResults(), sort);
     }
 
     /**
