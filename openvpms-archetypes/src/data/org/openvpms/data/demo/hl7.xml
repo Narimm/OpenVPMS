@@ -17,10 +17,16 @@
 <archetype>
     <data id="HL7S1" archetype="entity.HL7SenderMLLP" name="Pharmacy Order Connector"
           host="localhost" port="10001" sendingApplication="OpenVPMS" sendingFacility="Main Clinic"
-          receivingApplication="Pharmacy" receivingFacility="Main Clinic"/>
+          receivingApplication="Pharmacy" receivingFacility="Main Clinic">
+        <data collection="mapping" archetype="entityLink.HL7Mapping" source="id:HL7S1" target="id:HL7CM"/>
+    </data>
+
     <data id="HL7R1" archetype="entity.HL7ReceiverMLLP" name="Pharmacy Dispense Connector"
           port="10000" sendingApplication="Pharmacy" sendingFacility="Main Clinic"
-          receivingApplication="OpenVPMS" receivingFacility="Main Clinic"/>
+          receivingApplication="OpenVPMS" receivingFacility="Main Clinic">
+        <data collection="mapping" archetype="entityLink.HL7Mapping" source="id:HL7R1" target="id:HL7CM"/>
+    </data>
+
     <data id="HL7P1" archetype="entity.HL7ServicePharmacy" name="Main Clinic Pharmacy" active="false">
         <data collection="sender" archetype="entityLink.HL7ServiceSender" source="id:HL7P1" target="id:HL7S1"/>
         <data collection="receiver" archetype="entityLink.HL7ServiceReceiver" source="id:HL7P1" target="id:HL7R1"/>
@@ -28,6 +34,7 @@
         <data collection="user" archetype="entityLink.HL7ServiceUser" source="id:HL7P1" target="id:ADMIN"/>
     </data>
 
+    <data id="HL7CM" archetype="entity.HL7MappingCubex" name="Cubex Mapping"/>
     <data id="HL7IM" archetype="entity.HL7MappingIDEXX" name="IDEXX Mapping"/>
 
     <data id="HL7S2" archetype="entity.HL7SenderMLLP" name="Laboratory Order Connector"
@@ -38,7 +45,9 @@
 
     <data id="HL7R2" archetype="entity.HL7ReceiverMLLP" name="Laboratory Cancellation Connector"
           port="10002" sendingApplication="IVLS" sendingFacility="IDEXX"
-          receivingApplication="PIMS" receivingFacility="PIMS"/>
+          receivingApplication="PIMS" receivingFacility="PIMS">
+        <data collection="mapping" archetype="entityLink.HL7Mapping" source="id:HL7R2" target="id:HL7IM"/>
+    </data>
 
     <data id="HL7L1" archetype="entity.HL7ServiceLaboratory" name="Main Clinic Laboratory" active="true">
         <data collection="sender" archetype="entityLink.HL7ServiceSender" source="id:HL7L1" target="id:HL7S2"/>

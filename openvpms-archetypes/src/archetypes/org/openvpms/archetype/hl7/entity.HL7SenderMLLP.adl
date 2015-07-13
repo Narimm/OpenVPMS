@@ -39,6 +39,6 @@
         <node name="retryInterval" type="java.lang.Integer" path="/details/retryInterval" defaultValue="30"
               minCardinality="0"/>
         <node name="mapping" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
-              minCardinality="0" maxCardinality="1" filter="entityLink.HL7Mapping"/>
+              minCardinality="1" maxCardinality="1" filter="entityLink.HL7Mapping"/>
     </archetype>
 </archetypes>
