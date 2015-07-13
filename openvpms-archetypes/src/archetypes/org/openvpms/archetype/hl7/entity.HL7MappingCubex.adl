@@ -21,7 +21,8 @@
         <node name="name" type="java.lang.String" path="/name" minCardinality="1" defaultValue="'Cubex HL7 Mapping'">
             <assertion name="propercase"/>
         </node>
-        <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
+        <node name="description" type="java.lang.String" path="/description" minCardinality="0"
+              defaultValue="'Use this mapping for HL7 connections to Cubex'"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="sendUpdatePatient" displayName="Send Update Patient (ADT A08)" path="/details/sendUpdatePatient"
               type="java.lang.Boolean" defaultValue="true()" readOnly="true"/>

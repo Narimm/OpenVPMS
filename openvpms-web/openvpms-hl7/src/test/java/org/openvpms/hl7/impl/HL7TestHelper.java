@@ -28,11 +28,15 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.util.HL7Archetypes;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -108,6 +112,7 @@ public class HL7TestHelper {
      * @return a new receiver
      */
     public static MLLPReceiver createReceiver(int port, String receivingApplication, String receivingFacility) {
+        Entity mapping = getMapping(HL7Archetypes.CUBEX_MAPPING);
         Entity receiver = (Entity) TestHelper.create(HL7Archetypes.MLLP_RECEIVER);
         EntityBean bean = new EntityBean(receiver);
         bean.setValue("name", "ZTest MLLP Receiver");
@@ -116,8 +121,17 @@ public class HL7TestHelper {
         bean.setValue("sendingFacility", "Cubex");
         bean.setValue("receivingApplication", receivingApplication);
         bean.setValue("receivingFacility", receivingFacility);
+        bean.addNodeTarget("mapping", mapping);
         bean.save();
         return MLLPReceiver.create(receiver, ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    public static Entity getMapping(String shortName) {
+        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+        ArchetypeQuery query = new ArchetypeQuery(shortName);
+        query.add(Constraints.sort("id"));
+        Iterator<Entity> iter = new IMObjectQueryIterator<>(query);
+        return (iter.hasNext()) ? iter.next() : (Entity) service.create(shortName);
     }
 
     /**
@@ -167,7 +181,8 @@ public class HL7TestHelper {
 
     /**
      * Removes mapping relationships from a species.
-     * @param species      the species
+     *
+     * @param species the species
      */
     public static void removeRelationships(Lookup species) {
         IMObjectBean bean = new IMObjectBean(species);
