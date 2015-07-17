@@ -288,13 +288,14 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     }
 
     /**
-     * Verifies that if there is no clinician in the appointment, it defaults to that of the context.
+     * Verifies that if there is no clinician in the appointment, but there is one in the context, it is NOT used,
+     * as per OVPMS-1637.
      */
     @Test
-    public void testDefaultClinicianFromContext() {
+    public void testNoDefaultClinicianFromContext() {
         Act appointment = createAppointment(customer, patient, null);  // no clinician on appointment
         context.setClinician(clinician);
-        checkClinician(appointment, clinician, context);
+        checkClinician(appointment, null, context);
     }
 
     /**
