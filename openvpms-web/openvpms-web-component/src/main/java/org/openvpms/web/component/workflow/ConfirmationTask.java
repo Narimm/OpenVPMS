@@ -77,11 +77,12 @@ public class ConfirmationTask extends AbstractConfirmationTask {
     /**
      * Creates a new confirmation dialog.
      *
-     * @param help the help context
+     * @param context the task context
+     * @param help    the help context
      * @return a new confirmation dialog
      */
     @Override
-    protected ConfirmationDialog createConfirmationDialog(HelpContext help) {
+    protected ConfirmationDialog createConfirmationDialog(TaskContext context, HelpContext help) {
         String[] buttons = (displayNo) ? PopupDialog.YES_NO_CANCEL : PopupDialog.OK_CANCEL;
         return new ConfirmationDialog(title, message, buttons, help);
     }

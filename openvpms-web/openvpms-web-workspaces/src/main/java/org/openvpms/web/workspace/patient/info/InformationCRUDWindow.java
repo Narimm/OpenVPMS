@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.info;
@@ -19,7 +19,6 @@ package org.openvpms.web.workspace.patient.info;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.web.component.app.Context;
@@ -127,10 +126,9 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
         Context context = getContext();
         Party customer = context.getCustomer();
         Party patient = context.getPatient();
-        User clinician = context.getClinician();
         if (customer != null && patient != null) {
             WorkflowFactory factory = ServiceHelper.getBean(WorkflowFactory.class);
-            Workflow workflow = factory.createCheckInWorkflow(customer, patient, clinician, context, getHelpContext());
+            Workflow workflow = factory.createCheckInWorkflow(customer, patient, context, getHelpContext());
             workflow.start();
         } else {
             String title = Messages.get("patient.checkin.title");

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.clinician;
@@ -43,7 +43,16 @@ public class ClinicianSelectField extends SelectField {
      * Constructs a {@link ClinicianSelectField}.
      */
     public ClinicianSelectField() {
-        super(createModel());
+        this(true);
+    }
+
+    /**
+     * Constructs a {@link ClinicianSelectField}.
+     *
+     * @param all if {@code true}, add a localised "All"
+     */
+    public ClinicianSelectField(boolean all) {
+        super(createModel(all));
         if (getModel().size() != 0) {
             setSelectedIndex(0);
         }
@@ -54,9 +63,10 @@ public class ClinicianSelectField extends SelectField {
     /**
      * Creates a model to select a clinician.
      *
+     * @param all if {@code true}, add a localised "All"
      * @return a new model
      */
-    private static IMObjectListModel createModel() {
+    private static IMObjectListModel createModel(boolean all) {
         UserRules rules = ServiceHelper.getBean(UserRules.class);
         List<IMObject> clinicians = new ArrayList<IMObject>();
         ArchetypeQuery query = new ArchetypeQuery(UserArchetypes.USER, true, true);
@@ -68,6 +78,6 @@ public class ClinicianSelectField extends SelectField {
                 clinicians.add(user);
             }
         }
-        return new IMObjectListModel(clinicians, true, false);
+        return new IMObjectListModel(clinicians, all, false);
     }
 }
