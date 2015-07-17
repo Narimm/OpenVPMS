@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -27,6 +27,7 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.layout.TableLayoutData;
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -216,6 +217,12 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
                     }
                     TableHelper.mergeStyle(component, layout, true);
                 }
+                if (model.useStrikeThrough()) {
+                    String status = event.getString(ScheduleEvent.ACT_STATUS);
+                    if (ActStatus.COMPLETED.equals(status) || ActStatus.CANCELLED.equals(status)) {
+                        setStrikethroughFont(component, table);
+                    }
+                }
             } else {
                 colourCell(component, column, row, model);
             }
@@ -280,12 +287,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @param component the cell component
      */
     protected void cutCell(Table table, Component component) {
-        Font font = getFont(table);
-        if (font != null) {
-            int style = Font.BOLD | Font.LINE_THROUGH;
-            font = new Font(font.getTypeface(), style, font.getSize());
-            component.setFont(font);
-        }
+        setStrikethroughFont(component, table);
     }
 
     /**
@@ -378,6 +380,24 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
             }
         }
         return result;
+    }
+
+    /**
+     * Helper to return a font for a component, navigating up the component hierarchy if one isn't found on the
+     * specified component.
+     *
+     * @param component the component
+     * @return the font, or {@code null} if none is found
+     */
+    protected Font getFont(Component component) {
+        Font font = component.getFont();
+        if (font == null) {
+            font = (Font) component.getRenderProperty(Component.PROPERTY_FONT);
+            if (font == null && component.getParent() != null) {
+                font = getFont(component.getParent());
+            }
+        }
+        return font;
     }
 
     /**
@@ -488,21 +508,18 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     }
 
     /**
-     * Helper to return a font for a component, navigating up the component
-     * heirarchy if one isn't found on the specified component.
+     * Sets the font on a component to use strike-through.
      *
      * @param component the component
-     * @return the font, or {@code null} if none is found
+     * @param table     the parent table
      */
-    private Font getFont(Component component) {
-        Font font = component.getFont();
-        if (font == null) {
-            font = (Font) component.getRenderProperty(Component.PROPERTY_FONT);
-            if (font == null && component.getParent() != null) {
-                font = getFont(component.getParent());
-            }
+    private void setStrikethroughFont(Component component, Table table) {
+        Font font = getFont(table);
+        if (font != null) {
+            int style = Font.BOLD | Font.LINE_THROUGH;
+            font = new Font(font.getTypeface(), style, font.getSize());
+            component.setFont(font);
         }
-        return font;
     }
 
     /**
