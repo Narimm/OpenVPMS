@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -34,7 +34,6 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
-import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
@@ -132,6 +131,20 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
     }
 
     /**
+     * Creates an interactive printer to print the reminder report.
+     *
+     * @param title   the dialog title
+     * @param printer the printer to delegate to
+     * @param context the context
+     * @param help    the help context
+     * @return a new interactive printer
+     */
+    protected InteractivePrinter createPrinter(String title, IMPrinter<Act> printer, Context context,
+                                               HelpContext help) {
+        return new InteractivePrinter(title, printer, context, help);
+    }
+
+    /**
      * Invoked when the 'Print' button is pressed. Prints the selected reminder.
      */
     private void onPrint() {
@@ -199,7 +212,7 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
         String title = Messages.get("reporting.reminder.print.title");
         try {
             HelpContext help = getHelpContext().subtopic("report");
-            InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, getContext(), help);
+            InteractivePrinter iPrinter = createPrinter(title, printer, getContext(), help);
             iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {
