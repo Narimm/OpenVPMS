@@ -92,7 +92,7 @@ public abstract class MergeWorkflow<T extends IMObject> extends WorkflowImpl {
         addTask(select);
         addTask(new AbstractConfirmationTask(help) {
             @Override
-            protected ConfirmationDialog createConfirmationDialog(HelpContext help) {
+            protected ConfirmationDialog createConfirmationDialog(TaskContext context, HelpContext help) {
                 String title = Messages.format("workflow.merge.title", displayName);
                 return new ConfirmationDialog(title, getConfirmationMessage(), help);
             }

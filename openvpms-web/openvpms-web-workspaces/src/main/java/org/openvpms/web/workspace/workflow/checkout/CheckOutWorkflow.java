@@ -319,11 +319,12 @@ public class CheckOutWorkflow extends WorkflowImpl {
         /**
          * Creates a new confirmation dialog.
          *
+         * @param context
          * @param help the help context
          * @return a new confirmation dialog
          */
         @Override
-        protected ConfirmationDialog createConfirmationDialog(HelpContext help) {
+        protected ConfirmationDialog createConfirmationDialog(TaskContext context, HelpContext help) {
             return new UndispensedOrderDialog(checker.getUndispensedItems(), help);
         }
     }
