@@ -328,6 +328,11 @@
                 <version>2.1.7</version>
             </dependency>
             <dependency>
+                <groupId>com.thoughtworks.xstream</groupId>
+                <artifactId>xstream</artifactId>
+                <version>${xstream.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.jvnet.jax-ws-commons.spring</groupId>
                 <artifactId>jaxws-spring</artifactId>
                 <version>1.8</version>

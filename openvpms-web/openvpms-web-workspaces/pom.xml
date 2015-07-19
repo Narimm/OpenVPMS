@@ -88,7 +88,6 @@
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
             <artifactId>xstream</artifactId>
-            <version>${xstream.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-beanutils</groupId>
