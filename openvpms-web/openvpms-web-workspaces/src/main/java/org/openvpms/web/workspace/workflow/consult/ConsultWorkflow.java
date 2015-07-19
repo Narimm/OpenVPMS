@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.consult;
@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.WorkflowStatus;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -57,8 +58,13 @@ public class ConsultWorkflow extends WorkflowImpl {
     /**
      * The initial context.
      */
-    private TaskContext initial;
+    private final TaskContext initial;
 
+    /**
+     * Determines if the clinician should be used to populate the appointment/task, event, and invoice, if
+     * one isn't present.
+     */
+    private final boolean setClinician;
 
     /**
      * Constructs a {@code ConsultWorkflow} from an <em>act.customerAppointment</em> or <em>act.customerTask</em>.
@@ -68,32 +74,88 @@ public class ConsultWorkflow extends WorkflowImpl {
      * @param help     the help context
      */
     public ConsultWorkflow(Act act, final Context external, HelpContext help) {
+        this(act, false, external, help);
+    }
+
+    /**
+     * Constructs a {@code ConsultWorkflow} from an <em>act.customerAppointment</em> or <em>act.customerTask</em>.
+     *
+     * @param act          the act
+     * @param setClinician determines if the clinician should be used to populate the appointment/task,
+     *                     event, and invoice, if one isn't present
+     * @param external     the external context to access and update
+     * @param help         the help context
+     */
+    public ConsultWorkflow(Act act, boolean setClinician, final Context external, HelpContext help) {
         super(help);
+        this.setClinician = setClinician;
+        initial = createContext(act, external, help);
+        addTasks(act, external);
+    }
+
+    /**
+     * Starts the workflow.
+     */
+    @Override
+    public void start() {
+        super.start(initial);
+    }
+
+    /**
+     * Creates the context to run tasks with.
+     *
+     * @param act      the appointment/task
+     * @param external the external context
+     * @param help     the help context
+     * @return a new context
+     */
+    protected TaskContext createContext(Act act, Context external, HelpContext help) {
         if (external.getPractice() == null) {
             throw new IllegalStateException("Context has no practice");
         }
         ActBean bean = new ActBean(act);
-        Party customer = (Party) bean.getParticipant("participation.customer");
-        Party patient = (Party) bean.getParticipant("participation.patient");
-        User clinician = external.getClinician();
+        Party customer = (Party) bean.getNodeParticipant("customer");
+        Party patient = (Party) bean.getNodeParticipant("patient");
+        User clinician = (User) bean.getNodeParticipant("clinician");
+        if (clinician == null) {
+            clinician = external.getClinician();
+        }
 
-        initial = new DefaultTaskContext(help);
-        initial.setCustomer(customer);
-        initial.setPatient(patient);
-        initial.setClinician(clinician);
-        initial.setUser(external.getUser());
-        initial.setPractice(external.getPractice());
-        initial.setLocation(external.getLocation());
-        initial.addObject(act);
+        TaskContext context = new DefaultTaskContext(help);
+        context.setCustomer(customer);
+        context.setPatient(patient);
+        context.setClinician(clinician);
+        context.setUser(external.getUser());
+        context.setPractice(external.getPractice());
+        context.setLocation(external.getLocation());
+        context.addObject(act);
+        return context;
+    }
 
+    /**
+     * Adds the consult workflow tasks.
+     *
+     * @param act      the appointment/task
+     * @param external the external context to update at the end of the workflow
+     */
+    protected void addTasks(Act act, final Context external) {
         // update the act status to IN_PROGRESS if its not BILLED or COMPLETED
         addTask(createInProgressTask(act));
+        if (setClinician) {
+            addTask(new UpdateClinicianTask(act.getArchetypeId().getShortName()));
+        }
 
         addTask(new GetClinicalEventTask(act.getActivityStartTime()));
+        if (setClinician) {
+            addTask(new UpdateClinicianTask(PatientArchetypes.CLINICAL_EVENT));
+        }
 
         // get the latest invoice, possibly associated with the event. If none exists, creates a new one
         addTask(new GetConsultInvoiceTask());
         addTask(new ConditionalCreateTask(CustomerAccountArchetypes.INVOICE));
+        if (setClinician) {
+            addTask(new UpdateClinicianTask(CustomerAccountArchetypes.INVOICE));
+        }
 
         // edit the act.patientClinicalEvent in a local context, propagating the patient, customer and clinician on
         // completion
@@ -117,14 +179,6 @@ public class ConsultWorkflow extends WorkflowImpl {
     }
 
     /**
-     * Starts the workflow.
-     */
-    @Override
-    public void start() {
-        super.start(initial);
-    }
-
-    /**
      * Creates a new {@link EditVisitTask}.
      *
      * @return a new task to edit the visit
@@ -136,6 +190,9 @@ public class ConsultWorkflow extends WorkflowImpl {
     /**
      * Creates a task to update the appointment/task act status to {@code IN_PROGRESS} if it is not {@code IN_PROGRESS},
      * {@code BILLED} or {@code COMPLETED}.
+     * <p/>
+     * if  the act has no clinician, and {@code setClinician == true} and there is a clinician in the context, this
+     * will be used to update the act.
      * <p/>
      * For task acts, this also sets the "arrivalTime" node to the current time.
      *
@@ -169,6 +226,37 @@ public class ConsultWorkflow extends WorkflowImpl {
         billProps.add("status", WorkflowStatus.BILLED);
         UpdateIMObjectTask billTask = new UpdateIMObjectTask(shortName, billProps, true);
         return new ConditionalTask(invoiceCompleted, billTask);
+    }
+
+    private class UpdateClinicianTask extends UpdateIMObjectTask {
+
+        /**
+         * Constructs an {@link UpdateClinicianTask}.
+         *
+         * @param shortName the short name of the object to update
+         */
+        public UpdateClinicianTask(String shortName) {
+            super(shortName, new TaskProperties());
+        }
+
+        /**
+         * Populates an object.
+         *
+         * @param object     the object to populate
+         * @param properties the properties
+         * @param context    the task context
+         */
+        @Override
+        protected void populate(IMObject object, TaskProperties properties, TaskContext context) {
+            super.populate(object, properties, context);
+            User clinician = context.getClinician();
+            if (clinician != null) {
+                ActBean bean = new ActBean((Act) object);
+                if (bean.getNodeParticipantRef("clinician") == null) {
+                    bean.setNodeParticipant("clinician", clinician);
+                }
+            }
+        }
     }
 
 }

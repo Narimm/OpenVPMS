@@ -16,21 +16,14 @@
 
 package org.openvpms.web.workspace.reporting.report;
 
-import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.util.Variables;
-import org.openvpms.report.DocFormats;
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.mail.MailContext;
-import org.openvpms.web.component.mail.MailDialog;
-import org.openvpms.web.component.mail.MailEditor;
-import org.openvpms.web.component.print.InteractivePrinter;
+import org.openvpms.web.component.print.InteractiveExportPrinter;
 import org.openvpms.web.component.print.PrintDialog;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.servlet.DownloadServlet;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -44,7 +37,7 @@ import java.util.Set;
  *
  * @author Tim Anderson
  */
-public class InteractiveSQLReportPrinter extends InteractivePrinter {
+public class InteractiveSQLReportPrinter extends InteractiveExportPrinter {
 
     /**
      * Variables for macro expansion.
@@ -91,34 +84,19 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
             @Override
             protected void doMail() {
                 printer.setParameters(getValues());
-                try {
-                    Document document = getDocument(DocFormats.PDF_TYPE, true);
-                    mail(document);
-                } catch (OpenVPMSException exception) {
-                    failed(exception);
-                }
+                InteractiveSQLReportPrinter.this.mail(this);
             }
 
             @Override
             protected void doExport() {
                 printer.setParameters(getValues());
-                try {
-                    Document document = getDocument(DocFormats.CSV_TYPE, false);
-                    DownloadServlet.startDownload(document);
-                } catch (OpenVPMSException exception) {
-                    failed(exception);
-                }
+                export();
             }
 
             @Override
             protected void doExportMail() {
                 printer.setParameters(getValues());
-                try {
-                    Document document = getDocument(DocFormats.CSV_TYPE, true);
-                    mail(document);
-                } catch (OpenVPMSException exception) {
-                    failed(exception);
-                }
+                exportMail(this);
             }
         };
     }
@@ -140,20 +118,6 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
     @Override
     protected String getTitle() {
         return Messages.format("reporting.run.title", getDisplayName());
-    }
-
-    /**
-     * Mails a document.
-     *
-     * @param document the document to mail
-     */
-    private void mail(Document document) {
-        HelpContext help = getHelpContext().subtopic("email");
-        MailDialog dialog = new MailDialog(getMailContext(), new DefaultLayoutContext(getContext(), help));
-        MailEditor editor = dialog.getMailEditor();
-        editor.addAttachment(document);
-        editor.setSubject(getDisplayName());
-        dialog.show();
     }
 
     /**

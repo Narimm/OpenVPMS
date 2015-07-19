@@ -82,15 +82,14 @@ public class CheckInWorkflow extends WorkflowImpl {
     /**
      * Constructs a {@code CheckInWorkflow}.
      *
-     * @param customer  the customer
-     * @param patient   the patient
-     * @param clinician the user. May be {@code null}
-     * @param context   the external context to access and update
-     * @param help      the help context
+     * @param customer the customer
+     * @param patient  the patient
+     * @param context  the external context to access and update
+     * @param help     the help context
      */
-    public CheckInWorkflow(Party customer, Party patient, User clinician, Context context, HelpContext help) {
+    public CheckInWorkflow(Party customer, Party patient, Context context, HelpContext help) {
         super(help.topic(HELP_TOPIC));
-        initialise(null, customer, patient, clinician, null, null, context);
+        initialise(null, customer, patient, null, null, null, context);
     }
 
     /**
@@ -174,10 +173,6 @@ public class CheckInWorkflow extends WorkflowImpl {
         }
         initial.setCustomer(customer);
         initial.setPatient(patient);
-
-        if (clinician == null) {
-            clinician = context.getClinician();
-        }
         initial.setClinician(clinician);
         initial.setUser(external.getUser());
         initial.setWorkListDate(new Date());

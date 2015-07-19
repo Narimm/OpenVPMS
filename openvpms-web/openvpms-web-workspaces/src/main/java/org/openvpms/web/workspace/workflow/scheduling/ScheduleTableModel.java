@@ -1,15 +1,15 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
@@ -113,6 +113,15 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      */
     private final boolean displayNotes;
 
+    /**
+     * Determines if completed/cancelled appointments should be display with a strike-through.
+     */
+    private final boolean useStrikethrough;
+
+    /**
+     * 'Use strike-through' node name.
+     */
+    private static final String USE_STRIKETHROUGH = "useStrikethrough";
 
     /**
      * Constructs a {@code ScheduleTableModel}.
@@ -128,6 +137,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
         IMObjectBean bean = new IMObjectBean(grid.getScheduleView());
         expression = bean.getString("displayExpression");
         displayNotes = bean.getBoolean("displayNotes");
+        useStrikethrough = bean.hasNode(USE_STRIKETHROUGH) && bean.getBoolean(USE_STRIKETHROUGH);
         model = createColumnModel(grid);
     }
 
@@ -223,7 +233,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * Returns the clinician to display appointments for.
      *
      * @return the clinician, or {@code null} to display appointments
-     *         for all clinicians
+     * for all clinicians
      */
     public IMObjectReference getClinician() {
         return clinician;
@@ -332,6 +342,15 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      */
     public Highlight getHighlight() {
         return highlight;
+    }
+
+    /**
+     * Determines if completed/cancelled appointments should be display with strikethrough font.
+     *
+     * @return {@code true} if completed/cancelled appointments should be display with strikethrough font
+     */
+    public boolean useStrikeThrough() {
+        return useStrikethrough;
     }
 
     /**

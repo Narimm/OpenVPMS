@@ -96,7 +96,7 @@ public class InteractivePrinter implements Printer {
 
 
     /**
-     * Constructs an {@code InteractivePrinter}.
+     * Constructs an {@link InteractivePrinter}.
      *
      * @param printer the printer to delegate to
      * @param context the context
@@ -107,7 +107,7 @@ public class InteractivePrinter implements Printer {
     }
 
     /**
-     * Constructs an {@code InteractivePrinter}.
+     * Constructs an {@link InteractivePrinter}.
      *
      * @param printer the printer to delegate to
      * @param skip    if {@code true} display a 'skip' button that simply closes the dialog
@@ -119,7 +119,7 @@ public class InteractivePrinter implements Printer {
     }
 
     /**
-     * Constructs an {@code InteractivePrinter}.
+     * Constructs an {@link InteractivePrinter}.
      *
      * @param title   the dialog title. May be {@code null}
      * @param printer the printer to delegate to
@@ -131,7 +131,7 @@ public class InteractivePrinter implements Printer {
     }
 
     /**
-     * Constructs an {@code InteractivePrinter}.
+     * Constructs an {@link InteractivePrinter}.
      *
      * @param title   the dialog title. May be {@code null}
      * @param printer the printer to delegate to
@@ -179,7 +179,7 @@ public class InteractivePrinter implements Printer {
      * Returns the default printer for the object.
      *
      * @return the default printer for the object, or {@code null} if none
-     *         is defined
+     * is defined
      * @throws OpenVPMSException for any error
      */
     public String getDefaultPrinter() {
@@ -224,7 +224,7 @@ public class InteractivePrinter implements Printer {
      * Determines if printing should occur interactively.
      *
      * @return {@code true} if printing should occur interactively,
-     *         {@code false} if it can be performed non-interactively
+     * {@code false} if it can be performed non-interactively
      * @throws OpenVPMSException for any error
      */
     public boolean getInteractive() {
@@ -358,7 +358,7 @@ public class InteractivePrinter implements Printer {
 
             @Override
             protected void onMail() {
-                doMail(this);
+                mail(this);
             }
         };
     }
@@ -423,7 +423,7 @@ public class InteractivePrinter implements Printer {
         try {
             printer.print(printerName);
             printed(printerName);
-        } catch (OpenVPMSException exception) {
+        } catch (Throwable exception) {
             failed(exception);
         }
     }
@@ -435,7 +435,7 @@ public class InteractivePrinter implements Printer {
         try {
             Document document = getDocument();
             DownloadServlet.startDownload(document);
-        } catch (OpenVPMSException exception) {
+        } catch (Throwable exception) {
             ErrorHelper.show(exception);
         }
     }
@@ -447,28 +447,12 @@ public class InteractivePrinter implements Printer {
      *
      * @param parent the parent print dialog
      */
-    protected void doMail(final PrintDialog parent) {
+    protected void mail(final PrintDialog parent) {
         try {
             Document document = getDocument(DocFormats.PDF_TYPE, true);
-            final MailDialog dialog = new MailDialog(mailContext,
-                                                     new DefaultLayoutContext(context, help.subtopic("email")));
-            MailEditor editor = dialog.getMailEditor();
-            editor.setSubject(getDisplayName());
-            editor.addAttachment(document);
-            dialog.show();
-            dialog.addWindowPaneListener(new WindowPaneListener() {
-                @Override
-                public void onClose(WindowPaneEvent event) {
-                    if (MailDialog.SEND_ID.equals(dialog.getAction())) {
-                        // close the parent dialog. This will notify registered listeners of the action taken,
-                        // so need to propagate the action to the parent.
-                        parent.setDefaultCloseAction(MailDialog.SEND_ID);
-                        parent.close();
-                    }
-                }
-            });
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
+            mail(document, parent);
+        } catch (Throwable exception) {
+            failed(exception);
         }
     }
 
@@ -528,4 +512,33 @@ public class InteractivePrinter implements Printer {
             ErrorHelper.show(exception);
         }
     }
+
+    /**
+     * Mails a document as an attachment.
+     * <p/>
+     * If emailed, then the print dialog is closed.
+     *
+     * @param document the document to mail
+     * @param parent   the parent print dialog
+     */
+    protected void mail(Document document, final PrintDialog parent) {
+        final MailDialog dialog = new MailDialog(mailContext,
+                                                 new DefaultLayoutContext(context, help.subtopic("email")));
+        MailEditor editor = dialog.getMailEditor();
+        editor.setSubject(getDisplayName());
+        editor.addAttachment(document);
+        dialog.show();
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            @Override
+            public void onClose(WindowPaneEvent event) {
+                if (MailDialog.SEND_ID.equals(dialog.getAction())) {
+                    // close the parent dialog. This will notify registered listeners of the action taken,
+                    // so need to propagate the action to the parent.
+                    parent.setDefaultCloseAction(MailDialog.SEND_ID);
+                    parent.close();
+                }
+            }
+        });
+    }
+
 }

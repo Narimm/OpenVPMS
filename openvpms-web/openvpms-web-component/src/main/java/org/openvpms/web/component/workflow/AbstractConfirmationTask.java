@@ -68,7 +68,7 @@ public abstract class AbstractConfirmationTask extends EvalTask<Boolean> {
      * @param context the task context
      */
     public void start(TaskContext context) {
-        dialog = createConfirmationDialog(help);
+        dialog = createConfirmationDialog(context, help);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 String action = dialog.getAction();
@@ -88,9 +88,10 @@ public abstract class AbstractConfirmationTask extends EvalTask<Boolean> {
     /**
      * Creates a new confirmation dialog.
      *
-     * @param help the help context
+     * @param context the task context
+     * @param help    the help context
      * @return a new confirmation dialog
      */
-    protected abstract ConfirmationDialog createConfirmationDialog(HelpContext help);
+    protected abstract ConfirmationDialog createConfirmationDialog(TaskContext context, HelpContext help);
 
 }
