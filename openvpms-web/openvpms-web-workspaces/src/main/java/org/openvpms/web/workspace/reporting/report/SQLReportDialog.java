@@ -11,18 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.report;
 
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.im.doc.ReportParameters;
-import org.openvpms.web.component.print.PrintDialog;
-import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.component.print.ExportPrintDialog;
 import org.openvpms.web.echo.factory.GroupBoxFactory;
 import org.openvpms.web.echo.help.HelpContext;
 
@@ -35,26 +33,16 @@ import java.util.Set;
  *
  * @author Tim Anderson
  */
-public class SQLReportDialog extends PrintDialog {
+public class SQLReportDialog extends ExportPrintDialog {
 
     /**
      * The report parameters.
      */
     private final ReportParameters parameters;
 
-    /**
-     * The export button identifier.
-     */
-    private static final String EXPORT_ID = "export";
 
     /**
-     * The export mail button identifier.
-     */
-    private static final String EXPORT_MAIL_ID = "exportMail";
-
-
-    /**
-     * Constructs an {@code SQLReportDialog}.
+     * Constructs an {@link SQLReportDialog}.
      *
      * @param title      the dialog title
      * @param parameters the report parameter types
@@ -62,7 +50,7 @@ public class SQLReportDialog extends PrintDialog {
      * @param help       the help context
      */
     public SQLReportDialog(String title, Set<ParameterType> parameters, Variables variables, HelpContext help) {
-        super(title, true, true, false, help);
+        super(title, help);
         setStyleName("SQLReportDialog");
         this.parameters = new ReportParameters(parameters, variables, 2);
         getFocusGroup().add(0, this.parameters.getFocusGroup());
@@ -172,20 +160,7 @@ public class SQLReportDialog extends PrintDialog {
     @Override
     protected void doLayout(Component container) {
         super.doLayout(container);
-        addButton(EXPORT_ID, new ActionListener() {
-            public void onAction(ActionEvent e) {
-                onExport();
-            }
-        });
-
-        addButton(EXPORT_MAIL_ID, new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onExportMail();
-            }
-        });
-
-        Component component = GroupBoxFactory.create("reporting.run.parameters",
-                                                     parameters.getComponent());
+        Component component = GroupBoxFactory.create("reporting.run.parameters", parameters.getComponent());
         container.add(component);
     }
 
