@@ -169,7 +169,7 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
      */
     private ObjectTabPaneModel<TabComponent> createTabModel() {
         Column wrapper = ColumnFactory.create(Styles.INSET_Y);
-        ObjectTabPaneModel<TabComponent> result = new ObjectTabPaneModel<TabComponent>(wrapper);
+        ObjectTabPaneModel<TabComponent> result = new ObjectTabPaneModel<>(wrapper);
         addServiceBrowser(result);
         addConnectorBrowser(result);
         addMappingBrowser(result);
@@ -188,8 +188,8 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
         Browser<IMObject> browser = BrowserFactory.create(query, new DefaultLayoutContext(context, help));
         Archetypes<IMObject> archetypes = Archetypes.create(HL7Archetypes.SERVICES, IMObject.class,
                                                             Messages.get("admin.hl7.service.type"));
-        DefaultCRUDWindow<IMObject> window = new DefaultCRUDWindow<IMObject>(archetypes, context, help);
-        addTab("admin.hl7.services", model, new HL7BrowserCRUDWindow<IMObject>(browser, window));
+        DefaultCRUDWindow<IMObject> window = new DefaultCRUDWindow<>(archetypes, context, help);
+        addTab("admin.hl7.services", model, new HL7BrowserCRUDWindow<>(browser, window));
     }
 
     /**
@@ -205,7 +205,7 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
         Archetypes<Entity> archetypes = Archetypes.create(HL7Archetypes.CONNECTORS, Entity.class,
                                                           Messages.get("admin.hl7.connector.type"));
         HL7ConnectorCRUDWindow window = new HL7ConnectorCRUDWindow(archetypes, getContext(), help);
-        addTab("admin.hl7.connectors", model, new HL7BrowserCRUDWindow<Entity>(browser, window));
+        addTab("admin.hl7.connectors", model, new HL7BrowserCRUDWindow<>(browser, window));
     }
 
     /**
@@ -220,8 +220,8 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
         Browser<Entity> browser = BrowserFactory.create(query, new DefaultLayoutContext(context, help));
         Archetypes<Entity> archetypes = Archetypes.create(HL7Archetypes.MAPPINGS, Entity.class,
                                                           Messages.get("admin.hl7.mapping.type"));
-        DefaultCRUDWindow<Entity> window = new DefaultCRUDWindow<Entity>(archetypes, context, help);
-        addTab("admin.hl7.mappings", model, new HL7BrowserCRUDWindow<Entity>(browser, window));
+        HL7MappingCRUDWindow window = new HL7MappingCRUDWindow(archetypes, context, help);
+        addTab("admin.hl7.mappings", model, new HL7BrowserCRUDWindow<>(browser, window));
     }
 
     /**

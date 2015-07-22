@@ -11,12 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.csv.AbstractCSVReader;
+import org.openvpms.archetype.csv.CSVException;
+import org.openvpms.archetype.csv.CSVReaderException;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -265,13 +268,12 @@ public class ProductCSVReader extends AbstractCSVReader implements ProductReader
      *
      * @param line   the line
      * @param lineNo the line number
-     * @throws ProductIOException if the line has the incorrect no. of fields
+     * @throws CSVReaderException if the line has the incorrect no. of fields
      */
     @Override
     protected void checkFields(String[] line, int lineNo) {
         if (line.length < HEADER.length - 1) {
-            throw new ProductIOException(ProductIOException.ErrorCode.InvalidLine, lineNo, lineNo, HEADER.length,
-                                         line.length);
+            throw new CSVReaderException(CSVReaderException.ErrorCode.InvalidLine, lineNo, lineNo, HEADER.length, line.length);
         }
     }
 
@@ -298,7 +300,7 @@ public class ProductCSVReader extends AbstractCSVReader implements ProductReader
             name = getName(line, lineNo);
             printedName = getString(line, PRINTED_NAME, lineNo, false);
             tax = getDecimal(line, TAX_RATE, lineNo, true);
-        } catch (ProductIOException exception) {
+        } catch (CSVException exception) {
             ProductData invalid = new ProductData(id, name, printedName, tax, lineNo);
             invalid.setError(exception.getMessage(), exception.getLine());
             errors.add(invalid);
@@ -332,7 +334,7 @@ public class ProductCSVReader extends AbstractCSVReader implements ProductReader
                 current.addUnitPrice(unitId, unitPrice, unitCost, unitMaxDiscount, unitStartDate, unitEndDate,
                                      unitPriceGroups, lineNo);
             }
-        } catch (ProductIOException exception) {
+        } catch (CSVException exception) {
             current.setError(exception.getMessage(), exception.getLine());
             errors.add(current);
             current = null;

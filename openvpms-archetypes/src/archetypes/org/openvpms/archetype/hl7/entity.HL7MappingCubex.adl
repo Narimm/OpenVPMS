@@ -18,9 +18,7 @@
     <archetype name="entity.HL7MappingCubex.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.common.Entity" displayName="Cubex HL7 Mapping">
         <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
-        <node name="name" type="java.lang.String" path="/name" minCardinality="1" defaultValue="'Cubex HL7 Mapping'">
-            <assertion name="propercase"/>
-        </node>
+        <node name="name" type="java.lang.String" path="/name" minCardinality="1" defaultValue="'Cubex HL7 Mapping'"/>
         <node name="description" type="java.lang.String" path="/description" minCardinality="0"
               defaultValue="'Use this mapping for HL7 connections to Cubex'"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
@@ -43,7 +41,7 @@
         <node name="femaleDesexed" displayName="Sex: Female - desexed" path="/details/femaleDesexed"
               type="java.lang.String" minCardinality="1" defaultValue="'SF'" readOnly="true"/>
         <node name="unknownSex" displayName="Sex: Unknown" path="/details/unknownSex" type="java.lang.String"
-              minCardinality="0" readOnly="true"/>
+              minCardinality="1" defaultValue="'U'" readOnly="true"/>
         <node name="speciesMapping" path="/details/speciesMapping" type="java.lang.String" minCardinality="0"
               readOnly="true"/>
         <node name="unmappedSpecies" path="/details/unmappedSpecies" type="java.lang.String" minCardinality="0"
