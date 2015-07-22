@@ -14,10 +14,9 @@
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.archetype.rules.product.io;
+package org.openvpms.archetype.csv;
 
 import org.apache.commons.resources.Messages;
-import org.openvpms.archetype.csv.CSVException;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 /**
@@ -25,28 +24,18 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  *
  * @author Tim Anderson
  */
-public class ProductIOException extends CSVException {
+public class CSVReaderException extends CSVException {
 
     /**
      * An enumeration of error codes.
      */
     public enum ErrorCode {
-        InvalidName,
-        ProductNotFound,
+        RequiredValue,
+        InvalidValue,
+        InvalidLine,
         UnrecognisedDocument,
-        ReadError,
-        UnitPriceOverlap,
-        LinkedPrice,
-        NoFromDate,
-        PriceNotFound,
-        CannotUpdateLinkedPrice,
-        UnrecognisedDateFormat,
-        CannotCloseExistingPrice,
-        FromDateGreaterThanToDate,
-        DuplicateFixedPrice,
-        DuplicateUnitPrice,
-        StockLocationNotFound,
-        UnexpectedValue
+        InvalidColumn,
+        ReadError
     }
 
     /**
@@ -57,29 +46,29 @@ public class ProductIOException extends CSVException {
     /**
      * The error messages.
      */
-    private static Messages MESSAGES = Messages.getMessages("org.openvpms.archetype.rules.product.io."
+    private static Messages MESSAGES = Messages.getMessages("org.openvpms.archetype.csv."
                                                             + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
-     * Constructs an {@link ProductIOException}.
+     * Constructs an {@link CSVReaderException}.
      *
      * @param code the error code
      * @param line the line the error occurred on
      * @param args the arguments to format the error message
      */
-    public ProductIOException(ErrorCode code, int line, Object... args) {
+    public CSVReaderException(ErrorCode code, int line, Object... args) {
         super(MESSAGES.getMessage(code.toString(), args), line);
         this.errorCode = code;
     }
 
     /**
-     * Constructs an {@link ProductIOException}.
+     * Constructs an {@link CSVReaderException}.
      *
      * @param code  the error code
      * @param line  the line the error occurred on
      * @param cause the cause
      */
-    public ProductIOException(ErrorCode code, int line, Throwable cause) {
+    public CSVReaderException(ErrorCode code, int line, Throwable cause) {
         super(cause, line);
         this.errorCode = code;
     }

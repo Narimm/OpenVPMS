@@ -43,6 +43,10 @@
               filter="lookupRelationship.speciesBreed"/>
         <node name="mapping" path="/sourceLookupRelationships" type="java.util.HashSet"
               baseName="sourceLookupRelationship" minCardinality="0" maxCardinality="*"
-              filter="lookupRelationship.speciesMapping*"/>
+              filter="lookupRelationship.speciesMapping*">
+            <assertion name="uniqueRelationshipType">
+                <errorMessage>There are multiple mappings of the same type</errorMessage>
+            </assertion>
+        </node>
     </archetype>
 </archetypes>

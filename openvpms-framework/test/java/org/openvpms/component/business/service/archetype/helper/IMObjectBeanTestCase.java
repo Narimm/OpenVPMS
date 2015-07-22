@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -22,8 +22,10 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -488,7 +490,8 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
      * {@link IMObjectBean#getNodeSourceObjects(String, Predicate, boolean)},
      * {@link IMObjectBean#getNodeSourceObjects(String, Predicate, boolean, Class)}
      * {@link IMObjectBean#getNodeSourceObjects(String, Class, Class)} and
-     * {@link IMObjectBean#getNodeSourceObjects(String, Class, Class, boolean)} methods.
+     * {@link IMObjectBean#getNodeSourceObjects(String, Class, Class, boolean)} and
+     * {@link IMObjectBean#hasNodeSource(String, IMObject)} methods.
      */
     @Test
     public void testGetNodeSourceObjects() {
@@ -507,12 +510,18 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         IMObjectBean bean = new IMObjectBean(patient);
         checkEquals(bean.getNodeSourceObjects("customers"), customer1, customer2, customer3);
         checkEquals(bean.getNodeSourceObjects("customers", Party.class), customer1, customer2, customer3);
+        assertTrue(bean.hasNodeSource("customers", customer1));
+        assertTrue(bean.hasNodeSource("customers", customer2));
+        assertTrue(bean.hasNodeSource("customers", customer3));
 
         // set the relationship times to the past verify it is filtered out
         rel1.setActiveStartTime(start1);
         rel1.setActiveEndTime(end1);
         checkEquals(bean.getNodeSourceObjects("customers", now), customer2, customer3);
         checkEquals(bean.getNodeSourceObjects("customers", now, Party.class), customer2, customer3);
+        assertFalse(bean.hasNodeSource("customers", customer1));
+        assertTrue(bean.hasNodeSource("customers", customer2));
+        assertTrue(bean.hasNodeSource("customers", customer3));
 
         customer3.setActive(false);
         save(customer3);
@@ -537,6 +546,7 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         expected2.put(rel3, customer3);
         assertEquals(expected1, bean.getNodeSourceObjects("customers", Party.class, EntityRelationship.class, true));
         assertEquals(expected2, bean.getNodeSourceObjects("customers", Party.class, EntityRelationship.class, false));
+
     }
 
     /**
@@ -746,6 +756,35 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
 
         assertNull(custBean.getNodeTargetObjectRef("patients"));
         assertNull(patBean.getNodeSourceObjectRef("customers"));
+    }
+
+    /**
+     * Tests the {@link EntityBean#addNodeTarget(String, Entity)} method.
+     */
+    @Test
+    public void testAddNodeTarget() {
+        Party customer = createCustomer();
+        Party location = createLocation();
+        Party patient = createPatient();
+
+        IMObjectBean bean = new IMObjectBean(customer);
+        IMObjectRelationship rel1 = bean.addNodeTarget("location", location);
+        assertTrue(rel1 instanceof EntityLink);
+        bean.save();
+
+        IMObjectRelationship rel2 = bean.addNodeTarget("owns", patient);
+        assertTrue(rel2 instanceof EntityRelationship);
+        patient.addEntityRelationship((EntityRelationship) rel2);
+        save(customer, patient);
+
+        customer = get(customer);
+        assertNotNull(customer);
+        bean = new IMObjectBean(customer);
+
+        assertEquals(location, bean.getNodeTargetObject("location"));
+        assertEquals(location.getObjectReference(), bean.getNodeTargetObjectRef("location"));
+        assertEquals(patient, bean.getNodeTargetObject("owns"));
+        assertEquals(patient.getObjectReference(), bean.getNodeTargetObjectRef("owns"));
     }
 
     /**

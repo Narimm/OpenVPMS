@@ -387,6 +387,7 @@
                 <prop key="org.quartz.plugin.jobHistory.class">org.quartz.plugins.history.LoggingJobHistoryPlugin</prop>
             </props>
         </property>
+        <property name="waitForJobsToCompleteOnShutdown" value="true"/>
     </bean>
 
 

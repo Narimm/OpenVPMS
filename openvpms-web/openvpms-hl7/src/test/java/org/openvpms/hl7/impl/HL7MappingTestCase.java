@@ -70,7 +70,7 @@ public class HL7MappingTestCase extends ArchetypeServiceTest {
         assertEquals("NM", mapping.getMaleDesexed());
         assertEquals("F", mapping.getFemale());
         assertEquals("SF", mapping.getFemaleDesexed());
-        assertNull(mapping.getUnknownSex());
+        assertEquals("U", mapping.getUnknownSex());
         assertNull(mapping.getSpeciesLookup());
         assertNull(mapping.getUnmappedSpecies());
         assertFalse(mapping.includeMillis());
