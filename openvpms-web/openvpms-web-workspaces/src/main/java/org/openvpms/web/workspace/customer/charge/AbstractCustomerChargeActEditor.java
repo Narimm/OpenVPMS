@@ -299,13 +299,19 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     /**
      * Flags an invoice item as being ordered via a pharmacy/laboratory.
      * <p/>
-     * This suppresses it from being ordered again when the invoice is saved.
+     * This suppresses it from being ordered again when the invoice is saved and updates the display.
      *
      * @param item the invoice item
      */
     public void setOrdered(Act item) {
         if (orderPlacer != null) {
             orderPlacer.initialise(item);
+        }
+        if (getItems().hasEditor(item)) {
+            IMObjectEditor editor = getItems().getEditor(item);
+            if (editor instanceof CustomerChargeActItemEditor) {
+                ((CustomerChargeActItemEditor) editor).ordered();
+            }
         }
     }
 

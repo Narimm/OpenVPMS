@@ -592,7 +592,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Notifies the editor that the product has been ordered via a pharmacy.
      * <p/>
      * This refreshes the display to make the patient and product read-only, and display the received and returned
-     * nodes.
+     * nodes if required.
      */
     public void ordered() {
         updateLayout(getProduct());
@@ -1215,7 +1215,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     private Map<Entity, EntityRelationship> getReminderTypes(Product product) {
         Map<EntityRelationship, Entity> map = reminderRules.getReminderTypes(product);
-        Map<Entity, EntityRelationship> result = new TreeMap<Entity, EntityRelationship>(IMObjectSorter.getNameComparator(true));
+        Map<Entity, EntityRelationship> result = new TreeMap<>(IMObjectSorter.getNameComparator(true));
         for (Map.Entry<EntityRelationship, Entity> entry : map.entrySet()) {
             result.put(entry.getValue(), entry.getKey());
         }
@@ -1288,7 +1288,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         property.removeModifiableListener(quantityListener);
         try {
             if (dispensing != null) {
-                Set<Act> acts = new HashSet<Act>(dispensing.getActs());
+                Set<Act> acts = new HashSet<>(dispensing.getActs());
                 PatientMedicationActEditor current = (PatientMedicationActEditor) dispensing.getCurrentEditor();
                 if (current != null) {
                     acts.add((Act) current.getObject());
@@ -1440,7 +1440,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     @SuppressWarnings("unchecked")
     private <T extends IMObjectEditor> Set<T> getActEditors(ActRelationshipCollectionEditor editors) {
-        Set<T> result = new HashSet<T>();
+        Set<T> result = new HashSet<>();
         if (editors != null) {
             for (Act act : editors.getCurrentActs()) {
                 T editor = (T) editors.getEditor(act);
@@ -1520,7 +1520,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         if (TypeHelper.isA(product, TEMPLATE)) {
             result = TEMPLATE_NODES;
         } else {
-            List<String> filter = new ArrayList<String>();
+            List<String> filter = new ArrayList<>();
             filter.add(DISPENSING);
             filter.add(INVESTIGATIONS);
             filter.add(REMINDERS);
@@ -1546,7 +1546,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 }
                 result.simple(PRINT).order(PRINT, TAX);
             }
-            if (isOrdered()) {
+            if (isOrdered() && hasReceivedOrReturnedQuantity()) {
                 if (result == null) {
                     result = new ArchetypeNodes();
                 }
@@ -1554,6 +1554,18 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             }
         }
         return result;
+    }
+
+    /**
+     * Determines if there is a received or returned quantity set.
+     *
+     * @return {@code true} if there is a received or returned quantity set
+     */
+    private boolean hasReceivedOrReturnedQuantity() {
+        Property received = getProperty(RECEIVED_QUANTITY);
+        Property returned = getProperty(RETURNED_QUANTITY);
+        return (received != null && received.getBigDecimal() != null)
+               || (returned != null && returned.getBigDecimal() != null);
     }
 
     /**
