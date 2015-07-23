@@ -140,6 +140,23 @@ public class LookupMappingImporterTestCase extends AbstractLookupMappingTest {
     }
 
     /**
+     * Verifies that two mappings of the same type for the one source cannot be loaded.
+     *
+     * @throws IOException for any error
+     */
+    @Test
+    public void testDoubleMapping() throws IOException {
+        String[][] data = {{SPECIES, "SPECIES_1", "species1", IDEXX_SPECIES, "SPECIES_A", "speciesA"},
+                           {SPECIES, "SPECIES_1", "species1", IDEXX_SPECIES, "SPECIES_B", "speciesB"}};
+        LookupMappings mappings = load(data);
+        assertEquals(1, mappings.getMappings().size());
+        List<LookupMapping> errors = mappings.getErrors();
+        assertEquals(1, errors.size());
+        checkMapping(errors.get(0), SPECIES, "SPECIES_1", "species1", IDEXX_SPECIES, "SPECIES_B", "speciesB", 3,
+                     "Failed to validate Mapping of Species: There are multiple mappings of the same type");
+    }
+
+    /**
      * Verifies a lookup mapping has been established for CSV data.
      *
      * @param data the CSV data
@@ -190,10 +207,12 @@ public class LookupMappingImporterTestCase extends AbstractLookupMappingTest {
             toSave.add(lookup);
             IArchetypeService service = getArchetypeService();
             for (LookupRelationship relationship : new ArrayList<>(lookup.getSourceLookupRelationships())) {
-                Lookup target = (Lookup) service.get(relationship.getTarget());
                 lookup.removeLookupRelationship(relationship);
-                target.removeLookupRelationship(relationship);
-                toSave.add(target);
+                Lookup target = (Lookup) service.get(relationship.getTarget());
+                if (target != null) {
+                    target.removeLookupRelationship(relationship);
+                    toSave.add(target);
+                }
             }
             for (LookupRelationship relationship : new ArrayList<>(lookup.getTargetLookupRelationships())) {
                 Lookup source = (Lookup) service.get(relationship.getSource());
