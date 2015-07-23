@@ -509,6 +509,8 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
 
     /**
      * Sets the font on a component to use strike-through.
+     * <p/>
+     * This sets the font on each nested component, to avoid font inheritance issues on Chrome.
      *
      * @param component the component
      * @param table     the parent table
@@ -518,8 +520,21 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
         if (font != null) {
             int style = Font.BOLD | Font.LINE_THROUGH;
             font = new Font(font.getTypeface(), style, font.getSize());
-            component.setFont(font);
+            setFont(component, font);
         }
+    }
+
+    /**
+     * Recursively sets the font on a component and its children.
+     *
+     * @param component the component
+     * @param font      the font
+     */
+    private void setFont(Component component, Font font) {
+        for (Component child : component.getComponents()) {
+            setFont(child, font);
+        }
+        component.setFont(font);
     }
 
     /**
