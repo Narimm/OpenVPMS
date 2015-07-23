@@ -17,6 +17,8 @@
 package org.openvpms.archetype.rules.patient;
 
 import org.apache.commons.collections.ComparatorUtils;
+import org.apache.commons.collections.Predicate;
+import org.apache.commons.collections.functors.AndPredicate;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.MergeException;
@@ -31,6 +33,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.IsA;
+import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -220,7 +223,9 @@ public class PatientRules {
      */
     public IMObjectReference getOwnerReference(Party patient) {
         EntityBean bean = factory.createEntityBean(patient);
-        EntityRelationship er = bean.getNodeRelationship("customers", new IsA(PatientArchetypes.PATIENT_OWNER));
+        Predicate predicate = AndPredicate.getInstance(new IsA(PatientArchetypes.PATIENT_OWNER),
+                                                       IsActiveRelationship.isActiveNow());
+        EntityRelationship er = bean.getNodeRelationship("customers", predicate);
         return (er != null && er.isActive()) ? er.getSource() : null;
     }
 
