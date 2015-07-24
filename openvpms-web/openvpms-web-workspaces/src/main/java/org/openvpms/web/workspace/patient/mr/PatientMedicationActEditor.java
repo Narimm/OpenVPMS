@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -89,6 +89,11 @@ public class PatientMedicationActEditor extends PatientActEditor {
      * Listener for batch update events.
      */
     private final ModifiableListener batchListener;
+
+    /**
+     * Batch node name.
+     */
+    private static final String BATCH = "batch";
 
     /**
      * Constructs a {@link PatientMedicationActEditor}.
@@ -235,10 +240,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
      * @param batch the batch. May be {@code null}
      */
     public void setBatch(Entity batch) {
-        BatchParticipationEditor batchEditor = getBatchEditor();
-        if (batchEditor != null) {
-            batchEditor.setEntity(batch);
-        }
+        setParticipant(BATCH, batch);
     }
 
     /**
@@ -247,8 +249,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
      * @return the batch. May be {@code null}
      */
     public Entity getBatch() {
-        BatchParticipationEditor editor = getBatchEditor();
-        return editor != null ? editor.getEntity() : null;
+        return (Entity) getParticipant(BATCH);
     }
 
     /**
@@ -374,7 +375,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
      * @return the product batch participation, or {@code null} if none exists
      */
     protected BatchParticipationEditor getBatchEditor() {
-        ParticipationEditor<Entity> editor = getParticipationEditor("batch", false);
+        ParticipationEditor<Entity> editor = getParticipationEditor(BATCH, false);
         return (BatchParticipationEditor) editor;
     }
 
