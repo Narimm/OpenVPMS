@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -62,7 +62,7 @@ public class ADTMessageFactory extends AbstractMessageFactory {
      * @param config  the message population configuration
      * @return a new message
      */
-    public Message createAdmit(PatientContext context, MessageConfig config) {
+    public Message createAdmit(PatientContext context, HL7Mapping config) {
         return createADT_A01(context, "A01", config);
     }
 
@@ -73,7 +73,7 @@ public class ADTMessageFactory extends AbstractMessageFactory {
      * @param config  the message population configuration
      * @return a new message
      */
-    public Message createCancelAdmit(PatientContext context, MessageConfig config) {
+    public Message createCancelAdmit(PatientContext context, HL7Mapping config) {
         ADT_A09 adt = new ADT_A09(getModelClassFactory());
         try {
             init(adt, "ADT", "A11");
@@ -98,7 +98,7 @@ public class ADTMessageFactory extends AbstractMessageFactory {
      * @param config  the message population configuration
      * @return a new message
      */
-    public Message createDischarge(PatientContext context, MessageConfig config) {
+    public Message createDischarge(PatientContext context, HL7Mapping config) {
         ADT_A03 adt = new ADT_A03(getModelClassFactory());
         try {
             init(adt, "ADT", "A03");
@@ -124,7 +124,7 @@ public class ADTMessageFactory extends AbstractMessageFactory {
      * @param config  the message population configuration
      * @return a new message
      */
-    public Message createUpdate(PatientContext context, MessageConfig config) {
+    public Message createUpdate(PatientContext context, HL7Mapping config) {
         return createADT_A01(context, "A08", config);
     }
 
@@ -136,7 +136,7 @@ public class ADTMessageFactory extends AbstractMessageFactory {
      * @param config       the message population configuration
      * @return a new message
      */
-    private Message createADT_A01(PatientContext context, String triggerEvent, MessageConfig config) {
+    private Message createADT_A01(PatientContext context, String triggerEvent, HL7Mapping config) {
         ADT_A01 adt = new ADT_A01(getModelClassFactory());
         try {
             init(adt, "ADT", triggerEvent);
@@ -166,7 +166,7 @@ public class ADTMessageFactory extends AbstractMessageFactory {
      * @throws DataTypeException for any data error
      */
     private void populateWeight(OBX obx, PatientContext context, Message message, BigDecimal weight,
-                                MessageConfig config) throws DataTypeException {
+                                HL7Mapping config) throws DataTypeException {
         obx.getSetIDOBX().setValue("1");
         obx.getValueType().setValue("NM");
         CE identifier = obx.getObservationIdentifier();

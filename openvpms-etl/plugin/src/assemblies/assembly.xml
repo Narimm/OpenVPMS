@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <!-- http://maven.apache.org/plugins/maven-assembly-plugin/assembly.html -->
 <assembly
         xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
@@ -18,11 +34,9 @@
             <scope>runtime</scope>
             <excludes>
                 <exclude>commons-collections:commons-collections</exclude>
-                <exclude>commons-dbcp:commons-dbcp</exclude>
                 <exclude>commons-io:commons-io</exclude>
                 <exclude>commons-lang:commons-lang</exclude>
                 <exclude>commons-logging:commons-logging</exclude>
-                <exclude>commons-pool:commons-pool</exclude>
                 <exclude>com.ibm.icu:icu4j</exclude>
                 <exclude>drools:drools-all-jdk5</exclude>
                 <exclude>drools:jsr94</exclude>
@@ -45,8 +59,6 @@
                 <exclude>stax:stax-api</exclude>
                 <exclude>taglibs:standard</exclude>
                 <exclude>xalan:xalan</exclude>
-                <exclude>xml-apis:xml-apis</exclude>
-                <exclude>xerces:xmlParserAPIs</exclude>
                 <exclude>xom:xom</exclude>
             </excludes>
         </dependencySet>

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -21,14 +21,23 @@ import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.v25.message.RDE_O11;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.util.HL7Archetypes;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * HL7 test helper.
@@ -38,12 +47,48 @@ import java.io.IOException;
 public class HL7TestHelper {
 
     /**
-     * Creates a MLLP sender.
+     * Creates a mapping for Cubex.
      *
-     * @param port the port
+     * @return a new <em>entity.HL7MappingCubex</em>
+     */
+    public static Entity createCubexMapping() {
+        Entity entity = (Entity) TestHelper.create(HL7Archetypes.CUBEX_MAPPING);
+        TestHelper.save(entity);
+        return entity;
+    }
+
+    /**
+     * Creates a mapping for IDEXX.
+     *
+     * @return a new <em>entity.HL7MappingIDEXX</em>
+     */
+    public static Entity createIDEXXMapping() {
+        Entity entity = (Entity) TestHelper.create(HL7Archetypes.IDEXX_MAPPING);
+        TestHelper.save(entity);
+        return entity;
+    }
+
+    /**
+     * Creates an MLLP sender.
+     *
+     * @param port    the port
+     * @param mapping the mapping. May be {@code null}
      * @return a new sender
      */
-    public static MLLPSender createSender(int port) {
+    public static MLLPSender createSender(int port, Entity mapping) {
+        return createSender(port, mapping, "Cubex", "Cubex");
+    }
+
+    /**
+     * Creates an MLLP sender.
+     *
+     * @param port              the port
+     * @param mapping           the mapping. May be {@code null}
+     * @param receivingApp      the receiving application
+     * @param receivingFacility the receiving facility
+     * @return a new sender
+     */
+    public static MLLPSender createSender(int port, Entity mapping, String receivingApp, String receivingFacility) {
         Entity sender = (Entity) TestHelper.create(HL7Archetypes.MLLP_SENDER);
         EntityBean bean = new EntityBean(sender);
         bean.setValue("name", "ZTest MLLP Sender");
@@ -51,10 +96,11 @@ public class HL7TestHelper {
         bean.setValue("port", port);
         bean.setValue("sendingApplication", "VPMS");
         bean.setValue("sendingFacility", "Main Clinic");
-        bean.setValue("receivingApplication", "Cubex");
-        bean.setValue("receivingFacility", "Cubex");
-        bean.setValue("includeMillis", false);
-        bean.setValue("includeTimeZone", true);
+        bean.setValue("receivingApplication", receivingApp);
+        bean.setValue("receivingFacility", receivingFacility);
+        if (mapping != null) {
+            bean.addNodeTarget("mapping", mapping);
+        }
         bean.save();
         return MLLPSender.create(sender, ArchetypeServiceHelper.getArchetypeService());
     }
@@ -65,19 +111,27 @@ public class HL7TestHelper {
      * @param port the port
      * @return a new receiver
      */
-    public static MLLPReceiver createReceiver(int port) {
+    public static MLLPReceiver createReceiver(int port, String receivingApplication, String receivingFacility) {
+        Entity mapping = getMapping(HL7Archetypes.CUBEX_MAPPING);
         Entity receiver = (Entity) TestHelper.create(HL7Archetypes.MLLP_RECEIVER);
         EntityBean bean = new EntityBean(receiver);
         bean.setValue("name", "ZTest MLLP Receiver");
         bean.setValue("port", port);
         bean.setValue("sendingApplication", "Cubex");
         bean.setValue("sendingFacility", "Cubex");
-        bean.setValue("receivingApplication", "OpenVPMS");
-        bean.setValue("receivingFacility", "Main Clinic");
-        bean.setValue("includeMillis", false);
-        bean.setValue("includeTimeZone", true);
+        bean.setValue("receivingApplication", receivingApplication);
+        bean.setValue("receivingFacility", receivingFacility);
+        bean.addNodeTarget("mapping", mapping);
         bean.save();
         return MLLPReceiver.create(receiver, ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    public static Entity getMapping(String shortName) {
+        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+        ArchetypeQuery query = new ArchetypeQuery(shortName);
+        query.add(Constraints.sort("id"));
+        Iterator<Entity> iter = new IMObjectQueryIterator<>(query);
+        return (iter.hasNext()) ? iter.next() : (Entity) service.create(shortName);
     }
 
     /**
@@ -125,4 +179,40 @@ public class HL7TestHelper {
         return message;
     }
 
+    /**
+     * Removes mapping relationships from a species.
+     *
+     * @param species the species
+     */
+    public static void removeRelationships(Lookup species) {
+        IMObjectBean bean = new IMObjectBean(species);
+        List<LookupRelationship> mappings = bean.getValues("mapping", LookupRelationship.class);
+        List<IMObject> toSave = new ArrayList<IMObject>();
+        for (LookupRelationship mapping : mappings) {
+            species.removeLookupRelationship(mapping);
+            Lookup target = (Lookup) ArchetypeServiceHelper.getArchetypeService().get(mapping.getTarget());
+            target.removeLookupRelationship(mapping);
+            toSave.add(target);
+        }
+        if (!toSave.isEmpty()) {
+            toSave.add(species);
+            TestHelper.save(toSave);
+        }
+    }
+
+    /**
+     * Adds a mapping relationship.
+     *
+     * @param species      the species
+     * @param idexxSpecies the species to map to
+     */
+    public static void addMapping(Lookup species, Lookup idexxSpecies) {
+        LookupRelationship relationship
+                = (LookupRelationship) TestHelper.create("lookupRelationship.speciesMappingIDEXX");
+        relationship.setSource(species.getObjectReference());
+        relationship.setTarget(idexxSpecies.getObjectReference());
+        species.addLookupRelationship(relationship);
+        idexxSpecies.addLookupRelationship(relationship);
+        TestHelper.save(species, idexxSpecies);
+    }
 }

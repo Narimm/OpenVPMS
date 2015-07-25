@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -20,7 +20,6 @@ import ca.uhn.hl7v2.AcknowledgmentCode;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.model.v25.message.ACK;
 import ca.uhn.hl7v2.model.v25.segment.MSA;
 import ca.uhn.hl7v2.model.v25.segment.MSH;
 import org.apache.commons.logging.Log;
@@ -157,17 +156,16 @@ class MessageQueue implements Statistics {
         }
         long waitUntil = -1;
         DocumentAct result = currentAct;
-        if (response instanceof ACK) {
-            ACK ack = (ACK) response;
-            MSA msa = ack.getMSA();
+        MSA msa = HL7MessageHelper.getMSA(response);
+        if (msa != null) {
             String ackCode = msa.getAcknowledgmentCode().getValue();
             if (AcknowledgmentCode.AA.toString().equals(ackCode)) {
                 processed();
             } else if (AcknowledgmentCode.AE.toString().equals(ackCode)) {
-                handleError(ack, HL7MessageStatuses.PENDING);
+                handleError(response, HL7MessageStatuses.PENDING);
                 waitUntil = System.currentTimeMillis() + 30 * 1000;
             } else {
-                handleError(ack, HL7MessageStatuses.ERROR);
+                handleError(response, HL7MessageStatuses.ERROR);
             }
         } else {
             unsupportedResponse(response);
@@ -313,7 +311,7 @@ class MessageQueue implements Statistics {
      * @param ack    the message acknowledgment
      * @param status the new act status
      */
-    private void handleError(ACK ack, String status) {
+    private void handleError(Message ack, String status) {
         String error = HL7MessageHelper.getErrorMessage(ack);
         error(status, error);
     }

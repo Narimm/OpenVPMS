@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -23,7 +23,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.hl7.io.Connector;
 
 /**
@@ -79,11 +79,13 @@ class MLLPSender extends Connector {
      * @param receivingApplication the receiving application
      * @param receivingFacility    the receiving facility
      * @param reference            the connection reference
+     * @param mapping              the mapping configuration
      */
     public MLLPSender(String host, int port, String sendingApplication, String sendingFacility,
-                      String receivingApplication, String receivingFacility, IMObjectReference reference) {
+                      String receivingApplication, String receivingFacility, IMObjectReference reference,
+                      HL7Mapping mapping) {
         this(host, port, sendingApplication, sendingFacility, receivingApplication, receivingFacility,
-             DEFAULT_RESPONSE_TIMEOUT, DEFAULT_RETRY_INTERVAL, true, true, false, reference);
+             DEFAULT_RESPONSE_TIMEOUT, DEFAULT_RETRY_INTERVAL, false, reference, mapping);
     }
 
     /**
@@ -97,16 +99,15 @@ class MLLPSender extends Connector {
      * @param receivingFacility    the receiving facility
      * @param responseTimeout      the maximum time to wait for a response, in seconds
      * @param retryInterval        the interval to wait before resending a message after failure, in seconds
-     * @param includeMillis        if {@code true} include milliseconds in time fields
-     * @param includeTimeZone      if {@code true} include the timezone in date/time fields
      * @param suspended            if {@code true} indicates that messages should be queued but not sent
      * @param reference            the connection reference
+     * @param mapping              the mapping configuration
      */
     public MLLPSender(String host, int port, String sendingApplication, String sendingFacility,
                       String receivingApplication, String receivingFacility, int responseTimeout, int retryInterval,
-                      boolean includeMillis, boolean includeTimeZone, boolean suspended, IMObjectReference reference) {
-        super(sendingApplication, sendingFacility, receivingApplication, receivingFacility, includeMillis,
-              includeTimeZone, reference);
+                      boolean suspended, IMObjectReference reference, HL7Mapping mapping) {
+        super(sendingApplication, sendingFacility, receivingApplication, receivingFacility,
+              reference, mapping);
         this.host = host;
         this.port = port;
         this.responseTimeout = responseTimeout;
@@ -122,15 +123,15 @@ class MLLPSender extends Connector {
      * @return a new {@link MLLPSender}
      */
     public static MLLPSender create(Entity object, IArchetypeService service) {
-        EntityBean bean = new EntityBean(object, service);
+        IMObjectBean bean = new IMObjectBean(object, service);
+        HL7Mapping mapping = getMapping(bean, service);
         return new MLLPSender(bean.getString("host"), bean.getInt("port"), bean.getString("sendingApplication"),
                               bean.getString("sendingFacility"), bean.getString("receivingApplication"),
                               bean.getString("receivingFacility"),
                               bean.getInt("responseTimeout", DEFAULT_RESPONSE_TIMEOUT),
                               bean.getInt("retryInterval", DEFAULT_RETRY_INTERVAL),
-                              bean.getBoolean("includeMillis"),
-                              bean.getBoolean("includeTimeZone"), bean.getBoolean("suspended"),
-                              object.getObjectReference());
+                              bean.getBoolean("suspended"),
+                              object.getObjectReference(), mapping);
     }
 
     /**

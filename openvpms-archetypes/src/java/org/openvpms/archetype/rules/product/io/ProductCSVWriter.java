@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -41,7 +41,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.openvpms.archetype.rules.product.io.AbstractCSVReader.MIME_TYPE;
+import static org.openvpms.archetype.csv.AbstractCSVReader.MIME_TYPE;
 
 /**
  * Writes product data as a CSV document.

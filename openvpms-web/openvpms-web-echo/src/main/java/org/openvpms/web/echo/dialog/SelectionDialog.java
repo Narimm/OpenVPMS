@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.dialog;
@@ -26,7 +26,6 @@ import nextapp.echo2.app.list.ListModel;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.focus.FocusCommand;
 import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.list.KeyListBox;
@@ -39,7 +38,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class SelectionDialog extends PopupDialog {
+public class SelectionDialog extends ModalDialog {
 
     /**
      * The list.
@@ -57,18 +56,13 @@ public class SelectionDialog extends PopupDialog {
     private int index = -1;
 
     /**
-     * The focus, prior to the dialog being shown.
-     */
-    private FocusCommand focus;
-
-    /**
      * Dialog style name.
      */
     private static final String STYLE = "SelectionDialog";
 
 
     /**
-     * Constructs a {@code SelectionDialog}.
+     * Constructs a {@link SelectionDialog}.
      *
      * @param title   the dialog title
      * @param message the message to display
@@ -79,7 +73,7 @@ public class SelectionDialog extends PopupDialog {
     }
 
     /**
-     * Constructs a {@code SelectionDialog}.
+     * Constructs a {@link SelectionDialog}.
      *
      * @param title   the dialog title
      * @param message the message to display
@@ -90,7 +84,7 @@ public class SelectionDialog extends PopupDialog {
     }
 
     /**
-     * Constructs a {@code SelectionDialog}.
+     * Constructs a {@link SelectionDialog}.
      *
      * @param title   the dialog title
      * @param message the message to display
@@ -101,7 +95,7 @@ public class SelectionDialog extends PopupDialog {
     }
 
     /**
-     * Constructs a {@code SelectionDialog}.
+     * Constructs a {@link SelectionDialog}.
      *
      * @param title   the dialog title
      * @param message the message to display
@@ -110,9 +104,6 @@ public class SelectionDialog extends PopupDialog {
      */
     public SelectionDialog(String title, String message, ListBox list, HelpContext help) {
         super(title, STYLE, OK_CANCEL, help);
-        setModal(true);
-        focus = new FocusCommand();
-
         this.list = list;
         if (list.getSelectedValue() == null && list.getModel().size() != 0) {
             list.getSelectionModel().setSelectedIndex(0, true);
@@ -147,17 +138,6 @@ public class SelectionDialog extends PopupDialog {
      */
     public int getSelectedIndex() {
         return index;
-    }
-
-    /**
-     * Processes a user request to close the window
-     * <p/>
-     * This restores the previous focus
-     */
-    @Override
-    public void userClose() {
-        focus.restore();
-        super.userClose();
     }
 
     /**

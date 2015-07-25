@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -46,29 +46,12 @@ class MLLPReceiver extends Connector {
      * @param receivingApplication the receiving application
      * @param receivingFacility    the receiving facility
      * @param reference            the connector reference
+     * @param mapping              the mapping configuration
      */
     public MLLPReceiver(int port, String sendingApplication, String sendingFacility,
-                        String receivingApplication, String receivingFacility, IMObjectReference reference) {
-        this(port, sendingApplication, sendingFacility, receivingApplication, receivingFacility, true, true, reference);
-    }
-
-    /**
-     * Constructs a {@link MLLPReceiver}.
-     *
-     * @param port                 the port to listen in
-     * @param sendingApplication   the sending application
-     * @param sendingFacility      the sending facility
-     * @param receivingApplication the receiving application
-     * @param receivingFacility    the receiving facility
-     * @param includeMillis        if {@code true} include milliseconds in time fields
-     * @param includeTimeZone      if {@code true} include the timezone in date/time fields
-     * @param reference            the connector reference
-     */
-    public MLLPReceiver(int port, String sendingApplication, String sendingFacility,
-                        String receivingApplication, String receivingFacility, boolean includeMillis,
-                        boolean includeTimeZone, IMObjectReference reference) {
-        super(sendingApplication, sendingFacility, receivingApplication, receivingFacility, includeMillis,
-              includeTimeZone, reference);
+                        String receivingApplication, String receivingFacility,
+                        IMObjectReference reference, HL7Mapping mapping) {
+        super(sendingApplication, sendingFacility, receivingApplication, receivingFacility, reference, mapping);
         this.port = port;
     }
 
@@ -81,10 +64,10 @@ class MLLPReceiver extends Connector {
      */
     public static MLLPReceiver create(Entity object, IArchetypeService service) {
         IMObjectBean bean = new IMObjectBean(object, service);
+        HL7Mapping mapping = getMapping(bean, service);
         return new MLLPReceiver(bean.getInt("port"), bean.getString("sendingApplication"),
                                 bean.getString("sendingFacility"), bean.getString("receivingApplication"),
-                                bean.getString("receivingFacility"), bean.getBoolean("includeMillis"),
-                                bean.getBoolean("includeTimeZone"), object.getObjectReference());
+                                bean.getString("receivingFacility"), object.getObjectReference(), mapping);
     }
 
     /**

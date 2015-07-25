@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.hl7;
@@ -29,6 +29,8 @@ import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.im.table.IMTableModel;
+import org.openvpms.web.echo.button.CheckBox;
+import org.openvpms.web.echo.factory.CheckBoxFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
@@ -72,7 +74,9 @@ public class HL7ConnectorBrowser extends IMObjectTableBrowser<Entity> {
 
         private MessageDispatcher dispatcher;
 
-        private static final int QUEUED = NEXT_INDEX;
+        private static final int RUNNING = NEXT_INDEX;
+
+        private static final int QUEUED = RUNNING + 1;
 
         private static final int ERRORS = QUEUED + 1;
 
@@ -91,6 +95,7 @@ public class HL7ConnectorBrowser extends IMObjectTableBrowser<Entity> {
             boolean showActive = query.getActive() == BaseArchetypeConstraint.State.BOTH;
             DefaultTableColumnModel model
                     = (DefaultTableColumnModel) createTableColumnModel(true, showArchetype, showActive);
+            model.addColumn(createTableColumn(RUNNING, "admin.hl7.running"));
             model.addColumn(createTableColumn(QUEUED, "admin.hl7.queued"));
             model.addColumn(createTableColumn(LAST_PROCESSED, "admin.hl7.lastprocessed"));
             model.addColumn(createTableColumn(ERRORS, "admin.hl7.errors"));
@@ -98,6 +103,14 @@ public class HL7ConnectorBrowser extends IMObjectTableBrowser<Entity> {
             model.addColumn(createTableColumn(LAST_ERROR_MSG, "admin.hl7.lasterrormessage"));
             setTableColumnModel(model);
             dispatcher = ServiceHelper.getBean(MessageDispatcher.class);
+        }
+
+        /**
+         * Invoked after the table has been rendered.
+         */
+        @Override
+        public void postRender() {
+            stats = null;
         }
 
         /**
@@ -111,6 +124,8 @@ public class HL7ConnectorBrowser extends IMObjectTableBrowser<Entity> {
         @Override
         protected Object getValue(Entity object, TableColumn column, int row) {
             switch (column.getModelIndex()) {
+                case RUNNING:
+                    return getRunning(object, row);
                 case QUEUED:
                     return getQueued(object, row);
                 case ERRORS:
@@ -123,6 +138,13 @@ public class HL7ConnectorBrowser extends IMObjectTableBrowser<Entity> {
                     return getLastErrorMessage(object, row);
             }
             return super.getValue(object, column, row);
+        }
+
+        private Object getRunning(Entity object, int row) {
+            Statistics stats = getStats(object, row);
+            CheckBox box = CheckBoxFactory.create(stats != null);
+            box.setEnabled(false);
+            return box;
         }
 
         private Component getQueued(Entity object, int row) {

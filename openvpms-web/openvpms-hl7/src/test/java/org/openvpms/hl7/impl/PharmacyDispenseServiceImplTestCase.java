@@ -42,8 +42,7 @@ import org.openvpms.hl7.pharmacy.Pharmacies;
 import org.openvpms.hl7.util.HL7Archetypes;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -66,47 +65,21 @@ public class PharmacyDispenseServiceImplTestCase extends AbstractRDSTest {
         Product product = createProduct();
         RDS_O13 rds = createRDS(product);
         User user = TestHelper.createUser();
-        final Entity pharmacy = (Entity) create(HL7Archetypes.PHARMACY);
+        Entity pharmacy = (Entity) create(HL7Archetypes.PHARMACY);
         EntityBean bean = new EntityBean(pharmacy);
         bean.addNodeTarget("user", user);
         Party location = getContext().getLocation();
         bean.addNodeTarget("location", location);
 
-        Pharmacies pharmacies = new Pharmacies() {
-            public List<Entity> getPharmacies() {
-                return Arrays.asList(pharmacy);
-            }
-
-            @Override
-            public Entity getPharmacy(IMObjectReference reference) {
-                return pharmacy;
-            }
-
-            @Override
-            public Entity getPharmacy(Entity group, IMObjectReference location) {
-                return null;
-            }
-
-            @Override
-            public Connector getOrderConnection(Entity pharmacy) {
-                return null;
-            }
-
-            @Override
-            public void addListener(Listener listener) {
-            }
-
-            @Override
-            public void removeListener(Listener listener) {
-            }
-        };
+        Pharmacies pharmacies = createPharmacies(pharmacy);
         MessageDispatcher dispatcher = Mockito.mock(MessageDispatcher.class);
         Connectors connectors = Mockito.mock(Connectors.class);
         PatientRules rules = new PatientRules(null, getArchetypeService(), getLookupService());
         UserRules userRules = new UserRules(getArchetypeService());
         final Connector receiver = new MLLPReceiver(10001, "Cubex", "Cubex", "VPMS", "VPMS",
-                                                    new IMObjectReference(HL7Archetypes.MLLP_RECEIVER, -1));
-        final List<Act> order = new ArrayList<Act>();
+                                                    new IMObjectReference(HL7Archetypes.MLLP_RECEIVER, -1),
+                                                    new HL7Mapping());
+        final List<Act> order = new ArrayList<>();
         PharmacyDispenseServiceImpl service = new PharmacyDispenseServiceImpl(pharmacies, dispatcher, connectors,
                                                                               getArchetypeService(), rules, userRules) {
 
@@ -118,13 +91,13 @@ public class PharmacyDispenseServiceImplTestCase extends AbstractRDSTest {
             }
 
             protected List<Connector> getConnectors() {
-                return Arrays.asList(receiver);
+                return Collections.singletonList(receiver);
             }
 
         };
         assertTrue(service.canProcess(rds));
         log("RDS: ", rds);
-        Message response = service.processMessage(rds, new HashMap<String, Object>());
+        Message response = service.processMessage(rds, receiver.getReference());
         assertTrue(response instanceof ACK);
         ACK ack = (ACK) response;
         assertEquals("AA", ack.getMSA().getAcknowledgmentCode().getValue());
@@ -136,29 +109,40 @@ public class PharmacyDispenseServiceImplTestCase extends AbstractRDSTest {
     }
 
     /**
-     * Verifies that messages are rejected if the message header has incorrect sending or receiving application or
-     * facility details
+     * Creates a {@link Pharmacies} instance that returns the supplied pharmacy.
      *
-     * @throws Exception for any error
+     * @param pharmacy the pharmacy
+     * @return a new {@link Pharmacies}
      */
-    @Test
-    public void testUnknownSender() throws Exception {
-        Product product = createProduct();
-        RDS_O13 rds = createRDS(product);
+    protected Pharmacies createPharmacies(final Entity pharmacy) {
+        return new Pharmacies() {
+            public List<Entity> getServices() {
+                return Collections.singletonList(pharmacy);
+            }
 
-        Pharmacies pharmacies = Mockito.mock(Pharmacies.class);
-        MessageDispatcher dispatcher = Mockito.mock(MessageDispatcher.class);
-        Connectors connectors = Mockito.mock(Connectors.class);
-        PatientRules rules = new PatientRules(null, getArchetypeService(), getLookupService());
-        UserRules userRules = new UserRules(getArchetypeService());
-        PharmacyDispenseServiceImpl service = new PharmacyDispenseServiceImpl(pharmacies, dispatcher, connectors,
-                                                                              getArchetypeService(), rules, userRules);
-        assertTrue(service.canProcess(rds));
-        Message response = service.processMessage(rds, new HashMap<String, Object>());
-        assertTrue(response instanceof ACK);
-        ACK ack = (ACK) response;
-        assertEquals("AR", ack.getMSA().getAcknowledgmentCode().getValue());
-        assertEquals("Unrecognised application details", ack.getERR().getHL7ErrorCode().getOriginalText().getValue());
+            @Override
+            public Entity getService(IMObjectReference reference) {
+                return pharmacy;
+            }
+
+            @Override
+            public Entity getService(Entity group, IMObjectReference location) {
+                return null;
+            }
+
+            @Override
+            public Connector getSender(Entity pharmacy) {
+                return null;
+            }
+
+            @Override
+            public void addListener(Listener listener) {
+            }
+
+            @Override
+            public void removeListener(Listener listener) {
+            }
+        };
     }
 
 }

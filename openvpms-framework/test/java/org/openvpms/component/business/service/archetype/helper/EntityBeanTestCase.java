@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -945,19 +945,6 @@ public class EntityBeanTestCase extends AbstractIMObjectBeanTestCase {
      */
     private EntityBean createPerson() {
         return new EntityBean(createCustomer());
-    }
-
-    /**
-     * Creates a practice location.
-     *
-     * @return a new location
-     */
-    private Party createLocation() {
-        Party party = (Party) create("party.organisationLocation");
-        IMObjectBean bean = new IMObjectBean(party);
-        bean.setValue("name", "ZLocation" + System.currentTimeMillis());
-        bean.save();
-        return party;
     }
 
     /**

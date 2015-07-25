@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.stock.io;
 
+import org.openvpms.archetype.csv.AbstractCSVReader;
+import org.openvpms.archetype.csv.CSVException;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
-import org.openvpms.archetype.rules.product.io.AbstractCSVReader;
-import org.openvpms.archetype.rules.product.io.ProductIOException;
 import org.openvpms.component.business.domain.im.document.Document;
 
 import java.math.BigDecimal;
@@ -128,7 +128,7 @@ public class StockCSVReader extends AbstractCSVReader {
             newQuantity = getDecimal(line, NEW_QUANTITY, lineNo, true);
             data.add(new StockData(stockLocationId, stockLocationName, productId, productName, sellingUnits,
                                    quantity, newQuantity, lineNo));
-        } catch (ProductIOException exception) {
+        } catch (CSVException exception) {
             StockData invalid = new StockData(stockLocationId, stockLocationName, productId, productName, sellingUnits,
                                               quantity, newQuantity, lineNo);
             invalid.setError(exception.getMessage());

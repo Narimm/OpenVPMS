@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
 
 import org.apache.commons.resources.Messages;
+import org.openvpms.archetype.csv.CSVException;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 /**
@@ -24,19 +25,15 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  *
  * @author Tim Anderson
  */
-public class ProductIOException extends OpenVPMSException {
+public class ProductIOException extends CSVException {
 
     /**
      * An enumeration of error codes.
      */
     public enum ErrorCode {
-        RequiredValue,
-        InvalidValue,
-        InvalidLine,
         InvalidName,
         ProductNotFound,
         UnrecognisedDocument,
-        InvalidColumn,
         ReadError,
         UnitPriceOverlap,
         LinkedPrice,
@@ -58,11 +55,6 @@ public class ProductIOException extends OpenVPMSException {
     private final ErrorCode errorCode;
 
     /**
-     * The line the error occurred on.
-     */
-    private final int line;
-
-    /**
      * The error messages.
      */
     private static Messages MESSAGES = Messages.getMessages("org.openvpms.archetype.rules.product.io."
@@ -76,9 +68,8 @@ public class ProductIOException extends OpenVPMSException {
      * @param args the arguments to format the error message
      */
     public ProductIOException(ErrorCode code, int line, Object... args) {
-        super(MESSAGES.getMessage(code.toString(), args));
+        super(MESSAGES.getMessage(code.toString(), args), line);
         this.errorCode = code;
-        this.line = line;
     }
 
     /**
@@ -89,9 +80,8 @@ public class ProductIOException extends OpenVPMSException {
      * @param cause the cause
      */
     public ProductIOException(ErrorCode code, int line, Throwable cause) {
-        super(cause);
+        super(cause, line);
         this.errorCode = code;
-        this.line = line;
     }
 
     /**
@@ -101,15 +91,6 @@ public class ProductIOException extends OpenVPMSException {
      */
     public ErrorCode getErrorCode() {
         return errorCode;
-    }
-
-    /**
-     * Returns the line the error occurred on.
-     *
-     * @return the line number
-     */
-    public int getLine() {
-        return line;
     }
 
 }

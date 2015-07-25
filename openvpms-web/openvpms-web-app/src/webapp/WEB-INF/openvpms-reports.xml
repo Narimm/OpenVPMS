@@ -54,7 +54,7 @@
         <constructor-arg ref="functionsFactory"/>
     </bean>
 
-    <bean id="reportingDataSource" class="org.apache.commons.dbcp.BasicDataSource" autowire-candidate="false">
+    <bean id="reportingDataSource" class="org.apache.commons.dbcp2.BasicDataSource" autowire-candidate="false">
         <property name="driverClassName" value="${hibernate.connection.driver_class}"/>
         <property name="url" value="${hibernate.reportingconnection.url}"/>
         <property name="username" value="${hibernate.reportingconnection.username}"/>

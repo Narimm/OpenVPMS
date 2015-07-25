@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
 
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -89,16 +90,11 @@ public class AbstractPatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> im
     @Override
     protected void onCreated(final Act object) {
         if (TypeHelper.isA(object, PatientArchetypes.PATIENT_MEDICATION)) {
-            ConfirmationDialog dialog = new ConfirmationDialog(Messages.get("patient.record.create.medication.title"),
-                                                               Messages.get("patient.record.create.medication.message"),
-                                                               getHelpContext().subtopic("newMedication"));
-            dialog.addWindowPaneListener(new PopupDialogListener() {
-                @Override
-                public void onOK() {
-                    AbstractPatientHistoryCRUDWindow.super.onCreated(object);
-                }
-            });
-            dialog.show();
+            confirmCreation(object, "patient.record.create.medication.title",
+                            "patient.record.create.medication.message", "newMedication");
+        } else if (TypeHelper.isA(object, InvestigationArchetypes.PATIENT_INVESTIGATION)) {
+            confirmCreation(object, "patient.record.create.investigation.title",
+                            "patient.record.create.investigation.message", "newInvestigation");
         } else {
             super.onCreated(object);
         }
@@ -156,4 +152,25 @@ public class AbstractPatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> im
         System.arraycopy(shortNames, 0, result, targets.length, shortNames.length);
         return result;
     }
+
+    /**
+     * Confirms creation of an object.
+     *
+     * @param object  the object
+     * @param title   the dialog title key
+     * @param message the dialog message key
+     * @param help    the help key
+     */
+    private void confirmCreation(final Act object, String title, String message, String help) {
+        ConfirmationDialog dialog = new ConfirmationDialog(Messages.get(title), Messages.get(message),
+                                                           getHelpContext().subtopic(help));
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                AbstractPatientHistoryCRUDWindow.super.onCreated(object);
+            }
+        });
+        dialog.show();
+    }
+
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.dialog;
@@ -65,7 +65,7 @@ import static org.openvpms.web.echo.style.Styles.INSET;
  *
  * @author Tim Anderson
  */
-public class HelpDialog extends PopupDialog {
+public class HelpDialog extends ModalDialog {
 
     /**
      * Features to pass to window.open().
@@ -108,7 +108,6 @@ public class HelpDialog extends PopupDialog {
     protected HelpDialog(String topic, final String topicURL, IArchetypeService service, String features) {
         super(Messages.get("helpdialog.title"), "HelpDialog", OK);
         this.features = features;
-        setModal(true);
 
         Component component = null;
 

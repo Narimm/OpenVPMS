@@ -53,17 +53,12 @@ import java.util.Map;
 import static java.math.BigDecimal.ZERO;
 
 /**
- * This class is responsible for creating charges from <em>act.customerOrderPharmacy</em> and
- * <em>act.customerReturnPharmacy</em> acts.
- * <p/>
- * NOTE that there is limited support to charge orders and returns when the existing invoice has been POSTED.
- * <p/>
- * In this case, the difference will be charged. This does not take into account multiple orders/returns for the one
- * POSTED invoice.
+ * This class is responsible for creating charges from <em>act.customerOrder*</em> and <em>act.customerReturn*</em>
+ * acts.
  *
  * @author Tim Anderson
  */
-public class PharmacyOrderCharger extends AbstractInvoicer {
+public abstract class OrderInvoicer extends AbstractInvoicer {
 
     /**
      * The order/return.
@@ -88,7 +83,7 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
     /**
      * The related invoices.
      */
-    private final Map<IMObjectReference, FinancialAct> invoices = new HashMap<IMObjectReference, FinancialAct>();
+    private final Map<IMObjectReference, FinancialAct> invoices = new HashMap<>();
 
     /**
      * The properties, used for validation.
@@ -97,16 +92,16 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
 
 
     /**
-     * Constructs a {@link PharmacyOrderCharger}.
+     * Constructs a {@link OrderInvoicer}.
      *
      * @param act   the order/return act
      * @param rules the order rules
      */
-    public PharmacyOrderCharger(FinancialAct act, OrderRules rules) {
+    public OrderInvoicer(FinancialAct act, OrderRules rules) {
         this.act = act;
         ActBean bean = new ActBean(act);
         customer = bean.getNodeParticipantRef("customer");
-        items = new ArrayList<Item>();
+        items = new ArrayList<>();
 
         for (FinancialAct item : bean.getNodeActs("items", FinancialAct.class)) {
             FinancialAct invoiceItem = rules.getInvoiceItem(item);
@@ -114,7 +109,7 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
             if (invoiceItem != null) {
                 invoice = getInvoice(invoiceItem, invoices);
             }
-            items.add(new Item(item, invoiceItem, invoice));
+            items.add(createItem(item, invoiceItem, invoice));
         }
 
         invoice = (invoices.size() == 1) ? invoices.values().iterator().next() : null;
@@ -308,6 +303,10 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
         return result;
     }
 
+    protected Item createItem(FinancialAct item, FinancialAct invoiceItem, FinancialAct invoice) {
+        return new Item(item, invoiceItem, invoice);
+    }
+
     /**
      * Charges an order/return.
      * <p/>
@@ -367,7 +366,7 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
         return invoice;
     }
 
-    private boolean validateRequired(Validator validator, PropertySet properties, String name, Object value) {
+    protected static boolean validateRequired(Validator validator, PropertySet properties, String name, Object value) {
         boolean valid = false;
         if (value != null) {
             valid = true;
@@ -379,17 +378,17 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
         return valid;
     }
 
-    private class Item {
+    protected class Item {
 
-        final IMObjectReference patient;
-        final BigDecimal quantity;
-        final IMObjectReference product;
-        final IMObjectReference clinician;
-        final FinancialAct invoiceItem;
-        final BigDecimal invoiceQty;
-        final boolean isOrder;
-        final boolean posted;
-        final PropertySet properties;
+        private final IMObjectReference patient;
+        private final BigDecimal quantity;
+        private final IMObjectReference product;
+        private final IMObjectReference clinician;
+        private final FinancialAct invoiceItem;
+        private final BigDecimal invoiceQty;
+        private final boolean isOrder;
+        private final boolean posted;
+        private final PropertySet properties;
 
         public Item(FinancialAct orderItem, FinancialAct invoiceItem, FinancialAct invoice) {
             ActBean bean = new ActBean(orderItem);
@@ -404,13 +403,31 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
             properties = new PropertySet(orderItem);
         }
 
+        public boolean isOrder() {
+            return isOrder;
+        }
+
+        public boolean isPosted() {
+            return posted;
+        }
+
+        public FinancialAct getInvoiceItem() {
+            return invoiceItem;
+        }
+
+        public IMObjectReference getProduct() {
+            return product;
+        }
+
         public boolean isValid() {
             return validate(new DefaultValidator());
         }
 
+
         public boolean validate(Validator validator) {
-            return validateRequired(validator, properties, "patient", patient)
-                   && validateRequired(validator, properties, "quantity", quantity)
+            return validateRequired(validator, "patient", patient)
+                   && validateRequired(validator, "quantity", quantity)
+                   && validateRequired(validator, "product", product)
                    && validateProduct(validator);
         }
 
@@ -503,18 +520,30 @@ public class PharmacyOrderCharger extends AbstractInvoicer {
             return result;
         }
 
-        private boolean validateProduct(Validator validator) {
+        protected boolean validateRequired(Validator validator, String name, Object value) {
+            return OrderInvoicer.validateRequired(validator, properties, name, value);
+        }
+
+        /**
+         * Ensures that the product is one of {@link #getProductArchetypes()}.
+         *
+         * @param validator the validator
+         * @return {@code true} if the product is valid
+         */
+        protected boolean validateProduct(Validator validator) {
             boolean valid = false;
-            if (validateRequired(validator, properties, "product", product)) {
-                if (TypeHelper.isA(product, ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE)) {
-                    valid = true;
-                } else {
-                    Property property = properties.get("product");
-                    String msg = Messages.format(property.getDisplayName(), "imobject.invalidreference");
-                    validator.add(property, new ValidatorError(property, msg));
-                }
+            if (TypeHelper.isA(product, getProductArchetypes())) {
+                valid = true;
+            } else {
+                Property property = properties.get("product");
+                String msg = Messages.format("imobject.invalidreference", property.getDisplayName());
+                validator.add(property, new ValidatorError(property, msg));
             }
             return valid;
+        }
+
+        protected String[] getProductArchetypes() {
+            return new String[]{ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE};
         }
 
     }

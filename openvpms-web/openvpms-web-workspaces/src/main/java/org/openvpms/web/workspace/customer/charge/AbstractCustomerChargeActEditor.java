@@ -37,6 +37,8 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.hl7.laboratory.Laboratories;
+import org.openvpms.hl7.laboratory.LaboratoryOrderService;
 import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.hl7.pharmacy.Pharmacies;
@@ -91,7 +93,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     /**
      * The pharmacy order placer, used to place orders when invoicing.
      */
-    private PharmacyOrderPlacer orderPlacer;
+    private OrderPlacer orderPlacer;
 
     /**
      * Constructs an {@link AbstractCustomerChargeActEditor}.
@@ -127,9 +129,27 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                 }
             });
 
-            orderPlacer = createPharmacyOrderPlacer(customer, location, context.getContext().getUser());
-            orderPlacer.initialise(getItems().getActs());
+            orderPlacer = createOrderPlacer(customer, location, context.getContext().getUser());
+            List<Act> acts = getOrderActs();
+            orderPlacer.initialise(acts);
         }
+    }
+
+    /**
+     * Returns all acts that may be associated with pharmacy or laboratory orders.
+     *
+     * @return the acts
+     */
+    private List<Act> getOrderActs() {
+        List<Act> acts = new ArrayList<Act>();
+        for (Act item : getItems().getActs()) {
+            IMObjectEditor editor = getItems().getEditor(item);
+            if (editor instanceof CustomerChargeActItemEditor) {
+                acts.add(item);
+                acts.addAll(((CustomerChargeActItemEditor) editor).getInvestigations());
+            }
+        }
+        return acts;
     }
 
     /**
@@ -277,15 +297,21 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
-     * Flags an invoice item as being ordered via a pharmacy.
+     * Flags an invoice item as being ordered via a pharmacy/laboratory.
      * <p/>
-     * This suppresses it from being ordered again when the invoice is saved.
+     * This suppresses it from being ordered again when the invoice is saved and updates the display.
      *
      * @param item the invoice item
      */
     public void setOrdered(Act item) {
         if (orderPlacer != null) {
             orderPlacer.initialise(item);
+        }
+        if (getItems().hasEditor(item)) {
+            IMObjectEditor editor = getItems().getEditor(item);
+            if (editor instanceof CustomerChargeActItemEditor) {
+                ((CustomerChargeActItemEditor) editor).ordered();
+            }
         }
     }
 
@@ -369,16 +395,18 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                 }
 
                 if (TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE)) {
-                    List<Act> updated = orderPlacer.order(getItems().getActs(), changes);
+                    Set<Act> updated = orderPlacer.order(getOrderActs(), changes);
                     if (!updated.isEmpty()) {
                         // need to save the items again. This time do it skipping rules
                         ServiceHelper.getArchetypeService(false).save(updated);
 
                         // notify the editors that orders have been placed
                         for (Act item : updated) {
-                            IMObjectEditor editor = getItems().getEditor(item);
-                            if (editor instanceof CustomerChargeActItemEditor) {
-                                ((CustomerChargeActItemEditor) editor).ordered();
+                            if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
+                                IMObjectEditor editor = getItems().getEditor(item);
+                                if (editor instanceof CustomerChargeActItemEditor) {
+                                    ((CustomerChargeActItemEditor) editor).ordered();
+                                }
                             }
                         }
                     }
@@ -500,20 +528,22 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
-     * Creates a new {@link PharmacyOrderPlacer}.
+     * Creates a new {@link OrderPlacer}.
      *
      * @param customer the customer
      * @param location the practice location
      * @param user     the user responsible for the orders
      * @return a new pharmacy order placer
      */
-    protected PharmacyOrderPlacer createPharmacyOrderPlacer(Party customer, Party location, User user) {
-        return new PharmacyOrderPlacer(customer, location, user, getLayoutContext().getCache(),
-                                       ServiceHelper.getBean(PharmacyOrderService.class),
-                                       ServiceHelper.getBean(Pharmacies.class),
-                                       ServiceHelper.getBean(PatientContextFactory.class),
-                                       ServiceHelper.getBean(PatientInformationService.class),
-                                       ServiceHelper.getBean(MedicalRecordRules.class));
+    protected OrderPlacer createOrderPlacer(Party customer, Party location, User user) {
+        OrderServices services = new OrderServices(ServiceHelper.getBean(PharmacyOrderService.class),
+                                                   ServiceHelper.getBean(Pharmacies.class),
+                                                   ServiceHelper.getBean(LaboratoryOrderService.class),
+                                                   ServiceHelper.getBean(Laboratories.class),
+                                                   ServiceHelper.getBean(PatientContextFactory.class),
+                                                   ServiceHelper.getBean(PatientInformationService.class),
+                                                   ServiceHelper.getBean(MedicalRecordRules.class));
+        return new OrderPlacer(customer, location, user, getLayoutContext().getCache(), services);
     }
 
     /**

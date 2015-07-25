@@ -14,7 +14,7 @@
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.archetype.rules.product.io;
+package org.openvpms.archetype.csv;
 
 import au.com.bytecode.opencsv.CSVReader;
 import org.apache.commons.lang.StringUtils;
@@ -79,16 +79,16 @@ public abstract class AbstractCSVReader {
             CSVReader reader = new CSVReader(new InputStreamReader(documentHandler.getContent(document)), separator);
             String[] first = reader.readNext();
             if (first.length < header.length) {
-                throw new ProductIOException(ProductIOException.ErrorCode.UnrecognisedDocument, 1, document.getName());
+                throw new CSVReaderException(CSVReaderException.ErrorCode.UnrecognisedDocument, 1, document.getName());
             }
             for (int i = 0; i < header.length; ++i) {
                 if (!first[i].equalsIgnoreCase(header[i])) {
-                    throw new ProductIOException(ProductIOException.ErrorCode.InvalidColumn, 1, first[i]);
+                    throw new CSVReaderException(CSVReaderException.ErrorCode.InvalidColumn, 1, first[i]);
                 }
             }
             return reader.readAll();
         } catch (IOException exception) {
-            throw new ProductIOException(ProductIOException.ErrorCode.ReadError, -1, exception);
+            throw new CSVReaderException(CSVReaderException.ErrorCode.ReadError, -1, exception);
         }
     }
 
@@ -157,12 +157,12 @@ public abstract class AbstractCSVReader {
      * @param lineNo   the line no., for error reporting purposes
      * @param required if {@code true}, the value must be present
      * @return the string value. May be {@code null} if {@code required} is {@code false}
-     * @throws ProductIOException if the value is required but not present
+     * @throws CSVReaderException if the value is required but not present
      */
     protected String getString(String[] line, int index, int lineNo, boolean required) {
         String value = StringUtils.trimToNull(line[index]);
         if (value == null && required) {
-            throw new ProductIOException(ProductIOException.ErrorCode.RequiredValue, lineNo, header[index]);
+            throw new CSVReaderException(CSVReaderException.ErrorCode.RequiredValue, lineNo, header[index]);
         }
         return value;
     }
@@ -173,10 +173,10 @@ public abstract class AbstractCSVReader {
      * @param name   the column name
      * @param value  the invalid value
      * @param lineNo the line no.
-     * @throws ProductIOException
+     * @throws CSVReaderException
      */
     protected void reportInvalid(String name, String value, int lineNo) {
-        throw new ProductIOException(ProductIOException.ErrorCode.InvalidValue, lineNo, name, value);
+        throw new CSVReaderException(CSVReaderException.ErrorCode.InvalidValue, lineNo, name, value);
     }
 
     /**
@@ -184,12 +184,11 @@ public abstract class AbstractCSVReader {
      *
      * @param line   the line
      * @param lineNo the line number
-     * @throws ProductIOException if the line has the incorrect no. of fields
+     * @throws CSVReaderException if the line has the incorrect no. of fields
      */
     protected void checkFields(String[] line, int lineNo) {
         if (line.length < header.length) {
-            throw new ProductIOException(ProductIOException.ErrorCode.InvalidLine, lineNo, lineNo, header.length,
-                                         line.length);
+            throw new CSVReaderException(CSVReaderException.ErrorCode.InvalidLine, lineNo, lineNo, header.length, line.length);
         }
     }
 

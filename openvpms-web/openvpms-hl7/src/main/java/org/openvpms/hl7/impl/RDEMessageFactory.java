@@ -73,7 +73,7 @@ public class RDEMessageFactory extends AbstractMessageFactory {
      * @return a new message
      */
     public Message createOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                               Date date, MessageConfig config) {
+                               Date date, HL7Mapping config) {
         return createOrder(context, "NW", product, quantity, placerOrderNumber, date, config);
     }
 
@@ -89,7 +89,7 @@ public class RDEMessageFactory extends AbstractMessageFactory {
      * @return a new message
      */
     public Message updateOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                               Date date, MessageConfig config) {
+                               Date date, HL7Mapping config) {
         return createOrder(context, "RP", product, quantity, placerOrderNumber, date, config);
     }
 
@@ -105,7 +105,7 @@ public class RDEMessageFactory extends AbstractMessageFactory {
      * @return a new message
      */
     public Message cancelOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                               MessageConfig config, Date date) {
+                               HL7Mapping config, Date date) {
         return createOrder(context, "CA", product, quantity, placerOrderNumber, date, config);
     }
 
@@ -121,7 +121,7 @@ public class RDEMessageFactory extends AbstractMessageFactory {
      * @return a new message
      */
     public Message discontinueOrder(PatientContext context, Product product, BigDecimal quantity,
-                                    long placerOrderNumber, MessageConfig config, Date date) {
+                                    long placerOrderNumber, HL7Mapping config, Date date) {
         return createOrder(context, "DC", product, quantity, placerOrderNumber, date, config);
     }
 
@@ -138,7 +138,7 @@ public class RDEMessageFactory extends AbstractMessageFactory {
      * @return a new message
      */
     private RDE_O11 createOrder(PatientContext context, String orderControl, Product product, BigDecimal quantity,
-                                long placerOrderNumber, Date date, MessageConfig config) {
+                                long placerOrderNumber, Date date, HL7Mapping config) {
         RDE_O11 rde;
         try {
             rde = new RDE_O11(getModelClassFactory());

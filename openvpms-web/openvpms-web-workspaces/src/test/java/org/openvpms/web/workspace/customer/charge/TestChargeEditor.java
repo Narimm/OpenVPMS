@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.hl7.laboratory.Laboratories;
 import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.hl7.pharmacy.Pharmacies;
@@ -44,7 +45,12 @@ public class TestChargeEditor extends CustomerChargeActEditor {
     /**
      * The pharmacy order service.
      */
-    private TestPharmacyOrderService service;
+    private TestPharmacyOrderService pharmacyOrderService;
+
+    /**
+     * The laboratory order service.
+     */
+    private TestLaboratoryOrderService laboratoryOrderService;
 
     /**
      * Constructs a {@link TestChargeEditor}.
@@ -103,7 +109,16 @@ public class TestChargeEditor extends CustomerChargeActEditor {
      * @return the test pharmacy order service
      */
     public TestPharmacyOrderService getPharmacyOrderService() {
-        return service;
+        return pharmacyOrderService;
+    }
+
+    /**
+     * Returns the test laboratory order service.
+     *
+     * @return the test laboratory order service
+     */
+    public TestLaboratoryOrderService getLaboratoryOrderService() {
+        return laboratoryOrderService;
     }
 
     /**
@@ -124,7 +139,7 @@ public class TestChargeEditor extends CustomerChargeActEditor {
     }
 
     /**
-     * Creates a new {@link PharmacyOrderPlacer}.
+     * Creates a new {@link OrderPlacer}.
      *
      * @param customer the customer
      * @param location the practice location
@@ -132,12 +147,14 @@ public class TestChargeEditor extends CustomerChargeActEditor {
      * @return a new pharmacy order placer
      */
     @Override
-    protected PharmacyOrderPlacer createPharmacyOrderPlacer(Party customer, Party location, User user) {
-        service = new TestPharmacyOrderService();
-        return new PharmacyOrderPlacer(customer, location, user, getLayoutContext().getCache(), service,
-                                       ServiceHelper.getBean(Pharmacies.class),
-                                       ServiceHelper.getBean(PatientContextFactory.class),
-                                       ServiceHelper.getBean(PatientInformationService.class),
-                                       ServiceHelper.getBean(MedicalRecordRules.class));
+    protected OrderPlacer createOrderPlacer(Party customer, Party location, User user) {
+        pharmacyOrderService = new TestPharmacyOrderService();
+        laboratoryOrderService = new TestLaboratoryOrderService();
+        OrderServices services = new OrderServices(pharmacyOrderService, ServiceHelper.getBean(Pharmacies.class),
+                                                   laboratoryOrderService, ServiceHelper.getBean(Laboratories.class),
+                                                   ServiceHelper.getBean(PatientContextFactory.class),
+                                                   ServiceHelper.getBean(PatientInformationService.class),
+                                                   ServiceHelper.getBean(MedicalRecordRules.class));
+        return new OrderPlacer(customer, location, user, getLayoutContext().getCache(), services);
     }
 }

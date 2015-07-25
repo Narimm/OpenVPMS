@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -75,14 +75,14 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
     /**
      * The message configuration.
      */
-    private MessageConfig config = new MessageConfig();
+    private HL7Mapping config = new HL7Mapping();
 
     /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
-        sender = HL7TestHelper.createSender(-1); // dummy port
+        sender = HL7TestHelper.createSender(-1, HL7TestHelper.createCubexMapping()); // dummy port
         context = HapiContextFactory.create();
         user = TestHelper.createUser();
         ConnectorsImpl connectors = new ConnectorsImpl(getArchetypeService()) {
@@ -248,7 +248,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testApplicationError() throws Exception {
-        MessageConfig config = new MessageConfig();
+        HL7Mapping config = new HL7Mapping();
 
         dispatcher.setAcknowledgmentCode(AcknowledgmentCode.AE);
         dispatcher.setAcknowledgmentException(new HL7Exception("simulated application exception"));

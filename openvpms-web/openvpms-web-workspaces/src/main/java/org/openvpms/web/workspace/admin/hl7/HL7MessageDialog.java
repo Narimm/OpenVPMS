@@ -39,7 +39,10 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.echo.button.ButtonSet;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
@@ -76,12 +79,17 @@ public class HL7MessageDialog extends PopupDialog {
     /**
      * Determines if messages can be resubmitted to the connector.
      */
-    private final boolean canResubmit;
+    private final boolean isSender;
 
     /**
      * Resubmit button identifier.
      */
     private static final String RESUBMIT_ID = "button.resubmit";
+
+    /**
+     * Dequeue message button identifier.
+     */
+    private static final String DEQUEUE_ID = "button.dequeue";
 
     /**
      * The message statuses.
@@ -105,15 +113,21 @@ public class HL7MessageDialog extends PopupDialog {
         setStyleName("BrowserDialog");
         this.context = context;
         DefaultActQuery<Act> query = new DefaultActQuery<Act>(connector, "connector", "participation.HL7Connector",
-                                                              HL7Archetypes.MESSAGE, STATUSES);
+                HL7Archetypes.MESSAGE, STATUSES);
         query.setStatus(null);
         query.setAuto(true);
-        canResubmit = canResubmit(connector);
-        if (canResubmit) {
+        isSender = isSender(connector);
+        if (isSender) {
             addButton(RESUBMIT_ID, new ActionListener() {
                 @Override
                 public void onAction(ActionEvent event) {
                     onResubmit();
+                }
+            });
+            addButton(DEQUEUE_ID, new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    onDequeue();
                 }
             });
         }
@@ -153,14 +167,40 @@ public class HL7MessageDialog extends PopupDialog {
      * Invoked to resubmit a message that was rejected.
      */
     private void onResubmit() {
-        if (canResubmit) {
+        if (isSender) {
             DocumentAct act = (DocumentAct) IMObjectHelper.reload(browser.getSelected());
             if (act != null && HL7MessageStatuses.ERROR.equals(act.getStatus())) {
                 ServiceHelper.getBean(MessageDispatcher.class).resubmit(act);
                 act.setStatus(HL7MessageStatuses.PENDING);
                 SaveHelper.save(act);
             }
-            browser.query();
+            refresh();
+        }
+    }
+
+    /**
+     * Invoked to dequeue a message.
+     */
+    private void onDequeue() {
+        if (isSender) {
+            final DocumentAct act = (DocumentAct) IMObjectHelper.reload(browser.getSelected());
+            if (act != null && HL7MessageStatuses.PENDING.equals(act.getStatus())) {
+                String title = Messages.get("admin.hl7.dequeue.title");
+                String message = Messages.get("admin.hl7.dequeue.message");
+                ConfirmationDialog dialog = new ConfirmationDialog(title, message, ConfirmationDialog.YES_NO);
+                dialog.addWindowPaneListener(new PopupDialogListener() {
+                    @Override
+                    public void onYes() {
+                        act.setStatus(HL7MessageStatuses.CANCELLED);
+                        SaveHelper.save(act);
+                        refresh();
+                    }
+                });
+                dialog.show();
+            } else {
+                // need a refresh.
+                refresh();
+            }
         }
     }
 
@@ -172,32 +212,48 @@ public class HL7MessageDialog extends PopupDialog {
     protected void doLayout() {
         messageContainer = ColumnFactory.create(Styles.INSET);
         SplitPane container = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, "BrowserCRUDWorkspace.Layout",
-                                                      browser.getComponent(), messageContainer);
+                browser.getComponent(), messageContainer);
         getLayout().add(container);
         super.doLayout();
     }
 
     /**
-     * Invoked to display a message.
+     * Refreshes the message display.
+     */
+    private void refresh() {
+        browser.query();
+        onSelected(browser.getSelected());
+    }
+
+    /**
+     * Invoked to display a message, or remove any existing message if no message is selected.
      *
-     * @param object the message
+     * @param object the message. May be {@code null}
      */
     private void onSelected(Act object) {
         messageContainer.removeAll();
-        IMObjectViewer viewer = new IMObjectViewer(object, new DefaultLayoutContext(context, getHelpContext()));
-        messageContainer.add(viewer.getComponent());
-        if (canResubmit) {
-            getButtons().setEnabled(RESUBMIT_ID, HL7MessageStatuses.ERROR.equals(object.getStatus()));
+        ButtonSet buttons = getButtons();
+        if (object != null) {
+            IMObjectViewer viewer = new IMObjectViewer(object, new DefaultLayoutContext(context, getHelpContext()));
+            messageContainer.add(viewer.getComponent());
+            if (isSender) {
+                String status = object.getStatus();
+                buttons.setEnabled(RESUBMIT_ID, HL7MessageStatuses.ERROR.equals(status));
+                buttons.setEnabled(DEQUEUE_ID, HL7MessageStatuses.PENDING.equals(status));
+            }
+        } else if (isSender) {
+            buttons.setEnabled(RESUBMIT_ID, false);
+            buttons.setEnabled(DEQUEUE_ID, false);
         }
     }
 
     /**
-     * Determines if messages can be resubmitted to a connector.
+     * Determines if a connector is a sender.
      *
      * @param connector the connector
-     * @return {@code true} if messages can be resubmitted
+     * @return {@code true} if the connector is a sender
      */
-    private boolean canResubmit(Entity connector) {
+    private boolean isSender(Entity connector) {
         return TypeHelper.isA(connector, HL7Archetypes.SENDERS);
     }
 

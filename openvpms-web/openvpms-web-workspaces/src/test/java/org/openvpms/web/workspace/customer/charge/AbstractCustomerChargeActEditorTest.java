@@ -26,6 +26,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -578,8 +579,19 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @return the investigation type
      */
     protected Entity addInvestigation(Product product) {
-        Entity investigation = (Entity) create(InvestigationArchetypes.INVESTIGATION_TYPE);
-        investigation.setName("X-TestInvestigationType-" + investigation.hashCode());
+        return addInvestigation(product, null);
+    }
+
+    /**
+     * Adds an investigation type to a product.
+     *
+     * @param product    the product
+     * @param laboratory the laboratory. May be {@code null}
+     * @return the investigation type
+     */
+    protected Entity addInvestigation(Product product, Entity laboratory) {
+        Entity investigation = (laboratory != null) ? ProductTestHelper.createInvestigationType(laboratory, "123456789")
+                                                    : ProductTestHelper.createInvestigationType();
         EntityBean productBean = new EntityBean(product);
         productBean.addNodeRelationship("investigationTypes", investigation);
         save(investigation, product);

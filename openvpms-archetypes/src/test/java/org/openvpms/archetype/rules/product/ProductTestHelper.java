@@ -16,6 +16,7 @@
 
 package org.openvpms.archetype.rules.product;
 
+import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -29,6 +30,9 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
 import java.util.List;
+
+import static org.openvpms.archetype.test.TestHelper.create;
+import static org.openvpms.archetype.test.TestHelper.save;
 
 /**
  * Product test helper methods.
@@ -70,6 +74,46 @@ public class ProductTestHelper {
     public static void addPharmacy(Product product, Entity pharmacy) {
         EntityBean bean = new EntityBean(product);
         bean.addNodeTarget("pharmacy", pharmacy);
+        bean.save();
+    }
+
+    /**
+     * Helper to create an <em>entity.investigationType</em>.
+     *
+     * @return a new investigation type
+     */
+    public static Entity createInvestigationType() {
+        Entity investigation = (Entity) create(InvestigationArchetypes.INVESTIGATION_TYPE);
+        investigation.setName("X-TestInvestigationType-" + investigation.hashCode());
+        save(investigation);
+        return investigation;
+    }
+
+    /**
+     * Helper to create an <em>entity.investigationType</em> linked to a laboratory.
+     *
+     * @param laboratory         the laboratory
+     * @param universalServiceId the universal service identifier
+     * @return a new investigation type
+     */
+    public static Entity createInvestigationType(Entity laboratory, String universalServiceId) {
+        Entity investigation = createInvestigationType();
+        EntityBean bean = new EntityBean(investigation);
+        bean.addNodeTarget("laboratory", laboratory);
+        bean.setValue("universalServiceIdentifier", universalServiceId);
+        bean.save();
+        return investigation;
+    }
+
+    /**
+     * Adds an investigation type to a product.
+     *
+     * @param product           the product
+     * @param investigationType the investigation type
+     */
+    public static void addInvestigationType(Product product, Entity investigationType) {
+        EntityBean bean = new EntityBean(product);
+        bean.addNodeTarget("investigationTypes", investigationType);
         bean.save();
     }
 
