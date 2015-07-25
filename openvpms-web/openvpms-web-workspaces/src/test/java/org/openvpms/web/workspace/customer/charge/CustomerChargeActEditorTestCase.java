@@ -55,6 +55,7 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.customer.charge.TestLaboratoryOrderService.LabOrder;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -71,7 +72,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.MEDICATION;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.SERVICE;
 import static org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelper.checkOrder;
+import static org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelper.createLaboratory;
 import static org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelper.createPharmacy;
 import static org.openvpms.web.workspace.customer.charge.TestPharmacyOrderService.Order;
 
@@ -426,7 +429,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     /**
      * Verifies that the {@link CustomerChargeActEditor#delete()} method deletes an invoice and its item.
      * <p/>
-     * If any pharmacy orders have been created, these are cancelled.
+     * If any pharmacy or lab orders have been created, these are cancelled.
      */
     @Test
     public void testDeleteInvoice() {
@@ -437,6 +440,8 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         BigDecimal total = itemTotal.multiply(BigDecimal.valueOf(3));
 
         Entity pharmacy = CustomerChargeTestHelper.createPharmacy(location);
+        Entity laboratory = CustomerChargeTestHelper.createLaboratory(location);
+
         Product product1 = createProduct(MEDICATION, fixedPrice, pharmacy);
         Entity reminderType1 = addReminder(product1);
         Entity investigationType1 = addInvestigation(product1);
@@ -450,7 +455,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
 
         Product product3 = createProduct(ProductArchetypes.SERVICE, fixedPrice);
         Entity reminderType3 = addReminder(product3);
-        Entity investigationType4 = addInvestigation(product3);
+        Entity investigationType4 = addInvestigation(product3, laboratory); // ordered via lab
         Entity investigationType5 = addInvestigation(product3);
         Entity investigationType6 = addInvestigation(product3);
 
@@ -470,9 +475,16 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         FinancialAct item3 = (FinancialAct) item3Editor.getObject();
 
         assertTrue(SaveHelper.save(editor));
+
+        // check pharmacy orders
         List<Order> orders = editor.getPharmacyOrderService().getOrders();
         assertEquals(2, orders.size());
         editor.getPharmacyOrderService().clear();
+
+        // check lab orders
+        List<LabOrder> labOrders = editor.getLaboratoryOrderService().getOrders();
+        assertEquals(1, labOrders.size());
+        editor.getLaboratoryOrderService().clear();
 
         BigDecimal balance = (charge.isCredit()) ? total.negate() : total;
         checkBalance(customer, balance, ZERO);
@@ -518,12 +530,18 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             assertNull(get(item));
         }
 
+        // check order cancellations
         orders = editor.getPharmacyOrderService().getOrders(true);
         assertEquals(2, orders.size());
         checkOrder(orders.get(0), Order.Type.CANCEL, patient, product1, quantity, item1.getId(),
                    item1.getActivityStartTime(), clinician, pharmacy);
         checkOrder(orders.get(1), Order.Type.CANCEL, patient, product2, quantity, item2.getId(),
                    item2.getActivityStartTime(), clinician, pharmacy);
+
+        labOrders = editor.getLaboratoryOrderService().getOrders();
+        assertEquals(1, labOrders.size());
+        checkOrder(labOrders.get(0), LabOrder.Type.CANCEL, patient, investigation4.getId(),
+                   investigation4.getActivityStartTime(), clinician, laboratory);
 
         assertNull(get(investigation1));
         assertNotNull(get(investigation2));
@@ -542,6 +560,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
 
         checkBalance(customer, ZERO, ZERO);
     }
+
 
     /**
      * Verifies that the {@link CustomerChargeActEditor#delete()} method deletes a credit and its item.
@@ -880,6 +899,44 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
+     * Verifies that deleting an invoice item with a laboratory order cancels the order.
+     */
+    @Test
+    public void testDeleteInvoiceItemWithLaboratoryOrder() {
+        Entity laboratory = createLaboratory(location);
+        Product product1 = createProduct(SERVICE, TEN);
+        Entity investigationType1 = addInvestigation(product1, laboratory);
+        Product product2 = createProduct(ProductArchetypes.MERCHANDISE, TEN);
+
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        ChargeEditorQueue queue = editor.getQueue();
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        Act item1 = (Act) addItem(editor, patient, product1, TEN, queue).getObject();
+        addItem(editor, patient, product2, ONE, queue).getObject();
+        assertTrue(SaveHelper.save(editor));
+
+        Act investigation1 = getInvestigation(item1, investigationType1);
+
+        List<LabOrder> orders = editor.getLaboratoryOrderService().getOrders();
+        assertEquals(1, orders.size());
+        checkOrder(orders.get(0), LabOrder.Type.CREATE, patient, investigation1.getId(),
+                   investigation1.getActivityStartTime(), clinician, laboratory);
+        editor.getLaboratoryOrderService().clear();
+
+        editor.delete(item1);
+        assertTrue(SaveHelper.save(editor));
+
+        orders = editor.getLaboratoryOrderService().getOrders();
+        assertEquals(1, orders.size());
+        checkOrder(orders.get(0), LabOrder.Type.CANCEL, patient, investigation1.getId(),
+                   investigation1.getActivityStartTime(), clinician, laboratory);
+    }
+
+    /**
      * Tests expansion for invoices.
      */
     @Test
@@ -1093,6 +1150,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         BigDecimal tax = itemTax.multiply(BigDecimal.valueOf(3));
         BigDecimal total = itemTotal.multiply(BigDecimal.valueOf(3));
         Entity pharmacy = CustomerChargeTestHelper.createPharmacy(location);
+        Entity laboratory = CustomerChargeTestHelper.createLaboratory(location);
 
         boolean invoice = TypeHelper.isA(charge, CustomerAccountArchetypes.INVOICE);
 
@@ -1110,7 +1168,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
 
         Product product3 = createProduct(ProductArchetypes.SERVICE, fixedPrice);
         addReminder(product3);
-        addInvestigation(product3);
+        Entity investigationType3 = addInvestigation(product3, laboratory);
         addTemplate(product3);
         int product3Acts = invoice ? 3 : 0;
 
@@ -1127,7 +1185,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         BigDecimal quantity = ONE;
         Act item1 = (Act) addItem(editor, patient, product1, quantity, queue).getObject();
         Act item2 = (Act) addItem(editor, patient, product2, quantity, queue).getObject();
-        addItem(editor, patient, product3, quantity, queue);
+        Act item3 = (Act) addItem(editor, patient, product3, quantity, queue).getObject();
 
         assertTrue(editor.isValid());
         assertTrue(SaveHelper.save(editor));
@@ -1149,8 +1207,17 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             checkOrder(orders.get(3), Order.Type.DISCONTINUE, patient, product2, quantity, item2.getId(),
                        item2.getActivityStartTime(), clinician, pharmacy);
             editor.getPharmacyOrderService().clear();
+
+            List<LabOrder> labOrders = editor.getLaboratoryOrderService().getOrders();
+            assertEquals(1, labOrders.size());
+
+            Act investigation = getInvestigation(item3, investigationType3);
+            checkOrder(labOrders.get(0), LabOrder.Type.CREATE, patient, investigation.getId(),
+                       investigation.getActivityStartTime(), clinician, laboratory);
+            editor.getLaboratoryOrderService().clear();
         } else {
             assertNull(editor.getPharmacyOrderService());
+            assertNull(editor.getLaboratoryOrderService());
         }
 
         charge = get(charge);

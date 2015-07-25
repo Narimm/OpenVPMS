@@ -15,6 +15,7 @@
   ~
   ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <templates>
     <template name="Counter Sale" archetype="act.customerAccountChargesCounter" reportType="CUSTOMER"
               description="Counter Sale" path="Customer/Counter Sale/A4/Counter Sale.jrxml" mimeType="text/xml"

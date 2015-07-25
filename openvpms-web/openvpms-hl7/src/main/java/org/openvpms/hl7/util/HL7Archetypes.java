@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.util;
@@ -44,6 +44,16 @@ public class HL7Archetypes {
     public static final String PHARMACY_GROUP = "entity.HL7ServicePharmacyGroup";
 
     /**
+     * Laboratory archetype short name.
+     */
+    public static final String LABORATORY = "entity.HL7ServiceLaboratory";
+
+    /**
+     * Laboratory group archetype short name.
+     */
+    public static final String LABORATORY_GROUP = "entity.HL7ServiceLaboratoryGroup";
+
+    /**
      * HL7 MLLP sender archetype short name.
      */
     public static final String MLLP_SENDER = "entity.HL7SenderMLLP";
@@ -67,6 +77,26 @@ public class HL7Archetypes {
      * The connector archetype short names.
      */
     public static final String[] CONNECTORS = {SENDERS, RECEIVERS};
+
+    /**
+     * The default mapping archetype short name.
+     */
+    public static final String MAPPING = "entity.HL7Mapping";
+
+    /**
+     * Cubex mapping archetype short name.
+     */
+    public static final String CUBEX_MAPPING = "entity.HL7MappingCubex";
+
+    /**
+     * IDEXX mapping archetype short name.
+     */
+    public static final String IDEXX_MAPPING = "entity.HL7MappingIDEXX";
+
+    /**
+     * The mapping archetype short names.
+     */
+    public static final String MAPPINGS = "entity.HL7Mapping*";
 
     /**
      * HL7 message archetype short name.

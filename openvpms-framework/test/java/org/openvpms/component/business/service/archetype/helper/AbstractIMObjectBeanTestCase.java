@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -33,7 +33,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Abstract base class for {@link IMObjectBean} tests.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @author Tim Anderson
  */
 @ContextConfiguration("../archetype-service-appcontext.xml")
 public abstract class AbstractIMObjectBeanTestCase extends AbstractArchetypeServiceTest {
@@ -109,6 +109,19 @@ public abstract class AbstractIMObjectBeanTestCase extends AbstractArchetypeServ
         bean.setValue("species", canine.getCode());
         bean.save();
         return patient;
+    }
+
+    /**
+     * Creates a practice location.
+     *
+     * @return a new location
+     */
+    protected Party createLocation() {
+        Party party = (Party) create("party.organisationLocation");
+        IMObjectBean bean = new IMObjectBean(party);
+        bean.setValue("name", "ZLocation" + System.currentTimeMillis());
+        bean.save();
+        return party;
     }
 
     /**

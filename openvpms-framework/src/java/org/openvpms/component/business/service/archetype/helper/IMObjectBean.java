@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -145,7 +145,7 @@ public class IMObjectBean {
      *
      * @param name the node name
      * @return {@code true} if the node exists, otherwise
-     *         {@code false}
+     * {@code false}
      */
     public boolean hasNode(String name) {
         return (getDescriptor(name) != null);
@@ -156,7 +156,7 @@ public class IMObjectBean {
      *
      * @param name the node name
      * @return the descriptor corresponding to {@code name} or
-     *         {@code null} if none exists.
+     * {@code null} if none exists.
      */
     public NodeDescriptor getDescriptor(String name) {
         return getArchetype().getNodeDescriptor(name);
@@ -213,7 +213,7 @@ public class IMObjectBean {
      * @param name         the node name
      * @param defaultValue the value to return if the node value is null
      * @return the value of the node, or {@code defaultValue} if it
-     *         is null
+     * is null
      * @throws IMObjectBeanException if the node doesn't exist
      */
     public boolean getBoolean(String name, boolean defaultValue) {
@@ -237,7 +237,7 @@ public class IMObjectBean {
      * @param name         the node name
      * @param defaultValue the value to return if the node value is null
      * @return the value of the node, or {@code defaultValue} if it
-     *         is null
+     * is null
      * @throws IMObjectBeanException if the node doesn't exist
      */
     public int getInt(String name, int defaultValue) {
@@ -261,7 +261,7 @@ public class IMObjectBean {
      * @param name         the node name
      * @param defaultValue the value to return if the node value is null
      * @return the value of the node, or {@code defaultValue} if it
-     *         is null
+     * is null
      * @throws IMObjectBeanException if the node doesn't exist
      */
     public long getLong(String name, long defaultValue) {
@@ -308,7 +308,7 @@ public class IMObjectBean {
      * @param name         the node name
      * @param defaultValue the value to return if the node value is null
      * @return the value of the node, or {@code defaultValue} if it
-     *         is null
+     * is null
      * @throws IMObjectBeanException if the node doesn't exist
      */
     public BigDecimal getBigDecimal(String name, BigDecimal defaultValue) {
@@ -332,7 +332,7 @@ public class IMObjectBean {
      * @param name         the node name
      * @param defaultValue the value to return if the node value is null
      * @return the value of the node, or {@code defaultValue} if it
-     *         is null
+     * is null
      * @throws IMObjectBeanException if the node doesn't exist
      */
     public Money getMoney(String name, Money defaultValue) {
@@ -356,7 +356,7 @@ public class IMObjectBean {
      * @param name         the node name
      * @param defaultValue the value to return if the node value is null
      * @return the value of the node, or {@code defaultValue} if it
-     *         is null
+     * is null
      * @throws IMObjectBeanException if the node doesn't exist
      */
     public Date getDate(String name, Date defaultValue) {
@@ -1562,6 +1562,18 @@ public class IMObjectBean {
     }
 
     /**
+     * Determines if there is an active {@link IMObjectRelationship} with {@code object} as its source, for the node
+     * {@code node}.
+     *
+     * @param node   the relationship node
+     * @param object the target object
+     * @return {@code true} if there is an active relationship to {@code object}
+     */
+    public boolean hasNodeSource(String node, IMObject object) {
+        return getNodeSourceObjectRefs(node).contains(object.getObjectReference());
+    }
+
+    /**
      * Sets the value of a node.
      *
      * @param name  the node name
@@ -1595,11 +1607,51 @@ public class IMObjectBean {
     }
 
     /**
+     * Adds a new relationship between the current object (the source), and the supplied target.
+     * <p/>
+     * If the relationship is bidirectional, the caller is responsible for adding the returned relationship
+     * to the target.
+     *
+     * @param name   the name
+     * @param target the target
+     * @return the new relationship
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException if the relationship archetype is not found
+     */
+    public IMObjectRelationship addNodeTarget(String name, IMObjectReference target) {
+        String shortName = getRelationshipShortName(name, target, "target");
+        IMObjectRelationship r = (IMObjectRelationship) getArchetypeService().create(shortName);
+        if (r == null) {
+            throw new IMObjectBeanException(ArchetypeNotFound, shortName);
+        }
+        r.setSource(object.getObjectReference());
+        r.setTarget(target);
+        addValue(name, r);
+        return r;
+    }
+
+    /**
+     * Adds a new relationship between the current object (the source), and the supplied target.
+     * <p/>
+     * If the relationship is bidirectional, the caller is responsible for adding the returned relationship
+     * to the target.
+     *
+     * @param name   the name
+     * @param target the target
+     * @return the new relationship
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if the relationship archetype is not found
+     */
+    public IMObjectRelationship addNodeTarget(String name, IMObject target) {
+        return addNodeTarget(name, target.getObjectReference());
+    }
+
+    /**
      * Evaluates the default value if a node, if it has one.
      *
      * @param name the node name
      * @return the evaluation of {@link NodeDescriptor#getDefaultValue()} (which may evaluate {@code null}),
-     *         or {@code null} if the node doesn't have a default value
+     * or {@code null} if the node doesn't have a default value
      * @throws IMObjectBeanException if the descriptor doesn't exist
      */
     public Object getDefaultValue(String name) {
@@ -1897,7 +1949,7 @@ public class IMObjectBean {
      * @param accessor      the relationship reference accessor
      * @param active        determines if the object must be active or not
      * @return the first object matching the criteria or {@code null} if none
-     *         is found
+     * is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected <R extends IMObjectRelationship> IMObject getRelatedObject(Collection<R> relationships,

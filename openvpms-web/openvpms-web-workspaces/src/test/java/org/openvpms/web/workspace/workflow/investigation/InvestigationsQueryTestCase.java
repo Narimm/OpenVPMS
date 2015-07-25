@@ -1,8 +1,25 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.web.workspace.workflow.investigation;
 
 import org.junit.Test;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
+import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -30,8 +47,8 @@ public class InvestigationsQueryTestCase extends AbstractAppTest {
     @Test
     public void testQueryByInvestigationType() {
         Party patient = TestHelper.createPatient();
-        Entity type1 = PatientTestHelper.createInvestigationType();
-        Entity type2 = PatientTestHelper.createInvestigationType();
+        Entity type1 = ProductTestHelper.createInvestigationType();
+        Entity type2 = ProductTestHelper.createInvestigationType();
         Act investigation1 = PatientTestHelper.createInvestigation(patient, type1);
         Act investigation2 = PatientTestHelper.createInvestigation(patient, type2);
         InvestigationsQuery query = createQuery(new LocalContext());
@@ -58,7 +75,7 @@ public class InvestigationsQueryTestCase extends AbstractAppTest {
         Party patient = TestHelper.createPatient();
         User clinician1 = TestHelper.createClinician();
         User clinician2 = TestHelper.createClinician();
-        Entity type = PatientTestHelper.createInvestigationType();
+        Entity type = ProductTestHelper.createInvestigationType();
         Act investigation1 = PatientTestHelper.createInvestigation(patient, clinician1, type);
         Act investigation2 = PatientTestHelper.createInvestigation(patient, clinician2, type);
         InvestigationsQuery query = createQuery(new LocalContext());
@@ -89,7 +106,7 @@ public class InvestigationsQueryTestCase extends AbstractAppTest {
         LocalContext context = new LocalContext();
         Party patient = TestHelper.createPatient();
         User clinician = TestHelper.createClinician();
-        Entity type = PatientTestHelper.createInvestigationType();
+        Entity type = ProductTestHelper.createInvestigationType();
         Party location1 = TestHelper.createLocation();
         Party location2 = TestHelper.createLocation();
         Party location3 = TestHelper.createLocation();
@@ -129,7 +146,7 @@ public class InvestigationsQueryTestCase extends AbstractAppTest {
     public void testQueryByLocationForRestrictedUser() {
         LocalContext context = new LocalContext();
         Party patient = TestHelper.createPatient();
-        Entity type = PatientTestHelper.createInvestigationType();
+        Entity type = ProductTestHelper.createInvestigationType();
         Party location1 = TestHelper.createLocation();
         Party location2 = TestHelper.createLocation();
         Party practice = createPractice(location1, location2);
@@ -164,7 +181,7 @@ public class InvestigationsQueryTestCase extends AbstractAppTest {
     public void testQueryByLocationForSingleLocation() {
         LocalContext context = new LocalContext();
         Party patient = TestHelper.createPatient();
-        Entity type = PatientTestHelper.createInvestigationType();
+        Entity type = ProductTestHelper.createInvestigationType();
         Party location1 = TestHelper.createLocation();
         Party location2 = TestHelper.createLocation(); // not linked to anything
         Party practice = createPractice(location1);
@@ -196,8 +213,8 @@ public class InvestigationsQueryTestCase extends AbstractAppTest {
     public void testQueryByLocationAndInvestigationType() {
         LocalContext context = new LocalContext();
         Party patient = TestHelper.createPatient();
-        Entity type1 = PatientTestHelper.createInvestigationType();
-        Entity type2 = PatientTestHelper.createInvestigationType();
+        Entity type1 = ProductTestHelper.createInvestigationType();
+        Entity type2 = ProductTestHelper.createInvestigationType();
         Party location1 = TestHelper.createLocation();
         Party location2 = TestHelper.createLocation();
         Party practice = createPractice(location1, location2);

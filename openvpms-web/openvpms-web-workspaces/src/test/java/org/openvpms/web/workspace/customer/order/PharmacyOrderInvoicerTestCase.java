@@ -63,11 +63,11 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests the {@link PharmacyOrderCharger}.
+ * Tests the {@link PharmacyOrderInvoicer}.
  *
  * @author Tim Anderson
  */
-public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEditorTest {
+public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEditorTest {
 
     /**
      * The order rules.
@@ -157,7 +157,7 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
         BigDecimal tax = BigDecimal.valueOf(2);
         BigDecimal total = new BigDecimal("22");
         FinancialAct order = createOrder(customer, patient, product, quantity, null);
-        PharmacyOrderCharger charger = new TestPharmacyOrderCharger(order, rules);
+        PharmacyOrderInvoicer charger = new TestPharmacyOrderInvoicer(order, rules);
         assertTrue(charger.isValid());
         assertTrue(charger.canInvoice());
         assertFalse(charger.canCredit());
@@ -184,7 +184,7 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
         BigDecimal tax = BigDecimal.valueOf(2);
         BigDecimal total = new BigDecimal("22");
         FinancialAct orderReturn = createReturn(customer, patient, product, quantity, null);
-        PharmacyOrderCharger charger = new TestPharmacyOrderCharger(orderReturn, rules);
+        PharmacyOrderInvoicer charger = new TestPharmacyOrderInvoicer(orderReturn, rules);
         assertTrue(charger.isValid());
         assertTrue(charger.canCredit());
         assertFalse(charger.canInvoice());
@@ -217,7 +217,7 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
         FinancialAct invoiceItem = getInvoiceItem(editor1);
 
         FinancialAct order = createOrder(customer, patient, product, quantity, invoiceItem);
-        PharmacyOrderCharger charger = new TestPharmacyOrderCharger(order, rules);
+        PharmacyOrderInvoicer charger = new TestPharmacyOrderInvoicer(order, rules);
         assertTrue(charger.isValid());
         assertTrue(charger.canInvoice());
         assertFalse(charger.canCredit());
@@ -254,7 +254,7 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
         FinancialAct invoiceItem = getInvoiceItem(editor1);
 
         FinancialAct order = createOrder(customer, patient, product, newQty, invoiceItem);
-        PharmacyOrderCharger charger = new TestPharmacyOrderCharger(order, rules);
+        PharmacyOrderInvoicer charger = new TestPharmacyOrderInvoicer(order, rules);
         assertTrue(charger.isValid());
         assertTrue(charger.canInvoice());
         assertFalse(charger.canCredit());
@@ -292,7 +292,7 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
         FinancialAct invoiceItem = getInvoiceItem(editor1);
 
         FinancialAct order = createOrder(customer, patient, product, newOrderQty, invoiceItem);
-        PharmacyOrderCharger charger = new TestPharmacyOrderCharger(order, rules);
+        PharmacyOrderInvoicer charger = new TestPharmacyOrderInvoicer(order, rules);
         assertTrue(charger.isValid());
         assertTrue(charger.canInvoice());
         assertFalse(charger.canCredit());
@@ -334,7 +334,7 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
         FinancialAct invoiceItem = getInvoiceItem(editor1);
 
         FinancialAct order = createOrder(customer, patient, product, newQty, invoiceItem);
-        PharmacyOrderCharger charger = new TestPharmacyOrderCharger(order, rules);
+        PharmacyOrderInvoicer charger = new TestPharmacyOrderInvoicer(order, rules);
         assertTrue(charger.isValid());
         assertTrue(charger.canInvoice());
         assertTrue(charger.canCredit());
@@ -371,7 +371,7 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
         FinancialAct invoiceItem = getInvoiceItem(editor1);
 
         FinancialAct order = createOrder(customer, patient, product, newQty, invoiceItem);
-        PharmacyOrderCharger charger = new TestPharmacyOrderCharger(order, rules);
+        PharmacyOrderInvoicer charger = new TestPharmacyOrderInvoicer(order, rules);
         assertTrue(charger.isValid());
         assertFalse(charger.canInvoice());
         assertTrue(charger.canCredit());
@@ -407,12 +407,12 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
 
         // charge two orders
         FinancialAct order1 = createOrder(customer, patient, product, ONE, invoiceItem);
-        PharmacyOrderCharger charger1 = new TestPharmacyOrderCharger(order1, rules);
+        PharmacyOrderInvoicer charger1 = new TestPharmacyOrderInvoicer(order1, rules);
         assertTrue(charger1.canCharge(editor));
         charger1.charge(editor);
 
         FinancialAct order2 = createOrder(customer, patient, product, ONE, invoiceItem);
-        PharmacyOrderCharger charger2 = new TestPharmacyOrderCharger(order2, rules);
+        PharmacyOrderInvoicer charger2 = new TestPharmacyOrderInvoicer(order2, rules);
         assertTrue(charger2.canCharge(editor));
         charger2.charge(editor);
 
@@ -436,12 +436,12 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
         FinancialAct invoiceItem = getInvoiceItem(editor);
 
         FinancialAct order = createOrder(customer, patient, product, ONE, invoiceItem);
-        PharmacyOrderCharger charger1 = new TestPharmacyOrderCharger(order, rules);
+        PharmacyOrderInvoicer charger1 = new TestPharmacyOrderInvoicer(order, rules);
         assertTrue(charger1.canCharge(editor));
         charger1.charge(editor);
 
         FinancialAct orderReturn = createReturn(customer, patient, product, ONE, invoiceItem);
-        PharmacyOrderCharger charger2 = new TestPharmacyOrderCharger(orderReturn, rules);
+        PharmacyOrderInvoicer charger2 = new TestPharmacyOrderInvoicer(orderReturn, rules);
         assertTrue(charger2.canCharge(editor));
         charger2.charge(editor);
 
@@ -467,7 +467,7 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
         FinancialAct invoiceItem = getInvoiceItem(editor1);
 
         FinancialAct order = createOrder(customer, patient, product, quantity, invoiceItem);
-        PharmacyOrderCharger charger1 = new TestPharmacyOrderCharger(order, rules);
+        PharmacyOrderInvoicer charger1 = new TestPharmacyOrderInvoicer(order, rules);
         assertTrue(charger1.canCharge(editor1));
         charger1.charge(editor1);
 
@@ -476,7 +476,7 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
 
         // now return the same quantity, and verify a Credit is created
         FinancialAct orderReturn = createReturn(customer, patient, product, quantity, invoiceItem);
-        PharmacyOrderCharger charger2 = new TestPharmacyOrderCharger(orderReturn, rules);
+        PharmacyOrderInvoicer charger2 = new TestPharmacyOrderInvoicer(orderReturn, rules);
         assertFalse(charger2.canCharge(editor1));
         DefaultLayoutContext layoutContext = new DefaultLayoutContext(context, new HelpContext("foo", null));
         CustomerChargeActEditDialog dialog = charger2.charge(null, null, layoutContext);
@@ -502,7 +502,7 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
         FinancialAct order = createOrder(customer, patient, product, quantity, null); // not linked to an invoice item
 
         // charge the order
-        PharmacyOrderCharger charger = new TestPharmacyOrderCharger(order, rules);
+        PharmacyOrderInvoicer charger = new TestPharmacyOrderInvoicer(order, rules);
         assertTrue(charger.canCharge(editor));
         charger.charge(editor);
 
@@ -572,7 +572,7 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
      * @param expected the expected validation error
      */
     private void checkRequired(FinancialAct act, String expected) {
-        PharmacyOrderCharger charger = new TestPharmacyOrderCharger(act, rules);
+        PharmacyOrderInvoicer charger = new TestPharmacyOrderInvoicer(act, rules);
         assertFalse(charger.isValid());
         Validator validator = new DefaultValidator();
         assertFalse(charger.validate(validator));
@@ -742,15 +742,15 @@ public class PharmacyOrderChargerTestCase extends AbstractCustomerChargeActEdito
                   tax, total, null, childActs);
     }
 
-    private static class TestPharmacyOrderCharger extends PharmacyOrderCharger {
+    private static class TestPharmacyOrderInvoicer extends PharmacyOrderInvoicer {
 
         /**
-         * Constructs a {@link TestPharmacyOrderCharger}.
+         * Constructs a {@link TestPharmacyOrderInvoicer}.
          *
          * @param act   the order/return act
          * @param rules the order rules
          */
-        public TestPharmacyOrderCharger(FinancialAct act, OrderRules rules) {
+        public TestPharmacyOrderInvoicer(FinancialAct act, OrderRules rules) {
             super(act, rules);
         }
 

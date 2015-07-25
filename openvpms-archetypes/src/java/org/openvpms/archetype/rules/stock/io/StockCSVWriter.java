@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.stock.io;
@@ -26,7 +26,7 @@ import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.Iterator;
 
-import static org.openvpms.archetype.rules.product.io.AbstractCSVReader.MIME_TYPE;
+import static org.openvpms.archetype.csv.AbstractCSVReader.MIME_TYPE;
 
 /**
  * Writes stock data to a CSV document.

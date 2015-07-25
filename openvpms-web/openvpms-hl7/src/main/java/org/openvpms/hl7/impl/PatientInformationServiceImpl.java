@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -76,7 +76,7 @@ public class PatientInformationServiceImpl implements PatientInformationService 
     public void admitted(PatientContext context, User user) {
         Collection<Connector> senders = services.getConnections(context.getLocation());
         for (Connector connector : senders) {
-            MessageConfig config = MessageConfigFactory.create(connector);
+            HL7Mapping config = connector.getMapping();
             Message message = factory.createAdmit(context, config);
             queue(message, connector, config, user);
         }
@@ -85,6 +85,9 @@ public class PatientInformationServiceImpl implements PatientInformationService 
 
     /**
      * Notifies that an admission has been cancelled.
+     * <p/>
+     * If a connector doesn't support Cancel Admit messages (ADT A11), a Discharge (ADT A03) message will be sent
+     * instead.
      *
      * @param context the patient context
      * @param user    the user that triggered the notification
@@ -93,8 +96,13 @@ public class PatientInformationServiceImpl implements PatientInformationService 
     public void admissionCancelled(PatientContext context, User user) {
         Collection<Connector> senders = services.getConnections(context.getLocation());
         for (Connector connector : senders) {
-            MessageConfig config = MessageConfigFactory.create(connector);
-            Message message = factory.createCancelAdmit(context, config);
+            HL7Mapping config = connector.getMapping();
+            Message message;
+            if (config.sendCancelAdmit()) {
+                message = factory.createCancelAdmit(context, config);
+            } else {
+                message = factory.createDischarge(context, config);
+            }
             queue(message, connector, config, user);
         }
     }
@@ -109,7 +117,7 @@ public class PatientInformationServiceImpl implements PatientInformationService 
     public void discharged(PatientContext context, User user) {
         Collection<Connector> senders = services.getConnections(context.getLocation());
         for (Connector connector : senders) {
-            MessageConfig config = MessageConfigFactory.create(connector);
+            HL7Mapping config = connector.getMapping();
             Message message = factory.createDischarge(context, config);
             queue(message, connector, config, user);
         }
@@ -125,9 +133,11 @@ public class PatientInformationServiceImpl implements PatientInformationService 
     public void updated(PatientContext context, User user) {
         Collection<Connector> senders = services.getConnections(context.getLocation());
         for (Connector connector : senders) {
-            MessageConfig config = MessageConfigFactory.create(connector);
-            Message message = factory.createUpdate(context, config);
-            queue(message, connector, config, user);
+            HL7Mapping config = connector.getMapping();
+            if (config.sendUpdatePatient()) {
+                Message message = factory.createUpdate(context, config);
+                queue(message, connector, config, user);
+            }
         }
     }
 
@@ -139,7 +149,7 @@ public class PatientInformationServiceImpl implements PatientInformationService 
      * @param config    the message config
      * @param user      the user that triggered the notification
      */
-    protected void queue(Message message, Connector connector, MessageConfig config, User user) {
+    protected void queue(Message message, Connector connector, HL7Mapping config, User user) {
         dispatcher.queue(message, connector, config, user);
     }
 

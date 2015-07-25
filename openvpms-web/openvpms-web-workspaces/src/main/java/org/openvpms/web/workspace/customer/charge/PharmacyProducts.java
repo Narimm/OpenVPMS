@@ -82,7 +82,7 @@ class PharmacyProducts {
                 }
             }
             if (pharmacy != null && TypeHelper.isA(pharmacy, HL7Archetypes.PHARMACY_GROUP)) {
-                pharmacy = pharmacies.getPharmacy(pharmacy, location.getObjectReference());
+                pharmacy = pharmacies.getService(pharmacy, location.getObjectReference());
             }
         }
         return pharmacy;

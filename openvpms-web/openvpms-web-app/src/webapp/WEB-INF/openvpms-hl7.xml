@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -65,6 +65,28 @@
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="patientRules"/>
         <constructor-arg ref="userRules"/>
+    </bean>
+
+    <bean class="org.openvpms.hl7.impl.LaboratoryOrderServiceImpl">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="hl7Laboratories"/>
+        <constructor-arg ref="hl7messageDispatcher"/>
+    </bean>
+
+    <bean class="org.openvpms.hl7.impl.LaboratoryCancellationServiceImpl">
+        <constructor-arg ref="hl7Laboratories"/>
+        <constructor-arg ref="hl7Connectors"/>
+        <constructor-arg ref="hl7messageDispatcher"/>
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="patientRules"/>
+        <constructor-arg ref="userRules"/>
+    </bean>
+
+    <bean id="hl7Laboratories" class="org.openvpms.hl7.impl.LaboratoriesImpl">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="hl7Connectors"/>
+        <constructor-arg ref="hl7PatientEventServices"/>
     </bean>
 
     <bean class="org.openvpms.hl7.patient.PatientContextFactory">

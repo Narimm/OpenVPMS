@@ -11,37 +11,37 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
-package org.openvpms.web.workspace.admin.organisation;
 
-import org.openvpms.component.business.domain.im.party.Party;
+package org.openvpms.web.component.im.table;
+
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 
 
 /**
- * Table model for <em>party.organisation*</em> objects. Displays the archetype name.
+ * A table model that displays the ID, archetype, name, description and active status.
  *
  * @author Tim Anderson
  */
-public class OrganisationTableModel extends BaseIMObjectTableModel<Party> {
+public class NameDescTableModel<T extends IMObject> extends BaseIMObjectTableModel<T> {
 
     /**
-     * Constructs an {@link OrganisationTableModel}.
+     * Constructs an {@link NameDescTableModel}.
      */
-    public OrganisationTableModel() {
+    public NameDescTableModel() {
         super(null);
         setTableColumnModel(createTableColumnModel(true, true, true));
     }
 
     /**
-     * Constructs an {@link OrganisationTableModel}.
+     * Constructs an {@link NameDescTableModel}.
      *
      * @param query the query. If both active and inactive results are being queried, an Active column will be displayed
      */
-    public OrganisationTableModel(Query<Party> query) {
+    public NameDescTableModel(Query<T> query) {
         super(null);
         boolean active = query.getActive() == BaseArchetypeConstraint.State.BOTH;
         setTableColumnModel(createTableColumnModel(true, true, active));

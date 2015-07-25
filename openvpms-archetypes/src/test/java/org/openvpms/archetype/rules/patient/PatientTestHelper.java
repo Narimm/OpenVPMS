@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -136,7 +136,7 @@ public class PatientTestHelper {
         for (Act item : items) {
             bean.addNodeRelationship("items", item);
         }
-        List<Act> acts = new ArrayList<Act>();
+        List<Act> acts = new ArrayList<>();
         acts.add(act);
         acts.addAll(Arrays.asList(items));
         save(acts);
@@ -176,7 +176,7 @@ public class PatientTestHelper {
         for (Act item : items) {
             bean.addNodeRelationship("items", item);
         }
-        List<Act> acts = new ArrayList<Act>();
+        List<Act> acts = new ArrayList<>();
         acts.add(act);
         acts.addAll(Arrays.asList(items));
         save(acts);
@@ -276,18 +276,6 @@ public class PatientTestHelper {
             bean.addNodeParticipation("clinician", clinician);
         }
         return act;
-    }
-
-    /**
-     * Helper to create an <em>entity.investigationType</em>.
-     *
-     * @return a new investigation type
-     */
-    public static Entity createInvestigationType() {
-        Entity investigation = (Entity) create(InvestigationArchetypes.INVESTIGATION_TYPE);
-        investigation.setName("X-TestInvestigationType-" + investigation.hashCode());
-        save(investigation);
-        return investigation;
     }
 
     /**

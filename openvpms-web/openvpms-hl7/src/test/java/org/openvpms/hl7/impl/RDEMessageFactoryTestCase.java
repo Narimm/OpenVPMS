@@ -83,21 +83,24 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
     }
 
     /**
-     * Tests the {@link RDEMessageFactory#createOrder(PatientContext, Product, BigDecimal, long, Date, MessageConfig)} method.
+     * Tests the {@link RDEMessageFactory#createOrder(PatientContext, Product, BigDecimal, long, Date, HL7Mapping)} method.
      *
      * @throws Exception for any error
      */
     @Test
     public void testCreateOrder() throws Exception {
-        String expected = "MSH|^~\\&|||||20140825090000.105+1000||RDE^O11^RDE_O11|1200022|P|2.5\r" +
-                          "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
-                          "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
+        String expected = "MSH|^~\\&|||||20140825090000.105||RDE^O11^RDE_O11|1200022|P|2.5\r" +
+                          "PID|1|1001|||Bar^Fido||20140701000000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500\r" +
                           "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
                           "AL1|2|MA|^Pollen|U|Produces hives\r" +
-                          "ORC|NW|10231|||||||20140825090200.11+1000|2001^Blogs^Joe\r" +
+                          "ORC|NW|10231|||||||20140825090200.11|2001^Blogs^Joe\r" +
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
-        MessageConfig config = new MessageConfig();
+        HL7Mapping config = new HL7Mapping();
+        config.setPopulatePID2(true);
+        config.setPopulatePID3(false);
+        config.setIncludeTimeZone(false);
         Date date = getDatetime("2014-08-25 09:02:00.110").getTime();
         Message order = messageFactory.createOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, config);
         MSH msh = (MSH) order.get("MSH");
@@ -107,7 +110,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
     }
 
     /**
-     * Tests the {@link RDEMessageFactory#updateOrder(PatientContext, Product, BigDecimal, long, Date, MessageConfig)} method.
+     * Tests the {@link RDEMessageFactory#updateOrder(PatientContext, Product, BigDecimal, long, Date, HL7Mapping)} method.
      *
      * @throws Exception for any error
      */
@@ -122,7 +125,9 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
-        MessageConfig config = new MessageConfig();
+        HL7Mapping config = new HL7Mapping();
+        config.setPopulatePID2(true);
+        config.setPopulatePID3(false);
         config.setIncludeTimeZone(false);
         Message order = messageFactory.updateOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, config);
         MSH msh = (MSH) order.get("MSH");
@@ -132,7 +137,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
     }
 
     /**
-     * Tests the {@link RDEMessageFactory#cancelOrder(PatientContext, Product, BigDecimal, long, MessageConfig, Date)} method.
+     * Tests the {@link RDEMessageFactory#cancelOrder(PatientContext, Product, BigDecimal, long, HL7Mapping, Date)} method.
      *
      * @throws Exception for any error
      */
@@ -147,7 +152,9 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
-        MessageConfig config = new MessageConfig();
+        HL7Mapping config = new HL7Mapping();
+        config.setPopulatePID2(true);
+        config.setPopulatePID3(false);
         config.setIncludeMillis(false);
         config.setIncludeTimeZone(false);
         Message order = messageFactory.cancelOrder(getContext(), product, BigDecimal.valueOf(2), 10231, config, date);
@@ -159,7 +166,7 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
 
     /**
      * Tests the {@link RDEMessageFactory#discontinueOrder(PatientContext, Product, BigDecimal, long,
-     * MessageConfig, Date)} method.
+     * HL7Mapping, Date)} method.
      *
      * @throws Exception for any error
      */
@@ -174,7 +181,9 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
                           "RXO|4001^Valium 2mg^OpenVPMS|||TAB^Tablets^OpenVPMS|||^Give 1 tablet once daily||||2|BOX^Box^OpenVPMS\r";
 
         Date date = getDatetime("2014-08-25 09:02:00").getTime();
-        MessageConfig config = new MessageConfig();
+        HL7Mapping config = new HL7Mapping();
+        config.setPopulatePID2(true);
+        config.setPopulatePID3(false);
         config.setIncludeMillis(false);
         config.setIncludeTimeZone(false);
         Message order = messageFactory.discontinueOrder(getContext(), product, BigDecimal.valueOf(2), 10231, config,
@@ -192,12 +201,12 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
      */
     @Test
     public void testCreateOrderForMerchandise() throws Exception {
-        String expected = "MSH|^~\\&|||||20140825090000.105+1000||RDE^O11^RDE_O11|1200022|P|2.5\r" +
-                          "PID|1|1001|||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
-                          "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
+        String expected = "MSH|^~\\&|||||20140825090000.105||RDE^O11^RDE_O11|1200022|P|2.5\r" +
+                          "PID|1|1001|||Bar^Fido||20140701000000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500\r" +
                           "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
                           "AL1|2|MA|^Pollen|U|Produces hives\r" +
-                          "ORC|NW|10231|||||||20140825090200.11+1000|2001^Blogs^Joe\r" +
+                          "ORC|NW|10231|||||||20140825090200.11|2001^Blogs^Joe\r" +
                           "RXO|4001^Azostix^OpenVPMS||||||||||2|BOX^Box^OpenVPMS\r";
 
         Product product = TestHelper.createProduct(ProductArchetypes.MERCHANDISE, null);
@@ -206,7 +215,10 @@ public class RDEMessageFactoryTestCase extends AbstractMessageTest {
         productBean.setValue("sellingUnits", TestHelper.getLookup("lookup.uom", "BOX", "Box", true).getCode());
         product.setId(4001);
 
-        MessageConfig config = new MessageConfig();
+        HL7Mapping config = new HL7Mapping();
+        config.setPopulatePID2(true);
+        config.setPopulatePID3(false);
+        config.setIncludeTimeZone(false);
         Date date = getDatetime("2014-08-25 09:02:00.110").getTime();
         Message order = messageFactory.createOrder(getContext(), product, BigDecimal.valueOf(2), 10231, date, config);
         MSH msh = (MSH) order.get("MSH");

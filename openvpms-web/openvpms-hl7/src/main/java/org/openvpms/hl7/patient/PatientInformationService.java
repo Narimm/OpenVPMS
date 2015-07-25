@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.patient;
@@ -35,6 +35,9 @@ public interface PatientInformationService {
 
     /**
      * Notifies that an admission has been cancelled.
+     * <p/>
+     * If a connector doesn't support Cancel Admit messages (ADT A11), a Discharge (ADT A03) message will be sent
+     * instead.
      *
      * @param context the patient context
      * @param user    the user that triggered the notification

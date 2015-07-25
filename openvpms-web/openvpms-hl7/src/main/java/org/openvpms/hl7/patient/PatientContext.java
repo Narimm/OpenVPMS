@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.patient;
@@ -242,19 +242,19 @@ public class PatientContext {
     /**
      * Returns the patient sex.
      *
-     * @return the sex. On of {@code M} (male), {@code F} (female) or {@code U} (unknown)
+     * @return the patient sex. May be {@code null}
      */
     public String getPatientSex() {
-        String result;
-        String sex = patientBean.getString("sex");
-        if ("MALE".equals(sex)) {
-            result = "M";
-        } else if ("FEMALE".equals(sex)) {
-            result = "F";
-        } else {
-            result = "U";
-        }
-        return result;
+        return patientBean.getString("sex");
+    }
+
+    /**
+     * Determines if the patient is desexed.
+     *
+     * @return {@code true} if the patient is desexed
+     */
+    public boolean isDesexed() {
+        return patientBean.getBoolean("desexed");
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -191,6 +191,16 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
             addEditor(object, editor);
         }
         return editor;
+    }
+
+    /**
+     * Determines if an editor exists for an object.
+     *
+     * @param object the object
+     * @return {@code true} if an editor exists
+     */
+    public boolean hasEditor(IMObject object) {
+        return getCollectionPropertyEditor().getEditor(object) != null;
     }
 
     /**

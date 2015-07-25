@@ -11,15 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.assertion;
 
-import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ActionContext;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.PeriodRelationship;
 
 import java.util.ArrayList;
@@ -33,20 +31,41 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class EntityRelationshipAssertions {
+public class EntityRelationshipAssertions extends AbstractRelationshipAssertions {
+
+    /**
+     * Assertion to indicate that there can be only one active relationship between two objects.
+     */
+    public static final String UNIQUE_ENTITY_RELATIONSHIP = "uniqueEntityRelationship";
+
+    /**
+     * The singleton instance.
+     */
+    private static EntityRelationshipAssertions INSTANCE = new EntityRelationshipAssertions();
 
     /**
      * Validates an entity relationship assertion.
      *
      * @param context the assertion context
+     * @return {@code true} if the assertion is valid
      */
     public static boolean validate(ActionContext context) {
+        return INSTANCE.isValid(context);
+    }
+
+    /**
+     * Determines if an assertion is valkid.
+     *
+     * @param context the assertion context
+     * @return {@code true} if the assertion is valid
+     */
+    protected boolean isValid(ActionContext context) {
         boolean result = false;
         AssertionDescriptor assertion = context.getAssertion();
-        if (assertion.getName().equals("uniqueEntityRelationship")) {
-            Collection<PeriodRelationship> entries = getRelationships(context.getValue());
+        if (UNIQUE_ENTITY_RELATIONSHIP.equals(assertion.getName())) {
+            Collection<PeriodRelationship> entries = getRelationships(context.getValue(), PeriodRelationship.class);
             if (entries != null) {
-                result = validateUnique(entries);
+                result = checkUnique(entries);
             }
         }
         return result;
@@ -58,44 +77,19 @@ public class EntityRelationshipAssertions {
      * @param entries the relationships to validate
      * @return {@code true} if the relationships are unique, otherwise {@code false}
      */
-    private static boolean validateUnique(Collection<PeriodRelationship> entries) {
+    protected boolean checkUnique(Collection<PeriodRelationship> entries) {
         if (entries.size() > 1) {
             Date now = new Date();
             List<PeriodRelationship> active = new ArrayList<PeriodRelationship>();
             for (PeriodRelationship entry : entries) {
                 if (entry.isActive(now)) {
-                    IMObjectReference source = entry.getSource();
-                    IMObjectReference target = entry.getTarget();
-                    for (PeriodRelationship other : active) {
-                        if (ObjectUtils.equals(source, other.getSource())
-                            && ObjectUtils.equals(target, other.getTarget())) {
-                            return false;
-                        }
+                    if (contains(entry, active)) {
+                        return false;
                     }
-                    active.add(entry);
                 }
             }
         }
         return true;
-    }
-
-    /**
-     * Helper to verify that an object is a collection of entity relationships.
-     *
-     * @param object the object to check
-     * @return the collection, or {@code null}, if {@code object} is invalid
-     */
-    private static Collection<PeriodRelationship> getRelationships(Object object) {
-        if (object instanceof Collection) {
-            Collection list = (Collection) object;
-            for (Object element : list) {
-                if (!(element instanceof PeriodRelationship)) {
-                    return null;
-                }
-            }
-            return (Collection<PeriodRelationship>) object;
-        }
-        return null;
     }
 
 }
