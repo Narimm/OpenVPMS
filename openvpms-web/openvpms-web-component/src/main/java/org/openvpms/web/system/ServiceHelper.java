@@ -189,6 +189,17 @@ public final class ServiceHelper {
     }
 
     /**
+     * Return the bean instance with the given name and type.
+     *
+     * @param name the bean name
+     * @param type the bean type
+     * @return the matching bean
+     */
+    public static <T> T getBean(String name, Class<T> type) {
+        return getContext().getBean(name, type);
+    }
+
+    /**
      * Helper to return the application context associated with the current
      * thread.
      *

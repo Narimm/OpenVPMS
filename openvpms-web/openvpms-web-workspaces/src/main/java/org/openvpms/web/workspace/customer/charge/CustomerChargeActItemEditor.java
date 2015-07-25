@@ -1338,11 +1338,10 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         if (batchEditor != null) {
             batchEditor.removeModifiableListener(batchListener);
             try {
-                Entity selected = null;
-                for (PatientMedicationActEditor editor : getMedicationActEditors()) {
-                    selected = editor.getBatch();
+                PatientMedicationActEditor editor = getMedicationActEditor();
+                if (editor != null) {
+                    batchEditor.setEntity(editor.getBatch());
                 }
-                batchEditor.setEntity(selected);
             } finally {
                 batchEditor.addModifiableListener(batchListener);
             }
@@ -1405,6 +1404,15 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         }
     }
 
+    /**
+     * Returns the medication editor.
+     *
+     * @return the medication editor, or {@code null} if none exists
+     */
+    private PrescriptionMedicationActEditor getMedicationActEditor() {
+        Set<PrescriptionMedicationActEditor> editors = getMedicationActEditors();
+        return !editors.isEmpty() ? editors.iterator().next() : null;
+    }
     /**
      * Returns editors for each of the <em>act.patientMedication</em> acts.
      *

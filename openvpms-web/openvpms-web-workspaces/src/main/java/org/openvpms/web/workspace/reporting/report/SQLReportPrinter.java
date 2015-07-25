@@ -229,7 +229,7 @@ public class SQLReportPrinter extends AbstractPrinter {
      */
     private Connection getConnection() {
         try {
-            DataSource ds = ServiceHelper.getDataSource();
+            DataSource ds = ServiceHelper.getBean("reportingDataSource", DataSource.class);
             return ds.getConnection();
         } catch (SQLException exception) {
             throw new SQLReportException(ConnectionError, exception);
