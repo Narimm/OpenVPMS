@@ -80,8 +80,20 @@ public class LaboratoryCancellationServiceImpl extends ServicesMessageReceiver {
      */
     @Override
     public void process(Message message, IMObjectReference location) throws HL7Exception {
-        List<Act> order = processor.process((ORM_O01) message, location);
-        getService().save(order);
+        List<Act> acts = process((ORM_O01) message, location);
+        getService().save(acts);
+    }
+
+    /**
+     * Processes a message.
+     *
+     * @param message  the message
+     * @param location the practice location
+     * @return the acts
+     * @throws HL7Exception for any HL7 error
+     */
+    protected List<Act> process(ORM_O01 message, IMObjectReference location) throws HL7Exception {
+        return processor.process(message, location);
     }
 
 }

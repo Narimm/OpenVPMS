@@ -32,7 +32,8 @@ import org.openvpms.web.workspace.patient.history.PatientInvestigationActEditor;
  * <em>act.customerReturnInvestigation</em> acts.
  * <p/>
  * Unlike other {@link OrderInvoicer} implementations, this does not support the charging of new investigations,
- * or crediting returns. This is due to the fact that there is not a 1:1
+ * or crediting returns. This is due to the fact that there is not a 1:1 relationship between a charge item and
+ * investigations.
  *
  * @author Tim Anderson
  */
