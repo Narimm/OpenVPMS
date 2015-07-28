@@ -18,28 +18,28 @@ package org.openvpms.web.workspace.admin.hl7;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.hl7.pharmacy.Pharmacies;
+import org.openvpms.hl7.laboratory.Laboratories;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.system.ServiceHelper;
 
 /**
- * An editor for <em>entity.HL7ServicePharmacyGroup</em> archetypes.
+ * An editor for <em>entity.HL7ServiceLaboratoryGroup</em> archetypes.
  * <p/>
- * This ensures that pharmacies have different practice locations.
+ * This ensures that laboratories have different practice locations.
  *
  * @author Tim Anderson
  */
-public class PharmacyGroupEditor extends HL7ServiceGroupEditor {
+public class LaboratoryGroupEditor extends HL7ServiceGroupEditor {
 
     /**
-     * Constructs a {@link {PharmacyGroupEditor}}.
+     * Constructs a {@link {LaboratoryGroupEditor}}.
      *
      * @param object        the object to edit
      * @param parent        the parent object. May be {@code null}
      * @param layoutContext the layout context
      */
-    public PharmacyGroupEditor(Entity object, IMObject parent, LayoutContext layoutContext) {
-        super(object, parent, ServiceHelper.getBean(Pharmacies.class), layoutContext);
+    public LaboratoryGroupEditor(Entity object, IMObject parent, LayoutContext layoutContext) {
+        super(object, parent, ServiceHelper.getBean(Laboratories.class), layoutContext);
     }
 
 }

@@ -147,7 +147,7 @@ public class HL7MappingCRUDWindow extends AbstractViewCRUDWindow<Entity> {
         LookupMappings mappings = importer.load(document);
         if (!mappings.getErrors().isEmpty()) {
             List<LookupMapping> errors = mappings.getErrors();
-            LookupMappingImportErrorDialog dialog = new LookupMappingImportErrorDialog(errors, help.subtopic("errors"));
+            LookupMappingImportErrorDialog dialog = new LookupMappingImportErrorDialog(errors, help.subtopic("error"));
             dialog.show();
         } else {
             InformationDialog.show(Messages.get("admin.hl7.mapping.import.title"),
