@@ -27,11 +27,25 @@
         <data collection="mapping" archetype="entityLink.HL7Mapping" source="id:HL7R1" target="id:HL7CM"/>
     </data>
 
-    <data id="HL7P1" archetype="entity.HL7ServicePharmacy" name="Main Clinic Pharmacy" active="false">
+    <data id="HL7P1" archetype="entity.HL7ServicePharmacy" name="Cubex - Main Clinic"
+          description="Main Clinic Pharmacy Service" active="false">
         <data collection="sender" archetype="entityLink.HL7ServiceSender" source="id:HL7P1" target="id:HL7S1"/>
         <data collection="receiver" archetype="entityLink.HL7ServiceReceiver" source="id:HL7P1" target="id:HL7R1"/>
         <data collection="location" archetype="entityLink.HL7ServiceLocation" source="id:HL7P1" target="id:OL1"/>
         <data collection="user" archetype="entityLink.HL7ServiceUser" source="id:HL7P1" target="id:ADMIN"/>
+    </data>
+
+    <data id="HL7P2" archetype="entity.HL7ServicePharmacy" name="Cubex - Branch Clinic"
+          description="Branch Clinic Pharmacy Service" active="false">
+        <data collection="sender" archetype="entityLink.HL7ServiceSender" source="id:HL7P2" target="id:HL7S1"/>
+        <data collection="location" archetype="entityLink.HL7ServiceLocation" source="id:HL7P1" target="id:OL2"/>
+        <data collection="user" archetype="entityLink.HL7ServiceUser" source="id:HL7P1" target="id:ADMIN"/>
+    </data>
+
+    <data id="HL7PG" archetype="entity.HL7ServicePharmacyGroup" name="Cubex"
+          description="Cubex Pharmacy" active="false">
+        <data collection="services" archetype="entityLink.HL7PharmacyGroupPharmacy" source="id:HL7PG" target="id:HL7P1"/>
+        <data collection="services" archetype="entityLink.HL7PharmacyGroupPharmacy" source="id:HL7PG" target="id:HL7P2"/>
     </data>
 
     <data id="HL7CM" archetype="entity.HL7MappingCubex" name="Cubex Mapping"/>

@@ -113,10 +113,10 @@ public class LookupMappingCSVReader extends AbstractCSVReader {
             checkFields(line, lineNo);
             fromType = getString(line, FROM_TYPE, lineNo, true);
             fromCode = getString(line, FROM_CODE, lineNo, true);
-            fromName = getString(line, FROM_NAME, lineNo, false);
+            fromName = getString(line, FROM_NAME, lineNo, true);
             toType = getString(line, TO_TYPE, lineNo, true);
             toCode = getString(line, TO_CODE, lineNo, true);
-            toName = getString(line, TO_NAME, lineNo, false);
+            toName = getString(line, TO_NAME, lineNo, true);
             data.add(new LookupMapping(fromType, fromCode, fromName, toType, toCode, toName, lineNo));
         } catch (CSVReaderException exception) {
             LookupMapping invalid = new LookupMapping(fromType, fromCode, fromName, toType, toCode, toName, lineNo);
