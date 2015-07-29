@@ -154,7 +154,7 @@ public class ConsultWorkflow extends WorkflowImpl {
         addTask(new GetConsultInvoiceTask());
         addTask(new ConditionalCreateTask(CustomerAccountArchetypes.INVOICE));
         if (setClinician) {
-            addTask(new UpdateClinicianTask(CustomerAccountArchetypes.INVOICE));
+            addTask(new UpdateInvoiceClinicianTask());
         }
 
         // edit the act.patientClinicalEvent in a local context, propagating the patient, customer and clinician on
@@ -221,7 +221,7 @@ public class ConsultWorkflow extends WorkflowImpl {
     private Task createBilledTask(Act act) {
         String shortName = act.getArchetypeId().getShortName();
         NodeConditionTask<String> invoiceCompleted
-                = new NodeConditionTask<String>(CustomerAccountArchetypes.INVOICE, "status", ActStatus.COMPLETED);
+                = new NodeConditionTask<>(CustomerAccountArchetypes.INVOICE, "status", ActStatus.COMPLETED);
         TaskProperties billProps = new TaskProperties();
         billProps.add("status", WorkflowStatus.BILLED);
         UpdateIMObjectTask billTask = new UpdateIMObjectTask(shortName, billProps, true);
@@ -236,7 +236,17 @@ public class ConsultWorkflow extends WorkflowImpl {
          * @param shortName the short name of the object to update
          */
         public UpdateClinicianTask(String shortName) {
-            super(shortName, new TaskProperties());
+            this(shortName, true);
+        }
+
+        /**
+         * Constructs an {@link UpdateClinicianTask}.
+         *
+         * @param shortName the short name of the object to update
+         * @param save      determines if the object should be saved
+         */
+        public UpdateClinicianTask(String shortName, boolean save) {
+            super(shortName, new TaskProperties(), save);
         }
 
         /**
@@ -259,4 +269,27 @@ public class ConsultWorkflow extends WorkflowImpl {
         }
     }
 
+    private class UpdateInvoiceClinicianTask extends UpdateClinicianTask {
+
+        /**
+         * Constructs an {@link UpdateInvoiceClinicianTask}.
+         */
+        public UpdateInvoiceClinicianTask() {
+            super(CustomerAccountArchetypes.INVOICE, false); // don't save the invoice. It may be invalid
+        }
+
+        /**
+         * Executes the task.
+         *
+         * @param context the task context
+         */
+        @Override
+        public void execute(TaskContext context) {
+            // only update the clinician if the invoice isn't POSTED
+            Act object = (Act) getObject(context);
+            if (object != null && !ActStatus.POSTED.equals(object.getStatus())) {
+                super.execute(context);
+            }
+        }
+    }
 }
