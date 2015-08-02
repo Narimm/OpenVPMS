@@ -1,22 +1,23 @@
 /*
  * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.doc;
 
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
+import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -26,7 +27,6 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -37,6 +37,7 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.event.ActionListener;
 
 
 /**
@@ -72,9 +73,15 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
     private boolean deleteAct = false;
 
     /**
+     * The handler to use when uploading documents. May be {@code null}
+     */
+    private DocumentHandler handler;
+
+
+    /**
      * @param participation the participation to edit
      * @param parent        the parent entity
-     * @param context       the layout context. May be {@code null}.
+     * @param context       the layout context
      */
     public AbstractDocumentParticipationEditor(Participation participation, Entity parent, LayoutContext context) {
         super(participation, parent, context);
@@ -83,7 +90,7 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
             entity.setValue(parent.getObjectReference());
         }
         getDocumentAct(); // get/create the document act
-        selector = new BasicSelector<DocumentAct>("button.upload");
+        selector = new BasicSelector<>("button.upload");
         selector.getSelect().addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 onSelect();
@@ -101,6 +108,15 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
      */
     public void setDeleteAct(boolean delete) {
         this.deleteAct = delete;
+    }
+
+    /**
+     * Sets the handler to use when uploading documents.
+     *
+     * @param handler the handler. May be {@code null}
+     */
+    public void setDocumentHandler(DocumentHandler handler) {
+        this.handler = handler;
     }
 
     /**
@@ -237,7 +253,6 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
                 participation.setAct(act.getObjectReference());
                 act.addParticipation(participation);
             }
-
         }
         return act;
     }
@@ -249,6 +264,16 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
      */
     protected abstract DocumentAct createDocumentAct();
 
+    /**
+     * Helper to create a document act.
+     *
+     * @param shortName the document act short name
+     * @return a new document act
+     */
+    protected DocumentAct createDocumentAct(String shortName) {
+        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+        return (DocumentAct) service.create(shortName);
+    }
 
     /**
      * Creates the layout strategy.
@@ -262,8 +287,7 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
                 // do nothing
             }
 
-            public ComponentState apply(IMObject object, PropertySet properties,
-                                        IMObject parent,
+            public ComponentState apply(IMObject object, PropertySet properties, IMObject parent,
                                         LayoutContext context) {
                 return new ComponentState(selector.getComponent());
             }
@@ -280,7 +304,7 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
     }
 
     protected void onSelect() {
-        UploadListener listener = new DocumentUploadListener() {
+        UploadListener listener = new DocumentUploadListener(handler) {
             protected void upload(Document doc) {
                 onUpload(doc);
             }
@@ -297,6 +321,20 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
     protected void onUpload(Document document) {
         IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
         service.save(document);
+        populateDocumentAct(act, document);
+        replaceDocReference(document);
+        updateDisplay(act);
+        docModified = true;
+    }
+
+    /**
+     * Populates a document act with details from a document.
+     *
+     * @param act      the act to populate
+     * @param document the document
+     */
+    protected void populateDocumentAct(DocumentAct act, Document document) {
+        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
         act.setFileName(document.getName());
         service.deriveValue(act, "name");
         act.setMimeType(document.getMimeType());
@@ -305,9 +343,6 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
         } else {
             act.setDescription(getParent().getName());
         }
-        replaceDocReference(document);
-        updateDisplay(act);
-        docModified = true;
     }
 
     /**

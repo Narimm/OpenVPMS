@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
@@ -111,7 +112,7 @@ public class QueryHelper {
      */
     public static <T extends IMObject> boolean selects(ResultSet<T> set, IMObjectReference reference) {
         boolean result = false;
-        Iterator<T> iter = new ResultSetIterator<T>(set);
+        Iterator<T> iter = new ResultSetIterator<>(set);
         while (iter.hasNext()) {
             if (iter.next().getObjectReference().equals(reference)) {
                 result = true;
@@ -128,7 +129,7 @@ public class QueryHelper {
      * @return the matching objects
      */
     public static <T extends IMObject> List<T> query(ArchetypeQuery query) {
-        List<T> matches = new ArrayList<T>();
+        List<T> matches = new ArrayList<>();
         CollectionUtils.addAll(matches, new IMObjectQueryIterator<T>(query));
         return matches;
     }
@@ -140,10 +141,10 @@ public class QueryHelper {
      * @return the matching objects
      */
     public static <T extends IMObject> List<T> query(Query<T> query) {
-        List<T> matches = new ArrayList<T>();
+        List<T> matches = new ArrayList<>();
         ResultSet<T> set = query.query();
         if (set != null) {
-            CollectionUtils.addAll(matches, new ResultSetIterator<T>(set));
+            CollectionUtils.addAll(matches, new ResultSetIterator<>(set));
         }
         return matches;
     }
@@ -303,6 +304,23 @@ public class QueryHelper {
     }
 
     /**
+     * Returns the first participation linked to an entity.
+     *
+     * @param entity    the entity
+     * @param shortName the participation short name to match on
+     * @return the first participation, or {@code null} if none is found
+     */
+    public static Participation getParticipation(Entity entity, String shortName) {
+        ArchetypeQuery query = new ArchetypeQuery(shortName, true, true);
+        query.add(Constraints.eq("entity", entity));
+        query.add(Constraints.sort("id"));
+        query.setFirstResult(0);
+        query.setMaxResults(1);
+        List<IMObject> rows = query(query);
+        return (!rows.isEmpty()) ? (Participation) rows.get(0) : null;
+    }
+
+    /**
      * Returns a unique alias for an entity constraint.
      *
      * @param prefix the alias prefix
@@ -319,7 +337,6 @@ public class QueryHelper {
             String alias = arch.getAlias();
             if (alias != null && alias.startsWith(prefix)) {
                 String suffix = alias.substring(prefix.length());
-                if (suffix != null) {
                     try {
                         int id = Integer.valueOf(suffix);
                         if (id > maxId) {
@@ -328,7 +345,6 @@ public class QueryHelper {
                     } catch (NumberFormatException ignore) {
                         // do nothing
                     }
-                }
                 for (IConstraint child : arch.getConstraints()) {
                     maxId = getAliasSuffix(prefix, child, maxId);
                 }

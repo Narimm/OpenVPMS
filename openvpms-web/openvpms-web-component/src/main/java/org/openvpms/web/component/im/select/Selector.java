@@ -330,7 +330,7 @@ public abstract class Selector<T extends IMObject> {
         } else if (buttonStyle == ButtonStyle.LEFT) {
             // display button(s) on the left
             child = RowFactory.create(Styles.CELL_SPACING, objectComponent);
-            child.add(getButtons(component), 0);
+            child.add(getButtons(child), 0);
         } else {
             // no buttons
             container.add(objectComponent);

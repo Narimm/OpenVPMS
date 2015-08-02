@@ -23,18 +23,6 @@
     <!-- Reporting                                                                                              -->
     <!-- ====================================================================================================== -->
 
-    <!-- the Document handlers -->
-    <bean id="documentHandlers"
-          class="org.openvpms.archetype.rules.doc.DocumentHandlers">
-        <property name="documentHandlers">
-            <list>
-                <bean class="org.openvpms.report.jasper.JRXMLDocumentHandler">
-                    <constructor-arg ref="archetypeRuleService"/>
-                </bean>
-            </list>
-        </property>
-    </bean>
-
     <bean id="printService" class="org.openvpms.report.openoffice.PrintService">
         <constructor-arg ref="openOfficeConnectionPool"/>
         <constructor-arg ref="documentHandlers"/>

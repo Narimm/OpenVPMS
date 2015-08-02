@@ -11,14 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.doc;
 
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 import java.io.ByteArrayInputStream;
@@ -36,8 +35,7 @@ import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.ReadE
 /**
  * Generic document handler.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractDocumentHandler implements DocumentHandler {
 
@@ -53,22 +51,12 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
 
 
     /**
-     * Creates a new <code>AbstractDocumentHandler</code>
-     *
-     * @param shortName the document archetype short name
-     */
-    public AbstractDocumentHandler(String shortName) {
-        this(shortName, ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Creates a new <code>AbstractDocumentHandler</code>.
+     * Constructs an {@link AbstractDocumentHandler}.
      *
      * @param shortName the document archetype short name
      * @param service   the archetype service
      */
-    public AbstractDocumentHandler(String shortName,
-                                   IArchetypeService service) {
+    public AbstractDocumentHandler(String shortName, IArchetypeService service) {
         this.shortName = shortName;
         this.service = service;
     }
@@ -77,8 +65,8 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
      * Determines if this handler supports a document.
      *
      * @param name     the document name
-     * @param mimeType the mime type of the document. May be <code>null</code>
-     * @return <code>true</code> if this handler supports the document
+     * @param mimeType the mime type of the document. May be {@code null}
+     * @return {@code true} if this handler supports the document
      */
     public boolean canHandle(String name, String mimeType) {
         return true;
@@ -89,11 +77,11 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
      *
      * @param name      the document name
      * @param shortName the document archetype short name
-     * @param mimeType  the mime type of the document. May be <code>null</code>
-     * @return <code>true</code> if this handler supports the document
+     * @param mimeType  the mime type of the document. May be {@code null}
+     * @return {@code true} if this handler supports the document
      */
     public boolean canHandle(String name, String shortName, String mimeType) {
-        return this.shortName.equals(shortName);
+        return this.shortName.equals(shortName) && canHandle(name, mimeType);
     }
 
     /**
@@ -101,15 +89,13 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
      *
      * @param name     the document name. Any path information is removed.
      * @param stream   a stream representing the document content
-     * @param mimeType the mime type of the content. May be <code>null</code>
-     * @param size     the size of stream, or <tt>-1</tt> if the size is not
-     *                 known
+     * @param mimeType the mime type of the content. May be {@code null}
+     * @param size     the size of stream, or {@code -1} if the size is not known
      * @return a new document
      * @throws DocumentException         if the document can't be created
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Document create(String name, InputStream stream, String mimeType,
-                           int size) {
+    public Document create(String name, InputStream stream, String mimeType, int size) {
         byte[] buffer = new byte[1024];
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         DeflaterOutputStream output = new DeflaterOutputStream(bytes);
@@ -137,7 +123,7 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
      * Determines if this handler supports a document.
      *
      * @param document the document
-     * @return <code>true</code> if this handler supports the document
+     * @return {@code true} if this handler supports the document
      * @throws DocumentException for any error
      */
     public boolean canHandle(Document document) {
@@ -152,8 +138,7 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
      * @throws DocumentException for any error
      */
     public InputStream getContent(Document document) {
-        ByteArrayInputStream bytes
-                = new ByteArrayInputStream(document.getContents());
+        ByteArrayInputStream bytes = new ByteArrayInputStream(document.getContents());
         return new InflaterInputStream(bytes);
     }
 
@@ -162,7 +147,7 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
      *
      * @param name     the document name. Any path information is removed.
      * @param content  the serialized content
-     * @param mimeType the mime type of the content. May be <code>null</code>
+     * @param mimeType the mime type of the content. May be {@code null}
      * @param size     the uncompressed document size
      * @return a new document
      * @throws DocumentException         if the document can't be created
@@ -177,15 +162,14 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
      *
      * @param name     the document name. Any path information is removed.
      * @param content  the serialized content
-     * @param mimeType the mime type of the content. May be <code>null</code>
+     * @param mimeType the mime type of the content. May be {@code null}
      * @param size     the uncompressed document size
      * @param checksum the uncompressed document CRC32 checksum
      * @return a new document
      * @throws DocumentException         if the document can't be created
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Document create(String name, byte[] content, String mimeType,
-                           int size, long checksum) {
+    public Document create(String name, byte[] content, String mimeType, int size, long checksum) {
         if (name != null) {
             // strip path information
             File file = new File(name);
@@ -211,4 +195,14 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
         checksum.update(content);
         return checksum.getValue();
     }
+
+    /**
+     * Returns the archetype service.
+     *
+     * @return the archetype service
+     */
+    protected IArchetypeService getService() {
+        return service;
+    }
+
 }

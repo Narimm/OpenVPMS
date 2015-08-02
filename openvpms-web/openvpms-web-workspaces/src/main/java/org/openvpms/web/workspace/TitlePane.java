@@ -18,18 +18,25 @@ package org.openvpms.web.workspace;
 
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Extent;
+import nextapp.echo2.app.ImageReference;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.RowLayoutData;
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.user.UserRules;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.doc.ImageCache;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
+import org.openvpms.web.component.im.query.QueryHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -37,6 +44,7 @@ import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.pane.ContentPane;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Collections;
 import java.util.List;
@@ -65,6 +73,11 @@ public class TitlePane extends ContentPane {
     private final Context context;
 
     /**
+     * The logo.
+     */
+    private Label logo;
+
+    /**
      * The location selector.
      */
     private SelectField locationSelector;
@@ -76,7 +89,7 @@ public class TitlePane extends ContentPane {
 
 
     /**
-     * Construct a new {@code TitlePane}.
+     * Constructs a {@link TitlePane}.
      *
      * @param practiceRules the practice rules
      * @param userRules     the user rules
@@ -95,7 +108,7 @@ public class TitlePane extends ContentPane {
     protected void doLayout() {
         setStyleName(STYLE);
 
-        Label logo = LabelFactory.create(null, "logo");
+        logo = LabelFactory.create(null, "logo");
         RowLayoutData centre = new RowLayoutData();
         centre.setAlignment(new Alignment(Alignment.DEFAULT, Alignment.CENTER));
         logo.setLayoutData(centre);
@@ -123,6 +136,7 @@ public class TitlePane extends ContentPane {
                     changeLocation();
                 }
             });
+            setLogo(defLocation);
         }
 
         Row inset = RowFactory.create("InsetX", locationUserRow);
@@ -150,6 +164,27 @@ public class TitlePane extends ContentPane {
     private void changeLocation() {
         Party selected = (Party) locationSelector.getSelectedItem();
         context.setLocation(selected);
+        setLogo(selected);
+    }
+
+    /**
+     * Sets the logo for the practice location.
+     *
+     * @param location the location. May be {@code null}
+     */
+    private void setLogo(Party location) {
+        ImageReference ref = null;
+        if (location != null) {
+            Participation participation = QueryHelper.getParticipation(location, DocumentArchetypes.LOGO_PARTICIPATION);
+            if (participation != null) {
+                DocumentAct act = (DocumentAct) IMObjectHelper.getObject(participation.getAct(), context);
+                if (act != null) {
+                    ImageCache cache = ServiceHelper.getBean(ImageCache.class);
+                    ref = cache.getImage(act);
+                }
+            }
+        }
+        logo.setIcon(ref);
     }
 
     /**

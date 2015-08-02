@@ -1,17 +1,17 @@
 /*
  * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.admin.organisation;
 
@@ -22,14 +22,13 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.im.doc.AbstractDocumentParticipationEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.style.Styles;
 
 
 /**
@@ -47,7 +46,7 @@ public class SubscriptionParticipationEditor extends AbstractDocumentParticipati
     /**
      * @param participation the participation to edit
      * @param parent        the parent entity
-     * @param context       the layout context. May be <tt>null</tt>.
+     * @param context       the layout context. May be {@code null}.
      */
     public SubscriptionParticipationEditor(Participation participation, Party parent, LayoutContext context) {
         super(participation, parent, context);
@@ -71,7 +70,7 @@ public class SubscriptionParticipationEditor extends AbstractDocumentParticipati
                                         LayoutContext context) {
                 viewer.setSubscription(getDocumentAct());
                 Component selector = getSelector().getComponent();
-                Row row = RowFactory.create("CellSpacing", viewer.getComponent(), selector);
+                Row row = RowFactory.create(Styles.CELL_SPACING, viewer.getComponent(), selector);
                 return new ComponentState(row);
             }
         };
@@ -84,8 +83,7 @@ public class SubscriptionParticipationEditor extends AbstractDocumentParticipati
      */
     @Override
     protected DocumentAct createDocumentAct() {
-        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
-        return (DocumentAct) service.create("act.subscription");
+        return createDocumentAct("act.subscription");
     }
 
     /**
