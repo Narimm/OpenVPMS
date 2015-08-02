@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -37,6 +37,7 @@ import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -57,6 +58,11 @@ public class DocumentActDownloader extends Downloader {
      * Determines if the document should be downloaded as a template.
      */
     private final boolean asTemplate;
+
+    /**
+     * Determines if the description should be displayed. If not, just the name is displayed.
+     */
+    private final boolean showDescription;
 
     /**
      * The context.
@@ -92,9 +98,22 @@ public class DocumentActDownloader extends Downloader {
      * @param context    the context
      */
     public DocumentActDownloader(DocumentAct act, boolean asTemplate, Context context) {
+        this(act, asTemplate, false, context);
+    }
+
+    /**
+     * Constructs a {@link DocumentActDownloader}.
+     *
+     * @param act             the act
+     * @param asTemplate      determines if the document should be downloaded as a template
+     * @param showDescription determines if the description should be displayed. If not, just the name is displayed
+     * @param context         the context
+     */
+    public DocumentActDownloader(DocumentAct act, boolean asTemplate, boolean showDescription, Context context) {
         this.act = act;
         this.context = context;
         this.asTemplate = asTemplate;
+        this.showDescription = showDescription;
     }
 
     /**
@@ -122,6 +141,9 @@ public class DocumentActDownloader extends Downloader {
                 generated = true;
             }
         }
+
+        String description = showDescription ? act.getDescription() : null;
+
         if (generated) {
             // if the document is generated, then its going to be a PDF, at least for the forseeable future.
             // Fairly expensive to determine the mime type otherwise. TODO
@@ -131,7 +153,8 @@ public class DocumentActDownloader extends Downloader {
                 }
             });
             button.setStyleName(PDF_STYLE_NAME);
-            button.setText(name);
+
+            setButtonName(button, name, description);
         } else {
             button = ButtonFactory.create(new ActionListener() {
                 public void onAction(ActionEvent event) {
@@ -139,7 +162,7 @@ public class DocumentActDownloader extends Downloader {
                 }
             });
             if (name != null) {
-                setButtonStyle(button, name);
+                setButtonNameAndStyle(button, name, description);
             } else {
                 button.setStyleName(DEFAULT_BUTTON_STYLE);
             }
@@ -153,9 +176,9 @@ public class DocumentActDownloader extends Downloader {
             });
             asPDF.setStyleName(PDF_STYLE_NAME);
             asPDF.setProperty(Button.PROPERTY_TOOL_TIP_TEXT, Messages.get("file.download.asPDF.tooltip"));
-            component = RowFactory.create("CellSpacing", button, asPDF);
+            component = RowFactory.create(Styles.CELL_SPACING, button, asPDF);
         } else {
-            component = RowFactory.create("CellSpacing", button);
+            component = RowFactory.create(Styles.CELL_SPACING, button);
         }
         return component;
     }

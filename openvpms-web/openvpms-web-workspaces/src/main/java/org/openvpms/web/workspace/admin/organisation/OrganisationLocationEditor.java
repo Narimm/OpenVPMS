@@ -11,24 +11,35 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.organisation;
 
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.list.DefaultListModel;
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.bound.BoundSelectFieldFactory;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
+import org.openvpms.web.component.im.doc.LogoParticipationEditor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
+import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.QueryHelper;
+import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.print.PrintHelper;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.resource.i18n.Messages;
+
+import java.util.List;
 
 /**
  * Editor for <em>party.organisationLocation</em>
@@ -37,6 +48,7 @@ import org.openvpms.web.component.property.Property;
  * <ul>
  * <li>displays a password field for the "mailPassword" node.
  * <li>displays a list of a available printers for the "defaultPrinter" node
+ * <li>displays an editor for the practice location logo</li>
  * </ul>
  *
  * @author Tim Anderson
@@ -44,14 +56,26 @@ import org.openvpms.web.component.property.Property;
 public class OrganisationLocationEditor extends AbstractIMObjectEditor {
 
     /**
+     * The logo participation editor.
+     */
+    private IMObjectEditor logoParticipationEditor;
+
+    /**
      * Constructs an {@link OrganisationLocationEditor}
      *
      * @param object        the object to edit
      * @param parent        the parent object. May be {@code null}
-     * @param layoutContext the layout context. May be {@code null}.
+     * @param layoutContext the layout context
      */
-    public OrganisationLocationEditor(IMObject object, IMObject parent, LayoutContext layoutContext) {
+    public OrganisationLocationEditor(Party object, IMObject parent, LayoutContext layoutContext) {
         super(object, parent, layoutContext);
+        Participation participation = QueryHelper.getParticipation(object, DocumentArchetypes.LOGO_PARTICIPATION);
+        if (participation == null) {
+            participation = (Participation) IMObjectCreator.create(DocumentArchetypes.LOGO_PARTICIPATION);
+        }
+
+        logoParticipationEditor = new LogoParticipationEditor(participation, object, layoutContext);
+        getEditors().add(logoParticipationEditor);
     }
 
     /**
@@ -64,12 +88,30 @@ public class OrganisationLocationEditor extends AbstractIMObjectEditor {
         return new LocationLayoutStrategy();
     }
 
-    private static class LocationLayoutStrategy extends AbstractLayoutStrategy {
+    private class LocationLayoutStrategy extends AbstractLayoutStrategy {
 
         /**
          * The nodes.
          */
-        private static final ArchetypeNodes NODES = new ArchetypeNodes().simple("pricingGroup");
+        private final ArchetypeNodes NODES = new ArchetypeNodes().simple("pricingGroup");
+
+
+        /**
+         * Lays out components in a grid.
+         *
+         * @param object     the object to lay out
+         * @param properties the properties
+         * @param context    the layout context
+         */
+        @Override
+        protected ComponentGrid createGrid(IMObject object, List<Property> properties, LayoutContext context) {
+            ComponentGrid grid = super.createGrid(object, properties, context);
+            ComponentState logo = new ComponentState(logoParticipationEditor.getComponent(),
+                                                     null, logoParticipationEditor.getFocusGroup(),
+                                                     Messages.get("admin.practice.logo"));
+            grid.add(logo);
+            return grid;
+        }
 
         /**
          * Creates a component for a property.

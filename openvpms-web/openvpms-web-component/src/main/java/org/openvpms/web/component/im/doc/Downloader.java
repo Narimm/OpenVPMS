@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -28,13 +28,13 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.openoffice.OpenOfficeException;
 import org.openvpms.web.echo.servlet.DownloadServlet;
+import org.openvpms.web.resource.i18n.Messages;
 
 
 /**
  * Helper to render a component to download a document.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class Downloader {
 
@@ -158,25 +158,46 @@ public abstract class Downloader {
     }
 
     /**
-     * Helper to set the button style.
+     * Helper to set the button style and name.
+     * <p/>
+     * Long names will be shortened if {@link #nameLength} is > 0}
      *
-     * @param button the button
-     * @param name   the button name. Long names will be shortened if {@link #nameLength} is > 0}
+     * @param button      the button
+     * @param name        the name
+     * @param description the description. May be {@code null}
      */
-    protected void setButtonStyle(Button button, String name) {
+    protected void setButtonNameAndStyle(Button button, String name, String description) {
+        String styleName = getStyleName(name);
+        button.setStyleName(styleName);
+
+        setButtonName(button, name, description);
+    }
+
+    /**
+     * Helper to set the button style.
+     * <p/>
+     * Long names will be shortened if {@link #nameLength} is > 0}
+     *
+     * @param button      the button
+     * @param name        the name
+     * @param description the description. May be {@code null}
+     */
+    protected void setButtonName(Button button, String name, String description) {
+        String text = name;
         String tooltip = null;
-        if (nameLength > 0 && name.length() > nameLength) {
-            tooltip = name;
+        if (description != null) {
+            text = Messages.format("imobject.summary", name, description);
+        }
+        if (nameLength > 0 && text.length() > nameLength) {
+            tooltip = text;
             int start = nameLength / 2 - 1;
             int end = nameLength - start - 3;
-            name = name.substring(0, start) + "..." + name.substring(name.length() - end);
+            text = text.substring(0, start) + "..." + text.substring(text.length() - end);
         }
-        button.setText(name);
+        button.setText(text);
         if (tooltip != null) {
             button.setToolTipText(tooltip);
         }
-        String styleName = getStyleName(name);
-        button.setStyleName(styleName);
     }
 
     /**

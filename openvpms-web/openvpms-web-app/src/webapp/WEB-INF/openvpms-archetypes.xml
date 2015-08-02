@@ -176,4 +176,23 @@
         <constructor-arg ref="txnManager"/>
     </bean>
 
+    <!-- ================================================================== -->
+    <!--                    DOCUMENT HANDLERS                               -->
+    <!-- ================================================================== -->
+
+    <bean id="imageDocumentHandler" class="org.openvpms.archetype.rules.doc.ImageDocumentHandler">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="documentHandlers" class="org.openvpms.archetype.rules.doc.DocumentHandlers">
+        <property name="documentHandlers">
+            <list>
+                <ref bean="imageDocumentHandler"/>
+                <bean class="org.openvpms.report.jasper.JRXMLDocumentHandler">
+                    <constructor-arg ref="archetypeRuleService"/>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
 </beans>

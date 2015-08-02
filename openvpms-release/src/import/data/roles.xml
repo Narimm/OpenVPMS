@@ -558,6 +558,17 @@
           description="Authority to Remove HL7 Message Act"
           serviceName="archetypeService" method="remove" archetypeShortName="act.HL7Message"/>
 
+    <!-- Logo Authorities -->
+    <data id="CDLA" archetype="security.archetypeAuthority" name="Document Logo Act Create"
+          description="Authority to Create Document Logo Act"
+          serviceName="archetypeService" method="create" archetypeShortName="act.documentLogo"/>
+    <data id="SDLA" archetype="security.archetypeAuthority" name="Document Logo Act Save"
+          description="Authority to Save Document Logo Act"
+          serviceName="archetypeService" method="save" archetypeShortName="act.documentLogo"/>
+    <data id="RDLA" archetype="security.archetypeAuthority" name="Document Logo Act Remove"
+          description="Authority to Remove Document Logo Act"
+          serviceName="archetypeService" method="remove" archetypeShortName="act.documentLogo"/>
+
     <!-- ROLES -->
     <!-- Base Role that contains all the commonly required authorities -->
     <data id="ROLE1" archetype="security.role" name="Base Role">
@@ -643,6 +654,9 @@
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CHL7MA"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SHL7MA"/>
         <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RHL7MA"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:CDLA"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:SDLA"/>
+        <data collection="authorities" archetype="security.archetypeAuthority" childId="id:RDLA"/>
     </data>
 
     <data id="ROLE_S" archetype="security.role" name="Stock Control">

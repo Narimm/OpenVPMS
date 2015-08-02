@@ -17,17 +17,17 @@
 package org.openvpms.web.component.im.doc;
 
 /**
- * Layout strategy for <em>participation.document</em> participation relationships.
- * This displays the associated document act name, enabling the document do be downloaded.
+ * Layout strategy for <em>participation.logo</em> participation relationships.
+ * This displays the associated document act name and description, enabling the document do be downloaded.
  *
  * @author Tim Anderson
  */
-public class DocumentParticipationLayoutStrategy extends AbstractDocumentParticipationLayoutStrategy {
+public class LogoParticipationLayoutStrategy extends AbstractDocumentParticipationLayoutStrategy {
 
     /**
      * Default constructor.
      */
-    public DocumentParticipationLayoutStrategy() {
-        super(false);
+    public LogoParticipationLayoutStrategy() {
+        super(true);
     }
 }

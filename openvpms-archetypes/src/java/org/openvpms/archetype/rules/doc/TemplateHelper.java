@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.doc;
@@ -78,7 +78,7 @@ public class TemplateHelper {
         query.add(Constraints.sort("id"));
         query.setFirstResult(0);
         query.setMaxResults(1);
-        Iterator<DocumentAct> iterator = new IMObjectQueryIterator<DocumentAct>(service, query);
+        Iterator<DocumentAct> iterator = new IMObjectQueryIterator<>(service, query);
         if (iterator.hasNext()) {
             DocumentAct act = iterator.next();
             result = (Document) get(act.getDocument());
@@ -99,7 +99,7 @@ public class TemplateHelper {
         Entity result = null;
         ArchetypeQuery query = new ArchetypeQuery(DocumentArchetypes.DOCUMENT_TEMPLATE, false, true);
         query.add(Constraints.sort("id"));
-        Iterator<Entity> iterator = new IMObjectQueryIterator<Entity>(service, query);
+        Iterator<Entity> iterator = new IMObjectQueryIterator<>(service, query);
         while (iterator.hasNext()) {
             Entity template = iterator.next();
             if (hasArchetype(template, shortName)) {
@@ -209,7 +209,7 @@ public class TemplateHelper {
      * <em>entity.documentTemplate</em>.
      *
      * @param template the template. An <em>entity.documentTemplate</em>
-     * @return the document act, or <code>null</code> if none exists
+     * @return the document act, or {@code null} if none exists
      * @throws ArchetypeServiceException for any archetype service error
      */
     public DocumentAct getDocumentAct(Entity template) {
@@ -226,12 +226,11 @@ public class TemplateHelper {
      * <em>entity.documentTemplate</em>.
      *
      * @param template the document template entity
-     * @return the participation, or <code>null</code> if none exists
+     * @return the participation, or {@code null} if none exists
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Participation getDocumentParticipation(Entity template) {
-        ArchetypeQuery query = new ArchetypeQuery("participation.document",
-                                                  true, true);
+        ArchetypeQuery query = new ArchetypeQuery(DocumentArchetypes.DOCUMENT_PARTICIPATION, true, true);
         query.add(new ObjectRefNodeConstraint("entity",
                                               template.getObjectReference()));
         query.setFirstResult(0);
@@ -256,9 +255,8 @@ public class TemplateHelper {
     /**
      * Helper to return an object given its reference.
      *
-     * @param ref the object reference. May be <code>null</code>
-     * @return the object corresponding to ref or <code>null</code> if none is
-     *         found
+     * @param ref the object reference. May be {@code null}
+     * @return the object corresponding to ref or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     private IMObject get(IMObjectReference ref) {

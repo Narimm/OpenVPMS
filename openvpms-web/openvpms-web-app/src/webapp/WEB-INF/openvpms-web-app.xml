@@ -106,6 +106,14 @@
         <constructor-arg ref="practiceRules"/>
     </bean>
 
+    <bean id="imageCache" class="org.openvpms.web.component.im.doc.ImageCache">
+        <constructor-arg ref="documentHandlers"/>
+        <!--
+        By default, images are stored in an ImageCache directory under that pointed to by javax.servlet.context.tempdir.
+        This can be changed by passing an explicit directory e.g.:
+        <constructor-arg value="file:c:\tmp"/>
+        -->
+    </bean>
     <!-- ================================================================== -->
     <!--                        FACTORIES                                   -->
     <!-- ================================================================== -->
