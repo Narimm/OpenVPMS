@@ -119,6 +119,7 @@ public class ImageDocumentHandler extends AbstractDocumentHandler {
                 }
             }
             buffered.reset();
+            buffered.mark(0); // don't want to buffer any longer
             document = super.create(name, buffered, mimeType, size);
         } catch (IOException exception) {
             throw new DocumentException(DocumentException.ErrorCode.ReadError, exception);

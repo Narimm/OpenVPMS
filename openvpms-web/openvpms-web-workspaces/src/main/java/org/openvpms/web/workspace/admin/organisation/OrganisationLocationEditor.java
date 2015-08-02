@@ -109,7 +109,7 @@ public class OrganisationLocationEditor extends AbstractIMObjectEditor {
             ComponentState logo = new ComponentState(logoParticipationEditor.getComponent(),
                                                      null, logoParticipationEditor.getFocusGroup(),
                                                      Messages.get("admin.practice.logo"));
-            grid.add(logo);
+            grid.add(logo, 2);
             return grid;
         }
 
