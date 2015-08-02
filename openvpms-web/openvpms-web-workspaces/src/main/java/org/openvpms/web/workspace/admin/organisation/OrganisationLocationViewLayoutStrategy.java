@@ -57,10 +57,27 @@ public class OrganisationLocationViewLayoutStrategy extends AbstractLayoutStrate
     protected ComponentGrid createGrid(IMObject object, List<Property> properties, LayoutContext context) {
         ComponentGrid grid = super.createGrid(object, properties, context);
         ComponentState logo = getLogo(object, context);
-        grid.add(logo);
+        grid.add(logo, 2);
         return grid;
     }
 
+    /**
+     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
+     *
+     * @return the archetype nodes
+     */
+    @Override
+    protected ArchetypeNodes getArchetypeNodes() {
+        return NODES;
+    }
+
+    /**
+     * Returns a component representing the practice location logo.
+     *
+     * @param object  the practice location
+     * @param context the layout context
+     * @return a new component
+     */
     private ComponentState getLogo(IMObject object, LayoutContext context) {
         Participation participation = QueryHelper.getParticipation((Entity) object,
                                                                    DocumentArchetypes.LOGO_PARTICIPATION);
@@ -74,13 +91,4 @@ public class OrganisationLocationViewLayoutStrategy extends AbstractLayoutStrate
         return logo;
     }
 
-    /**
-     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-     *
-     * @return the archetype nodes
-     */
-    @Override
-    protected ArchetypeNodes getArchetypeNodes() {
-        return NODES;
-    }
 }
