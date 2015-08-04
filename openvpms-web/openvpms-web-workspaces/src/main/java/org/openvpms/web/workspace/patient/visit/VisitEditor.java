@@ -371,13 +371,20 @@ public class VisitEditor {
 
     /**
      * Returns the component.
+     * <p/>
+     * NOTE: this uses a tabbed pane, with its height set by the VisitEditor.TabbedPane style.
+     * This is necessary for the reminders, documents, prescriptions and estimates tabs which contain SplitPanes.
+     * The parent container must have a height in order for these to render correctly.
+     * Unfortunately, this means that if the dialog is resized vertically, the contents don't grow to fill the available
+     * space.
+     * Without the split panes, the TabbedPane.setHeightStretched(true) can be used to allow the content to grow.
      *
      * @return the component
      */
     public Component getComponent() {
         if (container == null) {
             container = ColumnFactory.create("InsetY");
-            ObjectTabPaneModel<VisitEditorTab> model = new ObjectTabPaneModel<VisitEditorTab>(container);
+            ObjectTabPaneModel<VisitEditorTab> model = new ObjectTabPaneModel<>(container);
             addTabs(model);
             tabbedPane = TabbedPaneFactory.create(model);
             tabbedPane.setStyleName("VisitEditor.TabbedPane");
@@ -595,10 +602,10 @@ public class VisitEditor {
      * @return a new window
      */
     protected VisitBrowserCRUDWindow<DocumentAct> createDocumentBrowserCRUDWindow(Context context) {
-        Query<DocumentAct> query = new PatientDocumentQuery<DocumentAct>(patient);
+        Query<DocumentAct> query = new PatientDocumentQuery<>(patient);
         Browser<DocumentAct> browser = BrowserFactory.create(query, new DefaultLayoutContext(context, help));
         VisitDocumentCRUDWindow window = new VisitDocumentCRUDWindow(context, help.subtopic("document"));
-        VisitBrowserCRUDWindow<DocumentAct> result = new VisitBrowserCRUDWindow<DocumentAct>(browser, window);
+        VisitBrowserCRUDWindow<DocumentAct> result = new VisitBrowserCRUDWindow<>(browser, window);
         result.setId(DOCUMENT_TAB);
         return result;
     }
