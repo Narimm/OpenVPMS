@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.delivery;
@@ -32,6 +32,7 @@ import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.workspace.supplier.SupplierActQuery;
 
 import java.util.Date;
@@ -93,8 +94,8 @@ public class PostedOrderQuery extends SupplierActQuery<FinancialAct> {
     protected void doLayout(Component container) {
         if (includeDateRange) {
             // include the date range, and set the from date to 1 month prior
-            Row row1 = RowFactory.create("CellSpacing");
-            Row row2 = RowFactory.create("CellSpacing");
+            Row row1 = RowFactory.create(Styles.CELL_SPACING);
+            Row row2 = RowFactory.create(Styles.CELL_SPACING);
 
             addSupplierSelector(row1);
             addStockLocationSelector(row1);
@@ -117,13 +118,16 @@ public class PostedOrderQuery extends SupplierActQuery<FinancialAct> {
      * @param sort         the sort criteria
      * @return a new result set
      */
-    protected ActResultSet<FinancialAct> createResultSet(
-            ParticipantConstraint[] participants, SortConstraint[] sort) {
-        return new ActResultSet<FinancialAct>(getArchetypeConstraint(),
-                                              participants, null, null,
-                                              getStatuses(), false,
-                                              getConstraints(), getMaxResults(),
-                                              sort);
+    protected ActResultSet<FinancialAct> createResultSet(ParticipantConstraint[] participants, SortConstraint[] sort) {
+        Date from = null;
+        Date to = null;
+        if (includeDateRange) {
+            DateRange range = getDateRange();
+            from = range.getFrom();
+            to = range.getTo();
+        }
+        return new ActResultSet<>(getArchetypeConstraint(), participants, from, to, getStatuses(), false,
+                                  getConstraints(), getMaxResults(), sort);
     }
 
     /**
