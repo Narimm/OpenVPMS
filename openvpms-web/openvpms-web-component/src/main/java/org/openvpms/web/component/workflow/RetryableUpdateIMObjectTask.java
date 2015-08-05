@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workflow;
@@ -66,16 +66,34 @@ public class RetryableUpdateIMObjectTask extends UpdateIMObjectTask {
         }
     }
 
+    /**
+     * Updates an object, and saves it.
+     *
+     * @param object  the object to update
+     * @param context the context
+     */
+    protected void update(IMObject object, TaskContext context) {
+        populate(object, context);
+        ServiceHelper.getArchetypeService().save(object);
+    }
+
+    /**
+     * Updates an object and saves it.
+     *
+     * @param first   if {@code true}, this is the first invocation
+     * @param context the context
+     * @return {@code true} if the object exists, otherwise {@code false}
+     */
     private boolean update(boolean first, TaskContext context) {
         IMObject object = getObject(context);
         if (!first) {
             object = IMObjectHelper.reload(object);
         }
         if (object != null) {
-            populate(object, context);
-            ServiceHelper.getArchetypeService().save(object);
+            update(object, context);
             return true;
         }
         return false;
     }
+
 }

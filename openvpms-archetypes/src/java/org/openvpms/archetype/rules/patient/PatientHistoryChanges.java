@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -33,6 +34,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -67,27 +69,27 @@ public class PatientHistoryChanges {
     /**
      * The events, keyed on reference.
      */
-    private Map<IMObjectReference, Act> events = new HashMap<IMObjectReference, Act>();
+    private Map<IMObjectReference, Act> events = new HashMap<>();
 
     /**
      * The events for a patient, keyed on reference.
      */
-    private Map<IMObjectReference, List<Act>> eventsByPatient = new HashMap<IMObjectReference, List<Act>>();
+    private Map<IMObjectReference, List<Act>> eventsByPatient = new HashMap<>();
 
     /**
      * The acts to save.
      */
-    private Map<IMObjectReference, Act> toSave = new HashMap<IMObjectReference, Act>();
+    private Map<IMObjectReference, Act> toSave = new HashMap<>();
 
     /**
      * Used to determine if an event was new, prior to {@link #save()} being invoked.
      */
-    private Set<IMObjectReference> newEvents = new HashSet<IMObjectReference>();
+    private Set<IMObjectReference> newEvents = new HashSet<>();
 
     /**
      * The objects to remove.
      */
-    private Set<IMObject> toRemove = new HashSet<IMObject>();
+    private Set<IMObject> toRemove = new HashSet<>();
 
     /**
      * Constructs a {@link PatientHistoryChanges}.
@@ -120,7 +122,7 @@ public class PatientHistoryChanges {
                     if (patient != null) {
                         List<Act> events = eventsByPatient.get(patient);
                         if (events == null) {
-                            events = new ArrayList<Act>();
+                            events = new ArrayList<>();
                             eventsByPatient.put(patient, events);
                         }
                         events.add(event);
@@ -183,7 +185,7 @@ public class PatientHistoryChanges {
             if (patient != null) {
                 List<Act> acts = eventsByPatient.get(patient);
                 if (acts == null) {
-                    acts = new ArrayList<Act>();
+                    acts = new ArrayList<>();
                     eventsByPatient.put(patient, acts);
                 }
                 acts.add(event);
@@ -330,6 +332,21 @@ public class PatientHistoryChanges {
      */
     public boolean isNew(Act event) {
         return newEvents.contains(event.getObjectReference());
+    }
+
+    /**
+     * Marks events as being completed, setting their end time.
+     *
+     * @param endTime the end time
+     */
+    public void complete(Date endTime) {
+        for (Act event : events.values()) {
+            if (!toRemove.contains(event)) {
+                event.setStatus(ActStatus.COMPLETED);
+                event.setActivityEndTime(endTime);
+                changed(event);
+            }
+        }
     }
 
     /**

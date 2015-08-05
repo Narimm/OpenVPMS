@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.customer.charge;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
@@ -60,6 +61,7 @@ import org.openvpms.web.system.ServiceHelper;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -141,7 +143,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
      * @return the acts
      */
     private List<Act> getOrderActs() {
-        List<Act> acts = new ArrayList<Act>();
+        List<Act> acts = new ArrayList<>();
         for (Act item : getItems().getActs()) {
             IMObjectEditor editor = getItems().getEditor(item);
             if (editor instanceof CustomerChargeActItemEditor) {
@@ -186,9 +188,9 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
      * @return the list of unprinted documents
      */
     public List<Act> getUnprintedDocuments(List<Act> exclude) {
-        List<Act> result = new ArrayList<Act>();
+        List<Act> result = new ArrayList<>();
         ActRelationshipCollectionEditor items = getItems();
-        Set<IMObjectReference> excludeRefs = new HashSet<IMObjectReference>();
+        Set<IMObjectReference> excludeRefs = new HashSet<>();
         for (Act excluded : exclude) {
             excludeRefs.add(excluded.getObjectReference());
         }
@@ -322,7 +324,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
      * @return invoice items that have
      */
     public List<Act> getNonDispensedItems() {
-        List<Act> result = new ArrayList<Act>();
+        List<Act> result = new ArrayList<>();
         if (orderPlacer != null) {
             for (Act item : getItems().getCurrentActs()) {
                 IMObjectEditor editor = getItems().getEditor(item);
@@ -380,9 +382,13 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
 
             saved = super.doSave();
             if (saved) {
-                if (TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE)) {
+                boolean invoice = TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE);
+                if (changes != null && invoice) {
                     // link the items to their corresponding clinical events
                     linkToEvents(changes);
+                    if (ActStatus.POSTED.equals(getStatus())) {
+                        changes.complete(new Date());
+                    }
 
                     // mark reminders that match the new reminders completed
                     if (!reminders.isEmpty()) {
@@ -394,7 +400,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                     chargeContext.save();
                 }
 
-                if (TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE)) {
+                if (invoice) {
                     Set<Act> updated = orderPlacer.order(getOrderActs(), changes);
                     if (!updated.isEmpty()) {
                         // need to save the items again. This time do it skipping rules
@@ -449,7 +455,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
      */
     protected void linkToEvents(PatientHistoryChanges changes) {
         ChargeItemEventLinker linker = new ChargeItemEventLinker(ServiceHelper.getArchetypeService());
-        List<FinancialAct> items = new ArrayList<FinancialAct>();
+        List<FinancialAct> items = new ArrayList<>();
         for (Act act : getItems().getActs()) {
             items.add((FinancialAct) act);
         }
@@ -597,7 +603,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
      */
     private List<Act> getNewReminders() {
         ActRelationshipCollectionEditor items = getItems();
-        List<Act> reminders = new ArrayList<Act>();
+        List<Act> reminders = new ArrayList<>();
         for (IMObjectEditor editor : items.getEditors()) {
             if (editor instanceof DefaultCustomerChargeActItemEditor) {
                 DefaultCustomerChargeActItemEditor charge = (DefaultCustomerChargeActItemEditor) editor;

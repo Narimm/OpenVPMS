@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -160,12 +161,12 @@ public class CheckOutWorkflow extends WorkflowImpl {
 
         // on save, determine if the user wants to post the invoice, but
         // only if its not already posted
-        NodeConditionTask<String> notPosted = new NodeConditionTask<String>(
+        NodeConditionTask<String> notPosted = new NodeConditionTask<>(
                 CustomerAccountArchetypes.INVOICE, "status", false, FinancialActStatus.POSTED);
         addTask(new ConditionalTask(notPosted, getPostTask()));
 
         // if the invoice is posted, prompt to pay the account
-        NodeConditionTask<String> posted = new NodeConditionTask<String>(
+        NodeConditionTask<String> posted = new NodeConditionTask<>(
                 CustomerAccountArchetypes.INVOICE, "status", FinancialActStatus.POSTED);
 
         PaymentWorkflow payWorkflow = createPaymentWorkflow(initial);
@@ -175,21 +176,13 @@ public class CheckOutWorkflow extends WorkflowImpl {
         // add the most recent clinical event to the context
         addTask(new GetClinicalEventTask(act.getActivityStartTime()));
 
-        // print acts and documents created since the visit or invoice was
-        // created
+        // print acts and documents created since the visit or invoice was created
         addTask(new PrintTask(act, help.subtopic("print")));
 
         // update the most recent act.patientClinicalEvent, setting it status to COMPLETED and endTime to now, if one
-        // is present. Use a retryable task to handle concurrent update conflicts
-        TaskProperties eventProperties = new TaskProperties();
-        eventProperties.add("status", ActStatus.COMPLETED);
-        eventProperties.add(new Variable("endTime") {
-            public Object getValue(TaskContext context) {
-                return new Date();
-            }
-        });
-        addTask(new ConditionalUpdateTask(CLINICAL_EVENT,
-                                          new RetryableUpdateIMObjectTask(CLINICAL_EVENT, eventProperties)));
+        // is present. Use a retryable task to handle concurrent update conflicts.
+        // If the invoice was posted, the event should already be completed.
+        addTask(new ConditionalUpdateTask(CLINICAL_EVENT, new UpdateEventTask()));
         addTask(new DischargeTask());
     }
 
@@ -319,8 +312,8 @@ public class CheckOutWorkflow extends WorkflowImpl {
         /**
          * Creates a new confirmation dialog.
          *
-         * @param context
-         * @param help the help context
+         * @param context the context
+         * @param help    the help context
          * @return a new confirmation dialog
          */
         @Override
@@ -420,6 +413,38 @@ public class CheckOutWorkflow extends WorkflowImpl {
                                                       context.getLocation(), context.getClinician());
             PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
             service.discharged(pc, context.getUser());
+        }
+    }
+
+    /**
+     * Updates the patient clinical event, if it is not already completed.
+     */
+    private static class UpdateEventTask extends RetryableUpdateIMObjectTask {
+
+        /**
+         * Constructs an {@link UpdateEventTask}.
+         */
+        public UpdateEventTask() {
+            super(CLINICAL_EVENT, createProperties());
+        }
+
+        @Override
+        protected void update(IMObject object, TaskContext context) {
+            Act act = (Act) object;
+            if (ActStatus.IN_PROGRESS.equals(act.getStatus())) {
+                super.update(object, context);
+            }
+        }
+
+        private static TaskProperties createProperties() {
+            TaskProperties properties = new TaskProperties();
+            properties.add("status", ActStatus.COMPLETED);
+            properties.add(new Variable("endTime") {
+                public Object getValue(TaskContext context) {
+                    return new Date();
+                }
+            });
+            return properties;
         }
     }
 
