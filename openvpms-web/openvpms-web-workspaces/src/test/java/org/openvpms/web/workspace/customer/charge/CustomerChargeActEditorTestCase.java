@@ -1229,7 +1229,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         Act event = records.getEvent(patient);  // get the clinical event. Should be null if not an invoice
         if (invoice) {
             assertNotNull(event);
-            checkEvent(event, patient, author, clinician, location);
+            checkEvent(event, patient, author, clinician, location, ActStatus.COMPLETED);
         } else {
             assertNull(event);
         }
@@ -1366,7 +1366,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         Act event = records.getEvent(patient);  // get the clinical event. Should be null if not an invoice
         if (invoice) {
             assertNotNull(event);
-            checkEvent(event, patient, author, clinician, location);
+            checkEvent(event, patient, author, clinician, location, ActStatus.IN_PROGRESS);
         } else {
             assertNull(event);
         }
@@ -1428,13 +1428,15 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      * @param author    the expected author
      * @param clinician the expected clinician
      * @param location  the expected location
+     * @param status    the expected status
      */
-    private void checkEvent(Act event, Party patient, User author, User clinician, Party location) {
+    private void checkEvent(Act event, Party patient, User author, User clinician, Party location, String status) {
         ActBean bean = new ActBean(event);
         assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
         assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
         assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
         assertEquals(location.getObjectReference(), bean.getNodeParticipantRef("location"));
+        assertEquals(status, event.getStatus());
     }
 
     /**
