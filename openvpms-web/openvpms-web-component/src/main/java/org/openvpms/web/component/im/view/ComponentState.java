@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -147,7 +147,7 @@ public class ComponentState {
      * The property associated with the component.
      *
      * @return the property associated with the component, or {@code null}
-     *         if the component isn't associated with a node
+     * if the component isn't associated with a node
      */
     public Property getProperty() {
         return property;
@@ -157,7 +157,7 @@ public class ComponentState {
      * Returns the component's focus group.
      *
      * @return the component's focus group, or {@code null} if the
-     *         component is a simple component or doesn't receive focus
+     * component is a simple component or doesn't receive focus
      */
     public FocusGroup getFocusGroup() {
         return focusGroup;
@@ -210,6 +210,16 @@ public class ComponentState {
      */
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    /**
+     * Sets the visibility state of the label and component.
+     *
+     * @param visible if {@code true} shows the label and component, otherwise hides them
+     */
+    public void setVisible(boolean visible) {
+        getLabel().setVisible(visible);
+        component.setVisible(visible);
     }
 
     /**

@@ -55,6 +55,7 @@
         <constructor-arg ref="locationRules"/>
         <constructor-arg ref="userRules"/>
         <constructor-arg ref="sessionMonitor"/>
+        <constructor-arg ref="preferences"/>
         <property name="styleSheets" ref="userStyleSheets"/>
     </bean>
 
@@ -68,6 +69,8 @@
     </bean>
 
     <bean id="browserStates" class="org.openvpms.web.component.im.query.BrowserStates" scope="session"/>
+
+    <bean id="preferences" class="org.openvpms.web.component.app.UserPreferences" scope="session"/>
 
     <bean id="messageMonitor" class="org.openvpms.web.workspace.workflow.messaging.MessageMonitor">
         <constructor-arg ref="archetypeRuleService"/>
