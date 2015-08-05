@@ -18,11 +18,11 @@ package org.openvpms.web.workspace.patient.mr;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -32,6 +32,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
+import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.patient.PatientActEditor;
@@ -42,14 +43,20 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.SimpleProperty;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
-import org.openvpms.web.echo.text.TitledTextArea;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
+
+import static org.openvpms.web.workspace.patient.mr.PatientMedicationActLayoutStrategy.LABEL;
+import static org.openvpms.web.workspace.patient.mr.PatientMedicationActLayoutStrategy.PRODUCT;
+import static org.openvpms.web.workspace.patient.mr.PatientMedicationActLayoutStrategy.QUANTITY;
 
 
 /**
@@ -67,7 +74,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
     /**
      * Usage notes text.
      */
-    private TitledTextArea usageNotes;
+    private SimpleProperty usageNotes;
 
     /**
      * Determines if the product node should be displayed read-only.
@@ -86,9 +93,24 @@ public class PatientMedicationActEditor extends PatientActEditor {
     private ComponentState expiryDate;
 
     /**
+     * Component to display the usage notes.
+     */
+    private ComponentState usageComponent;
+
+    /**
      * Listener for batch update events.
      */
     private final ModifiableListener batchListener;
+
+    /**
+     * Medication product usage notes node name.
+     */
+    private static final String USAGE_NOTES = "usageNotes";
+
+    /**
+     * Dispensing instructions node name.
+     */
+    private static final String INSTRUCTIONS = "dispInstructions";
 
     /**
      * Batch node name.
@@ -108,11 +130,14 @@ public class PatientMedicationActEditor extends PatientActEditor {
             throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
         }
 
-        dispensingUnits = LabelFactory.create();
-        String displayName = DescriptorHelper.getDisplayName(ProductArchetypes.MEDICATION, "usageNotes");
-        usageNotes = new TitledTextArea(displayName);
-        usageNotes.setEnabled(false);
+        // create a property to hold the medication usage notes, if any.
+        NodeDescriptor node = DescriptorHelper.getNode(ProductArchetypes.MEDICATION, USAGE_NOTES,
+                                                       ServiceHelper.getArchetypeService());
+        usageNotes = new SimpleProperty(node.getName(), null, String.class, node.getDisplayName());
+        usageNotes.setMaxLength(node.getMaxLength());
+        usageNotes.setReadOnly(true);
 
+        dispensingUnits = LabelFactory.create();
         expiryDate = getLayoutContext().getComponentFactory().create(getProperty("endTime"), act);
 
 
@@ -128,14 +153,14 @@ public class PatientMedicationActEditor extends PatientActEditor {
 
         boolean updated = false;
         if (parent != null) {
+            // update the product from the parent if possible
             ActBean bean = new ActBean(parent);
-            if (bean.hasNode("product")) {
-                // update the product from the parent
-                Product product = (Product) getObject(bean.getNodeParticipantRef("product"));
+            if (bean.hasNode(PRODUCT)) {
+                Product product = (Product) getObject(bean.getNodeParticipantRef(PRODUCT));
                 if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
                     updated = setProduct(product);
-                    if (bean.hasNode("quantity")) {
-                        setQuantity(bean.getBigDecimal("quantity"));
+                    if (bean.hasNode(QUANTITY)) {
+                        setQuantity(bean.getBigDecimal(QUANTITY));
                     }
                 } else {
                     updated = setProduct(null);
@@ -156,7 +181,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
      * @return {@code true} if the product was modified
      */
     public boolean setProduct(Product product) {
-        boolean result = setParticipant("product", product);
+        boolean result = setParticipant(PRODUCT, product);
         if (result) {
             if (getProductEditor() == null) {
                 productModified(product); // only invoke if the product participation changed
@@ -171,7 +196,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
      * @return the product. May be {@code null}
      */
     public Product getProduct() {
-        return (Product) getParticipant("product");
+        return (Product) getParticipant(PRODUCT);
     }
 
     /**
@@ -189,7 +214,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
      * @param quantity the quantity
      */
     public void setQuantity(BigDecimal quantity) {
-        getProperty("quantity").setValue(quantity);
+        getProperty(QUANTITY).setValue(quantity);
     }
 
     /**
@@ -198,7 +223,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
      * @return the quantity
      */
     public BigDecimal getQuantity() {
-        return getProperty("quantity").getBigDecimal();
+        return getProperty(QUANTITY).getBigDecimal();
     }
 
     /**
@@ -211,14 +236,13 @@ public class PatientMedicationActEditor extends PatientActEditor {
         this.prescription = prescription;
     }
 
-
     /**
      * Sets the dispensing instructions label.
      *
      * @param instructions the dispensing instructions
      */
     public void setLabel(String instructions) {
-        Property label = getProperty("label");
+        Property label = getProperty(LABEL);
         label.setValue(instructions);
     }
 
@@ -260,10 +284,31 @@ public class PatientMedicationActEditor extends PatientActEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         PatientMedicationActLayoutStrategy strategy = new PatientMedicationActLayoutStrategy() {
+            /**
+             * Lays out components in a grid.
+             *
+             * @param object     the object to lay out
+             * @param properties the properties
+             * @param context    the layout context
+             * @param columns    the no. of columns to use
+             */
+            @Override
+            protected ComponentGrid createGrid(IMObject object, List<Property> properties, LayoutContext context,
+                                               int columns) {
+                ComponentGrid grid = super.createGrid(object, properties, context, columns);
+                usageComponent = createNotes(object, usageNotes, context);
+                Component label = ColumnFactory.create(usageComponent.getLabel());
+                Component text = ColumnFactory.create(usageComponent.getComponent());
+                text.setLayoutData(ComponentGrid.layout(1, columns * 2 - 1));
+                usageComponent.setVisible(usageNotes.getValue() != null);
+                grid.add(label, text);
+                return grid;
+            }
+
             @Override
             protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
                 ComponentState state = super.createComponent(property, parent, context);
-                if ("quantity".equals(property.getName())) {
+                if (QUANTITY.equals(property.getName())) {
                     Component component = RowFactory.create(Styles.CELL_SPACING, state.getComponent(), dispensingUnits);
                     state = new ComponentState(component, property);
                 }
@@ -272,7 +317,6 @@ public class PatientMedicationActEditor extends PatientActEditor {
         };
         strategy.setProductReadOnly(showProductReadOnly);
         strategy.setDispensedFromPrescription(prescription);
-        strategy.setUsageNotes(usageNotes);
         strategy.addComponent(expiryDate);
         return strategy;
     }
@@ -303,8 +347,8 @@ public class PatientMedicationActEditor extends PatientActEditor {
     protected void productModified(Product product) {
         if (product != null) {
             IMObjectBean bean = new IMObjectBean(product);
-            if (bean.hasNode("dispInstructions")) {
-                String dispInstructions = bean.getString("dispInstructions");
+            if (bean.hasNode(INSTRUCTIONS)) {
+                String dispInstructions = bean.getString(INSTRUCTIONS);
                 setLabel(dispInstructions);
             }
         }
@@ -335,10 +379,12 @@ public class PatientMedicationActEditor extends PatientActEditor {
         String notes = "";
         if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
             IMObjectBean bean = new IMObjectBean(product);
-            notes = bean.getString("usageNotes");
+            notes = bean.getString(USAGE_NOTES);
         }
-        usageNotes.setText(notes);
-        usageNotes.setVisible(!StringUtils.isEmpty(notes));
+        usageNotes.setValue(notes);
+        if (usageComponent != null) {
+            usageComponent.setVisible(notes != null);
+        }
     }
 
     /**
@@ -365,7 +411,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
      * @return the product editor, or {@code null} if none exists
      */
     private ProductParticipationEditor getProductEditor() {
-        ParticipationEditor<Product> editor = getParticipationEditor("product", false);
+        ParticipationEditor<Product> editor = getParticipationEditor(PRODUCT, false);
         return (ProductParticipationEditor) editor;
     }
 
