@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -163,10 +163,9 @@ public class ReportParameters {
      * @return the parameter values
      */
     public Map<String, Object> getValues() {
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
         for (Property property : properties) {
             result.put(property.getName(), property.getValue());
-
         }
         return result;
     }
@@ -180,7 +179,7 @@ public class ReportParameters {
      * @return the properties
      */
     private List<Property> createProperties(Set<ParameterType> parameters, Object context, Variables variables) {
-        List<Property> result = new ArrayList<Property>();
+        List<Property> result = new ArrayList<>();
         for (ParameterType type : parameters) {
             if (!type.isSystem()) {
                 SimpleProperty property = new SimpleProperty(type.getName(), type.getType());
@@ -231,8 +230,9 @@ public class ReportParameters {
         protected Component createString(Property property, int columns) {
             Component result;
             if (property.getMaxLength() == -1 || property.getMaxLength() > NodeDescriptor.DEFAULT_MAX_LENGTH) {
-                TextArea text = BoundTextComponentFactory.createTextArea(property, columns, 5);
-                text.setWidth(Styles.FULL_WIDTH);
+                TextArea text = BoundTextComponentFactory.createTextArea(property, columns, 2);
+                text.setWidth(new Extent(95, Extent.PERCENT));
+                // 100% doesn't respect insets unless 'box-sizing: border-box' is used
                 result = text;
             } else {
                 result = super.createString(property, columns);
