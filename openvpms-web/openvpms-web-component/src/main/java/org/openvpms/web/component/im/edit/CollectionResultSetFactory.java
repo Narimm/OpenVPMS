@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMTableModel;
@@ -28,15 +29,16 @@ import org.openvpms.web.component.im.table.IMTableModel;
  */
 public interface CollectionResultSetFactory {
 
-    static final int DEFAULT_ROWS = IMTableCollectionEditor.ROWS;
+    int DEFAULT_ROWS = IMTableCollectionEditor.ROWS;
 
     /**
      * Creates a new result set.
      *
      * @param property the collection property
+     * @param context  the context
      * @return a new result set
      */
-    ResultSet<IMObject> createResultSet(CollectionPropertyEditor property);
+    ResultSet<IMObject> createResultSet(CollectionPropertyEditor property, Context context);
 
     /**
      * Creates a table model to display the result set.

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -170,7 +170,7 @@ public abstract class IMObjectTableCollectionEditor extends IMTableCollectionEdi
      * @return a new result set
      */
     protected ResultSet<IMObject> createResultSet() {
-        return resultSetFactory.createResultSet(getCollectionPropertyEditor());
+        return resultSetFactory.createResultSet(getCollectionPropertyEditor(), getContext().getContext());
     }
 
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -171,7 +171,7 @@ public abstract class IMTableCollectionViewer<T>
      */
     protected Component doLayout() {
         Column column = new IMObjectCollectionComponent();
-        column.setStyleName("WideCellSpacing");
+        column.setStyleName(Styles.CELL_SPACING);
         column.add(getTable());
         populateTable();
         return column;
@@ -225,7 +225,7 @@ public abstract class IMTableCollectionViewer<T>
      */
     protected List<IMObject> getObjects() {
         List values = property.getValues();
-        List<IMObject> objects = new ArrayList<IMObject>();
+        List<IMObject> objects = new ArrayList<>();
         for (Object value : values) {
             objects.add((IMObject) value);
         }
@@ -251,7 +251,7 @@ public abstract class IMTableCollectionViewer<T>
      */
     protected PagedIMTable<T> createTable() {
         IMTableModel<T> tableModel = createTableModel(getLayoutContext());
-        PagedIMTable<T> table = new PagedIMTable<T>(tableModel);
+        PagedIMTable<T> table = new PagedIMTable<>(tableModel);
         table.getTable().addActionListener(new ActionListener() {
             public void onAction(ActionEvent e) {
                 onBrowse();
@@ -270,8 +270,8 @@ public abstract class IMTableCollectionViewer<T>
         if (model instanceof SortableTableModel) {
             // if no column is currently sorted, sort on the default (if any)
             SortableTableModel sortable = ((SortableTableModel) model);
-            if (sortable.getSortColumn() == -1 && sortable.getDefaultSortColumn() != -1) {
-                sortable.sort(sortable.getDefaultSortColumn(), true);
+            if (sortable.getSortColumn() == -1 && model.getDefaultSortColumn() != -1) {
+                sortable.sort(model.getDefaultSortColumn(), model.getDefaultSortAscending());
             }
         }
     }

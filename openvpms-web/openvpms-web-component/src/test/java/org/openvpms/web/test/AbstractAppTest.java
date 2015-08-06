@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.test;
@@ -27,6 +27,7 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.UserPreferences;
 
 
 /**
@@ -45,7 +46,7 @@ public abstract class AbstractAppTest extends ArchetypeServiceTest {
         LocationRules locationRules = new LocationRules(getArchetypeService());
         UserRules userRules = new UserRules(getArchetypeService());
         ContextApplicationInstance app = new ContextApplicationInstance(new GlobalContext(), rules, locationRules,
-                                                                        userRules) {
+                                                                        userRules, new UserPreferences()) {
             /**
              * Switches the current workspace to display an object.
              *

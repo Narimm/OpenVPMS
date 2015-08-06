@@ -1,31 +1,37 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.app.UserPreferences;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.table.DelegatingIMTableModel;
+import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.view.act.ActRelationshipCollectionViewer;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.echo.button.CheckBox;
+import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.CheckBoxFactory;
+import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -33,35 +39,82 @@ import org.openvpms.web.component.property.CollectionProperty;
  * <em>actRelationship.customerAccountCreditItem</em> act relationships.
  * Sorts the items on descending start time.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
-public class ChargeItemRelationshipCollectionViewer
-    extends ActRelationshipCollectionViewer {
+public class ChargeItemRelationshipCollectionViewer extends ActRelationshipCollectionViewer {
 
     /**
-     * Constructs a new <tt>ChargeItemRelationshipCollectionViewer</tt>.
+     * Constructs a {@link ChargeItemRelationshipCollectionViewer}.
      *
      * @param property the collection property
      * @param act      the parent act
      * @param context  the layout context
      */
-    public ChargeItemRelationshipCollectionViewer(CollectionProperty property,
-                                                  Act act,
-                                                  LayoutContext context) {
+    public ChargeItemRelationshipCollectionViewer(CollectionProperty property, Act act, LayoutContext context) {
         super(property, act, context);
     }
 
     /**
-     * Creates a new result set for display.
+     * Lays out the component.
      *
-     * @return a new result set
+     * @return a new component
      */
     @Override
-    protected ResultSet<IMObject> createResultSet() {
-        ResultSet<IMObject> set = super.createResultSet();
-        set.sort(new SortConstraint[]{new NodeSortConstraint("startTime",
-                                                             false)});
-        return set;
+    protected Component doLayout() {
+        Component component = super.doLayout();
+        component.add(createControls(), 0);
+        return component;
     }
+
+    /**
+     * Create controls to show/hide columns.
+     *
+     * @return a row of controls
+     */
+    protected Row createControls() {
+        Row row = RowFactory.create(Styles.CELL_SPACING);
+        final UserPreferences preferences = ServiceHelper.getPreferences();
+        boolean showTemplate = preferences.getShowTemplateDuringCharging();
+        boolean showProductType = preferences.getShowProductTypeDuringCharging();
+        final CheckBox template = CheckBoxFactory.create("customer.charge.show.template", showTemplate);
+        final CheckBox productType = CheckBoxFactory.create("customer.charge.show.productType", showProductType);
+        template.addActionListener(new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                preferences.setShowTemplateDuringCharging(template.isSelected());
+                ChargeItemTableModel model = getModel();
+                if (model != null) {
+                    model.setShowTemplate(preferences.getShowTemplateDuringCharging());
+                }
+            }
+        });
+        productType.addActionListener(new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                preferences.setShowProductTypeDuringCharging(productType.isSelected());
+                ChargeItemTableModel model = getModel();
+                if (model != null) {
+                    model.setShowTemplate(preferences.getShowProductTypeDuringCharging());
+                }
+            }
+        });
+        row.add(template);
+        row.add(productType);
+        return row;
+    }
+
+    /**
+     * Returns the underlying table model.
+     *
+     * @return the underlying table model, or {@code null} if it is not of the expected type
+     */
+    private ChargeItemTableModel getModel() {
+        IMTableModel result = null;
+        IMTableModel relationshipModel = getTable().getModel().getModel();
+        if (relationshipModel instanceof DelegatingIMTableModel) {
+            result = ((DelegatingIMTableModel) relationshipModel).getModel();
+        }
+        return (result instanceof ChargeItemTableModel) ? (ChargeItemTableModel) result : null;
+    }
+
 }

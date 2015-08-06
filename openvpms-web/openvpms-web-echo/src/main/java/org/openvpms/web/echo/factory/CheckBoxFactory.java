@@ -17,6 +17,7 @@
 package org.openvpms.web.echo.factory;
 
 
+import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.web.echo.button.CheckBox;
 
 /**
@@ -61,6 +62,20 @@ public class CheckBoxFactory extends ComponentFactory {
     public static CheckBox create(String key, boolean value) {
         CheckBox box = create(key);
         box.setSelected(value);
+        return box;
+    }
+
+    /**
+     * Creates a new check box with localised label, initial value and listener.
+     *
+     * @param key      the resource bundle key. May be {@code null}
+     * @param value    the initial value
+     * @param listener the listener
+     * @return a new check box
+     */
+    public static CheckBox create(String key, boolean value, ActionListener listener) {
+        CheckBox box = create(key, value);
+        box.addActionListener(listener);
         return box;
     }
 

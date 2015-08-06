@@ -34,8 +34,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public abstract class AbstractIMTableModel<T> extends AbstractTableModel
-        implements IMTableModel<T> {
+public abstract class AbstractIMTableModel<T> extends AbstractTableModel implements IMTableModel<T> {
 
     /**
      * The column model.
@@ -46,6 +45,16 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
      * The objects.
      */
     private List<T> objects = new ArrayList<T>();
+
+    /**
+     * The default sort column, or {@code -1} if there is no default.
+     */
+    private int defaultSortColumn = -1;
+
+    /**
+     * Determines if the default sort column should sort ascending or descending.
+     */
+    private boolean defaultSortAscending = true;
 
     /**
      * Determines if selection should be enabled.
@@ -186,6 +195,39 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
             result = str;
         }
         return result;
+    }
+
+    /**
+     * Returns the default sort column.
+     *
+     * @return the default sort column, or {@code -1} if there is no default.
+     */
+    @Override
+    public int getDefaultSortColumn() {
+        return defaultSortColumn;
+    }
+
+    /**
+     * Sets the default sort column.
+     *
+     * @param column the column, or {@code -1} if there is no default
+     */
+    public void setDefaultSortColumn(int column) {
+        this.defaultSortColumn = column;
+    }
+
+    /**
+     * Determines if the default sort column should sort ascending or descending.
+     *
+     * @return {@code true} if it should sort ascending, {@code false}
+     */
+    @Override
+    public boolean getDefaultSortAscending() {
+        return defaultSortAscending;
+    }
+
+    public void setDefaultSortAscending(boolean ascending) {
+        defaultSortAscending = ascending;
     }
 
     /**

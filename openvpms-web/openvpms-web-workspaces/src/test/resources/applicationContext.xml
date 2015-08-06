@@ -265,6 +265,7 @@
         <constructor-arg ref="locationRules"/>
         <constructor-arg ref="userRules"/>
         <constructor-arg ref="sessionMonitor"/>
+        <constructor-arg ref="preferences"/>
     </bean>
 
     <bean id="sessionMonitor" class="org.openvpms.web.echo.servlet.SessionMonitor"/>
@@ -276,6 +277,8 @@
     <bean id="userStyleSheets" class="org.openvpms.web.echo.style.UserStyleSheets">
         <constructor-arg index="0" ref="styleSheetCache"/>
     </bean>
+
+    <bean id="preferences" class="org.openvpms.web.component.app.UserPreferences"/>
 
     <bean id="messageMonitor" class="org.openvpms.web.workspace.workflow.messaging.MessageMonitor">
         <constructor-arg ref="defaultArchetypeService"/>

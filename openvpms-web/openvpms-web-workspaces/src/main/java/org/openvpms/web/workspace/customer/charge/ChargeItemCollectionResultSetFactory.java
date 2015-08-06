@@ -11,18 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.edit.ActCollectionResultSetFactory;
-import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
-import org.openvpms.web.component.im.query.ResultSet;
 
 /**
  * An implementation of the {@link CollectionResultSetFactory} for charge items.
@@ -44,16 +39,4 @@ public class ChargeItemCollectionResultSetFactory extends ActCollectionResultSet
     protected ChargeItemCollectionResultSetFactory() {
     }
 
-    /**
-     * Creates a new result set.
-     *
-     * @param property the collection property
-     * @return a new result set
-     */
-    @Override
-    public ResultSet<IMObject> createResultSet(CollectionPropertyEditor property) {
-        ResultSet<IMObject> set = super.createResultSet(property);
-        set.sort(new SortConstraint[]{new NodeSortConstraint("startTime", false)});
-        return set;
-    }
 }

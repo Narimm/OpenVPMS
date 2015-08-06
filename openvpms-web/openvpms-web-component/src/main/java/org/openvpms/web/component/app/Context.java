@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.app;
@@ -38,82 +38,82 @@ public interface Context {
     /**
      * Practice short name.
      */
-    public static final String PRACTICE_SHORTNAME = "party.organisationPractice";
+    String PRACTICE_SHORTNAME = "party.organisationPractice";
 
     /**
      * Location short name.
      */
-    public static final String LOCATION_SHORTNAME = "party.organisationLocation";
+    String LOCATION_SHORTNAME = "party.organisationLocation";
 
     /**
      * Stock location short name.
      */
-    public static final String STOCK_LOCATION_SHORTNAME = "party.organisationStockLocation";
+    String STOCK_LOCATION_SHORTNAME = "party.organisationStockLocation";
 
     /**
      * Customer short name.
      */
-    public static final String CUSTOMER_SHORTNAME = "party.customer*";
+    String CUSTOMER_SHORTNAME = "party.customer*";
 
     /**
      * Patient short name.
      */
-    public static final String PATIENT_SHORTNAME = "party.patient*";
+    String PATIENT_SHORTNAME = "party.patient*";
 
     /**
      * Supplier short name.
      */
-    public static final String SUPPLIER_SHORTNAME = "party.supplier*";
+    String SUPPLIER_SHORTNAME = "party.supplier*";
 
     /**
      * Product short name.
      */
-    public static final String PRODUCT_SHORTNAME = "product.*";
+    String PRODUCT_SHORTNAME = "product.*";
 
     /**
      * Till short name.
      */
-    public static final String TILL_SHORTNAME = "party.organisationTill";
+    String TILL_SHORTNAME = "party.organisationTill";
 
     /**
      * Bank Deposit short name.
      */
-    public static final String DEPOSIT_SHORTNAME = "party.organisationDeposit";
+    String DEPOSIT_SHORTNAME = "party.organisationDeposit";
 
     /**
      * Clinician short name.
      */
-    public static final String CLINICIAN_SHORTNAME = "security.user";
+    String CLINICIAN_SHORTNAME = "security.user";
 
     /**
      * Schedule view short name.
      */
-    public static final String SCHEDULE_VIEW_SHORTNAME = "entity.organisationScheduleView";
+    String SCHEDULE_VIEW_SHORTNAME = "entity.organisationScheduleView";
 
     /**
      * Schedule short name.
      */
-    public static final String SCHEDULE_SHORTNAME = "party.organisationSchedule";
+    String SCHEDULE_SHORTNAME = "party.organisationSchedule";
 
     /**
      * Appointment short name.
      */
-    public static final String APPOINTMENT_SHORTNAME = ScheduleArchetypes.APPOINTMENT;
+    String APPOINTMENT_SHORTNAME = ScheduleArchetypes.APPOINTMENT;
 
     /**
      * Work list view short name.
      */
-    public static final String WORKLIST_VIEW_SHORTNAME = "entity.organisationWorkListView";
+    String WORKLIST_VIEW_SHORTNAME = "entity.organisationWorkListView";
 
     /**
      * Work list short name.
      */
-    public static final String WORKLIST_SHORTNAME = "party.organisationWorkList";
+    String WORKLIST_SHORTNAME = "party.organisationWorkList";
 
     /**
      * Task short name.
      */
-    public static final String TASK_SHORTNAME = ScheduleArchetypes.TASK;
+    String TASK_SHORTNAME = ScheduleArchetypes.TASK;
 
     /**
      * Sets the current object being viewed/edited.

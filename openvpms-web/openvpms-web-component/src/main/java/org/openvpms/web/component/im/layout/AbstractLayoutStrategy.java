@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.layout;
@@ -232,6 +232,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param object     the object to lay out
      * @param properties the properties
      * @param context    the layout context
+     * @param columns    the no. of columns to use
      */
     protected ComponentGrid createGrid(IMObject object, List<Property> properties, LayoutContext context, int columns) {
         ComponentSet set = createComponentSet(object, properties, context);

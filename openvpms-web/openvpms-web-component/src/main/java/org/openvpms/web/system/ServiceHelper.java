@@ -30,6 +30,7 @@ import org.openvpms.esci.adapter.client.OrderServiceAdapter;
 import org.openvpms.esci.adapter.client.SupplierServiceLocator;
 import org.openvpms.macro.Macros;
 import org.openvpms.sms.ConnectionFactory;
+import org.openvpms.web.component.app.UserPreferences;
 import org.openvpms.web.echo.spring.SpringApplicationInstance;
 import org.springframework.context.ApplicationContext;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -176,6 +177,15 @@ public final class ServiceHelper {
      */
     public static ConnectionFactory getSMSConnectionFactory() {
         return getBean(ConnectionFactory.class);
+    }
+
+    /**
+     * Returns the user preferences.
+     *
+     * @return the user preferences
+     */
+    public static UserPreferences getPreferences() {
+        return getContext().getBean(UserPreferences.class);
     }
 
     /**

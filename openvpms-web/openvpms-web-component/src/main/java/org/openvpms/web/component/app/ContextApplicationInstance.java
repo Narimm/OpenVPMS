@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.app;
@@ -89,9 +89,10 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
      * @param practiceRules the practice rules
      * @param locationRules the location rules
      * @param userRules     the user rules
+     * @param preferences   the user preferences
      */
     public ContextApplicationInstance(GlobalContext context, PracticeRules practiceRules, LocationRules locationRules,
-                                      UserRules userRules) {
+                                      UserRules userRules, UserPreferences preferences) {
         this.context = context;
         this.practiceRules = practiceRules;
         this.locationRules = locationRules;
@@ -99,6 +100,7 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
         initUser();
         initPractice();
         initLocation();
+        initPrefs(preferences);
         context.addListener(new ContextListener() {
             public void changed(String key, IMObject value) {
                 if (Context.LOCATION_SHORTNAME.equals(key)) {
@@ -286,29 +288,34 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
      * @throws ArchetypeServiceException for any archetype service error
      */
     private void initLocation() {
-        // Get the current Practice
         Party practice = context.getPractice();
-
-        // Get the current user.
         User user = context.getUser();
 
-        // If pactice and/or user not set then exit.
-        if (practice == null || user == null) {
-            return;
+        if (practice != null && user != null) {
+            // Now get the default location for the user or the first location if no default.
+            Party location = userRules.getDefaultLocation(user);
+
+            // If no locations defined for user find default location for Practice
+            // or the first location if no default.
+            if (location == null) {
+                location = practiceRules.getDefaultLocation(practice);
+            }
+
+            context.setLocation(location);
+            updateLocation(location);
         }
+    }
 
-        // Now get the default location for the user or the first location if
-        // no default.
-        Party location = userRules.getDefaultLocation(user);
-
-        // If no locations defined for user find default location for Practice
-        // or the first location if no default.
-        if (location == null) {
-            location = practiceRules.getDefaultLocation(practice);
+    /**
+     * Initialises user preferences.
+     *
+     * @param preferences the preferences
+     */
+    private void initPrefs(UserPreferences preferences) {
+        Party practice = context.getPractice();
+        if (practice != null) {
+            preferences.initialise(practice);
         }
-
-        context.setLocation(location);
-        updateLocation(location);
     }
 
     /**

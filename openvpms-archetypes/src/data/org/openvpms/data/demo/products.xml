@@ -66,6 +66,7 @@
           activeIngredients="10mg/ml" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="ACEP10IN"/>
         <data collection="prices" archetype="productPrice.unitPrice" cost="0.20" price="0.50"/>
+        <data collection="prices" archetype="productPrice.fixedPrice" price="10.00"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
     <data archetype="entityRelationship.productTypeProduct" target="id:P4" source="id:Medications"/>
@@ -490,6 +491,7 @@
     <data id="P58" archetype="product.medication" name="Betsolan Tablets" printedName="" drugSchedule="S4"
           activeIngredients="0.25mg Betamethasone" sellingUnits="TABLET">
         <data collection="identities" archetype="entityIdentity.code" code="BETSTA"/>
+        <data collection="prices" archetype="productPrice.fixedPrice" price="10.00"/>
         <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
     </data>
@@ -5952,7 +5954,9 @@
 
     <data id="P866" archetype="product.service" name="Desex - Dog &lt; 20kg"/>
     <data id="P867" archetype="product.service" name="Desex - Dog &gt;= 20kg"/>
-    <data id="P868" archetype="product.medication" name="Carprofen Injection"/>
+    <data id="P868" archetype="product.medication" name="Carprofen Injection">
+        <data collection="prices" archetype="productPrice.fixedPrice" price="10.00"/>
+    </data>
     <data id="P869" archetype="product.medication" name="Carprofen Tablets 20mg"
           dispInstructions="Non-Steroidal Anti-Inflammatory Pain Relief  - Give 1/2 a tablet TWICE a day. Do NOT give if not eating/drinking or starts to vomit/diarrhoea."
           usageNotes="Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.

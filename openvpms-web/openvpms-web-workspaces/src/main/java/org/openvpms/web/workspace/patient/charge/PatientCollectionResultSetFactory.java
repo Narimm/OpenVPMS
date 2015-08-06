@@ -11,17 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.charge;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.ActCollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
+import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.IMObjectTableCollectionEditor;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -37,30 +36,26 @@ import java.util.List;
 public class PatientCollectionResultSetFactory extends ActCollectionResultSetFactory {
 
     /**
-     * The context.
+     * The singleton instance.
      */
-    private final Context context;
+    public static final CollectionResultSetFactory INSTANCE = new PatientCollectionResultSetFactory();
 
     /**
-     * Constructs an {@link PatientCollectionResultSetFactory}.
-     *
-     * @param context the context
+     * Default constructor.
      */
-    public PatientCollectionResultSetFactory(Context context) {
-        this.context = context;
+    protected PatientCollectionResultSetFactory() {
     }
 
     /**
      * Creates a new result set.
      *
      * @param property the collection property
+     * @param context  the context
      * @return a new result set
      */
     @Override
-    public ResultSet<IMObject> createResultSet(CollectionPropertyEditor property) {
-        List<IMObject> objects = property.getObjects(new PatientPredicate<IMObject>(context.getPatient()));
-        IMObjectListResultSet<IMObject> set = new IMObjectListResultSet<IMObject>(objects, DEFAULT_ROWS);
-        set.sort(new SortConstraint[]{new NodeSortConstraint("startTime", false)});
-        return set;
+    public ResultSet<IMObject> createResultSet(CollectionPropertyEditor property, Context context) {
+        List<IMObject> objects = property.getObjects(new PatientPredicate<>(context.getPatient()));
+        return new IMObjectListResultSet<>(objects, DEFAULT_ROWS);
     }
 }

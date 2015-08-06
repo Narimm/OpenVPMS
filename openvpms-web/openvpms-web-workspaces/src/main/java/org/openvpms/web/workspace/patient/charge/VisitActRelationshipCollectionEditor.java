@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.charge;
@@ -46,7 +46,7 @@ public class VisitActRelationshipCollectionEditor extends ActRelationshipCollect
      * @param context  the layout context
      */
     public VisitActRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context) {
-        super(property, act, context, new PatientCollectionResultSetFactory(context.getContext()));
+        super(property, act, context, PatientCollectionResultSetFactory.INSTANCE);
     }
 
     /**

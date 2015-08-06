@@ -11,14 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
+import nextapp.echo2.app.table.TableColumn;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.act.DefaultActTableModel;
 import org.openvpms.web.component.im.view.TableComponentFactory;
@@ -44,6 +46,9 @@ public class ActCollectionResultSetFactory extends AbstractCollectionResultSetFa
 
     /**
      * Creates a table model to display the result set.
+     * <p/>
+     * This implementation sets the default sort column to the first column, and sorts it descending if
+     * it is a "startTime" node.
      *
      * @param property the collection property
      * @param parent   the parent object
@@ -56,7 +61,15 @@ public class ActCollectionResultSetFactory extends AbstractCollectionResultSetFa
                                                    LayoutContext context) {
         context = new DefaultLayoutContext(context);
         context.setComponentFactory(new TableComponentFactory(context));
-        IMTableModel model = new DefaultActTableModel(property.getArchetypeRange(), context);
-        return (IMTableModel<IMObject>) model;
+        DefaultActTableModel model = new DefaultActTableModel(property.getArchetypeRange(), context);
+        TableColumn column = model.getColumnModel().getColumn(0);
+        if (column instanceof DescriptorTableColumn && ((DescriptorTableColumn) column).getName().equals("startTime")) {
+            model.setDefaultSortAscending(false);
+        } else {
+            model.setDefaultSortAscending(true);
+        }
+        model.setDefaultSortColumn(column.getModelIndex());
+        IMTableModel result = model;
+        return (IMTableModel<IMObject>) result;
     }
 }
