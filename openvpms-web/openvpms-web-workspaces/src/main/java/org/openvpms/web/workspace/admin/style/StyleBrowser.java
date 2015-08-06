@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.style;
@@ -19,11 +19,8 @@ package org.openvpms.web.workspace.admin.style;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
-import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.list.DefaultListModel;
-import nextapp.echo2.app.list.ListCellRenderer;
 import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.text.TextComponent;
 import org.apache.commons.lang.ArrayUtils;
@@ -36,7 +33,6 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
-import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.factory.TableFactory;
 import org.openvpms.web.echo.style.UserStyleSheets;
 import org.openvpms.web.echo.table.DefaultTableHeaderRenderer;
@@ -45,6 +41,10 @@ import org.openvpms.web.resource.i18n.Messages;
 
 import java.awt.Dimension;
 import java.util.Map;
+
+import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
+import static org.openvpms.web.echo.style.Styles.INSET;
+import static org.openvpms.web.echo.style.Styles.WIDE_CELL_SPACING;
 
 
 /**
@@ -57,7 +57,7 @@ public class StyleBrowser {
     /**
      * Screen resolution selector.
      */
-    private SelectField resolutionSelector;
+    private ResolutionSelectField resolutionSelector;
 
     /**
      * Screen width property.
@@ -91,10 +91,10 @@ public class StyleBrowser {
 
 
     /**
-     * Constructs a <tt>StyleBrowser</tt>.
+     * Constructs a {@link StyleBrowser}.
      *
      * @param stylesheets the user style sheets
-     * @param size        the inital resolution to evaluate properties against
+     * @param size        the initial resolution to evaluate properties against
      */
     public StyleBrowser(UserStyleSheets stylesheets, Dimension size) {
         this.styles = stylesheets;
@@ -111,10 +111,6 @@ public class StyleBrowser {
         height.addModifiableListener(resolutionListener);
 
         resolutionSelector = createResolutionSelector();
-//        resolutionSelector.getSelectionModel().addChangeListener(new ChangeListener() {
-//            public void stateChanged(ChangeEvent e) {
-//            }
-//        });
         resolutionSelector.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 updateWidthAndHeight(getSelectedResolution());
@@ -130,12 +126,12 @@ public class StyleBrowser {
      */
     public Component getComponent() {
         if (component == null) {
-            Row row1 = RowFactory.create("CellSpacing", LabelFactory.create("stylesheet.resolution"),
+            Row row1 = RowFactory.create(CELL_SPACING, LabelFactory.create("stylesheet.resolution"),
                                          resolutionSelector);
-            Row row2 = RowFactory.create("CellSpacing", createLabel(width), createField(width), createLabel(height),
-                                         createField(height));
-            Row wrapper = RowFactory.create("WideCellSpacing", row1, row2);
-            component = ColumnFactory.create("Inset", ColumnFactory.create("WideCellSpacing", wrapper, getTable()));
+            Row row2 = RowFactory.create(CELL_SPACING, createLabel(width), createField(width),
+                                         createLabel(height), createField(height));
+            Row wrapper = RowFactory.create(WIDE_CELL_SPACING, row1, row2);
+            component = ColumnFactory.create(INSET, ColumnFactory.create(WIDE_CELL_SPACING, wrapper, getTable()));
         }
         return component;
     }
@@ -151,23 +147,12 @@ public class StyleBrowser {
     }
 
     /**
-     * Sets the selected resolution.
-     *
-     * @param resolution the resolution
-     */
-    public void setSelectedResolution(Dimension resolution) {
-        resolutionSelector.setSelectedItem(resolution);
-        updateWidthAndHeight(resolution);
-    }
-
-    /**
      * Refreshes the browser.
      */
     public void refresh() {
         Dimension size = getSelectedResolution();
-        DefaultListModel model = getResolutions();
-        resolutionSelector.setModel(model);
-        if (model.indexOf(size) != -1) {
+        resolutionSelector.setModel(ResolutionSelectField.createModel(getResolutions()));
+        if (resolutionSelector.contains(size)) {
             resolutionSelector.setSelectedItem(size);
         } else {
             resolutionSelector.setSelectedIndex(0);
@@ -177,7 +162,7 @@ public class StyleBrowser {
     }
 
     /**
-     * Updates the widhe and height fields for the supplied screen resolution.
+     * Updates the width and height fields for the supplied screen resolution.
      *
      * @param size the screen resolution
      */
@@ -217,14 +202,11 @@ public class StyleBrowser {
 
     /**
      * Returns the available resolutions.
-     * <p/>
-     * This always returns a model with at least one resolution.
      *
      * @return the resolutions
      */
-    private DefaultListModel getResolutions() {
-        Dimension[] sizes = (Dimension[]) ArrayUtils.add(styles.getResolutions(), 0, StyleHelper.ANY_RESOLUTION);
-        return new DefaultListModel(sizes);
+    private Dimension[] getResolutions() {
+        return (Dimension[]) ArrayUtils.add(styles.getResolutions(), 0, StyleHelper.ANY_RESOLUTION);
     }
 
     /**
@@ -260,23 +242,8 @@ public class StyleBrowser {
      *
      * @return a new screen resolution selector
      */
-    private SelectField createResolutionSelector() {
-        SelectField field = SelectFieldFactory.create(getResolutions());
-        field.addActionListener(new ActionListener() { // add a listener so notification occurs in timely fashion
-
-            public void onAction(ActionEvent event) {
-            }
-        });
-        field.setCellRenderer(new ListCellRenderer() {
-            public Object getListCellRendererComponent(Component list, Object value, int index) {
-                if (index == 0) {
-                    return Messages.get("stylesheet.anyresolution");
-                }
-                Dimension size = (Dimension) value;
-                return Messages.format("stylesheet.size", size.width, size.height);
-            }
-        });
-        return field;
+    private ResolutionSelectField createResolutionSelector() {
+        return new ResolutionSelectField(getResolutions());
     }
 
     /**

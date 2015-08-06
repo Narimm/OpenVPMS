@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin;
@@ -62,7 +62,7 @@ public class StyleSheetWorkspace extends AbstractWorkspace {
 
 
     /**
-     * Constructs a {@code StyleSheetWorkspace}.
+     * Constructs a {@link StyleSheetWorkspace}.
      */
     public StyleSheetWorkspace(Context context) {
         super("admin", "stylesheet", context);
@@ -178,7 +178,7 @@ public class StyleSheetWorkspace extends AbstractWorkspace {
      * Changes the screen resolution.
      */
     private void changeResolution() {
-        ChangeResolutionDialog dialog = new ChangeResolutionDialog();
+        ChangeResolutionDialog dialog = new ChangeResolutionDialog(styles.getResolutions());
         dialog.show();
     }
 
@@ -231,6 +231,5 @@ public class StyleSheetWorkspace extends AbstractWorkspace {
         }
         InformationDialog.show(builder.toString());
     }
-
 
 }
