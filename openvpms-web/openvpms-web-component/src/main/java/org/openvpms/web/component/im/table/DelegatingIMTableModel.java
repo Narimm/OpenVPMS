@@ -161,6 +161,26 @@ public class DelegatingIMTableModel<T, K> extends AbstractTableModel implements 
     }
 
     /**
+     * Returns the default sort column.
+     *
+     * @return the default sort column, or {@code -1} if there is no default.
+     */
+    @Override
+    public int getDefaultSortColumn() {
+        return model.getDefaultSortColumn();
+    }
+
+    /**
+     * Determines if the default sort column should sort ascending or descending.
+     *
+     * @return {@code true} if it should sort ascending, {@code false}
+     */
+    @Override
+    public boolean getDefaultSortAscending() {
+        return model.getDefaultSortAscending();
+    }
+
+    /**
      * Determines if selection should be enabled.
      *
      * @return {@code true} if selection should be enabled; otherwise {@code false}

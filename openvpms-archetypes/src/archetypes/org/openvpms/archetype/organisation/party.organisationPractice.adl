@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -81,6 +81,10 @@
               defaultValue="false()"/>
         <node name="showCustomerAccountSummary" path="/details/showCustomerAccountSummary" type="java.lang.Boolean"
               defaultValue="true()"/>
+        <node name="showTemplateDuringCharging" path="/details/showTemplateDuringCharging" type="java.lang.Boolean"
+              minCardinality="0" maxCardinality="1" defaultValue="false()"/>
+        <node name="showProductTypeDuringCharging" path="/details/showProductTypeDuringCharging" type="java.lang.Boolean"
+              minCardinality="0" maxCardinality="1" defaultValue="false()"/>
         <node name="contacts" path="/contacts"
               type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
             <assertion name="archetypeRange">

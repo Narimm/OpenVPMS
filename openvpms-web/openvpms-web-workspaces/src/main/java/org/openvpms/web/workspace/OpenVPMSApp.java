@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace;
@@ -34,6 +34,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.UserPreferences;
 import org.openvpms.web.component.workspace.WorkspacesFactory;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
@@ -113,10 +114,12 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      * @param locationRules the location rules
      * @param userRules     the user rules
      * @param monitor       the session monitor
+     * @param preferences   the user preferences
      */
     public OpenVPMSApp(GlobalContext context, WorkspacesFactory factory, PracticeRules practiceRules,
-                       LocationRules locationRules, UserRules userRules, SessionMonitor monitor) {
-        super(context, practiceRules, locationRules, userRules);
+                       LocationRules locationRules, UserRules userRules, SessionMonitor monitor,
+                       UserPreferences preferences) {
+        super(context, practiceRules, locationRules, userRules, preferences);
         this.factory = factory;
         this.monitor = monitor;
         location = getLocation(context.getLocation());

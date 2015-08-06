@@ -345,7 +345,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
         container.setStyleName(Styles.CELL_SPACING);
         focusGroup = new FocusGroup(ClassUtils.getShortClassName(getClass()));
 
-        table = new PagedIMTable<T>(createTableModel(context));
+        table = new PagedIMTable<>(createTableModel(context));
         table.getTable().addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 onEdit();
@@ -594,9 +594,8 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
         if (model instanceof SortableTableModel) {
             // if no column is currently sorted, sort on the default (if any)
             SortableTableModel sortable = ((SortableTableModel) model);
-            if (sortable.getSortColumn() == -1
-                && sortable.getDefaultSortColumn() != -1) {
-                sortable.sort(sortable.getDefaultSortColumn(), true);
+            if (sortable.getSortColumn() == -1 && model.getDefaultSortColumn() != -1) {
+                sortable.sort(model.getDefaultSortColumn(), model.getDefaultSortAscending());
             }
         }
     }

@@ -61,6 +61,20 @@ public interface IMTableModel<T> extends RenderTableModel {
     SortConstraint[] getSortConstraints(int column, boolean ascending);
 
     /**
+     * Returns the default sort column.
+     *
+     * @return the default sort column, or {@code -1} if there is no default.
+     */
+    int getDefaultSortColumn();
+
+    /**
+     * Determines if the default sort column should sort ascending or descending.
+     *
+     * @return {@code true} if it should sort ascending, {@code false}
+     */
+    boolean getDefaultSortAscending();
+
+    /**
      * Determines if selection should be enabled.
      *
      * @return {@code true} if selection should be enabled; otherwise {@code false}

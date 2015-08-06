@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
@@ -36,10 +37,11 @@ public abstract class AbstractCollectionResultSetFactory implements CollectionRe
      * Creates a new result set.
      *
      * @param property the collection property
+     * @param context  the context
      * @return a new result set
      */
-    public ResultSet<IMObject> createResultSet(CollectionPropertyEditor property) {
-        return new IMObjectListResultSet<IMObject>(property.getObjects(), CollectionResultSetFactory.DEFAULT_ROWS);
+    public ResultSet<IMObject> createResultSet(CollectionPropertyEditor property, Context context) {
+        return new IMObjectListResultSet<>(property.getObjects(), CollectionResultSetFactory.DEFAULT_ROWS);
     }
 
     /**

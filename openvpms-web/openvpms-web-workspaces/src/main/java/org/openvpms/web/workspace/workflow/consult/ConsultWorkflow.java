@@ -67,7 +67,7 @@ public class ConsultWorkflow extends WorkflowImpl {
     private final boolean setClinician;
 
     /**
-     * Constructs a {@code ConsultWorkflow} from an <em>act.customerAppointment</em> or <em>act.customerTask</em>.
+     * Constructs a {@link ConsultWorkflow} from an <em>act.customerAppointment</em> or <em>act.customerTask</em>.
      *
      * @param act      the act
      * @param external the external context to access and update
@@ -78,7 +78,7 @@ public class ConsultWorkflow extends WorkflowImpl {
     }
 
     /**
-     * Constructs a {@code ConsultWorkflow} from an <em>act.customerAppointment</em> or <em>act.customerTask</em>.
+     * Constructs a {@link ConsultWorkflow} from an <em>act.customerAppointment</em> or <em>act.customerTask</em>.
      *
      * @param act          the act
      * @param setClinician determines if the clinician should be used to populate the appointment/task,

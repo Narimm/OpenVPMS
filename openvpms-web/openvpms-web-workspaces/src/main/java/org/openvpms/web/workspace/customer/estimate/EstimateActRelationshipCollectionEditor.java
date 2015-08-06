@@ -17,16 +17,16 @@
 package org.openvpms.web.workspace.customer.estimate;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.workspace.customer.charge.AbstractChargeItemRelationshipCollectionEditor;
 
 /**
  * Estimate item collection editor.
  *
  * @author Tim Anderson
  */
-public class EstimateActRelationshipCollectionEditor extends ActRelationshipCollectionEditor {
+public class EstimateActRelationshipCollectionEditor extends AbstractChargeItemRelationshipCollectionEditor {
 
     /**
      * Constructs an {@link EstimateActRelationshipCollectionEditor}.
