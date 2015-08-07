@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -162,7 +162,7 @@ public class ProductPriceRules {
      */
     public List<ProductPrice> getProductPrices(Product product, String shortName, boolean includeLinked,
                                                PricingGroup group) {
-        List<ProductPrice> result = new ArrayList<ProductPrice>();
+        List<ProductPrice> result = new ArrayList<>();
         ProductPricePredicate predicate = new ProductPricePredicate(shortName, group);
         List<ProductPrice> prices = findPrices(product, predicate);
         result.addAll(prices);
@@ -213,7 +213,7 @@ public class ProductPriceRules {
      */
     public List<ProductPrice> getProductPrices(Product product, String shortName, Date date, boolean includeLinked,
                                                PricingGroup group) {
-        List<ProductPrice> result = new ArrayList<ProductPrice>();
+        List<ProductPrice> result = new ArrayList<>();
         ShortNameDatePredicate predicate = new ShortNameDatePredicate(shortName, date, group);
         List<ProductPrice> prices = findPrices(product, predicate);
         result.addAll(prices);
@@ -267,7 +267,7 @@ public class ProductPriceRules {
      */
     public List<ProductPrice> getProductPrices(Product product, String shortName, Date from, Date to,
                                                boolean includeLinked, PricingGroup group) {
-        List<ProductPrice> result = new ArrayList<ProductPrice>();
+        List<ProductPrice> result = new ArrayList<>();
         ShortNameDateRangePredicate predicate = new ShortNameDateRangePredicate(shortName, from, to, group);
         List<ProductPrice> prices = findPrices(product, predicate);
         result.addAll(prices);
@@ -297,7 +297,7 @@ public class ProductPriceRules {
             BigDecimal markupDec = getRate(markup);
             BigDecimal taxRate = getTaxRate(product, practice);
             price = cost.multiply(ONE.add(markupDec)).multiply(ONE.add(taxRate));
-            price = currency.round(price);
+            price = currency.roundPrice(price);
         }
         return price;
     }
@@ -378,7 +378,7 @@ public class ProductPriceRules {
                 if (TypeHelper.isA(price, ProductArchetypes.UNIT_PRICE)) {
                     if (updateUnitPrice(price, product, cost, practice, currency)) {
                         if (result == null) {
-                            result = new ArrayList<ProductPrice>();
+                            result = new ArrayList<>();
                         }
                         result.add(price);
                     }
@@ -537,7 +537,7 @@ public class ProductPriceRules {
             if (bean.hasNode("linked")) {
                 List<Entity> products = bean.getNodeTargetEntities("linked", date);
                 for (Entity linked : products) {
-                    ProductPrice price = findPrice((Product) linked, predicate, useDefault);
+                    ProductPrice price = findPrice((Product) linked, predicate, true);
                     if (price != null) {
                         if (isDefault(price)) {
                             result = price;
@@ -597,7 +597,7 @@ public class ProductPriceRules {
         for (ProductPrice price : product.getProductPrices()) {
             if (predicate.evaluate(price)) {
                 if (result == null) {
-                    result = new ArrayList<ProductPrice>();
+                    result = new ArrayList<>();
                 }
                 result.add(price);
             }
@@ -623,7 +623,7 @@ public class ProductPriceRules {
             for (Entity linked : bean.getNodeTargetEntities("linked", active)) {
                 prices = findPrices((Product) linked, price);
                 if (result == null) {
-                    result = new ArrayList<ProductPrice>();
+                    result = new ArrayList<>();
                 }
                 result.addAll(prices);
             }

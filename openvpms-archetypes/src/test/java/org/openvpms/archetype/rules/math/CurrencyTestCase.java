@@ -11,25 +11,26 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.math;
 
-import junit.framework.TestCase;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 
 /**
  * Tests the {@link Currency} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class CurrencyTestCase extends TestCase {
+public class CurrencyTestCase {
 
     /**
      * Tests the {@link Currency#round(BigDecimal)} method.
@@ -123,6 +124,39 @@ public class CurrencyTestCase extends TestCase {
     }
 
     /**
+     * Tests the {@link Currency#roundPrice(BigDecimal)} method.
+     */
+    @Test
+    public void testRoundPrice() {
+        BigDecimal minDenomination = new BigDecimal("0.01");
+        BigDecimal minPrice = new BigDecimal("0.05"); // round all prices to 0.05
+        java.util.Currency AUD = java.util.Currency.getInstance("AUD");
+        Currency halfUp = new Currency(AUD, RoundingMode.HALF_UP, minDenomination, minPrice);
+        checkRoundPrice(halfUp, "1.925", "1.95");
+        checkRoundPrice(halfUp, "1.95", "1.95");
+        checkRoundPrice(halfUp, "1.96", "1.95");
+        checkRoundPrice(halfUp, "1.97", "1.95");
+        checkRoundPrice(halfUp, "1.975", "2.00");
+        checkRoundPrice(halfUp, "1.98", "2.00");
+
+        Currency halfDown = new Currency(AUD, RoundingMode.HALF_DOWN, minDenomination, minPrice);
+        checkRoundPrice(halfDown, "1.925", "1.90");
+        checkRoundPrice(halfDown, "1.95", "1.95");
+        checkRoundPrice(halfDown, "1.96", "1.95");
+        checkRoundPrice(halfDown, "1.97", "1.95");
+        checkRoundPrice(halfDown, "1.975", "1.95");
+        checkRoundPrice(halfDown, "1.98", "2.00");
+
+        Currency halfEven = new Currency(AUD, RoundingMode.HALF_EVEN, minDenomination, minPrice);
+        checkRoundPrice(halfEven, "1.925", "1.90"); // round down to nearest even
+        checkRoundPrice(halfEven, "1.95", "1.95");
+        checkRoundPrice(halfEven, "1.96", "1.95");
+        checkRoundPrice(halfEven, "1.97", "1.95");
+        checkRoundPrice(halfEven, "1.975", "2.00");
+        checkRoundPrice(halfEven, "1.98", "2.00");
+    }
+
+    /**
      * Tests the {@link Currency#round(BigDecimal)} method.
      *
      * @param currency the currency
@@ -141,9 +175,20 @@ public class CurrencyTestCase extends TestCase {
      * @param value    the value to round
      * @param expected the expected result
      */
-    private void checkRoundCash(Currency currency, String value,
-                                String expected) {
+    private void checkRoundCash(Currency currency, String value, String expected) {
         BigDecimal e = new BigDecimal(expected);
         assertEquals(e, currency.roundCash(new BigDecimal(value)));
+    }
+
+    /**
+     * Tests the {@link Currency#roundPrice(BigDecimal)} method.
+     *
+     * @param currency the currency
+     * @param value    the value to round
+     * @param expected the expected result
+     */
+    private void checkRoundPrice(Currency currency, String value, String expected) {
+        BigDecimal e = new BigDecimal(expected);
+        assertEquals(e, currency.roundPrice(new BigDecimal(value)));
     }
 }

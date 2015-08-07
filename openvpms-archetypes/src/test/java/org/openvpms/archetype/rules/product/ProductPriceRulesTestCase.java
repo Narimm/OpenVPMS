@@ -31,6 +31,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -226,6 +227,51 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         checkGetPrice(createService());
         checkGetPrice(createPriceTemplate());
         checkGetPrice(createTemplate());
+    }
+
+    /**
+     * Tests the {@link ProductPriceRules#getPrice} method, when the currency has a non-zero {@code minPrice}.
+     */
+    @Test
+    public void testGetPriceWithPriceRounding() {
+        java.util.Currency AUD = java.util.Currency.getInstance("AUD");
+
+        // remove tax as it complicates rounding tests
+        IMObjectBean bean = new IMObjectBean(practice);
+        for (Lookup tax : bean.getValues("taxes", Lookup.class)) {
+            practice.removeClassification(tax);
+        }
+        Product product = TestHelper.createProduct();
+        BigDecimal minDenomination = new BigDecimal("0.05");
+        BigDecimal minPrice = new BigDecimal("0.20"); // round all prices to 0.20 increments
+        BigDecimal markup = BigDecimal.valueOf(100);  // 100% markup
+
+        // test HALF_UP rounding
+        Currency currency1 = new Currency(AUD, RoundingMode.HALF_UP, minDenomination, minPrice);
+        checkGetPrice(product, currency1, "0.09", markup, "0.20");
+        checkGetPrice(product, currency1, "0.15", markup, "0.40");
+        checkGetPrice(product, currency1, "0.22", markup, "0.40");
+        checkGetPrice(product, currency1, "0.25", markup, "0.60");
+        checkGetPrice(product, currency1, "0.75", markup, "1.60");
+        checkGetPrice(product, currency1, "1.25", markup, "2.60");
+
+        // test HALF_DOWN rounding
+        Currency currency2 = new Currency(AUD, RoundingMode.HALF_DOWN, minDenomination, minPrice);
+        checkGetPrice(product, currency2, "0.09", markup, "0.20");
+        checkGetPrice(product, currency2, "0.15", markup, "0.20");
+        checkGetPrice(product, currency2, "0.22", markup, "0.40");
+        checkGetPrice(product, currency2, "0.25", markup, "0.40");
+        checkGetPrice(product, currency2, "0.75", markup, "1.40");
+        checkGetPrice(product, currency2, "1.25", markup, "2.40");
+
+        // test HALF_EVEN rounding
+        Currency currency3 = new Currency(AUD, RoundingMode.HALF_EVEN, minDenomination, minPrice);
+        checkGetPrice(product, currency3, "0.09", markup, "0.20");
+        checkGetPrice(product, currency3, "0.15", markup, "0.40");
+        checkGetPrice(product, currency3, "0.22", markup, "0.40");
+        checkGetPrice(product, currency3, "0.25", markup, "0.40"); // round down as 0 is even
+        checkGetPrice(product, currency3, "0.75", markup, "1.60"); // round up as 1 is odd
+        checkGetPrice(product, currency3, "1.25", markup, "2.40"); // round down as 2 is even
     }
 
     /**
@@ -918,10 +964,23 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
      * @param product the product to test
      */
     private void checkGetPrice(Product product) {
-        BigDecimal cost = BigDecimal.ONE;
         BigDecimal markup = BigDecimal.valueOf(100); // 100% markup
-        BigDecimal price = rules.getPrice(product, cost, markup, practice, currency);
-        checkEquals(new BigDecimal("2.20"), price);
+        checkGetPrice(product, currency, "1.00", markup, "2.20");
+    }
+
+    /**
+     * Tests the {@link ProductPriceRules#getPrice(Product, BigDecimal, BigDecimal, Party, Currency)} method.
+     *
+     * @param product       the product
+     * @param currency      the currency
+     * @param cost          the cost
+     * @param markup        the markup
+     * @param expectedPrice the epxected price
+     */
+    private void checkGetPrice(Product product, Currency currency, String cost, BigDecimal markup,
+                               String expectedPrice) {
+        BigDecimal price = rules.getPrice(product, new BigDecimal(cost), markup, practice, currency);
+        checkEquals(new BigDecimal(expectedPrice), price);
     }
 
     /**

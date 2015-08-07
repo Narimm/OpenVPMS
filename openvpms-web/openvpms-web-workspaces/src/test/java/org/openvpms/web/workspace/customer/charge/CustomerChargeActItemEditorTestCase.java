@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.finance.discount.DiscountTestHelper;
+import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
@@ -34,6 +35,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
@@ -80,7 +82,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
     /**
      * Tracks errors logged.
      */
-    private List<String> errors = new ArrayList<String>();
+    private List<String> errors = new ArrayList<>();
 
     /**
      * The context.
@@ -111,6 +113,12 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         context.setPractice(getPractice());
         Party location = TestHelper.createLocation();
         context.setLocation(location);
+
+        // set a minimum price for calculated prices. This should only apply to prices calculated using a service ratio
+        Lookup currency = TestHelper.getLookup(Currencies.LOOKUP, "AUD");
+        IMObjectBean bean = new IMObjectBean(currency);
+        bean.setValue("minPrice", new BigDecimal("0.20"));
+        bean.save();
     }
 
     /**
@@ -579,13 +587,17 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         // fixed prices
         BigDecimal quantity2 = BigDecimal.ONE;
         BigDecimal unitCost2 = BigDecimal.valueOf(5);
-        BigDecimal unitPrice2 = BigDecimal.valueOf(5.5);
+        BigDecimal unitPrice2 = BigDecimal.valueOf(5.55);
         BigDecimal fixedCost2 = BigDecimal.valueOf(0.5);
-        BigDecimal fixedPrice2 = BigDecimal.valueOf(5.5);
+        BigDecimal fixedPrice2 = BigDecimal.valueOf(5.55);
         BigDecimal discount2 = BigDecimal.ZERO;
         BigDecimal ratio = BigDecimal.valueOf(2);
-        BigDecimal tax2 = BigDecimal.valueOf(2);
-        BigDecimal total2 = BigDecimal.valueOf(22);
+        BigDecimal tax2 = BigDecimal.valueOf(2.036);
+
+        // when the service ratio is applied, unitPrice2 and fixedPrice2 will be calculated as 11.10, then rounded
+        // according to minPrice
+        BigDecimal roundedPrice = BigDecimal.valueOf(11.20);
+        BigDecimal total2 = BigDecimal.valueOf(22.40);
 
         Product product2 = createProduct(productShortName, fixedCost2, fixedPrice2, unitCost2, unitPrice2);
         Entity productType = ProductTestHelper.createProductType("Z Product Type");
@@ -690,8 +702,10 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         item = get(item);
         assertNotNull(item);
 
-        checkItem(item, patient2, product2, null, author2, clinician2, quantity2, unitCost2, unitPrice2.multiply(ratio),
-                  fixedCost2, fixedPrice2.multiply(ratio), discount2, tax2, total2);
+        // fixedPrice2 and unitPrice2 are calculated as 11.10, then rounded to minPrice
+        checkItem(item, patient2, product2, null, author2, clinician2, quantity2, unitCost2, roundedPrice,
+                  fixedCost2, roundedPrice, discount2, tax2, total2);
+
         itemBean = new ActBean(item);
         if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)
             && TypeHelper.isA(product2, ProductArchetypes.MEDICATION)) {
@@ -714,8 +728,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
             item = get(item);
             assertNotNull(item);
 
-            checkItem(item, patient2, product2, null, author2, null, quantity2, unitCost2, unitPrice2.multiply(ratio),
-                      fixedCost2, fixedPrice2.multiply(ratio), discount2, tax2, total2);
+            checkItem(item, patient2, product2, null, author2, null, quantity2, unitCost2, roundedPrice,
+                      fixedCost2, roundedPrice, discount2, tax2, total2);
         }
 
         editor.setProduct(null);       // make sure nulls are handled

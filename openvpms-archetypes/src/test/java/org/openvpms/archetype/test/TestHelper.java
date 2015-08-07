@@ -493,7 +493,7 @@ public class TestHelper {
         Party party;
         ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.PRACTICE, true, true);
         query.setMaxResults(1);
-        QueryIterator<Party> iter = new IMObjectQueryIterator<Party>(query);
+        QueryIterator<Party> iter = new IMObjectQueryIterator<>(query);
         if (iter.hasNext()) {
             party = iter.next();
 
@@ -523,8 +523,7 @@ public class TestHelper {
     }
 
     /**
-     * Returns a currency with the specified currency code, creating it
-     * if it doesn't exist.
+     * Returns a currency with the specified currency code, creating it if it doesn't exist.
      *
      * @param code the currency code
      * @return the currency
@@ -533,6 +532,7 @@ public class TestHelper {
         Lookup currency = getLookup("lookup.currency", code, false);
         IMObjectBean ccyBean = new IMObjectBean(currency);
         ccyBean.setValue("minDenomination", new BigDecimal("0.05"));
+        ccyBean.setValue("minPrice", null);
         ccyBean.save();
         return currency;
     }
@@ -602,7 +602,7 @@ public class TestHelper {
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, false);
         query.add(new NodeConstraint("code", code));
         query.setMaxResults(1);
-        QueryIterator<Lookup> iter = new IMObjectQueryIterator<Lookup>(query);
+        QueryIterator<Lookup> iter = new IMObjectQueryIterator<>(query);
         if (iter.hasNext()) {
             return iter.next();
         }
@@ -630,7 +630,7 @@ public class TestHelper {
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
         query.add(new NodeConstraint("code", code));
         query.setMaxResults(1);
-        QueryIterator<Lookup> iter = new IMObjectQueryIterator<Lookup>(query);
+        QueryIterator<Lookup> iter = new IMObjectQueryIterator<>(query);
         if (iter.hasNext()) {
             lookup = iter.next();
             if (!StringUtils.equals(name, lookup.getName())) {

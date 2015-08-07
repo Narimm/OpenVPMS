@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -91,13 +91,8 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
 
         // create a product-supplier relationship to trigger auto price updates
         int packageSize = 30;
-        ProductSupplier ps = createProductSupplier(product, supplier);
-        ps.setPackageSize(packageSize);
-        ps.setNettPrice(new BigDecimal("10.00"));
-        ps.setListPrice(new BigDecimal("20.00"));
-        ps.setAutoPriceUpdate(true);
-        product.addEntityRelationship(ps.getRelationship());
-        save(product);
+        addProductSupplier(product, supplier, packageSize, "10.00", "20.00", true);
+        save(product, supplier);
 
         checkPrice(product, new BigDecimal("0.67"), new BigDecimal("1.34"));
 
@@ -161,13 +156,8 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
 
         Party supplier = TestHelper.createSupplier();
         int packageSize = 30;
-        ProductSupplier ps = createProductSupplier(product, supplier);
-        ps.setPackageSize(packageSize);
-        ps.setNettPrice(new BigDecimal("10.00"));
-        ps.setListPrice(new BigDecimal("20.00"));
-        ps.setAutoPriceUpdate(true);
-        product.addEntityRelationship(ps.getRelationship());
-        save(product);
+        addProductSupplier(product, supplier, packageSize, "10.00", "20.00", true);
+        save(product, supplier);
 
         price1 = get(price1);
         price2 = get(price2);
@@ -178,6 +168,36 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
         checkPrice(price2, new BigDecimal("0.67"), new BigDecimal("2.01"));
         checkPrice(price3, new BigDecimal("0.67"), new BigDecimal("2.68"));
         checkPrice(price4, new BigDecimal("1"), new BigDecimal("5"));
+    }
+
+    /**
+     * Verifies that if the currency has a minimum price, prices are rounded to it.
+     */
+    @Test
+    public void testRoundPrice() {
+        Product product1 = TestHelper.createProduct(ProductArchetypes.MEDICATION, null);
+        Product product2 = TestHelper.createProduct(ProductArchetypes.MEDICATION, null);
+        ProductPrice price1 = addUnitPrice(product1, BigDecimal.ZERO, BigDecimal.ONE);
+        ProductPrice price2 = addUnitPrice(product2, BigDecimal.ZERO, BigDecimal.ONE);
+
+        Party supplier = TestHelper.createSupplier();
+        addProductSupplier(product1, supplier, 30, "10.00", "20.00", true);
+        save(product1, supplier);
+
+        price1 = get(price1);
+        checkPrice(price1, new BigDecimal("0.67"), new BigDecimal("1.34"));
+
+        // change currency to round prices to nearest 20 cents.
+        Lookup lookup = TestHelper.getCurrency("AUD");
+        IMObjectBean bean = new IMObjectBean(lookup);
+        bean.setValue("minPrice", new BigDecimal("0.20"));
+        bean.save();
+
+        addProductSupplier(product2, supplier, 30, "10.00", "20.00", true);
+        save(product2, supplier);
+
+        price2 = get(price2);
+        checkPrice(price2, new BigDecimal("0.67"), new BigDecimal("1.40"));
     }
 
     /**
@@ -200,6 +220,16 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
         return TestHelper.getPractice();
     }
 
+    /**
+     * Adds a unit price to a product.
+     *
+     * @param product      the product
+     * @param cost         the cost
+     * @param markup       the markup
+     * @param price        the price
+     * @param pricingGroup the pricing group
+     * @return a new unit price
+     */
     private ProductPrice addUnitPrice(Product product, String cost, String markup, String price, String pricingGroup) {
         ProductPrice unit = ProductPriceTestHelper.createUnitPrice(new BigDecimal(price), new BigDecimal(cost),
                                                                    new BigDecimal(markup), BigDecimal.valueOf(100),
@@ -294,10 +324,9 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
         // create a product-supplier relationship.
         // It should not trigger auto price updates
         int packageSize = 30;
-        ProductSupplier ps = createProductSupplier(product, supplier);
+        ProductSupplier ps = addProductSupplier(product, supplier);
         ps.setPackageSize(packageSize);
         assertFalse(ps.isAutoPriceUpdate());
-        product.addEntityRelationship(ps.getRelationship());
         save(product);
 
         checkPrice(product, initialCost, initialPrice);
@@ -356,7 +385,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      * @param product     the product
      * @param supplier    the supplier
      * @param packageSize the package size
-     * @return the corresponding product supplier, or <tt>null</tt> if none is found
+     * @return the corresponding product supplier, or {@code null} if none is found
      */
     private ProductSupplier getProductSupplier(Product product, Party supplier, int packageSize) {
         ProductRules rules = new ProductRules(getArchetypeService());
@@ -364,19 +393,38 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
     }
 
     /**
-     * Helper to create a new product supplier relationship.
+     * Helper to add a new product supplier relationship.
      *
      * @param product  the product
      * @param supplier the supplier
      * @return the new relationship
      */
-    private ProductSupplier createProductSupplier(Product product, Party supplier) {
+    private ProductSupplier addProductSupplier(Product product, Party supplier) {
         ProductRules rules = new ProductRules(getArchetypeService());
-        supplier = get(supplier);         // make sure using the latest
-        product = get(product);           // instance of each
         ProductSupplier ps = rules.createProductSupplier(product, supplier);
         ps.setPackageUnits(PACKAGE_UNITS);
         return ps;
+    }
+
+    /**
+     * Helper to add a new product supplier relationship.
+     *
+     * @param product         the product
+     * @param supplier        the supplier
+     * @param packageSize     the package size
+     * @param nettPrice       the nett price
+     * @param listPrice       the list price
+     * @param autoPriceUpdate if {@code true}, update prices automatically
+     * @return the new relationship
+     */
+    private ProductSupplier addProductSupplier(Product product, Party supplier, int packageSize,
+                                               String nettPrice, String listPrice, boolean autoPriceUpdate) {
+        ProductSupplier result = addProductSupplier(product, supplier);
+        result.setPackageSize(packageSize);
+        result.setNettPrice(new BigDecimal(nettPrice));
+        result.setListPrice(new BigDecimal(listPrice));
+        result.setAutoPriceUpdate(autoPriceUpdate);
+        return result;
     }
 
 }

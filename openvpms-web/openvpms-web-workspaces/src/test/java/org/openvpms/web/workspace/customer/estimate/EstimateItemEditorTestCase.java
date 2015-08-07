@@ -23,11 +23,13 @@ import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.finance.discount.DiscountTestHelper;
 import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
 import org.openvpms.archetype.rules.finance.estimate.EstimateTestHelper;
+import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
@@ -62,7 +64,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
     /**
      * Tracks errors logged.
      */
-    private List<String> errors = new ArrayList<String>();
+    private List<String> errors = new ArrayList<>();
 
     /**
      * The customer.
@@ -313,6 +315,59 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         BigDecimal totalExTax = new BigDecimal("40");
         checkItem(item, patient, product, author, quantity, quantity, unitPriceExTax, unitPriceExTax, fixedPriceExTax,
                   discount, discount, totalExTax, totalExTax);
+
+        // verify no errors were logged
+        assertTrue(errors.isEmpty());
+    }
+
+    /**
+     * Verifies that when the currency has a minPrice, the fixedPrice and unitPrice are rounded after the service ratio
+     * is applied.
+     */
+    @Test
+    public void testServiceRatioWithMinPrice() {
+        // set a minimum price for calculated prices. This should only apply to prices calculated using a service ratio
+        Lookup currency = TestHelper.getLookup(Currencies.LOOKUP, "AUD");
+        IMObjectBean bean = new IMObjectBean(currency);
+        bean.setValue("minPrice", new BigDecimal("0.20"));
+        bean.save();
+
+        BigDecimal quantity = BigDecimal.ONE;
+        BigDecimal unitCost = BigDecimal.valueOf(5);
+        BigDecimal unitPrice = BigDecimal.valueOf(5.55);
+        BigDecimal fixedCost = BigDecimal.valueOf(0.5);
+        BigDecimal fixedPrice = BigDecimal.valueOf(5.55);
+        BigDecimal discount = BigDecimal.ZERO;
+        BigDecimal ratio = BigDecimal.valueOf(2);
+
+        Product product = createProduct(ProductArchetypes.MERCHANDISE, fixedCost, fixedPrice, unitCost, unitPrice);
+        Entity productType = ProductTestHelper.createProductType("Z Product Type");
+        ProductTestHelper.addProductType(product, productType);
+        ProductTestHelper.addServiceRatio(layout.getContext().getLocation(), productType, ratio);
+
+        Act item = (Act) create(EstimateArchetypes.ESTIMATE_ITEM);
+        Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
+
+        // create the editor
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
+        editor.getComponent();
+
+        // populate quantity, patient, clinician.
+        editor.setQuantity(quantity);
+        editor.setPatient(patient);
+        editor.setProduct(product);
+        checkSave(estimate, editor);
+
+        item = get(item);
+
+        // when the service ratio is applied, unitPrice and fixedPrice will be calculated as 11.10, then rounded
+        // according to minPrice
+        BigDecimal roundedPrice = BigDecimal.valueOf(11.20);
+        BigDecimal total = BigDecimal.valueOf(22.40);
+
+        // fixedPrice and unitPrice are calculated as 11.10, then rounded to minPrice
+        checkItem(item, patient, product, author, quantity, quantity, roundedPrice, roundedPrice, roundedPrice,
+                  discount, discount, total, total);
 
         // verify no errors were logged
         assertTrue(errors.isEmpty());

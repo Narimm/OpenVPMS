@@ -38,6 +38,11 @@ import static org.openvpms.archetype.rules.math.CurrencyException.ErrorCode.NoLo
 public class Currencies {
 
     /**
+     * The currency lookup archetype short name.
+     */
+    public static final String LOOKUP = "lookup.currency";
+
+    /**
      * The archetype service.
      */
     private final IArchetypeService service;
@@ -51,12 +56,7 @@ public class Currencies {
     /**
      * The currency cache.
      */
-    private Map<String, Currency> currencies = new HashMap<String, Currency>();
-
-    /**
-     * The currency lookup archeype short name.
-     */
-    private static final String LOOKUP_CURRENCY = "lookup.currency";
+    private Map<String, Currency> currencies = new HashMap<>();
 
 
     /**
@@ -68,7 +68,7 @@ public class Currencies {
     public Currencies(IArchetypeService service, ILookupService lookupService) {
         this.service = service;
         this.lookupService = lookupService;
-        service.addListener(LOOKUP_CURRENCY, new AbstractArchetypeServiceListener() {
+        service.addListener(LOOKUP, new AbstractArchetypeServiceListener() {
             @Override
             public void saved(IMObject object) {
                 add((Lookup) object);
@@ -96,7 +96,7 @@ public class Currencies {
         }
         Currency currency = currencies.get(code);
         if (currency == null) {
-            Lookup lookup = lookupService.getLookup(LOOKUP_CURRENCY, code);
+            Lookup lookup = lookupService.getLookup(LOOKUP, code);
             if (lookup == null) {
                 throw new CurrencyException(NoLookupForCode, code);
             }
