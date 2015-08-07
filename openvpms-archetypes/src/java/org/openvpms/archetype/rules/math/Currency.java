@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.math;
@@ -30,11 +30,9 @@ import static org.openvpms.archetype.rules.math.CurrencyException.ErrorCode.Inva
 
 
 /**
- * Represents a currency. Currencies are identified by their ISO 4217 currency
- * codes.
+ * Represents a currency. Currencies are identified by their ISO 4217 currency codes.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class Currency {
 
@@ -54,6 +52,11 @@ public class Currency {
     private final BigDecimal minDenomination;
 
     /**
+     * The minimum price.
+     */
+    private final BigDecimal minPrice;
+
+    /**
      * Constants used in rounding.
      */
     private static final BigDecimal POS_HALF = new BigDecimal("0.5");
@@ -62,10 +65,9 @@ public class Currency {
 
 
     /**
-     * Creates a new <tt>Currency</tt> from an <em>lookup.currency</em>.
+     * Constructs a {@link Currency} from an <em>lookup.currency</em>.
      *
-     * @throws CurrencyException if the currency code or rounding mode is
-     *                           invalid
+     * @throws CurrencyException if the currency code or rounding mode is invalid
      */
     public Currency(Lookup lookup, IArchetypeService service) {
         String code = lookup.getCode();
@@ -79,29 +81,39 @@ public class Currency {
         if (roundingMode == null) {
             throw new CurrencyException(InvalidRoundingMode, mode, code);
         }
-        minDenomination = bean.getBigDecimal("minDenomination");
+        minDenomination = bean.getBigDecimal("minDenomination", BigDecimal.ZERO);
+        minPrice = bean.getBigDecimal("minPrice", BigDecimal.ZERO);
     }
 
     /**
-     * Creates a new <tt>Currency</tt>.
+     * Constructs a {@link Currency}.
      *
      * @param currency        the underlying currency
      * @param roundingMode    the rounding mode
-     * @param minDenomination the minimum cash denonmination
+     * @param minDenomination the minimum cash denomination
      */
-    public Currency(java.util.Currency currency,
-                    RoundingMode roundingMode,
-                    BigDecimal minDenomination) {
-        EnumSet<RoundingMode> modes = EnumSet.of(RoundingMode.HALF_UP,
-                                                 RoundingMode.HALF_DOWN,
-                                                 RoundingMode.HALF_EVEN);
+    public Currency(java.util.Currency currency, RoundingMode roundingMode, BigDecimal minDenomination) {
+        this(currency, roundingMode, minDenomination, BigDecimal.ZERO);
+    }
+
+    /**
+     * Constructs a {@link Currency}.
+     *
+     * @param currency        the underlying currency
+     * @param roundingMode    the rounding mode
+     * @param minDenomination the minimum cash denomination
+     * @param minPrice        the minimum price
+     */
+    public Currency(java.util.Currency currency, RoundingMode roundingMode, BigDecimal minDenomination,
+                    BigDecimal minPrice) {
+        EnumSet<RoundingMode> modes = EnumSet.of(RoundingMode.HALF_UP, RoundingMode.HALF_DOWN, RoundingMode.HALF_EVEN);
         if (!modes.contains(roundingMode)) {
-            throw new CurrencyException(InvalidRoundingMode, roundingMode,
-                                        currency.getCurrencyCode());
+            throw new CurrencyException(InvalidRoundingMode, roundingMode, currency.getCurrencyCode());
         }
         this.currency = currency;
         this.roundingMode = roundingMode;
         this.minDenomination = minDenomination;
+        this.minPrice = minPrice;
     }
 
     /**
@@ -140,53 +152,81 @@ public class Currency {
     }
 
     /**
-     * Rounds an amount to the nearest minimum denomination,
-     * or <tt>defaultFractionDigits</tt> if the minimum denomination is not
-     * specified.
-     * Uses the following algorithm:
-     * <tt>
-     * roundCash = integer(value / minDenomination) * minDenomination
-     * temp = value * minDenomination
-     * intTemp = integer(temp + 0.5 + sign(value))
-     * if temp - integer(temp) == 0.5 then
-     * if roundingMode == HALF_DOWN then
-     * intTemp = intTemp - sign(value)
-     * else if roundingMode == HALF_EVEN then
-     * if intTemp / 2 == integer(intTemp / 2) then
-     * intTemp = intTemp - sign(value)
-     * end
-     * end
-     * end
-     * roundCash = intTemp * minDenomination
-     * </tt>
+     * Rounds an amount to the nearest minimum cash denomination, or <tt>defaultFractionDigits</tt> if the minimum
+     * denomination is not specified.
      *
      * @param value the value to round
      * @return the rounded value
      */
     public BigDecimal roundCash(BigDecimal value) {
-        if (minDenomination.compareTo(BigDecimal.ZERO) == 0) {
+        return roundTo(value, minDenomination);
+    }
+
+    /**
+     * Rounds a price to the nearest minimum price, or <tt>defaultFractionDigits</tt> if the minimum price is not
+     * specified.
+     *
+     * @param price the value to round
+     * @return the rounded value
+     */
+    public BigDecimal roundPrice(BigDecimal price) {
+        return roundTo(price, minPrice);
+    }
+
+    /**
+     * Returns the minimum price to round prices to.
+     *
+     * @return the minimum price to round prices to, or {@code 0} if prices should be rounded to the currency default
+     */
+    public BigDecimal getMinimumPrice() {
+        return minPrice;
+    }
+
+    /**
+     * Rounds an amount to the nearest minimum value or <tt>defaultFractionDigits</tt> if the minimum is not
+     * specified.
+     * <p/>
+     * Uses the following algorithm:
+     * <pre>
+     * value = integer(value / minimum) * minimum
+     * temp = value * minimum
+     * intTemp = integer(temp + 0.5 + sign(value))
+     * if temp - integer(temp) == 0.5 then
+     *     if roundingMode == HALF_DOWN then
+     *        intTemp = intTemp - sign(value)
+     *     else if roundingMode == HALF_EVEN then
+     *        if intTemp / 2 == integer(intTemp / 2) then
+     *           intTemp = intTemp - sign(value)
+     *        end
+     *     end
+     * end
+     * roundTo = intTemp * minimum
+     * </pre>
+     *
+     * @param value the value to round
+     * @return the rounded value
+     */
+    protected BigDecimal roundTo(BigDecimal value, BigDecimal minimum) {
+        if (minimum.compareTo(BigDecimal.ZERO) == 0) {
             return round(value);
         }
-        BigDecimal temp = value.divide(minDenomination);
+        BigDecimal temp = value.divide(minimum);
         BigInteger intPart = temp.toBigInteger();
-        value = new BigDecimal(intPart).multiply(minDenomination);
+        value = new BigDecimal(intPart).multiply(minimum);
         BigInteger intTemp = temp.add(getHalf(value)).toBigInteger();
 
         // handle rounding 0.5 according to the rounding mode
         if (temp.subtract(new BigDecimal(intPart)).compareTo(POS_HALF) == 0) {
-            if (roundingMode == RoundingMode.HALF_UP) {
-                // no-op
-            } else if (roundingMode == RoundingMode.HALF_DOWN) {
+            if (roundingMode == RoundingMode.HALF_DOWN) {
                 intTemp = intTemp.subtract(BigInteger.valueOf(value.signum()));
             } else if (roundingMode == RoundingMode.HALF_EVEN) {
                 BigDecimal div2 = new BigDecimal(intTemp).divide(TWO);
                 if (div2.compareTo(new BigDecimal(div2.toBigInteger())) != 0) {
-                    intTemp = intTemp.subtract(
-                            BigInteger.valueOf(value.signum()));
+                    intTemp = intTemp.subtract(BigInteger.valueOf(value.signum()));
                 }
             }
         }
-        value = new BigDecimal(intTemp).multiply(minDenomination);
+        value = new BigDecimal(intTemp).multiply(minimum);
         return value;
     }
 

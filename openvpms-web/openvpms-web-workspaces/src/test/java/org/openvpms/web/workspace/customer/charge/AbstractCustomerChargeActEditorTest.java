@@ -47,7 +47,6 @@ import org.openvpms.web.test.AbstractAppTest;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -74,7 +73,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     public void setUp() {
         // NOTE: need to create the practice prior to the application as it caches the practice in the context 
         practice = TestHelper.getPractice();
-        practice.addClassification(createTaxType());
+        practice.addClassification(TestHelper.createTaxType(BigDecimal.TEN));
         save(practice);
         super.setUp();
     }
@@ -652,20 +651,6 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         EntityBean bean = new EntityBean(entity);
         bean.addNodeRelationship("discounts", discount);
         bean.save();
-    }
-
-    /**
-     * Helper to create and save a new tax type classification.
-     *
-     * @return a new tax classification
-     */
-    private Lookup createTaxType() {
-        Lookup tax = (Lookup) create("lookup.taxType");
-        IMObjectBean bean = new IMObjectBean(tax);
-        bean.setValue("code", "XTAXRULESTESTCASE_CLASSIFICATION_" + Math.abs(new Random().nextInt()));
-        bean.setValue("rate", new BigDecimal(10));
-        save(tax);
-        return tax;
     }
 
 }

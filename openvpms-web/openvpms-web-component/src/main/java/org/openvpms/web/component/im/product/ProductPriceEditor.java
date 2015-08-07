@@ -17,6 +17,7 @@
 package org.openvpms.web.component.im.product;
 
 import org.openvpms.archetype.rules.math.Currency;
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -36,8 +37,7 @@ import java.math.BigDecimal;
 
 
 /**
- * Editor for <em>productPrice.unitPrice</em> and
- * <em>productPrice.fixedPrice</em> product prices.
+ * Editor for <em>productPrice.unitPrice</em> and <em>productPrice.fixedPrice</em> product prices.
  *
  * @author Tim Anderson
  */
@@ -63,6 +63,35 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
      */
     private final ProductPriceRules rules;
 
+    /**
+     * The cost node.
+     */
+    private static final String COST = "cost";
+
+    /**
+     * The markup node.
+     */
+    private static final String MARKUP = "markup";
+
+    /**
+     * The price node.
+     */
+    private static final String PRICE = "price";
+
+    /**
+     * The max discount node.
+     */
+    private static final String MAX_DISCOUNT = "maxDiscount";
+
+    /**
+     * The practice, used to determine the tax rate.
+     */
+    private Party practice;
+
+    /**
+     * The practice currency.
+     */
+    private Currency currency;
 
     /**
      * Constructs a {@link ProductPriceEditor}.
@@ -74,27 +103,100 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
     public ProductPriceEditor(ProductPrice object, Product parent, LayoutContext layoutContext) {
         super(object, parent, layoutContext);
 
+        Context context = layoutContext.getContext();
+        practice = context.getPractice();
+        currency = ContextHelper.getPracticeCurrency(context);
+
         costListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updatePrice();
             }
         };
-        getProperty("cost").addModifiableListener(costListener);
+        getProperty(COST).addModifiableListener(costListener);
 
         markupListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updatePrice();
             }
         };
-        getProperty("markup").addModifiableListener(markupListener);
+        getProperty(MARKUP).addModifiableListener(markupListener);
 
         priceListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updateMarkup();
             }
         };
-        getProperty("price").addModifiableListener(priceListener);
+        getProperty(PRICE).addModifiableListener(priceListener);
         rules = ServiceHelper.getBean(ProductPriceRules.class);
+    }
+
+    /**
+     * Returns the cost.
+     *
+     * @return the cost
+     */
+    public BigDecimal getCost() {
+        return getProperty(COST).getBigDecimal(BigDecimal.ZERO);
+    }
+
+    /**
+     * Sets the cost.
+     * <p/>
+     * The price will be recalculated using the cost and markup.
+     *
+     * @param cost the cost
+     */
+    public void setCost(BigDecimal cost) {
+        getProperty(COST).setValue(cost);
+    }
+
+    /**
+     * Returns the markup.
+     *
+     * @return the markup
+     */
+    public BigDecimal getMarkup() {
+        return getProperty(MARKUP).getBigDecimal(BigDecimal.ZERO);
+    }
+
+    /**
+     * Sets the markup.
+     * <p/>
+     * The price will be recalculated using the cost and markup.
+     *
+     * @param markup the markup
+     */
+    public void setMarkup(BigDecimal markup) {
+        getProperty(MARKUP).setValue(markup);
+    }
+
+    /**
+     * Returns the price.
+     *
+     * @return the price
+     */
+    public BigDecimal getPrice() {
+        return getProperty(PRICE).getBigDecimal(BigDecimal.ZERO);
+    }
+
+    /**
+     * Sets the price.
+     * <p/>
+     * The markup will be recalculated using the cost and price.
+     *
+     * @param price the price
+     */
+    public void setPrice(BigDecimal price) {
+        getProperty(PRICE).setValue(price);
+    }
+
+    /**
+     * Returns the maximum discount.
+     *
+     * @return the maximum discount
+     */
+    public BigDecimal getMaxDiscount() {
+        return getProperty(MAX_DISCOUNT).getBigDecimal(BigDecimal.ZERO);
     }
 
     /**
@@ -105,9 +207,9 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
      * Fields will not recalculate.
      */
     public void refresh() {
-        Property cost = getProperty("cost");
-        Property markup = getProperty("markup");
-        Property price = getProperty("price");
+        Property cost = getProperty(COST);
+        Property markup = getProperty(MARKUP);
+        Property price = getProperty(PRICE);
         try {
             cost.removeModifiableListener(costListener);
             markup.removeModifiableListener(markupListener);
@@ -122,13 +224,22 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
 
     /**
      * Updates the price and maximum discount.
+     * <p/>
+     * Note that the markup is also recalculated if the currency has a minimum price set.
+     * <p/>
+     * This doesn't happen by default due to rounding errors.
      */
     private void updatePrice() {
         try {
-            Property property = getProperty("price");
+            Property property = getProperty(PRICE);
             property.removeModifiableListener(priceListener);
             property.setValue(calculatePrice());
             property.addModifiableListener(priceListener);
+
+            if (currencyHasMinimumPrice()) {
+                // recalculate the markup as the price may have been rounded
+                updateMarkup();
+            }
             updateMaxDiscount();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
@@ -140,7 +251,7 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
      */
     private void updateMarkup() {
         try {
-            Property property = getProperty("markup");
+            Property property = getProperty(MARKUP);
             property.removeModifiableListener(markupListener);
             property.setValue(calculateMarkup());
             property.addModifiableListener(markupListener);
@@ -154,7 +265,7 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
      * Updates the maximum discount.
      */
     private void updateMaxDiscount() {
-        Property property = getProperty("maxDiscount");
+        Property property = getProperty(MAX_DISCOUNT);
         BigDecimal maxDiscount = property.getBigDecimal(BigDecimal.ZERO);
         property.setValue(calculateDiscount(maxDiscount));
     }
@@ -167,13 +278,10 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
      * @return the price
      */
     private BigDecimal calculatePrice() {
-        BigDecimal cost = getValue("cost");
-        BigDecimal markup = getValue("markup");
+        BigDecimal cost = getCost();
+        BigDecimal markup = getMarkup();
         BigDecimal price = BigDecimal.ZERO;
         Product product = (Product) getParent();
-        Context context = getLayoutContext().getContext();
-        Party practice = context.getPractice();
-        Currency currency = ContextHelper.getPracticeCurrency(context);
 
         if (product != null && practice != null && currency != null) {
             price = rules.getPrice(product, cost, markup, practice, currency);
@@ -190,8 +298,8 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
      */
     private BigDecimal calculateMarkup() {
         BigDecimal markup = BigDecimal.ZERO;
-        BigDecimal cost = getValue("cost");
-        BigDecimal price = getValue("price");
+        BigDecimal cost = getCost();
+        BigDecimal price = getPrice();
         Product product = (Product) getParent();
         Context context = getLayoutContext().getContext();
         Party practice = context.getPractice();
@@ -215,20 +323,18 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
         if (maxDiscount.compareTo(BigDecimal.ZERO) == 0) {
             result = BigDecimal.ZERO;
         } else {
-            BigDecimal markup = getValue("markup");
+            BigDecimal markup = getMarkup();
             result = rules.calcMaxDiscount(markup);
         }
         return result;
     }
 
     /**
-     * Returns the decimal value of a property.
+     * Determines if the currency has a minimum price.
      *
-     * @param name the property name
-     * @return the property value
+     * @return {@code true} if the currency has a mininum price
      */
-    private BigDecimal getValue(String name) {
-        return getProperty(name).getBigDecimal(BigDecimal.ZERO);
+    private boolean currencyHasMinimumPrice() {
+        return currency != null && !MathRules.equals(currency.getMinimumPrice(), BigDecimal.ZERO);
     }
-
 }
