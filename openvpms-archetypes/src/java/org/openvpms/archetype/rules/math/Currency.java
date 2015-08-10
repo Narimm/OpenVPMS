@@ -87,13 +87,28 @@ public class Currency {
 
     /**
      * Constructs a {@link Currency}.
+     * <p/>
+     * Both the {@link #getMinimumDenomination()} and {@link #getMinimumPrice()} are set to the
+     * {@link #getDefaultRoundingAmount()}.
+     *
+     * @param currency     the underlying currency
+     * @param roundingMode the rounding mode
+     */
+    public Currency(java.util.Currency currency, RoundingMode roundingMode) {
+        this(currency, roundingMode, getRoundingAmount(currency.getDefaultFractionDigits()));
+    }
+
+    /**
+     * Constructs a {@link Currency}.
+     * <p/>
+     * The {@link #getMinimumPrice()} is set to the {@link #getDefaultRoundingAmount()}.
      *
      * @param currency        the underlying currency
      * @param roundingMode    the rounding mode
      * @param minDenomination the minimum cash denomination
      */
     public Currency(java.util.Currency currency, RoundingMode roundingMode, BigDecimal minDenomination) {
-        this(currency, roundingMode, minDenomination, BigDecimal.ZERO);
+        this(currency, roundingMode, minDenomination, getRoundingAmount(currency.getDefaultFractionDigits()));
     }
 
     /**
@@ -129,8 +144,7 @@ public class Currency {
      * Gets the default number of fraction digits used with this currency.
      * For example, the default number of fraction digits for the Euro is 2,
      * while for the Japanese Yen it's 0.
-     * In the case of pseudo-currencies, such as IMF Special Drawing Rights,
-     * -1 is returned.
+     * In the case of pseudo-currencies, such as XAU Gold, -1 is returned.
      *
      * @return the default number of fraction digits used with this currency
      */
@@ -139,8 +153,20 @@ public class Currency {
     }
 
     /**
+     * Returns the default rounding amount for a currency, based on the default number of fraction digits.
+     * <p/>
+     * For example, the default number of fraction digits for the Euro is 2, so the default rounding amount is 0.01,
+     * whereas for the Yen it's 0, so the default rounding amount is 0.
+     * <p/>
+     * If a currency has {@code -1} for {@link #getDefaultFractionDigits()}, then {@code 0.01} is returned.
+     */
+    public BigDecimal getDefaultRoundingAmount() {
+        return getRoundingAmount(getDefaultFractionDigits());
+    }
+
+    /**
      * Rounds an amount to the no. of digits specified by
-     * {@link #getDefaultFractionDigits()}. If the digits are <tt>-1</tt>
+     * {@link #getDefaultFractionDigits()}. If the digits are {@code -1}
      * returns the value unchanged.
      *
      * @param value the value to round
@@ -152,7 +178,7 @@ public class Currency {
     }
 
     /**
-     * Rounds an amount to the nearest minimum cash denomination, or <tt>defaultFractionDigits</tt> if the minimum
+     * Rounds an amount to the nearest minimum cash denomination, or {@code defaultFractionDigits} if the minimum
      * denomination is not specified.
      *
      * @param value the value to round
@@ -163,7 +189,7 @@ public class Currency {
     }
 
     /**
-     * Rounds a price to the nearest minimum price, or <tt>defaultFractionDigits</tt> if the minimum price is not
+     * Rounds a price to the nearest minimum price, or {@code defaultFractionDigits} if the minimum price is not
      * specified.
      *
      * @param price the value to round
@@ -171,6 +197,15 @@ public class Currency {
      */
     public BigDecimal roundPrice(BigDecimal price) {
         return roundTo(price, minPrice);
+    }
+
+    /**
+     * Returns the minimum denomination.
+     *
+     * @return the minimum denomination
+     */
+    public BigDecimal getMinimumDenomination() {
+        return minDenomination;
     }
 
     /**
@@ -183,7 +218,7 @@ public class Currency {
     }
 
     /**
-     * Rounds an amount to the nearest minimum value or <tt>defaultFractionDigits</tt> if the minimum is not
+     * Rounds an amount to the nearest minimum value or {@code defaultFractionDigits} if the minimum is not
      * specified.
      * <p/>
      * Uses the following algorithm:
@@ -234,9 +269,25 @@ public class Currency {
      * Helper to return +/-0.5 based on the sign of the specified value.
      *
      * @param value the value
-     * @return <tt>0.5</tt> if <tt>value != -1</tt>; otherwise <tt>-0.5</tt>
+     * @return {@code 0.5} if {@code value != -1}; otherwise {@code -0.5}
      */
     private BigDecimal getHalf(BigDecimal value) {
         return value.signum() != -1 ? POS_HALF : NEG_HALF;
     }
+
+    /**
+     * Returns a rounding amount.
+     * <p/>
+     * If the digits are < 0, returns 0.01
+     *
+     * @param digits the number of digits
+     * @return the rounding amount
+     */
+    private static BigDecimal getRoundingAmount(int digits) {
+        if (digits < 0) {
+            digits = 2;
+        }
+        return BigDecimal.ONE.movePointLeft(digits);
+    }
+
 }

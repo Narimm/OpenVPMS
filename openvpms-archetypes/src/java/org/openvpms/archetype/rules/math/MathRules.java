@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.math;
@@ -109,15 +109,25 @@ public class MathRules {
     /**
      * Helper to determine if two decimals are equal.
      *
-     * @param lhs the left-hand side. May be <tt>null</tt>
-     * @param rhs right left-hand side. May be <tt>null</tt>
-     * @return <tt>true</t> if they are equal, otherwise <tt>false</tt>
+     * @param lhs the left-hand side. May be {@code null}
+     * @param rhs right left-hand side. May be {@code null}
+     * @return {@code true</t> if they are equal, otherwise {@code false}
      */
     public static boolean equals(BigDecimal lhs, BigDecimal rhs) {
         if (lhs != null && rhs != null) {
             return lhs.compareTo(rhs) == 0;
         }
         return ObjectUtils.equals(lhs, rhs);
+    }
+
+    /**
+     * Helper to determine if a decimal is zero.
+     *
+     * @param value the value to check
+     * @return {@code true} iof the decimal is zero
+     */
+    public static boolean isZero(BigDecimal value) {
+        return value.signum() == 0;
     }
 
     /**
@@ -129,7 +139,7 @@ public class MathRules {
      * @return the converted weight
      */
     public static BigDecimal convert(BigDecimal weight, WeightUnits from, WeightUnits to) {
-        if (weight.compareTo(BigDecimal.ZERO) == 0 || from == to) {
+        if (isZero(weight) || from == to) {
             return weight;
         } else if (from == WeightUnits.KILOGRAMS) {
             if (to == WeightUnits.GRAMS) {

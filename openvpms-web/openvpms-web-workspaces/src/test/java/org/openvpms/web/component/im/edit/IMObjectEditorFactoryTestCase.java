@@ -47,6 +47,7 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 import org.openvpms.web.workspace.admin.hl7.PharmacyGroupEditor;
 import org.openvpms.web.workspace.admin.lookup.AlertTypeEditor;
+import org.openvpms.web.workspace.admin.lookup.CurrencyEditor;
 import org.openvpms.web.workspace.admin.lookup.LookupEditor;
 import org.openvpms.web.workspace.admin.lookup.MacroEditor;
 import org.openvpms.web.workspace.admin.lookup.SpeciesLookupEditor;
@@ -121,23 +122,32 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     public void testCreateRelationshipEditor() {
         String[] shortNames = DescriptorHelper.getShortNames("entityRelationship.*");
         for (String shortName : shortNames) {
-            if (shortName.equals("entityRelationship.patientOwner")) {
-                checkCreate(shortName, PatientOwnerRelationshipEditor.class);
-            } else if (shortName.equals("entityRelationship.documentTemplatePrinter")) {
-                checkCreate(shortName, DocumentTemplatePrinterEditor.class);
-            } else if (shortName.equals("entityRelationship.supplierStockLocationESCI")) {
-                checkCreate(shortName, SupplierStockLocationRelationshipESCIEditor.class);
-            } else if (shortName.equals("entityRelationship.productReminder")) {
-                checkCreate(shortName, ProductReminderRelationshipEditor.class);
-            } else if (shortName.equals("entityRelationship.reminderTypeTemplate")) {
-                checkCreate(shortName, ReminderTypeTemplateEditor.class);
-            } else if (shortName.equals("entityRelationship.scheduleDocumentTemplate") ||
-                       shortName.equals("entityRelationship.worklistDocumentTemplate")) {
-                checkCreate(shortName, ScheduleTemplateRelationshipEditor.class);
-            } else if (shortName.equals("entityRelationship.productStockLocation")) {
-                checkCreate(shortName, ProductStockLocationEditor.class);
-            } else {
-                checkCreate(shortName, EntityRelationshipEditor.class);
+            switch (shortName) {
+                case "entityRelationship.patientOwner":
+                    checkCreate(shortName, PatientOwnerRelationshipEditor.class);
+                    break;
+                case "entityRelationship.documentTemplatePrinter":
+                    checkCreate(shortName, DocumentTemplatePrinterEditor.class);
+                    break;
+                case "entityRelationship.supplierStockLocationESCI":
+                    checkCreate(shortName, SupplierStockLocationRelationshipESCIEditor.class);
+                    break;
+                case "entityRelationship.productReminder":
+                    checkCreate(shortName, ProductReminderRelationshipEditor.class);
+                    break;
+                case "entityRelationship.reminderTypeTemplate":
+                    checkCreate(shortName, ReminderTypeTemplateEditor.class);
+                    break;
+                case "entityRelationship.scheduleDocumentTemplate":
+                case "entityRelationship.worklistDocumentTemplate":
+                    checkCreate(shortName, ScheduleTemplateRelationshipEditor.class);
+                    break;
+                case "entityRelationship.productStockLocation":
+                    checkCreate(shortName, ProductStockLocationEditor.class);
+                    break;
+                default:
+                    checkCreate(shortName, EntityRelationshipEditor.class);
+                    break;
             }
         }
     }
@@ -461,7 +471,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     @Test
     public void testCreateLookupEditor() {
-        checkCreate("lookup.currency", LookupEditor.class);
+        checkCreate("lookup.fileNameFormat", LookupEditor.class);
     }
 
     /**
@@ -486,6 +496,14 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     @Test
     public void testCreateSuburbLookupEditor() {
         checkCreate("lookup.suburb", SuburbLookupEditor.class);
+    }
+
+    /**
+     * Verifies that a {@link CurrencyEditor} is created for <em>lookup.suburb</em>
+     */
+    @Test
+    public void testCreateCurrencyEditor() {
+        checkCreate("lookup.currency", CurrencyEditor.class);
     }
 
     /**

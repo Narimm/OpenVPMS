@@ -34,8 +34,6 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
 
 /**
@@ -166,17 +164,13 @@ public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTe
     }
 
     /**
-     * Verifies two <tt>BigDecimals</tt> are equal.
+     * Verifies two {@code BigDecimal} instances are equal.
      *
      * @param expected the expected value. May be {@code null}
      * @param actual   the actual value. May be {@code null}
      */
     protected void checkEquals(BigDecimal expected, BigDecimal actual) {
-        if (expected == null) {
-            assertNull(actual);
-        } else if (actual == null || expected.compareTo(actual) != 0) {
-            fail("Expected " + expected + ", but got " + actual);
-        }
+        TestHelper.checkEquals(expected, actual);
     }
 
 }
