@@ -225,7 +225,7 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
     /**
      * Updates the price and maximum discount.
      * <p/>
-     * Note that the markup is also recalculated if the currency has a minimum price set.
+     * Note that the markup is also recalculated if the currency has a non-default minimum price set.
      * <p/>
      * This doesn't happen by default due to rounding errors.
      */
@@ -236,8 +236,9 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
             property.setValue(calculatePrice());
             property.addModifiableListener(priceListener);
 
-            if (currencyHasMinimumPrice()) {
-                // recalculate the markup as the price may have been rounded
+            if (currencyHasNonDefaultMinimumPrice()) {
+                // recalculate the markup as the price may have been rounded. if the minimum price is the same as
+                // the default rounding amount, then don't recalculate as any difference is due to rounding error.
                 updateMarkup();
             }
             updateMaxDiscount();
@@ -330,11 +331,16 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Determines if the currency has a minimum price.
+     * Determines if the currency has a non-default minimum price.
      *
-     * @return {@code true} if the currency has a mininum price
+     * @return {@code true} if the currency has a non-default minimum price
      */
-    private boolean currencyHasMinimumPrice() {
-        return currency != null && !MathRules.equals(currency.getMinimumPrice(), BigDecimal.ZERO);
+    private boolean currencyHasNonDefaultMinimumPrice() {
+        if (currency != null) {
+            BigDecimal minimumPrice = currency.getMinimumPrice();
+            return !MathRules.isZero(minimumPrice)
+                   && !MathRules.equals(currency.getDefaultRoundingAmount(), minimumPrice);
+        }
+        return false;
     }
 }
