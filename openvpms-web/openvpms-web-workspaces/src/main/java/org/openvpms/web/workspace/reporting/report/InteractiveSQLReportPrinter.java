@@ -47,16 +47,16 @@ public class InteractiveSQLReportPrinter extends InteractiveExportPrinter {
     /**
      * Constructs an {@link InteractiveSQLReportPrinter}.
      *
-     * @param printer   the printer to delegate to
-     * @param context   the context
-     * @param help      the help context
-     * @param variables variables for macro expansion
+     * @param printer     the printer to delegate to
+     * @param context     the context
+     * @param mailContext the mail context
+     * @param help        the help context
+     * @param variables   variables for macro expansion
      */
     public InteractiveSQLReportPrinter(SQLReportPrinter printer, Context context, MailContext mailContext,
                                        HelpContext help, Variables variables) {
-        super(printer, context, help);
+        super(printer, context, mailContext, help);
         this.variables = variables;
-        setMailContext(mailContext);
     }
 
     /**

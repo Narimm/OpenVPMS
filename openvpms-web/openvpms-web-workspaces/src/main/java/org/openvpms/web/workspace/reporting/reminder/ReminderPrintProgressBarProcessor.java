@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.reporting.reminder;
 
@@ -40,11 +40,6 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
     private final ReminderPrintProcessor processor;
 
     /**
-     * The context.
-     */
-    private final Context context;
-
-    /**
      * The events currently being printed
      */
     private List<ReminderEvent> events;
@@ -56,7 +51,7 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
 
 
     /**
-     * Constructs a {@code ReminderPrintProgressBarProcessor}.
+     * Constructs a {@link ReminderPrintProgressBarProcessor}.
      *
      * @param reminders     the reminders
      * @param groupTemplate the grouped reminder document template
@@ -67,7 +62,6 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
     public ReminderPrintProgressBarProcessor(List<List<ReminderEvent>> reminders, DocumentTemplate groupTemplate,
                                              Statistics statistics, Context context, HelpContext help) {
         super(reminders, statistics, Messages.get("reporting.reminder.run.print"));
-        this.context = context;
 
         PrinterListener listener = new PrinterListener() {
             public void printed(String printer) {
@@ -93,7 +87,7 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
             }
         };
 
-        processor = new ReminderPrintProcessor(groupTemplate, listener, context, mailContext, help);
+        processor = createProcessor(groupTemplate, context, help, listener);
     }
 
     /**
@@ -113,6 +107,20 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
      */
     public void setMailContext(MailContext context) {
         mailContext = context;
+    }
+
+    /**
+     * Creates a new print processor.
+     *
+     * @param groupTemplate the grouped reminder document template
+     * @param context       the context
+     * @param help          the help context
+     * @param listener      the printer listener
+     * @return a new print processor
+     */
+    protected ReminderPrintProcessor createProcessor(DocumentTemplate groupTemplate, Context context, HelpContext help,
+                                                     PrinterListener listener) {
+        return new ReminderPrintProcessor(groupTemplate, listener, context, mailContext, help);
     }
 
     /**

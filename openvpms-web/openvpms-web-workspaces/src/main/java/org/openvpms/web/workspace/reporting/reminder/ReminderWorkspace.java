@@ -226,8 +226,9 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
     private void generateReminders() {
         try {
             HelpContext help = getHelpContext().subtopic("send");
-            ReminderGenerator generator = new ReminderGenerator(query.createReminderQuery(), getContext(),
-                                                                getMailContext(), help);
+            ReminderGeneratorFactory factory = ServiceHelper.getBean(ReminderGeneratorFactory.class);
+            ReminderGenerator generator = factory.create(query.createReminderQuery(), getContext(), getMailContext(),
+                                                         help);
             generateReminders(generator);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);

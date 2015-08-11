@@ -19,6 +19,7 @@ package org.openvpms.web.component.print;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.servlet.DownloadServlet;
 
@@ -32,12 +33,43 @@ public class InteractiveExportPrinter extends InteractivePrinter {
     /**
      * Constructs an {@link InteractiveExportPrinter}.
      *
-     * @param printer the printer to delegate to
-     * @param context the context
-     * @param help    the help context
+     * @param printer     the printer to delegate to
+     * @param context     the context
+     * @param mailContext the mail context
+     * @param help        the help context
      */
-    public InteractiveExportPrinter(Printer printer, Context context, HelpContext help) {
-        super(printer, context, help);
+    public InteractiveExportPrinter(Printer printer, Context context, MailContext mailContext, HelpContext help) {
+        this(null, printer, context, mailContext, help);
+    }
+
+    /**
+     * Constructs an {@link InteractivePrinter}.
+     *
+     * @param title       the dialog title. May be {@code null}
+     * @param printer     the printer to delegate to
+     * @param context     the context
+     * @param mailContext the mail context
+     * @param help        the help context
+     */
+    public InteractiveExportPrinter(String title, Printer printer, Context context, MailContext mailContext,
+                                    HelpContext help) {
+        this(title, printer, false, context, mailContext, help);
+    }
+
+    /**
+     * Constructs an {@link InteractiveExportPrinter}.
+     *
+     * @param title       the dialog title. May be {@code null}
+     * @param printer     the printer to delegate to
+     * @param skip        if {@code true} display a 'skip' button that simply closes the dialog
+     * @param context     the context
+     * @param mailContext the mail context
+     * @param help        the help context
+     */
+    public InteractiveExportPrinter(String title, Printer printer, boolean skip, Context context,
+                                    MailContext mailContext, HelpContext help) {
+        super(title, printer, skip, context, help);
+        setMailContext(mailContext);
     }
 
     /**
@@ -48,6 +80,17 @@ public class InteractiveExportPrinter extends InteractivePrinter {
     @Override
     protected PrintDialog createDialog() {
         return new ExportPrintDialog(getTitle(), getHelpContext()) {
+
+            @Override
+            protected void onPreview() {
+                doPrintPreview();
+            }
+
+            @Override
+            protected void onMail() {
+                mail(this);
+            }
+
             @Override
             protected void onExport() {
                 export();
