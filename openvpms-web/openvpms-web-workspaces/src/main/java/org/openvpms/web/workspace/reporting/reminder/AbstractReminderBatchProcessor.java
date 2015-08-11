@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Enter description.
+ * Abstract implementation of the {@link ReminderBatchProcessor} interface.
  *
  * @author Tim Anderson
  */
@@ -42,7 +42,7 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     /**
      * The reminders.
      */
-    private final List<ReminderEvent> reminders = new ArrayList<ReminderEvent>();
+    private final List<ReminderEvent> reminders = new ArrayList<>();
 
     /**
      * The statistics.
@@ -62,7 +62,7 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
     /**
      * The set of completed reminder ids, used to avoid updating reminders that are being reprocessed.
      */
-    private Set<IMObjectReference> completed = new HashSet<IMObjectReference>();
+    private Set<IMObjectReference> completed = new HashSet<>();
 
     /**
      * Constructs an {@link AbstractReminderBatchProcessor}.

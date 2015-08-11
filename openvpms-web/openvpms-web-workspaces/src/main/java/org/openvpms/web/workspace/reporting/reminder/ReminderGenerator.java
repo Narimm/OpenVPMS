@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -77,7 +77,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     /**
      * The reminder processors.
      */
-    private List<ReminderBatchProcessor> processors = new ArrayList<ReminderBatchProcessor>();
+    private List<ReminderBatchProcessor> processors = new ArrayList<>();
 
     /**
      * If {@code true}, pop up a dialog to perform generation.
@@ -98,6 +98,11 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      * The template for grouped reminders.
      */
     private final DocumentTemplate groupTemplate;
+
+    /**
+     * The mail context.
+     */
+    private final MailContext mailContext;
 
     /**
      * The context.
@@ -123,9 +128,9 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      * @param help        the help context
      */
     public ReminderGenerator(ReminderEvent event, Context context, MailContext mailContext, HelpContext help) {
-        this(context, help);
-        List<List<ReminderEvent>> reminders = new ArrayList<List<ReminderEvent>>();
-        List<ReminderEvent> group = new ArrayList<ReminderEvent>();
+        this(context, mailContext, help);
+        List<List<ReminderEvent>> reminders = new ArrayList<>();
+        List<ReminderEvent> group = new ArrayList<>();
         group.add(event);
         reminders.add(group);
 
@@ -190,7 +195,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      */
     public ReminderGenerator(Iterator<Act> reminders, Date from, Date to, Context context, MailContext mailContext,
                              HelpContext help) {
-        this(context, help);
+        this(context, mailContext, help);
 
         ReminderProcessor processor = new ReminderProcessor(from, to, new Date(), !sms,
                                                             ServiceHelper.getArchetypeService(),
@@ -251,15 +256,17 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     /**
      * Constructs a {@link ReminderGenerator}.
      *
-     * @param context the context
-     * @param help    the help context
+     * @param context     the context
+     * @param mailContext the mail context
+     * @param help        the help context
      */
-    private ReminderGenerator(Context context, HelpContext help) {
+    private ReminderGenerator(Context context, MailContext mailContext, HelpContext help) {
         practice = context.getPractice();
         if (practice == null) {
             throw new ReportingException(ReportingException.ErrorCode.NoPractice);
         }
         this.context = context;
+        this.mailContext = mailContext;
         this.help = help;
         TemplateHelper helper = new TemplateHelper(ServiceHelper.getArchetypeService());
         groupTemplate = helper.getDocumentTemplate("GROUPED_REMINDERS");
@@ -320,6 +327,29 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      */
     public int getErrors() {
         return statistics.getErrors();
+    }
+
+    /**
+     * Creates a new reminder list processor.
+     *
+     * @param reminders  the reminders
+     * @param statistics the reminder statistics
+     * @param context    the context
+     * @param help       the help context
+     * @return a new list processor
+     */
+    protected ReminderListProcessor createListProcessor(List<List<ReminderEvent>> reminders, Statistics statistics,
+                                                        Context context, HelpContext help) {
+        return new ReminderListProcessor(reminders, statistics, context, help);
+    }
+
+    /**
+     * Returns the mail context.
+     *
+     * @return the mail context
+     */
+    protected MailContext getMailContext() {
+        return mailContext;
     }
 
     /**
@@ -419,7 +449,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      * @return a new processor
      */
     private ReminderBatchProcessor createListProcessor(List<List<ReminderEvent>> reminders) {
-        return new ReminderListProcessor(reminders, statistics, context, help);
+        return createListProcessor(reminders, statistics, context, help);
     }
 
     /**
@@ -439,7 +469,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      * @return an iterator over the reminders
      */
     private static Iterator<Act> getReminders(DueReminderQuery query) {
-        List<Act> reminders = new ArrayList<Act>();
+        List<Act> reminders = new ArrayList<>();
         for (Act reminder : query.query()) {
             reminders.add(reminder);
         }
@@ -456,7 +486,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         /**
          * The restart buttons.
          */
-        private List<Button> restartButtons = new ArrayList<Button>();
+        private List<Button> restartButtons = new ArrayList<>();
 
         /**
          * The ok button.
@@ -594,7 +624,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
          * Returns the current batch processor.
          *
          * @return the current batch processor, or {@code null} if there
-         *         is none
+         * is none
          */
         private ReminderBatchProcessor getCurrent() {
             BatchProcessorTask task = (BatchProcessorTask) workflow.getCurrent();

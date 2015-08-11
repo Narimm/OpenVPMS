@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -25,6 +25,7 @@ import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.print.InteractivePrinter;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
@@ -39,7 +40,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-class ReminderListProcessor extends AbstractReminderBatchProcessor {
+public class ReminderListProcessor extends AbstractReminderBatchProcessor {
 
     /**
      * The context.
@@ -84,15 +85,14 @@ class ReminderListProcessor extends AbstractReminderBatchProcessor {
         List<ReminderEvent> reminders = getReminders();
         if (!reminders.isEmpty()) {
             try {
-                List<Act> acts = new ArrayList<Act>();
+                List<Act> acts = new ArrayList<>();
                 for (ReminderEvent event : reminders) {
                     acts.add(event.getReminder());
                 }
                 DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(ReminderArchetypes.REMINDER,
                                                                                      context);
-                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, locator, context);
-                final InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(
-                        Messages.get("reporting.reminder.list.print.title"), printer, true, context, help);
+                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<>(acts, locator, context);
+                final InteractivePrinter iPrinter = createPrinter(printer);
 
                 iPrinter.setListener(new PrinterListener() {
                     public void printed(String printer) {
@@ -130,6 +130,30 @@ class ReminderListProcessor extends AbstractReminderBatchProcessor {
      */
     public void restart() {
         // no-op
+    }
+
+    /**
+     * Creates a new interactive printer.
+     *
+     * @param printer the printer to delegate to
+     * @return a new interactive printer
+     */
+    protected InteractivePrinter createPrinter(IMObjectReportPrinter<Act> printer) {
+        return createPrinter(Messages.get("reporting.reminder.list.print.title"), printer, context, help);
+    }
+
+    /**
+     * Creates a new interactive printer.
+     *
+     * @param title   the dialog title
+     * @param printer the printer to delegate to
+     * @param context the context
+     * @param help    the help context
+     * @return a new interactive printer
+     */
+    protected InteractivePrinter createPrinter(String title, IMObjectReportPrinter<Act> printer, Context context,
+                                               HelpContext help) {
+        return new InteractiveIMPrinter<>(title, printer, true, context, help);
     }
 
     /**
