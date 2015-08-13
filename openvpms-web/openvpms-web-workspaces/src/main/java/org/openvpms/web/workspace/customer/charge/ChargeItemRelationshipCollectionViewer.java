@@ -73,33 +73,49 @@ public class ChargeItemRelationshipCollectionViewer extends ActRelationshipColle
      */
     protected Row createControls() {
         Row row = RowFactory.create(Styles.CELL_SPACING);
+
+        // TODO - this largely duplicates code from AbstractChargeItemRelationshipCollectionEditor
         final UserPreferences preferences = ServiceHelper.getPreferences();
+        boolean showBatch = preferences.getShowBatchDuringCharging();
         boolean showTemplate = preferences.getShowTemplateDuringCharging();
         boolean showProductType = preferences.getShowProductTypeDuringCharging();
-        final CheckBox template = CheckBoxFactory.create("customer.charge.show.template", showTemplate);
-        final CheckBox productType = CheckBoxFactory.create("customer.charge.show.productType", showProductType);
-        template.addActionListener(new ActionListener() {
-            @Override
-            public void onAction(ActionEvent event) {
-                preferences.setShowTemplateDuringCharging(template.isSelected());
-                ChargeItemTableModel model = getModel();
-                if (model != null) {
-                    model.setShowTemplate(preferences.getShowTemplateDuringCharging());
-                }
+
+        ChargeItemTableModel model = getModel();
+        if (model != null) {
+            if (model.hasBatch()) {
+                final CheckBox batch = CheckBoxFactory.create("customer.charge.show.batch", showBatch);
+                batch.addActionListener(new ActionListener() {
+                    @Override
+                    public void onAction(ActionEvent event) {
+                        boolean selected = batch.isSelected();
+                        preferences.setShowBatchDuringCharging(selected);
+                        getModel().setShowBatch(preferences.getShowBatchDuringCharging());
+                    }
+                });
+                row.add(batch);
             }
-        });
-        productType.addActionListener(new ActionListener() {
-            @Override
-            public void onAction(ActionEvent event) {
-                preferences.setShowProductTypeDuringCharging(productType.isSelected());
-                ChargeItemTableModel model = getModel();
-                if (model != null) {
-                    model.setShowTemplate(preferences.getShowProductTypeDuringCharging());
+
+            final CheckBox template = CheckBoxFactory.create("customer.charge.show.template", showTemplate);
+            final CheckBox productType = CheckBoxFactory.create("customer.charge.show.productType", showProductType);
+            template.addActionListener(new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    boolean selected = template.isSelected();
+                    preferences.setShowTemplateDuringCharging(selected);
+                    getModel().setShowTemplate(selected);
                 }
-            }
-        });
-        row.add(template);
-        row.add(productType);
+            });
+            productType.addActionListener(new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    boolean selected = productType.isSelected();
+                    preferences.setShowProductTypeDuringCharging(selected);
+                    getModel().setShowProductType(selected);
+                }
+            });
+            row.add(template);
+            row.add(productType);
+        }
         return row;
     }
 
