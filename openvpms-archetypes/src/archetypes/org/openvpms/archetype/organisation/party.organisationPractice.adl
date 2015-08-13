@@ -81,11 +81,11 @@
               defaultValue="false()"/>
         <node name="showCustomerAccountSummary" path="/details/showCustomerAccountSummary" type="java.lang.Boolean"
               defaultValue="true()"/>
+        <node name="showBatchDuringCharging" path="/details/showBatchDuringCharging" type="java.lang.Boolean"
+              minCardinality="0" maxCardinality="1" defaultValue="false()"/>
         <node name="showTemplateDuringCharging" path="/details/showTemplateDuringCharging" type="java.lang.Boolean"
               minCardinality="0" maxCardinality="1" defaultValue="false()"/>
         <node name="showProductTypeDuringCharging" path="/details/showProductTypeDuringCharging" type="java.lang.Boolean"
-              minCardinality="0" maxCardinality="1" defaultValue="false()"/>
-        <node name="showBatchDuringCharging" path="/details/showBatchDuringCharging" type="java.lang.Boolean"
               minCardinality="0" maxCardinality="1" defaultValue="false()"/>
         <node name="contacts" path="/contacts"
               type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
@@ -101,7 +101,6 @@
                         <property name="shortName" value="contact.email"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="serviceUser" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink" minCardinality="0"
@@ -109,53 +108,18 @@
         <node name="locations" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.practiceLocation">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.practiceLocation"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active practice location relationship</errorMessage>
             </assertion>
         </node>
         <node name="taxes" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
-              filter="lookup.taxType">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="lookup.taxType"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
+              filter="lookup.taxType"/>
         <node name="templates" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.documentTemplatePrinter">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="entityRelationship.documentTemplatePrinter"/>
-                    </propertyMap>
-                </propertyList>
-            </assertion>
-        </node>
+              filter="entityRelationship.documentTemplatePrinter"/>
         <node name="SMS" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="1"
-              filter="entityRelationship.practiceSMSConfiguration">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="entityRelationship.practiceSMSConfiguration"/>
-                    </propertyMap>
-                </propertyList>
-            </assertion>
-        </node>
+              filter="entityRelationship.practiceSMSConfiguration"/>
     </archetype>
 </archetypes>
