@@ -62,6 +62,11 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
     private boolean showProductType;
 
     /**
+     * Determines if the batch column should be shown.
+     */
+    private boolean showBatch;
+
+    /**
      * The product column index.
      */
     private int productIndex;
@@ -77,9 +82,14 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
     private int productTypeIndex;
 
     /**
-     * The product type column.
+     * The model index of the column before the batch.
      */
-    private TableColumn productType;
+    private int beforeBatchIndex;
+
+    /**
+     * The clinician column index. or {@code -1} if there is no clinician column.
+     */
+    private int clinicianIndex;
 
     /**
      * The template column.
@@ -87,9 +97,45 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
     private TableColumn template;
 
     /**
+     * The product type column.
+     */
+    private TableColumn productType;
+
+    /**
+     * The batch column. May be {@code null}
+     */
+    private TableColumn batch;
+
+    /**
      * Used to access the product type name node from a charge/estimate item.
      */
-    private static final String PRODUCT_TYPE_NODE = "product.entity.type.source.name";
+    private static final String PRODUCT_TYPE = "product.entity.type.source.name";
+
+    /**
+     * The start time node name.
+     */
+    private static final String START_TIME = "startTime";
+
+    /**
+     * The product node.
+     */
+    private static final String PRODUCT = "product";
+
+    /**
+     * The batch node name.
+     */
+    private static final String BATCH = "batch";
+
+    /**
+     * The clinician node name.
+     */
+    private static final String CLINICIAN = "clinician";
+
+    /**
+     * The template node name.
+     */
+    private static final String TEMPLATE = "template";
+
 
     /**
      * Constructs a {@link ChargeItemTableModel}.
@@ -102,13 +148,14 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
         UserPreferences preferences = ServiceHelper.getPreferences();
         showTemplate = preferences.getShowTemplateDuringCharging();
         showProductType = preferences.getShowProductTypeDuringCharging();
+        showBatch = preferences.getShowBatchDuringCharging();
         setTableColumnModel(createColumnModel(shortNames, context));
         if (showTemplate) {
             setDefaultSortColumn(templateIndex);
         } else if (showProductType) {
             setDefaultSortColumn(productTypeIndex);
         } else {
-            DescriptorTableColumn startTime = getColumn("startTime");
+            DescriptorTableColumn startTime = getColumn(START_TIME);
             if (startTime != null) {
                 setDefaultSortColumn(startTime.getModelIndex());
                 setDefaultSortAscending(false);
@@ -141,6 +188,26 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
     }
 
     /**
+     * Determines if the batch column is shown.
+     *
+     * @param show if {@code true}, show the column
+     */
+    public void setShowBatch(boolean show) {
+        if (show != showBatch) {
+            doShowBatch(show, getColumnModel());
+        }
+    }
+
+    /**
+     * Determines if the batch can be displayed.
+     *
+     * @return {@code true} if the batch can be displayed
+     */
+    public boolean hasBatch() {
+        return batch != null;
+    }
+
+    /**
      * Returns the column model.
      *
      * @return the column model
@@ -148,6 +215,26 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
     @Override
     public DefaultTableColumnModel getColumnModel() {
         return (DefaultTableColumnModel) super.getColumnModel();
+    }
+
+    /**
+     * Returns the sort criteria.
+     *
+     * @param column    the primary sort column
+     * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
+     * @return the sort criteria, or {@code null} if the column isn't sortable
+     */
+    @Override
+    public SortConstraint[] getSortConstraints(int column, boolean ascending) {
+        if (column == productTypeIndex) {
+            return new SortConstraint[]{new VirtualNodeSortConstraint(PRODUCT_TYPE, ascending),
+                                        new NodeSortConstraint(START_TIME, false)};
+        } else if (column == templateIndex) {
+            return new SortConstraint[]{new NodeSortConstraint(TEMPLATE, ascending),
+                                        new VirtualNodeSortConstraint(PRODUCT_TYPE, ascending),
+                                        new NodeSortConstraint(START_TIME, false)};
+        }
+        return super.getSortConstraints(column, ascending);
     }
 
     /**
@@ -165,27 +252,6 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
         return super.getValue(object, column, row);
     }
 
-
-    /**
-     * Returns the sort criteria.
-     *
-     * @param column    the primary sort column
-     * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
-     * @return the sort criteria, or {@code null} if the column isn't sortable
-     */
-    @Override
-    public SortConstraint[] getSortConstraints(int column, boolean ascending) {
-        if (column == productTypeIndex) {
-            return new SortConstraint[]{new VirtualNodeSortConstraint(PRODUCT_TYPE_NODE, ascending),
-                                        new NodeSortConstraint("startTime", false)};
-        } else if (column == templateIndex) {
-            return new SortConstraint[]{new NodeSortConstraint("template", ascending),
-                                        new VirtualNodeSortConstraint(PRODUCT_TYPE_NODE, ascending),
-                                        new NodeSortConstraint("startTime", false)};
-        }
-        return super.getSortConstraints(column, ascending);
-    }
-
     /**
      * Creates a column model.
      *
@@ -196,18 +262,35 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
     @Override
     protected TableColumnModel createColumnModel(List<ArchetypeDescriptor> archetypes, LayoutContext context) {
         DefaultTableColumnModel model = (DefaultTableColumnModel) super.createColumnModel(archetypes, context);
-        productIndex = getColumn(model, "product").getModelIndex();
+        productIndex = getColumn(model, PRODUCT).getModelIndex();
+        TableColumn clinician = getColumn(model, CLINICIAN);
+        clinicianIndex = clinician != null ? clinician.getModelIndex() : -1;
+        batch = getColumn(model, BATCH);
+        if (batch != null) {
+            int offset = getColumnOffset(model, batch.getModelIndex());
+            if (offset > 0) {
+                beforeBatchIndex = model.getColumn(offset - 1).getModelIndex();
+            } else {
+                beforeBatchIndex = 0;
+            }
+        } else {
+            beforeBatchIndex = -1;
+        }
         productTypeIndex = templateIndex + 1;
         productType = new TableColumn(productTypeIndex);
         productType.setHeaderValue(DescriptorHelper.getDisplayName(ProductArchetypes.PRODUCT_TYPE));
         templateIndex = getNextModelIndex(model);
-        template = new DescriptorTableColumn(templateIndex, "template", archetypes);
+        template = new DescriptorTableColumn(templateIndex, TEMPLATE, archetypes);
 
+        if (showTemplate) {
+            doShowTemplate(true, model);
+        }
         if (showProductType) {
             doShowProductType(true, model);
         }
-        if (showTemplate) {
-            doShowTemplate(true, model);
+
+        if (!showBatch) {
+            doShowBatch(false, model);
         }
         return model;
     }
@@ -222,7 +305,7 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
         ActBean bean = new ActBean((Act) object);
         LayoutContext context = getLayoutContext();
         IMObjectCache cache = context.getCache();
-        Product product = (Product) cache.get(bean.getNodeParticipantRef("product"));
+        Product product = (Product) cache.get(bean.getNodeParticipantRef(PRODUCT));
         if (product != null) {
             IMObjectBean productBean = new IMObjectBean(product);
             IMObjectReference type = productBean.getNodeSourceObjectRef("type");
@@ -240,8 +323,8 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
      * @param model the model
      */
     private void doShowTemplate(boolean show, DefaultTableColumnModel model) {
-        int before = showProductType ? productTypeIndex : productIndex;
-        showTemplate = show(template, show, before, model);
+        int after = clinicianIndex != -1 ? clinicianIndex : productIndex;
+        showTemplate = show(template, show, after, model);
     }
 
     /**
@@ -251,7 +334,20 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
      * @param model the model
      */
     private void doShowProductType(boolean show, DefaultTableColumnModel model) {
-        showProductType = show(productType, show, productIndex, model);
+        int after = showTemplate ? templateIndex : clinicianIndex != -1 ? clinicianIndex : productIndex;
+        showProductType = show(productType, show, after, model);
+    }
+
+    /**
+     * Shows/hides the batch column.
+     *
+     * @param show  if {@code true}, show it, otherwise hide it
+     * @param model the model
+     */
+    private void doShowBatch(boolean show, DefaultTableColumnModel model) {
+        if (batch != null) {
+            showBatch = show(batch, show, beforeBatchIndex, model);
+        }
     }
 
     /**
@@ -259,16 +355,16 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
      *
      * @param column the column
      * @param show   if {@code true}, show it, otherwise hide it
-     * @param before the model index of the column to place the column before, if its being shown
+     * @param after the model index of the column to place the column after, if its being shown
      * @param model  the model
      * @return {@code show}
      */
-    private boolean show(TableColumn column, boolean show, int before, DefaultTableColumnModel model) {
+    private boolean show(TableColumn column, boolean show, int after, DefaultTableColumnModel model) {
         if (show) {
             model.addColumn(column);
-            int columnOffset = getColumnOffset(model, before);
+            int columnOffset = getColumnOffset(model, after);
             if (columnOffset != -1) {
-                model.moveColumn(model.getColumnCount() - 1, columnOffset);
+                model.moveColumn(model.getColumnCount() - 1, columnOffset + 1);
             }
         } else {
             model.removeColumn(column);
