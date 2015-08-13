@@ -683,9 +683,8 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="background" value="#ffffff"/>
+                        <property name="background" value="${schedule.pending.colour}"/>
                         <property name="insets" value="${padding.small} ${padding.tiny}"/>
-                        <!-- white -->
                     </properties>
                 </layout-data>
             </property>
@@ -697,9 +696,8 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="background" value="#dbf714"/>
+                        <property name="background" value="${schedule.checkedin.colour}"/>
                         <property name="insets" value="${padding.small} ${padding.tiny}"/>
-                        <!-- white -->
                     </properties>
                 </layout-data>
             </property>
@@ -711,9 +709,8 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="background" value="#FFCCCC"/>
+                        <property name="background" value="${schedule.inprogress.colour}"/>
                         <property name="insets" value="${padding.small} ${padding.tiny}"/>
-                        <!-- pale red -->
                     </properties>
                 </layout-data>
             </property>
@@ -725,9 +722,8 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="background" value="#CCFFFF"/>
+                        <property name="background" value="${schedule.completed.colour}"/>
                         <property name="insets" value="${padding.small} ${padding.tiny}"/>
-                        <!-- pale blue -->
                     </properties>
                 </layout-data>
             </property>
@@ -739,9 +735,8 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="background" value="#CC99FF"/>
+                        <property name="background" value="${schedule.cancelled.colour}"/>
                         <property name="insets" value="${padding.small} ${padding.tiny}"/>
-                        <!-- pale dull violet -->
                     </properties>
                 </layout-data>
             </property>
@@ -753,7 +748,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="background" value="#CCFFCC"/>
+                        <property name="background" value="${schedule.billed.colour}"/>
                         <property name="insets" value="${padding.small} ${padding.tiny}"/>
                         <!-- pale green -->
                     </properties>
@@ -767,7 +762,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="background" value="#FFCC99"/>
+                        <property name="background" value="${schedule.admitted.colour}"/>
                         <property name="insets" value="${padding.small} ${padding.tiny}"/>
                         <!-- pale green -->
                     </properties>
