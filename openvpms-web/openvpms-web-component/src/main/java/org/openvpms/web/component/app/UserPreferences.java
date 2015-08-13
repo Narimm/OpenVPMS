@@ -37,6 +37,11 @@ public class UserPreferences {
     private boolean showProductType;
 
     /**
+     * Determines if batches should be displayed during charging.
+     */
+    private boolean showBatch;
+
+    /**
      * Default constructor.
      */
     public UserPreferences() {
@@ -61,6 +66,7 @@ public class UserPreferences {
         IMObjectBean bean = new IMObjectBean(practice);
         showTemplate = bean.getBoolean("showTemplateDuringCharging");
         showProductType = bean.getBoolean("showProductTypeDuringCharging");
+        showBatch = bean.getBoolean("showBatchDuringCharging");
     }
 
     /**
@@ -75,7 +81,7 @@ public class UserPreferences {
     /**
      * Determines if product templates should be displayed during charging and estimates.
      *
-     * @@param showTemplate if {@code true}, display the product template
+     * @param showTemplate if {@code true}, display the product template
      */
     public void setShowTemplateDuringCharging(boolean showTemplate) {
         this.showTemplate = showTemplate;
@@ -93,10 +99,27 @@ public class UserPreferences {
     /**
      * Determines if product types should be displayed during charging and estimates.
      *
-     * @@param showProductType if {@code true}, display the product type
+     * @param showProductType if {@code true}, display the product type
      */
     public void setShowProductTypeDuringCharging(boolean showProductType) {
         this.showProductType = showProductType;
     }
 
+    /**
+     * Determines if batches should be displayed during charging.
+     *
+     * @return {@code true} if batches should be displayed.
+     */
+    public boolean getShowBatchDuringCharging() {
+        return showBatch;
+    }
+
+    /**
+     * Determines if batches should be displayed during charging.
+     *
+     * @param showBatch if {@code true}, display the batch
+     */
+    public void setShowBatchDuringCharging(boolean showBatch) {
+        this.showBatch = showBatch;
+    }
 }

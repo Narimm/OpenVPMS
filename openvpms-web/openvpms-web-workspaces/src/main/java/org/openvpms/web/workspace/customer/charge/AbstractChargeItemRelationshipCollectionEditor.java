@@ -81,8 +81,8 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
 
     /**
      * Creates the row of controls.
-     * <p/>
-     * This provides checkboxes to show/hide the template and product type columns.
+     * <p>
+     * This provides checkboxes to show/hide the template, product type and batch columns.
      *
      * @param focus the focus group
      * @return the row of controls
@@ -91,28 +91,40 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
     protected Row createControls(FocusGroup focus) {
         Row controls = super.createControls(focus);
         final UserPreferences preferences = ServiceHelper.getPreferences();
+        boolean showBatch = preferences.getShowBatchDuringCharging();
         boolean showTemplate = preferences.getShowTemplateDuringCharging();
         boolean showProductType = preferences.getShowProductTypeDuringCharging();
+
+        ChargeItemTableModel model = getModel();
+        if (model.hasBatch()) {
+            final CheckBox batch = CheckBoxFactory.create("customer.charge.show.batch", showBatch);
+            batch.addActionListener(new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    boolean selected = batch.isSelected();
+                    preferences.setShowBatchDuringCharging(selected);
+                    getModel().setShowBatch(preferences.getShowBatchDuringCharging());
+                }
+            });
+            controls.add(batch);
+        }
+
         final CheckBox template = CheckBoxFactory.create("customer.charge.show.template", showTemplate);
         final CheckBox productType = CheckBoxFactory.create("customer.charge.show.productType", showProductType);
         template.addActionListener(new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
-                preferences.setShowTemplateDuringCharging(template.isSelected());
-                IMTableModel<IMObject> model = getTable().getModel().getModel();
-                if (model instanceof ChargeItemTableModel) {
-                    ((ChargeItemTableModel) model).setShowTemplate(preferences.getShowTemplateDuringCharging());
-                }
+                boolean selected = template.isSelected();
+                preferences.setShowTemplateDuringCharging(selected);
+                getModel().setShowTemplate(selected);
             }
         });
         productType.addActionListener(new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
-                preferences.setShowProductTypeDuringCharging(productType.isSelected());
-                IMTableModel<IMObject> model = getTable().getModel().getModel();
-                if (model instanceof ChargeItemTableModel) {
-                    ((ChargeItemTableModel) model).setShowProductType(preferences.getShowProductTypeDuringCharging());
-                }
+                boolean selected = productType.isSelected();
+                preferences.setShowProductTypeDuringCharging(selected);
+                getModel().setShowProductType(selected);
             }
         });
         controls.add(template);
@@ -120,4 +132,13 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
         return controls;
     }
 
+    /**
+     * Returns the underlying table model.
+     *
+     * @return the model
+     */
+    private ChargeItemTableModel getModel() {
+        IMTableModel<IMObject> model = getTable().getModel().getModel();
+        return (ChargeItemTableModel) model;
+    }
 }
