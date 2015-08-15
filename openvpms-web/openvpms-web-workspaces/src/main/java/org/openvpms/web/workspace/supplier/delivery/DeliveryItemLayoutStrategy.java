@@ -34,11 +34,6 @@ import org.openvpms.web.system.ServiceHelper;
 public class DeliveryItemLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
-     * The nodes to display.
-     */
-    private final ArchetypeNodes nodes = new ArchetypeNodes().excludeIfEmpty("order");
-
-    /**
      * Supplier invoice line identifier node.
      */
     private static final String SUPPLIER_INVOICE_LINE_ID = "supplierInvoiceLineId";
@@ -49,18 +44,11 @@ public class DeliveryItemLayoutStrategy extends AbstractLayoutStrategy {
     public DeliveryItemLayoutStrategy() {
         NodeDescriptor node = DescriptorHelper.getNode(SupplierArchetypes.DELIVERY_ITEM, SUPPLIER_INVOICE_LINE_ID,
                                                        ServiceHelper.getArchetypeService());
+        ArchetypeNodes nodes = new ArchetypeNodes().excludeIfEmpty("order");
         if (node != null && node.isReadOnly()) {
             nodes.excludeIfEmpty(SUPPLIER_INVOICE_LINE_ID);
         }
+        setArchetypeNodes(nodes);
     }
 
-    /**
-     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-     *
-     * @return the archetype nodes
-     */
-    @Override
-    protected ArchetypeNodes getArchetypeNodes() {
-        return nodes;
-    }
 }

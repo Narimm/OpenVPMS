@@ -98,6 +98,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      */
     private final CustomerTaxRules taxRules;
 
+
     /**
      * Constructs a {@link PriceActItemEditor}.
      *

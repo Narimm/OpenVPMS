@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.UserPreferences;
 import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -64,6 +65,18 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
     public AbstractChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context,
                                                           CollectionResultSetFactory factory) {
         super(property, act, context, factory);
+    }
+
+    /**
+     * Creates a new editor.
+     *
+     * @param object  the object to edit
+     * @param context the layout context
+     * @return an editor to edit <code>object</code>
+     */
+    @Override
+    public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
+        return super.createEditor(object, context);
     }
 
     /**

@@ -21,6 +21,7 @@ import org.openvpms.archetype.rules.patient.prescription.PrescriptionRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.im.edit.ActCollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -71,7 +72,7 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      * @param context  the layout context
      */
     public ChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context) {
-        this(property, act, context, ChargeItemCollectionResultSetFactory.INSTANCE);
+        this(property, act, context, ActCollectionResultSetFactory.INSTANCE);
     }
 
     /**

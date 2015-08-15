@@ -66,6 +66,31 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
     }
 
     /**
+     * Helper to create a read-only text field that has a width based on the number of characters present.
+     * <p/>
+     * This selects a width that displays the text in field slightly bigger than the text, up to maxLength characters.
+     *
+     * @param text      the text. May be {@code null}
+     * @param minLength the minimum length of the field, if the text is non-null
+     * @param maxLength the maximum display length
+     * @param style     the component style name
+     * @return a new text field
+     */
+    public static TextComponent getText(String text, int minLength, int maxLength, String style) {
+        TextComponent result;
+        if (text != null && text.length() > 0) {
+            minLength = text.length();
+        } else if (minLength > 20) {
+            minLength = 20; // value is empty, so shrink the display
+        }
+
+        result = TextComponentFactory.create(text, minLength, maxLength);
+        ComponentFactory.setStyle(result, style);
+        result.setEnabled(false);
+        return result;
+    }
+
+    /**
      * Returns a component to display a lookup.
      *
      * @param property the property
@@ -74,17 +99,8 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
      */
     protected Component createLookup(Property property, IMObject context) {
         TextComponent result;
-        int length = property.getMaxLength();
         String value = LookupNameHelper.getName(context, property.getName());
-        if (value != null && value.length() > 0) {
-            length = value.length();
-        } else if (length > 20) {
-            length = 20; // value is empty, so shrink the display
-        }
-
-        result = TextComponentFactory.create(value, length, MAX_DISPLAY_LENGTH);
-        ComponentFactory.setStyle(result, getStyle());
-        result.setEnabled(false);
+        result = getText(value, property.getMaxLength(), MAX_DISPLAY_LENGTH, getStyle());
         return result;
     }
 

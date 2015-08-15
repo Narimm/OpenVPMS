@@ -17,12 +17,16 @@
 package org.openvpms.web.workspace.customer.charge;
 
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
+import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.customer.Doses;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,15 +53,26 @@ public class ChargeContext implements CollectionPropertyEditor.RemoveHandler {
     private PatientHistoryChanges changes;
 
     /**
+     * The doses helper.
+     */
+    private Doses doses;
+
+    /**
      * The objects to remove.
      */
-    private List<IMObject> toRemove = new ArrayList<IMObject>();
+    private List<IMObject> toRemove = new ArrayList<>();
 
     /**
      * The editors to remove.
      */
-    private List<IMObjectEditor> toRemoveEditors = new ArrayList<IMObjectEditor>();
+    private List<IMObjectEditor> toRemoveEditors = new ArrayList<>();
 
+    /**
+     * Default constructor.
+     */
+    public ChargeContext() {
+        doses = new Doses(ServiceHelper.getBean(PatientRules.class), ServiceHelper.getBean(ProductRules.class));
+    }
 
     /**
      * Registers the patient history changes for the current save.
@@ -75,6 +90,15 @@ public class ChargeContext implements CollectionPropertyEditor.RemoveHandler {
      */
     public PatientHistoryChanges getHistoryChanges() {
         return changes;
+    }
+
+    /**
+     * Returns the doses helper.
+     *
+     * @return the doses helper
+     */
+    public Doses getDoses() {
+        return doses;
     }
 
     /**
@@ -110,7 +134,7 @@ public class ChargeContext implements CollectionPropertyEditor.RemoveHandler {
         boolean result = false;
         try {
             changes.save();
-            DefaultIMObjectDeletionListener<IMObject> listener = new DefaultIMObjectDeletionListener<IMObject>();
+            DefaultIMObjectDeletionListener<IMObject> listener = new DefaultIMObjectDeletionListener<>();
             for (IMObject object : toRemove.toArray(new IMObject[toRemove.size()])) {
                 if (!SaveHelper.delete(object, listener)) {
                     return false;

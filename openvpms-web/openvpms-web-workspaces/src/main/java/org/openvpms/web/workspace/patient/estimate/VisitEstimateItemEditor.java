@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.estimate;
@@ -77,11 +77,6 @@ public class VisitEstimateItemEditor extends EstimateItemEditor {
      */
     private class VisitEstimateLayoutStrategy extends EstimateItemLayoutStrategy {
 
-        /**
-         * The nodes to display.
-         */
-        private ArchetypeNodes nodes;
-
         public VisitEstimateLayoutStrategy(FixedPriceEditor fixedPrice) {
             super(fixedPrice);
         }
@@ -97,18 +92,9 @@ public class VisitEstimateItemEditor extends EstimateItemEditor {
          */
         @Override
         public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-            nodes = new ArchetypeNodes(super.getArchetypeNodes()).exclude("patient");
+            ArchetypeNodes nodes = new ArchetypeNodes(super.getArchetypeNodes()).exclude("patient");
+            setArchetypeNodes(nodes);
             return super.apply(object, properties, parent, context);
-        }
-
-        /**
-         * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-         *
-         * @return the archetype nodes
-         */
-        @Override
-        protected ArchetypeNodes getArchetypeNodes() {
-            return nodes;
         }
     }
 

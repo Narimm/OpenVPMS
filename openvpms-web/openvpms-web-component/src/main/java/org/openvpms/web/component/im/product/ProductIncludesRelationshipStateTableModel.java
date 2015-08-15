@@ -22,16 +22,11 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.RelationshipState;
 import org.openvpms.web.component.im.relationship.RelationshipStateTableModel;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
-import org.openvpms.web.component.im.util.LookupNameHelper;
-import org.openvpms.web.resource.i18n.Messages;
-
-import java.math.BigDecimal;
 
 /**
  * Table model for <em>entityLink.productIncludes</em>.
@@ -102,28 +97,11 @@ public class ProductIncludesRelationshipStateTableModel extends RelationshipStat
         if (column instanceof DescriptorTableColumn) {
             result = ((DescriptorTableColumn) column).getComponent(object.getRelationship(), getContext());
         } else if (column.getModelIndex() == WEIGHT_INDEX) {
-            result = getWeightRange(object);
+            result = WeightRangeTableHelper.getWeightRange(object.getBean());
         } else {
             result = super.getValue(object, column, row);
         }
         return result;
-    }
-
-    /**
-     * Returns the weight range.
-     *
-     * @param state the relationship state
-     * @return the weight range
-     */
-    private Object getWeightRange(RelationshipState state) {
-        IMObjectBean bean = state.getBean();
-        BigDecimal min = bean.getBigDecimal("minWeight", BigDecimal.ZERO);
-        BigDecimal max = bean.getBigDecimal("maxWeight", BigDecimal.ZERO);
-        if (min.compareTo(BigDecimal.ZERO) == 0 && max.compareTo(BigDecimal.ZERO) == 0) {
-            return null;
-        }
-        return Messages.format("product.template.weightrange", min, max,
-                               LookupNameHelper.getName(state.getRelationship(), "weightUnits"));
     }
 
     /**
@@ -139,7 +117,7 @@ public class ProductIncludesRelationshipStateTableModel extends RelationshipStat
         model.addColumn(createTableColumn(NAME_INDEX, "table.imobject.name"));
         model.addColumn(new DescriptorTableColumn(LOW_QUANTITY_INDEX, "lowQuantity", archetype));
         model.addColumn(new DescriptorTableColumn(HIGH_QUANTITY_INDEX, "highQuantity", archetype));
-        model.addColumn(createTableColumn(WEIGHT_INDEX, "product.template.weight"));
+        model.addColumn(createTableColumn(WEIGHT_INDEX, "product.weight"));
         model.addColumn(new DescriptorTableColumn(ZERO_PRICE_INDEX, "zeroPrice", archetype));
         model.addColumn(new DescriptorTableColumn(PRINT_INDEX, "print", true, archetype));
         if (getShowActive()) {

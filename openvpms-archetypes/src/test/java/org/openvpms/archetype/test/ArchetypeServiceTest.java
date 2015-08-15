@@ -173,4 +173,14 @@ public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTe
         TestHelper.checkEquals(expected, actual);
     }
 
+    /**
+     * Verifies two {@code BigDecimal} instances are equal.
+     *
+     * @param expected the expected value
+     * @param actual   the actual value. May be {@code null}
+     */
+    protected void checkEquals(int expected, BigDecimal actual) {
+        checkEquals(BigDecimal.valueOf(expected), actual);
+    }
+
 }

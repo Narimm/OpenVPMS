@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -48,15 +48,6 @@ public class PatientDocumentActLayoutStrategy extends DocumentActLayoutStrategy 
      */
     public PatientDocumentActLayoutStrategy(DocumentEditor editor, ActRelationshipCollectionEditor versionsEditor) {
         super(editor, versionsEditor);
-    }
-
-    /**
-     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-     *
-     * @return the archetype nodes
-     */
-    @Override
-    protected ArchetypeNodes getArchetypeNodes() {
-        return EDIT_NODES;
+        setArchetypeNodes(EDIT_NODES);
     }
 }

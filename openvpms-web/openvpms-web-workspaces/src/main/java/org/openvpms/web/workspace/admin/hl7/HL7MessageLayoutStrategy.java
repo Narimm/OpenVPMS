@@ -51,6 +51,13 @@ public class HL7MessageLayoutStrategy extends AbstractLayoutStrategy {
     private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude("document", "error");
 
     /**
+     * Constructs an {@link HL7MessageLayoutStrategy}.
+     */
+    public HL7MessageLayoutStrategy() {
+        super(NODES);
+    }
+
+    /**
      * Apply the layout strategy.
      * <p/>
      * This renders an object in a {@code Component}, using a factory to create the child components.
@@ -92,16 +99,6 @@ public class HL7MessageLayoutStrategy extends AbstractLayoutStrategy {
         grid.add(getComponent("document"), 2);
         Component component = createGrid(grid);
         container.add(ColumnFactory.create(Styles.INSET, component));
-    }
-
-    /**
-     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-     *
-     * @return the archetype nodes
-     */
-    @Override
-    protected ArchetypeNodes getArchetypeNodes() {
-        return NODES;
     }
 
     /**
