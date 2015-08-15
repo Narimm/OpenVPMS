@@ -19,6 +19,7 @@ package org.openvpms.archetype.function.party;
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
 import org.openvpms.archetype.rules.finance.account.BalanceCalculator;
+import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
@@ -1058,7 +1059,7 @@ public class PartyFunctions {
      * @return the patient weight, in kilos
      */
     public BigDecimal getWeight(Party patient) {
-        return (patient != null) ? patientRules.getWeight(patient) : BigDecimal.ZERO;
+        return (patient != null) ? patientRules.getWeight(patient).toKilograms() : BigDecimal.ZERO;
     }
 
     /**
@@ -1071,7 +1072,12 @@ public class PartyFunctions {
      * @return the patient weight in the specified units
      */
     public BigDecimal getWeight(Party patient, String units) {
-        return (patient != null) ? patientRules.getWeight(patient, WeightUnits.valueOf(units)) : BigDecimal.ZERO;
+        BigDecimal result = BigDecimal.ZERO;
+        if (patient != null) {
+            Weight weight = patientRules.getWeight(patient);
+            result = weight.convert(WeightUnits.valueOf(units));
+        }
+        return result;
     }
 
     /**

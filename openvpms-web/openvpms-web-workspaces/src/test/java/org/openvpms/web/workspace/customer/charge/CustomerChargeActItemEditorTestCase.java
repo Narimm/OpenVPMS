@@ -261,6 +261,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
         // create the editor
         TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, layout);
+        editor.setChargeContext(new ChargeContext());
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -322,6 +323,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
         // create the editor
         TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, layout);
+        editor.setChargeContext(new ChargeContext());
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -390,6 +392,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
         // create the editor
         TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, layout);
+        editor.setChargeContext(new ChargeContext());
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -490,6 +493,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
         // create the editor
         TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, layout);
+        editor.setChargeContext(new ChargeContext());
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -610,6 +614,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
         // create the editor
         TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, layout);
+        editor.setChargeContext(new ChargeContext());
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -768,6 +773,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         context.getContext().setClinician(clinician);
 
         CustomerChargeActItemEditor editor = new DefaultCustomerChargeActItemEditor(item, charge, context);
+        editor.setChargeContext(new ChargeContext());
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -829,6 +835,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
         // create the editor
         TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, layout);
+        editor.setChargeContext(new ChargeContext());
         editor.getComponent();
         assertFalse(editor.isValid());
 

@@ -33,7 +33,7 @@ import static org.junit.Assert.assertEquals;
 public class SequencedRelationshipCollectionHelperTest {
 
     /**
-     * Tests the {@link SequencedRelationshipCollectionHelper#sequence(List)} method.
+     * Tests the {@link SequencedRelationshipCollectionHelper#sequenceStates(List)} method.
      */
     @Test
     public void testSequence() {
@@ -45,7 +45,7 @@ public class SequencedRelationshipCollectionHelperTest {
         RelationshipState state6 = create(16);
         RelationshipState state7 = create(20);
         List<RelationshipState> states = Arrays.asList(state1, state2, state3, state4, state5, state6, state7);
-        SequencedRelationshipCollectionHelper.sequence(states);
+        SequencedRelationshipCollectionHelper.sequenceStates(states);
 
         check(states, 10, 11, 14, 15, 16, 17, 20);
     }

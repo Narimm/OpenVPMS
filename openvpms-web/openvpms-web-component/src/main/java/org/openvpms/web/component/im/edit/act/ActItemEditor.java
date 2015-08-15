@@ -51,6 +51,51 @@ import java.math.BigDecimal;
 public abstract class ActItemEditor extends AbstractActEditor {
 
     /**
+     * The default patient node name.
+     */
+    public static final String PATIENT = "patient";
+
+    /**
+     * The default product node name.
+     */
+    public static final String PRODUCT = "product";
+
+    /**
+     * The default template node name.
+     */
+    public static final String TEMPLATE = "template";
+
+    /**
+     * The default quantity node name.
+     */
+    public static final String QUANTITY = "quantity";
+
+    /**
+     * The default clinician node name.
+     */
+    public static final String CLINICIAN = "clinician";
+
+    /**
+     * The default fixed price node name.
+     */
+    public static final String FIXED_PRICE = "fixedPrice";
+
+    /**
+     * The default unit price node name.
+     */
+    public static final String UNIT_PRICE = "unitPrice";
+
+    /**
+     * The default discount node name.
+     */
+    public static final String DISCOUNT = "discount";
+
+    /**
+     * The default location node name.
+     */
+    public static final String LOCATION = "location";
+
+    /**
      * The product price rules.
      */
     private final ProductPriceRules rules;
@@ -137,7 +182,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return a reference to the product, or {@code null} if the act has no product
      */
     public IMObjectReference getProductRef() {
-        return getParticipantRef("product");
+        return getParticipantRef(PRODUCT);
     }
 
     /**
@@ -164,7 +209,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @param product a reference to the product. May be {@code null}
      */
     public void setProductRef(IMObjectReference product) {
-        setParticipant("product", product);
+        setParticipant(PRODUCT, product);
     }
 
     /**
@@ -214,7 +259,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return a reference to the product template, or {@code null} if the act has no template
      */
     public IMObjectReference getTemplateRef() {
-        return getParticipantRef("template");
+        return getParticipantRef(TEMPLATE);
     }
 
     /**
@@ -233,7 +278,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      *         has no patient
      */
     public IMObjectReference getPatientRef() {
-        return getParticipantRef("patient");
+        return getParticipantRef(PATIENT);
     }
 
     /**
@@ -251,7 +296,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @param patient a reference to the patient. May be {@code null}
      */
     public void setPatientRef(IMObjectReference patient) {
-        setParticipant("patient", patient);
+        setParticipant(PATIENT, patient);
     }
 
     /**
@@ -271,7 +316,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      *         no clinician
      */
     public IMObjectReference getClinicianRef() {
-        return getParticipantRef("clinician");
+        return getParticipantRef(CLINICIAN);
     }
 
     /**
@@ -289,7 +334,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @param clinician a reference to the clinician. May be {@code null}
      */
     public void setClinicianRef(IMObjectReference clinician) {
-        setParticipant("clinician", clinician);
+        setParticipant(CLINICIAN, clinician);
     }
 
     /**
@@ -298,7 +343,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @param quantity the product quantity
      */
     public void setQuantity(BigDecimal quantity) {
-        getProperty("quantity").setValue(quantity);
+        getProperty(QUANTITY).setValue(quantity);
     }
 
     /**
@@ -307,7 +352,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return the product quantity
      */
     public BigDecimal getQuantity() {
-        return getProperty("quantity").getBigDecimal(BigDecimal.ZERO);
+        return getProperty(QUANTITY).getBigDecimal(BigDecimal.ZERO);
     }
 
     /**
@@ -316,7 +361,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @param fixedPrice the fixed price
      */
     public void setFixedPrice(BigDecimal fixedPrice) {
-        getProperty("fixedPrice").setValue(fixedPrice);
+        getProperty(FIXED_PRICE).setValue(fixedPrice);
     }
 
     /**
@@ -325,7 +370,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @param unitPrice the unit price
      */
     public void setUnitPrice(BigDecimal unitPrice) {
-        getProperty("unitPrice").setValue(unitPrice);
+        getProperty(UNIT_PRICE).setValue(unitPrice);
     }
 
     /**
@@ -334,7 +379,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return the unit price
      */
     public BigDecimal getUnitPrice() {
-        BigDecimal value = (BigDecimal) getProperty("unitPrice").getValue();
+        BigDecimal value = (BigDecimal) getProperty(UNIT_PRICE).getValue();
         return (value != null) ? value : BigDecimal.ZERO;
     }
 
@@ -344,7 +389,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @param discount the discount
      */
     public void setDiscount(BigDecimal discount) {
-        getProperty("discount").setValue(discount);
+        getProperty(DISCOUNT).setValue(discount);
     }
 
     /**
@@ -499,7 +544,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return the product editor, or {@code null} if none exists
      */
     protected ProductParticipationEditor getProductEditor(boolean create) {
-        ParticipationEditor<Product> editor = getParticipationEditor("product", create);
+        ParticipationEditor<Product> editor = getParticipationEditor(PRODUCT, create);
         return (ProductParticipationEditor) editor;
     }
 
@@ -520,8 +565,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return the patient editor, or {@code null} if none exists
      */
     protected PatientParticipationEditor getPatientEditor(boolean create) {
-        ParticipationEditor<Party> editor
-                = getParticipationEditor("patient", create);
+        ParticipationEditor<Party> editor = getParticipationEditor(PATIENT, create);
         return (PatientParticipationEditor) editor;
     }
 
@@ -542,7 +586,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return the clinician editor, or {@code null}  if none exists
      */
     protected ClinicianParticipationEditor getClinicianEditor(boolean create) {
-        ParticipationEditor<User> editor = getParticipationEditor("clinician", create);
+        ParticipationEditor<User> editor = getParticipationEditor(CLINICIAN, create);
         return (ClinicianParticipationEditor) editor;
     }
 
@@ -623,8 +667,8 @@ public abstract class ActItemEditor extends AbstractActEditor {
         Party location = null;
         if (parent != null) {
             ActBean bean = new ActBean(parent);
-            if (bean.hasNode("location")) {
-                location = (Party) getObject(bean.getNodeParticipantRef("location"));
+            if (bean.hasNode(LOCATION)) {
+                location = (Party) getObject(bean.getNodeParticipantRef(LOCATION));
             }
         }
         if (location == null) {
@@ -663,8 +707,8 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @param template a reference to the product. May be {@code null}
      */
     private void setTemplateRef(IMObjectReference template) {
-        if (getProperty("template") != null) {
-            setParticipant("template", template);
+        if (getProperty(TEMPLATE) != null) {
+            setParticipant(TEMPLATE, template);
             currentTemplate = template != null;
         }
     }
@@ -675,13 +719,10 @@ public abstract class ActItemEditor extends AbstractActEditor {
     protected class LayoutStrategy extends AbstractLayoutStrategy {
 
         /**
-         * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-         *
-         * @return the archetype nodes
+         * Constructs an {@link LayoutStrategy}.
          */
-        @Override
-        protected ArchetypeNodes getArchetypeNodes() {
-            return nodes != null ? nodes : super.getArchetypeNodes();
+        public LayoutStrategy() {
+            super(nodes != null ? nodes : DEFAULT_NODES);
         }
     }
 }

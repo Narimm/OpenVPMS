@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -44,6 +44,12 @@ public class EstimateLayoutStrategy extends AbstractLayoutStrategy {
      */
     private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude("lowTotal", "highTotal", "notes");
 
+    /**
+     * Constructs an {@link EstimateLayoutStrategy}.
+     */
+    public EstimateLayoutStrategy() {
+        super(NODES);
+    }
 
     /**
      * Apply the layout strategy.
@@ -83,16 +89,6 @@ public class EstimateLayoutStrategy extends AbstractLayoutStrategy {
         grid.add(getComponent("lowTotal"), getComponent("highTotal"));
         Component component = createGrid(grid);
         container.add(ColumnFactory.create(Styles.INSET, component));
-    }
-
-    /**
-     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-     *
-     * @return the archetype nodes
-     */
-    @Override
-    protected ArchetypeNodes getArchetypeNodes() {
-        return NODES;
     }
 
     /**

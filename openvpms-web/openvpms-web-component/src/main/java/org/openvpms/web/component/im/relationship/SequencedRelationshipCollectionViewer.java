@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -65,7 +65,7 @@ public class SequencedRelationshipCollectionViewer extends RelationshipCollectio
     protected ResultSet<RelationshipState> createResultSet() {
         if (sequenced) {
             List<RelationshipState> states = getRelationshipStates();
-            SequencedRelationshipCollectionHelper.sort(states);
+            SequencedRelationshipCollectionHelper.sortStates(states);
             return new ListResultSet<RelationshipState>(states, ROWS);
         }
         return super.createResultSet();

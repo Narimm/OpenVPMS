@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -78,12 +78,35 @@ public class SelectFieldIMObjectCollectionEditor extends AbstractIMObjectCollect
                                                              ServiceHelper.getArchetypeService());
         List<IMObject> objects = QueryHelper.query(property.getArchetypeRange(), nodes);
 
-        boolean allowNone = property.getMinCardinality() == 0;
-        IMObjectListModel model = new IMObjectListModel(objects, false, allowNone);
-        SelectField selectField = BoundSelectFieldFactory.create(property, model);
-        selectField.setCellRenderer(IMObjectListCellRenderer.NAME);
+        SelectField selectField = createSelectField(property, objects);
         focusGroup = new FocusGroup(property.getDisplayName());
         focusGroup.add(selectField);
         return selectField;
+    }
+
+    /**
+     * Creates the select field.
+     *
+     * @param property the collection property
+     * @param objects  the collection objects
+     * @return the select field
+     */
+    protected SelectField createSelectField(CollectionProperty property, List<IMObject> objects) {
+        IMObjectListModel model = createModel(property, objects);
+        SelectField selectField = BoundSelectFieldFactory.create(property, model);
+        selectField.setCellRenderer(IMObjectListCellRenderer.NAME);
+        return selectField;
+    }
+
+    /**
+     * Creates the select field model.
+     *
+     * @param property the collection property
+     * @param objects  the collection objects
+     * @return the model
+     */
+    protected IMObjectListModel createModel(CollectionProperty property, List<IMObject> objects) {
+        boolean allowNone = property.getMinCardinality() == 0;
+        return new IMObjectListModel(objects, false, allowNone);
     }
 }

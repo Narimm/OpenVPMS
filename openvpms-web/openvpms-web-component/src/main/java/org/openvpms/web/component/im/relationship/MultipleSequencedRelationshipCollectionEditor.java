@@ -16,27 +16,17 @@
 
 package org.openvpms.web.component.im.relationship;
 
-import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Row;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.layout.GridLayoutData;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.SequencedRelationship;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.echo.button.ButtonColumn;
-import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.factory.GridFactory;
-import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.echo.style.Styles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,16 +42,6 @@ import java.util.List;
 public abstract class MultipleSequencedRelationshipCollectionEditor extends RelationshipCollectionEditor {
 
     /**
-     * 'Move up' button identifier.
-     */
-    private static final String MOVEUP_ID = "moveup";
-
-    /**
-     * 'Move down' button identifier.
-     */
-    private static final String MOVEDOWN_ID = "movedown";
-
-    /**
      * Determines if the collection has a sequence node.
      * If so, the collection is automatically ordered on the sequence.
      */
@@ -73,9 +53,10 @@ public abstract class MultipleSequencedRelationshipCollectionEditor extends Rela
     private List<RelationshipState> relationships;
 
     /**
-     * The move up/down buttons.
+     * The table, if the collection is sequenced.
      */
-    private ButtonColumn moveButtons;
+    private SequencedTable<RelationshipState> table;
+
 
     /**
      * Constructs an {@link MultipleSequencedRelationshipCollectionEditor}.
@@ -91,7 +72,7 @@ public abstract class MultipleSequencedRelationshipCollectionEditor extends Rela
     }
 
     /**
-     * Creates a new object, subject to a short name being selected, and * current collection cardinality. This must be
+     * Creates a new object, subject to a short name being selected, and current collection cardinality. This must be
      * registered with the collection.
      * <p/>
      * If an {@link IMObjectCreationListener} is registered, it will be notified on successful creation of an object.
@@ -123,11 +104,11 @@ public abstract class MultipleSequencedRelationshipCollectionEditor extends Rela
     protected ResultSet<RelationshipState> createResultSet() {
         ResultSet<RelationshipState> result;
         RelationshipCollectionPropertyEditor editor = getCollectionPropertyEditor();
-        List<RelationshipState> relationships = new ArrayList<RelationshipState>(editor.getRelationships());
+        List<RelationshipState> relationships = new ArrayList<>(editor.getRelationships());
         if (sequenced) {
-            SequencedRelationshipCollectionHelper.sort(relationships);
-            SequencedRelationshipCollectionHelper.sequence(relationships);
-            result = new ListResultSet<RelationshipState>(relationships, ROWS);
+            SequencedRelationshipCollectionHelper.sortStates(relationships);
+            SequencedRelationshipCollectionHelper.sequenceStates(relationships);
+            result = new ListResultSet<>(relationships, ROWS);
             this.relationships = relationships;
         } else {
             result = super.createResultSet();
@@ -151,97 +132,49 @@ public abstract class MultipleSequencedRelationshipCollectionEditor extends Rela
     }
 
     /**
-     * Moves the selected relationship up in the table.
-     */
-    private void onMoveUp() {
-        RelationshipState selected = getTable().getTable().getSelected();
-        if (selected != null) {
-            int index = relationships.indexOf(selected);
-            if (index > 0) {
-                swap(index, index - 1);
-            }
-        }
-    }
-
-    /**
-     * Moves the selected relationship up in the table.
-     */
-    private void onMoveDown() {
-        RelationshipState selected = getTable().getTable().getSelected();
-        if (selected != null) {
-            int index = relationships.indexOf(selected);
-            if (index < relationships.size() - 1) {
-                swap(index, index + 1);
-            }
-        }
-    }
-
-    /**
-     * Swaps two relationships in the table.
-     *
-     * @param index1 the index of the first relationship
-     * @param index2 the index of the second relationship
-     */
-    private void swap(int index1, int index2) {
-        RelationshipState r1 = relationships.get(index1);
-        RelationshipState r2 = relationships.get(index2);
-
-        IMObjectEditor editor1 = getEditor(r1.getRelationship());
-        IMObjectEditor editor2 = getEditor(r2.getRelationship());
-        Property property1 = editor1.getProperty("sequence");
-        Property property2 = editor2.getProperty("sequence");
-        int value1 = property1.getInt();
-        int value2 = property2.getInt();
-        property1.setValue(value2);
-        property2.setValue(value1);
-
-        populateTable();
-
-        getTable().getTable().setSelected(r1);
-        enableNavigation(true);
-    }
-
-    /**
-     * Lays out the component with controls to change the sequence of relationships.
+     * Lays out the component in the specified container.
      *
      * @param container the container
      */
-    private void doSequenceLayout(Component container) {
+    protected void doSequenceLayout(Component container) {
+        table = new SequencedTable<RelationshipState>(getTable()) {
+            @Override
+            public List<RelationshipState> getObjects() {
+                return relationships;
+            }
+
+            /**
+             * Swaps two objects.
+             *
+             * @param object1 the first object
+             * @param object2 the second object
+             */
+            @Override
+            protected void swap(RelationshipState object1, RelationshipState object2) {
+                IMObjectEditor editor1 = getEditor(object1.getRelationship());
+                IMObjectEditor editor2 = getEditor(object2.getRelationship());
+                Property property1 = editor1.getProperty("sequence");
+                Property property2 = editor2.getProperty("sequence");
+                int value1 = property1.getInt();
+                int value2 = property2.getInt();
+                property1.setValue(value2);
+                property2.setValue(value1);
+
+                populateTable();
+
+                getTable().getTable().setSelected(object1);
+                enableNavigation(true);
+            }
+        };
         FocusGroup focusGroup = getFocusGroup();
-        PagedIMTable<RelationshipState> table = getTable();
-        focusGroup.add(table);
 
         if (!isCardinalityReadOnly()) {
             Row row = createControls(focusGroup);
             container.add(row);
         }
-        moveButtons = new ButtonColumn(focusGroup);
-        moveButtons.addButton(MOVEUP_ID, new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onMoveUp();
-            }
-        });
-        moveButtons.addButton(MOVEDOWN_ID, new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onMoveDown();
-            }
-        });
 
-
-        table.getTable().setWidth(Styles.FULL_WIDTH);
-        Row row = RowFactory.create(moveButtons);
-
-        GridLayoutData alignTop = new GridLayoutData();
-        alignTop.setAlignment(Alignment.ALIGN_TOP);
-        row.setLayoutData(alignTop);
-        table.setLayoutData(alignTop);
-        Grid grid = GridFactory.create(2, table, row);
-        grid.setWidth(Styles.FULL_WIDTH);
-
+        table.layout(container, focusGroup);
         populateTable();
-
-        container.add(grid);
-
         enableNavigation(true);
     }
 
@@ -255,22 +188,9 @@ public abstract class MultipleSequencedRelationshipCollectionEditor extends Rela
     @Override
     protected void enableNavigation(boolean enable) {
         super.enableNavigation(enable);
-        if (moveButtons != null) {
-            PagedIMTable<RelationshipState> table = getTable();
-            RelationshipState state = table.getSelected();
-            boolean moveUp = false;
-            boolean moveDown = false;
-            if (enable && state != null) {
-                int index = relationships.indexOf(state);
-                if (index > 0) {
-                    moveUp = true;
-                }
-                if (index < relationships.size() - 1) {
-                    moveDown = true;
-                }
-            }
-            moveButtons.getButtons().setEnabled(MOVEUP_ID, moveUp);
-            moveButtons.getButtons().setEnabled(MOVEDOWN_ID, moveDown);
+        if (table != null) {
+            table.enableNavigation(enable);
         }
     }
+
 }

@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.edit.act;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Predicate;
 import org.openvpms.archetype.rules.act.ActCopyHandler;
+import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -45,7 +46,6 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.system.ServiceHelper;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -71,7 +71,7 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
     /**
      * Determines if a new object has been modified since its editor was created (i.e has been user modified).
      */
-    private Map<IMObjectReference, Boolean> modified = new HashMap<IMObjectReference, Boolean>();
+    private Map<IMObjectReference, Boolean> modified = new HashMap<>();
 
     /**
      * Determines if a new object with default values should be excluded from commit.
@@ -125,7 +125,7 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
      */
     public List<Act> getActs() {
         ActRelationshipCollectionPropertyEditor collection = getEditor();
-        return new ArrayList<Act>(collection.getActs().keySet());
+        return new ArrayList<>(collection.getActs().keySet());
     }
 
     /**
@@ -134,7 +134,7 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
      * @return the filtered acts
      */
     public List<Act> getActs(Predicate<Act> predicate) {
-        List<Act> result = new ArrayList<Act>();
+        List<Act> result = new ArrayList<>();
         return CollectionUtils.select(getActs(), predicate, result);
     }
 
@@ -144,12 +144,12 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
      * @return the set of acts being edited
      */
     public List<Act> getCurrentActs() {
-        Set<Act> result = new LinkedHashSet<Act>(getActs());
+        Set<Act> result = new LinkedHashSet<>(getActs());
         IMObjectEditor current = getCurrentEditor();
         if (current != null) {
             result.add((Act) current.getObject());
         }
-        return new ArrayList<Act>(result);
+        return new ArrayList<>(result);
     }
 
     /**
@@ -158,7 +158,7 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
      * @return the filtered acts
      */
     public List<Act> getCurrentActs(Predicate<Act> predicate) {
-        List<Act> result = new ArrayList<Act>();
+        List<Act> result = new ArrayList<>();
         return CollectionUtils.select(getCurrentActs(), predicate, result);
     }
 
@@ -387,7 +387,7 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
      * @return the acts generated from the template
      */
     protected List<Act> createTemplateActs(ActItemEditor editor, Product template) {
-        List<Act> result = new ArrayList<Act>();
+        List<Act> result = new ArrayList<>();
         ActRelationshipCollectionPropertyEditor collection = getEditor();
 
         IMObjectCopier copier = new IMObjectCopier(new ActItemCopyHandler());
@@ -441,7 +441,7 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
      * @return a collection of included products
      */
     protected Collection<TemplateProduct> getProductIncludes(Product template, Party patient) {
-        BigDecimal weight = BigDecimal.ZERO;
+        Weight weight = Weight.ZERO;
         if (patient != null) {
             PatientRules rules = ServiceHelper.getBean(PatientRules.class);
             weight = rules.getWeight(patient);

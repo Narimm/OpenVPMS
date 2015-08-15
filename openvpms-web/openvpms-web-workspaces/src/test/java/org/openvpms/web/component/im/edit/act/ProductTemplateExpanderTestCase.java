@@ -18,6 +18,8 @@ package org.openvpms.web.component.im.edit.act;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.junit.Test;
+import org.openvpms.archetype.rules.math.Weight;
+import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.cache.SoftRefIMObjectCache;
@@ -58,7 +60,7 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         addInclude(templateC, productX, 1, 1);
         addInclude(templateC, productZ, 10, 10);
 
-        Collection<TemplateProduct> includes = expand(templateA, BigDecimal.ZERO);
+        Collection<TemplateProduct> includes = expand(templateA, Weight.ZERO);
         assertEquals(3, includes.size());
 
         checkInclude(includes, productX, 7, 12, false);
@@ -86,18 +88,18 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         addInclude(templateC, productX, 1, 1, 0, 2);
         addInclude(templateC, productZ, 1, 1, 2, 4);
 
-        Collection<TemplateProduct> includes = expand(templateA, BigDecimal.ZERO);
+        Collection<TemplateProduct> includes = expand(templateA, Weight.ZERO);
         assertEquals(0, includes.size());  // failed to expand as no weight specified
 
-        includes = expand(templateA, BigDecimal.ONE);
+        includes = expand(templateA, new Weight(BigDecimal.ONE, WeightUnits.KILOGRAMS));
         assertEquals(1, includes.size());
         checkInclude(includes, productX, 1, 1, false);
 
-        includes = expand(templateA, BigDecimal.valueOf(2));
+        includes = expand(templateA, new Weight(BigDecimal.valueOf(2), WeightUnits.KILOGRAMS));
         assertEquals(1, includes.size());
         checkInclude(includes, productZ, 2, 4, false);
 
-        includes = expand(templateA, BigDecimal.valueOf(4));
+        includes = expand(templateA, new Weight(BigDecimal.valueOf(4), WeightUnits.KILOGRAMS));
         assertEquals(0, includes.size()); // nothing in the weight range
     }
 
@@ -119,7 +121,7 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         addInclude(templateC, templateA, 1, 1);
         addInclude(templateC, productX, 1, 1);
 
-        Collection<TemplateProduct> includes = expand(templateA, BigDecimal.ZERO);
+        Collection<TemplateProduct> includes = expand(templateA, Weight.ZERO);
         assertEquals(0, includes.size());
     }
 
@@ -146,7 +148,7 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
         addInclude(templateC, productY, 1, false);
         addInclude(templateC, productZ, 1, false);
 
-        Collection<TemplateProduct> includes = expand(templateA, BigDecimal.ZERO);
+        Collection<TemplateProduct> includes = expand(templateA, Weight.ZERO);
         assertEquals(4, includes.size());
 
         checkInclude(includes, productY, 2, 2, true);  // included by template A and template C
@@ -159,10 +161,10 @@ public class ProductTemplateExpanderTestCase extends AbstractAppTest {
      * Expands a template.
      *
      * @param template the template to expand
-     * @param weight   the patient weigtht. May be {@code null}
+     * @param weight   the patient weight
      * @return the expanded template
      */
-    private Collection<TemplateProduct> expand(Product template, BigDecimal weight) {
+    private Collection<TemplateProduct> expand(Product template, Weight weight) {
         ProductTemplateExpander expander = new ProductTemplateExpander();
         return expander.expand(template, weight, new SoftRefIMObjectCache(getArchetypeService()));
     }

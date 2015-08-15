@@ -45,8 +45,8 @@ import java.util.Set;
 
 
 /**
- * A {@link CollectionPropertyEditor} for collections of
- * {@link IMObjectRelationship}s where the targets are being added and removed.
+ * A {@link CollectionPropertyEditor} for collections of {@link IMObjectRelationship}s where the targets are being added
+ * and removed.
  *
  * @author Tim Anderson
  */
@@ -71,12 +71,12 @@ public abstract class RelationshipCollectionTargetPropertyEditor
     /**
      * The set of removed objects.
      */
-    private final Set<IMObject> removed = new HashSet<IMObject>();
+    private final Set<IMObject> removed = new HashSet<>();
 
     /**
      * The set of removed editors.
      */
-    private final Map<IMObject, IMObjectEditor> removedEditors = new HashMap<IMObject, IMObjectEditor>();
+    private final Map<IMObject, IMObjectEditor> removedEditors = new HashMap<>();
 
     /**
      * The logger.
@@ -95,6 +95,15 @@ public abstract class RelationshipCollectionTargetPropertyEditor
         // @todo - no support for multiple relationship archetypes
         relationshipType = property.getArchetypeRange()[0];
         this.parent = parent;
+    }
+
+    /**
+     * Returns the parent object.
+     *
+     * @return the parent object
+     */
+    public IMObject getParent() {
+        return parent;
     }
 
     /**
@@ -165,9 +174,20 @@ public abstract class RelationshipCollectionTargetPropertyEditor
      *
      * @return the target objects in the collection
      */
+    @SuppressWarnings("unchecked")
     @Override
     public List<IMObject> getObjects() {
-        return new ArrayList<IMObject>(getTargets().keySet());
+        return new ArrayList<>(getTargets().keySet());
+    }
+
+    /**
+     * Returns the relationship for a target object.
+     *
+     * @param target the target object
+     * @return the relationship, or {@code null} if none is found
+     */
+    public IMObjectRelationship getRelationship(IMObject target) {
+        return getTargets().get(target);
     }
 
     /**
@@ -205,40 +225,51 @@ public abstract class RelationshipCollectionTargetPropertyEditor
     protected boolean doSave() {
         boolean saved = true;
         if (!removed.isEmpty()) {
-            IMObject[] toRemove = removed.toArray(new IMObject[removed.size()]);
-            boolean deleted;
-            RemoveHandler handler = getRemoveHandler();
-            for (IMObject object : toRemove) {
-                IMObjectEditor editor = removedEditors.get(object);
-                if (editor != null) {
-                    if (handler != null) {
-                        handler.remove(editor);
-                        deleted = true;
-                    } else {
-                        deleted = editor.delete();
-                    }
-                } else {
-                    if (handler != null) {
-                        handler.remove(object);
-                        deleted = true;
-                    } else {
-                        deleted = SaveHelper.delete(object, new DefaultIMObjectDeletionListener<IMObject>());
-                    }
-                }
-                if (deleted) {
-                    removed.remove(object);
-                    removedEditors.remove(object);
-                } else {
-                    saved = false;
-                    break;
-                }
-            }
-            if (saved) {
-                setSaved(true);
-            }
+            saved = remove();
         }
         if (saved) {
             saved = super.doSave();
+        }
+        return saved;
+    }
+
+    /**
+     * Invoked by {@link #doSave()} to remove objects queued for removal.
+     *
+     * @return {@code true} if they were removed
+     */
+    protected boolean remove() {
+        boolean saved = true;
+        IMObject[] toRemove = removed.toArray(new IMObject[removed.size()]);
+        boolean deleted;
+        RemoveHandler handler = getRemoveHandler();
+        for (IMObject object : toRemove) {
+            IMObjectEditor editor = removedEditors.get(object);
+            if (editor != null) {
+                if (handler != null) {
+                    handler.remove(editor);
+                    deleted = true;
+                } else {
+                    deleted = editor.delete();
+                }
+            } else {
+                if (handler != null) {
+                    handler.remove(object);
+                    deleted = true;
+                } else {
+                    deleted = SaveHelper.delete(object, new DefaultIMObjectDeletionListener<>());
+                }
+            }
+            if (deleted) {
+                removed.remove(object);
+                removedEditors.remove(object);
+            } else {
+                saved = false;
+                break;
+            }
+        }
+        if (saved) {
+            setSaved(true);
         }
         return saved;
     }
@@ -252,7 +283,7 @@ public abstract class RelationshipCollectionTargetPropertyEditor
         if (targets == null) {
             IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
             List<IMObject> relationships = super.getObjects();
-            targets = new LinkedHashMap<IMObject, IMObjectRelationship>();
+            targets = new LinkedHashMap<>();
             for (IMObject object : relationships) {
                 IMObjectRelationship relationship = (IMObjectRelationship) object;
                 IMObject target = (relationship.getTarget() != null) ? service.get(relationship.getTarget()) : null;

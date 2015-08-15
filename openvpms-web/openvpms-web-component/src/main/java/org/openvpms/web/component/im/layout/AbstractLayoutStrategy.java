@@ -36,6 +36,7 @@ import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,8 +54,12 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     /**
      * Default nodes to render.
      */
-    public static ArchetypeNodes DEFAULT_NODES = new ArchetypeNodes();
+    public static ArchetypeNodes DEFAULT_NODES = new ImmutableArchetypeNodes();
 
+    /**
+     * The nodes to render.
+     */
+    private ArchetypeNodes nodes;
 
     /**
      * The component states, used to determine initial focus.
@@ -64,7 +69,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     /**
      * Pre-created component states, keyed on property name.
      */
-    private Map<String, ComponentState> states = new HashMap<String, ComponentState>();
+    private Map<String, ComponentState> states = new HashMap<>();
 
     /**
      * The focus group of the current component.
@@ -97,6 +102,27 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      *                  component multiple times
      */
     public AbstractLayoutStrategy(boolean keepState) {
+        this(DEFAULT_NODES, keepState);
+    }
+
+    /**
+     * Constructs an {@link AbstractLayoutStrategy}.
+     *
+     * @param nodes the nodes to render
+     */
+    public AbstractLayoutStrategy(ArchetypeNodes nodes) {
+        this(nodes, false);
+    }
+
+    /**
+     * Constructs an {@link AbstractLayoutStrategy}.
+     *
+     * @param nodes     the nodes to render
+     * @param keepState if {@code true} keep layout state. Use this if the same strategy will be used to layout a
+     *                  component multiple times
+     */
+    public AbstractLayoutStrategy(ArchetypeNodes nodes, boolean keepState) {
+        this.nodes = nodes;
         this.keepState = keepState;
     }
 
@@ -293,12 +319,21 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     }
 
     /**
+     * Sets the {@link ArchetypeNodes} that determine which nodes will be displayed.
+     *
+     * @param nodes the nodes
+     */
+    protected void setArchetypeNodes(ArchetypeNodes nodes) {
+        this.nodes = nodes;
+    }
+
+    /**
      * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
      *
      * @return the archetype nodes
      */
     protected ArchetypeNodes getArchetypeNodes() {
-        return DEFAULT_NODES;
+        return nodes;
     }
 
     /**
@@ -594,5 +629,49 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         return new ReadOnlyProperty(property);
     }
 
+    /**
+     * An immutable implementation of ArchetypeNodes.
+     */
+    private static class ImmutableArchetypeNodes extends ArchetypeNodes {
+        @Override
+        public ArchetypeNodes first(String first) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ArchetypeNodes second(String second) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ArchetypeNodes simple(String... nodes) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ArchetypeNodes complex(String... nodes) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ArchetypeNodes exclude(String... nodes) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ArchetypeNodes exclude(Collection<String> nodes) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ArchetypeNodes excludeIfEmpty(String... nodes) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ArchetypeNodes order(String node1, String node2) {
+            throw new UnsupportedOperationException();
+        }
+    }
 }
 

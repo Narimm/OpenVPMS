@@ -58,11 +58,6 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
     private boolean prescription = false;
 
     /**
-     * The nodes to display.
-     */
-    private ArchetypeNodes nodes;
-
-    /**
      * Factory for read-only components.
      */
     private ReadOnlyComponentFactory factory;
@@ -124,12 +119,14 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         ComponentState result;
-        try {
-            nodes = new ArchetypeNodes().exclude(LABEL);
-            if (!showProduct) {
-                nodes.exclude(PRODUCT);
-            }
 
+        ArchetypeNodes nodes = new ArchetypeNodes().exclude(LABEL);
+        if (!showProduct) {
+            nodes.exclude(PRODUCT);
+        }
+        setArchetypeNodes(nodes);
+
+        try {
             if (!showProductReadOnly) {
                 if (parent instanceof Act) {
                     ActBean bean = new ActBean((Act) parent);
@@ -167,16 +164,6 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
         ComponentGrid grid = super.createGrid(object, properties, context, columns);
         grid.add(getComponent(LABEL), columns);
         return grid;
-    }
-
-    /**
-     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-     *
-     * @return the archetype nodes
-     */
-    @Override
-    protected ArchetypeNodes getArchetypeNodes() {
-        return nodes;
     }
 
     /**

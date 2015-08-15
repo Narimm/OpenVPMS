@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -20,6 +20,8 @@ import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.math.Weight;
+import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityLink;
@@ -27,6 +29,7 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -35,14 +38,18 @@ import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.JoinConstraint;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static org.openvpms.archetype.rules.math.MathRules.isZero;
 import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActiveNow;
 import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.gte;
@@ -100,6 +107,55 @@ public class ProductRules {
         return copy;
     }
 
+    /**
+     * Returns the dose of a product for the specified patient weight and species.
+     *
+     * @param product the product
+     * @param weight  the patient weight
+     * @param species the patient species code. May be {@code null}
+     * @return the dose or {@code 0} if there is no dose for the patient weight and species
+     */
+    public BigDecimal getDose(Product product, Weight weight, String species) {
+        BigDecimal result = BigDecimal.ZERO;
+        if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
+            IMObjectBean match = null;
+            WeightUnits matchUnits = null;
+            IMObjectBean bean = new IMObjectBean(product, service);
+            List<IMObject> doses = bean.getNodeTargetObjects("doses");
+            for (IMObject dose : doses) {
+                IMObjectBean doseBean = new IMObjectBean(dose, service);
+                BigDecimal minWeight = doseBean.getBigDecimal("minWeight", BigDecimal.ZERO);
+                BigDecimal maxWeight = doseBean.getBigDecimal("maxWeight", BigDecimal.ZERO);
+                WeightUnits units = WeightUnits.fromString(doseBean.getString("weightUnits"), WeightUnits.KILOGRAMS);
+                if (weight.between(minWeight, maxWeight, units)) {
+                    List<Lookup> values = doseBean.getValues("species", Lookup.class);
+                    if (values.isEmpty()) {
+                        if (species == null || match == null) {
+                            match = doseBean;
+                            matchUnits = units;
+                            if (species == null) {
+                                break;
+                            }
+                        }
+                    } else if (values.get(0).getCode().equals(species)) {
+                        match = doseBean;
+                        matchUnits = units;
+                        break;
+                    }
+                }
+            }
+            if (match != null) {
+                BigDecimal converted = weight.convert(matchUnits);
+                BigDecimal concentration = match.getBigDecimal("concentration", BigDecimal.ZERO);
+                BigDecimal rate = match.getBigDecimal("rate", BigDecimal.ZERO);
+                int places = match.getInt("roundTo");
+                if (!isZero(concentration) && !isZero(rate)) {
+                    result = converted.multiply(concentration).divide(rate, places, RoundingMode.HALF_UP);
+                }
+            }
+        }
+        return result;
+    }
 
     /**
      * Returns all active <em>entityRelationship.productSupplier</em>
@@ -110,7 +166,7 @@ public class ProductRules {
      * @return the relationships, wrapped in {@link ProductSupplier} instances
      */
     public List<ProductSupplier> getProductSuppliers(Product product, Party supplier) {
-        List<ProductSupplier> result = new ArrayList<ProductSupplier>();
+        List<ProductSupplier> result = new ArrayList<>();
         EntityBean bean = new EntityBean(product, service);
         Predicate predicate = AndPredicate.getInstance(isActiveNow(), RefEquals.getTargetEquals(supplier));
         List<EntityRelationship> relationships
@@ -167,8 +223,6 @@ public class ProductRules {
                 result = reorderMatch;
             } else if (packageMatch != null) {
                 result = packageMatch;
-            } else if (reorderMatch != null) {
-                result = reorderMatch;
             } else if (sizeMatch != null) {
                 result = sizeMatch;
             } else if (zeroMatch != null) {
@@ -186,7 +240,7 @@ public class ProductRules {
      * @return the relationships, wrapped in {@link ProductSupplier} instances
      */
     public List<ProductSupplier> getProductSuppliers(Product product) {
-        List<ProductSupplier> result = new ArrayList<ProductSupplier>();
+        List<ProductSupplier> result = new ArrayList<>();
         EntityBean bean = new EntityBean(product, service);
         List<EntityRelationship> relationships = bean.getNodeRelationships("suppliers", isActiveNow());
         for (EntityRelationship relationship : relationships) {
@@ -255,7 +309,7 @@ public class ProductRules {
         query.add(sort("name"));
         query.add(sort("id"));
 
-        List<Entity> batches = new ArrayList<Entity>();
+        List<Entity> batches = new ArrayList<>();
         for (IMObject object : page.getResults()) {
             batches.add((Entity) object);
         }

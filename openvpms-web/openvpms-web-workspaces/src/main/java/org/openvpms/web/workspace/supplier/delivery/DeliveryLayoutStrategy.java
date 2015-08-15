@@ -44,11 +44,6 @@ import java.util.List;
 public class DeliveryLayoutStrategy extends ActLayoutStrategy {
 
     /**
-     * The nodes to display.
-     */
-    private final ArchetypeNodes nodes;
-
-    /**
      * The supplier invoice identifier node.
      */
     private static final String SUPPLIER_INVOICE_ID = "supplierInvoiceId";
@@ -62,17 +57,23 @@ public class DeliveryLayoutStrategy extends ActLayoutStrategy {
      * Constructs a {@link DeliveryLayoutStrategy} for viewing deliveries.
      */
     public DeliveryLayoutStrategy() {
-        nodes = getNodes();
+        this(null);
     }
 
     /**
      * Constructs a {@link DeliveryLayoutStrategy} for editing deliveries.
      *
-     * @param editor the delivery items editor
+     * @param editor the delivery items editor. May be {@code null}
      */
     public DeliveryLayoutStrategy(IMObjectCollectionEditor editor) {
         super(editor);
-        nodes = getNodes();
+        // exclude the supplier notes, as these are added manually
+        ArchetypeNodes result = new ArchetypeNodes().exclude(SUPPLIER_NOTES);
+        NodeDescriptor node = DescriptorHelper.getNode(SupplierArchetypes.DELIVERY, SUPPLIER_INVOICE_ID,
+                                                       ServiceHelper.getArchetypeService());
+        if (node != null && node.isReadOnly()) {
+            result.excludeIfEmpty(SUPPLIER_INVOICE_ID);
+        }
     }
 
     /**
@@ -98,16 +99,6 @@ public class DeliveryLayoutStrategy extends ActLayoutStrategy {
     }
 
     /**
-     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-     *
-     * @return the archetype nodes
-     */
-    @Override
-    protected ArchetypeNodes getArchetypeNodes() {
-        return nodes;
-    }
-
-    /**
      * Returns a component to display the supplier notes.
      *
      * @param notes the notes
@@ -119,22 +110,6 @@ public class DeliveryLayoutStrategy extends ActLayoutStrategy {
         supplierNotes.setEnabled(false);
         supplierNotes.setText(notes);
         return supplierNotes;
-    }
-
-    /**
-     * Determines the nodes to display.
-     *
-     * @return the nodes to display
-     */
-    private ArchetypeNodes getNodes() {
-        // exclude the supplier notes, as these are added manually
-        ArchetypeNodes result = new ArchetypeNodes().exclude(SUPPLIER_NOTES);
-        NodeDescriptor node = DescriptorHelper.getNode(SupplierArchetypes.DELIVERY, SUPPLIER_INVOICE_ID,
-                                                       ServiceHelper.getArchetypeService());
-        if (node != null && node.isReadOnly()) {
-            result.excludeIfEmpty(SUPPLIER_INVOICE_ID);
-        }
-        return result;
     }
 
 }

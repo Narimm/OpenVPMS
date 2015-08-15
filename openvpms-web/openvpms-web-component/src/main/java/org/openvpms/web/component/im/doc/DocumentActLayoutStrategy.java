@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.doc;
 
@@ -64,21 +64,12 @@ public class DocumentActLayoutStrategy extends ActLayoutStrategy {
      * @param versionsEditor the document version editor. May be {@code null}
      */
     public DocumentActLayoutStrategy(DocumentEditor editor, ActRelationshipCollectionEditor versionsEditor) {
+        setArchetypeNodes(NODES);
         if (editor != null) {
             addComponent(new ComponentState(editor));
         }
         if (versionsEditor != null) {
             addComponent(new ComponentState(versionsEditor));
         }
-    }
-
-    /**
-     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-     *
-     * @return the archetype nodes
-     */
-    @Override
-    protected ArchetypeNodes getArchetypeNodes() {
-        return NODES;
     }
 }

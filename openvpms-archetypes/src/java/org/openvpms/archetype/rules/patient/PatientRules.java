@@ -19,7 +19,7 @@ package org.openvpms.archetype.rules.patient;
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
-import org.openvpms.archetype.rules.math.MathRules;
+import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.MergeException;
 import org.openvpms.archetype.rules.practice.PracticeRules;
@@ -535,57 +535,32 @@ public class PatientRules {
     }
 
     /**
-     * Returns the patient's weight, in kilograms.
+     * Returns the patient's weight.
      * <p/>
      * This uses the most recent recorded weight for the patient.
      *
      * @param patient the patient
-     * @return the patient's weight in kilograms, or {@code 0} if its weight is not known
+     * @return the patient's weight, or {@code 0} if its weight is not known
      */
-    public BigDecimal getWeight(Party patient) {
-        return getWeight(patient, WeightUnits.KILOGRAMS);
-    }
-
-    /**
-     * Returns the patient's weight, in the specified units.
-     * <p/>
-     * This uses the most recent recorded weight for the patient.
-     *
-     * @param patient the patient
-     * @param units   the weight units
-     * @return the patient's weight in the requested units, or {@code 0} if its weight is not known
-     */
-    public BigDecimal getWeight(Party patient, WeightUnits units) {
-        BigDecimal weight = BigDecimal.ZERO;
+    public Weight getWeight(Party patient) {
+        Weight weight = Weight.ZERO;
         Act act = getWeightAct(patient);
         if (act != null) {
-            weight = getWeight(act, units);
+            weight = getWeight(act);
         }
         return weight;
     }
 
     /**
-     * Returns a patient's weight, in kilograms.
+     * Returns a patient's weight.
      *
      * @param act an <em>act.patientWeight</em>
-     * @return the patient's weight in kilograms, or {@code 0} if its weight is not known
+     * @return the patient's weight, or {@code 0} if its weight is not known
      */
-    public BigDecimal getWeight(Act act) {
-        return getWeight(act, WeightUnits.KILOGRAMS);
-    }
-
-    /**
-     * Returns a patient's weight, in kilograms.
-     *
-     * @param act   an <em>act.patientWeight</em>
-     * @param units the weight units
-     * @return the patient's weight in kilograms, or {@code 0} if its weight is not known
-     */
-    public BigDecimal getWeight(Act act, WeightUnits units) {
+    public Weight getWeight(Act act) {
         IMObjectBean bean = new IMObjectBean(act, service);
-        String currentUnits = bean.getString("units", WeightUnits.KILOGRAMS.toString());
-        BigDecimal weight = bean.getBigDecimal("weight", BigDecimal.ZERO);
-        return MathRules.convert(weight, WeightUnits.valueOf(currentUnits), units);
+        String units = bean.getString("units", WeightUnits.KILOGRAMS.toString());
+        return new Weight(bean.getBigDecimal("weight", BigDecimal.ZERO), WeightUnits.valueOf(units));
     }
 
     /**
@@ -596,7 +571,7 @@ public class PatientRules {
      */
     public Act getWeightAct(Party patient) {
         ArchetypeQuery query = createWeightQuery(patient);
-        Iterator<Act> iterator = new IMObjectQueryIterator<Act>(service, query);
+        Iterator<Act> iterator = new IMObjectQueryIterator<>(service, query);
         return (iterator.hasNext()) ? iterator.next() : null;
     }
 
@@ -816,7 +791,8 @@ public class PatientRules {
      */
     @SuppressWarnings("unchecked")
     private Collection<EntityIdentity> getIdentities(Party patient, String shortName) {
-        TreeMap<Long, EntityIdentity> result = new TreeMap<Long, EntityIdentity>(ComparatorUtils.reversedComparator(ComparatorUtils.NATURAL_COMPARATOR));
+        TreeMap<Long, EntityIdentity> result = new TreeMap<>(ComparatorUtils.reversedComparator(
+                ComparatorUtils.NATURAL_COMPARATOR));
         for (EntityIdentity identity : patient.getIdentities()) {
             if (identity.isActive() && TypeHelper.isA(identity, shortName)) {
                 result.put(identity.getId(), identity);

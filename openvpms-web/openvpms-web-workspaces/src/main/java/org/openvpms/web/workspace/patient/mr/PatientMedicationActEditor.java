@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.patient.mr;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductRules;
@@ -43,12 +44,14 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.customer.charge.Quantity;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -65,6 +68,11 @@ import static org.openvpms.web.workspace.patient.mr.PatientMedicationActLayoutSt
  * @author Tim Anderson
  */
 public class PatientMedicationActEditor extends PatientActEditor {
+
+    /**
+     * The medication quantity.
+     */
+    private Quantity quantity;
 
     /**
      * Dispensing units label.
@@ -130,6 +138,8 @@ public class PatientMedicationActEditor extends PatientActEditor {
             throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
         }
 
+        quantity = new Quantity(getProperty(QUANTITY), act, context);
+
         // create a property to hold the medication usage notes, if any.
         NodeDescriptor node = DescriptorHelper.getNode(ProductArchetypes.MEDICATION, USAGE_NOTES,
                                                        ServiceHelper.getArchetypeService());
@@ -159,9 +169,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
                 Product product = (Product) getObject(bean.getNodeParticipantRef(PRODUCT));
                 if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
                     updated = setProduct(product);
-                    if (bean.hasNode(QUANTITY)) {
-                        setQuantity(bean.getBigDecimal(QUANTITY));
-                    }
+                    setQuantity(bean.getBigDecimal(QUANTITY));
                 } else {
                     updated = setProduct(null);
                 }
@@ -214,7 +222,16 @@ public class PatientMedicationActEditor extends PatientActEditor {
      * @param quantity the quantity
      */
     public void setQuantity(BigDecimal quantity) {
-        getProperty(QUANTITY).setValue(quantity);
+        this.quantity.setQuantity(quantity, false);
+    }
+
+    /**
+     * Sets the quantity.
+     *
+     * @param quantity the quantity
+     */
+    public void setQuantity(Quantity quantity) {
+        this.quantity.setQuantity(quantity.getValue(), quantity.isDefault());
     }
 
     /**
@@ -223,7 +240,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
      * @return the quantity
      */
     public BigDecimal getQuantity() {
-        return getProperty(QUANTITY).getBigDecimal();
+        return quantity.getValue();
     }
 
     /**
@@ -284,6 +301,25 @@ public class PatientMedicationActEditor extends PatientActEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         PatientMedicationActLayoutStrategy strategy = new PatientMedicationActLayoutStrategy() {
+
+            /**
+             * Apply the layout strategy.
+             * <p/>
+             * This renders an object in a {@code Component}, using a factory to create the child components.
+             *
+             * @param object     the object to apply
+             * @param properties the object's properties
+             * @param parent     the parent object. May be {@code null}
+             * @param context    the layout context
+             * @return the component containing the rendered {@code object}
+             */
+            @Override
+            public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
+                Row row = RowFactory.create(Styles.CELL_SPACING, quantity.getComponent(), dispensingUnits);
+                addComponent(new ComponentState(row, quantity.getProperty()));
+                return super.apply(object, properties, parent, context);
+            }
+
             /**
              * Lays out components in a grid.
              *
@@ -303,16 +339,6 @@ public class PatientMedicationActEditor extends PatientActEditor {
                 usageComponent.setVisible(usageNotes.getValue() != null);
                 grid.add(label, text);
                 return grid;
-            }
-
-            @Override
-            protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
-                ComponentState state = super.createComponent(property, parent, context);
-                if (QUANTITY.equals(property.getName())) {
-                    Component component = RowFactory.create(Styles.CELL_SPACING, state.getComponent(), dispensingUnits);
-                    state = new ComponentState(component, property);
-                }
-                return state;
             }
         };
         strategy.setProductReadOnly(showProductReadOnly);

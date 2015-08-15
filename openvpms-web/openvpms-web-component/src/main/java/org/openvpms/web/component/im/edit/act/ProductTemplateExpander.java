@@ -17,7 +17,7 @@
 package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.archetype.function.list.ListFunctions;
-import org.openvpms.archetype.rules.math.MathRules;
+import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.common.EntityLink;
@@ -44,7 +44,6 @@ import java.util.Map;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
-import static org.openvpms.archetype.rules.math.WeightUnits.KILOGRAMS;
 
 /**
  * Expands product templates.
@@ -57,12 +56,12 @@ class ProductTemplateExpander {
      * Expands a product template.
      *
      * @param template the template to expand
-     * @param weight   the patient weight, in kilograms. If {@code 0}, indicates the weight is unknown
+     * @param weight   the patient weight. If {@code 0}, indicates the weight is unknown
      * @param cache    the object cache
      * @return a map products to their corresponding quantities
      */
-    public Collection<TemplateProduct> expand(Product template, BigDecimal weight, IMObjectCache cache) {
-        Map<TemplateProduct, TemplateProduct> includes = new LinkedHashMap<TemplateProduct, TemplateProduct>();
+    public Collection<TemplateProduct> expand(Product template, Weight weight, IMObjectCache cache) {
+        Map<TemplateProduct, TemplateProduct> includes = new LinkedHashMap<>();
         if (!expand(template, template, weight, includes, ONE, ONE, false, new ArrayDeque<Product>(), cache)) {
             includes.clear();
         } else if (includes.isEmpty()) {
@@ -76,7 +75,7 @@ class ProductTemplateExpander {
      *
      * @param root         the root template
      * @param template     the template to expand
-     * @param weight       the patient weight, in kilograms. If {@code 0}, indicates the weight is unknown
+     * @param weight       the patient weight. If {@code 0}, indicates the weight is unknown
      * @param includes     the existing includes
      * @param lowQuantity  the low quantity
      * @param highQuantity the high quantity
@@ -85,7 +84,7 @@ class ProductTemplateExpander {
      * @param cache        the cache
      * @return {@code true} if the template expanded
      */
-    protected boolean expand(Product root, Product template, BigDecimal weight,
+    protected boolean expand(Product root, Product template, Weight weight,
                              Map<TemplateProduct, TemplateProduct> includes, BigDecimal lowQuantity,
                              BigDecimal highQuantity, boolean zeroPrice, Deque<Product> parents,
                              IMObjectCache cache) {
@@ -95,7 +94,7 @@ class ProductTemplateExpander {
             IMObjectBean bean = new IMObjectBean(template);
             for (EntityLink relationship : bean.getValues("includes", EntityLink.class)) {
                 Include include = new Include(relationship);
-                if (include.requiresWeight() && (weight == null || weight.compareTo(ZERO) == 0)) {
+                if (include.requiresWeight() && weight.isZero()) {
                     reportWeightError(template, relationship);
                     result = false;
                     break;
@@ -153,7 +152,7 @@ class ProductTemplateExpander {
     protected void reportRecursionError(Product root, Product template, Deque<Product> parents) {
         ListFunctions functions = new ListFunctions(ServiceHelper.getArchetypeService(),
                                                     ServiceHelper.getLookupService());
-        List<Product> products = new ArrayList<Product>(parents);
+        List<Product> products = new ArrayList<>(parents);
         Collections.reverse(products);
         products.add(template);
         String names = functions.names(products, Messages.get("product.template.includes"));
@@ -167,8 +166,8 @@ class ProductTemplateExpander {
      * @param root   the root template
      * @param weight the patient weight
      */
-    protected void reportNoExpansion(Product root, BigDecimal weight) {
-        String message = Messages.format("product.template.noproducts", root.getName(), weight);
+    protected void reportNoExpansion(Product root, Weight weight) {
+        String message = Messages.format("product.template.noproducts", root.getName(), weight.getWeight());
         ErrorDialog.show(message);
     }
 
@@ -189,6 +188,11 @@ class ProductTemplateExpander {
          * The maximum weight.
          */
         private final BigDecimal maxWeight;
+
+        /**
+         * The weight units
+         */
+        private final WeightUnits units;
 
         /**
          * The low quantity.
@@ -223,9 +227,9 @@ class ProductTemplateExpander {
          */
         public Include(IMObjectRelationship relationship) {
             IMObjectBean bean = new IMObjectBean(relationship);
-            WeightUnits units = getUnits(bean);
-            minWeight = getWeight("minWeight", bean, units);
-            maxWeight = getWeight("maxWeight", bean, units);
+            units = WeightUnits.fromString(bean.getString("weightUnits"), WeightUnits.KILOGRAMS);
+            minWeight = bean.getBigDecimal("minWeight", BigDecimal.ZERO);
+            maxWeight = bean.getBigDecimal("maxWeight", BigDecimal.ZERO);
             lowQuantity = bean.getBigDecimal("lowQuantity", ZERO);
             highQuantity = bean.getBigDecimal("highQuantity", ZERO);
             zeroPrice = bean.getBoolean("zeroPrice");
@@ -248,8 +252,8 @@ class ProductTemplateExpander {
          * @param weight the patient weight
          * @return {@code true} if the product is included
          */
-        public boolean isIncluded(BigDecimal weight) {
-            return !requiresWeight() || weight.compareTo(minWeight) >= 0 && weight.compareTo(maxWeight) < 0;
+        public boolean isIncluded(Weight weight) {
+            return !requiresWeight() || weight.between(minWeight, maxWeight, units);
         }
 
         /**
@@ -259,29 +263,6 @@ class ProductTemplateExpander {
          */
         public Product getProduct(IMObjectCache cache) {
             return (Product) cache.get(product);
-        }
-
-        /**
-         * Returns a weight node, in kilograms.
-         *
-         * @param name  the node name
-         * @param bean  the bean
-         * @param units the units
-         * @return the weight, in kilograms
-         */
-        private BigDecimal getWeight(String name, IMObjectBean bean, WeightUnits units) {
-            BigDecimal weight = bean.getBigDecimal(name, ZERO);
-            return (units == KILOGRAMS) ? weight : MathRules.convert(weight, units, KILOGRAMS);
-        }
-
-        /**
-         * Returns the weight units.
-         *
-         * @param bean the bean
-         * @return the weight units
-         */
-        private WeightUnits getUnits(IMObjectBean bean) {
-            return WeightUnits.valueOf(bean.getString("weightUnits", KILOGRAMS.toString()));
         }
 
     }
