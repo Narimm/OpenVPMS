@@ -25,11 +25,15 @@ import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.finance.discount.DiscountTestHelper;
 import org.openvpms.archetype.rules.math.Currencies;
+import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
+import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -51,12 +55,14 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.customer.DoseManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -90,6 +96,11 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
     private Context context;
 
     /**
+     * The dose manager.
+     */
+    private DoseManager doseManager;
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -113,6 +124,9 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         context.setPractice(getPractice());
         Party location = TestHelper.createLocation();
         context.setLocation(location);
+
+        doseManager = new DoseManager(ServiceHelper.getBean(PatientRules.class),
+                                      ServiceHelper.getBean(ProductRules.class));
 
         // set a minimum price for calculated prices. This should only apply to prices calculated using a service ratio
         Lookup currency = TestHelper.getLookup(Currencies.LOOKUP, "AUD");
@@ -239,7 +253,6 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         User author = TestHelper.createUser();
         User clinician = TestHelper.createUser();
 
-        // create product1 with reminder and investigation type
         BigDecimal quantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);
         BigDecimal unitPrice = BigDecimal.valueOf(10);
@@ -260,9 +273,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         layout.getContext().setUser(author); // to propagate to acts
 
         // create the editor
-        TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, layout);
-        editor.setChargeContext(new ChargeContext());
-        editor.getComponent();
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, layout);
         assertFalse(editor.isValid());
 
         // populate quantity, patient, clinician.
@@ -322,9 +333,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         layout.getContext().setUser(author); // to propagate to acts
 
         // create the editor
-        TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, layout);
-        editor.setChargeContext(new ChargeContext());
-        editor.getComponent();
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, layout);
         assertFalse(editor.isValid());
 
         // populate quantity, patient, clinician.
@@ -391,9 +400,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         layout.getContext().setUser(author); // to propagate to acts
 
         // create the editor
-        TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, layout);
-        editor.setChargeContext(new ChargeContext());
-        editor.getComponent();
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, layout);
         assertFalse(editor.isValid());
 
         // populate quantity, patient, clinician and product
@@ -492,9 +499,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
 
         // create the editor
-        TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, layout);
-        editor.setChargeContext(new ChargeContext());
-        editor.getComponent();
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, layout);
         assertFalse(editor.isValid());
 
         if (!TypeHelper.isA(item, CustomerAccountArchetypes.COUNTER_ITEM)) {
@@ -516,6 +521,85 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         BigDecimal total1 = new BigDecimal("22.00");
         checkItem(item, patient, product, null, author, clinician, quantity, unitCost, unitPrice, fixedCost,
                   fixedPrice, discount1, tax1, total1);
+    }
+
+    /**
+     * Verifies that when a product with a dose is selected, the quantity is determined by the patient weight.
+     */
+    @Test
+    public void testInvoiceProductDose() {
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(new BigDecimal(100), customer, null, null,
+                                                                           ActStatus.IN_PROGRESS);
+        checkProductDose(acts.get(0), acts.get(1));
+    }
+
+    /**
+     * Verifies that when a product with a dose is selected, the quantity is determined by the patient weight.
+     */
+    @Test
+    public void testCreditProductDose() {
+        List<FinancialAct> acts = FinancialTestHelper.createChargesCredit(new BigDecimal(100), customer, null, null,
+                                                                          ActStatus.IN_PROGRESS);
+        checkProductDose(acts.get(0), acts.get(1));
+    }
+
+    /**
+     * Verifies that when a product with a dose is selected during a counter sale, the quantity remains unchanged
+     * as there is no patient.
+     */
+    @Test
+    public void testCounterProductDose() {
+        List<FinancialAct> acts = FinancialTestHelper.createChargesCounter(new BigDecimal(100), customer, null,
+                                                                           ActStatus.IN_PROGRESS);
+        FinancialAct charge = acts.get(0);
+        FinancialAct item = acts.get(1);
+        LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        Party patient = TestHelper.createPatient();
+        PatientTestHelper.createWeight(patient, new Date(), new BigDecimal("4.2"), WeightUnits.KILOGRAMS);
+        User author = TestHelper.createUser();
+
+        BigDecimal quantity = BigDecimal.valueOf(2);
+        BigDecimal unitCost = BigDecimal.valueOf(5);
+        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal fixedCost = BigDecimal.valueOf(1);
+        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+
+        Product product = createProduct(ProductArchetypes.MEDICATION, fixedCost, fixedPrice, unitCost, unitPrice);
+        Entity dose = ProductTestHelper.createDose(null, BigDecimal.ZERO, BigDecimal.TEN, BigDecimal.ONE,
+                                                   BigDecimal.ONE);
+        ProductTestHelper.addDose(product, dose);
+
+        // set up the context
+        layout.getContext().setUser(author); // to propagate to acts
+
+        // create the editor
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, layout);
+        assertFalse(editor.isValid());
+
+        assertFalse((editor.isDefaultQuantity()));
+
+        // populate quantity, patient, clinician and product
+        editor.setQuantity(quantity);
+        assertFalse((editor.isDefaultQuantity()));
+        editor.setProduct(product);
+        checkEquals(quantity, item.getQuantity());
+        assertFalse((editor.isDefaultQuantity()));
+    }
+
+    /**
+     * Creates a charge item editor.
+     *
+     * @param charge the charge
+     * @param item   the charge item
+     * @param layout the layout context
+     * @return a new editor
+     */
+    private TestCustomerChargeActItemEditor createEditor(FinancialAct charge, FinancialAct item, LayoutContext layout) {
+        TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, layout);
+        editor.setChargeContext(new ChargeContext());
+        editor.setDoseManager(doseManager);
+        editor.getComponent();
+        return editor;
     }
 
     /**
@@ -613,9 +697,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         layout.getContext().setClinician(clinician1);
 
         // create the editor
-        TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, layout);
-        editor.setChargeContext(new ChargeContext());
-        editor.getComponent();
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, layout);
         assertFalse(editor.isValid());
 
         // register a handler for act popups
@@ -774,6 +856,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
         CustomerChargeActItemEditor editor = new DefaultCustomerChargeActItemEditor(item, charge, context);
         editor.setChargeContext(new ChargeContext());
+        editor.setDoseManager(doseManager);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -834,9 +917,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
 
         // create the editor
-        TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, layout);
-        editor.setChargeContext(new ChargeContext());
-        editor.getComponent();
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, layout);
         assertFalse(editor.isValid());
 
         if (!TypeHelper.isA(item, CustomerAccountArchetypes.COUNTER_ITEM)) {
@@ -868,6 +949,70 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         BigDecimal total2 = new BigDecimal("22.00");
         checkItem(item, patient, product, null, author, clinician, quantity, unitCost, unitPrice, fixedCost,
                   fixedPrice, discount2, tax2, total2);
+    }
+
+    /**
+     * Tests charging a product with a dose.
+     *
+     * @param charge the charge
+     * @param item   the charge item
+     */
+    protected void checkProductDose(FinancialAct charge, FinancialAct item) {
+        LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        Party patient = TestHelper.createPatient();
+        PatientTestHelper.createWeight(patient, new Date(), new BigDecimal("4.2"), WeightUnits.KILOGRAMS);
+        User author = TestHelper.createUser();
+        User clinician = TestHelper.createUser();
+
+        BigDecimal quantity = BigDecimal.valueOf(2);
+        BigDecimal unitCost = BigDecimal.valueOf(5);
+        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal fixedCost = BigDecimal.valueOf(1);
+        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+        BigDecimal discount = BigDecimal.ZERO;
+        BigDecimal doseQuantity = new BigDecimal("4.2");
+
+        Product product = createProduct(ProductArchetypes.MEDICATION, fixedCost, fixedPrice, unitCost, unitPrice);
+        Entity dose = ProductTestHelper.createDose(null, BigDecimal.ZERO, BigDecimal.TEN, BigDecimal.ONE,
+                                                   BigDecimal.ONE);
+        ProductTestHelper.addDose(product, dose);
+
+        // set up the context
+        layout.getContext().setUser(author); // to propagate to acts
+
+        // create the editor
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, layout);
+        assertFalse(editor.isValid());
+
+        assertFalse((editor.isDefaultQuantity()));
+
+        // populate quantity, patient, clinician and product
+        editor.setQuantity(quantity);
+        assertFalse((editor.isDefaultQuantity()));
+
+        editor.setPatient(patient);
+        editor.setClinician(clinician);
+        editor.setProduct(product);
+        checkEquals(doseQuantity, editor.getQuantity());
+        assertTrue(editor.isDefaultQuantity());
+
+        // editor should now be valid
+        assertTrue(editor.isValid());
+        checkSave(charge, editor);
+
+        charge = get(charge);
+        item = get(item);
+        assertNotNull(charge);
+        assertNotNull(item);
+
+        // verify the item matches that expected
+        BigDecimal tax = new BigDecimal("4.0");
+        BigDecimal total = new BigDecimal("44.00");
+        checkItem(item, patient, product, null, author, clinician, doseQuantity, unitCost, unitPrice, fixedCost,
+                  fixedPrice, discount, tax, total);
+
+        // verify no errors were logged
+        assertTrue(errors.isEmpty());
     }
 
     /**

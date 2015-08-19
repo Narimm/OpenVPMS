@@ -21,6 +21,8 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.finance.discount.DiscountTestHelper;
 import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
+import org.openvpms.archetype.rules.math.WeightUnits;
+import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -38,9 +40,11 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -87,12 +91,17 @@ public class EstimateEditorTestCase extends AbstractEstimateEditorTestCase {
     public void testTemplateExpansion() {
         LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         Party patient = TestHelper.createPatient(customer);
-        Entity discount = DiscountTestHelper.createDiscount(BigDecimal.TEN, true, DiscountRules.PERCENTAGE);
+        PatientTestHelper.createWeight(patient, new Date(), new BigDecimal("4.2"), WeightUnits.KILOGRAMS);
+        Entity discount = DiscountTestHelper.createDiscount(TEN, true, DiscountRules.PERCENTAGE);
 
         BigDecimal fixedPrice = ONE;
         BigDecimal unitPrice = ONE;
         Product template = ProductTestHelper.createTemplate("templateA");
+
+        // product1 has a dose, which should be selected over the template include quantity
         Product product1 = createProduct(MEDICATION, fixedPrice, unitPrice);
+        ProductTestHelper.addDose(product1, ProductTestHelper.createDose(null, ZERO, TEN, ONE, ONE));
+
         Product product2 = createProduct(MEDICATION, fixedPrice, unitPrice);
         Product product3 = createProduct(MEDICATION, fixedPrice, unitPrice);
         addDiscount(product3, discount);
@@ -120,12 +129,12 @@ public class EstimateEditorTestCase extends AbstractEstimateEditorTestCase {
         assertEquals(3, items.size());
 
         User author = context.getUser();
-        BigDecimal two = BigDecimal.valueOf(2);
         BigDecimal three = BigDecimal.valueOf(3);
         BigDecimal five = BigDecimal.valueOf(5);
 
-        checkEstimate(estimate, customer, author, five, new BigDecimal("8"));
-        checkItem(items, patient, product1, author, 1, 2, unitPrice, unitPrice, fixedPrice, ZERO, ZERO, two, three);
+        checkEstimate(estimate, customer, author, new BigDecimal("8.20"), new BigDecimal("10.20"));
+        checkItem(items, patient, product1, author, new BigDecimal("4.2"), new BigDecimal("4.2"), unitPrice, unitPrice,
+                  fixedPrice, ZERO, ZERO, new BigDecimal("5.20"), new BigDecimal("5.20"));
         checkItem(items, patient, product2, author, 2, 4, unitPrice, unitPrice, fixedPrice, ZERO, ZERO, three, five);
         checkItem(items, patient, product3, author, 3, 6, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO);
     }

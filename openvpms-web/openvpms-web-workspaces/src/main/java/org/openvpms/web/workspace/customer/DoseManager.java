@@ -35,7 +35,7 @@ import java.util.Map;
  *
  * @author Tim Anderson
  */
-public class Doses {
+public class DoseManager {
 
     /**
      * The patient weights, keyed on patient reference.
@@ -53,12 +53,12 @@ public class Doses {
     private final ProductRules productRules;
 
     /**
-     * Constructs a {@link Doses}.
+     * Constructs a {@link DoseManager}.
      *
      * @param patientRules the patient rules
      * @param productRules the product rules
      */
-    public Doses(PatientRules patientRules, ProductRules productRules) {
+    public DoseManager(PatientRules patientRules, ProductRules productRules) {
         this.patientRules = patientRules;
         this.productRules = productRules;
     }

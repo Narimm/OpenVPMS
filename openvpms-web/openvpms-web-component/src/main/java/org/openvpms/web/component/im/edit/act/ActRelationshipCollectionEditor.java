@@ -402,7 +402,6 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
                 copy = (Act) objects.get(0);
                 LayoutContext context = new DefaultLayoutContext(getContext());
                 context.setComponentFactory(new ReadOnlyComponentFactory(context));
-                context.setCache(getContext().getCache());
                 editor = (ActItemEditor) createEditor(copy, context);
 
                 // reset the start-time, which may have been set by the editor

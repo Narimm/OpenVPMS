@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.im.edit.act;
 
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -155,7 +156,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * Returns a reference to the customer, obtained from the parent act.
      *
      * @return a reference to the customer or {@code null} if the act
-     *         has no parent
+     * has no parent
      */
     public IMObjectReference getCustomerRef() {
         Act act = (Act) getParent();
@@ -170,7 +171,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * Returns a reference to the customer, obtained from the parent act.
      *
      * @return a reference to the customer or {@code null} if the act
-     *         has no parent
+     * has no parent
      */
     public Party getCustomer() {
         return (Party) getObject(getCustomerRef());
@@ -232,8 +233,13 @@ public abstract class ActItemEditor extends AbstractActEditor {
     public void setProduct(TemplateProduct product, Product template) {
         setTemplate(template);  // NB: template must be set before product
         if (product != null) {
+            // clear the quantity. If the quantity changes after the product is set, don't overwrite with that
+            // from the template, as it is the dose quantity for the patient weight
+            setQuantity(null);
             setProduct(product.getProduct());
-            setQuantity(product.getHighQuantity());
+            if (MathRules.isZero(getQuantity())) {
+                setQuantity(product.getHighQuantity());
+            }
             if (product.getZeroPrice()) {
                 setFixedPrice(BigDecimal.ZERO);
                 setUnitPrice(BigDecimal.ZERO);
@@ -275,7 +281,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * Returns a reference to the patient.
      *
      * @return a reference to the patient, or {@code null} if the act
-     *         has no patient
+     * has no patient
      */
     public IMObjectReference getPatientRef() {
         return getParticipantRef(PATIENT);
@@ -303,7 +309,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * Returns a reference to the clinician.
      *
      * @return a reference to the clinician, or {@code null} if the act has
-     *         no clinician
+     * no clinician
      */
     public User getClinician() {
         return (User) getObject(getClinicianRef());
@@ -313,7 +319,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * Returns a reference to the clinician.
      *
      * @return a reference to the clinician, or {@code null} if the act has
-     *         no clinician
+     * no clinician
      */
     public IMObjectReference getClinicianRef() {
         return getParticipantRef(CLINICIAN);
@@ -340,7 +346,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Sets the product quantity.
      *
-     * @param quantity the product quantity
+     * @param quantity the product quantity. May be {@code null}
      */
     public void setQuantity(BigDecimal quantity) {
         getProperty(QUANTITY).setValue(quantity);
@@ -349,7 +355,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns the product quantity.
      *
-     * @return the product quantity
+     * @return the product quantity, or {@code 0} if no quantity is set
      */
     public BigDecimal getQuantity() {
         return getProperty(QUANTITY).getBigDecimal(BigDecimal.ZERO);
@@ -376,11 +382,10 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns the unit price.
      *
-     * @return the unit price
+     * @return the unit price, or {@code 0} if no unit price is set
      */
     public BigDecimal getUnitPrice() {
-        BigDecimal value = (BigDecimal) getProperty(UNIT_PRICE).getValue();
-        return (value != null) ? value : BigDecimal.ZERO;
+        return getProperty(UNIT_PRICE).getBigDecimal(BigDecimal.ZERO);
     }
 
     /**
@@ -678,6 +683,27 @@ public abstract class ActItemEditor extends AbstractActEditor {
     }
 
     /**
+     * Sets the product template.
+     *
+     * @param template the product template. May be {@code null}
+     */
+    protected void setTemplate(Product template) {
+        setTemplateRef(template != null ? template.getObjectReference() : null);
+    }
+
+    /**
+     * Sets the product template.
+     *
+     * @param template a reference to the product. May be {@code null}
+     */
+    protected void setTemplateRef(IMObjectReference template) {
+        if (getProperty(TEMPLATE) != null) {
+            setParticipant(TEMPLATE, template);
+            currentTemplate = template != null;
+        }
+    }
+
+    /**
      * Determines the pricing group from the location.
      *
      * @param location the location. May be {@code null}
@@ -690,27 +716,6 @@ public abstract class ActItemEditor extends AbstractActEditor {
             result = locationRules.getPricingGroup(location);
         }
         return result;
-    }
-
-    /**
-     * Sets the product template.
-     *
-     * @param template the product template. May be {@code null}
-     */
-    private void setTemplate(Product template) {
-        setTemplateRef(template != null ? template.getObjectReference() : null);
-    }
-
-    /**
-     * Sets the product template.
-     *
-     * @param template a reference to the product. May be {@code null}
-     */
-    private void setTemplateRef(IMObjectReference template) {
-        if (getProperty(TEMPLATE) != null) {
-            setParticipant(TEMPLATE, template);
-            currentTemplate = template != null;
-        }
     }
 
     /**

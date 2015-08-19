@@ -71,10 +71,40 @@ public class Quantity {
     /**
      * Returns the quantity.
      *
-     * @return the quantity. May be {@code null}
+     * @return the quantity, or {@code null} if none is set
      */
     public BigDecimal getValue() {
-        return getProperty().getBigDecimal();
+        return property.getBigDecimal();
+    }
+
+    /**
+     * Returns the quantity.
+     *
+     * @return the quantity, or {@code defaultValue} if none is set
+     */
+    public BigDecimal getValue(BigDecimal defaultValue) {
+        return property.getBigDecimal(defaultValue);
+    }
+
+    /**
+     * Sets a non-default quantity.
+     *
+     * @param value the quantity
+     */
+    public void setValue(BigDecimal value) {
+        setValue(value, false);
+    }
+
+    /**
+     * Sets the quantity.
+     *
+     * @param value     the quantity
+     * @param isDefault if {@code true} the quantity is a default
+     */
+    public void setValue(BigDecimal value, boolean isDefault) {
+        defaultQuantity = isDefault ? value : null;
+        property.setValue(value);
+        setStyle(isDefault);
     }
 
     /**
@@ -87,22 +117,11 @@ public class Quantity {
     }
 
     /**
-     * Sets the quantity.
-     *
-     * @param quantity  the quantity
-     * @param isDefault if {@code true} the quantity is a default
+     * Indicate that the quantity is not a default.
      */
-    public void setQuantity(BigDecimal quantity, boolean isDefault) {
-        defaultQuantity = isDefault ? quantity : null;
-        property.setValue(quantity);
-        setStyle(isDefault);
-    }
-
-    /**
-     * Clears the quantity.
-     */
-    public void clear() {
-        setQuantity(null, false);
+    public void clearDefault() {
+        defaultQuantity = null;
+        setStyle(false);
     }
 
     /**

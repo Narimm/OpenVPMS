@@ -2591,7 +2591,7 @@
 
     <style name="highlight" base-name="default" type="nextapp.echo2.app.text.TextComponent">
         <properties>
-            <property name="background" value="#85c1ff"/>
+            <property name="background" value="#a8f5f5"/>
         </properties>
     </style>
 
