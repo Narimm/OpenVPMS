@@ -84,6 +84,11 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     private BigDecimal serviceRatio;
 
     /**
+     * The dose manager.
+     */
+    private DoseManager doseManager;
+
+    /**
      * The product price rules.
      */
     private final ProductPriceRules priceRules;
@@ -142,6 +147,15 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      */
     public BigDecimal getServiceRatio() {
         return serviceRatio;
+    }
+
+    /**
+     * Sets the dose manager.
+     *
+     * @param doseManager the dose manager
+     */
+    public void setDoseManager(DoseManager doseManager) {
+        this.doseManager = doseManager;
     }
 
     /**
@@ -205,6 +219,17 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      */
     protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice) {
         return new PriceItemLayoutStrategy(fixedPrice);
+    }
+
+    /**
+     * Returns the dose of a product for a patient, based on the patient's weight.
+     *
+     * @param product the product
+     * @param patient the patient
+     * @return the dose, or {@code 0} if no dose exists for the patient weight
+     */
+    protected BigDecimal getDose(Product product, Party patient) {
+        return doseManager.getDose(product, patient);
     }
 
     /**
@@ -474,8 +499,8 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * @param current   the current product price. May be {@code null}
      * @param price     the current price
      * @return {@code current} if it matches the specified product and price;
-     *         or the first matching product price associated with the product,
-     *         or {@code null} if none is found
+     * or the first matching product price associated with the product,
+     * or {@code null} if none is found
      */
     private ProductPrice getProductPrice(Product product, String shortName, ProductPrice current, BigDecimal price) {
         ProductPrice result = null;

@@ -79,7 +79,6 @@ import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.customer.Doses;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
 import org.openvpms.web.workspace.patient.history.PatientInvestigationActEditor;
 import org.openvpms.web.workspace.patient.mr.PatientMedicationActEditor;
@@ -365,9 +364,18 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     @Override
     public void setProduct(TemplateProduct product, Product template) {
         super.setProduct(product, template);
-        if (product != null && !product.getPrint() && MathRules.equals(getTotal(), ZERO)) {
+        if (product != null && !product.getPrint() && MathRules.isZero(getTotal())) {
             setPrint(false);
         }
+    }
+
+    /**
+     * Determines if the quantity is a default for a product based on the patient's weight.
+     *
+     * @return {@code true} if the quantity is a default
+     */
+    public boolean isDefaultQuantity() {
+        return quantity.isDefault();
     }
 
     /**
@@ -756,17 +764,20 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         getProperty(TOTAL).removeModifiableListener(totalListener);
         super.productModified(product);
 
+        boolean clearDefault = true;
         if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
             Party patient = getPatient();
             if (patient != null) {
-                Doses doses = chargeContext.getDoses();
-                BigDecimal dose = doses.getDose(product, patient);
+                BigDecimal dose = getDose(product, patient);
                 if (!MathRules.isZero(dose)) {
-                    quantity.setQuantity(dose, true);
-                } else {
-                    // quantity.clear();
+                    quantity.setValue(dose, true);
+                    clearDefault = false;
                 }
             }
+        }
+        if (clearDefault) {
+            // the quantity is not a default for the product, so turn off any higlighting
+            quantity.clearDefault();
         }
         Property discount = getProperty(DISCOUNT);
         discount.setValue(ZERO);

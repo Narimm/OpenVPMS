@@ -138,7 +138,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
             throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
         }
 
-        quantity = new Quantity(getProperty(QUANTITY), act, context);
+        quantity = new Quantity(getProperty(QUANTITY), act, getLayoutContext());
 
         // create a property to hold the medication usage notes, if any.
         NodeDescriptor node = DescriptorHelper.getNode(ProductArchetypes.MEDICATION, USAGE_NOTES,
@@ -222,7 +222,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
      * @param quantity the quantity
      */
     public void setQuantity(BigDecimal quantity) {
-        this.quantity.setQuantity(quantity, false);
+        this.quantity.setValue(quantity, false);
     }
 
     /**
@@ -231,7 +231,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
      * @param quantity the quantity
      */
     public void setQuantity(Quantity quantity) {
-        this.quantity.setQuantity(quantity.getValue(), quantity.isDefault());
+        this.quantity.setValue(quantity.getValue(), quantity.isDefault());
     }
 
     /**

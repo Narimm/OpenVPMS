@@ -17,16 +17,12 @@
 package org.openvpms.web.workspace.customer.charge;
 
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
-import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.customer.Doses;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,11 +49,6 @@ public class ChargeContext implements CollectionPropertyEditor.RemoveHandler {
     private PatientHistoryChanges changes;
 
     /**
-     * The doses helper.
-     */
-    private Doses doses;
-
-    /**
      * The objects to remove.
      */
     private List<IMObject> toRemove = new ArrayList<>();
@@ -71,7 +62,7 @@ public class ChargeContext implements CollectionPropertyEditor.RemoveHandler {
      * Default constructor.
      */
     public ChargeContext() {
-        doses = new Doses(ServiceHelper.getBean(PatientRules.class), ServiceHelper.getBean(ProductRules.class));
+        super();
     }
 
     /**
@@ -90,15 +81,6 @@ public class ChargeContext implements CollectionPropertyEditor.RemoveHandler {
      */
     public PatientHistoryChanges getHistoryChanges() {
         return changes;
-    }
-
-    /**
-     * Returns the doses helper.
-     *
-     * @return the doses helper
-     */
-    public Doses getDoses() {
-        return doses;
     }
 
     /**

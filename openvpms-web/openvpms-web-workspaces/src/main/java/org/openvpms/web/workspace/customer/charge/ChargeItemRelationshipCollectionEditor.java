@@ -63,6 +63,10 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      */
     private final ChargeContext chargeContext;
 
+    /**
+     * The start time node name.
+     */
+    private static final String START_TIME = "startTime";
 
     /**
      * Constructs a {@link ChargeItemRelationshipCollectionEditor}.
@@ -159,20 +163,21 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
             itemEditor.setEditorQueue(editorQueue);
             itemEditor.setPrescriptions(prescriptions);
             itemEditor.setChargeContext(chargeContext);
+            itemEditor.setDoseManager(getDoseManager());
         }
 
         // Set startTime to to last used value
         if (lastItemDate != null) {
-            editor.getProperty("startTime").setValue(lastItemDate);
+            editor.getProperty(START_TIME).setValue(lastItemDate);
         }
 
         // add a listener to store the last used item starttime.
         ModifiableListener startTimeListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
-                lastItemDate = (Date) editor.getProperty("startTime").getValue();
+                lastItemDate = (Date) editor.getProperty(START_TIME).getValue();
             }
         };
-        editor.getProperty("startTime").addModifiableListener(startTimeListener);
+        editor.getProperty(START_TIME).addModifiableListener(startTimeListener);
     }
 
     /**

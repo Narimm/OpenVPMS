@@ -18,12 +18,14 @@ package org.openvpms.web.workspace.customer.estimate;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -41,18 +43,19 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusHelper;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
+import org.openvpms.web.workspace.customer.charge.Quantity;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
 import static java.math.BigDecimal.ZERO;
-import static org.openvpms.archetype.rules.product.ProductArchetypes.TEMPLATE;
-import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
 
 
 /**
@@ -61,6 +64,21 @@ import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
  * @author Tim Anderson
  */
 public class EstimateItemEditor extends PriceActItemEditor {
+
+    /**
+     * The low quantity.
+     */
+    private final Quantity lowQuantity;
+
+    /**
+     * The high quantity.
+     */
+    private final Quantity highQuantity;
+
+    /**
+     * Listener for low and high total updates.
+     */
+    private final ModifiableListener totalListener;
 
     /**
      * Low quantity selling units.
@@ -123,7 +141,6 @@ public class EstimateItemEditor extends PriceActItemEditor {
     private static final ArchetypeNodes TEMPLATE_NODES = new ArchetypeNodes().exclude(
             LOW_QTY, HIGH_QTY, FIXED_PRICE, LOW_UNIT_PRICE, HIGH_UNIT_PRICE, LOW_DISCOUNT, HIGH_DISCOUNT,
             PRINT, LOW_TOTAL, HIGH_TOTAL);
-    private final ModifiableListener totalListener;
 
 
     /**
@@ -143,6 +160,9 @@ public class EstimateItemEditor extends PriceActItemEditor {
             // default the act start time to today
             act.setActivityStartTime(new Date());
         }
+
+        lowQuantity = new Quantity(getProperty(LOW_QTY), act, getLayoutContext());
+        highQuantity = new Quantity(getProperty(HIGH_QTY), act, getLayoutContext());
 
         Product product = getProduct();
         boolean showPrint = updatePrint(product);
@@ -170,9 +190,9 @@ public class EstimateItemEditor extends PriceActItemEditor {
         };
         getProperty(FIXED_PRICE).addModifiableListener(listener);
         getProperty(LOW_UNIT_PRICE).addModifiableListener(lowListener);
-        getProperty(LOW_QTY).addModifiableListener(lowListener);
+        lowQuantity.getProperty().addModifiableListener(lowListener);
         getProperty(HIGH_UNIT_PRICE).addModifiableListener(highListener);
-        getProperty(HIGH_QTY).addModifiableListener(highListener);
+        highQuantity.getProperty().addModifiableListener(highListener);
 
         // add a listener to update the tax amount when the total changes
         totalListener = new ModifiableListener() {
@@ -212,7 +232,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * @return the low quantity
      */
     public BigDecimal getLowQuantity() {
-        return getProperty(LOW_QTY).getBigDecimal(BigDecimal.ZERO);
+        return lowQuantity.getValue(BigDecimal.ZERO);
     }
 
     /**
@@ -221,7 +241,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * @param quantity the low quantity
      */
     public void setLowQuantity(BigDecimal quantity) {
-        getProperty(LOW_QTY).setValue(quantity);
+        lowQuantity.setValue(quantity);
     }
 
     /**
@@ -230,7 +250,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * @return the high quantity
      */
     public BigDecimal getHighQuantity() {
-        return getProperty(HIGH_QTY).getBigDecimal(BigDecimal.ZERO);
+        return highQuantity.getValue(BigDecimal.ZERO);
     }
 
     /**
@@ -239,7 +259,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * @param quantity the high quantity
      */
     public void setHighQuantity(BigDecimal quantity) {
-        getProperty(HIGH_QTY).setValue(quantity);
+        highQuantity.setValue(quantity);
     }
 
     /**
@@ -322,17 +342,30 @@ public class EstimateItemEditor extends PriceActItemEditor {
      */
     @Override
     public void setProduct(TemplateProduct product, Product template) {
-        super.setProduct(product, template);
+        setTemplate(template);  // NB: template must be set before product
         if (product != null) {
-            setLowQuantity(product.getLowQuantity());
-            setHighQuantity(product.getHighQuantity());
+            // clear the quantity. If the quantity changes after the product is set, don't overwrite with that
+            // from the template, as it is the dose quantity for the patient weight
+            setQuantity(null);
+            setProduct(product.getProduct());
+            if (MathRules.isZero(getHighQuantity())) {
+                setLowQuantity(product.getLowQuantity());
+                setHighQuantity(product.getHighQuantity());
+            }
             if (!product.getPrint()) {
                 BigDecimal low = getLowTotal();
                 BigDecimal high = getHighTotal();
-                if (MathRules.equals(low, ZERO) && MathRules.equals(high, ZERO)) {
+                if (MathRules.isZero(low) && MathRules.isZero(high)) {
                     setPrint(false);
                 }
             }
+            if (product.getZeroPrice()) {
+                setFixedPrice(BigDecimal.ZERO);
+                setUnitPrice(BigDecimal.ZERO);
+                setDiscount(BigDecimal.ZERO);
+            }
+        } else {
+            setProduct(null);
         }
     }
 
@@ -394,6 +427,23 @@ public class EstimateItemEditor extends PriceActItemEditor {
             highUnitPrice.setValue(BigDecimal.ZERO);
             updateSellingUnits(null);
         } else {
+            boolean clearDefault = true;
+            if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
+                Party patient = getPatient();
+                if (patient != null) {
+                    BigDecimal dose = getDose(product, patient);
+                    if (!MathRules.isZero(dose)) {
+                        lowQuantity.setValue(dose, true);
+                        highQuantity.setValue(dose, true);
+                        clearDefault = false;
+                    }
+                }
+            }
+            if (clearDefault) {
+                // the quantity is not a default for the product, so turn off any higlighting
+                lowQuantity.clearDefault();
+                highQuantity.clearDefault();
+            }
             Property fixedPrice = getProperty(FIXED_PRICE);
             Property lowUnitPrice = getProperty(LOW_UNIT_PRICE);
             Property highUnitPrice = getProperty(HIGH_UNIT_PRICE);
@@ -558,7 +608,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
             // If discount amount calculates to zero don't update any existing value as may have been manually modified.
             if (getDisableDiscounts() || amount.compareTo(BigDecimal.ZERO) != 0) {
                 Property discount = getProperty(HIGH_DISCOUNT);
-                discount.setValue(amount);
+                result = discount.setValue(amount);
             }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
@@ -571,17 +621,34 @@ public class EstimateItemEditor extends PriceActItemEditor {
             super(fixedPrice);
         }
 
+        /**
+         * Apply the layout strategy.
+         * <p/>
+         * This renders an object in a {@code Component}, using a factory to create the child components.
+         *
+         * @param object     the object to apply
+         * @param properties the object's properties
+         * @param parent     the parent object. May be {@code null}
+         * @param context    the layout context
+         * @return the component containing the rendered {@code object}
+         */
         @Override
-        protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
-            ComponentState state = super.createComponent(property, parent, context);
-            if (LOW_QTY.equals(property.getName())) {
-                Component component = RowFactory.create(CELL_SPACING, state.getComponent(), lowQtySellingUnits);
-                state = new ComponentState(component, property);
-            } else if (HIGH_QTY.equals(property.getName())) {
-                Component component = RowFactory.create(CELL_SPACING, state.getComponent(), highQtySellingUnits);
-                state = new ComponentState(component, property);
-            }
-            return state;
+        public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
+            addComponent(createQuantity(lowQuantity, lowQtySellingUnits));
+            addComponent(createQuantity(highQuantity, highQtySellingUnits));
+            return super.apply(object, properties, parent, context);
+        }
+
+        /**
+         * Creates a component containing a quantity and their selling units.
+         *
+         * @param quantity the quantity
+         * @param units    the selling units
+         * @return a new component
+         */
+        protected ComponentState createQuantity(Quantity quantity, Label units) {
+            Row row = RowFactory.create(Styles.CELL_SPACING, quantity.getComponent(), units);
+            return new ComponentState(row, quantity.getProperty());
         }
     }
 
