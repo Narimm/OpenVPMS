@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.select;
@@ -294,12 +294,12 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      */
     protected void onSelect(Query<T> query, boolean runQuery) {
         if (runQuery) {
-            query.setAuto(runQuery);
+            query.setAuto(true);
         }
         try {
             final FocusCommand focus = new FocusCommand();
             final Browser<T> browser = createBrowser(query);
-            final BrowserDialog<T> popup = new BrowserDialog<T>(type, browser, allowCreate, context.getHelpContext());
+            final BrowserDialog<T> popup = new BrowserDialog<>(type, browser, allowCreate, context.getHelpContext());
 
             popup.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.organisation;
@@ -65,6 +65,7 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
      * Default constructor.
      */
     public PracticeLayoutStrategy() {
+        super(NODES);
     }
 
     /**
@@ -127,16 +128,6 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
             label = getShortcut(label, model.size() + 1);
         }
         model.addTab(label, inset);
-    }
-
-    /**
-     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-     *
-     * @return the archetype nodes
-     */
-    @Override
-    protected ArchetypeNodes getArchetypeNodes() {
-        return NODES;
     }
 
     /**

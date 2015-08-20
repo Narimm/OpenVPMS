@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -21,27 +19,36 @@ package org.openvpms.web.component.im.relationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.IMObjectListResultSet;
+import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.view.IMObjectTableCollectionViewer;
 import org.openvpms.web.component.property.CollectionProperty;
 
 
 /**
  * Viewer for collections of {@link IMObjectRelationship}s.
+ * <p/>
+ * If the relationships have a sequence node, they will be sorted on this.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class IMObjectRelationshipCollectionViewer extends IMObjectTableCollectionViewer {
 
     /**
-     * Constructs a <tt>IMObjectRelationshipCollectionViewer</tt>.
+     * Determines if the collection should be sorted on sequence.
+     */
+    private boolean sequenced;
+
+    /**
+     * Constructs a {@link IMObjectRelationshipCollectionViewer}.
      *
      * @param property the collection to view
      * @param parent   the parent object
-     * @param layout   the layout context. May be <tt>null</tt>
+     * @param layout   the layout context. May be {@code null}
      */
     public IMObjectRelationshipCollectionViewer(CollectionProperty property, IMObject parent, LayoutContext layout) {
         super(property, parent, layout);
+        sequenced = SequencedRelationshipCollectionHelper.hasSequenceNode(property.getArchetypeRange());
     }
 
     /**
@@ -65,5 +72,21 @@ public class IMObjectRelationshipCollectionViewer extends IMObjectTableCollectio
      */
     protected void browseTarget(IMObject target) {
         super.browse(target);
+    }
+
+    /**
+     * Creates a new result set for display.
+     *
+     * @return a new result set
+     */
+    @Override
+    protected ResultSet<IMObject> createResultSet() {
+        ResultSet<IMObject> result;
+        if (!sequenced) {
+            result = super.createResultSet();
+        } else {
+            result = new IMObjectListResultSet<>(SequencedRelationshipCollectionHelper.sort(getObjects()), ROWS);
+        }
+        return result;
     }
 }

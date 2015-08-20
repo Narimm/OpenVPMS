@@ -112,7 +112,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     /**
      * Tracks errors logged.
      */
-    private List<String> errors = new ArrayList<String>();
+    private List<String> errors = new ArrayList<>();
 
     /**
      * Tests the check-in workflow when launched from an appointment with no patient.

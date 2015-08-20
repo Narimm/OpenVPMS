@@ -66,6 +66,59 @@ public class ProductTestHelper {
     }
 
     /**
+     * Creates an <em>entity.productDose</em> rounding to 2 decimal places.
+     *
+     * @param species       the species. May be {@code null}
+     * @param minWeight     the minimum weight, inclusive
+     * @param maxWeight     the maximum weight, exclusive
+     * @param concentration the concentration
+     * @param rate          the rate
+     * @return a new dose
+     */
+    public static Entity createDose(Lookup species, BigDecimal minWeight, BigDecimal maxWeight,
+                                    BigDecimal concentration, BigDecimal rate) {
+        return createDose(species, minWeight, maxWeight, concentration, rate, 2);
+    }
+
+    /**
+     * Creates an <em>entity.productDose</em>.
+     *
+     * @param species       the species. May be {@code null}
+     * @param minWeight     the minimum weight, inclusive
+     * @param maxWeight     the maximum weight, exclusive
+     * @param concentration the concentration
+     * @param rate          the rate
+     * @param roundTo       the no. of decimal places to round to
+     * @return a new dose
+     */
+    public static Entity createDose(Lookup species, BigDecimal minWeight, BigDecimal maxWeight,
+                                    BigDecimal concentration, BigDecimal rate, int roundTo) {
+        Entity dose = (Entity) TestHelper.create(ProductArchetypes.DOSE);
+        IMObjectBean bean = new IMObjectBean(dose);
+        if (species != null) {
+            dose.addClassification(species);
+        }
+        bean.setValue("minWeight", minWeight);
+        bean.setValue("maxWeight", maxWeight);
+        bean.setValue("concentration", concentration);
+        bean.setValue("rate", rate);
+        bean.setValue("roundTo", roundTo);
+        return dose;
+    }
+
+    /**
+     * Adds a dose to a product.
+     *
+     * @param product the product
+     * @param dose    the dose
+     */
+    public static void addDose(Product product, Entity dose) {
+        EntityBean bean = new EntityBean(product);
+        bean.addNodeTarget("doses", dose);
+        TestHelper.save(product, dose);
+    }
+
+    /**
      * Adds a pharmacy to a product.
      *
      * @param product  the product

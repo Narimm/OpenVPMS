@@ -273,7 +273,7 @@ public class PatientContext {
      */
     public BigDecimal getPatientWeight() {
         getWeightAct();
-        return (weight != null) ? patientRules.getWeight(weight) : null;
+        return (weight != null) ? patientRules.getWeight(weight).toKilograms() : null;
     }
 
     /**
@@ -410,12 +410,12 @@ public class PatientContext {
      */
     public List<Act> getAllergies() {
         if (allergies == null) {
-            allergies = new ArrayList<Act>();
+            allergies = new ArrayList<>();
             ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.ALERT);
             query.add(Constraints.eq("status", ActStatus.IN_PROGRESS));
             query.add(Constraints.join("patient").add(Constraints.eq("entity", patient)));
             query.add(Constraints.sort("id"));
-            IMObjectQueryIterator<Act> alerts = new IMObjectQueryIterator<Act>(query);
+            IMObjectQueryIterator<Act> alerts = new IMObjectQueryIterator<>(query);
             while (alerts.hasNext()) {
                 Act alert = alerts.next();
                 IMObjectBean bean = new IMObjectBean(alert, service);

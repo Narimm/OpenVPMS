@@ -61,6 +61,12 @@ public class OrganisationLocationEditor extends AbstractIMObjectEditor {
     private IMObjectEditor logoParticipationEditor;
 
     /**
+     * The nodes to display.
+     */
+    private static final ArchetypeNodes NODES = new ArchetypeNodes().simple("pricingGroup");
+
+
+    /**
      * Constructs an {@link OrganisationLocationEditor}
      *
      * @param object        the object to edit
@@ -91,10 +97,11 @@ public class OrganisationLocationEditor extends AbstractIMObjectEditor {
     private class LocationLayoutStrategy extends AbstractLayoutStrategy {
 
         /**
-         * The nodes.
+         * Constructs an {@link LocationLayoutStrategy}.
          */
-        private final ArchetypeNodes NODES = new ArchetypeNodes().simple("pricingGroup");
-
+        public LocationLayoutStrategy() {
+            super(NODES);
+        }
 
         /**
          * Lays out components in a grid.
@@ -136,15 +143,6 @@ public class OrganisationLocationEditor extends AbstractIMObjectEditor {
             return result;
         }
 
-        /**
-         * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-         *
-         * @return the archetype nodes
-         */
-        @Override
-        protected ArchetypeNodes getArchetypeNodes() {
-            return NODES;
-        }
     }
 
 }

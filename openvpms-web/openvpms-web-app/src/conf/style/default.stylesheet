@@ -2589,6 +2589,12 @@
         </properties>
     </style>
 
+    <style name="highlight" base-name="default" type="nextapp.echo2.app.text.TextComponent">
+        <properties>
+            <property name="background" value="#a8f5f5"/>
+        </properties>
+    </style>
+
     <style name="monospace" base-name="default" type="org.openvpms.web.echo.text.TextArea">
         <properties>
             <property name="font">

@@ -45,6 +45,12 @@ public class OrganisationLocationViewLayoutStrategy extends AbstractLayoutStrate
     private static final ArchetypeNodes NODES
             = new ArchetypeNodes().simple("pricingGroup").exclude("mailPassword");
 
+    /**
+     * Constructs an {@link OrganisationLocationViewLayoutStrategy}.
+     */
+    public OrganisationLocationViewLayoutStrategy() {
+        super(NODES);
+    }
 
     /**
      * Lays out components in a grid.
@@ -59,16 +65,6 @@ public class OrganisationLocationViewLayoutStrategy extends AbstractLayoutStrate
         ComponentState logo = getLogo(object, context);
         grid.add(logo, 2);
         return grid;
-    }
-
-    /**
-     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-     *
-     * @return the archetype nodes
-     */
-    @Override
-    protected ArchetypeNodes getArchetypeNodes() {
-        return NODES;
     }
 
     /**
