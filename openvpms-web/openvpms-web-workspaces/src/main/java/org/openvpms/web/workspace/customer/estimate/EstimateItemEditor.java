@@ -56,6 +56,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import static java.math.BigDecimal.ZERO;
+import static org.openvpms.archetype.rules.math.MathRules.isZero;
 
 
 /**
@@ -232,7 +233,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * @return the low quantity
      */
     public BigDecimal getLowQuantity() {
-        return lowQuantity.getValue(BigDecimal.ZERO);
+        return lowQuantity.getValue(ZERO);
     }
 
     /**
@@ -250,7 +251,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * @return the high quantity
      */
     public BigDecimal getHighQuantity() {
-        return highQuantity.getValue(BigDecimal.ZERO);
+        return highQuantity.getValue(ZERO);
     }
 
     /**
@@ -293,7 +294,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * @return the low unit price
      */
     public BigDecimal getLowUnitPrice() {
-        return getProperty(LOW_UNIT_PRICE).getBigDecimal(BigDecimal.ZERO);
+        return getProperty(LOW_UNIT_PRICE).getBigDecimal(ZERO);
     }
 
     /**
@@ -302,7 +303,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
      * @return the high unit price
      */
     public BigDecimal getHighUnitPrice() {
-        return getProperty(HIGH_UNIT_PRICE).getBigDecimal(BigDecimal.ZERO);
+        return getProperty(HIGH_UNIT_PRICE).getBigDecimal(ZERO);
     }
 
     /**
@@ -345,24 +346,26 @@ public class EstimateItemEditor extends PriceActItemEditor {
         setTemplate(template);  // NB: template must be set before product
         if (product != null) {
             // clear the quantity. If the quantity changes after the product is set, don't overwrite with that
-            // from the template, as it is the dose quantity for the patient weight
+            // from the template, as it is the dose quantity for the patient weight, unless the low quantity is zero
             setQuantity(null);
             setProduct(product.getProduct());
-            if (MathRules.isZero(getHighQuantity())) {
+            if (isZero(getHighQuantity())) {
                 setLowQuantity(product.getLowQuantity());
                 setHighQuantity(product.getHighQuantity());
+            } else if (isZero(product.getLowQuantity())) {
+                setLowQuantity(ZERO);
             }
             if (!product.getPrint()) {
                 BigDecimal low = getLowTotal();
                 BigDecimal high = getHighTotal();
-                if (MathRules.isZero(low) && MathRules.isZero(high)) {
+                if (isZero(low) && isZero(high)) {
                     setPrint(false);
                 }
             }
             if (product.getZeroPrice()) {
-                setFixedPrice(BigDecimal.ZERO);
-                setUnitPrice(BigDecimal.ZERO);
-                setDiscount(BigDecimal.ZERO);
+                setFixedPrice(ZERO);
+                setUnitPrice(ZERO);
+                setDiscount(ZERO);
             }
         } else {
             setProduct(null);
@@ -413,8 +416,8 @@ public class EstimateItemEditor extends PriceActItemEditor {
 
         Property lowDiscount = getProperty(LOW_DISCOUNT);
         Property highDiscount = getProperty(HIGH_DISCOUNT);
-        lowDiscount.setValue(BigDecimal.ZERO);
-        highDiscount.setValue(BigDecimal.ZERO);
+        lowDiscount.setValue(ZERO);
+        highDiscount.setValue(ZERO);
         boolean showPrint = false;
 
         if (TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
@@ -422,9 +425,9 @@ public class EstimateItemEditor extends PriceActItemEditor {
             Property fixedPrice = getProperty(FIXED_PRICE);
             Property lowUnitPrice = getProperty(LOW_UNIT_PRICE);
             Property highUnitPrice = getProperty(HIGH_UNIT_PRICE);
-            fixedPrice.setValue(BigDecimal.ZERO);
-            lowUnitPrice.setValue(BigDecimal.ZERO);
-            highUnitPrice.setValue(BigDecimal.ZERO);
+            fixedPrice.setValue(ZERO);
+            lowUnitPrice.setValue(ZERO);
+            highUnitPrice.setValue(ZERO);
             updateSellingUnits(null);
         } else {
             boolean clearDefault = true;
@@ -432,7 +435,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
                 Party patient = getPatient();
                 if (patient != null) {
                     BigDecimal dose = getDose(product, patient);
-                    if (!MathRules.isZero(dose)) {
+                    if (!isZero(dose)) {
                         lowQuantity.setValue(dose, true);
                         highQuantity.setValue(dose, true);
                         clearDefault = false;
@@ -440,7 +443,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
                 }
             }
             if (clearDefault) {
-                // the quantity is not a default for the product, so turn off any higlighting
+                // the quantity is not a default for the product, so turn off any highlighting
                 lowQuantity.clearDefault();
                 highQuantity.clearDefault();
             }
@@ -457,15 +460,15 @@ public class EstimateItemEditor extends PriceActItemEditor {
             if (fixed != null) {
                 fixedPrice.setValue(getPrice(product, fixed));
             } else {
-                fixedPrice.setValue(BigDecimal.ZERO);
+                fixedPrice.setValue(ZERO);
             }
             if (unit != null) {
                 BigDecimal price = getPrice(product, unit);
                 lowUnitPrice.setValue(price);
                 highUnitPrice.setValue(price);
             } else {
-                lowUnitPrice.setValue(BigDecimal.ZERO);
-                highUnitPrice.setValue(BigDecimal.ZERO);
+                lowUnitPrice.setValue(ZERO);
+                highUnitPrice.setValue(ZERO);
             }
             showPrint = updatePrint(product);
             updateSellingUnits(product);
@@ -584,7 +587,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
             BigDecimal quantity = getLowQuantity();
             BigDecimal amount = calculateDiscount(unitPrice, quantity);
             // If discount amount calculates to zero don't update any existing value as may have been manually modified.
-            if (getDisableDiscounts() || amount.compareTo(BigDecimal.ZERO) != 0) {
+            if (getDisableDiscounts() || amount.compareTo(ZERO) != 0) {
                 Property discount = getProperty(LOW_DISCOUNT);
                 result = discount.setValue(amount);
             }
@@ -606,7 +609,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
             BigDecimal quantity = getHighQuantity();
             BigDecimal amount = calculateDiscount(unitPrice, quantity);
             // If discount amount calculates to zero don't update any existing value as may have been manually modified.
-            if (getDisableDiscounts() || amount.compareTo(BigDecimal.ZERO) != 0) {
+            if (getDisableDiscounts() || amount.compareTo(ZERO) != 0) {
                 Property discount = getProperty(HIGH_DISCOUNT);
                 result = discount.setValue(amount);
             }
