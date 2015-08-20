@@ -256,7 +256,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
         if (actions.canEdit(object)) {
             ButtonSet buttons = getButtons();
             Button button = (buttons != null) ? buttons.getButton(EDIT_ID) : null;
-            edit = button == null || button.isEnabled();
+            edit = button != null && button.isEnabled();
         }
         return edit;
     }
@@ -728,7 +728,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
         ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
         IMPrinter<T> printer = IMPrinterFactory.create(object, locator, context);
         HelpContext help = createPrintTopic(object);
-        InteractiveIMPrinter<T> interactive = new InteractiveIMPrinter<T>(printer, context, help);
+        InteractiveIMPrinter<T> interactive = new InteractiveIMPrinter<>(printer, context, help);
         interactive.setMailContext(getMailContext());
         return interactive;
     }
