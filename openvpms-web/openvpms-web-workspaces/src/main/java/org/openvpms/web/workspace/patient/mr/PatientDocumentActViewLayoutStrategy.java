@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 /*
@@ -47,6 +47,7 @@ public class PatientDocumentActViewLayoutStrategy extends PatientDocumentActLayo
      */
     public PatientDocumentActViewLayoutStrategy() {
         super();
+        setArchetypeNodes(VIEW_NODES);
     }
 
     /**
@@ -72,16 +73,6 @@ public class PatientDocumentActViewLayoutStrategy extends PatientDocumentActLayo
             result = super.createComponent(property, parent, context);
         }
         return result;
-    }
-
-    /**
-     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-     *
-     * @return the archetype nodes
-     */
-    @Override
-    protected ArchetypeNodes getArchetypeNodes() {
-        return VIEW_NODES;
     }
 
     /**

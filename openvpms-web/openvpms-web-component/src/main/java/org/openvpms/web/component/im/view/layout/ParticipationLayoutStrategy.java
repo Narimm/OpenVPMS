@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view.layout;
@@ -41,6 +41,13 @@ public class ParticipationLayoutStrategy extends AbstractLayoutStrategy {
     private static final ArchetypeNodes NODES = new ArchetypeNodes(false, false).simple("entity");
 
     /**
+     * Constructs a {@link ParticipationLayoutStrategy}.
+     */
+    public ParticipationLayoutStrategy() {
+        super(NODES);
+    }
+
+    /**
      * Lays out the child components.
      * <p/>
      * If there is only one component, this will be rendered inline without any label.
@@ -65,13 +72,4 @@ public class ParticipationLayoutStrategy extends AbstractLayoutStrategy {
         }
     }
 
-    /**
-     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-     *
-     * @return the archetype nodes
-     */
-    @Override
-    protected ArchetypeNodes getArchetypeNodes() {
-        return NODES;
-    }
 }

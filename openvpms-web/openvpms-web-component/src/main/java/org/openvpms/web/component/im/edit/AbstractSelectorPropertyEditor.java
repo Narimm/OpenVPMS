@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -89,17 +89,7 @@ public abstract class AbstractSelectorPropertyEditor<T extends IMObject> extends
         super(property);
         this.context = new DefaultLayoutContext(context, context.getHelpContext().subtopic("select"));
 
-        selector = new IMObjectSelector<T>(property, allowCreate, this.context) {
-            @Override
-            protected Query<T> createQuery(String name) {
-                return AbstractSelectorPropertyEditor.this.createQuery(name);
-            }
-
-            @Override
-            protected Browser<T> createBrowser(Query<T> query) {
-                return AbstractSelectorPropertyEditor.this.createBrowser(query);
-            }
-        };
+        selector = createSelector(property, this.context, allowCreate);
         selector.setListener(new IMObjectSelectorListener<T>() {
             public void selected(T object) {
                 inListener = true;
@@ -150,7 +140,7 @@ public abstract class AbstractSelectorPropertyEditor<T extends IMObject> extends
      *
      * @param object the object. May  be {@code null}
      * @return {@code true} if the value was set, {@code false} if it cannot be set due to error, or is the same as
-     *         the existing value
+     * the existing value
      */
     public boolean setObject(T object) {
         if (!inListener) {
@@ -175,6 +165,28 @@ public abstract class AbstractSelectorPropertyEditor<T extends IMObject> extends
      */
     public FocusGroup getFocusGroup() {
         return selector.getFocusGroup();
+    }
+
+    /**
+     * Creates a new selector.
+     *
+     * @param property    the property
+     * @param context     the layout context
+     * @param allowCreate determines if objects may be created
+     * @return a new selector
+     */
+    protected IMObjectSelector<T> createSelector(final Property property, LayoutContext context, final boolean allowCreate) {
+        return new IMObjectSelector<T>(property, allowCreate, context) {
+            @Override
+            protected Query<T> createQuery(String name) {
+                return AbstractSelectorPropertyEditor.this.createQuery(name);
+            }
+
+            @Override
+            protected Browser<T> createBrowser(Query<T> query) {
+                return AbstractSelectorPropertyEditor.this.createBrowser(query);
+            }
+        };
     }
 
     /**
@@ -232,19 +244,13 @@ public abstract class AbstractSelectorPropertyEditor<T extends IMObject> extends
      *
      * @param object the object. May be {@code null}
      * @return {@code true} if the value was set, {@code false} if it cannot be set due to error, or is the same as
-     *         the existing value
+     * the existing value
      */
     protected boolean updateProperty(T object) {
-        boolean modified = false;
-        removeModifiableListener(propertyListener);
-        try {
-            Property property = getProperty();
-            modified = updateProperty(property, object);
-            if (modified) {
-                resetValid();
-            }
-        } finally {
-            addModifiableListener(propertyListener);
+        Property property = getProperty();
+        boolean modified = updateProperty(property, object);
+        if (modified) {
+            resetValid();
         }
         return modified;
     }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.lookup;
@@ -237,7 +237,7 @@ public abstract class AbstractLookupService implements ILookupService {
         Object value = descriptor.getValue(object);
         if (value != null) {
             LookupAssertion assertion = LookupAssertionFactory.create(descriptor, service, this);
-            result = assertion.getLookup(object, (String) value);
+            result = assertion.getLookup(object, value.toString());
         }
         return result;
     }
@@ -315,7 +315,7 @@ public abstract class AbstractLookupService implements ILookupService {
         query.setMaxResults(1000);
         query.add(new NodeSortConstraint("id"));
         Iterator<Lookup> iter = new IMObjectQueryIterator(service, query);
-        List<Lookup> result = new ArrayList<Lookup>();
+        List<Lookup> result = new ArrayList<>();
         while (iter.hasNext()) {
             result.add(iter.next());
         }
@@ -342,7 +342,7 @@ public abstract class AbstractLookupService implements ILookupService {
             Collection<LookupRelationship> relationships) {
         Collection<Lookup> result;
         if (!relationships.isEmpty()) {
-            result = new ArrayList<Lookup>();
+            result = new ArrayList<>();
             for (LookupRelationship relationship : relationships) {
                 Lookup source = getLookup(relationship.getSource());
                 if (source != null) {
@@ -365,7 +365,7 @@ public abstract class AbstractLookupService implements ILookupService {
             Collection<LookupRelationship> relationships) {
         Collection<Lookup> result;
         if (!relationships.isEmpty()) {
-            result = new ArrayList<Lookup>();
+            result = new ArrayList<>();
             for (LookupRelationship relationship : relationships) {
                 Lookup target = getLookup(relationship.getTarget());
                 if (target != null) {
@@ -391,7 +391,7 @@ public abstract class AbstractLookupService implements ILookupService {
         for (LookupRelationship relationship : relationships) {
             if (TypeHelper.isA(relationship, shortName)) {
                 if (result == null) {
-                    result = new ArrayList<LookupRelationship>();
+                    result = new ArrayList<>();
                 }
                 result.add(relationship);
             }

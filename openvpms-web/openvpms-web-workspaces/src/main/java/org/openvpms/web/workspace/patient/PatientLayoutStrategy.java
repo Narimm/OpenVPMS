@@ -83,10 +83,6 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
      */
     private boolean hideCustomFields;
 
-    /**
-     * The nodes to display.
-     */
-    private ArchetypeNodes nodes;
 
     /**
      * Constructs a {@link PatientLayoutStrategy} to view a patient.
@@ -165,6 +161,7 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
                 addComponent(createComponent(newBreed, object, context));
             }
         }
+        ArchetypeNodes nodes;
         if (hideCustomFields || !hasCustomFields(object)) {
             nodes = new ArchetypeNodes(NO_CUSTOM_NODES);
         } else {
@@ -173,6 +170,7 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
         if (!show) {
             nodes.exclude("newBreed");
         }
+        setArchetypeNodes(nodes);
         return super.apply(object, properties, parent, context);
     }
 
@@ -225,16 +223,6 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
         if ("customFields".equals(property.getName())) {
             customFieldsTab = model.size() - 1;
         }
-    }
-
-    /**
-     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-     *
-     * @return the archetype nodes
-     */
-    @Override
-    protected ArchetypeNodes getArchetypeNodes() {
-        return nodes;
     }
 
     /**

@@ -95,4 +95,9 @@ public class ProductArchetypes {
      * Template product include relationship
      */
     public static final String PRODUCT_INCLUDES = "entityLink.productIncludes";
+
+    /**
+     * Product dose short name.
+     */
+    public static final String DOSE = "entity.productDose";
 }

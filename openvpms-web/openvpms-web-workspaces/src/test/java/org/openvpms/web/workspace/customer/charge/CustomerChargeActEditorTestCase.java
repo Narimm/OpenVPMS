@@ -25,8 +25,10 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.finance.discount.DiscountTestHelper;
+import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.patient.InvestigationActStatus;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
+import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.patient.prescription.PrescriptionTestHelper;
 import org.openvpms.archetype.rules.patient.reminder.ReminderStatus;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
@@ -61,6 +63,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 import static java.math.BigDecimal.ONE;
@@ -73,6 +76,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.MEDICATION;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.SERVICE;
+import static org.openvpms.archetype.rules.product.ProductTestHelper.addDose;
+import static org.openvpms.archetype.rules.product.ProductTestHelper.createDose;
 import static org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelper.checkOrder;
 import static org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelper.createLaboratory;
 import static org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelper.createPharmacy;
@@ -561,7 +566,6 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         checkBalance(customer, ZERO, ZERO);
     }
 
-
     /**
      * Verifies that the {@link CustomerChargeActEditor#delete()} method deletes a credit and its item.
      */
@@ -1003,7 +1007,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      */
     private void checkTemplateExpansion(String shortName, int childActs) {
         BigDecimal fixedPrice = ONE;
-        Entity discount = DiscountTestHelper.createDiscount(BigDecimal.TEN, true, DiscountRules.PERCENTAGE);
+        Entity discount = DiscountTestHelper.createDiscount(TEN, true, DiscountRules.PERCENTAGE);
 
         Product template = ProductTestHelper.createTemplate("templateA");
         Product product1 = createProduct(MEDICATION, fixedPrice);
@@ -1276,9 +1280,9 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         assertTrue(editor.isValid());
 
         BigDecimal quantity1 = BigDecimal.valueOf(5);
-        BigDecimal quantity2 = BigDecimal.TEN;
+        BigDecimal quantity2 = TEN;
         BigDecimal quantity4a = BigDecimal.ONE;
-        BigDecimal quantity4b = BigDecimal.TEN;
+        BigDecimal quantity4b = TEN;
         BigDecimal quantity4 = quantity4a.add(quantity4b);
 
         CustomerChargeActItemEditor item1 = addItem(editor, patient, product1, quantity1, editor.getQueue());
@@ -1326,6 +1330,9 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         layoutContext.getContext().setLocation(location);
         layoutContext.getContext().setStockLocation(stockLocation);
 
+        // add a patient weight
+        PatientTestHelper.createWeight(patient, new Date(), new BigDecimal("4.2"), WeightUnits.KILOGRAMS);
+
         BigDecimal quantity = BigDecimal.valueOf(1);
         BigDecimal fixedPrice = BigDecimal.valueOf(11);
         BigDecimal discount = ZERO;
@@ -1335,6 +1342,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         BigDecimal total = itemTotal.multiply(BigDecimal.valueOf(3));
 
         Product product1 = createProduct(MEDICATION, fixedPrice);
+        addDose(product1, createDose(null, ZERO, TEN, ONE, ONE));
         Product product2 = createProduct(ProductArchetypes.MERCHANDISE, fixedPrice);
         Product product3 = createProduct(ProductArchetypes.SERVICE, fixedPrice);
         Product template = createProduct(ProductArchetypes.TEMPLATE);
@@ -1346,7 +1354,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
         editor.getComponent();
-        CustomerChargeTestHelper.addItem(editor, patient, template, ONE, editor.getQueue());
+        CustomerChargeTestHelper.addItem(editor, patient, template, null, editor.getQueue());
 
         boolean invoice = TypeHelper.isA(charge, CustomerAccountArchetypes.INVOICE);
         int product1Acts = 0;     // expected child acts for product1
@@ -1371,8 +1379,15 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             assertNull(event);
         }
 
-        checkItem(items, patient, product1, template, author, clinician, quantity, ZERO, ZERO,
-                  ZERO, fixedPrice, discount, itemTax, itemTotal, event, product1Acts);
+        if (TypeHelper.isA(charge, CustomerAccountArchetypes.COUNTER)) {
+            checkItem(items, patient, product1, template, author, clinician, quantity, ZERO, ZERO,
+                      ZERO, fixedPrice, discount, itemTax, itemTotal, event, product1Acts);
+        } else {
+            // quantity derived from the product dose. As there is no unit price, the totals don't change
+            checkItem(items, patient, product1, template, author, clinician, new BigDecimal("4.2"), ZERO, ZERO,
+                      ZERO, fixedPrice, discount, itemTax, itemTotal, event, product1Acts);
+        }
+
         checkItem(items, patient, product2, template, author, clinician, quantity, ZERO, ZERO,
                   ZERO, fixedPrice, discount, itemTax, itemTotal, event, 0);
         checkItem(items, patient, product3, template, author, clinician, quantity, ZERO, ZERO,

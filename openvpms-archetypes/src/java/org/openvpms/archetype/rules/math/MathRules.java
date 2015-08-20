@@ -165,4 +165,29 @@ public class MathRules {
         throw new IllegalArgumentException("Unsupported weight units for argument 'to': " + to);
     }
 
+    /**
+     * Determines if two numeric ranges intersect.
+     *
+     * @param from1 the start of the first range. May be {@code null}
+     * @param to1   the end of the first range. May be {@code null}
+     * @param from2 the start of the date range. May be {@code null}
+     * @param to2   the end of the date range. May be {@code null}
+     * @return {@code true} if the ranges intersect
+     */
+    public static boolean intersects(BigDecimal from1, BigDecimal to1, BigDecimal from2, BigDecimal to2) {
+        if (from1 == null && to1 == null) {
+            return true;
+        } else if (from1 == null) {
+            return from2 == null || to1.compareTo(from2) > 0;
+        } else if (to1 == null) {
+            return to2 == null || from1.compareTo(to2) < 0;
+        } else if (from2 == null && to2 == null) {
+            return true;
+        } else if (from2 == null) {
+            return from1.compareTo(to2) < 0;
+        } else if (to2 == null) {
+            return to1.compareTo(from2) > 0;
+        }
+        return from2.compareTo(to1) < 0 && to2.compareTo(from1) > 0;
+    }
 }

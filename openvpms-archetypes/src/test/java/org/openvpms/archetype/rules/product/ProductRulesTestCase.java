@@ -11,19 +11,22 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.math.Weight;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -35,11 +38,17 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.ZERO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.rules.math.MathRules.ONE_HUNDRED;
+import static org.openvpms.archetype.rules.product.ProductTestHelper.createDose;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 import static org.openvpms.archetype.test.TestHelper.getDatetime;
 
@@ -70,9 +79,14 @@ public class ProductRulesTestCase extends AbstractProductTest {
         ProductSupplier ps = rules.createProductSupplier(product, supplier);
         save(Arrays.asList(product, supplier));
 
+        // add a dose. This should be copied.
+        Lookup species = TestHelper.getLookup(PatientArchetypes.SPECIES, "CANINE");
+        Entity dose = createDose(species, ZERO, TEN, ONE, ONE);
+        ProductTestHelper.addDose(product, dose);
+
         Party stockLocation = (Party) create(StockArchetypes.STOCK_LOCATION);
         stockLocation.setName("STOCK-LOCATION-" + stockLocation.hashCode());
-        stockRules.updateStock(product, stockLocation, BigDecimal.TEN);
+        stockRules.updateStock(product, stockLocation, TEN);
 
         // add a linked product. This should *not* be copied
         Product linked = TestHelper.createProduct(ProductArchetypes.PRICE_TEMPLATE, null);
@@ -89,8 +103,17 @@ public class ProductRulesTestCase extends AbstractProductTest {
         assertEquals(product.getArchetypeId(), copy.getArchetypeId());
         assertEquals(name, copy.getName());
 
-        // verify the copy refers to the same stock location
+        // verify the copy has a different dose
         EntityBean copyBean = new EntityBean(copy);
+        List<Entity> doses = copyBean.getNodeTargetObjects("doses", Entity.class);
+        assertEquals(1, doses.size());
+        assertNotEquals(doses.get(0), dose);
+
+        // verify the dose species is identical
+        Lookup species2 = doses.get(0).getClassifications().iterator().next();
+        assertEquals(species.getId(), species2.getId());
+
+        // verify the copy refers to the same stock location
         assertEquals(copyBean.getNodeTargetEntity("stockLocations"), stockLocation);
 
         // verify the product price has been copied
@@ -115,7 +138,59 @@ public class ProductRulesTestCase extends AbstractProductTest {
         assertEquals(linked.getObjectReference(), linkedRefs.get(0));
 
         // stock quantity should not be copied
-        checkEquals(BigDecimal.ZERO, stockRules.getStock(copy, stockLocation));
+        checkEquals(ZERO, stockRules.getStock(copy, stockLocation));
+    }
+
+    /**
+     * Tests the {@link ProductRules#getDose(Product, Weight, String)} method.
+     */
+    @Test
+    public void testGetDose() {
+        Product product = TestHelper.createProduct();
+
+        Lookup canine = TestHelper.getLookup(PatientArchetypes.SPECIES, "CANINE");
+        Lookup feline = TestHelper.getLookup(PatientArchetypes.SPECIES, "FELINE");
+
+        Entity dose1 = createDose(canine, ZERO, TEN, BigDecimal.valueOf(2), ONE);
+        Entity dose2 = createDose(feline, ZERO, TEN, ONE, ONE);
+        Entity dose3 = createDose(null, TEN, BigDecimal.valueOf(20), BigDecimal.valueOf(3), ONE);
+        ProductTestHelper.addDose(product, dose1);
+        ProductTestHelper.addDose(product, dose2);
+        ProductTestHelper.addDose(product, dose3);
+
+        checkEquals(new BigDecimal("0.5"), rules.getDose(product, new Weight(1), "CANINE"));
+        checkEquals(1, rules.getDose(product, new Weight(1), "FELINE"));
+
+        checkEquals(new BigDecimal("3.33"), rules.getDose(product, new Weight(10), "CANINE"));
+        checkEquals(ZERO, rules.getDose(product, new Weight(20), "FELINE"));
+
+        // check null species
+        checkEquals(ZERO, rules.getDose(product, new Weight(1), null));
+        checkEquals(new BigDecimal("3.33"), rules.getDose(product, new Weight(10), null));
+        checkEquals(ZERO, rules.getDose(product, new Weight(20), null));
+    }
+
+    /**
+     * Verifies that {@link ProductRules#getDose(Product, Weight, String)} rounds doses correctly.
+     */
+    @Test
+    public void testGetDoseRounding() {
+        Product product1 = TestHelper.createProduct();
+        Product product2 = TestHelper.createProduct();
+        Product product3 = TestHelper.createProduct();
+
+        BigDecimal concentration = BigDecimal.valueOf(50);
+        BigDecimal rate = BigDecimal.valueOf(4);
+
+        // use the same concentration and date, but round to different no. of places for each weight range
+        ProductTestHelper.addDose(product1, createDose(null, ZERO, ONE_HUNDRED, concentration, rate, 0));
+        ProductTestHelper.addDose(product2, createDose(null, ZERO, ONE_HUNDRED, concentration, rate, 1));
+        ProductTestHelper.addDose(product3, createDose(null, ZERO, ONE_HUNDRED, concentration, rate, 2));
+
+        Weight weight = new Weight(new BigDecimal("15.5"));
+        checkEquals(1, rules.getDose(product1, weight, "CANINE"));
+        checkEquals(new BigDecimal("1.2"), rules.getDose(product2, weight, "CANINE"));
+        checkEquals(new BigDecimal("1.24"), rules.getDose(product3, weight, "CANINE"));
     }
 
     /**

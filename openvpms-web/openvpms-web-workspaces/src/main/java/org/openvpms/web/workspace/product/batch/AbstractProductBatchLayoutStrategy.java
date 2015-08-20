@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.batch;
@@ -40,6 +40,13 @@ public abstract class AbstractProductBatchLayoutStrategy extends AbstractLayoutS
     private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude("product");
 
     /**
+     * Constructs an {@link AbstractProductBatchLayoutStrategy}.
+     */
+    public AbstractProductBatchLayoutStrategy() {
+        super(NODES);
+    }
+
+    /**
      * @param object     the object to lay out
      * @param properties the object's properties
      * @param parent     the parent object. May be {@code null}
@@ -60,16 +67,6 @@ public abstract class AbstractProductBatchLayoutStrategy extends AbstractLayoutS
         }
         doSimpleLayout(object, parent, simple, container, context);
         doComplexLayout(object, parent, complex, container, context);
-    }
-
-    /**
-     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-     *
-     * @return the archetype nodes
-     */
-    @Override
-    protected ArchetypeNodes getArchetypeNodes() {
-        return NODES;
     }
 
 }
