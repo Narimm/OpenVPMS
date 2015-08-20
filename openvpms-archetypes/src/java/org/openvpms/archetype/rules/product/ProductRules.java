@@ -146,11 +146,11 @@ public class ProductRules {
             }
             if (match != null) {
                 BigDecimal converted = weight.convert(matchUnits);
-                BigDecimal concentration = match.getBigDecimal("concentration", BigDecimal.ZERO);
                 BigDecimal rate = match.getBigDecimal("rate", BigDecimal.ZERO);
+                BigDecimal concentration = match.getBigDecimal("concentration", BigDecimal.ZERO);
                 int places = match.getInt("roundTo");
                 if (!isZero(concentration) && !isZero(rate)) {
-                    result = converted.multiply(concentration).divide(rate, places, RoundingMode.HALF_UP);
+                    result = converted.multiply(rate).divide(concentration, places, RoundingMode.HALF_UP);
                 }
             }
         }

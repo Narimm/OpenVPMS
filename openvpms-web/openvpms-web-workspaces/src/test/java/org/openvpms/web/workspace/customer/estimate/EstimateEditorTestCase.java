@@ -106,7 +106,7 @@ public class EstimateEditorTestCase extends AbstractEstimateEditorTestCase {
         Product product3 = createProduct(MEDICATION, fixedPrice, unitPrice);
         addDiscount(product3, discount);
         addDiscount(customer, discount);                           // give customer a discount for product3
-        ProductTestHelper.addInclude(template, product1, 1, 2, false);
+        ProductTestHelper.addInclude(template, product1, 0, 2, false); // low quantity is zero, so dose should be 0
         ProductTestHelper.addInclude(template, product2, 2, 4, false);
         ProductTestHelper.addInclude(template, product3, 3, 6, true); // zero price
 
@@ -132,9 +132,9 @@ public class EstimateEditorTestCase extends AbstractEstimateEditorTestCase {
         BigDecimal three = BigDecimal.valueOf(3);
         BigDecimal five = BigDecimal.valueOf(5);
 
-        checkEstimate(estimate, customer, author, new BigDecimal("8.20"), new BigDecimal("10.20"));
-        checkItem(items, patient, product1, author, new BigDecimal("4.2"), new BigDecimal("4.2"), unitPrice, unitPrice,
-                  fixedPrice, ZERO, ZERO, new BigDecimal("5.20"), new BigDecimal("5.20"));
+        checkEstimate(estimate, customer, author, new BigDecimal("4.00"), new BigDecimal("10.20"));
+        checkItem(items, patient, product1, author, ZERO, new BigDecimal("4.2"), unitPrice, unitPrice,
+                  fixedPrice, ZERO, ZERO, ONE, new BigDecimal("5.20"));
         checkItem(items, patient, product2, author, 2, 4, unitPrice, unitPrice, fixedPrice, ZERO, ZERO, three, five);
         checkItem(items, patient, product3, author, 3, 6, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO);
     }

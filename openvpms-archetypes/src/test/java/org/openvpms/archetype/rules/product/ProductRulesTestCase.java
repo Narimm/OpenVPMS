@@ -47,6 +47,8 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.rules.math.MathRules.ONE_HUNDRED;
+import static org.openvpms.archetype.rules.product.ProductTestHelper.createDose;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 import static org.openvpms.archetype.test.TestHelper.getDatetime;
 
@@ -79,7 +81,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
 
         // add a dose. This should be copied.
         Lookup species = TestHelper.getLookup(PatientArchetypes.SPECIES, "CANINE");
-        Entity dose = ProductTestHelper.createDose(species, ZERO, TEN, ONE, ONE);
+        Entity dose = createDose(species, ZERO, TEN, ONE, ONE);
         ProductTestHelper.addDose(product, dose);
 
         Party stockLocation = (Party) create(StockArchetypes.STOCK_LOCATION);
@@ -149,23 +151,46 @@ public class ProductRulesTestCase extends AbstractProductTest {
         Lookup canine = TestHelper.getLookup(PatientArchetypes.SPECIES, "CANINE");
         Lookup feline = TestHelper.getLookup(PatientArchetypes.SPECIES, "FELINE");
 
-        Entity dose1 = ProductTestHelper.createDose(canine, ZERO, TEN, BigDecimal.valueOf(2), ONE);
-        Entity dose2 = ProductTestHelper.createDose(feline, ZERO, TEN, ONE, ONE);
-        Entity dose3 = ProductTestHelper.createDose(null, TEN, BigDecimal.valueOf(20), BigDecimal.valueOf(3), ONE);
+        Entity dose1 = createDose(canine, ZERO, TEN, BigDecimal.valueOf(2), ONE);
+        Entity dose2 = createDose(feline, ZERO, TEN, ONE, ONE);
+        Entity dose3 = createDose(null, TEN, BigDecimal.valueOf(20), BigDecimal.valueOf(3), ONE);
         ProductTestHelper.addDose(product, dose1);
         ProductTestHelper.addDose(product, dose2);
         ProductTestHelper.addDose(product, dose3);
 
-        checkEquals(2, rules.getDose(product, new Weight(1), "CANINE"));
-        checkEquals(ONE, rules.getDose(product, new Weight(1), "FELINE"));
+        checkEquals(new BigDecimal("0.5"), rules.getDose(product, new Weight(1), "CANINE"));
+        checkEquals(1, rules.getDose(product, new Weight(1), "FELINE"));
 
-        checkEquals(30, rules.getDose(product, new Weight(10), "CANINE"));
+        checkEquals(new BigDecimal("3.33"), rules.getDose(product, new Weight(10), "CANINE"));
         checkEquals(ZERO, rules.getDose(product, new Weight(20), "FELINE"));
 
         // check null species
         checkEquals(ZERO, rules.getDose(product, new Weight(1), null));
-        checkEquals(30, rules.getDose(product, new Weight(10), null));
+        checkEquals(new BigDecimal("3.33"), rules.getDose(product, new Weight(10), null));
         checkEquals(ZERO, rules.getDose(product, new Weight(20), null));
+    }
+
+    /**
+     * Verifies that {@link ProductRules#getDose(Product, Weight, String)} rounds doses correctly.
+     */
+    @Test
+    public void testGetDoseRounding() {
+        Product product1 = TestHelper.createProduct();
+        Product product2 = TestHelper.createProduct();
+        Product product3 = TestHelper.createProduct();
+
+        BigDecimal concentration = BigDecimal.valueOf(50);
+        BigDecimal rate = BigDecimal.valueOf(4);
+
+        // use the same concentration and date, but round to different no. of places for each weight range
+        ProductTestHelper.addDose(product1, createDose(null, ZERO, ONE_HUNDRED, concentration, rate, 0));
+        ProductTestHelper.addDose(product2, createDose(null, ZERO, ONE_HUNDRED, concentration, rate, 1));
+        ProductTestHelper.addDose(product3, createDose(null, ZERO, ONE_HUNDRED, concentration, rate, 2));
+
+        Weight weight = new Weight(new BigDecimal("15.5"));
+        checkEquals(1, rules.getDose(product1, weight, "CANINE"));
+        checkEquals(new BigDecimal("1.2"), rules.getDose(product2, weight, "CANINE"));
+        checkEquals(new BigDecimal("1.24"), rules.getDose(product3, weight, "CANINE"));
     }
 
     /**
