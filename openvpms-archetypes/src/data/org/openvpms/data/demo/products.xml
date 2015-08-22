@@ -14,12 +14,6 @@
   ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
-<!--
-  ~ Version: 1.0
-  ~
-  ~ Copyright 2013 (C) Vetwest Pty Ltd. All Rights Reserved.
-  -->
-
 <archetype>
     <data id="MERCH" archetype="lookup.productGroup" code="MERCHANDISE"/>
     <data id="DRUGS" archetype="lookup.productGroup" code="DRUGS"/>
@@ -75,6 +69,7 @@
           activeIngredients="10mg/ml" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="ACEP10IN"/>
         <data collection="prices" archetype="productPrice.unitPrice" cost="0.20" price="0.50"/>
+        <data collection="prices" archetype="productPrice.fixedPrice" price="10.00"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
         <data collection="type" archetype="entityRelationship.productTypeProduct" target="id:P4"
               source="id:Medications"/>
@@ -96,6 +91,7 @@
           activeIngredients="2mg/ml" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="ACEP2IN"/>
         <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
+        <data collection="prices" archetype="productPrice.fixedPrice" price="10.00"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
         <data collection="type" archetype="entityRelationship.productTypeProduct" target="id:P6"
               source="id:Medications"/>
@@ -117,6 +113,7 @@
           activeIngredients="" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="ADENIN"/>
         <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
+        <data collection="prices" archetype="productPrice.fixedPrice" price="10.00"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
         <data collection="type" archetype="entityRelationship.productTypeProduct" target="id:P8"
               source="id:Medications"/>
@@ -137,6 +134,7 @@
           activeIngredients="" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="ADREIN"/>
         <data collection="prices" archetype="productPrice.unitPrice" cost="1.60" price="3.20"/>
+        <data collection="prices" archetype="productPrice.fixedPrice" price="10.00"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
         <data collection="type" archetype="entityRelationship.productTypeProduct" target="id:P10"
               source="id:Medications"/>
@@ -147,6 +145,7 @@
           activeIngredients="100mg/ml" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="ALAM10"/>
         <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
+        <data collection="prices" archetype="productPrice.fixedPrice" price="10.00"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
         <data collection="type" archetype="entityRelationship.productTypeProduct" target="id:P11"
               source="id:Medications"/>
@@ -222,6 +221,7 @@
           activeIngredients="200mg/ml" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="AMOXLA"/>
         <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
+        <data collection="prices" archetype="productPrice.fixedPrice" price="10.00"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
         <data collection="type" archetype="entityRelationship.productTypeProduct" target="id:P18"
               source="id:Medications"/>
@@ -232,6 +232,7 @@
           activeIngredients="" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="AMOXRT"/>
         <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
+        <data collection="prices" archetype="productPrice.fixedPrice" price="10.00"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
         <data collection="type" archetype="entityRelationship.productTypeProduct" target="id:P19"
               source="id:Medications"/>
@@ -302,6 +303,7 @@
           activeIngredients="" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="ANADIN"/>
         <data collection="prices" archetype="productPrice.unitPrice" cost="0.05" price="0.10"/>
+        <data collection="prices" archetype="productPrice.fixedPrice" price="10.00"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
         <data collection="type" archetype="entityRelationship.productTypeProduct" target="id:P26"
               source="id:Medications"/>
@@ -534,7 +536,8 @@
     <data id="P55" archetype="product.medication" name="Benacillin Injection" printedName="" drugSchedule="S4"
           activeIngredients="" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="BENAIN"/>
-        <data collection="prices" archetype="productPrice.unitPrice" price="0.00"/>
+        <data collection="prices" archetype="productPrice.unitPrice" price="3.20"/>
+        <data collection="prices" archetype="productPrice.fixedPrice" price="10.00"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
         <data collection="type" archetype="entityRelationship.productTypeProduct" target="id:P55"
               source="id:Medications"/>
@@ -573,6 +576,7 @@
           activeIngredients="" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="BIMOIN"/>
         <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.fixedPrice" price="10.00"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
         <data collection="type" archetype="entityRelationship.productTypeProduct" target="id:P60"
               source="id:Medications"/>
@@ -588,6 +592,7 @@
           activeIngredients="" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="BIODIN"/>
         <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.fixedPrice" price="10.00"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
         <data collection="type" archetype="entityRelationship.productTypeProduct" target="id:P62"
               source="id:Medications"/>
@@ -870,6 +875,7 @@
           activeIngredients="" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="CARTIN"/>
         <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.fixedPrice" price="10.00"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
         <data collection="type" archetype="entityRelationship.productTypeProduct" target="id:P97"
               source="id:Medications"/>
@@ -1104,6 +1110,7 @@
           activeIngredients="1500iu Chorionic Gonadotrophin" sellingUnits="MLS">
         <data collection="identities" archetype="entityIdentity.code" code="CHOR1500"/>
         <data collection="prices" archetype="productPrice.unitPrice" price="0.10"/>
+        <data collection="prices" archetype="productPrice.fixedPrice" price="10.00"/>
         <data collection="classifications" archetype="lookup.productGroup" childId="id:DRUGS"/>
         <data collection="type" archetype="entityRelationship.productTypeProduct" target="id:P128"
               source="id:Medications"/>
@@ -6824,19 +6831,25 @@
     <data id="P869" archetype="product.medication" name="Carprofen Tablets 20mg">
         <data collection="type" archetype="entityRelationship.productTypeProduct" target="id:P869"
               source="id:Medications"/>
+        <data collection="prices" archetype="productPrice.unitPrice" price="1.10"/>
     </data>
     <data id="P870" archetype="product.medication" name="Carprofen Tablets 50mg">
         <data collection="type" archetype="entityRelationship.productTypeProduct" target="id:P870"
               source="id:Medications"/>
+        <data collection="prices" archetype="productPrice.unitPrice" price="1.48"/>
     </data>
-    <data id="P871" archetype="product.merchandise" name="Elizabethan Collar 15cm"/>
+    <data id="P871" archetype="product.merchandise" name="Elizabethan Collar 15cm">
+        <data collection="prices" archetype="productPrice.unitPrice" price="6.30"/>
+    </data>
     <data id="P872" archetype="product.medication" name="Ketamine 100mg">
         <data collection="type" archetype="entityRelationship.productTypeProduct" target="id:P872"
               source="id:Medications"/>
+        <data collection="prices" archetype="productPrice.unitPrice" price="1.10"/>
     </data>
     <data id="P873" archetype="product.medication" name="Methadone 10mg/ml">
         <data collection="type" archetype="entityRelationship.productTypeProduct" target="id:P873"
               source="id:Medications"/>
+        <data collection="prices" archetype="productPrice.unitPrice" price="4.95"/>
     </data>
     <data id="P880" archetype="product.template" name="Desex - Dog">
         <data collection="includes" archetype="entityLink.productIncludes" source="id:P880" target="id:P866"
