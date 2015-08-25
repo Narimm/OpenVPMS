@@ -31,6 +31,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -100,13 +101,15 @@ public class EstimateEditorTestCase extends AbstractEstimateEditorTestCase {
 
         // product1 has a dose, which should be selected over the template include quantity
         Product product1 = createProduct(MEDICATION, fixedPrice, unitPrice);
-        ProductTestHelper.addDose(product1, ProductTestHelper.createDose(null, ZERO, TEN, ONE, ONE));
+        IMObjectBean productBean = new IMObjectBean(product1);
+        productBean.setValue("concentration", ONE);
+        ProductTestHelper.addDose(product1, ProductTestHelper.createDose(null, ZERO, TEN, ONE));
 
         Product product2 = createProduct(MEDICATION, fixedPrice, unitPrice);
         Product product3 = createProduct(MEDICATION, fixedPrice, unitPrice);
         addDiscount(product3, discount);
         addDiscount(customer, discount);                           // give customer a discount for product3
-        ProductTestHelper.addInclude(template, product1, 0, 2, false); // low quantity is zero, so dose should be 0
+        ProductTestHelper.addInclude(template, product1, 0, 2, false);
         ProductTestHelper.addInclude(template, product2, 2, 4, false);
         ProductTestHelper.addInclude(template, product3, 3, 6, true); // zero price
 

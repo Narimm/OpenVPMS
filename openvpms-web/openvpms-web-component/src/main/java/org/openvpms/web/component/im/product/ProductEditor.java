@@ -45,6 +45,7 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.resource.i18n.Messages;
@@ -76,6 +77,11 @@ public class ProductEditor extends AbstractIMObjectEditor {
      * The product price updater.
      */
     private ProductPriceUpdater updater;
+
+    /**
+     * Concentration node.
+     */
+    private static final String CONCENTRATION = "concentration";
 
     /**
      * Prices node.
@@ -282,49 +288,82 @@ public class ProductEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Verifies that doses don't overlap on weight range.
+     * Verifies that if there are doses, a concentration is required and that doses don't overlap on weight range.
      *
      * @param validator the validator
      * @return {@code true} if the doses are valid, or the product has no doses
      */
     private boolean validateDoses(Validator validator) {
+        boolean result = true;
         EditableIMObjectCollectionEditor editor = (EditableIMObjectCollectionEditor) getEditor(DOSES);
         if (editor != null) {
-            Lookup all = new Lookup(); // dummy to indicate the dose applies to all species.
-            Map<Lookup, List<IMObject>> dosesBySpecies = new LinkedHashMap<>();
-            for (IMObject dose : editor.getCurrentObjects()) {
-                IMObjectBean bean = new IMObjectBean(dose);
-                List<Lookup> values = bean.getValues("species", Lookup.class);
-                Lookup species = !values.isEmpty() ? values.get(0) : all;
-                List<IMObject> doses = dosesBySpecies.get(species);
-                if (doses == null) {
-                    doses = new ArrayList<>();
-                    dosesBySpecies.put(species, doses);
-                }
-                doses.add(dose);
+            result = validateConcentration(editor, validator) && validateDoses(editor, validator);
+        }
+        return result;
+    }
+
+    /**
+     * Verifies a concentration has been specified if there are doses.
+     *
+     * @param doses     the doses editor
+     * @param validator the validator
+     * @return {@code true} if a concentration has been specified no concentration is required, otherwise {@code false}
+     */
+    private boolean validateConcentration(EditableIMObjectCollectionEditor doses, Validator validator) {
+        boolean result = true;
+        if (!doses.getCurrentObjects().isEmpty()) {
+            Property property = getProperty(CONCENTRATION);
+            BigDecimal concentration = property.getBigDecimal(BigDecimal.ZERO);
+            if (MathRules.isZero(concentration)) {
+                result = false;
+                validator.add(this, new ValidatorError(Messages.format("product.concentration.required")));
             }
-            for (Map.Entry<Lookup, List<IMObject>> entry : dosesBySpecies.entrySet()) {
-                List<IMObject> doses = new ArrayList<>(entry.getValue());
-                while (doses.size() > 1) {
-                    IMObjectBean dose = new IMObjectBean(doses.remove(0));
-                    BigDecimal minWeight = dose.getBigDecimal(MIN_WEIGHT, BigDecimal.ZERO);
-                    BigDecimal maxWeight = dose.getBigDecimal(MAX_WEIGHT, BigDecimal.ZERO);
-                    WeightUnits units = WeightUnits.fromString(dose.getString(WEIGHT_UNITS));
-                    for (IMObject otherDose : doses) {
-                        IMObjectBean other = new IMObjectBean(otherDose);
-                        BigDecimal otherMinWeight = other.getBigDecimal(MIN_WEIGHT, BigDecimal.ZERO);
-                        BigDecimal otherMaxWeight = other.getBigDecimal(MAX_WEIGHT, BigDecimal.ZERO);
-                        WeightUnits otherUnits = WeightUnits.fromString(other.getString(WEIGHT_UNITS));
-                        if (units != null && otherUnits != null && !units.equals(otherUnits)) {
-                            otherMinWeight = MathRules.convert(otherMinWeight, otherUnits, units);
-                            otherMaxWeight = MathRules.convert(otherMaxWeight, otherUnits, units);
-                        }
-                        if (MathRules.intersects(minWeight, maxWeight, otherMinWeight, otherMaxWeight)) {
-                            validator.add(this, new ValidatorError(Messages.format("product.dose.weightOverlap",
-                                                                                   dose.getObject().getName(),
-                                                                                   otherDose.getName())));
-                            return false;
-                        }
+        }
+        return result;
+    }
+
+    /**
+     * Verifies that doses don't overlap on weight range.
+     *
+     * @param editor    the dose editor
+     * @param validator the validator
+     * @return {@code true} if the doses are valid, otherwise {@code false}
+     */
+    private boolean validateDoses(EditableIMObjectCollectionEditor editor, Validator validator) {
+        Lookup all = new Lookup(); // dummy to indicate the dose applies to all species.
+        Map<Lookup, List<IMObject>> dosesBySpecies = new LinkedHashMap<>();
+        for (IMObject dose : editor.getCurrentObjects()) {
+            IMObjectBean bean = new IMObjectBean(dose);
+            List<Lookup> values = bean.getValues("species", Lookup.class);
+            Lookup species = !values.isEmpty() ? values.get(0) : all;
+            List<IMObject> doses = dosesBySpecies.get(species);
+            if (doses == null) {
+                doses = new ArrayList<>();
+                dosesBySpecies.put(species, doses);
+            }
+            doses.add(dose);
+        }
+        for (Map.Entry<Lookup, List<IMObject>> entry : dosesBySpecies.entrySet()) {
+            List<IMObject> doses = new ArrayList<>(entry.getValue());
+            while (doses.size() > 1) {
+                IMObjectBean dose = new IMObjectBean(doses.remove(0));
+                BigDecimal minWeight = dose.getBigDecimal(MIN_WEIGHT, BigDecimal.ZERO);
+                BigDecimal maxWeight = dose.getBigDecimal(MAX_WEIGHT, BigDecimal.ZERO);
+                WeightUnits units = WeightUnits.fromString(dose.getString(WEIGHT_UNITS));
+                for (IMObject otherDose : doses) {
+                    IMObjectBean other = new IMObjectBean(otherDose);
+                    BigDecimal otherMinWeight = other.getBigDecimal(MIN_WEIGHT, BigDecimal.ZERO);
+                    BigDecimal otherMaxWeight = other.getBigDecimal(MAX_WEIGHT, BigDecimal.ZERO);
+                    WeightUnits otherUnits = WeightUnits.fromString(other.getString(WEIGHT_UNITS));
+                    if (units != null && otherUnits != null && !units.equals(otherUnits)) {
+                        otherMinWeight = MathRules.convert(otherMinWeight, otherUnits, units);
+                        otherMaxWeight = MathRules.convert(otherMaxWeight, otherUnits, units);
+                    }
+                    if (MathRules.intersects(minWeight, maxWeight, otherMinWeight, otherMaxWeight)) {
+                        validator.add(this, new ValidatorError(Messages.format("product.dose.weightOverlap",
+                                                                               dose.getObject().getName(),
+                                                                               otherDose.getName())));
+                        return false;
                     }
                 }
             }

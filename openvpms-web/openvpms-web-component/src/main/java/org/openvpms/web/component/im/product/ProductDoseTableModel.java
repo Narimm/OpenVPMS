@@ -51,14 +51,9 @@ public class ProductDoseTableModel extends DescriptorTableModel<IMObject> {
     private static final int WEIGHT_INDEX = SPECIES_INDEX + 1;
 
     /**
-     * The concentration index.
-     */
-    private static final int CONCENTRATION_INDEX = WEIGHT_INDEX + 1;
-
-    /**
      * The rate index.
      */
-    private static final int RATE_INDEX = CONCENTRATION_INDEX + 1;
+    private static final int RATE_INDEX = WEIGHT_INDEX + 1;
 
 
     /**
@@ -122,7 +117,6 @@ public class ProductDoseTableModel extends DescriptorTableModel<IMObject> {
         DefaultTableColumnModel model = new DefaultTableColumnModel();
         model.addColumn(createColumn(SPECIES_INDEX, ProductArchetypes.DOSE, "species"));
         model.addColumn(createTableColumn(WEIGHT_INDEX, "product.weight"));
-        model.addColumn(new DescriptorTableColumn(CONCENTRATION_INDEX, "concentration", archetypes));
         model.addColumn(new DescriptorTableColumn(RATE_INDEX, "rate", archetypes));
         return model;
     }

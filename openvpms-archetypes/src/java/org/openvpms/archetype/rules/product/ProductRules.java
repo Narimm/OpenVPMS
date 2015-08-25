@@ -117,7 +117,8 @@ public class ProductRules {
      */
     public BigDecimal getDose(Product product, Weight weight, String species) {
         BigDecimal result = BigDecimal.ZERO;
-        if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
+        BigDecimal concentration = getConcentration(product);
+        if (!isZero(concentration)) {
             IMObjectBean match = null;
             WeightUnits matchUnits = null;
             IMObjectBean bean = new IMObjectBean(product, service);
@@ -147,7 +148,6 @@ public class ProductRules {
             if (match != null) {
                 BigDecimal converted = weight.convert(matchUnits);
                 BigDecimal rate = match.getBigDecimal("rate", BigDecimal.ZERO);
-                BigDecimal concentration = match.getBigDecimal("concentration", BigDecimal.ZERO);
                 int places = match.getInt("roundTo");
                 if (!isZero(concentration) && !isZero(rate)) {
                     result = converted.multiply(rate).divide(concentration, places, RoundingMode.HALF_UP);
@@ -368,6 +368,20 @@ public class ProductRules {
             result = product.get(0).getActiveEndTime();
         }
         return result;
+    }
+
+    /**
+     * Returns the product concentration.
+     *
+     * @param product the product
+     * @return the product concentration
+     */
+    private BigDecimal getConcentration(Product product) {
+        if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
+            IMObjectBean bean = new IMObjectBean(product, service);
+            return bean.getBigDecimal("concentration", BigDecimal.ZERO);
+        }
+        return BigDecimal.ZERO;
     }
 
 }

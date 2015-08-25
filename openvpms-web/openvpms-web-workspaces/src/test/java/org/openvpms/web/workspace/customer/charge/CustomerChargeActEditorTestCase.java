@@ -45,6 +45,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
@@ -1342,7 +1343,9 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         BigDecimal total = itemTotal.multiply(BigDecimal.valueOf(3));
 
         Product product1 = createProduct(MEDICATION, fixedPrice);
-        addDose(product1, createDose(null, ZERO, TEN, ONE, ONE));
+        IMObjectBean productBean = new IMObjectBean(product1);
+        productBean.setValue("concentration", ONE);
+        addDose(product1, createDose(null, ZERO, TEN, ONE));
         Product product2 = createProduct(ProductArchetypes.MERCHANDISE, fixedPrice);
         Product product3 = createProduct(ProductArchetypes.SERVICE, fixedPrice);
         Product template = createProduct(ProductArchetypes.TEMPLATE);

@@ -76,7 +76,6 @@ public class EntityLinkCollectionTargetPropertyEditorTestCase extends AbstractCo
         bean.setValue("name", "Z Dose");
         bean.setValue("minWeight", BigDecimal.ZERO);
         bean.setValue("maxWeight", BigDecimal.TEN);
-        bean.setValue("concentration", BigDecimal.TEN);
         bean.setValue("rate", BigDecimal.TEN);
         bean.setValue("roundTo", 2);
         return object;
