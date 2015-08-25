@@ -6821,13 +6821,13 @@
     <data id="P866" archetype="product.service" name="Desex - Dog &lt; 20kg"/>
     <data id="P867" archetype="product.service" name="Desex - Dog &gt;= 20kg"/>
     <data id="P868" archetype="product.medication" name="Carprofen Injection" dispensingUnits="MLS"
-          sellingUnits="MLS">
+          sellingUnits="MLS"  concentration="50">
         <data collection="type" archetype="entityRelationship.productTypeProduct" target="id:P868"
               source="id:Medications"/>
         <data collection="doses" archetype="entityLink.productDose" source="id:P868" target="id:D868"/>
         <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"/>
     </data>
-    <data id="D868" archetype="entity.productDose" minWeight="0" maxWeight="100" rate="4" concentration="50"/>
+    <data id="D868" archetype="entity.productDose" minWeight="0" maxWeight="100" rate="4"/>
     <data id="P869" archetype="product.medication" name="Carprofen Tablets 20mg">
         <data collection="type" archetype="entityRelationship.productTypeProduct" target="id:P869"
               source="id:Medications"/>

@@ -347,7 +347,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
         if (product != null) {
             // clear the quantity. If the quantity changes after the product is set, don't overwrite with that
             // from the template, as it is the dose quantity for the patient weight, unless the low quantity is zero
-            setQuantity(null);
+            setQuantity(ZERO);
             setProduct(product.getProduct());
             if (isZero(getHighQuantity())) {
                 setLowQuantity(product.getLowQuantity());

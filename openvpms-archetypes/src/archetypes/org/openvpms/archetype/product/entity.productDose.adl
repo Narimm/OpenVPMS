@@ -21,7 +21,7 @@
         <node name="name" type="java.lang.String" path="/name" minCardinality="0" hidden="true" derived="true"
               derivedValue="concat('Dose for ', expr:if(boolean(openvpms:get(., 'species')), concat(openvpms:get(., 'species.name'), 's'), 'all species'),' between ', /details/minWeight, '-', /details/maxWeight, ' ', openvpms:lookup(., 'weightUnits'))"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
-              derivedValue="concat('Concentration: ', /details/concentration, ', Rate: ', /details/rate)"/>
+              derivedValue="concat('Rate: ', /details/rate)"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" hidden="true"/>
         <node name="species" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="1"
@@ -46,11 +46,6 @@
                     <property name="GRAMS" value="Grams"/>
                     <property name="POUNDS" value="Pounds"/>
                 </propertyList>
-            </assertion>
-        </node>
-        <node name="concentration" path="/details/concentration" type="java.math.BigDecimal" minCardinality="1">
-            <assertion name="positive">
-                <errorMessage>Value must be > 0.0</errorMessage>
             </assertion>
         </node>
         <node name="rate" path="/details/rate" type="java.math.BigDecimal" minCardinality="1">

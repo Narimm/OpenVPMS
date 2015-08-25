@@ -50,7 +50,8 @@ public class ProductDoseLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * The nodes to display.
      */
-    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude(ProductDoseEditor.MAX_WEIGHT, ProductDoseEditor.WEIGHT_UNITS);
+    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude(ProductDoseEditor.MAX_WEIGHT,
+                                                                             ProductDoseEditor.WEIGHT_UNITS);
 
 
     /**

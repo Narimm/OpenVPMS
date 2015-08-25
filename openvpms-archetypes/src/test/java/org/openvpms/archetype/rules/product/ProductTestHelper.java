@@ -54,6 +54,19 @@ public class ProductTestHelper {
     }
 
     /**
+     * Creates a medication product with a concentration.
+     *
+     * @param concentration the concentration
+     * @return a new product
+     */
+    public static Product createProduct(BigDecimal concentration) {
+        Product product = TestHelper.createProduct();
+        IMObjectBean bean = new IMObjectBean(product);
+        bean.setValue("concentration", concentration);
+        return product;
+    }
+
+    /**
      * Adds a product type to a product.
      *
      * @param product     the product
@@ -71,13 +84,11 @@ public class ProductTestHelper {
      * @param species       the species. May be {@code null}
      * @param minWeight     the minimum weight, inclusive
      * @param maxWeight     the maximum weight, exclusive
-     * @param concentration the concentration
      * @param rate          the rate
      * @return a new dose
      */
-    public static Entity createDose(Lookup species, BigDecimal minWeight, BigDecimal maxWeight,
-                                    BigDecimal concentration, BigDecimal rate) {
-        return createDose(species, minWeight, maxWeight, concentration, rate, 2);
+    public static Entity createDose(Lookup species, BigDecimal minWeight, BigDecimal maxWeight, BigDecimal rate) {
+        return createDose(species, minWeight, maxWeight, rate, 2);
     }
 
     /**
@@ -86,13 +97,12 @@ public class ProductTestHelper {
      * @param species       the species. May be {@code null}
      * @param minWeight     the minimum weight, inclusive
      * @param maxWeight     the maximum weight, exclusive
-     * @param concentration the concentration
      * @param rate          the rate
      * @param roundTo       the no. of decimal places to round to
      * @return a new dose
      */
-    public static Entity createDose(Lookup species, BigDecimal minWeight, BigDecimal maxWeight,
-                                    BigDecimal concentration, BigDecimal rate, int roundTo) {
+    public static Entity createDose(Lookup species, BigDecimal minWeight, BigDecimal maxWeight, BigDecimal rate,
+                                    int roundTo) {
         Entity dose = (Entity) TestHelper.create(ProductArchetypes.DOSE);
         IMObjectBean bean = new IMObjectBean(dose);
         if (species != null) {
@@ -100,7 +110,6 @@ public class ProductTestHelper {
         }
         bean.setValue("minWeight", minWeight);
         bean.setValue("maxWeight", maxWeight);
-        bean.setValue("concentration", concentration);
         bean.setValue("rate", rate);
         bean.setValue("roundTo", roundTo);
         return dose;
@@ -182,7 +191,6 @@ public class ProductTestHelper {
         TestHelper.save(template);
         return template;
     }
-
 
     /**
      * Creates a new product type.

@@ -40,6 +40,11 @@
         </node>
         <node name="activeIngredients" path="/details/activeIngredients" type="java.lang.String"
               minCardinality="0"/>
+        <node name="concentration" path="/details/concentration" type="java.math.BigDecimal" minCardinality="0">
+            <assertion name="positive">
+                <errorMessage>Value must be > 0.0</errorMessage>
+            </assertion>
+        </node>
         <node name="sellingUnits" displayName="Selling Units" path="/details/sellingUnits" type="java.lang.String"
               minCardinality="0">
             <assertion name="lookup">

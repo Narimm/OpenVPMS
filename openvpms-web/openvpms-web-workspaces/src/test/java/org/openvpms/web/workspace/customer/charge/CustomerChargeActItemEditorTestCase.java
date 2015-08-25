@@ -565,7 +565,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         BigDecimal fixedPrice = BigDecimal.valueOf(2);
 
         Product product = createProduct(ProductArchetypes.MEDICATION, fixedCost, fixedPrice, unitCost, unitPrice);
-        Entity dose = ProductTestHelper.createDose(null, BigDecimal.ZERO, BigDecimal.TEN, BigDecimal.ONE,
+        Entity dose = ProductTestHelper.createDose(null, BigDecimal.ZERO, BigDecimal.TEN,
                                                    BigDecimal.ONE);
         ProductTestHelper.addDose(product, dose);
 
@@ -973,8 +973,9 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         BigDecimal doseQuantity = new BigDecimal("4.2");
 
         Product product = createProduct(ProductArchetypes.MEDICATION, fixedCost, fixedPrice, unitCost, unitPrice);
-        Entity dose = ProductTestHelper.createDose(null, BigDecimal.ZERO, BigDecimal.TEN, BigDecimal.ONE,
-                                                   BigDecimal.ONE);
+        IMObjectBean bean = new IMObjectBean(product);
+        bean.setValue("concentration", BigDecimal.ONE);
+        Entity dose = ProductTestHelper.createDose(null, BigDecimal.ZERO, BigDecimal.TEN, BigDecimal.ONE);
         ProductTestHelper.addDose(product, dose);
 
         // set up the context
