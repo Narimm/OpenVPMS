@@ -17,10 +17,12 @@
 package org.openvpms.web.component.property;
 
 import org.junit.Test;
+import org.openvpms.archetype.test.TestHelper;
 
 import java.math.BigDecimal;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -124,6 +126,27 @@ public class NumericPropertyTransformerTestCase {
 
         Integer zero = (Integer) handler.apply(0);
         assertEquals(new Integer(0), zero);
+    }
+
+    /**
+     * Verifies that an optional numeric can be left empty, but if specified it must meet its assertions.
+     */
+    @Test
+    public void testOptionalNumeric() {
+        SimpleProperty property = new SimpleProperty("concentration", BigDecimal.class);
+        property.setRequired(false);
+        NumericPropertyTransformer handler = new NumericPropertyTransformer(property, true);
+
+        assertNull(handler.apply(""));
+        assertNull(handler.apply(null));
+        try {
+            handler.apply("-1");
+        } catch (PropertyException expected) {
+            assertEquals(property, expected.getProperty());
+            assertEquals("Concentration must be >= 0", expected.getMessage());
+        }
+
+        TestHelper.checkEquals(BigDecimal.ONE, (BigDecimal) handler.apply("1"));
     }
 
 }

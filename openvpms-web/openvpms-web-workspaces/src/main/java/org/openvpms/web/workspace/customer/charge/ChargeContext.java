@@ -51,13 +51,19 @@ public class ChargeContext implements CollectionPropertyEditor.RemoveHandler {
     /**
      * The objects to remove.
      */
-    private List<IMObject> toRemove = new ArrayList<IMObject>();
+    private List<IMObject> toRemove = new ArrayList<>();
 
     /**
      * The editors to remove.
      */
-    private List<IMObjectEditor> toRemoveEditors = new ArrayList<IMObjectEditor>();
+    private List<IMObjectEditor> toRemoveEditors = new ArrayList<>();
 
+    /**
+     * Default constructor.
+     */
+    public ChargeContext() {
+        super();
+    }
 
     /**
      * Registers the patient history changes for the current save.
@@ -110,7 +116,7 @@ public class ChargeContext implements CollectionPropertyEditor.RemoveHandler {
         boolean result = false;
         try {
             changes.save();
-            DefaultIMObjectDeletionListener<IMObject> listener = new DefaultIMObjectDeletionListener<IMObject>();
+            DefaultIMObjectDeletionListener<IMObject> listener = new DefaultIMObjectDeletionListener<>();
             for (IMObject object : toRemove.toArray(new IMObject[toRemove.size()])) {
                 if (!SaveHelper.delete(object, listener)) {
                     return false;

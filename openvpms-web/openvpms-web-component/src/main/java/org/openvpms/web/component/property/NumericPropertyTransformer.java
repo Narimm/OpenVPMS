@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.property;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.system.common.jxpath.OpenVPMSTypeConverter;
 import org.openvpms.web.resource.i18n.Messages;
@@ -83,20 +84,29 @@ public class NumericPropertyTransformer extends AbstractPropertyTransformer {
     public Object apply(Object object) {
         Object result;
         Property property = getProperty();
-        try {
-            Class type = property.getType();
-            result = CONVERTER.convert(object, type);
-            if (result instanceof BigDecimal) {
-                result = MathRules.round((BigDecimal) result);
+        boolean empty = (object == null || (object instanceof String && StringUtils.isEmpty(object.toString())));
+        if (empty) {
+            if (property.isRequired()) {
+                String msg = Messages.format("property.error.required", property.getDisplayName());
+                throw new PropertyException(property, msg);
+            } else {
+                result = null;
             }
-        } catch (Throwable exception) {
-            String message = Messages.format("property.error.invalidnumeric",
-                                             property.getDisplayName());
-            throw new PropertyException(property, message, exception);
-        }
-        if (positive && result instanceof Number && ((Number) result).doubleValue() < 0) {
-            String msg = Messages.format("property.error.positive", property.getDisplayName());
-            throw new PropertyException(property, msg);
+        } else {
+            try {
+                Class type = property.getType();
+                result = CONVERTER.convert(object, type);
+                if (result instanceof BigDecimal) {
+                    result = MathRules.round((BigDecimal) result);
+                }
+            } catch (Throwable exception) {
+                String message = Messages.format("property.error.invalidnumeric", property.getDisplayName());
+                throw new PropertyException(property, message, exception);
+            }
+            if (positive && result instanceof Number && ((Number) result).doubleValue() < 0) {
+                String msg = Messages.format("property.error.positive", property.getDisplayName());
+                throw new PropertyException(property, msg);
+            }
         }
 
         return result;

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.order;
@@ -34,12 +34,10 @@ public class PharmacyItemLayoutStrategy extends AbstractLayoutStrategy {
     private static final ArchetypeNodes NODES = new ArchetypeNodes().excludeIfEmpty("reference");
 
     /**
-     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-     *
-     * @return the archetype nodes
+     * Constructs a {@link PharmacyItemLayoutStrategy}.
      */
-    @Override
-    protected ArchetypeNodes getArchetypeNodes() {
-        return NODES;
+    public PharmacyItemLayoutStrategy() {
+        super(NODES);
     }
+
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.math;
@@ -24,5 +24,25 @@ package org.openvpms.archetype.rules.math;
 public enum WeightUnits {
     KILOGRAMS,
     GRAMS,
-    POUNDS
+    POUNDS;
+
+    /**
+     * Converts a string to a weight unit, ignoring nulls.
+     *
+     * @param value the string value. May be {@code null}
+     * @return the corresponding unit, or {@code null} if {@code value} is {@code null}
+     */
+    public static WeightUnits fromString(String value) {
+        return value != null ? valueOf(value) : null;
+    }
+
+    /**
+     * Converts a string to a weight unit, ignoring nulls.
+     *
+     * @param value the string value. May be {@code null}
+     * @return the corresponding unit, or {@code defaultValue} if {@code value} is {@code null}
+     */
+    public static WeightUnits fromString(String value, WeightUnits defaultValue) {
+        return (value != null) ? fromString(value) : defaultValue;
+    }
 }

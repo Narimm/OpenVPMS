@@ -29,19 +29,14 @@
         <node name="visitNote" path="/details/visitNote" type="java.lang.String" maxLength="1000"/>
         <node name="printAggregate" path="/details/printAggregate" type="java.lang.Boolean" defaultValue="false()"
               minCardinality="0"/>
+        <node name="type" path="/targetEntityRelationships"
+              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="1"
+              filter="entityRelationship.productTypeProduct"/>
         <node name="includes" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
               minCardinality="0" maxCardinality="*" filter="entityLink.productIncludes"/>
         <node name="species" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
-              filter="lookup.species">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="lookup.species"/>
-                    </propertyMap>
-                </propertyList>
-            </assertion>
-        </node>
+              filter="lookup.species"/>
         <node name="classifications" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
               filter="lookup.product*">
@@ -61,62 +56,16 @@
         </node>
         <node name="taxes" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" hidden="true" minCardinality="0" maxCardinality="*"
-              filter="lookup.taxType">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="lookup.taxType"/>
-                    </propertyMap>
-                </propertyList>
-            </assertion>
-        </node>
-        <node name="type" path="/targetEntityRelationships"
-              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="1"
-              filter="entityRelationship.productTypeProduct">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="entityRelationship.productTypeProduct"/>
-                    </propertyMap>
-                </propertyList>
-            </assertion>
-            <assertion name="uniqueEntityRelationship">
-                <errorMessage>Duplicate active product type relationship</errorMessage>
-            </assertion>
-        </node>
-        <node name="identities" path="/identities"
-              type="java.util.HashSet" baseName="Identity" minCardinality="0"
-              maxCardinality="*">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="entityIdentity.code"/>
-                    </propertyMap>
-                </propertyList>
-            </assertion>
-        </node>
+              filter="lookup.taxType"/>
+        <node name="identities" path="/identities" type="java.util.HashSet" baseName="Identity" minCardinality="0"
+              maxCardinality="*" filter="entityIdentity.code"/>
         <node name="suppliers" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" hidden="true" minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.productSupplier">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="entityRelationship.productSupplier"/>
-                    </propertyMap>
-                </propertyList>
-            </assertion>
-        </node>
+              filter="entityRelationship.productSupplier"/>
         <node name="discounts" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               hidden="true" filter="entityRelationship.discountProduct">
-            <!-- dummy node. Ideally would have minCardinality=0, but for backwards compatibility, leave as is -->
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="entityRelationship.discountProduct"/>
-                    </propertyMap>
-                </propertyList>
-            </assertion>
+            <!-- dummy node. Ideally would have maxCardinality=0, but for backwards compatibility, leave as is -->
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active product discount relationship</errorMessage>
             </assertion>

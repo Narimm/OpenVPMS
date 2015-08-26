@@ -24,7 +24,11 @@ import org.openvpms.archetype.rules.finance.discount.DiscountTestHelper;
 import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
 import org.openvpms.archetype.rules.finance.estimate.EstimateTestHelper;
 import org.openvpms.archetype.rules.math.Currencies;
+import org.openvpms.archetype.rules.math.WeightUnits;
+import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -42,12 +46,14 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.customer.DoseManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertFalse;
@@ -86,6 +92,11 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
      */
     private LayoutContext layout;
 
+    /**
+     * The dose manager.
+     */
+    private DoseManager doseManager;
+
 
     /**
      * Sets up the test case.
@@ -114,6 +125,9 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         context.setLocation(TestHelper.createLocation());
         context.setUser(author);
         layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
+
+        doseManager = new DoseManager(ServiceHelper.getBean(PatientRules.class),
+                                      ServiceHelper.getBean(ProductRules.class));
     }
 
     /**
@@ -137,6 +151,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
 
         // create the editor
         EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
+        editor.setDoseManager(doseManager);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -196,6 +211,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
 
         // create the editor
         EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
+        editor.setDoseManager(doseManager);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -238,6 +254,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
 
         // create the editor
         EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
+        editor.setDoseManager(doseManager);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -291,6 +308,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
 
         // create the editor
         EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
+        editor.setDoseManager(doseManager);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -350,6 +368,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
 
         // create the editor
         EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
+        editor.setDoseManager(doseManager);
         editor.getComponent();
 
         // populate quantity, patient, clinician.
@@ -371,6 +390,52 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
 
         // verify no errors were logged
         assertTrue(errors.isEmpty());
+    }
+
+    /**
+     * Verifies that when a product with a dose is selected, both the low and high quantities are updated with
+     * the dose.
+     */
+    @Test
+    public void testProductDose() {
+        BigDecimal unitCost = BigDecimal.valueOf(5);
+        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal fixedCost = BigDecimal.valueOf(1);
+        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+        Product product = createProduct(ProductArchetypes.MEDICATION, fixedCost, fixedPrice, unitCost, unitPrice);
+        IMObjectBean bean = new IMObjectBean(product);
+        bean.setValue("concentration", BigDecimal.ONE);
+        Entity dose = ProductTestHelper.createDose(null, BigDecimal.ZERO, BigDecimal.TEN, BigDecimal.ONE);
+        ProductTestHelper.addDose(product, dose);
+
+        PatientTestHelper.createWeight(patient, new Date(), new BigDecimal("4.2"), WeightUnits.KILOGRAMS);
+
+        Act item = (Act) create(EstimateArchetypes.ESTIMATE_ITEM);
+        Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
+
+        // create the editor
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
+        editor.setDoseManager(doseManager);
+        editor.getComponent();
+        assertFalse(editor.isValid());
+
+        editor.setPatient(patient);
+        editor.setProduct(product);
+
+        // editor should now be valid
+        assertTrue(editor.isValid());
+
+        checkSave(estimate, editor);
+
+        item = get(item);
+        BigDecimal lowQuantity = new BigDecimal("4.2");
+        BigDecimal highQuantity = new BigDecimal("4.2");
+        BigDecimal lowDiscount = BigDecimal.ZERO;
+        BigDecimal highDiscount = BigDecimal.ZERO;
+        BigDecimal lowTotal1 = new BigDecimal("44.00");
+        BigDecimal highTotal1 = new BigDecimal("44.00");
+        checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPrice, unitPrice, fixedPrice,
+                  lowDiscount, highDiscount, lowTotal1, highTotal1);
     }
 
     /**
