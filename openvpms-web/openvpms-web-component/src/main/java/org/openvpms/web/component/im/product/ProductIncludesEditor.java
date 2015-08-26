@@ -46,6 +46,31 @@ import java.math.BigDecimal;
 public class ProductIncludesEditor extends EntityLinkEditor {
 
     /**
+     * The minimum weight node.
+     */
+    private static final String MIN_WEIGHT = "minWeight";
+
+    /**
+     * The maximum weight node.
+     */
+    private static final String MAX_WEIGHT = "maxWeight";
+
+    /**
+     * The weight units node.
+     */
+    private static final String WEIGHT_UNITS = "weightUnits";
+
+    /**
+     * The low quantity node.
+     */
+    private static final String LOW_QUANTITY = "lowQuantity";
+
+    /**
+     * The high quantity node.
+     */
+    private static final String HIGH_QUANTITY = "highQuantity";
+
+    /**
      * Constructs a {@link ProductIncludesEditor}.
      *
      * @param object        the object to edit
@@ -54,23 +79,22 @@ public class ProductIncludesEditor extends EntityLinkEditor {
      */
     public ProductIncludesEditor(EntityLink object, IMObject parent, LayoutContext layoutContext) {
         super(object, parent, layoutContext);
-        getArchetypeNodes().exclude("maxWeight", "weightUnits");
+        getArchetypeNodes().exclude(MAX_WEIGHT, WEIGHT_UNITS);
 
-        getProperty("lowQuantity").addModifiableListener(new ModifiableListener() {
+        getProperty(LOW_QUANTITY).addModifiableListener(new ModifiableListener() {
             @Override
             public void modified(Modifiable modifiable) {
                 onLowQuantityChanged();
             }
         });
 
-        getProperty("highQuantity").addModifiableListener(new ModifiableListener() {
+        getProperty(HIGH_QUANTITY).addModifiableListener(new ModifiableListener() {
             @Override
             public void modified(Modifiable modifiable) {
                 onHighQuantityChanged();
             }
         });
     }
-
 
     /**
      * Validates the object.
@@ -91,15 +115,15 @@ public class ProductIncludesEditor extends EntityLinkEditor {
      */
     private boolean validateWeight(Validator validator) {
         boolean valid = true;
-        Property minWeight = getProperty("minWeight");
-        Property maxWeight = getProperty("maxWeight");
+        Property minWeight = getProperty(MIN_WEIGHT);
+        Property maxWeight = getProperty(MAX_WEIGHT);
         BigDecimal min = minWeight.getBigDecimal(BigDecimal.ZERO);
         BigDecimal max = maxWeight.getBigDecimal(BigDecimal.ZERO);
         if (min.compareTo(BigDecimal.ZERO) != 0 || max.compareTo(BigDecimal.ZERO) != 0) {
             if (min.compareTo(max) >= 0) {
                 validator.add(this, new ValidatorError(Messages.format("product.template.weighterror", min, max)));
                 valid = false;
-            } else if (getProperty("weightUnits").getString() == null) {
+            } else if (getProperty(WEIGHT_UNITS).getString() == null) {
                 validator.add(this, new ValidatorError(Messages.format("product.template.noweightunits", min, max)));
                 valid = false;
             }
@@ -121,8 +145,8 @@ public class ProductIncludesEditor extends EntityLinkEditor {
      * Invoked when the low quantity changes.
      */
     private void onLowQuantityChanged() {
-        Property highQuantity = getProperty("highQuantity");
-        Property lowQuantity = getProperty("lowQuantity");
+        Property highQuantity = getProperty(HIGH_QUANTITY);
+        Property lowQuantity = getProperty(LOW_QUANTITY);
         BigDecimal low = lowQuantity.getBigDecimal(BigDecimal.ZERO);
         BigDecimal high = highQuantity.getBigDecimal(BigDecimal.ZERO);
         if (low.compareTo(high) > 0) {
@@ -134,8 +158,8 @@ public class ProductIncludesEditor extends EntityLinkEditor {
      * Invoked when the high quantity changes.
      */
     private void onHighQuantityChanged() {
-        Property highQuantity = getProperty("highQuantity");
-        Property lowQuantity = getProperty("lowQuantity");
+        Property highQuantity = getProperty(HIGH_QUANTITY);
+        Property lowQuantity = getProperty(LOW_QUANTITY);
         BigDecimal low = lowQuantity.getBigDecimal(BigDecimal.ZERO);
         BigDecimal high = highQuantity.getBigDecimal(BigDecimal.ZERO);
         if (low.compareTo(high) > 0) {
@@ -158,16 +182,16 @@ public class ProductIncludesEditor extends EntityLinkEditor {
          */
         @Override
         public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-            ComponentState minWeight = createComponent(properties.get("minWeight"), parent, context);
-            ComponentState maxWeight = createComponent(properties.get("maxWeight"), parent, context);
-            ComponentState weightUnits = createComponent(properties.get("weightUnits"), parent, context);
+            ComponentState minWeight = createComponent(properties.get(MIN_WEIGHT), parent, context);
+            ComponentState maxWeight = createComponent(properties.get(MAX_WEIGHT), parent, context);
+            ComponentState weightUnits = createComponent(properties.get(WEIGHT_UNITS), parent, context);
             Label label = LabelFactory.create();
             label.setText("-");
             Row row = RowFactory.create(Styles.CELL_SPACING, minWeight.getComponent(), label, maxWeight.getComponent(),
                                         weightUnits.getComponent());
             FocusGroup weight = new FocusGroup("weight", minWeight.getComponent(), maxWeight.getComponent(),
                                                weightUnits.getComponent());
-            String displayName = Messages.get("product.template.weight");
+            String displayName = Messages.get("product.weight");
             addComponent(new ComponentState(row, minWeight.getProperty(), weight, displayName));
             return super.apply(object, properties, parent, context);
         }

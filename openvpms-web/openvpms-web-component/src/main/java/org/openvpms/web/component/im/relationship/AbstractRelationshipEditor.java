@@ -233,9 +233,10 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
     protected class LayoutStrategy extends AbstractLayoutStrategy {
 
         /**
-         * Constructs a {@code LayoutStrategy}.
+         * Constructs a {@link LayoutStrategy}.
          */
         public LayoutStrategy() {
+            super(nodes);
         }
 
         /**
@@ -288,16 +289,6 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
                 doSimpleLayout(object, parent, simple, container, context);
                 doComplexLayout(object, parent, complex, container, context);
             }
-        }
-
-        /**
-         * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-         *
-         * @return the archetype nodes
-         */
-        @Override
-        protected ArchetypeNodes getArchetypeNodes() {
-            return nodes;
         }
     }
 

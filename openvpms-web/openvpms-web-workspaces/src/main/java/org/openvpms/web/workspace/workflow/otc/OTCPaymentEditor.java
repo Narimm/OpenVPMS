@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.otc;
@@ -20,7 +20,6 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.payment.AbstractCustomerPaymentEditor;
-import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -72,7 +71,7 @@ class OTCPaymentEditor extends AbstractCustomerPaymentEditor {
          * Constructs a {@link LayoutStrategy}.
          */
         public LayoutStrategy() {
-            super(getItems());
+            super(getItems(), OTCChargeEditor.NODES); // suppresses the status node
         }
 
         /**
@@ -92,16 +91,6 @@ class OTCPaymentEditor extends AbstractCustomerPaymentEditor {
             grid.add(createComponent(getInvoiceAmountProperty(), object, context));
             grid.add(set);
             doGridLayout(grid, container);
-        }
-
-        /**
-         * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-         *
-         * @return the archetype nodes
-         */
-        protected ArchetypeNodes getArchetypeNodes() {
-            // suppresses the status node
-            return OTCChargeEditor.NODES;
         }
     }
 }

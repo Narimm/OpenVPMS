@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -19,7 +19,6 @@ package org.openvpms.web.component.im.doc;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
@@ -31,6 +30,13 @@ import org.openvpms.web.component.property.Property;
  * @author Tim Anderson
  */
 public class DocumentActViewLayoutStrategy extends DocumentActLayoutStrategy {
+
+    /**
+     * Constructs a {@link DocumentActViewLayoutStrategy}.
+     */
+    public DocumentActViewLayoutStrategy() {
+        setArchetypeNodes(VIEW_NODES);
+    }
 
     /**
      * Creates a component for a property.
@@ -55,16 +61,6 @@ public class DocumentActViewLayoutStrategy extends DocumentActLayoutStrategy {
             result = super.createComponent(property, parent, context);
         }
         return result;
-    }
-
-    /**
-     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-     *
-     * @return the archetype nodes
-     */
-    @Override
-    protected ArchetypeNodes getArchetypeNodes() {
-        return VIEW_NODES;
     }
 
     /**

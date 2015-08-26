@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.charge;
@@ -262,7 +262,7 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     private class VisitChargeLayoutStrategy extends ActLayoutStrategy {
 
         public VisitChargeLayoutStrategy() {
-            super(VisitChargeEditor.this.getItems());
+            super(VisitChargeEditor.this.getItems(), NODES);
         }
 
         /**
@@ -302,14 +302,5 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
             return result;
         }
 
-        /**
-         * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-         *
-         * @return the archetype nodes
-         */
-        @Override
-        protected ArchetypeNodes getArchetypeNodes() {
-            return NODES;
-        }
     }
 }

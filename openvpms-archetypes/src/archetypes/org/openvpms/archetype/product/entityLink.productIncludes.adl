@@ -27,8 +27,8 @@
               hidden="true" defaultValue="java.util.Date.new()"/>
         <node name="lowQuantity" path="/details/lowQuantity" type="java.math.BigDecimal" defaultValue="1.0"
               minCardinality="1">
-            <assertion name="positive">
-                <errorMessage>Value must be > 0</errorMessage>
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0</errorMessage>
             </assertion>
         </node>
         <node name="highQuantity" path="/details/highQuantity" type="java.math.BigDecimal" defaultValue="1.0"

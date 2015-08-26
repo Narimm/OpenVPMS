@@ -18,11 +18,15 @@ package org.openvpms.web.workspace.customer.charge;
 
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.UserPreferences;
 import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
+import org.openvpms.web.component.im.edit.DefaultCollectionResultSetFactory;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -34,13 +38,22 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.CheckBoxFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.customer.DoseManager;
+import org.openvpms.web.workspace.customer.PriceActItemEditor;
 
 /**
  * Editor for collections of {@link ActRelationship}s belonging to charges and estimates.
+ * <p/>
+ * This provides an {@link DoseManager} to {@link PriceActItemEditor} instances.
  *
  * @author Tim Anderson
  */
 public abstract class AbstractChargeItemRelationshipCollectionEditor extends ActRelationshipCollectionEditor {
+
+    /**
+     * The doses.
+     */
+    private final DoseManager doseManager;
 
     /**
      * Constructs an {@link AbstractChargeItemRelationshipCollectionEditor}
@@ -50,7 +63,7 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
      * @param context  the layout context
      */
     public AbstractChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context) {
-        super(property, act, context);
+        this(property, act, context, DefaultCollectionResultSetFactory.INSTANCE);
     }
 
     /**
@@ -64,6 +77,33 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
     public AbstractChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context,
                                                           CollectionResultSetFactory factory) {
         super(property, act, context, factory);
+        doseManager = new DoseManager(ServiceHelper.getBean(PatientRules.class),
+                                      ServiceHelper.getBean(ProductRules.class));
+    }
+
+    /**
+     * Creates a new editor.
+     *
+     * @param object  the object to edit
+     * @param context the layout context
+     * @return an editor to edit {@code object}
+     */
+    @Override
+    public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
+        IMObjectEditor editor = super.createEditor(object, context);
+        if (editor instanceof PriceActItemEditor) {
+            ((PriceActItemEditor) editor).setDoseManager(doseManager);
+        }
+        return editor;
+    }
+
+    /**
+     * Returns the dose manager.
+     *
+     * @return the dose manager
+     */
+    protected DoseManager getDoseManager() {
+        return doseManager;
     }
 
     /**
@@ -81,7 +121,7 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
 
     /**
      * Creates the row of controls.
-     * <p>
+     * <p/>
      * This provides checkboxes to show/hide the template, product type and batch columns.
      *
      * @param focus the focus group

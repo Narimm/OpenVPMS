@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -46,8 +46,8 @@ public class ProductCopyHandler extends MappingCopyHandler {
      */
     public ProductCopyHandler(Product product) {
         this.product = product.getObjectReference();
-        setCopy(Product.class);
-        setReference(Entity.class); // reference all other entities
+        setCopy(ProductArchetypes.DOSE);  // copy doses
+        setReference(Entity.class);       // reference all other entities
     }
 
     /**
@@ -73,15 +73,13 @@ public class ProductCopyHandler extends MappingCopyHandler {
 
     /**
      * Determines if an object should be copied.
-     * <p/>
-     * This implementation returns {@code true} if the object is the specified product.
      *
      * @param object the object to check
      * @return {@code true} if it should be copied
      */
     @Override
     protected boolean copy(IMObject object) {
-        return object.getObjectReference().equals(product);
+        return object.getObjectReference().equals(product) || super.copy(object);
     }
 
     /**

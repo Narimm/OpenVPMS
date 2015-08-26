@@ -11,20 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.estimate;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
-import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.workspace.customer.estimate.EstimateItemEditor;
 
 /**
@@ -77,38 +73,9 @@ public class VisitEstimateItemEditor extends EstimateItemEditor {
      */
     private class VisitEstimateLayoutStrategy extends EstimateItemLayoutStrategy {
 
-        /**
-         * The nodes to display.
-         */
-        private ArchetypeNodes nodes;
-
         public VisitEstimateLayoutStrategy(FixedPriceEditor fixedPrice) {
             super(fixedPrice);
-        }
-
-        /**
-         * Apply the layout strategy.
-         *
-         * @param object     the object to apply
-         * @param properties the object's properties
-         * @param parent     the parent object. May be {@code null}
-         * @param context    the layout context
-         * @return the component containing the rendered {@code object}
-         */
-        @Override
-        public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-            nodes = new ArchetypeNodes(super.getArchetypeNodes()).exclude("patient");
-            return super.apply(object, properties, parent, context);
-        }
-
-        /**
-         * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
-         *
-         * @return the archetype nodes
-         */
-        @Override
-        protected ArchetypeNodes getArchetypeNodes() {
-            return nodes;
+            getArchetypeNodes().exclude(PATIENT);
         }
     }
 

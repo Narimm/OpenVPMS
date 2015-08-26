@@ -11,11 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
 
+import org.openvpms.archetype.rules.math.MathRules;
+import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
@@ -43,6 +45,7 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.resource.i18n.Messages;
@@ -50,9 +53,16 @@ import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
+import static org.openvpms.web.component.im.product.ProductDoseEditor.MAX_WEIGHT;
+import static org.openvpms.web.component.im.product.ProductDoseEditor.MIN_WEIGHT;
+import static org.openvpms.web.component.im.product.ProductDoseEditor.WEIGHT_UNITS;
 
 
 /**
@@ -69,6 +79,36 @@ public class ProductEditor extends AbstractIMObjectEditor {
     private ProductPriceUpdater updater;
 
     /**
+     * Concentration node.
+     */
+    private static final String CONCENTRATION = "concentration";
+
+    /**
+     * Prices node.
+     */
+    private static final String PRICES = "prices";
+
+    /**
+     * Doses node.
+     */
+    private static final String DOSES = "doses";
+
+    /**
+     * Stock locations node.
+     */
+    private static final String STOCK_LOCATIONS = "stockLocations";
+
+    /**
+     * Suppliers node.
+     */
+    private static final String SUPPLIERS = "suppliers";
+
+    /**
+     * Pricing groups node.
+     */
+    private static final String PRICING_GROUPS = "pricingGroups";
+
+    /**
      * Constructs a {@link ProductEditor}.
      *
      * @param object        the object to edit
@@ -77,8 +117,8 @@ public class ProductEditor extends AbstractIMObjectEditor {
      */
     public ProductEditor(Product object, IMObject parent, LayoutContext layoutContext) {
         super(object, parent, layoutContext);
-        CollectionProperty suppliers = getCollectionProperty("suppliers");
-        CollectionProperty stock = getCollectionProperty("stockLocations");
+        CollectionProperty suppliers = getCollectionProperty(SUPPLIERS);
+        CollectionProperty stock = getCollectionProperty(STOCK_LOCATIONS);
         if (suppliers != null && stock != null) {
             RelationshipCollectionEditor stockLocations
                     = new MultipleEntityRelationshipCollectionEditor(stock, object, getLayoutContext()) {
@@ -108,7 +148,7 @@ public class ProductEditor extends AbstractIMObjectEditor {
     protected boolean doValidation(Validator validator) {
         boolean valid = super.doValidation(validator);
         if (valid) {
-            valid = validateUnitPrices(validator);
+            valid = validateUnitPrices(validator) && validateDoses(validator);
         }
         return valid;
     }
@@ -119,8 +159,8 @@ public class ProductEditor extends AbstractIMObjectEditor {
      * @return the product supplier references
      */
     public List<IMObjectReference> getSuppliers() {
-        List<IMObjectReference> result = new ArrayList<IMObjectReference>();
-        EditableIMObjectCollectionEditor suppliers = (EditableIMObjectCollectionEditor) getEditor("suppliers");
+        List<IMObjectReference> result = new ArrayList<>();
+        EditableIMObjectCollectionEditor suppliers = (EditableIMObjectCollectionEditor) getEditor(SUPPLIERS);
         if (suppliers != null) {
             for (IMObject object : suppliers.getCurrentObjects()) {
                 IMObjectRelationship relationship = (IMObjectRelationship) object;
@@ -141,7 +181,7 @@ public class ProductEditor extends AbstractIMObjectEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         IMObjectLayoutStrategy strategy = super.createLayoutStrategy();
-        RelationshipCollectionEditor stockLocations = (RelationshipCollectionEditor) getEditor("stockLocations", false);
+        RelationshipCollectionEditor stockLocations = (RelationshipCollectionEditor) getEditor(STOCK_LOCATIONS, false);
         if (stockLocations != null) {
             strategy.addComponent(new ComponentState(stockLocations));
         }
@@ -154,7 +194,7 @@ public class ProductEditor extends AbstractIMObjectEditor {
      */
     @Override
     protected void onLayoutCompleted() {
-        IMObjectCollectionEditor editor = (IMObjectCollectionEditor) getEditor("suppliers");
+        IMObjectCollectionEditor editor = (IMObjectCollectionEditor) getEditor(SUPPLIERS);
         if (editor != null) {
             editor.addModifiableListener(new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
@@ -168,8 +208,8 @@ public class ProductEditor extends AbstractIMObjectEditor {
      * Invoked when a product-supplier relationship changes. This recalculates product prices if required.
      */
     private void onSupplierChanged() {
-        EditableIMObjectCollectionEditor suppliers = (EditableIMObjectCollectionEditor) getEditor("suppliers");
-        EditableIMObjectCollectionEditor prices = (EditableIMObjectCollectionEditor) getEditor("prices");
+        EditableIMObjectCollectionEditor suppliers = (EditableIMObjectCollectionEditor) getEditor(SUPPLIERS);
+        EditableIMObjectCollectionEditor prices = (EditableIMObjectCollectionEditor) getEditor(PRICES);
         Collection<IMObjectEditor> currentPrices = prices.getEditors();
         Collection<IMObjectEditor> editors = suppliers.getEditors();
         for (IMObjectEditor editor : editors) {
@@ -212,7 +252,7 @@ public class ProductEditor extends AbstractIMObjectEditor {
     private boolean validateUnitPrices(Validator validator) {
         boolean valid = true;
         Product product = (Product) getObject();
-        List<ProductPrice> unitPrices = new ArrayList<ProductPrice>();
+        List<ProductPrice> unitPrices = new ArrayList<>();
         for (ProductPrice price : product.getProductPrices()) {
             if (TypeHelper.isA(price, ProductArchetypes.UNIT_PRICE)) {
                 unitPrices.add(price);
@@ -226,8 +266,8 @@ public class ProductEditor extends AbstractIMObjectEditor {
                                          other.getToDate())) {
                     IMObjectBean priceBean = new IMObjectBean(price);
                     IMObjectBean otherBean = new IMObjectBean(other);
-                    List<Lookup> priceGroups = priceBean.getValues("pricingGroups", Lookup.class);
-                    List<Lookup> otherGroups = otherBean.getValues("pricingGroups", Lookup.class);
+                    List<Lookup> priceGroups = priceBean.getValues(PRICING_GROUPS, Lookup.class);
+                    List<Lookup> otherGroups = otherBean.getValues(PRICING_GROUPS, Lookup.class);
                     if (priceGroups.isEmpty() && otherGroups.isEmpty()) {
                         validator.add(getPriceEditor(price), new ValidatorError(
                                 Messages.format("product.price.dateOverlap", formatPrice(price),
@@ -245,6 +285,90 @@ public class ProductEditor extends AbstractIMObjectEditor {
             }
         }
         return valid;
+    }
+
+    /**
+     * Verifies that if there are doses, a concentration is required and that doses don't overlap on weight range.
+     *
+     * @param validator the validator
+     * @return {@code true} if the doses are valid, or the product has no doses
+     */
+    private boolean validateDoses(Validator validator) {
+        boolean result = true;
+        EditableIMObjectCollectionEditor editor = (EditableIMObjectCollectionEditor) getEditor(DOSES);
+        if (editor != null) {
+            result = validateConcentration(editor, validator) && validateDoses(editor, validator);
+        }
+        return result;
+    }
+
+    /**
+     * Verifies a concentration has been specified if there are doses.
+     *
+     * @param doses     the doses editor
+     * @param validator the validator
+     * @return {@code true} if a concentration has been specified no concentration is required, otherwise {@code false}
+     */
+    private boolean validateConcentration(EditableIMObjectCollectionEditor doses, Validator validator) {
+        boolean result = true;
+        if (!doses.getCurrentObjects().isEmpty()) {
+            Property property = getProperty(CONCENTRATION);
+            BigDecimal concentration = property.getBigDecimal(BigDecimal.ZERO);
+            if (MathRules.isZero(concentration)) {
+                result = false;
+                validator.add(this, new ValidatorError(Messages.format("product.concentration.required")));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Verifies that doses don't overlap on weight range.
+     *
+     * @param editor    the dose editor
+     * @param validator the validator
+     * @return {@code true} if the doses are valid, otherwise {@code false}
+     */
+    private boolean validateDoses(EditableIMObjectCollectionEditor editor, Validator validator) {
+        Lookup all = new Lookup(); // dummy to indicate the dose applies to all species.
+        Map<Lookup, List<IMObject>> dosesBySpecies = new LinkedHashMap<>();
+        for (IMObject dose : editor.getCurrentObjects()) {
+            IMObjectBean bean = new IMObjectBean(dose);
+            List<Lookup> values = bean.getValues("species", Lookup.class);
+            Lookup species = !values.isEmpty() ? values.get(0) : all;
+            List<IMObject> doses = dosesBySpecies.get(species);
+            if (doses == null) {
+                doses = new ArrayList<>();
+                dosesBySpecies.put(species, doses);
+            }
+            doses.add(dose);
+        }
+        for (Map.Entry<Lookup, List<IMObject>> entry : dosesBySpecies.entrySet()) {
+            List<IMObject> doses = new ArrayList<>(entry.getValue());
+            while (doses.size() > 1) {
+                IMObjectBean dose = new IMObjectBean(doses.remove(0));
+                BigDecimal minWeight = dose.getBigDecimal(MIN_WEIGHT, BigDecimal.ZERO);
+                BigDecimal maxWeight = dose.getBigDecimal(MAX_WEIGHT, BigDecimal.ZERO);
+                WeightUnits units = WeightUnits.fromString(dose.getString(WEIGHT_UNITS));
+                for (IMObject otherDose : doses) {
+                    IMObjectBean other = new IMObjectBean(otherDose);
+                    BigDecimal otherMinWeight = other.getBigDecimal(MIN_WEIGHT, BigDecimal.ZERO);
+                    BigDecimal otherMaxWeight = other.getBigDecimal(MAX_WEIGHT, BigDecimal.ZERO);
+                    WeightUnits otherUnits = WeightUnits.fromString(other.getString(WEIGHT_UNITS));
+                    if (units != null && otherUnits != null && !units.equals(otherUnits)) {
+                        otherMinWeight = MathRules.convert(otherMinWeight, otherUnits, units);
+                        otherMaxWeight = MathRules.convert(otherMaxWeight, otherUnits, units);
+                    }
+                    if (MathRules.intersects(minWeight, maxWeight, otherMinWeight, otherMaxWeight)) {
+                        validator.add(this, new ValidatorError(Messages.format("product.dose.weightOverlap",
+                                                                               dose.getObject().getName(),
+                                                                               otherDose.getName())));
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -269,7 +393,7 @@ public class ProductEditor extends AbstractIMObjectEditor {
      * @return the price editor
      */
     private IMObjectEditor getPriceEditor(ProductPrice price) {
-        EditableIMObjectCollectionEditor prices = (EditableIMObjectCollectionEditor) getEditor("prices");
+        EditableIMObjectCollectionEditor prices = (EditableIMObjectCollectionEditor) getEditor(PRICES);
         return prices.getEditor(price);
     }
 

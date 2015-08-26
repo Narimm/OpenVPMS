@@ -21,6 +21,8 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.finance.discount.DiscountTestHelper;
 import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
+import org.openvpms.archetype.rules.math.WeightUnits;
+import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -29,6 +31,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -38,9 +41,11 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -87,17 +92,24 @@ public class EstimateEditorTestCase extends AbstractEstimateEditorTestCase {
     public void testTemplateExpansion() {
         LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         Party patient = TestHelper.createPatient(customer);
-        Entity discount = DiscountTestHelper.createDiscount(BigDecimal.TEN, true, DiscountRules.PERCENTAGE);
+        PatientTestHelper.createWeight(patient, new Date(), new BigDecimal("4.2"), WeightUnits.KILOGRAMS);
+        Entity discount = DiscountTestHelper.createDiscount(TEN, true, DiscountRules.PERCENTAGE);
 
         BigDecimal fixedPrice = ONE;
         BigDecimal unitPrice = ONE;
         Product template = ProductTestHelper.createTemplate("templateA");
+
+        // product1 has a dose, which should be selected over the template include quantity
         Product product1 = createProduct(MEDICATION, fixedPrice, unitPrice);
+        IMObjectBean productBean = new IMObjectBean(product1);
+        productBean.setValue("concentration", ONE);
+        ProductTestHelper.addDose(product1, ProductTestHelper.createDose(null, ZERO, TEN, ONE));
+
         Product product2 = createProduct(MEDICATION, fixedPrice, unitPrice);
         Product product3 = createProduct(MEDICATION, fixedPrice, unitPrice);
         addDiscount(product3, discount);
         addDiscount(customer, discount);                           // give customer a discount for product3
-        ProductTestHelper.addInclude(template, product1, 1, 2, false);
+        ProductTestHelper.addInclude(template, product1, 0, 2, false);
         ProductTestHelper.addInclude(template, product2, 2, 4, false);
         ProductTestHelper.addInclude(template, product3, 3, 6, true); // zero price
 
@@ -120,12 +132,12 @@ public class EstimateEditorTestCase extends AbstractEstimateEditorTestCase {
         assertEquals(3, items.size());
 
         User author = context.getUser();
-        BigDecimal two = BigDecimal.valueOf(2);
         BigDecimal three = BigDecimal.valueOf(3);
         BigDecimal five = BigDecimal.valueOf(5);
 
-        checkEstimate(estimate, customer, author, five, new BigDecimal("8"));
-        checkItem(items, patient, product1, author, 1, 2, unitPrice, unitPrice, fixedPrice, ZERO, ZERO, two, three);
+        checkEstimate(estimate, customer, author, new BigDecimal("4.00"), new BigDecimal("10.20"));
+        checkItem(items, patient, product1, author, ZERO, new BigDecimal("4.2"), unitPrice, unitPrice,
+                  fixedPrice, ZERO, ZERO, ONE, new BigDecimal("5.20"));
         checkItem(items, patient, product2, author, 2, 4, unitPrice, unitPrice, fixedPrice, ZERO, ZERO, three, five);
         checkItem(items, patient, product3, author, 3, 6, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO);
     }

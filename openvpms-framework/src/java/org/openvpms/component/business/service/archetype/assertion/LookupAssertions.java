@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -35,13 +33,13 @@ import org.openvpms.component.business.service.lookup.LookupServiceHelper;
  * the static methods return boolean and take an object and a property
  * map as parameters.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 public class LookupAssertions {
 
     /**
-     * Default constructor
+     * Default constructor.
      */
     public LookupAssertions() {
     }
@@ -49,23 +47,22 @@ public class LookupAssertions {
     /**
      * Check that the target object is in the specified list.
      *
-     * @param target
-     *            the target object
-     * @param node
-     *            the node descriptor for this assertion
-     * @param assertion
-     *            the particular assertion
+     * @param target    the target object
+     * @param node      the node descriptor for this assertion
+     * @param assertion the particular assertion
      */
-    public static boolean isStringValueInList(Object target,
-            NodeDescriptor node, AssertionDescriptor assertion) {
-        PropertyList entries = (PropertyList)assertion.getPropertyMap()
-            .getProperties().get("entries");
+    public static boolean isStringValueInList(Object target, NodeDescriptor node, AssertionDescriptor assertion) {
+        PropertyList entries = (PropertyList) assertion.getPropertyMap().getProperties().get("entries");
         if (entries == null) {
             return false;
         }
 
+        if (target != null && !(target instanceof String)) {
+            target = target.toString();
+        }
+
         for (NamedProperty property : entries.getProperties()) {
-            AssertionProperty prop = (AssertionProperty)property;
+            AssertionProperty prop = (AssertionProperty) property;
             if (prop.getName().equals(target)) {
                 return true;
             }
@@ -79,23 +76,20 @@ public class LookupAssertions {
      * whether it should set node value of the supplied target object to
      * the default lookup type.
      *
-     * @param target
-     *            the target object
-     * @param node
-     *            the node descriptor for this assertion
-     * @param assertion
-     *            the particular assertion
+     * @param target    the target object
+     * @param node      the node descriptor for this assertion
+     * @param assertion the particular assertion
      */
     public static void setDefaultValue(Object target, NodeDescriptor node,
                                        AssertionDescriptor assertion) {
 
         // only process if it is a lookup and there is no defeault value
         if (assertion.getName().equals("lookup")
-                && StringUtils.isEmpty(node.getDefaultValue())) {
-            String type = (String)assertion.getProperty("type").getValue();
+            && StringUtils.isEmpty(node.getDefaultValue())) {
+            String type = (String) assertion.getProperty("type").getValue();
             if (!StringUtils.isEmpty(type) && type.equals("lookup")
-                    && assertion.getProperty("source") != null){
-                String source = (String)assertion.getProperty("source").getValue();
+                && assertion.getProperty("source") != null) {
+                String source = (String) assertion.getProperty("source").getValue();
                 if (!StringUtils.isEmpty(source)) {
                     ILookupService service
                             = LookupServiceHelper.getLookupService();
@@ -103,7 +97,7 @@ public class LookupAssertions {
                     // if a default lookup has identified then set it through
                     // the node descriptor.
                     if (lookup != null) {
-                        node.setValue((IMObject)target, lookup.getCode());
+                        node.setValue((IMObject) target, lookup.getCode());
                     }
                 }
             }
@@ -113,16 +107,12 @@ public class LookupAssertions {
     /**
      * Always return true
      *
-     * @param target
-     *            the target object
-     * @param node
-     *            the node descriptor for this assertion
-     * @param assertion
-     *            the particular assertion
+     * @param target    the target object
+     * @param node      the node descriptor for this assertion
+     * @param assertion the particular assertion
      * @return boolean
      */
-    public static boolean alwaysTrue(Object target,
-            NodeDescriptor node, AssertionDescriptor assertion) {
+    public static boolean alwaysTrue(Object target, NodeDescriptor node, AssertionDescriptor assertion) {
         return true;
     }
 }
