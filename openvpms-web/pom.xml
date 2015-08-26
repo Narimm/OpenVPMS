@@ -38,6 +38,7 @@
         <module>openvpms-web-echo</module>
         <module>openvpms-web-component</module>
         <module>openvpms-hl7</module>
+        <module>openvpms-smartflow</module>
         <module>openvpms-web-workspaces</module>
         <module>openvpms-web-app</module>
         <module>openvpms-web-jobs</module>
