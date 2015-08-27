@@ -12,22 +12,34 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 /**
- * .
+ * Smart Flow Sheet Hospitalizations API.
  *
  * @author Tim Anderson
  */
 @Path("/hospitalization")
 public interface Hospitalizations {
 
+    /**
+     * Returns a hospitalization, given its identifier.
+     *
+     * @param hospitalizationId the hospitalization identifier
+     * @return the corresponding hospitalization, or {@code null} if none is found
+     */
     @GET
     @Path("/{hospitalizationId}")
     @Produces({MediaType.APPLICATION_JSON})
     Hospitalization get(@PathParam("hospitalizationId") String hospitalizationId);
 
+    /**
+     * Adds a new hospitalizations.
+     *
+     * @param hospitalization the hospitalization to add
+     * @return the created hospitalization
+     */
     @POST
     @Produces({MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_JSON})
-    void add(Hospitalization hospitalization);
+    Hospitalization add(Hospitalization hospitalization);
 
     @DELETE
     @Path("/{hospitalizationId}")

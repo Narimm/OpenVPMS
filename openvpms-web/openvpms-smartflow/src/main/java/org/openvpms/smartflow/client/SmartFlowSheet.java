@@ -1,9 +1,14 @@
 package org.openvpms.smartflow.client;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.proxy.WebResourceFactory;
+import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.jackson.JacksonFeature;
+import org.openvpms.archetype.rules.math.Weight;
+import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -23,23 +28,45 @@ import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
-import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.logging.Logger;
 
 /**
- * .
+ * Smart Flow Sheet client.
  *
  * @author Tim Anderson
  */
 public class SmartFlowSheet {
 
-    private static final String COLOUR = "colour";
-    private static final Form EMPTY_FORM = new Form();
+    /**
+     * The Smart Flow Sheet service URI.
+     */
     private final String uri;
 
+    /**
+     * The archetype service.
+     */
     private final IArchetypeService service;
 
+    /**
+     * The lookup service.
+     */
     private final ILookupService lookups;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(SmartFlowSheet.class);
+
+    /**
+     * Patient colour node.
+     */
+    private static final String COLOUR = "colour";
+
+    /**
+     * Empty form.
+     */
+    private static final Form EMPTY_FORM = new Form();
 
     /**
      * Constructs a {@link SmartFlowSheet}.
@@ -55,6 +82,27 @@ public class SmartFlowSheet {
     }
 
     /**
+     * Determines if a patient hospitalization exists.
+     *
+     * @param context the patient context
+     * @return {@code true} if it exists
+     */
+    public boolean exists(PatientContext context) {
+        boolean result = false;
+        javax.ws.rs.client.Client client = getClient();
+        WebTarget target = client.target(uri);
+        try {
+            Hospitalizations hospitalizations = getHospitalizations(target);
+            if (hospitalizations.get(Long.toString(context.getVisitId())) != null) {
+                result = true;
+            }
+        } finally {
+            client.close();
+        }
+        return result;
+    }
+
+    /**
      * Adds a patient to Smart Flow Sheet.
      * <p>
      * The patient should have a current weight.
@@ -62,39 +110,72 @@ public class SmartFlowSheet {
      * @param context the patient context
      */
     public void addPatient(PatientContext context) {
-        ClientConfig config = new ClientConfig().register(JacksonFeature.class);
-        javax.ws.rs.client.Client resource = ClientBuilder.newClient(config);
-        MultivaluedMap<String, Object> header = new MultivaluedHashMap<>();
-        header.add("emrApiKey", "emr-api-key-received-from-sfs");
-        header.add("clinicApiKey", "clinic-api-key-taken-from-account-web-page");
-
         Hospitalization hospitalization = new Hospitalization();
         hospitalization.setPatient(createPatient(context));
         hospitalization.setHospitalizationId(Long.toString(context.getVisitId()));
         hospitalization.setDateCreated(context.getVisitStartTime());
-        BigDecimal weight = context.getPatientWeight();
-        if (weight == null) {
-            weight = BigDecimal.ZERO;
+        Weight weight = context.getPatientWeight();
+        if (weight != null) {
+            if (weight.getUnits() == WeightUnits.KILOGRAMS || weight.getUnits() == WeightUnits.GRAMS) {
+                hospitalization.setWeight(weight.toKilograms().doubleValue());
+                hospitalization.setWeightUnits("kg");
+            } else if (weight.getUnits() == WeightUnits.POUNDS) {
+                hospitalization.setWeight(weight.getWeight().doubleValue());
+                hospitalization.setWeightUnits("lbs");
+            }
         }
-        hospitalization.setWeight(weight.doubleValue());
         User clinician = context.getClinician();
         if (clinician != null) {
             hospitalization.setDoctorName(clinician.getName());
         }
 
-        WebTarget target = resource.target(uri);
+        javax.ws.rs.client.Client client = getClient();
         try {
-
-            Hospitalizations hospitalizations = WebResourceFactory.newResource(Hospitalizations.class,
-                                                                               target, false,
-                                                                               header, Collections.<Cookie>emptyList(),
-                                                                               EMPTY_FORM);
+            WebTarget target = client.target(uri);
+            Hospitalizations hospitalizations = getHospitalizations(target);
             hospitalizations.add(hospitalization);
         } finally {
-            resource.close();
+            client.close();
         }
     }
 
+    /**
+     * Creates a JAX-RS client.
+     *
+     * @return a new JAX-RS client
+     */
+    private javax.ws.rs.client.Client getClient() {
+        ClientConfig config = new ClientConfig()
+                .register(JacksonFeature.class)
+                .register(ClientErrorResponseFilter.class);
+        javax.ws.rs.client.Client resource = ClientBuilder.newClient(config);
+        if (log.isDebugEnabled()) {
+            resource.register(new LoggingFilter(new DebugLog(log), true));
+        }
+        return resource;
+    }
+
+    /**
+     * Creates a new {@link Hospitalizations} proxy for the specified target.
+     *
+     * @param target the target
+     * @return a new proxy
+     */
+    private Hospitalizations getHospitalizations(WebTarget target) {
+        MultivaluedMap<String, Object> header = new MultivaluedHashMap<>();
+        header.add("emrApiKey", "873af17b2163255a3eb70a7d7413be152657bfab");
+        header.add("clinicApiKey", "51a6f8ddcd6516d9ec055689a35ac775f4d9f2a6");
+
+        return WebResourceFactory.newResource(Hospitalizations.class, target, false, header,
+                                              Collections.<Cookie>emptyList(), EMPTY_FORM);
+    }
+
+    /**
+     * Creates a Smart Flow Sheet patient from the patient context.
+     *
+     * @param context the patient context.
+     * @return a new patient
+     */
     private Patient createPatient(PatientContext context) {
         Patient result = new Patient();
         IMObjectBean bean = new IMObjectBean(context.getPatient(), service);
@@ -126,6 +207,12 @@ public class SmartFlowSheet {
         return result;
     }
 
+    /**
+     * Creates a new Smart Flow Sheet customer.
+     *
+     * @param context the patient context
+     * @return a new customer
+     */
     private Client createClient(PatientContext context) {
         Client result = new Client();
         IMObjectBean bean = new IMObjectBean(context.getCustomer(), service);
@@ -137,11 +224,25 @@ public class SmartFlowSheet {
         return result;
     }
 
+    /**
+     * Returns the patient colour.
+     * <p>
+     * This allows for the fact that some practices use lookups for the colour node.
+     *
+     * @param bean the patient bean
+     * @return the patient colour
+     */
     private String getColour(IMObjectBean bean) {
         NodeDescriptor node = bean.getDescriptor(COLOUR);
         return (node.isLookup()) ? lookups.getName(bean.getObject(), COLOUR) : bean.getString(COLOUR);
     }
 
+    /**
+     * Returns the patient sex.
+     *
+     * @param context the patient context
+     * @return the patient sex
+     */
     private String getSex(PatientContext context) {
         String result;
         String sex = context.getPatientSex();
@@ -154,4 +255,22 @@ public class SmartFlowSheet {
         return result;
     }
 
+    /**
+     * Workaround to allow JAX-RS logging to be delegated to log4j.
+     */
+    private static final class DebugLog extends Logger {
+
+        private final Log log;
+
+        protected DebugLog(Log log) {
+            super(GLOBAL_LOGGER_NAME, null);
+            this.log = log;
+        }
+
+        @Override
+        public void info(String msg) {
+            log.debug(msg);
+        }
+
+    }
 }
