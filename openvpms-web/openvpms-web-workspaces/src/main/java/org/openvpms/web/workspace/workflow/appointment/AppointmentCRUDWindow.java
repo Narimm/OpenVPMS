@@ -25,6 +25,7 @@ import nextapp.echo2.app.button.ButtonGroup;
 import nextapp.echo2.app.event.ActionEvent;
 import org.joda.time.DateTime;
 import org.joda.time.Minutes;
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -33,12 +34,15 @@ import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.hl7.patient.PatientContext;
+import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientInformationService;
+import org.openvpms.smartflow.client.SmartFlowSheet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.EditDialog;
@@ -106,6 +110,10 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      */
     private static final String CHECKIN_ID = "checkin";
 
+    /**
+     * Smart flow button identifier.
+     */
+    private static final String SMART_FLOW_ID = "button.smartflow";
 
     /**
      * Constructs an {@link AppointmentCRUDWindow}.
@@ -311,6 +319,12 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         buttons.add(createConsultButton());
         buttons.add(createCheckOutButton());
         buttons.add(createOverTheCounterButton());
+        buttons.add(SMART_FLOW_ID, new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                onSmartFlow();
+            }
+        });
         buttons.addKeyListener(KeyStrokes.CONTROL_MASK | 'C', new ActionListener() {
             public void onAction(ActionEvent event) {
                 onCopy();
@@ -411,6 +425,29 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         }
     }
 
+    private void onSmartFlow() {
+        Act appointment = IMObjectHelper.reload(getObject());
+        if (appointment != null) {
+            ActBean bean = new ActBean(appointment);
+            Party customer = (Party) bean.getNodeParticipant("customer");
+            Party patient = (Party) bean.getNodeParticipant("patient");
+            User clinician = (User) bean.getNodeParticipant("clinician");
+            if (customer != null && patient != null) {
+                MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
+                Act visit = rules.getEvent(patient);
+                if (visit != null) {
+                    SmartFlowSheet client = new SmartFlowSheet("https://sfs-public.azurewebsites.net/api/v3",
+                                                               ServiceHelper.getArchetypeService(),
+                                                               ServiceHelper.getLookupService());
+                    PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
+                    PatientContext context = factory.createContext(patient, customer, visit, getContext().getLocation(),
+                                                                   clinician);
+                    client.addPatient(context);
+                }
+            }
+        }
+    }
+
     /**
      * Invoked to copy an appointment.
      */
@@ -452,7 +489,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
 
     /**
      * Invoked to paste an appointment.
-     * <p/>
+     * <p>
      * For the paste to be successful:
      * <ul>
      * <li>the appointment must still exist

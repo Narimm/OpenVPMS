@@ -170,6 +170,16 @@
                     <groupId>eclipse</groupId>
                     <artifactId>jdtcore</artifactId>
                 </exclusion>
+                <!-- the following conflict with those required by        -->
+                <!-- org.glassfish.jersey.media:jersey-media-json-jackson -->
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

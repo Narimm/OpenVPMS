@@ -1,5 +1,7 @@
 package org.openvpms.smartflow.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.util.Date;
 
 /**
@@ -27,6 +29,7 @@ public class Patient {
     /**
      * Patient`s birthday. Time format: YYYY-MM-DDThh:mm:ss.sssTZD (e.g. 1997-07-16T19:20:30.000+00:00). Optional.
      */
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX")
     private Date birthday;
 
     /**
@@ -71,98 +74,219 @@ public class Patient {
      */
     private Client owner;
 
+    /**
+     * Returns the object type.
+     *
+     * @return the object type
+     */
     public String getObjectType() {
         return objectType;
     }
 
+    /**
+     * Sets the object type.
+     *
+     * @param objectType the object type. Should be {@code "patient"}
+     */
     public void setObjectType(String objectType) {
         this.objectType = objectType;
     }
 
+    /**
+     * Returns the patient identifier.
+     *
+     * @return the patient identifier
+     */
     public String getPatientId() {
         return patientId;
     }
 
+    /**
+     * Sets the patient identifier.
+     *
+     * @param patientId the patient identifier
+     */
     public void setPatientId(String patientId) {
         this.patientId = patientId;
     }
 
+    /**
+     * Returns the patient name.
+     *
+     * @return the patient name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Sets the patient name.
+     *
+     * @param name the patient name
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * Returns the patient birthday.
+     *
+     * @return the patient birthday
+     */
     public Date getBirthday() {
         return birthday;
     }
 
+    /**
+     * Sets the patient birthday.
+     *
+     * @param birthday the patient birthday
+     */
     public void setBirthday(Date birthday) {
         this.birthday = birthday;
     }
 
+    /**
+     * Returns the patient sex.
+     *
+     * @return the patient sex. One of M, F, MN, FS
+     */
     public String getSex() {
         return sex;
     }
 
+    /**
+     * Sets the patient sex.
+     *
+     * @param sex the patient sex. One of M, F, MN, FS
+     */
     public void setSex(String sex) {
         this.sex = sex;
     }
 
+    /**
+     * Returns the patient species.
+     *
+     * @return the patient species. May be {@code null}
+     */
     public String getSpecies() {
         return species;
     }
 
+    /**
+     * Sets the patient species.
+     *
+     * @param species the patient species. May be {@code null}
+     */
     public void setSpecies(String species) {
         this.species = species;
     }
 
+    /**
+     * Returns the patient’s color.
+     *
+     * @return the patient’s color. May be {@code null}
+     */
     public String getColor() {
         return color;
     }
 
+    /**
+     * Sets the patient’s color.
+     *
+     * @param color the patient’s color. May be {@code null}
+     */
     public void setColor(String color) {
         this.color = color;
     }
 
+    /**
+     * Returns the patient breed.
+     *
+     * @return the patient breed. May be {@code null}
+     */
     public String getBreed() {
         return breed;
     }
 
+    /**
+     * Sets the patient breed.
+     *
+     * @param breed the patient breed. May be {@code null}
+     */
     public void setBreed(String breed) {
         this.breed = breed;
     }
 
+    /**
+     * Returns the critical notes that will be shown on a flowsheet.
+     *
+     * @return the critical notes. May be {@code null}
+     */
     public String getCriticalNotes() {
         return criticalNotes;
     }
 
+    /**
+     * Sets he critical notes that will be shown on a flowsheet.
+     *
+     * @param criticalNotes the critical notes. May be {@code null}
+     */
     public void setCriticalNotes(String criticalNotes) {
         this.criticalNotes = criticalNotes;
     }
 
+    /**
+     * Returns the value of the custom field that will be shown on a flowsheet.
+     *
+     * @return the custom field. May be {@code null}
+     */
     public String getCustomField() {
         return customField;
     }
 
+    /**
+     * Sets the value of the custom field that will be shown on a flowsheet.
+     *
+     * @param customField the custom field. May be {@code null}
+     */
     public void setCustomField(String customField) {
         this.customField = customField;
     }
 
+    /**
+     * Return the path to the patient`s image file.
+     *
+     * @return the image file path. May be {@code null}
+     */
     public String getImagePath() {
         return imagePath;
     }
 
+    /**
+     * Sets the path to the patient`s image file.
+     *
+     * @param imagePath the image file path. May be {@code null}
+     */
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
     }
 
+    /**
+     * Returns the patient owner.
+     *
+     * @return the patient owner.
+     */
     public Client getOwner() {
         return owner;
     }
 
+    /**
+     * Sets the patient owner.
+     *
+     * @param owner the owner. Required when creating new hospitalization. Optional if used to update existing
+     *              hospitalization.
+     */
     public void setOwner(Client owner) {
         this.owner = owner;
     }
