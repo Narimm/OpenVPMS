@@ -1,10 +1,13 @@
 package org.openvpms.smartflow.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * Smart Flow Sheet patient owner.
  *
  * @author Tim Anderson
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Client {
 
     /**

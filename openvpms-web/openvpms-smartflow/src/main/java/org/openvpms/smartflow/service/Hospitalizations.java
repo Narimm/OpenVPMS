@@ -20,17 +20,6 @@ import javax.ws.rs.core.MediaType;
 public interface Hospitalizations {
 
     /**
-     * Returns a hospitalization, given its identifier.
-     *
-     * @param hospitalizationId the hospitalization identifier
-     * @return the corresponding hospitalization, or {@code null} if none is found
-     */
-    @GET
-    @Path("/{hospitalizationId}")
-    @Produces({MediaType.APPLICATION_JSON})
-    Hospitalization get(@PathParam("hospitalizationId") String hospitalizationId);
-
-    /**
      * Adds a new hospitalizations.
      *
      * @param hospitalization the hospitalization to add
@@ -40,6 +29,17 @@ public interface Hospitalizations {
     @Produces({MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_JSON})
     Hospitalization add(Hospitalization hospitalization);
+
+    /**
+     * Returns a hospitalization, given its identifier.
+     *
+     * @param hospitalizationId the hospitalization identifier
+     * @return the corresponding hospitalization, or {@code null} if none is found
+     */
+    @GET
+    @Path("/{hospitalizationId}")
+    @Produces({MediaType.APPLICATION_JSON})
+    Hospitalization get(@PathParam("hospitalizationId") String hospitalizationId);
 
     @DELETE
     @Path("/{hospitalizationId}")

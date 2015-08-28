@@ -17,8 +17,12 @@ import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.client.ClientResponseContext;
 import javax.ws.rs.client.ClientResponseFilter;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 
 /**
  * A filter used to handle 40x series errors. These extract any error messages returned in the body of responses, and
@@ -26,12 +30,21 @@ import java.io.IOException;
  *
  * @author Tim Anderson
  */
-class ClientErrorResponseFilter implements ClientResponseFilter {
+public class ClientErrorResponseFilter implements ClientResponseFilter {
 
     /**
      * The object mapper.
      */
-    private static ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
+
+    /**
+     * Constructs an {@link ClientErrorResponseFilter}.
+     *
+     * @param mapper the mapper
+     */
+    public ClientErrorResponseFilter(@Context ObjectMapper mapper) {
+        this.mapper = mapper;
+    }
 
     /**
      * Filter method called after a response has been provided for a request (either by a
@@ -47,7 +60,7 @@ class ClientErrorResponseFilter implements ClientResponseFilter {
     @Override
     public void filter(ClientRequestContext requestContext, ClientResponseContext responseContext) throws IOException {
         if (responseContext.getStatusInfo().getFamily() == Response.Status.Family.CLIENT_ERROR) {
-            if (responseContext.hasEntity()) {
+            if (responseContext.hasEntity() && isJSON(responseContext.getMediaType())) {
                 Error error = mapper.readValue(responseContext.getEntityStream(), Error.class);
                 String message = error.getMessage();
 
@@ -88,6 +101,18 @@ class ClientErrorResponseFilter implements ClientResponseFilter {
                 throw exception;
             }
         }
+    }
+
+    /**
+     * Determines if a media type is an {@link MediaType#APPLICATION_JSON_TYPE}.
+     *
+     * @param mediaType the media type. May be {@code null}
+     * @return {@code true} if its a JSON type
+     */
+    private boolean isJSON(MediaType mediaType) {
+        // can't use MediaType.equals() as it looks at parameters
+        return mediaType != null && APPLICATION_JSON_TYPE.getType().equals(mediaType.getType())
+               && APPLICATION_JSON_TYPE.getSubtype().equals(mediaType.getSubtype());
     }
 
 }
