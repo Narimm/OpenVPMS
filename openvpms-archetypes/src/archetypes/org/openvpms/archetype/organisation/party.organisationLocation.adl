@@ -109,6 +109,8 @@
         <node name="OTC" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="1"
               filter="entityRelationship.locationOTC"/>
+        <node name="smartFlowSheetKey" displayName="Smart Flow Sheet Clinic API Key" path="/details/smartFlowSheetKey"
+              type="java.lang.String" minCardinality="0"/>
         <node name="templates" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.documentTemplatePrinter"/>

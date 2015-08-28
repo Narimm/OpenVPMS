@@ -1,6 +1,6 @@
 package org.openvpms.smartflow.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.Date;
 
@@ -9,6 +9,7 @@ import java.util.Date;
  *
  * @author Tim Anderson
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Hospitalization {
 
     /**
@@ -38,7 +39,6 @@ public class Hospitalization {
      * Specifies the date and time of the patient arrival in the hospital.
      * Time format: YYYY-MM-DDThh:mm:ss.sssTZD (e.g. 1997-07-16T19:20:30.000+00:00). Required.
      */
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private Date dateCreated;
 
     /**

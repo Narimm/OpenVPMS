@@ -22,6 +22,7 @@ import org.openvpms.smartflow.model.Hospitalization;
 import org.openvpms.smartflow.model.Patient;
 import org.openvpms.smartflow.service.Hospitalizations;
 
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Cookie;
@@ -29,19 +30,35 @@ import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.Collections;
+import java.util.TimeZone;
 import java.util.logging.Logger;
 
 /**
- * Smart Flow Sheet client.
+ * Smart Flow Sheet hospitalisations client.
  *
  * @author Tim Anderson
  */
-public class SmartFlowSheet {
+public class HospitalizationService {
 
     /**
-     * The Smart Flow Sheet service URI.
+     * The Smart Flow Sheet service root URL.
      */
-    private final String uri;
+    private final String url;
+
+    /**
+     * The EMR API key.
+     */
+    private final String emrApiKey;
+
+    /**
+     * The clinic API key.
+     */
+    private final String clinicApiKey;
+
+    /**
+     * The time zone.
+     */
+    private final TimeZone timeZone;
 
     /**
      * The archetype service.
@@ -56,7 +73,7 @@ public class SmartFlowSheet {
     /**
      * The logger.
      */
-    private static final Log log = LogFactory.getLog(SmartFlowSheet.class);
+    private static final Log log = LogFactory.getLog(HospitalizationService.class);
 
     /**
      * Patient colour node.
@@ -69,14 +86,21 @@ public class SmartFlowSheet {
     private static final Form EMPTY_FORM = new Form();
 
     /**
-     * Constructs a {@link SmartFlowSheet}.
+     * Constructs a {@link HospitalizationService}.
      *
-     * @param uri     the Smart Flow Sheet URI
-     * @param service the archetype service
-     * @param lookups the lookup service
+     * @param url          the Smart Flow Sheet URL
+     * @param emrApiKey    the EMR API key
+     * @param clinicApiKey the clinic API key
+     * @param timeZone     the timezone. This determines how dates are serialized
+     * @param service      the archetype service
+     * @param lookups      the lookup service
      */
-    public SmartFlowSheet(String uri, IArchetypeService service, ILookupService lookups) {
-        this.uri = uri;
+    public HospitalizationService(String url, String emrApiKey, String clinicApiKey, TimeZone timeZone,
+                                  IArchetypeService service, ILookupService lookups) {
+        this.url = url;
+        this.emrApiKey = emrApiKey;
+        this.clinicApiKey = clinicApiKey;
+        this.timeZone = timeZone;
         this.service = service;
         this.lookups = lookups;
     }
@@ -88,13 +112,25 @@ public class SmartFlowSheet {
      * @return {@code true} if it exists
      */
     public boolean exists(PatientContext context) {
-        boolean result = false;
+        return getHospitalization(context) != null;
+    }
+
+    /**
+     * Returns the hospitalization for the specified patient context.
+     *
+     * @param context the patient context
+     * @return the hospitalization, or {@code null} if none exists
+     */
+    public Hospitalization getHospitalization(PatientContext context) {
+        Hospitalization result = null;
         javax.ws.rs.client.Client client = getClient();
-        WebTarget target = client.target(uri);
+        WebTarget target = client.target(url);
         try {
             Hospitalizations hospitalizations = getHospitalizations(target);
-            if (hospitalizations.get(Long.toString(context.getVisitId())) != null) {
-                result = true;
+            try {
+                result = hospitalizations.get(Long.toString(context.getVisitId()));
+            } catch (NotFoundException ignore) {
+                log.debug("No hospitalization found for id=" + context.getVisitId());
             }
         } finally {
             client.close();
@@ -103,13 +139,13 @@ public class SmartFlowSheet {
     }
 
     /**
-     * Adds a patient to Smart Flow Sheet.
+     * Adds a hospitalization for a patient.
      * <p>
      * The patient should have a current weight.
      *
      * @param context the patient context
      */
-    public void addPatient(PatientContext context) {
+    public void add(PatientContext context) {
         Hospitalization hospitalization = new Hospitalization();
         hospitalization.setPatient(createPatient(context));
         hospitalization.setHospitalizationId(Long.toString(context.getVisitId()));
@@ -131,7 +167,7 @@ public class SmartFlowSheet {
 
         javax.ws.rs.client.Client client = getClient();
         try {
-            WebTarget target = client.target(uri);
+            WebTarget target = client.target(url);
             Hospitalizations hospitalizations = getHospitalizations(target);
             hospitalizations.add(hospitalization);
         } finally {
@@ -145,9 +181,11 @@ public class SmartFlowSheet {
      * @return a new JAX-RS client
      */
     private javax.ws.rs.client.Client getClient() {
+        ObjectMapperContextResolver resolver = new ObjectMapperContextResolver(timeZone);
         ClientConfig config = new ClientConfig()
+                .register(resolver)
                 .register(JacksonFeature.class)
-                .register(ClientErrorResponseFilter.class);
+                .register(new ClientErrorResponseFilter(resolver.getContext(Object.class)));
         javax.ws.rs.client.Client resource = ClientBuilder.newClient(config);
         if (log.isDebugEnabled()) {
             resource.register(new LoggingFilter(new DebugLog(log), true));
@@ -163,8 +201,8 @@ public class SmartFlowSheet {
      */
     private Hospitalizations getHospitalizations(WebTarget target) {
         MultivaluedMap<String, Object> header = new MultivaluedHashMap<>();
-        header.add("emrApiKey", "873af17b2163255a3eb70a7d7413be152657bfab");
-        header.add("clinicApiKey", "51a6f8ddcd6516d9ec055689a35ac775f4d9f2a6");
+        header.add("emrApiKey", emrApiKey);
+        header.add("clinicApiKey", clinicApiKey); // "51a6f8ddcd6516d9ec055689a35ac775f4d9f2a6"
 
         return WebResourceFactory.newResource(Hospitalizations.class, target, false, header,
                                               Collections.<Cookie>emptyList(), EMPTY_FORM);

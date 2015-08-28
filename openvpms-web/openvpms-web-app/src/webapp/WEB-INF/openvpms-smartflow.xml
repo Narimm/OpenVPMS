@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <bean class="org.openvpms.smartflow.client.FlowSheetServiceFactory">
+        <constructor-arg name="emrApiKey" value="873af17b2163255a3eb70a7d7413be152657bfab"/>
+        <constructor-arg name="url" value="https://sfs-public.azurewebsites.net/api/v3"/>
+        <constructor-arg name="service" ref="archetypeRuleService"/>
+        <constructor-arg name="lookups" ref="lookupService"/>
+    </bean>
+</beans>
