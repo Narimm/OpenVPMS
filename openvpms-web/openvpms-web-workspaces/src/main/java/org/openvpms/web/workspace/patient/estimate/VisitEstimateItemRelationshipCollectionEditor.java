@@ -70,7 +70,7 @@ public class VisitEstimateItemRelationshipCollectionEditor extends EstimateActRe
     public List<Act> getPatientActs() {
         CollectionPropertyEditor editor = getCollectionPropertyEditor();
         List<IMObject> objects = editor.getObjects();
-        List<Act> acts = new ArrayList<Act>();
+        List<Act> acts = new ArrayList<>();
         Party patient = getPatient();
         if (patient != null) {
             IMObjectReference patientRef = patient.getObjectReference();
@@ -94,7 +94,7 @@ public class VisitEstimateItemRelationshipCollectionEditor extends EstimateActRe
     @SuppressWarnings("unchecked")
     protected ResultSet<IMObject> createResultSet() {
         List acts = getPatientActs();
-        ResultSet<IMObject> set = new IMObjectListResultSet<IMObject>(acts, ROWS);
+        ResultSet<IMObject> set = new IMObjectListResultSet<>(acts, ROWS);
         set.sort(new SortConstraint[]{new NodeSortConstraint("startTime", false)});
         return set;
     }
@@ -109,7 +109,7 @@ public class VisitEstimateItemRelationshipCollectionEditor extends EstimateActRe
     @Override
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
         VisitEstimateItemEditor editor = new VisitEstimateItemEditor((Act) object, (Act) getObject(), context);
-        editor.setProductListener(getProductListener());
+        editor.setDoseManager(getDoseManager());
         return editor;
     }
 
