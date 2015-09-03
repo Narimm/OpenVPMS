@@ -90,8 +90,16 @@ order by p.activityStartTime, act.id
 select ap.entity.id as scheduleId, a.activityEndTime as startTime, min(b.activityStartTime) as endTime
 from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as a,
       org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as b
-join a.participations ap with ap.archetypeId.shortName = 'participation.schedule' and ap.entity.id = :scheduleId
-join b.participations bp with bp.archetypeId.shortName = 'participation.schedule' and bp.entity.id = :scheduleId
+join a.participations ap
+      with ap.archetypeId.shortName = 'participation.schedule'
+           and ap.entity.id = :scheduleId
+           and ap.actShortName = 'act.customerAppointment'
+           and (ap.activityStartTime between :from and :to or ap.activityEndTime between :from and :to)
+join b.participations bp
+      with bp.archetypeId.shortName = 'participation.schedule'
+           and bp.entity.id = :scheduleId
+           and bp.actShortName = 'act.customerAppointment'
+           and (bp.activityStartTime between :from and :to or bp.activityEndTime between :from and :to)
 where a.archetypeId.shortName = 'act.customerAppointment'
       and b.archetypeId.shortName = 'act.customerAppointment'
       and (a.activityStartTime between :from and :to or a.activityEndTime between :from and :to)
