@@ -245,11 +245,14 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
             removeCurrentEditor();
         }
         // remove the object from the collection. May generate events
-        boolean removed = getCollectionPropertyEditor().remove(object);
+        CollectionPropertyEditor collection = getCollectionPropertyEditor();
+        boolean present = collection.getObjects().contains(object);
+        boolean removed = collection.remove(object);
         refresh();
-        if (!removed) {
-            // the object was not committed, so no notification has been
-            // generated yet
+        if (!(present && removed)) {
+            // the object was not committed, so no notification has been generated yet
+            // RelationshipCollectionTargetEditor doesn't commit the object to the collection until saved, but
+            // the editor can still be be removed without generating a callback
             getListeners().notifyListeners(getProperty());
         }
         // workaround for OVPMS-629
