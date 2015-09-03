@@ -98,6 +98,9 @@ public class DateBinder extends Binder {
             calendar.setTime(date);
         }
         chooser.setSelectedDate(calendar);
+        if (calendar != null) {
+            chooser.setDisplayedDate(calendar);
+        }
         chooser.addPropertyChangeListener(listener);
     }
 }
