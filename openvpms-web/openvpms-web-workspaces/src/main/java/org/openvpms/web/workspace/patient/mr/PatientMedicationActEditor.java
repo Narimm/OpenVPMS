@@ -91,6 +91,11 @@ public class PatientMedicationActEditor extends PatientActEditor {
     private final ModifiableListener batchListener;
 
     /**
+     * Batch node name.
+     */
+    private static final String BATCH = "batch";
+
+    /**
      * Constructs a {@link PatientMedicationActEditor}.
      *
      * @param act     the act to edit
@@ -235,10 +240,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
      * @param batch the batch. May be {@code null}
      */
     public void setBatch(Entity batch) {
-        BatchParticipationEditor batchEditor = getBatchEditor();
-        if (batchEditor != null) {
-            batchEditor.setEntity(batch);
-        }
+        setParticipant(BATCH, batch);
     }
 
     /**
@@ -247,8 +249,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
      * @return the batch. May be {@code null}
      */
     public Entity getBatch() {
-        BatchParticipationEditor editor = getBatchEditor();
-        return editor != null ? editor.getEntity() : null;
+        return (Entity) getParticipant(BATCH);
     }
 
     /**
@@ -374,7 +375,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
      * @return the product batch participation, or {@code null} if none exists
      */
     protected BatchParticipationEditor getBatchEditor() {
-        ParticipationEditor<Entity> editor = getParticipationEditor("batch", false);
+        ParticipationEditor<Entity> editor = getParticipationEditor(BATCH, false);
         return (BatchParticipationEditor) editor;
     }
 
