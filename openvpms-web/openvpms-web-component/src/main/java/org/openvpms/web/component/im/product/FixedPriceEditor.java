@@ -138,7 +138,9 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
             field.setEnabled(false);
         }
         focus = new FocusGroup(property.getDisplayName());
-        focus.add(field);
+        if (!property.isReadOnly()) {
+            focus.add(field);
+        }
         container = RowFactory.create(field);
     }
 
