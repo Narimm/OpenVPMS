@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
+import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.layout.PrintObjectLayoutStrategy;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -29,6 +30,8 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.ReadOnlyProperty;
 import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.text.TextArea;
 
 import java.util.List;
 
@@ -75,6 +78,21 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
      * Factory for read-only components.
      */
     private ReadOnlyComponentFactory factory;
+
+    /**
+     * The product node.
+     */
+    static final String PRODUCT = "product";
+
+    /**
+     * The quantity node.
+     */
+    static final String QUANTITY = "quantity";
+
+    /**
+     * The notes node.
+     */
+    static final String LABEL = "label";
 
 
     /**
@@ -139,15 +157,28 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         ComponentState result;
         try {
+            nodes = new ArchetypeNodes().exclude(LABEL);
+            if (!showProduct) {
+                nodes.exclude(PRODUCT);
+            }
+
             if (!showProductReadOnly) {
                 if (parent instanceof Act) {
                     ActBean bean = new ActBean((Act) parent);
-                    showProduct = !bean.hasNode("product");
+                    showProduct = !bean.hasNode(PRODUCT);
                 } else {
                     showProduct = true;
                 }
+            } else {
+                addComponent(getReadOnlyComponent(properties.get(PRODUCT), parent, context));
             }
-            nodes = (showProduct) ? DEFAULT_NODES : new ArchetypeNodes().exclude("product");
+
+            Property label = properties.get(LABEL);
+            if (prescription) {
+                addComponent(getReadOnlyComponent(properties.get(QUANTITY), parent, context));
+                label = new ReadOnlyProperty(label);
+            }
+            addComponent(createNotes(parent, label, context));
             result = super.apply(object, properties, parent, context);
         } finally {
             factory = null;
@@ -169,32 +200,23 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
                                   Component container, LayoutContext context) {
         super.doSimpleLayout(object, parent, properties, container, context);
         if (usageNotes != null) {
-            container.add(ColumnFactory.create("InsetX", usageNotes));
+            container.add(ColumnFactory.create(Styles.INSET_X, usageNotes));
         }
     }
 
     /**
-     * Creates a component for a property.
+     * Lays out components in a grid.
      *
-     * @param property the property
-     * @param parent   the parent object
-     * @param context  the layout context
-     * @return a component to display {@code property}
+     * @param object     the object to lay out
+     * @param properties the properties
+     * @param context    the layout context
+     * @param columns    the no. of columns to use
      */
     @Override
-    protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
-        ComponentState result;
-        String name = property.getName();
-        if (showDateReadOnly && name.equals("startTime")) {
-            result = getReadOnlyComponent(property, parent, context);
-        } else if (showProductReadOnly && name.equals("product")) {
-            result = getReadOnlyComponent(property, parent, context);
-        } else if (prescription && (name.equals("quantity") || name.equals("label"))) {
-            result = super.createComponent(new ReadOnlyProperty(property), parent, context);
-        } else {
-            result = super.createComponent(property, parent, context);
-        }
-        return result;
+    protected ComponentGrid createGrid(IMObject object, List<Property> properties, LayoutContext context, int columns) {
+        ComponentGrid grid = super.createGrid(object, properties, context, columns);
+        grid.add(getComponent(LABEL), columns);
+        return grid;
     }
 
     /**
@@ -205,6 +227,24 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
     @Override
     protected ArchetypeNodes getArchetypeNodes() {
         return nodes;
+    }
+
+    /**
+     * Creates a component for a note node.
+     *
+     * @param property the property
+     * @param object   the parent object
+     * @param context  the layout context
+     * @return a new component
+     */
+    protected ComponentState createNotes(IMObject object, Property property, LayoutContext context) {
+        ComponentState notes = createComponent(property, object, context);
+        Component component = notes.getComponent();
+        if (component instanceof TextArea) {
+            TextArea text = (TextArea) component;
+            text.setWidth(Styles.FULL_WIDTH);
+        }
+        return notes;
     }
 
     /**
