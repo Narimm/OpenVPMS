@@ -87,6 +87,7 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
         buttons.add(createCheckOutButton());
         buttons.add(transfer);
         buttons.add(createOverTheCounterButton());
+        buttons.add(createFlowSheetButton());
     }
 
     /**

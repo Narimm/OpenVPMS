@@ -10,6 +10,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * Smart Flow Sheet Hospitalizations API.
@@ -44,4 +45,19 @@ public interface Hospitalizations {
     @DELETE
     @Path("/{hospitalizationId}")
     void remove(@PathParam("hospitalizationId") String hospitalizationId);
+
+    @GET
+    @Path("/{hospitalizationId}/medicalrecordsreport")
+    @Produces({"application/pdf"})
+    Response getMedicalRecordsReport(@PathParam("hospitalizationId") String hospitalizationId);
+
+    @GET
+    @Path("/{hospitalizationId}/inventoryreport")
+    @Produces({"application/pdf"})
+    Response getInventoryReport(@PathParam("hospitalizationId") String hospitalizationId);
+
+    @GET
+    @Path("/{hospitalizationId}/flowsheetreport")
+    @Produces({"application/pdf"})
+    Response getFlowSheetReport(@PathParam("hospitalizationId") String hospitalizationId);
 }

@@ -18,6 +18,7 @@ package org.openvpms.web.echo.dialog;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.TaskQueueHandle;
+import nextapp.echo2.app.event.WindowPaneListener;
 import nextapp.echo2.webcontainer.ContainerContext;
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.web.resource.i18n.Messages;
@@ -79,7 +80,32 @@ public class InformationDialog extends MessageDialog {
      * @param message dialog message
      */
     public static void show(String title, String message) {
-        InformationDialog dialog = new InformationDialog(title, message);
+        show(title, message, null);
+    }
+
+    /**
+     * Helper to show a new information dialog.
+     *
+     * @param message  dialog message
+     * @param listener the listener to notify when the dialog closes. May be {@code null}
+     */
+    public static void show(String message, WindowPaneListener listener) {
+        show(null, message, listener);
+    }
+
+    /**
+     * Helper to show a new information dialog.
+     *
+     * @param title    the dialog title. May be {@code null}
+     * @param message  dialog message
+     * @param listener the listener to notify when the dialog closes. May be {@code null}
+     */
+    public static void show(String title, String message, WindowPaneListener listener) {
+        InformationDialog dialog = title != null ? new InformationDialog(title, message)
+                                                 : new InformationDialog(message);
+        if (listener != null) {
+            dialog.addWindowPaneListener(listener);
+        }
         dialog.show();
     }
 
@@ -101,7 +127,7 @@ public class InformationDialog extends MessageDialog {
 
     /**
      * Processes a user request to close the window (via the close button).
-     * <p/>
+     * <p>
      * This restores the previous focus
      */
     @Override

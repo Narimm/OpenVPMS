@@ -1,6 +1,7 @@
 package org.openvpms.smartflow.client;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -35,6 +36,11 @@ public class FlowSheetServiceFactory {
      */
     private final ILookupService lookups;
 
+    /**
+     * The document handlers.
+     */
+    private final DocumentHandlers handlers;
+
 
     /**
      * Constructs an {@link FlowSheetServiceFactory}.
@@ -43,12 +49,15 @@ public class FlowSheetServiceFactory {
      * @param emrApiKey the emrApiKey submitted with each request
      * @param service   the archetype service
      * @param lookups   the lookup service
+     * @param handlers  the document handlers
      */
-    public FlowSheetServiceFactory(String url, String emrApiKey, IArchetypeService service, ILookupService lookups) {
+    public FlowSheetServiceFactory(String url, String emrApiKey, IArchetypeService service, ILookupService lookups,
+                                   DocumentHandlers handlers) {
         this.url = url;
         this.emrApiKey = emrApiKey;
         this.service = service;
         this.lookups = lookups;
+        this.handlers = handlers;
     }
 
     /**
@@ -72,7 +81,7 @@ public class FlowSheetServiceFactory {
         if (clinicKey == null) {
             throw new IllegalArgumentException("Argument 'location' doesn't have a clinic key");
         }
-        return new HospitalizationService(url, emrApiKey, clinicKey, TimeZone.getDefault(), service, lookups);
+        return new HospitalizationService(url, emrApiKey, clinicKey, TimeZone.getDefault(), service, lookups, handlers);
     }
 
     /**

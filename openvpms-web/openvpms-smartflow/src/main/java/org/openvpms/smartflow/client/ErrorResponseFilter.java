@@ -18,19 +18,16 @@ import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.client.ClientResponseContext;
 import javax.ws.rs.client.ClientResponseFilter;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
-
 /**
- * A filter used to handle 40x series errors. These extract any error messages returned in the body of responses, and
- * include them in the thrown exception.
+ * A filter used to handle 40x and 50x series errors. These extract any error messages returned in the body of
+ * responses, and includes them in the thrown exception.
  *
  * @author Tim Anderson
  */
-public class ClientErrorResponseFilter implements ClientResponseFilter {
+public class ErrorResponseFilter implements ClientResponseFilter {
 
     /**
      * The object mapper.
@@ -38,11 +35,11 @@ public class ClientErrorResponseFilter implements ClientResponseFilter {
     private final ObjectMapper mapper;
 
     /**
-     * Constructs an {@link ClientErrorResponseFilter}.
+     * Constructs an {@link ErrorResponseFilter}.
      *
      * @param mapper the mapper
      */
-    public ClientErrorResponseFilter(@Context ObjectMapper mapper) {
+    public ErrorResponseFilter(@Context ObjectMapper mapper) {
         this.mapper = mapper;
     }
 
@@ -59,8 +56,10 @@ public class ClientErrorResponseFilter implements ClientResponseFilter {
      */
     @Override
     public void filter(ClientRequestContext requestContext, ClientResponseContext responseContext) throws IOException {
-        if (responseContext.getStatusInfo().getFamily() == Response.Status.Family.CLIENT_ERROR) {
-            if (responseContext.hasEntity() && isJSON(responseContext.getMediaType())) {
+        Response.StatusType statusInfo = responseContext.getStatusInfo();
+        if (statusInfo.getFamily() == Response.Status.Family.CLIENT_ERROR
+            || statusInfo.getFamily() == Response.Status.Family.SERVER_ERROR) {
+            if (responseContext.hasEntity() && MediaTypeHelper.isJSON(responseContext.getMediaType())) {
                 Error error = mapper.readValue(responseContext.getEntityStream(), Error.class);
                 String message = error.getMessage();
 
@@ -101,18 +100,6 @@ public class ClientErrorResponseFilter implements ClientResponseFilter {
                 throw exception;
             }
         }
-    }
-
-    /**
-     * Determines if a media type is an {@link MediaType#APPLICATION_JSON_TYPE}.
-     *
-     * @param mediaType the media type. May be {@code null}
-     * @return {@code true} if its a JSON type
-     */
-    private boolean isJSON(MediaType mediaType) {
-        // can't use MediaType.equals() as it looks at parameters
-        return mediaType != null && APPLICATION_JSON_TYPE.getType().equals(mediaType.getType())
-               && APPLICATION_JSON_TYPE.getSubtype().equals(mediaType.getSubtype());
     }
 
 }

@@ -272,19 +272,9 @@ public class PatientContext {
      *
      * @return the patient weight, or {@code null} if unknown
      */
-    public Weight getPatientWeight() {
+    public Weight getWeight() {
         getWeightAct();
         return (weight != null) ? patientRules.getWeight(weight) : null;
-    }
-
-    /**
-     * Returns the date when the patient was weighed.
-     *
-     * @return the date, or {@code null} if the patient has no weight record
-     */
-    public Date getWeighDate() {
-        getWeightAct();
-        return weight != null ? weight.getActivityStartTime() : null;
     }
 
     /**

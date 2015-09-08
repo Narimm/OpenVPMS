@@ -18,13 +18,18 @@ package org.openvpms.web.workspace.patient.history;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.WindowPaneEvent;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.hl7.patient.PatientContext;
+import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientInformationService;
+import org.openvpms.smartflow.client.FlowSheetServiceFactory;
+import org.openvpms.smartflow.client.HospitalizationService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.archetype.Archetypes;
@@ -32,10 +37,13 @@ import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.retry.Retryer;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonSet;
+import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
@@ -93,7 +101,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
 
     /**
      * Sets the current patient clinical event.
-     * <p/>
+     * <p>
      * This updates the context.
      *
      * @param event the current event
@@ -123,6 +131,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         super.layoutButtons(buttons);
         buttons.add(createPrintButton());
         buttons.add(createAddNoteButton());
+        buttons.add(createImportFlowSheetButton());
     }
 
     /**
@@ -148,8 +157,8 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
             // an event is selected, so display all of the possible event item archetypes
             String[] shortNames = getShortNames(PatientArchetypes.CLINICAL_EVENT_ITEM,
                                                 PatientArchetypes.CLINICAL_EVENT);
-            archetypes = new Archetypes<Act>(shortNames, archetypes.getType(), PatientArchetypes.CLINICAL_NOTE,
-                                             archetypes.getDisplayName());
+            archetypes = new Archetypes<>(shortNames, archetypes.getType(), PatientArchetypes.CLINICAL_NOTE,
+                                          archetypes.getDisplayName());
         }
         super.onCreate(archetypes);
     }
@@ -207,13 +216,13 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
                 Context context = getContext();
                 PatientHistoryFilter filter = new PatientHistoryFilter(query.getActItemShortNames());
                 // maxDepth = 2 - display the events, and their immediate children
-                Iterable<Act> summary = new ActHierarchyIterator<Act>(query, filter, 2);
+                Iterable<Act> summary = new ActHierarchyIterator<>(query, filter, 2);
                 DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_EVENT,
                                                                                      context);
-                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(summary, locator, context);
+                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<>(summary, locator, context);
                 String title = Messages.get("patient.record.summary.print");
                 HelpContext help = getHelpContext().topic(PatientArchetypes.CLINICAL_EVENT + "/print");
-                InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, context, help);
+                InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<>(title, printer, context, help);
                 iPrinter.setMailContext(getMailContext());
                 iPrinter.print();
             } catch (OpenVPMSException exception) {
@@ -227,13 +236,13 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      */
     protected void onAddNote() {
         setEvent(null);     // event will be created in onSaved()
-        Archetypes<Act> archetypes = new Archetypes<Act>(PatientArchetypes.CLINICAL_NOTE, Act.class);
+        Archetypes<Act> archetypes = new Archetypes<>(PatientArchetypes.CLINICAL_NOTE, Act.class);
         onCreate(archetypes);
     }
 
     /**
      * Invoked when the patient weight changes or a weight record is deleted.
-     * <p/>
+     * <p>
      * If the act is for the current visit, registered listeners will be notified via
      * the {@link PatientInformationService}.
      *
@@ -261,4 +270,44 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         });
     }
 
+    /**
+     * Creates a button to import flow sheet documents.
+     *
+     * @return a new button
+     */
+    private Button createImportFlowSheetButton() {
+        return ButtonFactory.create("button.importFlowSheet", new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onImportFlowSheet();
+            }
+        });
+    }
+
+    /**
+     * Imports flow sheet documents.
+     */
+    private void onImportFlowSheet() {
+        final Act visit = IMObjectHelper.reload(getEvent());
+        if (visit != null) {
+            Party location = getContext().getLocation();
+            PatientContext context = ServiceHelper.getBean(PatientContextFactory.class).createContext(visit, location);
+            if (context != null) {
+                FlowSheetServiceFactory factory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
+                HospitalizationService service = factory.getHospitalisationService(location);
+                if (service.exists(context)) {
+                    FlowSheetReportsDialog dialog = new FlowSheetReportsDialog(context);
+                    dialog.addWindowPaneListener(new WindowPaneListener() {
+                        @Override
+                        public void onClose(WindowPaneEvent event) {
+                            onRefresh(visit);
+                        }
+                    });
+                    dialog.show();
+                } else {
+                    InformationDialog.show(Messages.format("patient.record.flowsheet.import.nohospitalisation",
+                                                           context.getPatient().getName()));
+                }
+            }
+        }
+    }
 }

@@ -37,7 +37,6 @@ public class Tasks extends AbstractTask {
      * @param help the help context
      */
     public Tasks(HelpContext help) {
-
         workflow = new WorkflowImpl(help);
     }
 
@@ -62,7 +61,7 @@ public class Tasks extends AbstractTask {
 
     /**
      * Starts the task.
-     * <p/>
+     * <p>
      * The registered {@link TaskListener} will be notified on completion or failure.
      *
      * @param context the task context
@@ -84,7 +83,21 @@ public class Tasks extends AbstractTask {
                 }
             }
         });
-        start(workflow, context);
+        initialise(context);
+        if (!isFinished()) {     // initialisation may have failed
+            start(workflow, context);
+        }
+    }
+
+    /**
+     * Initialise any tasks.
+     * <p>
+     * This implementation is a no-op.
+     *
+     * @param context the task context
+     */
+    protected void initialise(TaskContext context) {
+
     }
 
 }

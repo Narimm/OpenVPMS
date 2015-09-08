@@ -29,6 +29,8 @@
               defaultValue="true()"/>
         <node name="inputWeight" path="/details/inputWeight" type="java.lang.Boolean" minCardinality="0"
               defaultValue="true()"/>
+        <node name="createFlowSheet" path="/details/createFlowSheet" type="java.lang.Boolean" minCardinality="0"
+              defaultValue="false()"/>
         <node name="views" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.viewWorkList">

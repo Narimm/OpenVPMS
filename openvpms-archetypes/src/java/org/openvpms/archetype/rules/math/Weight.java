@@ -17,9 +17,12 @@
 package org.openvpms.archetype.rules.math;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * A weight value and the units it is expressed in.
+ * <p>
+ * Weights have an optional date, indicating when the weight was taken.
  *
  * @author Tim Anderson
  */
@@ -36,9 +39,14 @@ public class Weight {
     private final BigDecimal weight;
 
     /**
-     * The weight units
+     * The weight units.
      */
     private final WeightUnits units;
+
+    /**
+     * The date/time when the weight was taken.
+     */
+    private Date date;
 
     /**
      * Constructs a {@link Weight}, expressed in kilograms.
@@ -65,8 +73,20 @@ public class Weight {
      * @param units  the weight units
      */
     public Weight(BigDecimal weight, WeightUnits units) {
+        this(weight, units, null);
+    }
+
+    /**
+     * Constructs a {@link Weight}.
+     *
+     * @param weight the weight
+     * @param units  the weight units
+     * @param date   the date/time when the weight was taken. May be {@code null}
+     */
+    public Weight(BigDecimal weight, WeightUnits units, Date date) {
         this.weight = weight;
         this.units = units;
+        this.date = date;
     }
 
     /**
@@ -94,6 +114,15 @@ public class Weight {
      */
     public WeightUnits getUnits() {
         return units;
+    }
+
+    /**
+     * Returns the date/time when the weight was taken.
+     *
+     * @return the date/time, or {@code null} if it is not known
+     */
+    public Date getDate() {
+        return date;
     }
 
     /**
