@@ -16,18 +16,13 @@
 
 package org.openvpms.web.workspace.patient.info;
 
-import org.openvpms.archetype.rules.patient.MedicalRecordRules;
-import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.system.ServiceHelper;
-
-import java.util.Date;
 
 /**
  * Helper to create {@link PatientContext} instances.
@@ -47,28 +42,34 @@ public class PatientContextHelper {
         PatientContext result = null;
         ActBean bean = new ActBean(appointment);
         Party patient = (Party) bean.getNodeParticipant("patient");
-        if (patient != null) {
+        Party location = context.getLocation();
+        if (patient != null && location != null) {
             Party customer = (Party) bean.getNodeParticipant("customer");
-            User clinician = (User) bean.getNodeParticipant("clinician");
-            MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
-            Act event = rules.getEvent(patient, new Date());
-            if (event != null) {
-                result = getPatientContext(patient, customer, event, context, clinician);
-            }
+            PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
+            result = factory.createContext(patient, customer, context.getLocation());
         }
         return result;
     }
 
     /**
-     * Returns the patient context for a patient act.
+     * Returns the patient context for a patient associated with an act.
+     * <p>
+     * Note that this uses the current owner and visit for the patient.
      *
      * @param act     the patient act
      * @param context the context
      * @return the patient context, or {@code null} if the patient can't be found, or has no current visit
      */
     public static PatientContext getPatientContext(Act act, Context context) {
+        PatientContext result = null;
         ActBean bean = new ActBean(act);
-        return getPatientContext((Party) bean.getNodeParticipant("patient"), context);
+        Party patient = (Party) bean.getNodeParticipant("patient");
+        Party location = context.getLocation();
+        if (patient != null && location != null) {
+            PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
+            result = factory.createContext(patient, location);
+        }
+        return result;
     }
 
     /**
@@ -80,23 +81,12 @@ public class PatientContextHelper {
      */
     public static PatientContext getPatientContext(Party patient, Context context) {
         PatientContext result = null;
-        if (patient != null) {
-            PatientRules patientRules = ServiceHelper.getBean(PatientRules.class);
-            Party customer = patientRules.getOwner(patient);
-            MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
-            Act event = rules.getEvent(patient, new Date());
-            if (event != null) {
-                ActBean bean = new ActBean(event);
-                User clinician = (User) bean.getNodeParticipant("clinician");
-                result = getPatientContext(patient, customer, event, context, clinician);
-            }
+        Party location = context.getLocation();
+        if (patient != null && location != null) {
+            PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
+            result = factory.createContext(patient, location);
         }
         return result;
     }
 
-    private static PatientContext getPatientContext(Party patient, Party customer, Act event, Context context,
-                                                    User clinician) {
-        PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
-        return factory.createContext(patient, customer, event, context.getLocation(), clinician);
-    }
 }

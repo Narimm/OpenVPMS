@@ -7,21 +7,31 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.proxy.WebResourceFactory;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.jackson.JacksonFeature;
+import org.openvpms.archetype.rules.doc.DocumentHandler;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.math.WeightUnits;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.hl7.patient.PatientContext;
+import org.openvpms.smartflow.i18n.FlowSheetMessages;
 import org.openvpms.smartflow.model.Client;
 import org.openvpms.smartflow.model.Hospitalization;
 import org.openvpms.smartflow.model.Patient;
 import org.openvpms.smartflow.service.Hospitalizations;
 
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
@@ -29,9 +39,15 @@ import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.logging.Logger;
+
+import static org.openvpms.smartflow.client.MediaTypeHelper.APPLICATION_PDF;
 
 /**
  * Smart Flow Sheet hospitalisations client.
@@ -71,6 +87,11 @@ public class HospitalizationService {
     private final ILookupService lookups;
 
     /**
+     * The document handlers.
+     */
+    private final DocumentHandlers handlers;
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(HospitalizationService.class);
@@ -94,15 +115,18 @@ public class HospitalizationService {
      * @param timeZone     the timezone. This determines how dates are serialized
      * @param service      the archetype service
      * @param lookups      the lookup service
+     * @param handlers     the document handlers
      */
     public HospitalizationService(String url, String emrApiKey, String clinicApiKey, TimeZone timeZone,
-                                  IArchetypeService service, ILookupService lookups) {
+                                  IArchetypeService service, ILookupService lookups,
+                                  DocumentHandlers handlers) {
         this.url = url;
         this.emrApiKey = emrApiKey;
         this.clinicApiKey = clinicApiKey;
         this.timeZone = timeZone;
         this.service = service;
         this.lookups = lookups;
+        this.handlers = handlers;
     }
 
     /**
@@ -132,6 +156,8 @@ public class HospitalizationService {
             } catch (NotFoundException ignore) {
                 log.debug("No hospitalization found for id=" + context.getVisitId());
             }
+        } catch (Throwable exception) {
+            throw new FlowSheetException(FlowSheetMessages.failedToGetHospitalization(context.getPatient()), exception);
         } finally {
             client.close();
         }
@@ -150,7 +176,7 @@ public class HospitalizationService {
         hospitalization.setPatient(createPatient(context));
         hospitalization.setHospitalizationId(Long.toString(context.getVisitId()));
         hospitalization.setDateCreated(context.getVisitStartTime());
-        Weight weight = context.getPatientWeight();
+        Weight weight = context.getWeight();
         if (weight != null) {
             if (weight.getUnits() == WeightUnits.KILOGRAMS || weight.getUnits() == WeightUnits.GRAMS) {
                 hospitalization.setWeight(weight.toKilograms().doubleValue());
@@ -170,6 +196,98 @@ public class HospitalizationService {
             WebTarget target = client.target(url);
             Hospitalizations hospitalizations = getHospitalizations(target);
             hospitalizations.add(hospitalization);
+        } catch (NotAuthorizedException exception) {
+            throw new FlowSheetException(FlowSheetMessages.noAuthToCreateFlowSheet(context.getPatient()), exception);
+        } catch (Throwable exception) {
+            throw new FlowSheetException(FlowSheetMessages.failedToCreateFlowSheet(context.getPatient()), exception);
+        } finally {
+            client.close();
+        }
+    }
+
+    /**
+     * Saves a medical record report associated with a patient visit, to the patient visit.
+     *
+     * @param name    the name to use for the file, excluding the extension
+     * @param context the patient context
+     */
+    public void saveMedicalRecords(String name, PatientContext context) {
+        saveReport(name, context, new ReportRetriever() {
+            @Override
+            public Response getResponse(Hospitalizations service, String id) {
+                return service.getMedicalRecordsReport(id);
+            }
+        });
+    }
+
+    /**
+     * Saves a inventory report associated with a patient visit, to the patient visit.
+     *
+     * @param name    the name to use for the file, excluding the extension
+     * @param context the patient context
+     */
+    public void saveInventoryReport(String name, PatientContext context) {
+        saveReport(name, context, new ReportRetriever() {
+            @Override
+            public Response getResponse(Hospitalizations service, String id) {
+                return service.getInventoryReport(id);
+            }
+        });
+    }
+
+    /**
+     * Saves a flow sheet report associated with a patient visit, to the patient visit.
+     *
+     * @param name    the name to use for the file, excluding the extension
+     * @param context the patient context
+     */
+    public void saveFlowSheetReport(String name, PatientContext context) {
+        saveReport(name, context, new ReportRetriever() {
+            @Override
+            public Response getResponse(Hospitalizations service, String id) {
+                return service.getFlowSheetReport(id);
+            }
+        });
+    }
+
+    /**
+     * Saves a report to the patient history.
+     *
+     * @param name      the report name
+     * @param context   the patient context
+     * @param retriever the report retriever
+     */
+    private void saveReport(String name, PatientContext context, ReportRetriever retriever) {
+        String id = Long.toString(context.getVisitId());
+        javax.ws.rs.client.Client client = getClient();
+        try {
+            WebTarget target = client.target(url);
+            Hospitalizations hospitalizations = getHospitalizations(target);
+            Response response = retriever.getResponse(hospitalizations, id);
+            if (response.hasEntity() && MediaTypeHelper.isPDF(response.getMediaType())) {
+                try (InputStream stream = (InputStream) response.getEntity()) {
+                    String fileName = name + ".pdf";
+                    DocumentHandler documentHandler = handlers.find(fileName, APPLICATION_PDF);
+                    DocumentRules rules = new DocumentRules(service);
+                    Document document = documentHandler.create(fileName, stream, APPLICATION_PDF, -1);
+                    DocumentAct act = (DocumentAct) service.create(PatientArchetypes.DOCUMENT_ATTACHMENT);
+                    ActBean bean = new ActBean(act, service);
+                    Act visit = context.getVisit();
+                    ActBean visitBean = new ActBean(visit, service);
+                    visitBean.addNodeRelationship("items", act);
+                    bean.addNodeParticipation("patient", context.getPatient());
+                    List<IMObject> objects = rules.addDocument(act, document);
+                    objects.add(act);
+                    service.save(objects);
+                } catch (IOException exception) {
+                    throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(context.getPatient(), name),
+                                                 exception);
+                }
+            } else {
+                log.error("Failed to get " + name + " for hospitalizationId=" + id + ", status=" + response.getStatus()
+                          + ", mediaType=" + response.getMediaType());
+                throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(context.getPatient(), name));
+            }
         } finally {
             client.close();
         }
@@ -185,7 +303,7 @@ public class HospitalizationService {
         ClientConfig config = new ClientConfig()
                 .register(resolver)
                 .register(JacksonFeature.class)
-                .register(new ClientErrorResponseFilter(resolver.getContext(Object.class)));
+                .register(new ErrorResponseFilter(resolver.getContext(Object.class)));
         javax.ws.rs.client.Client resource = ClientBuilder.newClient(config);
         if (log.isDebugEnabled()) {
             resource.register(new LoggingFilter(new DebugLog(log), true));
@@ -202,7 +320,8 @@ public class HospitalizationService {
     private Hospitalizations getHospitalizations(WebTarget target) {
         MultivaluedMap<String, Object> header = new MultivaluedHashMap<>();
         header.add("emrApiKey", emrApiKey);
-        header.add("clinicApiKey", clinicApiKey); // "51a6f8ddcd6516d9ec055689a35ac775f4d9f2a6"
+        header.add("clinicApiKey", clinicApiKey);
+        header.add("timezoneName", timeZone.getID());
 
         return WebResourceFactory.newResource(Hospitalizations.class, target, false, header,
                                               Collections.<Cookie>emptyList(), EMPTY_FORM);
@@ -291,6 +410,21 @@ public class HospitalizationService {
             result = desexed ? "MN" : "M";
         }
         return result;
+    }
+
+    /**
+     * Retrieves documents from the {@link Hospitalizations} service.
+     */
+    private interface ReportRetriever {
+
+        /**
+         * Retrieves a document.
+         *
+         * @param service the service
+         * @param id      the hospitalisation identifier
+         * @return the document response
+         */
+        Response getResponse(Hospitalizations service, String id);
     }
 
     /**

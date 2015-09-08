@@ -79,7 +79,7 @@ public class ADTMessageFactory extends AbstractMessageFactory {
             populate(adt.getPID(), context, config);
             populate(adt.getPV1(), context, config);
 
-            Weight weight = context.getPatientWeight();
+            Weight weight = context.getWeight();
             if (weight != null) {
                 OBX obx = adt.getOBX(0);
                 populateWeight(obx, context, adt, weight, config);
@@ -104,7 +104,7 @@ public class ADTMessageFactory extends AbstractMessageFactory {
             populate(adt.getPID(), context, config);
             populate(adt.getPV1(), context, config);
 
-            Weight weight = context.getPatientWeight();
+            Weight weight = context.getWeight();
             if (weight != null) {
                 OBX obx = adt.getOBX(0);
                 populateWeight(obx, context, adt, weight, config);
@@ -142,7 +142,7 @@ public class ADTMessageFactory extends AbstractMessageFactory {
             populate(adt.getPID(), context, config);
             populate(adt.getPV1(), context, config);
 
-            Weight weight = context.getPatientWeight();
+            Weight weight = context.getWeight();
             if (weight != null) {
                 OBX obx = adt.getOBX(0);
                 populateWeight(obx, context, adt, weight, config);
@@ -176,7 +176,7 @@ public class ADTMessageFactory extends AbstractMessageFactory {
         Varies observationValue = obx.getObservationValue(0);
         nm.setValue(weight.toKilograms().toString());
         observationValue.setData(nm);
-        PopulateHelper.populateDTM(obx.getDateTimeOfTheObservation().getTime(), context.getWeighDate(), config);
+        PopulateHelper.populateDTM(obx.getDateTimeOfTheObservation().getTime(), weight.getDate(), config);
 
         obx.getUnits().getIdentifier().setValue("kg");
         obx.getUnits().getText().setValue("kilogram");    // ISO 2955-1983

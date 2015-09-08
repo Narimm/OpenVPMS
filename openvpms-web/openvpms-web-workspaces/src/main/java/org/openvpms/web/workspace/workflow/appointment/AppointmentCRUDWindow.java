@@ -25,7 +25,6 @@ import nextapp.echo2.app.button.ButtonGroup;
 import nextapp.echo2.app.event.ActionEvent;
 import org.joda.time.DateTime;
 import org.joda.time.Minutes;
-import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -34,16 +33,12 @@ import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.hl7.patient.PatientContext;
-import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientInformationService;
-import org.openvpms.smartflow.client.FlowSheetServiceFactory;
-import org.openvpms.smartflow.client.HospitalizationService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.EditDialog;
@@ -102,11 +97,6 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     private final AppointmentRules rules;
 
     /**
-     * The Smart Flow Sheet service factory.
-     */
-    private final FlowSheetServiceFactory flowSheetServiceFactory;
-
-    /**
      * The original status of the appointment being edited.
      */
     private String oldStatus;
@@ -115,11 +105,6 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * Check-in button identifier.
      */
     private static final String CHECKIN_ID = "checkin";
-
-    /**
-     * New flow sheet button identifier.
-     */
-    private static final String NEW_FLOW_SHEET_ID = "button.newflowsheet";
 
     /**
      * Constructs an {@link AppointmentCRUDWindow}.
@@ -144,7 +129,6 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         super(Archetypes.create("act.customerAppointment", Act.class, Messages.get("workflow.scheduling.createtype")),
               actions, context, help);
         this.browser = browser;
-        this.flowSheetServiceFactory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
         browser.setListener(new TabbedBrowserListener() {
             @Override
             public void onBrowserChanged() {
@@ -326,12 +310,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         buttons.add(createConsultButton());
         buttons.add(createCheckOutButton());
         buttons.add(createOverTheCounterButton());
-        buttons.add(NEW_FLOW_SHEET_ID, new ActionListener() {
-            @Override
-            public void onAction(ActionEvent event) {
-                onNewFlowSheet();
-            }
-        });
+        buttons.add(createFlowSheetButton());
         buttons.addKeyListener(KeyStrokes.CONTROL_MASK | 'C', new ActionListener() {
             public void onAction(ActionEvent event) {
                 onCopy();
@@ -361,7 +340,6 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         super.enableButtons(buttons, enable);
         boolean checkInEnabled = false;
         boolean checkoutConsultEnabled = false;
-        boolean newFlowSheetEnabled = false;
         if (enable) {
             Act act = getObject();
             AppointmentActions actions = getActions();
@@ -372,14 +350,12 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                 checkInEnabled = false;
                 checkoutConsultEnabled = true;
             }
-            newFlowSheetEnabled = actions.canCreateFlowSheet(act, getContext().getLocation(), flowSheetServiceFactory);
         }
         buttons.setEnabled(NEW_ID, canCreateAppointment());
         buttons.setEnabled(CHECKIN_ID, checkInEnabled);
         buttons.setEnabled(CONSULT_ID, checkoutConsultEnabled);
         buttons.setEnabled(CHECKOUT_ID, checkoutConsultEnabled);
         buttons.setEnabled(OVER_THE_COUNTER_ID, browser.isAppointmentsSelected());
-        buttons.setEnabled(NEW_FLOW_SHEET_ID, newFlowSheetEnabled);
     }
 
     /**
@@ -432,37 +408,6 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
             workflow.start();
         } else {
             onRefresh(getObject());
-        }
-    }
-
-    /**
-     * Creates a new Smart Flow sheet for the patient associated with the selected appointment.
-     */
-    private void onNewFlowSheet() {
-        Act appointment = IMObjectHelper.reload(getObject());
-        Party location = getContext().getLocation();
-        if (appointment != null && flowSheetServiceFactory.supportsSmartFlowSheet(location)) {
-            ActBean bean = new ActBean(appointment);
-            Party customer = (Party) bean.getNodeParticipant("customer");
-            Party patient = (Party) bean.getNodeParticipant("patient");
-            User clinician = (User) bean.getNodeParticipant("clinician");
-            if (customer != null && patient != null) {
-                MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
-                Act visit = rules.getEventForAddition(patient, new Date(), null);
-                if (!visit.isNew()) {
-                    HospitalizationService client = flowSheetServiceFactory.getHospitalisationService(location);
-                    PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
-                    PatientContext context = factory.createContext(patient, customer, visit, location, clinician);
-                    if (!client.exists(context)) {
-                        client.add(context);
-                        InformationDialog.show(Messages.format("workflow.flowsheet.created", patient.getName()));
-                    } else {
-                        ErrorHelper.show(Messages.format("workflow.flowsheet.exists", patient.getName()));
-                    }
-                } else {
-                    ErrorHelper.show(Messages.format("workflow.flowsheet.novisit", patient.getName()));
-                }
-            }
         }
     }
 
@@ -721,17 +666,6 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                    || AppointmentStatus.BILLED.equals(status);
         }
 
-        /**
-         * Determines if a flow sheet can be created.
-         *
-         * @param act the act
-         * @param location the practice location
-         * @param factory the flow sheet service factory
-         * @return {@code true} if a flow sheet can be created
-         */
-        public boolean canCreateFlowSheet(Act act, Party location, FlowSheetServiceFactory factory) {
-            return act != null && location != null && factory.supportsSmartFlowSheet(location);
-        }
     }
 
     private static class SeriesDialog extends MessageDialog {

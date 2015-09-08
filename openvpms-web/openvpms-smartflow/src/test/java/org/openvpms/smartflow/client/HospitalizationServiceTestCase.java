@@ -7,8 +7,10 @@ import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.CustomerRules;
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -39,6 +41,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -65,6 +68,7 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
      */
     @Autowired
     private CustomerRules customerRules;
+
 
     /**
      * The patient context.
@@ -97,10 +101,11 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
         save(visit);
         User clinician = TestHelper.createClinician();
         clinician.setName("Dr Seuss");
-        PatientContextFactory factory = new PatientContextFactory(patientRules, customerRules, getArchetypeService(),
-                                                                  getLookupService());
+        MedicalRecordRules rules = new MedicalRecordRules(getArchetypeService());
+        PatientContextFactory factory = new PatientContextFactory(patientRules, customerRules, rules,
+                                                                  getArchetypeService(), getLookupService());
         context = factory.createContext(patient, customer, visit, location, clinician);
-        context.getPatientWeight();
+        context.getWeight();
 
         // now override the ids, to support result comparison.
         location.setId(1);
@@ -172,8 +177,11 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
         try {
             client.add(context);
             fail("Expected add() to fail");
-        } catch (BadRequestException expected) {
-            assertEquals("Hospitalization already exists", expected.getMessage());
+        } catch (FlowSheetException exception) {
+            assertEquals("SFS-0101: Failed to create Flow Sheet for Fido", exception.getMessage());
+            Throwable cause = exception.getCause();
+            assertTrue(cause instanceof BadRequestException);
+            assertEquals("Hospitalization already exists", cause.getMessage());
         }
     }
 
@@ -192,8 +200,12 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
         try {
             client.add(context);
             fail("Expected add() to fail");
-        } catch (NotAuthorizedException expected) {
-            assertEquals("Authorization has been denied for this request", expected.getMessage());
+        } catch (FlowSheetException exception) {
+            assertEquals("SFS-0103: The request to create a Flow Sheet for Fido has been denied",
+                         exception.getMessage());
+            Throwable cause = exception.getCause();
+            assertTrue(cause instanceof NotAuthorizedException);
+            assertEquals("Authorization has been denied for this request", cause.getMessage());
         }
     }
 
@@ -279,7 +291,8 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
     private HospitalizationService createService() {
         String url = "http://localhost:" + wireMockRule.port() + "/";
         return new HospitalizationService(url, "foo", "bar", TimeZone.getTimeZone("Australia/Sydney"),
-                                          getArchetypeService(), getLookupService());
+                                          getArchetypeService(), getLookupService(),
+                                          new DocumentHandlers());
     }
 
 }

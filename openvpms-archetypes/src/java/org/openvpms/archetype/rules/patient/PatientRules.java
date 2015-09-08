@@ -560,7 +560,8 @@ public class PatientRules {
     public Weight getWeight(Act act) {
         IMObjectBean bean = new IMObjectBean(act, service);
         String units = bean.getString("units", WeightUnits.KILOGRAMS.toString());
-        return new Weight(bean.getBigDecimal("weight", BigDecimal.ZERO), WeightUnits.valueOf(units));
+        return new Weight(bean.getBigDecimal("weight", BigDecimal.ZERO), WeightUnits.valueOf(units),
+                          act.getActivityStartTime());
     }
 
     /**

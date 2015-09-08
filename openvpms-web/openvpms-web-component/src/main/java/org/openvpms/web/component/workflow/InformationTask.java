@@ -36,6 +36,14 @@ public class InformationTask extends AbstractInformationTask {
      */
     private final String message;
 
+    /**
+     * Constructs an {@link InformationTask}.
+     *
+     * @param message the dialog message
+     */
+    public InformationTask(String message) {
+        this(null, message);
+    }
 
     /**
      * Constructs an {@link InformationTask}.
@@ -63,7 +71,7 @@ public class InformationTask extends AbstractInformationTask {
     /**
      * Returns the title.
      *
-     * @return the title
+     * @return the title. May be {@code null}
      */
     @Override
     protected String getTitle() {
