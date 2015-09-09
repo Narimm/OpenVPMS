@@ -1,0 +1,10 @@
+#!/bin/sh
+#
+# Script to install the StartCom Certification Authority to cacerts.
+# This is required in order to connect to Smart Flow Sheet over https
+#
+cacerts="$JAVA_HOME/jre/lib/security/cacerts"
+storepass=changeit
+
+echo Installing StartCom Certification Authority to $cacerts
+keytool -import -trustcacerts -alias "StartCom Certification Authority" -file ../conf/startcom-ca.crt -storepass $storepass -noprompt -keystore "$cacerts"

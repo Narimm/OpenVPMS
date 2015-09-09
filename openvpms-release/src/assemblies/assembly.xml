@@ -112,6 +112,15 @@
             <outputDirectory>conf</outputDirectory>
         </fileSet>
 
+        <!-- startcom certification authority, required by Smart Flow Sheet -->
+        <fileSet>
+            <directory>${basedir}/src/conf/</directory>
+            <includes>
+                <include>startcom-ca.crt</include>
+            </includes>
+            <outputDirectory>conf</outputDirectory>
+        </fileSet>
+
         <!-- shell scripts -->
         <fileSet>
             <directory>${basedir}/src/bin</directory>
