@@ -31,6 +31,7 @@ import org.openvpms.smartflow.model.Hospitalization;
 import org.openvpms.smartflow.model.Patient;
 import org.openvpms.smartflow.service.Hospitalizations;
 
+import javax.net.ssl.SSLHandshakeException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.ClientBuilder;
@@ -40,7 +41,6 @@ import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
@@ -157,6 +157,7 @@ public class HospitalizationService {
                 log.debug("No hospitalization found for id=" + context.getVisitId());
             }
         } catch (Throwable exception) {
+            checkSSL(exception);
             throw new FlowSheetException(FlowSheetMessages.failedToGetHospitalization(context.getPatient()), exception);
         } finally {
             client.close();
@@ -199,6 +200,7 @@ public class HospitalizationService {
         } catch (NotAuthorizedException exception) {
             throw new FlowSheetException(FlowSheetMessages.noAuthToCreateFlowSheet(context.getPatient()), exception);
         } catch (Throwable exception) {
+            checkSSL(exception);
             throw new FlowSheetException(FlowSheetMessages.failedToCreateFlowSheet(context.getPatient()), exception);
         } finally {
             client.close();
@@ -297,7 +299,8 @@ public class HospitalizationService {
                     List<IMObject> objects = rules.addDocument(act, document);
                     objects.add(act);
                     service.save(objects);
-                } catch (IOException exception) {
+                } catch (Throwable exception) {
+                    checkSSL(exception);
                     throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(context.getPatient(), name),
                                                  exception);
                 }
@@ -308,6 +311,20 @@ public class HospitalizationService {
             }
         } finally {
             client.close();
+        }
+    }
+
+    /**
+     * Checks an exception for an SSLHandshakeException cause, and throws an {@link FlowSheetException} with appropriate
+     * error message if it has one.
+     *
+     * @param exception the exception
+     * @throws FlowSheetException if the exception has a SSLHandshakeException cause
+     */
+    private void checkSSL(Throwable exception) {
+        if (exception.getCause() instanceof SSLHandshakeException) {
+            log.error(exception, exception);
+            throw new FlowSheetException(FlowSheetMessages.cannotConnectUsingSSL(url));
         }
     }
 

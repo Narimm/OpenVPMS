@@ -49,12 +49,24 @@ public class FlowSheetMessages {
     }
 
     /**
-     * Creates a message indicating that there is
+     * Creates a message indicating that the user has no authorisation to create a flow sheet.
      *
-     * @param patient
-     * @return
+     * @param patient the patient
+     * @return a new message
      */
     public static Message noAuthToCreateFlowSheet(Party patient) {
         return messages.getMessage(103, patient.getName());
+    }
+
+    /**
+     * Creates a message indicating that SSL handing shaking has failed.
+     * <p>
+     * This typically indicates that the Start Com certification authority has not been imported into cacerts.
+     *
+     * @param url the url being connected to
+     * @return a new message
+     */
+    public static Message cannotConnectUsingSSL(String url) {
+        return messages.getMessage(104, url);
     }
 }
