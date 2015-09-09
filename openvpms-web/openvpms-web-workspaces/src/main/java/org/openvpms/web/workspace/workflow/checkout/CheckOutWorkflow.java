@@ -1,3 +1,4 @@
+
 /*
  * Version: 1.0
  *
@@ -16,6 +17,7 @@
 
 package org.openvpms.web.workspace.workflow.checkout;
 
+import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
@@ -31,10 +33,13 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientInformationService;
+import org.openvpms.smartflow.client.FlowSheetServiceFactory;
+import org.openvpms.smartflow.client.HospitalizationService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.workflow.AbstractConfirmationTask;
+import org.openvpms.web.component.workflow.AbstractTask;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.ConditionalUpdateTask;
@@ -54,11 +59,13 @@ import org.openvpms.web.component.workflow.UpdateIMObjectTask;
 import org.openvpms.web.component.workflow.Variable;
 import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.charge.UndispensedOrderChecker;
 import org.openvpms.web.workspace.customer.charge.UndispensedOrderDialog;
+import org.openvpms.web.workspace.patient.history.FlowSheetReportsDialog;
 import org.openvpms.web.workspace.workflow.GetClinicalEventTask;
 import org.openvpms.web.workspace.workflow.GetInvoiceTask;
 import org.openvpms.web.workspace.workflow.payment.PaymentWorkflow;
@@ -85,6 +92,11 @@ public class CheckOutWorkflow extends WorkflowImpl {
      */
     private final Context external;
 
+    /**
+     * The flow sheet service factory.
+     */
+    private FlowSheetServiceFactory flowSheetServiceFactory;
+
 
     /**
      * Constructs a {@code CheckOutWorkflow} from an <em>act.customerAppointment</em> or <em>act.customerTask</em>.
@@ -99,6 +111,8 @@ public class CheckOutWorkflow extends WorkflowImpl {
             throw new IllegalStateException("Context has no practice");
         }
         external = context;
+        flowSheetServiceFactory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
+
         initialise(act, getHelpContext());
 
         // update the act status
@@ -179,6 +193,10 @@ public class CheckOutWorkflow extends WorkflowImpl {
         // print acts and documents created since the visit or invoice was created
         addTask(new PrintTask(act, help.subtopic("print")));
 
+        if (flowSheetServiceFactory.supportsSmartFlowSheet(initial.getLocation())) {
+            addTask(new ImportFlowSheetReportsTask());
+        }
+
         // update the most recent act.patientClinicalEvent, setting it status to COMPLETED and endTime to now, if one
         // is present. Use a retryable task to handle concurrent update conflicts.
         // If the invoice was posted, the event should already be completed.
@@ -218,7 +236,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
 
     /**
      * Returns a task to post the invoice.
-     * <p/>
+     * <p>
      * This first confirms that the invoice should be posted, and then checks if there are any undispensed orders.
      * If so, displays a confirmation dialog before posting.
      *
@@ -239,7 +257,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
 
     /**
      * Task to post an invoice.
-     * <p/>
+     * <p>
      * This uses an editor to ensure that any HL7 Pharmacy Orders associated with the invoice are discontinued.
      * This is workaround for Cubex.
      */
@@ -288,7 +306,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
 
         /**
          * Starts the task.
-         * <p/>
+         * <p>
          * The registered {@link TaskListener} will be notified on completion or failure.
          *
          * @param context the task context
@@ -328,17 +346,12 @@ public class CheckOutWorkflow extends WorkflowImpl {
      * <em>act.customerAccountChargesInvoice</em> and time now to select the
      * objects to print.
      */
-    private class PrintTask extends SynchronousTask {
+    private class PrintTask extends Tasks {
 
         /**
          * The minimum of the act start time and the time the task was created.
          */
         private final Date startTime;
-
-        /**
-         * The help context.
-         */
-        private final HelpContext help;
 
         /**
          * Creates a new {@code PrintTask}.
@@ -347,20 +360,21 @@ public class CheckOutWorkflow extends WorkflowImpl {
          * @param help the help context
          */
         public PrintTask(Act act, HelpContext help) {
+            super(help);
             startTime = getMin(new Date(), act.getActivityStartTime());
-            this.help = help;
         }
 
         /**
-         * Executes the task.
+         * Initialise any tasks.
          *
-         * @throws OpenVPMSException for any error
+         * @param context the task context
          */
-        public void execute(TaskContext context) {
+        @Override
+        protected void initialise(TaskContext context) {
             Date min = getMinStartTime(CustomerAccountArchetypes.INVOICE, startTime, context);
             min = getMinStartTime(CLINICAL_EVENT, min, context);
             min = DateRules.getDate(min);  // print all documents done on or after the min date
-            PrintDocumentsTask printDocs = new PrintDocumentsTask(min, help);
+            PrintDocumentsTask printDocs = new PrintDocumentsTask(min, context.getHelpContext());
             printDocs.setRequired(false);
             addTask(printDocs);
         }
@@ -395,6 +409,55 @@ public class CheckOutWorkflow extends WorkflowImpl {
                 min = date2;
             }
             return min;
+        }
+    }
+
+    /**
+     * Task to import flow sheet reports, if the patient has a Smart Flow Sheet hospitalisation.
+     */
+    private class ImportFlowSheetReportsTask extends AbstractTask {
+
+        /**
+         * Default constructor.
+         */
+        public ImportFlowSheetReportsTask() {
+            setRequired(false);
+        }
+
+        /**
+         * Starts the task.
+         * <p>
+         * The registered {@link TaskListener} will be notified on completion or failure.
+         *
+         * @param context the task context
+         * @throws OpenVPMSException for any error
+         */
+        @Override
+        public void start(TaskContext context) {
+            Party location = context.getLocation();
+            Act visit = (Act) context.getObject(PatientArchetypes.CLINICAL_EVENT);
+            boolean completed = true;
+            if (location != null && visit != null) {
+                PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
+                PatientContext patientContext = factory.createContext(visit, location);
+                if (patientContext != null) {
+                    HospitalizationService service = flowSheetServiceFactory.getHospitalisationService(location);
+                    if (service != null && service.exists(patientContext)) {
+                        completed = false;
+                        FlowSheetReportsDialog dialog = new FlowSheetReportsDialog(patientContext, true);
+                        dialog.addWindowPaneListener(new WindowPaneListener() {
+                            @Override
+                            public void onClose(WindowPaneEvent event) {
+                                notifyCompleted();
+                            }
+                        });
+                        dialog.show();
+                    }
+                }
+            }
+            if (completed) {
+                notifyCompleted();
+            }
         }
     }
 

@@ -64,6 +64,10 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      */
     private PatientHistoryQuery query;
 
+    /**
+     * Import flow sheet documents button identifier.
+     */
+    private static final String IMPORT_FLOWSHEET_ID = "button.importFlowSheet";
 
     /**
      * Constructs a {@link PatientHistoryCRUDWindow}.
@@ -144,6 +148,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
         buttons.setEnabled(PRINT_ID, enable);
+        buttons.setEnabled(IMPORT_FLOWSHEET_ID, enable && getEvent() != null);
     }
 
     /**
@@ -276,7 +281,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      * @return a new button
      */
     private Button createImportFlowSheetButton() {
-        return ButtonFactory.create("button.importFlowSheet", new ActionListener() {
+        return ButtonFactory.create(IMPORT_FLOWSHEET_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onImportFlowSheet();
             }

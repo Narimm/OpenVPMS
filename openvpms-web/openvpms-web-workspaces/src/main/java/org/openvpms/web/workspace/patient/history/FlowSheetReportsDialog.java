@@ -23,7 +23,7 @@ import org.openvpms.web.system.ServiceHelper;
  *
  * @author Tim Anderson
  */
-class FlowSheetReportsDialog extends PopupDialog {
+public class FlowSheetReportsDialog extends PopupDialog {
 
     /**
      * The patient context.
@@ -41,9 +41,34 @@ class FlowSheetReportsDialog extends PopupDialog {
     private final CheckBox inventory;
 
     /**
+     * Determines if the tech notes report is imported.
+     */
+    private final CheckBox techNotes;
+
+    /**
      * Determines if the flow sheet report is imported.
      */
     private final CheckBox flowSheet;
+
+    /**
+     * Medical records report label.
+     */
+    private static final String MEDICAL = "patient.record.flowsheet.import.medical";
+
+    /**
+     * Inventory report label.
+     */
+    private static final String INVENTORY = "patient.record.flowsheet.import.inventory";
+
+    /**
+     * Tech notes report label.
+     */
+    private static final String TECH_NOTES = "patient.record.flowsheet.import.technotes";
+
+    /**
+     * Flow sheet report label.
+     */
+    private static final String FLOW_SHEET = "patient.record.flowsheet.import.flowsheet";
 
     /**
      * Constructs a {@link FlowSheetReportsDialog}.
@@ -51,18 +76,30 @@ class FlowSheetReportsDialog extends PopupDialog {
      * @param context the patient context
      */
     public FlowSheetReportsDialog(PatientContext context) {
-        super(Messages.get("patient.record.flowsheet.import.title"), "MessageDialog", OK_CANCEL);
+        this(context, false);
+    }
+
+    /**
+     * Constructs a {@link FlowSheetReportsDialog}.
+     *
+     * @param context the patient context
+     * @param skip    if {@code true}, display a skip button, otherwise display a cancel button
+     */
+    public FlowSheetReportsDialog(PatientContext context, boolean skip) {
+        super(Messages.get("patient.record.flowsheet.import.title"), "MessageDialog", (skip) ? OK_SKIP : OK_CANCEL);
         this.context = context;
         ActionListener listener = new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
-                boolean enable = medicalRecords.isSelected() || inventory.isSelected() || flowSheet.isSelected();
+                boolean enable = medicalRecords.isSelected() || inventory.isSelected() || techNotes.isSelected()
+                                 || flowSheet.isSelected();
                 getButtons().setEnabled(OK_ID, enable);
             }
         };
-        medicalRecords = CheckBoxFactory.create("patient.record.flowsheet.import.medical", true, listener);
-        inventory = CheckBoxFactory.create("patient.record.flowsheet.import.inventory", true, listener);
-        flowSheet = CheckBoxFactory.create("patient.record.flowsheet.import.flowsheet", true, listener);
+        medicalRecords = CheckBoxFactory.create(MEDICAL, true, listener);
+        inventory = CheckBoxFactory.create(INVENTORY, true, listener);
+        techNotes = CheckBoxFactory.create(TECH_NOTES, true, listener);
+        flowSheet = CheckBoxFactory.create(FLOW_SHEET, true, listener);
     }
 
     /**
@@ -74,13 +111,16 @@ class FlowSheetReportsDialog extends PopupDialog {
         FlowSheetServiceFactory factory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
         HospitalizationService service = factory.getHospitalisationService(context.getLocation());
         if (medicalRecords.isSelected()) {
-            service.saveMedicalRecords("Smart Flow Sheet Medical Records", context);
+            service.saveMedicalRecords(getName(MEDICAL), context);
         }
         if (inventory.isSelected()) {
-            service.saveInventoryReport("Smart Flow Sheet Inventory", context);
+            service.saveInventoryReport(getName(INVENTORY), context);
+        }
+        if (techNotes.isSelected()) {
+            service.saveTechNotesReport(getName(TECH_NOTES), context);
         }
         if (flowSheet.isSelected()) {
-            service.saveFlowSheetReport("Smart Flow Sheet", context);
+            service.saveFlowSheetReport(getName(FLOW_SHEET), context);
         }
         super.onOK();
     }
@@ -93,7 +133,19 @@ class FlowSheetReportsDialog extends PopupDialog {
     @Override
     protected void doLayout() {
         Label label = LabelFactory.create("patient.record.flowsheet.import.message", Styles.BOLD);
-        Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, label, medicalRecords, inventory, flowSheet);
+        Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, label, medicalRecords, inventory, techNotes,
+                                             flowSheet);
         getLayout().add(ColumnFactory.create(Styles.LARGE_INSET, column));
     }
+
+    /**
+     * Formats a report name.
+     *
+     * @param key the resource bundle key for the report name
+     * @return the report name
+     */
+    private String getName(String key) {
+        return Messages.format("patient.record.flowsheet.import.name", Messages.get(key));
+    }
+
 }

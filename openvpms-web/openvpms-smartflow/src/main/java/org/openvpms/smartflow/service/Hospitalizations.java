@@ -42,20 +42,50 @@ public interface Hospitalizations {
     @Produces({MediaType.APPLICATION_JSON})
     Hospitalization get(@PathParam("hospitalizationId") String hospitalizationId);
 
+    /**
+     * Removes a hospitalization, given its identifier.
+     *
+     * @param hospitalizationId the hospitalization identifier
+     */
     @DELETE
     @Path("/{hospitalizationId}")
     void remove(@PathParam("hospitalizationId") String hospitalizationId);
 
+    /**
+     * Returns the medical records report PDF for a hospitalization.
+     *
+     * @param hospitalizationId the hospitalization identifier
+     */
     @GET
     @Path("/{hospitalizationId}/medicalrecordsreport")
     @Produces({"application/pdf"})
     Response getMedicalRecordsReport(@PathParam("hospitalizationId") String hospitalizationId);
 
+    /**
+     * Returns the inventory report PDF for a hospitalization.
+     *
+     * @param hospitalizationId the hospitalization identifier
+     */
     @GET
     @Path("/{hospitalizationId}/inventoryreport")
     @Produces({"application/pdf"})
     Response getInventoryReport(@PathParam("hospitalizationId") String hospitalizationId);
 
+    /**
+     * Returns the tech notes report PDF for a hospitalization.
+     *
+     * @param hospitalizationId the hospitalization identifier
+     */
+    @GET
+    @Path("/{hospitalizationId}/technotesreport")
+    @Produces({"application/pdf"})
+    Response getTechNotesReport(@PathParam("hospitalizationId") String hospitalizationId);
+
+    /**
+     * Returns the flow sheet report PDF for a hospitalization.
+     *
+     * @param hospitalizationId the hospitalization identifier
+     */
     @GET
     @Path("/{hospitalizationId}/flowsheetreport")
     @Produces({"application/pdf"})

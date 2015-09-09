@@ -68,6 +68,11 @@ public class NewFlowSheetTask extends Tasks {
     private Act visit;
 
     /**
+     * If {@code false} don't display a note if a hospitalisation already exists.
+     */
+    private final boolean ignoreExisting;
+
+    /**
      * The hospitalisation service.
      */
     private HospitalizationService client;
@@ -85,12 +90,29 @@ public class NewFlowSheetTask extends Tasks {
     /**
      * Constructs a {@link NewFlowSheetTask}.
      *
-     * @param act  the appointment/task
-     * @param help the help context
+     * @param act      the appointment/task
+     * @param location the practice location
+     * @param help     the help context
      */
     public NewFlowSheetTask(Act act, Party location, FlowSheetServiceFactory factory, HelpContext help) {
+        this(act, null, false, location, factory, help);
+    }
+
+    /**
+     * Constructs a {@link NewFlowSheetTask}.
+     *
+     * @param act            the appointment/task
+     * @param visit          the patient visit. May be {@code null}
+     * @param location       the practice location
+     * @param ignoreExisting if {@code true}, ignore any existing hospitalisation, otherwise display a note
+     * @param help           the help context
+     */
+    public NewFlowSheetTask(Act act, Act visit, boolean ignoreExisting, Party location, FlowSheetServiceFactory factory,
+                            HelpContext help) {
         super(help);
         this.act = act;
+        this.visit = visit;
+        this.ignoreExisting = ignoreExisting;
         ActBean bean = new ActBean(act);
         customer = (Party) bean.getNodeParticipant("customer");
         patient = (Party) bean.getNodeParticipant("patient");
@@ -109,8 +131,14 @@ public class NewFlowSheetTask extends Tasks {
     @Override
     protected void initialise(TaskContext context) {
         if (customer != null && patient != null && location != null) {
-            visit = getVisit();
+            if (visit == null) {
+                visit = getVisit();
+            }
             if (!visit.isNew()) {
+                context.setCustomer(customer);
+                context.setLocation(location);
+                context.setPatient(patient);
+                context.addObject(visit);
                 client = factory.getHospitalisationService(location);
                 patientContext = getPatientContext(visit);
                 if (!client.exists(patientContext)) {
@@ -121,7 +149,7 @@ public class NewFlowSheetTask extends Tasks {
                     }
                     addTask(new AddFlowSheet());
                     addTask(new InformationTask(Messages.format("workflow.flowsheet.created", patient.getName())));
-                } else {
+                } else if (!ignoreExisting) {
                     addTask(new InformationTask(Messages.format("workflow.flowsheet.exists", patient.getName())));
                 }
             } else {
