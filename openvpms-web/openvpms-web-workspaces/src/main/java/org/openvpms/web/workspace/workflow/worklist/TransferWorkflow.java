@@ -23,11 +23,13 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -43,11 +45,13 @@ import org.openvpms.web.component.workflow.PrintActTask;
 import org.openvpms.web.component.workflow.PrintIMObjectTask;
 import org.openvpms.web.component.workflow.SelectIMObjectTask;
 import org.openvpms.web.component.workflow.TaskContext;
+import org.openvpms.web.component.workflow.Tasks;
 import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.workflow.checkin.AbstractPrintPatientDocumentsTask;
+import org.openvpms.web.workspace.workflow.checkin.NewFlowSheetTask;
 import org.openvpms.web.workspace.workflow.checkin.PrintPatientActTask;
 
 
@@ -59,9 +63,19 @@ import org.openvpms.web.workspace.workflow.checkin.PrintPatientActTask;
 public class TransferWorkflow extends WorkflowImpl {
 
     /**
+     * The task.
+     */
+    private final Act task;
+
+    /**
      * The initial context.
      */
     private TaskContext initial;
+
+    /**
+     * The flow sheet service factory.
+     */
+    private final FlowSheetServiceFactory factory;
 
 
     /**
@@ -73,10 +87,13 @@ public class TransferWorkflow extends WorkflowImpl {
      */
     public TransferWorkflow(Act task, Context context, HelpContext help) {
         super(help);
+        this.task = task;
+        factory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
 
         ActBean bean = new ActBean(task);
         Party customer = (Party) bean.getNodeParticipant("customer");
         Party patient = (Party) bean.getNodeParticipant("patient");
+        Party location = context.getLocation();
         IMObjectReference workList = bean.getNodeParticipantRef("worklist");
 
         // copy rather than inherit the context to avoid falling back to global customer/patient if these are missing
@@ -85,14 +102,19 @@ public class TransferWorkflow extends WorkflowImpl {
         context.setTask(task);
         context.setCustomer(customer);
         context.setPatient(patient);
+        context.setLocation(location);
 
         initial = new DefaultTaskContext(context, help);
 
         // exclude the work list being transferred from
-        Query<Party> query = new EntityQuery<Party>(new WorkListQuery(workList), initial);
+        Query<Party> query = new EntityQuery<>(new WorkListQuery(workList), initial);
 
-        addTask(new SelectIMObjectTask<Party>(query, help.topic("worklist")));
+        addTask(new SelectIMObjectTask<>(query, help.topic("worklist")));
         addTask(new UpdateWorkListTask(task));
+
+        if (location != null && factory.supportsSmartFlowSheet(location)) {
+            addTask(new AddFlowSheetTask(help));
+        }
 
         addTask(new PrintPatientDocumentsTask(getHelpContext()));
     }
@@ -131,6 +153,40 @@ public class TransferWorkflow extends WorkflowImpl {
             super.edit(editor, context);
             if (editor instanceof TaskActEditor) {
                 ((TaskActEditor) editor).setWorkList(context.getWorkList());
+            }
+        }
+    }
+
+    private class AddFlowSheetTask extends Tasks {
+
+        /**
+         * Constructs a {@link AddFlowSheetTask}.
+         *
+         * @param help the help context
+         */
+        public AddFlowSheetTask(HelpContext help) {
+            super(help);
+        }
+
+        /**
+         * Initialise any tasks.
+         *
+         * @param context the task context
+         */
+        @Override
+        protected void initialise(TaskContext context) {
+            Party workList = context.getWorkList();
+            if (workList != null) {
+                IMObjectBean bean = new IMObjectBean(workList);
+                if (bean.getBoolean("createFlowSheet")) {
+                    MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
+                    Act visit = rules.getEventForAddition(context.getPatient().getObjectReference(),
+                                                          task.getActivityStartTime(), null);
+                    if (!visit.isNew()) {
+                        addTask(new NewFlowSheetTask(task, visit, true, context.getLocation(), factory,
+                                                     context.getHelpContext()));
+                    }
+                }
             }
         }
     }

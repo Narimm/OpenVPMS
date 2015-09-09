@@ -236,6 +236,21 @@ public class HospitalizationService {
     }
 
     /**
+     * Saves a tech notes report associated with a patient visit, to the patient visit.
+     *
+     * @param name    the name to use for the file, excluding the extension
+     * @param context the patient context
+     */
+    public void saveTechNotesReport(String name, PatientContext context) {
+        saveReport(name, context, new ReportRetriever() {
+            @Override
+            public Response getResponse(Hospitalizations service, String id) {
+                return service.getTechNotesReport(id);
+            }
+        });
+    }
+
+    /**
      * Saves a flow sheet report associated with a patient visit, to the patient visit.
      *
      * @param name    the name to use for the file, excluding the extension
@@ -272,6 +287,9 @@ public class HospitalizationService {
                     Document document = documentHandler.create(fileName, stream, APPLICATION_PDF, -1);
                     DocumentAct act = (DocumentAct) service.create(PatientArchetypes.DOCUMENT_ATTACHMENT);
                     ActBean bean = new ActBean(act, service);
+                    if (context.getClinician() != null) {
+                        bean.addNodeParticipation("clinician", context.getClinician());
+                    }
                     Act visit = context.getVisit();
                     ActBean visitBean = new ActBean(visit, service);
                     visitBean.addNodeRelationship("items", act);
