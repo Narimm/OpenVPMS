@@ -49,13 +49,12 @@ public class FlowSheetMessages {
     }
 
     /**
-     * Creates a message indicating that the user has no authorisation to create a flow sheet.
+     * Creates a message indicating that an operation has failed through lack of authorisation.
      *
-     * @param patient the patient
      * @return a new message
      */
-    public static Message noAuthToCreateFlowSheet(Party patient) {
-        return messages.getMessage(103, patient.getName());
+    public static Message notAuthorised() {
+        return messages.getMessage(103);
     }
 
     /**

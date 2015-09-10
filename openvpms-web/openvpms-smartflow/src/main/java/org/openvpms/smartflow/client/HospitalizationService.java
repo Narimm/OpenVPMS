@@ -156,6 +156,8 @@ public class HospitalizationService {
             } catch (NotFoundException ignore) {
                 log.debug("No hospitalization found for id=" + context.getVisitId());
             }
+        } catch (NotAuthorizedException exception) {
+            notAuthorised(exception);
         } catch (Throwable exception) {
             checkSSL(exception);
             throw new FlowSheetException(FlowSheetMessages.failedToGetHospitalization(context.getPatient()), exception);
@@ -198,7 +200,7 @@ public class HospitalizationService {
             Hospitalizations hospitalizations = getHospitalizations(target);
             hospitalizations.add(hospitalization);
         } catch (NotAuthorizedException exception) {
-            throw new FlowSheetException(FlowSheetMessages.noAuthToCreateFlowSheet(context.getPatient()), exception);
+            notAuthorised(exception);
         } catch (Throwable exception) {
             checkSSL(exception);
             throw new FlowSheetException(FlowSheetMessages.failedToCreateFlowSheet(context.getPatient()), exception);
@@ -299,6 +301,8 @@ public class HospitalizationService {
                     List<IMObject> objects = rules.addDocument(act, document);
                     objects.add(act);
                     service.save(objects);
+                } catch (NotAuthorizedException exception) {
+                    notAuthorised(exception);
                 } catch (Throwable exception) {
                     checkSSL(exception);
                     throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(context.getPatient(), name),
@@ -312,6 +316,16 @@ public class HospitalizationService {
         } finally {
             client.close();
         }
+    }
+
+    /**
+     * Throws a {@link FlowSheetException} with an appropriate error message for a {@code NotAuthorizedException}.
+     *
+     * @param exception the original exception
+     */
+    private void notAuthorised(NotAuthorizedException exception) {
+        log.error(exception, exception);
+        throw new FlowSheetException(FlowSheetMessages.notAuthorised());
     }
 
     /**

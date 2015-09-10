@@ -353,8 +353,13 @@
     <bean class="org.openvpms.hl7.patient.PatientContextFactory">
         <constructor-arg ref="patientRules"/>
         <constructor-arg ref="customerRules"/>
+        <constructor-arg ref="medicalRecordRules"/>
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
+    </bean>
+
+    <bean id="flowSheetServiceFactory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.openvpms.smartflow.client.FlowSheetServiceFactory"/>
     </bean>
 
     <bean id="hl7PatientInformationService" class="org.mockito.Mockito" factory-method="mock">
