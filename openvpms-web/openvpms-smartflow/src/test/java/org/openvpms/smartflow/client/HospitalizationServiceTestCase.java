@@ -26,7 +26,6 @@ import org.openvpms.smartflow.model.Patient;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.core.HttpHeaders;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -201,11 +200,8 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
             client.add(context);
             fail("Expected add() to fail");
         } catch (FlowSheetException exception) {
-            assertEquals("SFS-0103: The request to create a Flow Sheet for Fido has been denied",
-                         exception.getMessage());
-            Throwable cause = exception.getCause();
-            assertTrue(cause instanceof NotAuthorizedException);
-            assertEquals("Authorization has been denied for this request", cause.getMessage());
+            assertEquals("SFS-0103: Failed to connect to Smart Flow Sheet.\n\n"
+                         + "Check that the Smart Flow Sheet Clinic API Key is correct.", exception.getMessage());
         }
     }
 
