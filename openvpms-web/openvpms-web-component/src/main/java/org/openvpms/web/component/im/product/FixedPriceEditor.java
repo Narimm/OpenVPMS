@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -139,6 +139,9 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
         }
         focus = new FocusGroup(property.getDisplayName());
         focus.add(field);
+        if (!property.isReadOnly()) {
+            focus.add(field);
+        }
         container = RowFactory.create(field);
     }
 
@@ -262,9 +265,8 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
      * @return a new price table
      */
     private PagedIMTable<ProductPrice> createPriceTable(List<ProductPrice> prices) {
-        ResultSet<ProductPrice> set = new IMObjectListResultSet<ProductPrice>(
-                new ArrayList<ProductPrice>(prices), 20);
-        final PagedIMTable<ProductPrice> table = new PagedIMTable<ProductPrice>(new PriceTableModel(), set);
+        ResultSet<ProductPrice> set = new IMObjectListResultSet<>(new ArrayList<>(prices), 20);
+        final PagedIMTable<ProductPrice> table = new PagedIMTable<>(new PriceTableModel(), set);
         table.getTable().addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 onSelected(table.getTable().getSelected());
