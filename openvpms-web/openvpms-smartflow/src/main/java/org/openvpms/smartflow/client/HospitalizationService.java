@@ -42,7 +42,10 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.logging.Logger;
@@ -387,7 +390,12 @@ public class HospitalizationService {
         IMObjectBean bean = new IMObjectBean(context.getPatient(), service);
         result.setPatientId(Long.toString(context.getPatientId()));
         result.setName(context.getPatientFirstName());
-        result.setBirthday(context.getDateOfBirth());
+        Date dateOfBirth = context.getDateOfBirth();
+        if (dateOfBirth != null) {
+            // need to add the timezone to the date of birth otherwise it is converted to UTC by SFS.
+            dateOfBirth = getUTCDate(dateOfBirth);
+        }
+        result.setBirthday(dateOfBirth);
         result.setSpecies(context.getSpeciesName());
         result.setBreed(context.getBreedName());
         result.setColor(getColour(bean));
@@ -411,6 +419,27 @@ public class HospitalizationService {
             result.setOwner(createClient(context));
         }
         return result;
+    }
+
+    /**
+     * Converts a local date to UTC, ignoring its timezone. This should be used for absolute dates such as birthdays
+     * which shouldn't change if the locale does.
+     *
+     * @param date the date
+     * @return the converted date
+     */
+    private Date getUTCDate(Date date) {
+        GregorianCalendar utc = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        GregorianCalendar local = new GregorianCalendar();
+        local.setTime(date);
+        utc.set(Calendar.YEAR, local.get(Calendar.YEAR));
+        utc.set(Calendar.MONTH, local.get(Calendar.MONTH));
+        utc.set(Calendar.DATE, local.get(Calendar.DATE));
+        utc.set(Calendar.HOUR_OF_DAY, 0);
+        utc.set(Calendar.MINUTE, 0);
+        utc.set(Calendar.SECOND, 0);
+        utc.set(Calendar.MILLISECOND, 0);
+        return utc.getTime();
     }
 
     /**
