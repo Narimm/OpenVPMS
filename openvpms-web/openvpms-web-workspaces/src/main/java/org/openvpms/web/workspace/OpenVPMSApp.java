@@ -158,9 +158,18 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     }
 
     /**
+     * Invoked when the application is disposed and will not be used again.
+     */
+    @Override
+    public void dispose() {
+        super.dispose();
+        window.dispose();
+    }
+
+    /**
      * Returns the instance associated with the current thread.
      *
-     * @return the current instance, or <code>null</code>
+     * @return the current instance, or {@code null}
      */
     public static OpenVPMSApp getInstance() {
         return (OpenVPMSApp) ApplicationInstance.getActive();

@@ -297,7 +297,7 @@ public class SessionMonitor implements DisposableBean {
          * The applications linked to the session.
          */
         private final ReferenceMap<SpringApplicationInstance, SpringApplicationInstance> apps
-                = new ReferenceMap<SpringApplicationInstance, SpringApplicationInstance>(WEAK, WEAK);
+                = new ReferenceMap<>(WEAK, WEAK);
 
         /**
          * The time the session was last accessed, in milliseconds.
@@ -326,7 +326,7 @@ public class SessionMonitor implements DisposableBean {
          */
         public Monitor(HttpSession session) {
             lastAccessedTime = System.currentTimeMillis();
-            this.session = new WeakReference<HttpSession>(session);
+            this.session = new WeakReference<>(session);
         }
 
         /**
@@ -502,6 +502,17 @@ public class SessionMonitor implements DisposableBean {
          * Invalidates a session.
          */
         private void invalidate() {
+            SpringApplicationInstance[] list = apps.values().toArray(new SpringApplicationInstance[apps.size()]);
+            for (SpringApplicationInstance app : list) {
+                if (app != null) {
+                    try {
+                        app.dispose();
+                    } catch (Throwable exception) {
+                        log.debug("Error disposing app", exception);
+                    }
+                }
+            }
+
             HttpSession httpSession = session.get();
             if (httpSession != null) {
                 httpSession.invalidate();
