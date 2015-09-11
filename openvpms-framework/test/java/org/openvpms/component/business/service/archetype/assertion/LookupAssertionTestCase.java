@@ -28,7 +28,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the {@link LookupAssertions} class.
- * <p/>
+ * <p>
  * TODO - this should be converted to use {@link ActionContext}.
  *
  * @author Tim Anderson

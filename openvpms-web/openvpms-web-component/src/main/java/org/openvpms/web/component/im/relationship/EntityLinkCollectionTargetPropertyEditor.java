@@ -127,7 +127,7 @@ public class EntityLinkCollectionTargetPropertyEditor extends RelationshipCollec
 
     /**
      * Invoked by {@link #doSave()} to remove objects queued for removal.
-     * <p/>
+     * <p>
      * For entity links, the parent must first be saved, otherwise constraint violations will occur.
      *
      * @return {@code true} if they were removed

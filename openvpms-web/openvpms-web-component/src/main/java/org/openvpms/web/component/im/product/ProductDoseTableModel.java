@@ -58,7 +58,7 @@ public class ProductDoseTableModel extends DescriptorTableModel<IMObject> {
 
     /**
      * Constructs a {@link ProductDoseTableModel}.
-     * <p/>
+     * <p>
      * Enables selection if the context is in edit mode.
      *
      * @param shortNames the archetype short names

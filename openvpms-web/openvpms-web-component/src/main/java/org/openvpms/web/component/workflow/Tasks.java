@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workflow;
@@ -37,7 +37,6 @@ public class Tasks extends AbstractTask {
      * @param help the help context
      */
     public Tasks(HelpContext help) {
-
         workflow = new WorkflowImpl(help);
     }
 
@@ -62,7 +61,7 @@ public class Tasks extends AbstractTask {
 
     /**
      * Starts the task.
-     * <p/>
+     * <p>
      * The registered {@link TaskListener} will be notified on completion or failure.
      *
      * @param context the task context
@@ -84,7 +83,21 @@ public class Tasks extends AbstractTask {
                 }
             }
         });
-        start(workflow, context);
+        initialise(context);
+        if (!isFinished()) {     // initialisation may have failed
+            start(workflow, context);
+        }
+    }
+
+    /**
+     * Initialise any tasks.
+     * <p>
+     * This implementation is a no-op.
+     *
+     * @param context the task context
+     */
+    protected void initialise(TaskContext context) {
+
     }
 
 }

@@ -92,7 +92,7 @@ class SequencedRelationshipCollectionHelper {
 
     /**
      * Sequences relationships, using the first relationship sequence as the starting point.
-     * <p/>
+     * <p>
      * This preserves gaps in the sequence.
      *
      * @param objects the objects to sequence

@@ -94,11 +94,11 @@ public class ProductTestHelper {
     /**
      * Creates an <em>entity.productDose</em>.
      *
-     * @param species       the species. May be {@code null}
-     * @param minWeight     the minimum weight, inclusive
-     * @param maxWeight     the maximum weight, exclusive
-     * @param rate          the rate
-     * @param roundTo       the no. of decimal places to round to
+     * @param species   the species. May be {@code null}
+     * @param minWeight the minimum weight, inclusive
+     * @param maxWeight the maximum weight, exclusive
+     * @param rate      the rate
+     * @param roundTo   the no. of decimal places to round to
      * @return a new dose
      */
     public static Entity createDose(Lookup species, BigDecimal minWeight, BigDecimal maxWeight, BigDecimal rate,

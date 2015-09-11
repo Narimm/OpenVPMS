@@ -106,7 +106,6 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      */
     private static final String CHECKIN_ID = "checkin";
 
-
     /**
      * Constructs an {@link AppointmentCRUDWindow}.
      *
@@ -311,6 +310,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         buttons.add(createConsultButton());
         buttons.add(createCheckOutButton());
         buttons.add(createOverTheCounterButton());
+        buttons.add(createFlowSheetButton());
         buttons.addKeyListener(KeyStrokes.CONTROL_MASK | 'C', new ActionListener() {
             public void onAction(ActionEvent event) {
                 onCopy();
@@ -452,7 +452,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
 
     /**
      * Invoked to paste an appointment.
-     * <p/>
+     * <p>
      * For the paste to be successful:
      * <ul>
      * <li>the appointment must still exist
@@ -473,7 +473,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                 if (appointment == null) {
                     InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
                                            Messages.get("workflow.scheduling.appointment.paste.noexist"));
-                    onRefresh(appointment); // force redraw
+                    onRefresh(null);        // force redraw
                     browser.clearMarked();
                 } else if (browser.isCut() && !AppointmentStatus.PENDING.equals(appointment.getStatus())) {
                     InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),

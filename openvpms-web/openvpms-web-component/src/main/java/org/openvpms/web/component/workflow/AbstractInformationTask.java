@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workflow;
@@ -49,7 +49,10 @@ public abstract class AbstractInformationTask extends AbstractTask {
      */
     @Override
     public void start(TaskContext context) {
-        InformationDialog dialog = new InformationDialog(getTitle(), getMessage());
+        String title = getTitle();
+        String message = getMessage();
+        InformationDialog dialog = (title != null) ? new InformationDialog(title, message)
+                                                   : new InformationDialog(message);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             @Override
             public void onClose(WindowPaneEvent event) {
@@ -66,7 +69,7 @@ public abstract class AbstractInformationTask extends AbstractTask {
     /**
      * Returns the title.
      *
-     * @return the title
+     * @return the title. May be {@code null}
      */
     protected abstract String getTitle();
 

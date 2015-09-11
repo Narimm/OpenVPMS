@@ -6821,7 +6821,7 @@
     <data id="P866" archetype="product.service" name="Desex - Dog &lt; 20kg"/>
     <data id="P867" archetype="product.service" name="Desex - Dog &gt;= 20kg"/>
     <data id="P868" archetype="product.medication" name="Carprofen Injection" dispensingUnits="MLS"
-          sellingUnits="MLS"  concentration="50">
+          sellingUnits="MLS" concentration="50">
         <data collection="type" archetype="entityRelationship.productTypeProduct" target="id:P868"
               source="id:Medications"/>
         <data collection="doses" archetype="entityLink.productDose" source="id:P868" target="id:D868"/>

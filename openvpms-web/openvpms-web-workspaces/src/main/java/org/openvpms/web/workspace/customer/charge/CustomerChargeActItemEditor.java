@@ -1680,7 +1680,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
         /**
          * Apply the layout strategy.
-         * <p/>
+         * <p>
          * This renders an object in a {@code Component}, using a factory to create the child components.
          *
          * @param object     the object to apply

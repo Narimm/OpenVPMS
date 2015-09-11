@@ -26,11 +26,10 @@ import ca.uhn.hl7v2.model.v25.message.ADT_A01;
 import ca.uhn.hl7v2.model.v25.message.ADT_A03;
 import ca.uhn.hl7v2.model.v25.message.ADT_A09;
 import ca.uhn.hl7v2.model.v25.segment.OBX;
+import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.hl7.patient.PatientContext;
-
-import java.math.BigDecimal;
 
 /**
  * Factory for ADT (Admit, Discharge, Transfer) messages.
@@ -80,7 +79,7 @@ public class ADTMessageFactory extends AbstractMessageFactory {
             populate(adt.getPID(), context, config);
             populate(adt.getPV1(), context, config);
 
-            BigDecimal weight = context.getPatientWeight();
+            Weight weight = context.getWeight();
             if (weight != null) {
                 OBX obx = adt.getOBX(0);
                 populateWeight(obx, context, adt, weight, config);
@@ -105,7 +104,7 @@ public class ADTMessageFactory extends AbstractMessageFactory {
             populate(adt.getPID(), context, config);
             populate(adt.getPV1(), context, config);
 
-            BigDecimal weight = context.getPatientWeight();
+            Weight weight = context.getWeight();
             if (weight != null) {
                 OBX obx = adt.getOBX(0);
                 populateWeight(obx, context, adt, weight, config);
@@ -143,7 +142,7 @@ public class ADTMessageFactory extends AbstractMessageFactory {
             populate(adt.getPID(), context, config);
             populate(adt.getPV1(), context, config);
 
-            BigDecimal weight = context.getPatientWeight();
+            Weight weight = context.getWeight();
             if (weight != null) {
                 OBX obx = adt.getOBX(0);
                 populateWeight(obx, context, adt, weight, config);
@@ -161,11 +160,11 @@ public class ADTMessageFactory extends AbstractMessageFactory {
      * @param obx     the segment to populate
      * @param context the patient context
      * @param message the parent message
-     * @param weight  the weight, in kilograms
+     * @param weight  the weight
      * @param config  the message population configuration
      * @throws DataTypeException for any data error
      */
-    private void populateWeight(OBX obx, PatientContext context, Message message, BigDecimal weight,
+    private void populateWeight(OBX obx, PatientContext context, Message message, Weight weight,
                                 HL7Mapping config) throws DataTypeException {
         obx.getSetIDOBX().setValue("1");
         obx.getValueType().setValue("NM");
@@ -175,9 +174,9 @@ public class ADTMessageFactory extends AbstractMessageFactory {
         identifier.getNameOfCodingSystem().setValue("LN");
         NM nm = new NM(message);
         Varies observationValue = obx.getObservationValue(0);
-        nm.setValue(weight.toString());
+        nm.setValue(weight.toKilograms().toString());
         observationValue.setData(nm);
-        PopulateHelper.populateDTM(obx.getDateTimeOfTheObservation().getTime(), context.getWeighDate(), config);
+        PopulateHelper.populateDTM(obx.getDateTimeOfTheObservation().getTime(), weight.getDate(), config);
 
         obx.getUnits().getIdentifier().setValue("kg");
         obx.getUnits().getText().setValue("kilogram");    // ISO 2955-1983

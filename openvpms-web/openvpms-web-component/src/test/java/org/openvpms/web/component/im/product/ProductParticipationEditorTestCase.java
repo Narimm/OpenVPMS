@@ -53,7 +53,7 @@ public class ProductParticipationEditorTestCase extends AbstractAppTest {
     /**
      * Verifies that the product reference can be updated from within the callback notifying that the product has
      * changed, and that the product text reflects the update.
-     * <p/>
+     * <p>
      * This replicates what happens when a product template is selected, and is replaced with an actual product.
      */
     @Test

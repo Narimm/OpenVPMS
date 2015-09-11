@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.util;
@@ -54,8 +54,29 @@ public class ErrorHelper {
      * @param error the error
      */
     public static void show(String title, String error) {
+        show(title, error, (WindowPaneListener) null);
+    }
+
+    /**
+     * Display an error.
+     *
+     * @param error    the error
+     * @param listener the listener. May be {@code null}
+     */
+    public static void show(String error, WindowPaneListener listener) {
+        show(null, error, listener);
+    }
+
+    /**
+     * Display an error.
+     *
+     * @param title    the title. May be {@code null}
+     * @param error    the error
+     * @param listener the listener. May be {@code null}
+     */
+    public static void show(String title, String error, WindowPaneListener listener) {
         log.error(error);
-        ErrorHandler.getInstance().error(title, error, null, null);
+        ErrorHandler.getInstance().error(title, error, null, listener);
     }
 
     /**
