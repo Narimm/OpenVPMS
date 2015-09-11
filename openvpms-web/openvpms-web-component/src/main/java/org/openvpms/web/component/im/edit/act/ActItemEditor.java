@@ -727,7 +727,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
          * Constructs an {@link LayoutStrategy}.
          */
         public LayoutStrategy() {
-            super(nodes != null ? nodes : DEFAULT_NODES);
+            super(nodes != null ? nodes : new ArchetypeNodes());
         }
     }
 }

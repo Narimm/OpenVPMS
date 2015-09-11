@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -46,8 +44,7 @@ import java.util.StringTokenizer;
  * It will vote to grant access if the user has a grant authority matching one
  * of the config attributes, otherwise a deny access will be returned.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
  */
 public class ArchetypeAwareVoter implements AccessDecisionVoter {
 
@@ -136,8 +133,8 @@ public class ArchetypeAwareVoter implements AccessDecisionVoter {
             granted = false;
             // Attempt to find a matching granted authority
             for (GrantedAuthority authority : authentication.getAuthorities()) {
-                if (isAccessGranted((ArchetypeAwareGrantedAuthority) authority,
-                                    attribute, shortName)) {
+                if (authority instanceof ArchetypeAwareGrantedAuthority
+                    && isAccessGranted((ArchetypeAwareGrantedAuthority) authority, attribute, shortName)) {
                     granted = true;
                     break;
                 }
@@ -214,7 +211,7 @@ public class ArchetypeAwareVoter implements AccessDecisionVoter {
                         result = new String[]{id.getShortName()};
                     } else {
                         Collection<IMObject> objects = (Collection<IMObject>) arg;
-                        Set<String> shortNames = new HashSet<String>();
+                        Set<String> shortNames = new HashSet<>();
                         for (IMObject object : objects) {
                             ArchetypeId id = object.getArchetypeId();
                             shortNames.add(id.getShortName());

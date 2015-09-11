@@ -13,7 +13,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <!DOCTYPE hibernate-mapping PUBLIC
@@ -36,20 +36,21 @@ select act.archetypeId, act.id, act.linkId, act.version,
       e.archetypeId, e.id, e.linkId,
       e.name
 from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act
-      join act.participations as p
-      join p.entity as e
-      join act.participations as schedule
-      left outer join act.details as details
-where act.archetypeId.shortName = 'act.customerAppointment'
-      and p.actShortName = 'act.customerAppointment'
-      and ((p.activityStartTime < :from and p.activityEndTime > :from)
-	   	or (p.activityStartTime < :to and p.activityEndTime > :to)
-      	or (p.activityStartTime >= :from and p.activityEndTime <=:to))
-      and schedule.archetypeId.shortName = 'participation.schedule'
+join act.participations as p
+      with p.actShortName = 'act.customerAppointment'
+           and ((p.activityStartTime < :from and p.activityEndTime > :from)
+	            or (p.activityStartTime < :to and p.activityEndTime > :to)
+      	        or (p.activityStartTime >= :from and p.activityEndTime <=:to))
+join p.entity as e
+join act.participations as schedule
+      with schedule.archetypeId.shortName = 'participation.schedule'
+          and schedule.actShortName = 'act.customerAppointment'
           and schedule.entity.id = :scheduleId
           and ((schedule.activityStartTime < :from and schedule.activityEndTime > :from)
             	or (schedule.activityStartTime < :to and schedule.activityEndTime > :to)
             	or (schedule.activityStartTime >= :from and schedule.activityEndTime <=:to))
+      left outer join act.details as details
+where act.archetypeId.shortName = 'act.customerAppointment'
 order by p.activityStartTime, act.id
       ]]>
     </query>
@@ -68,19 +69,19 @@ select act.archetypeId, act.id, act.linkId, act.version,
       e.archetypeId, e.id, e.linkId,
       e.name
 from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as act
-      join act.participations as p
-      join p.entity as e
-      join act.participations as schedule
-      left outer join act.details as details
-where act.archetypeId.shortName = 'act.customerTask'
-      and p.actShortName = 'act.customerTask'
-      and (p.activityStartTime <= :to
-          and (p.activityEndTime >= :from or p.activityEndTime is null))
-      and schedule.archetypeId.shortName = 'participation.worklist'
+join act.participations as p
+     with p.actShortName = 'act.customerTask'
+        and (p.activityStartTime <= :to
+            and (p.activityEndTime >= :from or p.activityEndTime is null))
+join p.entity as e
+join act.participations as schedule
+      with schedule.archetypeId.shortName = 'participation.worklist'
+          and schedule.actShortName = 'act.customerTask'
           and schedule.entity.id = :scheduleId
           and (schedule.activityStartTime <= :to
-              and (schedule.activityEndTime >= :from
-                   or schedule.activityEndTime is null))
+              and (schedule.activityEndTime >= :from or schedule.activityEndTime is null))
+left outer join act.details as details
+where act.archetypeId.shortName = 'act.customerTask'
 order by p.activityStartTime, act.id
       ]]>
     </query>
@@ -90,8 +91,16 @@ order by p.activityStartTime, act.id
 select ap.entity.id as scheduleId, a.activityEndTime as startTime, min(b.activityStartTime) as endTime
 from  org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as a,
       org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl as b
-join a.participations ap with ap.archetypeId.shortName = 'participation.schedule' and ap.entity.id = :scheduleId
-join b.participations bp with bp.archetypeId.shortName = 'participation.schedule' and bp.entity.id = :scheduleId
+join a.participations ap
+      with ap.archetypeId.shortName = 'participation.schedule'
+           and ap.entity.id = :scheduleId
+           and ap.actShortName = 'act.customerAppointment'
+           and (ap.activityStartTime between :from and :to or ap.activityEndTime between :from and :to)
+join b.participations bp
+      with bp.archetypeId.shortName = 'participation.schedule'
+           and bp.entity.id = :scheduleId
+           and bp.actShortName = 'act.customerAppointment'
+           and (bp.activityStartTime between :from and :to or bp.activityEndTime between :from and :to)
 where a.archetypeId.shortName = 'act.customerAppointment'
       and b.archetypeId.shortName = 'act.customerAppointment'
       and (a.activityStartTime between :from and :to or a.activityEndTime between :from and :to)
