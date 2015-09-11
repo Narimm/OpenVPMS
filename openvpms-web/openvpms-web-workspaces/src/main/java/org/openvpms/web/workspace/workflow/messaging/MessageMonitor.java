@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.workflow.messaging;
 
@@ -51,7 +51,7 @@ import java.util.Map;
  */
 public class MessageMonitor {
 
-    public static interface MessageListener {
+    public interface MessageListener {
 
         void onMessage(Act message);
 
@@ -70,7 +70,7 @@ public class MessageMonitor {
     /**
      * The listeners.
      */
-    private Map<IMObjectReference, List<Listener>> listeners = new HashMap<IMObjectReference, List<Listener>>();
+    private Map<IMObjectReference, List<Listener>> listeners = new HashMap<>();
 
     /**
      * The default interval to poll the server for new messages, in seconds.
@@ -110,7 +110,7 @@ public class MessageMonitor {
         query.add(Constraints.eq("status", MessageStatus.PENDING));
         query.add(new ParticipantConstraint("to", "participation.user", user));
         query.setMaxResults(1);
-        IMObjectQueryIterator<Act> iterator = new IMObjectQueryIterator<Act>(query);
+        IMObjectQueryIterator<Act> iterator = new IMObjectQueryIterator<>(query);
         return iterator.hasNext();
     }
 
@@ -124,7 +124,7 @@ public class MessageMonitor {
         IMObjectReference userRef = user.getObjectReference();
         List<Listener> userListeners = listeners.get(userRef);
         if (userListeners == null) {
-            userListeners = new ArrayList<Listener>();
+            userListeners = new ArrayList<>();
             listeners.put(userRef, userListeners);
         } else {
             purge(userListeners);
@@ -230,9 +230,10 @@ public class MessageMonitor {
         final WeakReference<MessageListener> listenerRef;
 
         /**
-         * Application task queue.
+         * Reference to the application task queue. This is a WeakReference as the TaskQueueHandle has a reference to
+         * the ApplicationInstance.
          */
-        final TaskQueueHandle taskQueue;
+        final WeakReference<TaskQueueHandle> taskQueueRef;
 
         /**
          * Hash code for the listener.
@@ -250,9 +251,10 @@ public class MessageMonitor {
             if (app == null) {
                 throw new IllegalStateException("No current ApplicationInstance");
             }
-            appRef = new WeakReference<ApplicationInstance>(app);
-            listenerRef = new WeakReference<MessageListener>(listener);
-            taskQueue = app.createTaskQueue();
+            TaskQueueHandle taskQueue = app.createTaskQueue();
+            appRef = new WeakReference<>(app);
+            listenerRef = new WeakReference<>(listener);
+            taskQueueRef = new WeakReference<>(taskQueue);
             ContainerContext context
                     = (ContainerContext) app.getContextProperty(ContainerContext.CONTEXT_PROPERTY_NAME);
 
@@ -277,7 +279,8 @@ public class MessageMonitor {
 
         public void queue(final Act message) {
             ApplicationInstance app = appRef.get();
-            if (app != null) {
+            TaskQueueHandle taskQueue = taskQueueRef.get();
+            if (app != null && taskQueue != null) {
                 app.enqueueTask(taskQueue, new Runnable() {
                     public void run() {
                         MessageListener l = getMessageListener();
@@ -298,7 +301,8 @@ public class MessageMonitor {
          */
         public void destroy() {
             ApplicationInstance app = appRef.get();
-            if (app != null) {
+            TaskQueueHandle taskQueue = taskQueueRef.get();
+            if (app != null && taskQueue != null) {
                 app.removeTaskQueue(taskQueue);
             }
         }
