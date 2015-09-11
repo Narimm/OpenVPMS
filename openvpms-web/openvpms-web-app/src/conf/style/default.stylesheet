@@ -750,7 +750,6 @@
                     <properties>
                         <property name="background" value="${schedule.billed.colour}"/>
                         <property name="insets" value="${padding.small} ${padding.tiny}"/>
-                        <!-- pale green -->
                     </properties>
                 </layout-data>
             </property>
@@ -764,7 +763,6 @@
                     <properties>
                         <property name="background" value="${schedule.admitted.colour}"/>
                         <property name="insets" value="${padding.small} ${padding.tiny}"/>
-                        <!-- pale green -->
                     </properties>
                 </layout-data>
             </property>
