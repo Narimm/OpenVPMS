@@ -138,7 +138,7 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
                           + "\"dnr\":false,\"doctorName\":\"Dr Seuss\",\"medicId\":null,\"diseases\":null,"
                           + "\"cageNumber\":null,\"color\":null,\"reportPath\":null,\"status\":null,"
                           + "\"patient\":{\"objectType\":\"patient\",\"patientId\":\"30\",\"name\":\"Fido\","
-                          + "\"birthday\":\"2014-06-21T00:00:00.000+10:00\",\"sex\":\"M\",\"species\":\"Canine\","
+                          + "\"birthday\":\"2014-06-21T10:00:00.000+10:00\",\"sex\":\"M\",\"species\":\"Canine\","
                           + "\"color\":null,\"breed\":\"Kelpie\",\"criticalNotes\":null,\"customField\":null,"
                           + "\"imagePath\":null,\"owner\":{\"objectType\":\"client\",\"ownerId\":\"20\","
                           + "\"nameLast\":\"Bloggs\",\"nameFirst\":\"J\","
