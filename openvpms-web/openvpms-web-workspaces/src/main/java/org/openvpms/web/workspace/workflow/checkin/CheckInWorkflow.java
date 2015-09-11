@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.workflow.checkin;
 
+import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
@@ -32,8 +33,12 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientInformationService;
+import org.openvpms.smartflow.client.FlowSheetServiceFactory;
+import org.openvpms.smartflow.client.HospitalizationService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.EntityQuery;
+import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.workflow.AbstractTask;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
@@ -47,6 +52,8 @@ import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.TaskProperties;
 import org.openvpms.web.component.workflow.UpdateIMObjectTask;
 import org.openvpms.web.component.workflow.WorkflowImpl;
+import org.openvpms.web.echo.dialog.InformationDialog;
+import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -73,6 +80,11 @@ public class CheckInWorkflow extends WorkflowImpl {
      * The external context to access and update.
      */
     private Context external;
+
+    /**
+     * The flow sheet service factory.
+     */
+    private FlowSheetServiceFactory flowSheetServiceFactory;
 
     /**
      * The check-in workflow help topic.
@@ -106,7 +118,7 @@ public class CheckInWorkflow extends WorkflowImpl {
 
     /**
      * Constructs a {@code CheckInWorkflow}.
-     * <p/>
+     * <p>
      * The workflow must be initialised via {@link #initialise} prior to use.
      *
      * @param help the help context
@@ -156,6 +168,7 @@ public class CheckInWorkflow extends WorkflowImpl {
      */
     private void initialise(Act appointment, Party customer, Party patient, User clinician, String taskDescription,
                             String reason, Context context) {
+        flowSheetServiceFactory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
         if (context.getPractice() == null) {
             throw new IllegalStateException("Context has no practice");
         }
@@ -189,7 +202,8 @@ public class CheckInWorkflow extends WorkflowImpl {
             addTask(new UpdateIMObjectTask(PatientArchetypes.PATIENT, new TaskProperties(), true));
         }
 
-        if (selectWorkList(schedule)) {
+        boolean useWorkList = selectWorkList(schedule);
+        if (useWorkList) {
             // optionally select a work list and edit a customer task
             addTask(new CustomerTaskWorkflow(arrivalTime, taskDescription, help));
         }
@@ -201,6 +215,10 @@ public class CheckInWorkflow extends WorkflowImpl {
 
         // prompt for a patient weight.
         addTask(new PatientWeightTask(help));
+
+        if (useWorkList && flowSheetServiceFactory.supportsSmartFlowSheet(initial.getLocation())) {
+            addTask(new CreateFlowSheetTask());
+        }
 
         // optionally print act.patientDocumentForm and act.patientDocumentLetters
         addTask(new PrintPatientDocumentsTask(getHelpContext()));
@@ -247,7 +265,7 @@ public class CheckInWorkflow extends WorkflowImpl {
 
     /**
      * Returns the time that the customer arrived for the appointment.
-     * <p/>
+     * <p>
      * This is used to:
      * <ul>
      * <li>select a Visit</li>
@@ -278,8 +296,8 @@ public class CheckInWorkflow extends WorkflowImpl {
      * @return a new task to select a patient
      */
     protected SelectIMObjectTask<Party> createSelectPatientTask(TaskContext context, EditIMObjectTask patientEditor) {
-        return new SelectIMObjectTask<Party>(PatientArchetypes.PATIENT, context, patientEditor,
-                                             context.getHelpContext().topic("patient"));
+        return new SelectIMObjectTask<>(PatientArchetypes.PATIENT, context, patientEditor,
+                                        context.getHelpContext().topic("patient"));
     }
 
     /**
@@ -291,7 +309,7 @@ public class CheckInWorkflow extends WorkflowImpl {
     protected SelectIMObjectTask<Entity> createSelectWorkListTask(TaskContext context) {
         HelpContext help = context.getHelpContext().topic("worklist");
         ScheduleWorkListQuery query = new ScheduleWorkListQuery(context.getSchedule(), context.getLocation());
-        return new SelectIMObjectTask<Entity>(new EntityQuery<Entity>(query, context), help);
+        return new SelectIMObjectTask<>(new EntityQuery<>(query, context), help);
     }
 
     /**
@@ -353,6 +371,61 @@ public class CheckInWorkflow extends WorkflowImpl {
 
     }
 
+    /**
+     * Task to create a flow sheet if a work list has been selected and has "createFlowSheet" set true.
+     */
+    private class CreateFlowSheetTask extends AbstractTask {
+
+        /**
+         * Starts the task.
+         *
+         * @param context the task context
+         * @throws OpenVPMSException for any error
+         */
+        @Override
+        public void start(TaskContext context) {
+            boolean popup = false;
+            Party workList = context.getWorkList();
+            Act visit = (Act) context.getObject(PatientArchetypes.CLINICAL_EVENT);
+            Party patient = context.getPatient();
+            Party location = context.getLocation();
+            if (workList != null && visit != null && location != null) {
+                IMObjectBean bean = new IMObjectBean(workList);
+                if (bean.getBoolean("createFlowSheet")) {
+                    PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
+                    PatientContext patientContext = factory.createContext(patient, visit, location);
+                    try {
+                        if (patientContext.getWeight() != null) {
+                            HospitalizationService service
+                                    = flowSheetServiceFactory.getHospitalisationService(location);
+                            if (!service.exists(patientContext)) {
+                                service.add(patientContext);
+                            } else {
+                                popup = true;
+                                InformationDialog.show(Messages.format("workflow.flowsheet.exists", patient.getName()),
+                                                       new WindowPaneListener() {
+                                                           public void onClose(WindowPaneEvent event) {
+                                                               notifyCompleted();
+                                                           }
+                                                       });
+                            }
+                        }
+                    } catch (Throwable exception) {
+                        popup = true;
+                        ErrorHelper.show(exception, new WindowPaneListener() {
+                            public void onClose(WindowPaneEvent event) {
+                                notifyCompleted();
+                            }
+                        });
+                    }
+                }
+            }
+            if (!popup) {
+                notifyCompleted();
+            }
+        }
+    }
+
     private class UpdateAppointmentTask extends UpdateIMObjectTask {
 
         /**
@@ -380,8 +453,7 @@ public class CheckInWorkflow extends WorkflowImpl {
          * @param context    the task context
          */
         @Override
-        protected void populate(IMObject object, TaskProperties properties,
-                                TaskContext context) {
+        protected void populate(IMObject object, TaskProperties properties, TaskContext context) {
             super.populate(object, properties, context);
             ActBean bean = new ActBean((Act) object);
             bean.setValue("arrivalTime", arrivalTime);

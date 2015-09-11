@@ -22,6 +22,7 @@ import org.junit.Before;
 import org.mockito.Mockito;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.CustomerRules;
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
@@ -66,6 +67,7 @@ public abstract class AbstractMessageTest extends ArchetypeServiceTest {
         ILookupService lookups = getLookupService();
         PatientRules rules = new PatientRules(null, getArchetypeService(), lookups);
         CustomerRules customerRules = new CustomerRules(getArchetypeService(), lookups);
+        MedicalRecordRules medicalRecordRules = new MedicalRecordRules(getArchetypeService());
         Party owner = TestHelper.createCustomer("Foo", "Bar", true);
         Party patient = TestHelper.createPatient(owner);
         Lookup species = getLookup("lookup.species", "CANINE", "Canine", true);
@@ -111,7 +113,8 @@ public abstract class AbstractMessageTest extends ArchetypeServiceTest {
         User clinician = TestHelper.createClinician(false);
         clinician.setName("Joe Blogs"); // todo - need separate first, last name fields
         save(clinician);
-        PatientContextFactory factory = new PatientContextFactory(rules, customerRules, getArchetypeService(), lookups);
+        PatientContextFactory factory = new PatientContextFactory(rules, customerRules, medicalRecordRules,
+                                                                  getArchetypeService(), lookups);
         context = factory.createContext(patient, owner, visit, location, clinician);
         context = Mockito.spy(context);
         Mockito.when(context.getVisitId()).thenReturn(3001L);

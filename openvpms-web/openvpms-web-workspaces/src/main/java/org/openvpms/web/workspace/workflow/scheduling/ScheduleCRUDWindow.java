@@ -20,13 +20,18 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.edit.IMObjectActions;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
+import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.Workflow;
 import org.openvpms.web.component.workspace.AbstractCRUDWindow;
@@ -40,6 +45,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.workflow.WorkflowFactory;
+import org.openvpms.web.workspace.workflow.checkin.NewFlowSheetTask;
 import org.openvpms.web.workspace.workflow.otc.OverTheCounterWorkflow;
 
 
@@ -65,6 +71,16 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
      */
     protected static final String OVER_THE_COUNTER_ID = "button.OTC";
 
+    /**
+     * New flow sheet button identifier.
+     */
+    private static final String NEW_FLOW_SHEET_ID = "button.newflowsheet";
+
+    /**
+     * The Smart Flow Sheet service factory.
+     */
+    private final FlowSheetServiceFactory flowSheetServiceFactory;
+
 
     /**
      * Constructs a {@link ScheduleCRUDWindow}.
@@ -77,6 +93,7 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
      */
     public ScheduleCRUDWindow(Archetypes<Act> archetypes, ScheduleActions actions, Context context, HelpContext help) {
         super(archetypes, actions, context, help);
+        this.flowSheetServiceFactory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
     }
 
     /**
@@ -126,12 +143,15 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
+        boolean newFlowSheetEnabled = enable && getActions().canCreateFlowSheet(
+                getObject(), getContext().getLocation(), flowSheetServiceFactory);
+        buttons.setEnabled(NEW_FLOW_SHEET_ID, newFlowSheetEnabled);
         buttons.setEnabled(PRINT_ID, enable);
     }
 
     /**
      * Invoked when the object needs to be refreshed.
-     * <p/>
+     * <p>
      * This implementation updates the object and notifies any registered listener.
      *
      * @param object the object
@@ -198,6 +218,16 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
         });
     }
 
+    protected Button createFlowSheetButton() {
+        return ButtonFactory.create(NEW_FLOW_SHEET_ID, new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                onNewFlowSheet();
+            }
+        });
+
+    }
+
     /**
      * Invoked when the 'consult' button is pressed.
      */
@@ -248,6 +278,25 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
         workflow.start();
     }
 
+    /**
+     * Creates a new Smart Flow sheet for the patient associated with the selected appointment/task.
+     */
+    private void onNewFlowSheet() {
+        final Act object = IMObjectHelper.reload(getObject());
+        Party location = getContext().getLocation();
+        if (object != null && flowSheetServiceFactory.supportsSmartFlowSheet(location)) {
+            NewFlowSheetTask task = new NewFlowSheetTask(object, location, flowSheetServiceFactory, getHelpContext());
+            task.addTaskListener(new DefaultTaskListener() {
+                @Override
+                public void taskEvent(TaskEvent event) {
+                    onRefresh(object);
+                }
+            });
+            TaskContext context = new DefaultTaskContext(getContext(), getHelpContext());
+            task.start(context);
+        }
+    }
+
     protected static abstract class ScheduleActions extends ActActions<Act> {
 
         /**
@@ -274,6 +323,23 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
          * @return {@code true} if consultation can be performed
          */
         public abstract boolean canCheckoutOrConsult(Act act);
+
+        /**
+         * Determines if a flow sheet can be created.
+         *
+         * @param act      the act
+         * @param location the practice location
+         * @param factory  the flow sheet service factory
+         * @return {@code true} if a flow sheet can be created
+         */
+        public boolean canCreateFlowSheet(Act act, Party location, FlowSheetServiceFactory factory) {
+            if (act != null && location != null && factory.supportsSmartFlowSheet(location)) {
+                ActBean bean = new ActBean(act);
+                return bean.getNodeParticipantRef("patient") != null;
+            }
+            return false;
+        }
+
     }
 
 }

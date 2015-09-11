@@ -16,6 +16,7 @@
 
 package org.openvpms.archetype.rules.patient;
 
+import org.apache.commons.lang.WordUtils;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -26,6 +27,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -42,6 +44,33 @@ import static org.openvpms.archetype.test.TestHelper.save;
  * @author Tim Anderson
  */
 public class PatientTestHelper {
+
+    /**
+     * Creates a new patient.
+     *
+     * @param name        the patient name
+     * @param species     the patient species code
+     * @param breed       the patient breed code
+     * @param dateOfBirth the patient's date of birth. May be {@code null}
+     * @param owner       the patient owner
+     * @return a new patient
+     */
+    public static Party createPatient(String name, String species, String breed, Date dateOfBirth, Party owner) {
+        Party patient = TestHelper.createPatient(owner);
+        patient.setName(name);
+        Lookup speciesLookup = TestHelper.getLookup(PatientArchetypes.SPECIES, species,
+                                                    WordUtils.capitalize(species.toLowerCase()), true);
+        Lookup breedLookup = TestHelper.getLookup(PatientArchetypes.BREED, breed, speciesLookup, "lookupRelationship.speciesBreed");
+        breedLookup.setName(WordUtils.capitalize(breed.toLowerCase()));
+        save(breedLookup);
+        IMObjectBean bean = new IMObjectBean(patient);
+        bean.setValue("species", species);
+        bean.setValue("breed", breed);
+        bean.setValue("dateOfBirth", dateOfBirth);
+        bean.save();
+        ;
+        return patient;
+    }
 
     /**
      * Helper to create an <em>act.patientMedication</em>.
@@ -92,7 +121,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalEvent</em>.
-     * <p/>
+     * <p>
      * This links the event to any items, and saves it.
      *
      * @param startTime the start time. May be {@code null}
@@ -105,7 +134,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalEvent</em>.
-     * <p/>
+     * <p>
      * This links the event to any items, and saves it.
      *
      * @param startTime the start time. May be {@code null}
@@ -119,7 +148,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalEvent</em>.
-     * <p/>
+     * <p>
      * This links the event to any items, and saves it.
      *
      * @param startTime the start time. May be {@code null}
@@ -145,7 +174,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalProblem</em>.
-     * <p/>
+     * <p>
      * This links the problem to any items, and saves it.
      *
      * @param startTime the start time
@@ -159,7 +188,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalProblem</em>.
-     * <p/>
+     * <p>
      * This links the problem to any items, and saves it.
      *
      * @param startTime the start time

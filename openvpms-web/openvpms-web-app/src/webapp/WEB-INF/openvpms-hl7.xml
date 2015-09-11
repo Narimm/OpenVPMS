@@ -92,6 +92,7 @@
     <bean class="org.openvpms.hl7.patient.PatientContextFactory">
         <constructor-arg ref="patientRules"/>
         <constructor-arg ref="customerRules"/>
+        <constructor-arg ref="medicalRecordRules"/>
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="lookupService"/>
     </bean>

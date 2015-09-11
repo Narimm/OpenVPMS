@@ -16,7 +16,9 @@
 
 package org.openvpms.hl7.patient;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
@@ -32,7 +34,6 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -271,19 +272,9 @@ public class PatientContext {
      *
      * @return the patient weight, or {@code null} if unknown
      */
-    public BigDecimal getPatientWeight() {
+    public Weight getWeight() {
         getWeightAct();
-        return (weight != null) ? patientRules.getWeight(weight).toKilograms() : null;
-    }
-
-    /**
-     * Returns the date when the patient was weighed.
-     *
-     * @return the date, or {@code null} if the patient has no weight record
-     */
-    public Date getWeighDate() {
-        getWeightAct();
-        return weight != null ? weight.getActivityStartTime() : null;
+        return (weight != null) ? patientRules.getWeight(weight) : null;
     }
 
     /**
@@ -292,7 +283,14 @@ public class PatientContext {
      * @return the customer home phone. May be {@code null}
      */
     public String getHomePhone() {
-        return (customer != null) ? customerRules.getHomeTelephone(customer) : null;
+        String result = null;
+        if (customer != null) {
+            String phone = customerRules.getHomeTelephone(customer);
+            if (!StringUtils.isEmpty(phone)) {
+                result = phone;
+            }
+        }
+        return result;
     }
 
     /**
@@ -301,7 +299,14 @@ public class PatientContext {
      * @return the customer work phone. May be {@code null}
      */
     public String getWorkPhone() {
-        return (customer != null) ? customerRules.getWorkTelephone(customer) : null;
+        String result = null;
+        if (customer != null) {
+            String phone = customerRules.getWorkTelephone(customer);
+            if (!StringUtils.isEmpty(phone)) {
+                result = phone;
+            }
+        }
+        return result;
     }
 
     /**

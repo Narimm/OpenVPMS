@@ -141,6 +141,11 @@ public abstract class PopupDialog extends PopupWindow {
     private VetoListener cancelListener;
 
     /**
+     * The listener to veto skip events. May be {@code null}
+     */
+    private VetoListener skipListener;
+
+    /**
      * The default close action.
      */
     private String defaultCloseAction;
@@ -243,8 +248,17 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
+     * Sets a listener to veto skip events.
+     *
+     * @param listener the listener. May be {@code null}
+     */
+    public void setSkipListener(VetoListener listener) {
+        skipListener = listener;
+    }
+
+    /**
      * Sets the default action when the close button is pressed.
-     * <p/>
+     * <p>
      * Defaults to the last button displayed.
      *
      * @param action the default action. May be {@code null}
@@ -255,7 +269,7 @@ public abstract class PopupDialog extends PopupWindow {
 
     /**
      * Processes a user request to close the window (via the close button).
-     * <p/>
+     * <p>
      * If there is an {@link #defaultCloseAction}, this will be invoked.
      */
     @Override
@@ -355,7 +369,7 @@ public abstract class PopupDialog extends PopupWindow {
 
     /**
      * Cancels the operation.
-     * <p/>
+     * <p>
      * This implementation closes the dialog, setting the action to {@link #CANCEL_ID}.
      */
     protected void doCancel() {
@@ -378,11 +392,30 @@ public abstract class PopupDialog extends PopupWindow {
         close(NO_ID);
     }
 
+
+    /**
+     * Invoked when the 'cancel' button is pressed. If a {@link VetoListener}
+     * has been registered, this will be notified, otherwise {@link #doCancel} will be invoked.
+     */
+    protected void onSkip() {
+        if (skipListener != null) {
+            skipListener.onVeto(new Vetoable() {
+                public void veto(boolean veto) {
+                    if (!veto) {
+                        doSkip();
+                    }
+                }
+            });
+        } else {
+            doSkip();
+        }
+    }
+
     /**
      * Invoked when the 'skip' button is pressed. This sets the action and
      * closes the window.
      */
-    protected void onSkip() {
+    protected void doSkip() {
         close(SKIP_ID);
     }
 
@@ -424,7 +457,7 @@ public abstract class PopupDialog extends PopupWindow {
 
     /**
      * Invoked just prior to the dialog closing.
-     * <p/>
+     * <p>
      * This implementation is a no-op.
      */
     protected void onClosing() {

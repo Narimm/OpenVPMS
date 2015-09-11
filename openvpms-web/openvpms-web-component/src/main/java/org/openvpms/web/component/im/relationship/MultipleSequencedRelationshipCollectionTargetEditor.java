@@ -117,7 +117,7 @@ public class MultipleSequencedRelationshipCollectionTargetEditor extends Multipl
 
     /**
      * Enable/disables the buttons.
-     * <p/>
+     * <p>
      * Note that the delete button is enabled if {@link #getCurrentEditor()} or {@link #getSelected()} return non-null.
      *
      * @param enable if {@code true} enable buttons (subject to criteria), otherwise disable them

@@ -169,7 +169,7 @@ public class DefaultIMObjectReferenceEditorTestCase extends AbstractAppTest {
 
     /**
      * Tests updating the property from within the modification callback.
-     * <p/>
+     * <p>
      * This happens when replacing a template product with a medication product for example.
      */
     @Test

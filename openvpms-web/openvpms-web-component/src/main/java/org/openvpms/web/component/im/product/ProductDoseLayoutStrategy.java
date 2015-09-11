@@ -63,7 +63,7 @@ public class ProductDoseLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
      * Apply the layout strategy.
-     * <p/>
+     * <p>
      * This renders an object in a {@code Component}, using a factory to create the child components.
      *
      * @param object     the object to apply
@@ -97,7 +97,7 @@ public class ProductDoseLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
      * Creates a select field to select the species.
-     * <p/>
+     * <p>
      * This provides an All option, indicating that the dose applies to all species. This is selected if no
      * other species has been selected previously.
      *
