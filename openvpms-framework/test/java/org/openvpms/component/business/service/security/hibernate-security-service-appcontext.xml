@@ -16,9 +16,12 @@
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:security="http://www.springframework.org/schema/security"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+                           http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+                           http://www.springframework.org/schema/security
+                           http://www.springframework.org/schema/security/spring-security-3.2.xsd">
 
     <import resource="classpath:/datasource-context.xml"/>
 
@@ -173,17 +176,20 @@
 
     <!--  Configure the security advisor -->
     <bean id='securityAdvisor'
-          class='org.openvpms.component.business.service.security.OpenVPMSMethodSecurityInterceptor'>
+          class="org.openvpms.component.business.service.security.OpenVPMSMethodSecurityInterceptor">
         <property name='authenticationManager' ref='authenticationManager'/>
         <property name='accessDecisionManager' ref='accessDecisionManager'/>
-        <property name='securityMetadataSource'>
-            <value>
-                org.openvpms.component.business.service.archetype.IArchetypeService.create=archetypeService.create
-                org.openvpms.component.business.service.archetype.IArchetypeService.save=archetypeService.save
-                org.openvpms.component.business.service.archetype.IArchetypeService.remove=archetypeService.remove
-            </value>
-        </property>
+        <property name="securityMetadataSource" ref="archSecurityMetaDataSource"/>
     </bean>
+
+    <security:method-security-metadata-source id="archSecurityMetaDataSource">
+        <security:protect method="org.openvpms.component.business.service.archetype.IArchetypeService.create"
+                          access="archetypeService.create"/>
+        <security:protect method="org.openvpms.component.business.service.archetype.IArchetypeService.save"
+                          access="archetypeService.save"/>
+        <security:protect method="org.openvpms.component.business.service.archetype.IArchetypeService.remove"
+                          access="archetypeService.remove"/>
+    </security:method-security-metadata-source>
 
     <!--  Define the Authentication Manager  -->
     <bean id='authenticationManager'

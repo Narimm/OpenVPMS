@@ -26,7 +26,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.util.StringUtilities;
-import org.springframework.aop.framework.ReflectiveMethodInvocation;
+import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDecisionVoter;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.core.Authentication;
@@ -46,7 +46,7 @@ import java.util.StringTokenizer;
  *
  * @author Jim Alateras
  */
-public class ArchetypeAwareVoter implements AccessDecisionVoter {
+public class ArchetypeAwareVoter implements AccessDecisionVoter<MethodInvocation> {
 
     /**
      * Archetype service name prefix.
@@ -83,33 +83,34 @@ public class ArchetypeAwareVoter implements AccessDecisionVoter {
 
     /**
      * Indicates whether or not access is granted.
-     * <p>The decision must be affirmative (<code>ACCESS_GRANTED</code>), negative (<code>ACCESS_DENIED</code>)
-     * or the <code>AccessDecisionVoter</code> can abstain (<code>ACCESS_ABSTAIN</code>) from voting.
-     * </p>
-     * <p>Unless an <code>AccessDecisionVoter</code> is specifically intended to vote on an access control
+     * <p/>
+     * The decision must be affirmative ({@code ACCESS_GRANTED}), negative ({@code ACCESS_DENIED})
+     * or the {@code AccessDecisionVoter} can abstain ({@code ACCESS_ABSTAIN}) from voting.
+     * Under no circumstances should implementing classes return any other value. If a weighting of results is desired,
+     * this should be handled in a custom {@link AccessDecisionManager} instead.
+     * <p/>
+     * Unless an {@code AccessDecisionVoter} is specifically intended to vote on an access control
      * decision due to a passed method invocation or configuration attribute parameter, it must return
-     * <code>ACCESS_ABSTAIN</code>. This prevents the coordinating <code>AccessDecisionManager</code> from counting
-     * votes from those <code>AccessDecisionVoter</code>s without a legitimate interest in the access control
+     * {@code ACCESS_ABSTAIN}. This prevents the coordinating {@code AccessDecisionManager} from counting
+     * votes from those {@code AccessDecisionVoter}s without a legitimate interest in the access control
      * decision.
-     * </p>
+     * <p/>
+     * Whilst the secured object (such as a {@code MethodInvocation}) is passed as a parameter to maximise flexibility
+     * in making access control decisions, implementing classes should not modify it or cause the represented invocation
+     * to take place (for example, by calling {@code MethodInvocation.proceed()}).
      *
-     * @param authentication the caller invoking the method
-     * @param object         the secured object
-     * @param attributes     the configuration attributes associated with the method being invoked
+     * @param authentication the caller making the invocation
+     * @param object         the secured object being invoked
+     * @param attributes     the configuration attributes associated with the secured object
      * @return either {@link #ACCESS_GRANTED}, {@link #ACCESS_ABSTAIN} or {@link #ACCESS_DENIED}
      */
-    public int vote(Authentication authentication, Object object, Collection<ConfigAttribute> attributes) {
+    @Override
+    public int vote(Authentication authentication, MethodInvocation object, Collection<ConfigAttribute> attributes) {
         int result = ACCESS_ABSTAIN;
-
-        // make sure that we are dealing with an {@link IMObject}
-        if (object instanceof ReflectiveMethodInvocation) {
-            ReflectiveMethodInvocation method
-                    = (ReflectiveMethodInvocation) object;
-            String[] shortNames = getArchetypeShortNames(method);
-            for (ConfigAttribute attribute : attributes) {
-                if (supports(attribute)) {
-                    result = isAccessGranted(shortNames, authentication, attribute);
-                }
+        String[] shortNames = getArchetypeShortNames(object);
+        for (ConfigAttribute attribute : attributes) {
+            if (supports(attribute)) {
+                result = isAccessGranted(shortNames, authentication, attribute);
             }
         }
 
@@ -123,7 +124,7 @@ public class ArchetypeAwareVoter implements AccessDecisionVoter {
      * @param authentication the authentication
      * @param attribute      the config attribute
      * @return <tt>ACCESS_GRANTED</tt> if access is granted;
-     *         otherwise <tt>ACCESS_DENIED</tt>.
+     * otherwise <tt>ACCESS_DENIED</tt>.
      */
     private int isAccessGranted(String[] shortNames,
                                 Authentication authentication,
@@ -158,7 +159,7 @@ public class ArchetypeAwareVoter implements AccessDecisionVoter {
      * @param attr      the associated contrib attributes
      * @param shortName the archetype shortName
      * @return boolean
-     *         true if access is granted
+     * true if access is granted
      */
     private boolean isAccessGranted(ArchetypeAwareGrantedAuthority authority,
                                     ConfigAttribute attr, String shortName) {
