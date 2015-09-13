@@ -731,8 +731,8 @@
         <stax.api.version>1.0</stax.api.version>
         <stax.version>1.1.2-dev</stax.version>
         <slf4j.version>1.6.0</slf4j.version>
-        <spring.version>3.0.5.RELEASE</spring.version>
-        <spring.security.version>3.0.3.RELEASE</spring.security.version>
+        <spring.version>3.2.6.RELEASE</spring.version>
+        <spring.security.version>3.2.0.RELEASE</spring.security.version>
         <springmodules.version>0.2</springmodules.version>
         <xerces.version>2.11.0_1</xerces.version>
         <xmlapis.version>1.4.01</xmlapis.version>
