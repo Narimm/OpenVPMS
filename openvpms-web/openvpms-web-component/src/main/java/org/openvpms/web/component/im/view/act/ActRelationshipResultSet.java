@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view.act;
 
+import org.apache.commons.collections.Transformer;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -33,6 +34,9 @@ import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.AbstractListResultSet;
 import org.openvpms.web.component.im.query.QueryHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.util.IMObjectSorter;
+import org.openvpms.web.component.im.util.VirtualNodeSortConstraint;
 import org.openvpms.web.component.util.ErrorHelper;
 
 import java.util.ArrayList;
@@ -45,12 +49,13 @@ import java.util.Map;
 /**
  * A result set for {@link ActRelationship} instances, that provides sorting
  * of target acts using ArchetypeQuery, to improve performance.
+ * <p/>
+ * If any of the sort constraints are {@link VirtualNodeSortConstraint}, it will fall back a less efficient
+ * memory sort.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class ActRelationshipResultSet
-        extends AbstractListResultSet<IMObject> {
+public class ActRelationshipResultSet extends AbstractListResultSet<IMObject> {
 
     /**
      * The parent act.
@@ -79,40 +84,44 @@ public class ActRelationshipResultSet
 
 
     /**
-     * Creates a new <tt>ActRelationshipResultSet</tt>.
+     * Constructs an {@link ActRelationshipResultSet}.
      *
      * @param parent                 the parent act
      * @param relationships          the act relationships
      * @param relationshipShortNames the act relationship short names to use
      * @param pageSize               the maximum no. of results per page
      */
-    public ActRelationshipResultSet(Act parent,
-                                    List<IMObject> relationships,
-                                    String[] relationshipShortNames,
+    public ActRelationshipResultSet(Act parent, List<IMObject> relationships, String[] relationshipShortNames,
                                     int pageSize) {
         super(relationships, pageSize);
         this.parent = parent;
         this.relationshipShortNames = relationshipShortNames;
-        shortNames = DescriptorHelper.getNodeShortNames(relationshipShortNames,
-                                                        "target");
+        shortNames = DescriptorHelper.getNodeShortNames(relationshipShortNames, "target");
     }
 
     /**
      * Sorts the set. This resets the iterator.
      *
-     * @param sort the sort criteria. May be <tt>null</tt>
+     * @param sort the sort criteria. May be {@code null}
      */
     public void sort(SortConstraint[] sort) {
         if (sort != null && sort.length != 0 && !getObjects().isEmpty()) {
-            List<String> nodes = new ArrayList<String>();
+            List<NodeSortConstraint> nodes = new ArrayList<>();
+            boolean memorySort = false;
             sortAscending = sort[0].isAscending();
             for (SortConstraint constraint : sort) {
+                if (constraint instanceof VirtualNodeSortConstraint) {
+                    memorySort = true;
+                    break;
+                }
                 if (constraint instanceof NodeSortConstraint) {
-                    nodes.add(((NodeSortConstraint) constraint).getNodeName());
+                    nodes.add(((NodeSortConstraint) constraint));
                 }
             }
-            if (!nodes.isEmpty()) {
-                sort(nodes);
+            if (memorySort) {
+                memorySort(sort);
+            } else if (!nodes.isEmpty()) {
+                querySort(nodes);
             }
             this.sort = sort;
         }
@@ -122,9 +131,9 @@ public class ActRelationshipResultSet
     /**
      * Determines if the node is sorted ascending or descending.
      *
-     * @return <tt>true</tt> if the node is sorted ascending or no sort
-     *         constraint was specified; <tt>false</tt> if it is sorted
-     *         descending
+     * @return {@code true} if the node is sorted ascending or no sort
+     * constraint was specified; {@code false} if it is sorted
+     * descending
      */
     public boolean isSortedAscending() {
         return sortAscending;
@@ -140,16 +149,32 @@ public class ActRelationshipResultSet
     }
 
     /**
+     * Performs an in-memory sort of the act relationships.
+     * <p/>
+     * Note that the sort constraints must be relative to the target acts.
+     *
+     * @param sort the sort constraints
+     */
+    protected void memorySort(SortConstraint[] sort) {
+        IMObjectSorter.sort(getObjects(), sort, new Transformer() {
+            @Override
+            public Object transform(Object input) {
+                ActRelationship relationship = (ActRelationship) input;
+                return IMObjectHelper.getObject(relationship.getTarget(), null);
+            }
+        });
+    }
+
+    /**
      * Sorts the act relationships on or one more target nodes.
      *
      * @param nodes the nodes
      */
-    protected void sort(List<String> nodes) {
+    protected void querySort(List<NodeSortConstraint> nodes) {
         try {
-            List<IMObject> sorted = new ArrayList<IMObject>();
-            ArchetypeQuery query = createQuery(nodes, sortAscending);
-            Map<Long, ActRelationship> relsById
-                    = new LinkedHashMap<Long, ActRelationship>();
+            List<IMObject> sorted = new ArrayList<>();
+            ArchetypeQuery query = createQuery(nodes);
+            Map<Long, ActRelationship> relsById = new LinkedHashMap<>();
             for (IMObject object : getObjects()) {
                 relsById.put(object.getId(), (ActRelationship) object);
             }
@@ -181,18 +206,13 @@ public class ActRelationshipResultSet
     /**
      * Creates a new archetype ordered on the specified nodes.
      *
-     * @param nodes     the target act nodes to sort on
-     * @param ascending if <tt>true</tt> sort ascending, else sort descending
+     * @param nodes the target act nodes to sort on
      * @return a new archetype query
      */
-    protected ArchetypeQuery createQuery(List<String> nodes,
-                                         boolean ascending) {
-        ShortNameConstraint relationships = new ShortNameConstraint(
-                "rel", relationshipShortNames, false, false);
-        ObjectRefConstraint source = new ObjectRefConstraint(
-                "source", parent.getObjectReference());
-        ShortNameConstraint target = new ShortNameConstraint(
-                "target", shortNames, false, false);
+    protected ArchetypeQuery createQuery(List<NodeSortConstraint> nodes) {
+        ShortNameConstraint relationships = new ShortNameConstraint("rel", relationshipShortNames, false, false);
+        ObjectRefConstraint source = new ObjectRefConstraint("source", parent.getObjectReference());
+        ShortNameConstraint target = new ShortNameConstraint("target", shortNames, false, false);
 
         ArchetypeQuery query = new ArchetypeQuery(relationships);
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
@@ -201,19 +221,16 @@ public class ActRelationshipResultSet
         query.add(new IdConstraint("rel.source", "source"));
         query.add(new IdConstraint("rel.target", "target"));
         query.add(new NodeSelectConstraint("rel.id"));
-        for (String node : nodes) {
-            NodeDescriptor descriptor = QueryHelper.getDescriptor(target, node);
+        for (NodeSortConstraint node : nodes) {
+            String name = node.getNodeName();
+            NodeDescriptor descriptor = QueryHelper.getDescriptor(target, name);
             if (descriptor != null) {
                 if (QueryHelper.isParticipationNode(descriptor)) {
-                    QueryHelper.addSortOnParticipation(target, query,
-                                                       descriptor,
-                                                       ascending);
+                    QueryHelper.addSortOnParticipation(target, query, descriptor, node.isAscending());
                 } else {
-                    query.add(new NodeSortConstraint(target.getAlias(), node,
-                                                     ascending));
+                    query.add(new NodeSortConstraint(target.getAlias(), name, node.isAscending()));
                 }
             }
-
         }
         return query;
     }
