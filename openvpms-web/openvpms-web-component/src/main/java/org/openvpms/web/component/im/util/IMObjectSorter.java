@@ -220,7 +220,7 @@ public class IMObjectSorter {
             ComparatorChain comparator = new ComparatorChain();
             for (SortConstraint constraint : sort) {
                 if (constraint instanceof VirtualNodeSortConstraint) {
-                    Comparator node = getComparator((VirtualNodeSortConstraint) constraint);
+                    Comparator node = getComparator((VirtualNodeSortConstraint) constraint, transformer);
                     comparator.addComparator(node);
                 } else if (constraint instanceof NodeSortConstraint) {
                     Comparator node = getComparator((NodeSortConstraint) constraint, transformer);
@@ -248,6 +248,19 @@ public class IMObjectSorter {
             if (transformer == null) {
                 transformer = getTransformer(sort);
             }
+            return new TransformingComparator(transformer, comparator);
+        }
+
+        /**
+         * Returns a new comparator for a virtual node sort constraint.
+         *
+         * @param sort        the sort criteria
+         * @param transformer a transformer to apply
+         * @return a new comparator
+         */
+        @SuppressWarnings("unchecked")
+        private Comparator<Object> getComparator(VirtualNodeSortConstraint sort, Transformer transformer) {
+            Comparator<Object> comparator = getComparator(sort);
             return new TransformingComparator(transformer, comparator);
         }
 
