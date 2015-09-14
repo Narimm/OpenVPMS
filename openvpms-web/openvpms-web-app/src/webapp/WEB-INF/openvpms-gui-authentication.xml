@@ -71,7 +71,7 @@
         <property name="authenticationManager" ref="guiAuthenticationManager"/>
         <property name="accessDecisionManager" ref="authenticatedVoterAccessDecisionManager"/>
         <property name="securityMetadataSource">
-            <security:filter-security-metadata-source path-type="ant">
+            <security:filter-security-metadata-source request-matcher="ant">
                 <security:intercept-url pattern="/j_spring_security_check" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
                 <security:intercept-url pattern="/login" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
                 <security:intercept-url pattern="/images/**" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
