@@ -253,6 +253,8 @@ public class IMObjectSorter {
 
         /**
          * Returns a new comparator for a virtual node sort constraint.
+         * <p/>
+         * If the sort constraint provides its own transformer, this will be used instead of {@code transformer}.
          *
          * @param sort        the sort criteria
          * @param transformer a transformer to apply
@@ -261,7 +263,7 @@ public class IMObjectSorter {
         @SuppressWarnings("unchecked")
         private Comparator<Object> getComparator(VirtualNodeSortConstraint sort, Transformer transformer) {
             Comparator<Object> comparator = getComparator(sort);
-            return new TransformingComparator(transformer, comparator);
+            return sort.getTransformer() == null ? new TransformingComparator(transformer, comparator) : comparator;
         }
 
         /**
