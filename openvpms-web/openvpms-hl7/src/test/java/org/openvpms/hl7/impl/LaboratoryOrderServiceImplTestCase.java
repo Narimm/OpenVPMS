@@ -91,6 +91,7 @@ public class LaboratoryOrderServiceImplTestCase extends AbstractServiceTest {
         PatientContext context = getContext();
         Mockito.when(context.getPatientId()).thenReturn(1001L);
         Mockito.when(context.getClinicianId()).thenReturn(2001L);
+        Mockito.when(context.getCustomerId()).thenReturn(3001L);
     }
 
     /**
@@ -101,7 +102,7 @@ public class LaboratoryOrderServiceImplTestCase extends AbstractServiceTest {
     @Test
     public void testCreateOrder() throws Exception {
         String expected = "MSH|^~\\&|VPMS|Main Clinic|IDEXX|IDEXX|20140825085900||ORM^O01^ORM_O01|1200022|P|2.5||||||UTF-8\r" +
-                          "PID|1||1001||Bar^Fido||20140701000000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine\r" +
+                          "PID|1||1001||Bar^Fido||20140701000000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432||||3001|||||||||||||||||CANINE^Canine\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500\r" +
                           "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
                           "AL1|2|MA|^Pollen|U|Produces hives\r" +
@@ -122,7 +123,7 @@ public class LaboratoryOrderServiceImplTestCase extends AbstractServiceTest {
     @Test
     public void testCancelOrder() throws Exception {
         String expected = "MSH|^~\\&|VPMS|Main Clinic|IDEXX|IDEXX|20140825085900||ORM^O01^ORM_O01|1200022|P|2.5||||||UTF-8\r" +
-                          "PID|1||1001||Bar^Fido||20140701000000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine\r" +
+                          "PID|1||1001||Bar^Fido||20140701000000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432||||3001|||||||||||||||||CANINE^Canine\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500\r" +
                           "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
                           "AL1|2|MA|^Pollen|U|Produces hives\r" +

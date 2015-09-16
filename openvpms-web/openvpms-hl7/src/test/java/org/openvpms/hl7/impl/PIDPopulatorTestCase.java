@@ -49,6 +49,7 @@ public class PIDPopulatorTestCase extends AbstractMessageTest {
         PatientContext context = getContext();
         Mockito.when(context.getPatientId()).thenReturn(1001L);
         Mockito.when(context.getClinicianId()).thenReturn(2001L);
+        Mockito.when(context.getCustomerId()).thenReturn(3001L);
     }
 
     /**
@@ -56,8 +57,8 @@ public class PIDPopulatorTestCase extends AbstractMessageTest {
      */
     @Test
     public void testSpeciesMapping() throws HL7Exception, IOException {
-        String noMap = "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||OTHER^OTHER";
-        String withMap = "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Dog";
+        String noMap = "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432||||3001|||||||||||||||||OTHER^OTHER";
+        String withMap = "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432||||3001|||||||||||||||||CANINE^Dog";
 
         // map species to IDEXX species
         HL7Mapping mapping = new HL7Mapping();

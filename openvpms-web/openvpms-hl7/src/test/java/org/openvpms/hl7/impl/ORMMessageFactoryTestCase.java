@@ -65,6 +65,7 @@ public class ORMMessageFactoryTestCase extends AbstractMessageTest {
         PatientContext context = getContext();
         Mockito.when(context.getPatientId()).thenReturn(1001L);
         Mockito.when(context.getClinicianId()).thenReturn(2001L);
+        Mockito.when(context.getCustomerId()).thenReturn(3001L);
     }
 
     /**
@@ -75,7 +76,7 @@ public class ORMMessageFactoryTestCase extends AbstractMessageTest {
     @Test
     public void testCreateOrder() throws Exception {
         String expected = "MSH|^~\\&|||||20140825090000.105+1000||ORM^O01^ORM_O01|1200022|P|2.5\r" +
-                          "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432|||||||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
+                          "PID|1||1001||Bar^Fido||20140701000000+1000|M|||123 Broadwater Avenue^^Cape Woolamai^VIC^3058||(03) 12345678|(03) 98765432||||3001|||||||||||||||||CANINE^Canine^OpenVPMS|KELPIE^Kelpie^OpenVPMS\r" +
                           "PV1|1|U|^^^Main Clinic||||||||||||||2001^Blogs^Joe||3001|||||||||||||||||||||||||20140825085500+1000\r" +
                           "AL1|1|MA|^Penicillin|U|Respiratory distress\r" +
                           "AL1|2|MA|^Pollen|U|Produces hives\r" +
