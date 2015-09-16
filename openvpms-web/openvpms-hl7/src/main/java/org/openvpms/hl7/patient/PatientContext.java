@@ -348,10 +348,19 @@ public class PatientContext {
     /**
      * Returns the customer.
      *
-     * @return the customer
+     * @return the customer. May be {@code null}
      */
     public Party getCustomer() {
         return customer;
+    }
+
+    /**
+     * Returns the customer identifier.
+     *
+     * @return the customer identifier, or {@code -1} if there is no customer
+     */
+    public long getCustomerId() {
+        return (customer != null) ? customer.getId() : -1;
     }
 
     /**

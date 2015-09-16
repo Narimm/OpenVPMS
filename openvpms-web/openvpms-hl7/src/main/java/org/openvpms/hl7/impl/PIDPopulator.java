@@ -96,6 +96,12 @@ class PIDPopulator {
             pid.getPatientID().getIDNumber().setValue(patientId);
         }
 
+        if (context.getCustomer() != null) {
+            // pass the customer identifier in PID-18 Patient Account Number
+            String customerId = Long.toString(context.getCustomerId());
+            pid.getPatientAccountNumber().getIDNumber().setValue(customerId);
+        }
+
         XPN patientName = pid.getPatientName(0);
         patientName.getFamilyName().getSurname().setValue(context.getPatientLastName());
         patientName.getGivenName().setValue(context.getPatientFirstName());
