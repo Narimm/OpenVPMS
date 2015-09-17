@@ -16,7 +16,7 @@
   -->
 <!DOCTYPE hibernate-mapping PUBLIC
         "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
     <class name="org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl"
            proxy="org.openvpms.component.business.dao.hibernate.im.entity.EntityDO"
@@ -55,7 +55,7 @@
             <key column="entity_id" not-null="true"/>
             <many-to-many
                     class="org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl"
-                    column="lookup_id" outer-join="auto"/>
+                    column="lookup_id"/>
         </set>
         <set name="identities" inverse="true" lazy="true" batch-size="50"
              cascade="all,delete-orphan">
@@ -117,10 +117,10 @@
         <key column="user_id" on-delete="cascade"/>
         <property name="username" column="user_name" type="string" length="20" not-null="true" unique="true"/>
         <property name="password" column="password" type="string" length="20"/>
-        <set name="roles" table="user_roles" inverse="false" lazy="true" batch-size="50" cascade="save-update">
+        <set name="roles" table="user_roles" inverse="false" lazy="extra" batch-size="50" cascade="save-update">
             <key column="user_id"/>
             <many-to-many class="org.openvpms.component.business.dao.hibernate.im.security.SecurityRoleDOImpl"
-                          column="security_role_id" outer-join="auto"/>
+                          column="security_role_id"/>
         </set>
     </joined-subclass>
 

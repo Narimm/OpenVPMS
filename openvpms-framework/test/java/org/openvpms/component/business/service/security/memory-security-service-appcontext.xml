@@ -19,9 +19,9 @@
        xmlns:security="http://www.springframework.org/schema/security"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-                           http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+                           http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
                            http://www.springframework.org/schema/security
-                           http://www.springframework.org/schema/security/spring-security-3.2.xsd">
+                           http://www.springframework.org/schema/security/spring-security-4.0.xsd">
 
     <import resource="classpath:/datasource-context.xml"/>
 
@@ -29,17 +29,14 @@
     <bean id="imObjectDao"
           class="org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate">
         <constructor-arg ref="sessionFactory"/>
-        <property name="transactionManager" ref="txnManager"/>
-        <property name="archetypeDescriptorCache">
-            <ref local="archetypeDescriptorCache"/>
-        </property>
+        <property name="archetypeDescriptorCache" ref="archetypeDescriptorCache"/>
     </bean>
 
     <!--  The AuditRecord DAO bean -->
-    <bean id="auditDao"
+    <!--bean id="auditDao"
           class="org.openvpms.component.business.dao.hibernate.im.audit.AuditDAOHibernate">
         <property name="sessionFactory" ref="sessionFactory"/>
-    </bean>
+    </bean-->
 
     <!--  The Archetype Descriptor Cache -->
     <bean id="archetypeDescriptorCache"
@@ -57,37 +54,25 @@
     <!--  The Archetype Service -->
     <bean id="archetypeService"
           class="org.openvpms.component.business.service.archetype.ArchetypeService">
-        <constructor-arg index="0">
-            <ref local="archetypeDescriptorCache"/>
-        </constructor-arg>
-        <property name="dao">
-            <ref local="imObjectDao"/>
-        </property>
+        <constructor-arg ref="archetypeDescriptorCache"/>
+        <property name="dao" ref="imObjectDao"/>
     </bean>
 
     <!--  Instantiate the archetype service helper bean and inject their dependencies -->
     <bean id="archetypeServiceHelper"
           class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
-        <constructor-arg index="0">
-            <ref local="archetypeService"/>
-        </constructor-arg>
+        <constructor-arg ref="archetypeService"/>
     </bean>
 
     <!--  The Lookup Service -->
     <bean id="lookupService" class="org.openvpms.component.business.service.lookup.LookupService">
-        <constructor-arg index="0">
-            <ref local="archetypeService"/>
-        </constructor-arg>
-        <constructor-arg index="1">
-            <ref local="imObjectDao"/>
-        </constructor-arg>
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="imObjectDao"/>
     </bean>
 
     <!--  Instantiate the lookup service helper bean and inject their dependencies -->
     <bean id="lookupServiceHelper" class="org.openvpms.component.business.service.lookup.LookupServiceHelper">
-        <constructor-arg>
-            <ref local="lookupService"/>
-        </constructor-arg>
+        <constructor-arg ref="lookupService"/>
     </bean>
 
     <bean id="archetypeServiceFunctions"
@@ -108,16 +93,14 @@
     </bean>
 
     <!--  The Audit Service -->
-    <bean id="auditService"
+    <!--bean id="auditService"
           class="org.openvpms.component.business.service.audit.AuditService">
-        <constructor-arg index="0">
-            <ref local="auditDao"/>
-        </constructor-arg>
-    </bean>
+        <constructor-arg ref="auditDao"/>
+    </bean-->
 
 
     <!--  Create a proxy for the Sudit Service bean -->
-    <bean id="auditServiceProxyCreator"
+    <!--bean id="auditServiceProxyCreator"
           class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
         <property name="beanNames">
             <list>
@@ -129,21 +112,19 @@
                 <value>auditServiceAdvisor</value>
             </list>
         </property>
-    </bean>
+    </bean-->
 
     <!-- The audit service advisor -->
-    <bean id="auditServiceAdvisor"
+    <!--bean id="auditServiceAdvisor"
           class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
-        <property name="advice">
-            <ref local="auditService"/>
-        </property>
+        <property name="advice" ref="auditService"/>
         <property name="patterns">
             <list>
                 <value>.*ArchetypeService\.save</value>
                 <value>.*ArchetypeService\.remove</value>
             </list>
         </property>
-    </bean>
+    </bean-->
 
     <!--  Create a proxy for the Security Service bean -->
     <bean id="securityserviceProxyCreator"
@@ -180,11 +161,11 @@
     <!--  Define the Authentication Manager  -->
     <bean id='authenticationManager'
           class='org.springframework.security.authentication.ProviderManager'>
-        <property name='providers'>
+        <constructor-arg>
             <list>
                 <ref bean='daoAuthenticationProvider'/>
             </list>
-        </property>
+        </constructor-arg>
     </bean>
 
     <!--  Define the authentication provider -->
@@ -207,11 +188,11 @@
     <!--  Define thew access decision manager for authorization -->
     <bean id='accessDecisionManager'
           class='org.springframework.security.access.vote.AffirmativeBased'>
-        <property name='decisionVoters'>
+        <constructor-arg>
             <list>
                 <ref bean='archetypeAwareVoter'/>
             </list>
-        </property>
+        </constructor-arg>
     </bean>
 
     <!--  Use the standard role vote -->

@@ -17,8 +17,14 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-                           http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/aop
+                           http://www.springframework.org/schema/aop/spring-aop-4.2.xsd
+                           http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/tx
+                           http://www.springframework.org/schema/tx/spring-tx-4.2.xsd">
 
     <bean id="propertyPlaceholderConfigurer"
           class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
@@ -35,17 +41,13 @@
     </bean>
 
     <!-- Configure CacheManager from specified config location -->
-    <bean id="cacheManager"
-          class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+    <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
         <property name="configLocation" value="classpath:ehcache.xml"/>
     </bean>
 
     <!--  Hibernate session factory -->
-    <bean id="sessionFactory"
-          class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
-        <property name="dataSource">
-            <ref local="dataSource"/>
-        </property>
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
 
         <property name="hibernateProperties">
             <props>
@@ -58,13 +60,13 @@
                 <prop key="hibernate.c3p0.max_size">20</prop>
                 <prop key="hibernate.c3p0.timeout">1800</prop>
                 <prop key="hibernate.c3p0.max_statements">50</prop>
-                <prop key="hibernate.cache.provider_class">
-                    org.hibernate.cache.EhCacheProvider
+                <prop key="hibernate.cache.region.factory_class">
+                    org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory
                 </prop>
                 <prop key="hibernate.cache.use_query_cache">true</prop>
                 <prop key="hibernate.cache.use_second_level_cache">false</prop>
                 <prop key="hibernate.query.factory_class">
-                    org.hibernate.hql.ast.ASTQueryTranslatorFactory
+                    org.hibernate.hql.internal.ast.ASTQueryTranslatorFactory
                 </prop>
             </props>
         </property>
@@ -77,17 +79,17 @@
         </property>
     </bean>
 
-    <bean id="txnManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+    <bean id="txnManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
         <property name="sessionFactory" ref="sessionFactory"/>
     </bean>
+
+    <aop:config proxy-target-class="true"/>
+    <tx:annotation-driven transaction-manager="txnManager"/>
 
     <!--  The IMObject DAO bean -->
     <bean id="imObjectDao"
           class="org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate">
         <constructor-arg ref="sessionFactory"/>
-        <property name="transactionManager">
-            <ref local="txnManager"/>
-        </property>
     </bean>
 
     <bean id="archetypeDescriptorCache"
@@ -98,35 +100,23 @@
     <!--  The Archetype Service -->
     <bean id="archetypeService"
           class="org.openvpms.component.business.service.archetype.ArchetypeService">
-        <constructor-arg index="0">
-            <ref local="archetypeDescriptorCache"/>
-        </constructor-arg>
-        <property name="dao">
-            <ref local="imObjectDao"/>
-        </property>
+        <constructor-arg ref="archetypeDescriptorCache"/>
+        <property name="dao" ref="imObjectDao"/>
     </bean>
 
     <bean id="archetypeServiceHelper"
           class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
-        <constructor-arg index="0">
-            <ref local="archetypeService"/>
-        </constructor-arg>
+        <constructor-arg ref="archetypeService"/>
     </bean>
 
     <bean id="lookupServiceHelper"
           class="org.openvpms.component.business.service.lookup.LookupServiceHelper">
-        <constructor-arg index="0">
-            <ref local="lookupService"/>
-        </constructor-arg>
+        <constructor-arg ref="lookupService"/>
     </bean>
 
     <bean id="lookupService" class="org.openvpms.etl.load.CachingLookupService">
-        <constructor-arg index="0">
-            <ref local="archetypeService"/>
-        </constructor-arg>
-        <constructor-arg index="1">
-            <ref local="imObjectDao"/>
-        </constructor-arg>
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="imObjectDao"/>
     </bean>
 
     <bean id="currencies" class="org.openvpms.archetype.rules.math.Currencies">
@@ -178,9 +168,7 @@
     <!--                         ETL DEFINITIONS                            -->
     <!-- ================================================================== -->
     <bean id="ETLLogDAO" class="org.openvpms.etl.load.ETLLogDAOImpl">
-        <constructor-arg>
-            <ref local="sessionFactory"/>
-        </constructor-arg>
+        <constructor-arg ref="sessionFactory"/>
     </bean>
 
 </beans>

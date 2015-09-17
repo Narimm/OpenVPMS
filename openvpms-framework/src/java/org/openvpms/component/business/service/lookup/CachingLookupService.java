@@ -126,7 +126,7 @@ public class CachingLookupService extends AbstractLookupService {
         Key key = new Key(shortName);
         Element element = cache.get(key);
         if (element != null) {
-            result = new ArrayList<Lookup>();
+            result = new ArrayList<>();
             Set<IMObjectReference> references = (Set<IMObjectReference>) element.getObjectValue();
             for (IMObjectReference reference : references) {
                 Lookup lookup = getLookup(reference);
@@ -136,7 +136,7 @@ public class CachingLookupService extends AbstractLookupService {
             }
         } else {
             result = query(shortName);
-            Set<IMObjectReference> references = new HashSet<IMObjectReference>();
+            Set<IMObjectReference> references = new HashSet<>();
             for (Lookup lookup : result) {
                 references.add(lookup.getObjectReference());
                 addLookup(lookup);
@@ -308,6 +308,9 @@ public class CachingLookupService extends AbstractLookupService {
          */
         @Override
         public boolean equals(Object obj) {
+            if (!(obj instanceof Key)) {
+                return false; // Can get a DummyPinnedKey
+            }
             Key other = (Key) obj;
             return (ObjectUtils.equals(key, other.key) || ObjectUtils.equals(ref, other.ref));
         }

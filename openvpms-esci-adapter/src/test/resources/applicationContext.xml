@@ -17,8 +17,14 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-                           http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/aop
+                           http://www.springframework.org/schema/aop/spring-aop-4.2.xsd
+                           http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/tx
+                           http://www.springframework.org/schema/tx/spring-tx-4.2.xsd">
 
     <bean id="propertyPlaceholderConfigurer"
           class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
@@ -44,7 +50,7 @@
 
     <!--  Hibernate session factory -->
     <bean id="sessionFactory"
-          class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+          class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
         <property name="dataSource" ref="dataSource"/>
         <property name="hibernateProperties">
             <props>
@@ -53,10 +59,10 @@
                 <prop key="hibernate.max_fetch_depth">3</prop>
                 <prop key="hibernate.jdbc.use_scrollable_resultset">true</prop>
                 <prop key="hibernate.cache.use_query_cache">true</prop>
-                <prop key="hibernate.cache.provider_class">org.hibernate.cache.SingletonEhCacheProvider</prop>
+                <prop key="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory</prop>
                 <prop key="hibernate.cache.use_second_level_cache">true</prop>
                 <prop key="hibernate.jdbc.batch_size">30</prop>
-                <prop key="hibernate.query.factory_class">org.hibernate.hql.ast.ASTQueryTranslatorFactory</prop>
+                <prop key="hibernate.query.factory_class">org.hibernate.hql.internal.ast.ASTQueryTranslatorFactory</prop>
                 <prop key="hibernate.jdbc.fetch_size">100</prop>
             </props>
         </property>
@@ -69,15 +75,17 @@
     </bean>
 
     <bean id="txnManager"
-          class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+          class="org.springframework.orm.hibernate4.HibernateTransactionManager">
         <property name="sessionFactory" ref="sessionFactory"/>
     </bean>
+
+    <aop:config proxy-target-class="true"/>
+    <tx:annotation-driven transaction-manager="txnManager"/>
 
     <!--  The IMObject DAO bean -->
     <bean id="imObjectDao"
           class="org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate">
         <constructor-arg ref="sessionFactory"/>
-        <property name="transactionManager" ref="txnManager"/>
     </bean>
 
     <bean id="archetypeDescriptorCache"
@@ -187,18 +195,12 @@
     <!-- ================================================================== -->
 
     <bean id="lookupService" class="org.openvpms.component.business.service.lookup.LookupService">
-        <constructor-arg index="0">
-            <ref local="archetypeService"/>
-        </constructor-arg>
-        <constructor-arg index="1">
-            <ref local="imObjectDao"/>
-        </constructor-arg>
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="imObjectDao"/>
     </bean>
 
     <bean id="lookupServiceHelper" class="org.openvpms.component.business.service.lookup.LookupServiceHelper">
-        <constructor-arg>
-            <ref local="lookupService"/>
-        </constructor-arg>
+        <constructor-arg ref="lookupService"/>
     </bean>
 
     <bean id="currencies" class="org.openvpms.archetype.rules.math.Currencies">

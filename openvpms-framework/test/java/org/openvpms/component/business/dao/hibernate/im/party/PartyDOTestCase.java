@@ -472,7 +472,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         assertTrue(source.getEntityLinks().contains(link));
         assertNotNull(session.load(EntityLinkDOImpl.class, link.getId()));
 
-        tx.begin();
+        tx = session.beginTransaction();
         session.delete(source);
         tx.commit();
 
@@ -500,7 +500,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         tx.commit();
 
         try {
-            tx.begin();
+            tx = session.beginTransaction();
             session.delete(target);
             tx.commit();
             fail("Expected delete to fail with a ConstraintViolationException");

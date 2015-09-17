@@ -19,9 +19,9 @@
        xmlns:security="http://www.springframework.org/schema/security"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-                           http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+                           http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
                            http://www.springframework.org/schema/security
-                           http://www.springframework.org/schema/security/spring-security-3.2.xsd">
+                           http://www.springframework.org/schema/security/spring-security-4.0.xsd">
 
     <!-- ================================================================== -->
     <!--                            GUI FILTER CHAIN                        -->
@@ -83,11 +83,11 @@
     <!-- bean id="skipLoginFilter" class="org.openvpms.web.servlet.SkipLoginFilter"/--> <!-- TODO -->
 
     <bean name="guiAuthenticationManager" class="org.springframework.security.authentication.ProviderManager">
-        <property name="providers">
+        <constructor-arg>
             <list>
-                <ref local="guiAuthenticationProvider"/>
+                <ref bean="guiAuthenticationProvider"/>
             </list>
-        </property>
+        </constructor-arg>
     </bean>
 
     <bean id="guiAuthenticationProvider"
@@ -98,16 +98,14 @@
     <!--  The User DAO bean -->
     <bean id="guiUserDAO"
           class="org.openvpms.component.business.dao.hibernate.im.security.UserDAOHibernate">
-        <property name="sessionFactory" ref="sessionFactory"/>
+        <constructor-arg ref="sessionFactory"/>
         <property name="userArchetypes" value="security.user"/>
     </bean>
 
     <!-- The User Details service -->
     <bean id="guiUserService"
           class="org.openvpms.component.business.service.security.UserService">
-        <constructor-arg index="0">
-            <ref local="guiUserDAO"/>
-        </constructor-arg>
+        <constructor-arg ref="guiUserDAO"/>
     </bean>
 
 </beans>

@@ -12,43 +12,33 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 
 package org.openvpms.component.business.dao.hibernate.usertype;
 
-// java core
-import java.io.Serializable;
+import com.thoughtworks.xstream.XStream;
+import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.usertype.UserType;
+import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 
-// java sql
+import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
-// hibernate
-import org.hibernate.HibernateException;
-import org.hibernate.usertype.UserType;
-
-//codehaus xstream
-import com.thoughtworks.xstream.XStream;
-
-// openvpms-framework
-import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
-
 /**
- * This user type will stream an {@link PropertyMap} into an 
+ * This user type will stream an {@link PropertyMap} into an
  * XML buffer, which will eventually be persisted
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author Jim Alateras
  */
 public class PropertyMapUserType implements UserType, Serializable {
 
     /**
-     * Default SUID
+     * Default SUID.
      */
     private static final long serialVersionUID = 1L;
 
@@ -58,7 +48,7 @@ public class PropertyMapUserType implements UserType, Serializable {
     private static final int[] SQL_TYPES = {Types.VARCHAR};
 
     /**
-     * Default constructor
+     * Default constructor.
      */
     public PropertyMapUserType() {
         super();
@@ -67,13 +57,15 @@ public class PropertyMapUserType implements UserType, Serializable {
     /* (non-Javadoc)
      * @see org.hibernate.usertype.UserType#sqlTypes()
      */
+    @Override
     public int[] sqlTypes() {
-         return SQL_TYPES;
+        return SQL_TYPES;
     }
 
     /* (non-Javadoc)
      * @see org.hibernate.usertype.UserType#returnedClass()
      */
+    @Override
     public Class returnedClass() {
         return PropertyMap.class;
     }
@@ -81,16 +73,9 @@ public class PropertyMapUserType implements UserType, Serializable {
     /* (non-Javadoc)
      * @see org.hibernate.usertype.UserType#equals(java.lang.Object, java.lang.Object)
      */
+    @Override
     public boolean equals(Object obj1, Object obj2) throws HibernateException {
-        if (obj1 == obj2) {
-            return true;
-        }
-
-        if (obj1 == null || obj2 == null) {
-            return false;
-        } else {
-            return obj1.equals(obj2);
-        }
+        return obj1 == obj2 || !(obj1 == null || obj2 == null) && obj1.equals(obj2);
     }
 
     /* (non-Javadoc)
@@ -100,33 +85,48 @@ public class PropertyMapUserType implements UserType, Serializable {
         return obj.hashCode();
     }
 
-    /* (non-Javadoc)
-     * @see org.hibernate.usertype.UserType#nullSafeGet(java.sql.ResultSet, java.lang.String[], java.lang.Object)
+    /**
+     * Retrieve an instance of the mapped class from a JDBC resultset. Implementors
+     * should handle possibility of null values.
+     *
+     * @param set     a JDBC result set
+     * @param names   the column names
+     * @param session the session
+     * @param owner   the containing entity
+     * @return the object. May be {@code null}
+     * @throws SQLException for an SQL error
      */
-    public Object nullSafeGet(ResultSet rs, String[] names, Object owner)
-            throws HibernateException, SQLException {
-        String value = rs.getString(names[0]);
-        if (value != null) {
-            return (PropertyMap) new XStream().fromXML(value);
-        }
-        return null;
+    @Override
+    public Object nullSafeGet(ResultSet set, String[] names, SessionImplementor session, Object owner) throws SQLException {
+        String value = set.getString(names[0]);
+        return (value != null) ? new XStream().fromXML(value) : null;
     }
 
-    /* (non-Javadoc)
-     * @see org.hibernate.usertype.UserType#nullSafeSet(java.sql.PreparedStatement, java.lang.Object, int)
+    /**
+     * Write an instance of the mapped class to a prepared statement. Implementors
+     * should handle possibility of null values. A multi-column type should be written
+     * to parameters starting from {@code index}.
+     *
+     * @param statement a JDBC prepared statement
+     * @param value     the object to write
+     * @param index     statement parameter index
+     * @param session   the session
+     * @throws SQLException for any SQL error
      */
-    public void nullSafeSet(PreparedStatement st, Object value, int index)
-            throws HibernateException, SQLException {
+    @Override
+    public void nullSafeSet(PreparedStatement statement, Object value, int index, SessionImplementor session)
+            throws SQLException {
         if (value == null) {
-            st.setNull(index, Types.VARCHAR);
+            statement.setNull(index, Types.VARCHAR);
         } else {
-            st.setString(index, new XStream().toXML(value));
+            statement.setString(index, new XStream().toXML(value));
         }
     }
 
     /* (non-Javadoc)
      * @see org.hibernate.usertype.UserType#deepCopy(java.lang.Object)
      */
+    @Override
     public Object deepCopy(Object obj) throws HibernateException {
         return obj;
     }
@@ -134,6 +134,7 @@ public class PropertyMapUserType implements UserType, Serializable {
     /* (non-Javadoc)
      * @see org.hibernate.usertype.UserType#isMutable()
      */
+    @Override
     public boolean isMutable() {
         return false;
     }
@@ -141,6 +142,7 @@ public class PropertyMapUserType implements UserType, Serializable {
     /* (non-Javadoc)
      * @see org.hibernate.usertype.UserType#assemble(java.io.Serializable, java.lang.Object)
      */
+    @Override
     public Object assemble(Serializable cached, Object owner) throws HibernateException {
         return cached;
     }
@@ -148,13 +150,15 @@ public class PropertyMapUserType implements UserType, Serializable {
     /* (non-Javadoc)
      * @see org.hibernate.usertype.UserType#disassemble(java.lang.Object)
      */
+    @Override
     public Serializable disassemble(Object value) throws HibernateException {
-        return (Serializable)value;
+        return (Serializable) value;
     }
 
     /* (non-Javadoc)
      * @see org.hibernate.usertype.UserType#replace(java.lang.Object, java.lang.Object, java.lang.Object)
      */
+    @Override
     public Object replace(Object original, Object target, Object owner) throws HibernateException {
         return original;
     }

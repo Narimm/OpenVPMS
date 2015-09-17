@@ -18,7 +18,6 @@ package org.openvpms.component.business.dao.hibernate.im.security;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.dao.hibernate.im.party.ContactDO;
@@ -26,6 +25,8 @@ import org.openvpms.component.business.dao.hibernate.im.party.ContactDOImpl;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.security.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.List;
 import java.util.Set;
@@ -37,7 +38,14 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Jim Alateras
  */
+@ContextConfiguration("/userdao-context.xml")
 public class UserDAOHibernateTestCase extends HibernateInfoModelTestCase {
+
+    /**
+     * The user DAO.
+     */
+    @Autowired
+    private UserDAOHibernate dao;
 
     /**
      * Default user id.
@@ -59,10 +67,6 @@ public class UserDAOHibernateTestCase extends HibernateInfoModelTestCase {
      */
     private static final ArchetypeId PHONE_ID = new ArchetypeId("contact.phoneNumber.1.0");
 
-    /**
-     * The user DAO.
-     */
-    private UserDAOHibernate dao;
 
     /**
      * Tests the {@link UserDAOHibernate#getByUserName(String)} method.
@@ -162,15 +166,6 @@ public class UserDAOHibernateTestCase extends HibernateInfoModelTestCase {
         User retrieved = list.get(0);
         Set<Contact> contacts = retrieved.getContacts();
         assertEquals(2, contacts.size());
-    }
-
-    /**
-     * Sets up the test case.
-     */
-    @Before
-    public void setUp() {
-        dao = new UserDAOHibernate();
-        dao.setSessionFactory(getSessionFactory());
     }
 
     /**

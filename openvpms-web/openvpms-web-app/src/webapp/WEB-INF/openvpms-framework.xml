@@ -65,7 +65,7 @@
 
     <!--  Hibernate session factory -->
     <bean id="sessionFactory"
-          class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+          class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
         <property name="dataSource" ref="dataSource"/>
         <property name="hibernateProperties">
             <props>
@@ -90,8 +90,8 @@
                 <prop key="hibernate.c3p0.max_statements">
                     ${hibernate.c3p0.max_statements}
                 </prop>
-                <prop key="hibernate.cache.provider_class">
-                    ${hibernate.cache.provider_class}
+                <prop key="hibernate.cache.region.factory_class">
+                    ${hibernate.cache.region.factory_class}
                 </prop>
                 <prop key="hibernate.cache.use_second_level_cache">
                     ${hibernate.cache.use_second_level_cache}
@@ -121,7 +121,7 @@
 
     <!--  Transaction manager -->
     <bean id="txnManager"
-          class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+          class="org.springframework.orm.hibernate4.HibernateTransactionManager">
         <property name="sessionFactory" ref="sessionFactory"/>
     </bean>
 
@@ -134,7 +134,6 @@
     <bean id="imObjectDao"
           class="org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate">
         <constructor-arg ref="sessionFactory"/>
-        <property name="transactionManager" ref="txnManager"/>
     </bean>
 
     <!--  The AuditRecord DAO bean -->
@@ -274,15 +273,13 @@
 
     <bean id="lookupService"
           class="org.openvpms.component.business.service.lookup.CachingLookupService">
-        <constructor-arg index="0" ref="archetypeRuleService"/>
-        <constructor-arg index="1">
-            <ref local="imObjectDao"/>
-        </constructor-arg>
-        <constructor-arg index="2">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="imObjectDao"/>
+        <constructor-arg>
             <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
                 <property name="diskPersistent" value="false"/>
                 <property name="cacheName" value="lookupCache"/>
-                <property name="maxElementsInMemory" value="40000"/>
+                <property name="maxEntriesLocalHeap" value="40000"/>
                 <property name="overflowToDisk" value="false"/>
                 <property name="eternal" value="true"/>
             </bean>

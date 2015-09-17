@@ -12,17 +12,15 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 
 package org.openvpms.component.business.dao.hibernate.usertype;
 
-// java core
 import com.thoughtworks.xstream.XStream;
 import org.apache.log4j.Logger;
 import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.usertype.UserType;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
@@ -33,13 +31,11 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 /**
- * This user type will stream an {@link ItemStructure} into an 
+ * This user type will stream an {@link ItemStructure} into an
  * XML buffer, which will eventually be persisted
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author Jim Alateras
  * @deprecated will be removed post 1.0
-
  */
 @Deprecated
 public class DynamicAttributeMapUserType implements UserType, Serializable {
@@ -54,12 +50,12 @@ public class DynamicAttributeMapUserType implements UserType, Serializable {
      * Default SUID
      */
     private static final long serialVersionUID = 1L;
-    
+
     /**
      * Define the SQL types for {@link ItemStructure
      */
     private static final int[] SQL_TYPES = {Types.VARCHAR};
-    
+
     /**
      * Default constructor
      */
@@ -71,7 +67,7 @@ public class DynamicAttributeMapUserType implements UserType, Serializable {
      * @see org.hibernate.usertype.UserType#sqlTypes()
      */
     public int[] sqlTypes() {
-         return SQL_TYPES;
+        return SQL_TYPES;
     }
 
     /* (non-Javadoc)
@@ -88,7 +84,7 @@ public class DynamicAttributeMapUserType implements UserType, Serializable {
         if (obj1 == obj2) {
             return true;
         }
-        
+
         if (obj1 == null || obj2 == null) {
             return false;
         } else {
@@ -103,25 +99,44 @@ public class DynamicAttributeMapUserType implements UserType, Serializable {
         return obj.hashCode();
     }
 
-    /* (non-Javadoc)
-     * @see org.hibernate.usertype.UserType#nullSafeGet(java.sql.ResultSet, java.lang.String[], java.lang.Object)
+    /**
+     * Retrieve an instance of the mapped class from a JDBC resultset. Implementors
+     * should handle possibility of null values.
+     *
+     * @param rs      a JDBC result set
+     * @param names   the column names
+     * @param session the session
+     * @param owner   the containing entity  @return Object
+     * @throws HibernateException
+     * @throws SQLException
      */
-    public Object nullSafeGet(ResultSet rs, String[] names, Object owner)
+    @Override
+    public Object nullSafeGet(ResultSet rs, String[] names, SessionImplementor session, Object owner)
             throws HibernateException, SQLException {
         if (rs.getString(names[0]) == null) {
             return new DynamicAttributeMap();
         } else {
-            return (DynamicAttributeMap)new XStream()
-                .fromXML(rs.getString(names[0]));
+            return (DynamicAttributeMap) new XStream()
+                    .fromXML(rs.getString(names[0]));
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.hibernate.usertype.UserType#nullSafeSet(java.sql.PreparedStatement, java.lang.Object, int)
+    /**
+     * Write an instance of the mapped class to a prepared statement. Implementors
+     * should handle possibility of null values. A multi-column type should be written
+     * to parameters starting from <tt>index</tt>.
+     *
+     * @param st      a JDBC prepared statement
+     * @param value   the object to write
+     * @param index   statement parameter index
+     * @param session the sewsion
+     * @throws HibernateException
+     * @throws SQLException
      */
-    public void nullSafeSet(PreparedStatement st, Object value, int index)
+    @Override
+    public void nullSafeSet(PreparedStatement st, Object value, int index, SessionImplementor session)
             throws HibernateException, SQLException {
-        if (value == null || ((DynamicAttributeMap)value).getAttributes().isEmpty()) {
+        if (value == null || ((DynamicAttributeMap) value).getAttributes().isEmpty()) {
             st.setNull(index, Types.VARCHAR);
         } else {
             st.setString(index, new XStream().toXML(value));
@@ -135,15 +150,15 @@ public class DynamicAttributeMapUserType implements UserType, Serializable {
         if (obj == null) {
             return obj;
         }
-        
+
         // create the new object
-        DynamicAttributeMap dam = (DynamicAttributeMap)obj;
+        DynamicAttributeMap dam = (DynamicAttributeMap) obj;
         DynamicAttributeMap copy = new DynamicAttributeMap();
-        
+
         for (String key : dam.getAttributeNames()) {
             copy.setAttribute(key, dam.getAttribute(key));
         }
-        
+
         return copy;
     }
 
@@ -165,7 +180,7 @@ public class DynamicAttributeMapUserType implements UserType, Serializable {
      * @see org.hibernate.usertype.UserType#disassemble(java.lang.Object)
      */
     public Serializable disassemble(Object value) throws HibernateException {
-        return (Serializable)value;
+        return (Serializable) value;
     }
 
     /* (non-Javadoc)

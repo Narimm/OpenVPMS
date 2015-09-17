@@ -19,8 +19,7 @@
 package org.openvpms.component.business.service.audit;
 
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.audit.AuditRecord;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -30,6 +29,9 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.util.List;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * Tests the {@link org.openvpms.component.business.service.audit.AuditService}.
  *
@@ -37,6 +39,7 @@ import java.util.List;
  * @version $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
  */
 @ContextConfiguration("audit-service-appcontext.xml")
+@Ignore("Not updated to Spring/Hibernate 4. Remove when AuditService removed")
 public class AuditServiceTestCase extends AbstractArchetypeServiceTest {
 
     /**

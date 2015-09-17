@@ -41,11 +41,18 @@ import java.io.IOException;
  * a redirection has occurred as XmlHttpRequest automatically follows
  * redirections.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class EchoAuthenticationEntryPoint
-    extends LoginUrlAuthenticationEntryPoint {
+public class EchoAuthenticationEntryPoint extends LoginUrlAuthenticationEntryPoint {
+
+    /**
+     * Constructs an {@link EchoAuthenticationEntryPoint}.
+     *
+     * @param loginFormUrl the login form URL
+     */
+    public EchoAuthenticationEntryPoint(String loginFormUrl) {
+        super(loginFormUrl);
+    }
 
     /**
      * Commences an authentication scheme.

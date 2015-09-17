@@ -19,9 +19,9 @@
        xmlns:security="http://www.springframework.org/schema/security"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-                           http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+                           http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
                            http://www.springframework.org/schema/security
-                           http://www.springframework.org/schema/security/spring-security-3.2.xsd">
+                           http://www.springframework.org/schema/security/spring-security-4.0.xsd">
 
     <import resource="classpath:/datasource-context.xml"/>
 
@@ -29,13 +29,12 @@
     <bean id="imObjectDao"
           class="org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate">
         <constructor-arg ref="sessionFactory"/>
-        <property name="transactionManager" ref="txnManager"/>
     </bean>
 
     <!--  The User DAO bean -->
     <bean id="userDAO"
           class="org.openvpms.component.business.dao.hibernate.im.security.UserDAOHibernate">
-        <property name="sessionFactory" ref="sessionFactory"/>
+        <constructor-arg ref="sessionFactory"/>
     </bean>
 
     <!--  The AuditRecord DAO bean -->
@@ -65,51 +64,35 @@
     <!--  The Archetype Service -->
     <bean id="defaultArchetypeService"
           class="org.openvpms.component.business.service.archetype.ArchetypeService">
-        <constructor-arg index="0">
-            <ref local="archetypeDescriptorCache"/>
-        </constructor-arg>
-        <property name="dao">
-            <ref local="imObjectDao"/>
-        </property>
-        <property name="ruleEngine">
-            <ref local="ruleEngine"/>
-        </property>
+        <constructor-arg ref="archetypeDescriptorCache"/>
+        <property name="dao" ref="imObjectDao"/>
+        <property name="ruleEngine" ref="ruleEngine"/>
     </bean>
 
     <!--  The rule-based Archetype Service -->
     <bean id="archetypeService"
           class="org.openvpms.component.business.service.archetype.rule.ArchetypeRuleService">
-        <constructor-arg>
-            <ref local="defaultArchetypeService"/>
-        </constructor-arg>
+        <constructor-arg ref="defaultArchetypeService"/>
         <constructor-arg ref="txnManager"/>
-        <constructor-arg>
-            <ref local="ruleEngine"/>
-        </constructor-arg>
+        <constructor-arg ref="ruleEngine"/>
     </bean>
 
     <!--  The Archetype Service Helper so others can reference the service statically -->
     <bean id="archetypeServiceHelper"
           class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
-        <constructor-arg index="0">
-            <ref local="archetypeService"/>
-        </constructor-arg>
+        <constructor-arg ref="archetypeService"/>
     </bean>
 
     <!--  The Audit Service -->
     <bean id="auditService"
           class="org.openvpms.component.business.service.audit.AuditService">
-        <constructor-arg index="0">
-            <ref local="auditDao"/>
-        </constructor-arg>
+        <constructor-arg ref="auditDao"/>
     </bean>
 
     <!--  The User Details Service -->
     <bean id="userDetailsService"
           class="org.openvpms.component.business.service.security.UserService">
-        <constructor-arg index="0">
-            <ref local="userDAO"/>
-        </constructor-arg>
+        <constructor-arg ref="userDAO"/>
     </bean>
 
     <!--  Create a proxy for the Sudit Service bean -->
@@ -130,9 +113,7 @@
     <!-- The audit service advisor -->
     <bean id="auditServiceAdvisor"
           class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
-        <property name="advice">
-            <ref local="auditService"/>
-        </property>
+        <property name="advice" ref="auditService"/>
         <property name="patterns">
             <list>
                 <value>.*ArchetypeService\.save</value>
@@ -176,29 +157,27 @@
     <!--  Define the Authentication Manager  -->
     <bean id='authenticationManager'
           class='org.springframework.security.authentication.ProviderManager'>
-        <property name='providers'>
+        <constructor-arg>
             <list>
                 <ref bean='daoAuthenticationProvider'/>
             </list>
-        </property>
+        </constructor-arg>
     </bean>
 
     <!--  Define the authentication provider -->
     <bean id='daoAuthenticationProvider'
           class='org.springframework.security.authentication.dao.DaoAuthenticationProvider'>
-        <property name="userDetailsService">
-            <ref bean="userDetailsService"/>
-        </property>
+        <property name="userDetailsService" ref="userDetailsService"/>
     </bean>
 
     <!--  Define thew access decision manager for authorization -->
     <bean id='accessDecisionManager'
           class='org.springframework.security.access.vote.AffirmativeBased'>
-        <property name='decisionVoters'>
+        <constructor-arg>
             <list>
                 <ref bean='archetypeAwareVoter'/>
             </list>
-        </property>
+        </constructor-arg>
     </bean>
 
     <!--  Use the standard role vote -->
@@ -208,47 +187,33 @@
     <!-- The `local' ruleServiceProvider; we can have as many different ruleProviders as we want -->
     <bean id="ruleServiceProvider"
           class="org.springmodules.jsr94.factory.DefaultRuleServiceProviderFactoryBean">
-        <property name="provider">
-            <value>http://drools.org</value>
-        </property>
-        <property name="providerClass">
-            <value>org.drools.jsr94.rules.RuleServiceProviderImpl</value>
-        </property>
+        <property name="provider" value="http://drools.org"/>
+        <property name="providerClass" value="org.drools.jsr94.rules.RuleServiceProviderImpl"/>
     </bean>
 
     <!-- The local ruleRuntime. Usually, there is one ruleRuntime bean for each ruleServiceProvider bean. -->
     <bean id="ruleRuntime"
           class="org.springmodules.jsr94.factory.RuleRuntimeFactoryBean">
-        <property name="serviceProvider">
-            <ref local="ruleServiceProvider"/>
-        </property>
+        <property name="serviceProvider" ref="ruleServiceProvider"/>
     </bean>
 
     <!-- the local ruleAdministrator. Usually, there is one ruleAdministrator bean for each ruleServiceProvider bean -->
     <bean id="ruleAdministrator"
           class="org.springmodules.jsr94.factory.RuleAdministratorFactoryBean">
-        <property name="serviceProvider">
-            <ref local="ruleServiceProvider"/>
-        </property>
+        <property name="serviceProvider" ref="ruleServiceProvider"/>
     </bean>
 
     <!-- the ruleSource. There can be many ruleSource beans for each ruleAdministrator/ruleRuntime. -->
     <bean id="ruleSource"
           class="org.openvpms.component.business.service.ruleengine.RuleDescriptorRuleSource">
-        <property name="ruleRuntime">
-            <ref local="ruleRuntime"/>
-        </property>
-        <property name="ruleAdministrator">
-            <ref local="ruleAdministrator"/>
-        </property>
+        <property name="ruleRuntime" ref="ruleRuntime"/>
+        <property name="ruleAdministrator" ref="ruleAdministrator"/>
     </bean>
 
     <!--  The DroolsRileEngine interceptor -->
     <bean id="ruleEngine"
           class="org.openvpms.component.business.service.ruleengine.RuleEngine">
-        <constructor-arg index="0">
-            <ref local="ruleSource"/>
-        </constructor-arg>
+        <constructor-arg ref="ruleSource"/>
     </bean>
 
 </beans>

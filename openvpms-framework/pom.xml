@@ -89,6 +89,8 @@
                 <directory>${basedir}/test/resources</directory>
                 <includes>
                     <include>datasource-context.xml</include>
+                    <include>userdao-context.xml</include>
+                    <include>spy.properties</include>
                 </includes>
             </testResource>
             <testResource>
@@ -163,9 +165,9 @@
                         <version>${jdbc.version}</version>
                     </dependency>
                     <dependency>
-                        <!-- this dependency is required to get hibernate to 
+                        <!-- this dependency is required to get hibernate to
                              work with cobertura during site generation
-                             see http://jira.codehaus.org/browse/MCOBERTURA-26 
+                             see http://jira.codehaus.org/browse/MCOBERTURA-26
                          -->
                         <groupId>net.sourceforge.cobertura</groupId>
                         <artifactId>cobertura</artifactId>
@@ -316,6 +318,11 @@
             <version>${spring.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>${aspectj.version}</version>
+        </dependency>
+        <dependency>
             <groupId>springmodules</groupId>
             <artifactId>springmodules</artifactId>
             <version>${springmodules.version}</version>
@@ -376,20 +383,10 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>${hibernate.version}</version>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-ehcache</artifactId>
-            <version>${hibernate.version}</version>
-            <scope>runtime</scope>
-            <exclusions>
-                <exclusion>
-                    <!-- want later version of ehcache-core -->
-                    <groupId>net.sf.ehcache</groupId>
-                    <artifactId>ehcache</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <!-- required by hibernate -->
@@ -475,6 +472,12 @@
             <artifactId>mockito-all</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>p6spy</groupId>
+            <artifactId>p6spy</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
 </project>

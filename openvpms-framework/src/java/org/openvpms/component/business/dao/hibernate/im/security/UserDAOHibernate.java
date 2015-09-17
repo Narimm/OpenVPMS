@@ -19,6 +19,7 @@ package org.openvpms.component.business.dao.hibernate.im.security;
 
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipAssembler;
@@ -29,7 +30,7 @@ import org.openvpms.component.business.dao.hibernate.im.party.ContactAssembler;
 import org.openvpms.component.business.dao.im.security.IUserDAO;
 import org.openvpms.component.business.dao.im.security.UserDAOException;
 import org.openvpms.component.business.domain.im.security.User;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -40,7 +41,12 @@ import java.util.List;
  *
  * @author Jim Alateras
  */
-public class UserDAOHibernate extends HibernateDaoSupport implements IUserDAO {
+public class UserDAOHibernate implements IUserDAO {
+
+    /**
+     * The session factory.
+     */
+    private final SessionFactory factory;
 
     /**
      * The assembler.
@@ -61,12 +67,15 @@ public class UserDAOHibernate extends HibernateDaoSupport implements IUserDAO {
      * User query.
      */
     private static final String QUERY =
-            "from " + UserDOImpl.class.getName() + " as user where user.username = ?";
+            "from " + UserDOImpl.class.getName() + " as user where user.username = :name";
 
     /**
-     * Constructs an <tt>UserDAOHibernate</tt>.
+     * Constructs a {@link UserDAOHibernate}.
+     *
+     * @param factory the session factory
      */
-    public UserDAOHibernate() {
+    public UserDAOHibernate(SessionFactory factory) {
+        this.factory = factory;
         assembler = new Assembler();
     }
 
@@ -84,7 +93,7 @@ public class UserDAOHibernate extends HibernateDaoSupport implements IUserDAO {
                 if (i > 0) {
                     query.append(',');
                 }
-                query.append('?');
+                query.append(":shortName").append(i);
             }
             query.append(")");
             userQuery = query.toString();
@@ -99,16 +108,16 @@ public class UserDAOHibernate extends HibernateDaoSupport implements IUserDAO {
      * @see IUserDAO#getByUserName(String)
      */
     @SuppressWarnings("unchecked")
+    @Transactional(readOnly = true)
     public List<User> getByUserName(String name) {
-        List<User> results = null;
-        Session session
-                = getHibernateTemplate().getSessionFactory().openSession();
+        List<User> results;
+        Session session = factory.getCurrentSession();
         try {
             Query query = session.createQuery(userQuery);
-            query.setString(0, name);
+            query.setString("name", name);
             if (shortNames != null && shortNames.length > 0) {
                 for (int i = 0; i < shortNames.length; ++i) {
-                    query.setString(i + 1, shortNames[i]);
+                    query.setString("shortName" + i, shortNames[i]);
                 }
             }
             Context context = Context.getContext(assembler, session);
@@ -121,13 +130,9 @@ public class UserDAOHibernate extends HibernateDaoSupport implements IUserDAO {
             objects = collector.getPage().getResults();
             results = objects;
         } catch (Exception exception) {
-            throw new UserDAOException(
-                    UserDAOException.ErrorCode.FailedToFindUserRecordByName,
-                    new Object[]{name}, exception);
-        } finally {
-            session.close();
+            throw new UserDAOException(UserDAOException.ErrorCode.FailedToFindUserRecordByName,
+                                       new Object[]{name}, exception);
         }
-
         return results;
     }
 
