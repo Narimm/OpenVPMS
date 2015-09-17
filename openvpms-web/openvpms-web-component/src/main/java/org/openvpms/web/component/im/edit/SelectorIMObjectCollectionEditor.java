@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -114,12 +114,13 @@ public class SelectorIMObjectCollectionEditor extends AbstractIMObjectCollection
                 for (IMObject object : objects) {
                     result |= editor.remove(object);
                 }
-            } else if ((objects.size() == 1 && !ObjectUtils.equals(objects.get(0), value) || objects.size() > 1)) {
+            } else if ((objects.size() == 1 && !ObjectUtils.equals(objects.get(0), value)) || objects.size() > 1) {
                 for (IMObject object : objects) {
                     editor.remove(object);
                 }
-                editor.add(value);
-                result = true;
+                result = editor.add(value);
+            } else if (objects.isEmpty()) {
+                result = editor.add(value);
             }
             return result;
         }
