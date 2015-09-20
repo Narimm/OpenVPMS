@@ -48,7 +48,7 @@
         <property name="maxLength" column="max_length" type="integer"/>
         <property name="index" column="node_index" type="integer"/>
         <property name="parentChild" column="is_parent_child" type="boolean"/>
-        <map name="nodeDescriptors" access="field" lazy="false" inverse="true"
+        <map name="nodeDescriptors" access="field" lazy="false" fetch="subselect" inverse="true"
              table="node_descriptors" cascade="all,delete-orphan">
             <key column="parent_id" on-delete="cascade"/>
             <map-key column="name" type="string"/>
@@ -57,7 +57,7 @@
         </map>
         <many-to-one name="parent" column="parent_id"
                      class="org.openvpms.component.business.dao.hibernate.im.archetype.NodeDescriptorDOImpl"/>
-        <map name="assertionDescriptors" access="field" lazy="false"
+        <map name="assertionDescriptors" access="field" fetch="subselect" lazy="false"
              table="assertion_descriptors" cascade="all,delete-orphan">
             <key column="node_desc_id"/>
             <map-key column="type" type="string"/>

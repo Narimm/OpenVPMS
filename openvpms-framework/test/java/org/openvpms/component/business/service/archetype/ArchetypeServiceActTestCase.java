@@ -12,14 +12,11 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.component.business.service.archetype;
 
 import org.apache.commons.lang.StringUtils;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate;
@@ -34,8 +31,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
-import static org.openvpms.component.business.service.archetype.ArchetypeServiceException.ErrorCode.FailedToDeleteObject;
-import static org.openvpms.component.business.service.archetype.ArchetypeServiceException.ErrorCode.FailedToSaveCollectionOfObjects;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -51,15 +46,26 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.openvpms.component.business.service.archetype.ArchetypeServiceException.ErrorCode.FailedToDeleteObject;
+import static org.openvpms.component.business.service.archetype.ArchetypeServiceException.ErrorCode.FailedToSaveCollectionOfObjects;
+
 /**
  * Test that ability to create and query on acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
  */
 @ContextConfiguration("archetype-service-appcontext.xml")
 public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
@@ -234,7 +240,7 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
     }
 
     /**
-     * Verifies that the {@link IArchetypeService#save(Collection<IMObject>)}
+     * Verifies that the {@link IArchetypeService#save(Collection)}
      * method can be used to save 2 or more acts that reference the same
      * ActRelationship.
      *
@@ -285,7 +291,7 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
     }
 
     /**
-     * Verifies that the {@link IArchetypeService#save(Collection<IMObject>)}
+     * Verifies that the {@link IArchetypeService#save(Collection)}
      * method and {@link IArchetypeService#save(IMObject) method can be used
      * to save the same object.
      *
@@ -303,12 +309,10 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
 
         save(act1);
         act1.setStatus("POSTED");
-        Collection<Act> objects = Arrays.asList(act1);
-        save(objects);
+        save(Collections.singletonList(act1));
 
         act1.removeParticipation(p1);
-        objects = Arrays.asList(act1);
-        save(objects);
+        save(Collections.singletonList(act1));
 
         save(act1);
     }

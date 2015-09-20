@@ -46,7 +46,7 @@
                   type="string"/>
         <property name="latest" column="is_latest" type="boolean"/>
         <property name="primary" column="is_primary" type="boolean"/>
-        <map name="nodeDescriptors" lazy="false" inverse="true"
+        <map name="nodeDescriptors" fetch="subselect" lazy="false" inverse="true"
              table="node_descriptors" cascade="all,delete-orphan">
             <key column="archetype_desc_id" on-delete="cascade"/>
             <map-key column="name" type="string"/>

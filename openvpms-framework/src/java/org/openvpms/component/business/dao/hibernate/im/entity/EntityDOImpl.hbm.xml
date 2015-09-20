@@ -117,7 +117,7 @@
         <key column="user_id" on-delete="cascade"/>
         <property name="username" column="user_name" type="string" length="20" not-null="true" unique="true"/>
         <property name="password" column="password" type="string" length="20"/>
-        <set name="roles" table="user_roles" inverse="false" lazy="extra" batch-size="50" cascade="save-update">
+        <set name="roles" table="user_roles" inverse="false" lazy="false" batch-size="50" cascade="save-update">
             <key column="user_id"/>
             <many-to-many class="org.openvpms.component.business.dao.hibernate.im.security.SecurityRoleDOImpl"
                           column="security_role_id"/>

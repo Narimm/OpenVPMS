@@ -31,9 +31,11 @@
             <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
                 <property name="diskPersistent" value="false"/>
                 <property name="cacheName" value="appointmentCache"/>
-                <property name="maxElementsInMemory" value="30"/>
+                <property name="maxEntriesLocalHeap" value="30"/>
                 <!-- 30 days of data -->
                 <property name="overflowToDisk" value="false"/>
+                <property name="timeToIdleSeconds" value="0"/>
+                <property name="timeToLiveSeconds" value="0"/>
                 <property name="eternal" value="true"/>
             </bean>
         </constructor-arg>
@@ -51,9 +53,11 @@
             <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
                 <property name="diskPersistent" value="false"/>
                 <property name="cacheName" value="appointmentCache"/>
-                <property name="maxElementsInMemory" value="30"/>
+                <property name="maxEntriesLocalHeap" value="30"/>
                 <!-- 30 days of data -->
                 <property name="overflowToDisk" value="false"/>
+                <property name="timeToIdleSeconds" value="0"/>
+                <property name="timeToLiveSeconds" value="0"/>
                 <property name="eternal" value="true"/>
             </bean>
         </constructor-arg>

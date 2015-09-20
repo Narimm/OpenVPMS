@@ -52,14 +52,14 @@
                 <property name="value" length="5000" not-null="true"/>
             </composite-element>
         </map>
-        <set name="sourceLookupRelationships" inverse="true" lazy="true"
-             batch-size="50" cascade="all,delete-orphan">
+        <set name="sourceLookupRelationships" inverse="true" lazy="false"
+             batch-size="50" cascade="all,delete-orphan" subselect="true">
             <key column="source_id" not-null="true" on-delete="cascade"/>
             <one-to-many
                     class="org.openvpms.component.business.dao.hibernate.im.lookup.LookupRelationshipDOImpl"/>
         </set>
-        <set name="targetLookupRelationships" inverse="true" lazy="true"
-             batch-size="50" cascade="all,delete-orphan">
+        <set name="targetLookupRelationships" inverse="true" lazy="false"
+             batch-size="50" cascade="all,delete-orphan" subselect="true">
             <key column="target_id" not-null="true" on-delete="cascade"/>
             <one-to-many
                     class="org.openvpms.component.business.dao.hibernate.im.lookup.LookupRelationshipDOImpl"/>

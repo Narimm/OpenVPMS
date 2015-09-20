@@ -37,12 +37,6 @@
         <constructor-arg ref="sessionFactory"/>
     </bean>
 
-    <!--  The AuditRecord DAO bean -->
-    <bean id="auditDao"
-          class="org.openvpms.component.business.dao.hibernate.im.audit.AuditDAOHibernate">
-        <property name="sessionFactory" ref="sessionFactory"/>
-    </bean>
-
     <!--  The Archetype Descriptor Cache -->
     <bean id="archetypeDescriptorCache"
           class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheDB">
@@ -83,46 +77,12 @@
         <constructor-arg ref="archetypeService"/>
     </bean>
 
-    <!--  The Audit Service -->
-    <bean id="auditService"
-          class="org.openvpms.component.business.service.audit.AuditService">
-        <constructor-arg ref="auditDao"/>
-    </bean>
-
     <!--  The User Details Service -->
     <bean id="userDetailsService"
           class="org.openvpms.component.business.service.security.UserService">
         <constructor-arg ref="userDAO"/>
     </bean>
 
-    <!--  Create a proxy for the Sudit Service bean -->
-    <bean id="auditServiceProxyCreator"
-          class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
-        <property name="beanNames">
-            <list>
-                <value>archetypeService</value>
-            </list>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <value>auditServiceAdvisor</value>
-            </list>
-        </property>
-    </bean>
-
-    <!-- The audit service advisor -->
-    <bean id="auditServiceAdvisor"
-          class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
-        <property name="advice" ref="auditService"/>
-        <property name="patterns">
-            <list>
-                <value>.*ArchetypeService\.save</value>
-                <value>.*ArchetypeService\.remove</value>
-            </list>
-        </property>
-    </bean>
-
-    <!--  Create a proxy for the Security Service bean -->
     <bean id="securityserviceProxyCreator"
           class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
         <property name="beanNames">

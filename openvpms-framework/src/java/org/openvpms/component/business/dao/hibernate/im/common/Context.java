@@ -385,27 +385,16 @@ public class Context {
             // sort the ids so the references are retrieved in index order
             Collections.sort(ids);
         }
-        int index = 0;
-        while (index < size) {
-            int max = index + 100 < size ? 100 : size - index;
-            StringBuilder hql = new StringBuilder("select id, archetypeId, linkId from ")
-                    .append(type.getName()).append(" where id in (:id0");
-            for (int i = 1; i < max; ++i) {
-                hql.append(",:id").append(i);
-            }
-            hql.append(")");
-            Query query = session.createQuery(hql.toString());
-            for (int i = 0; i < max; ++i) {
-                query.setParameter("id" + i, ids.get(i + index));
-            }
-            for (Object match : query.list()) {
-                Object[] values = (Object[]) match;
-                long id = (Long) values[0];
-                ArchetypeId archId = (ArchetypeId) values[1];
-                String linkId = (String) values[2];
-                result.put(id, new IMObjectReference(archId, id, linkId));
-            }
-            index += max;
+        Query query = session.createQuery("select id, archetypeId, linkId"
+                                          + " from " + type.getName()
+                                          + " where id in (:ids)");
+        query.setParameterList("ids", ids);
+        for (Object match : query.list()) {
+            Object[] values = (Object[]) match;
+            long id = (Long) values[0];
+            ArchetypeId archId = (ArchetypeId) values[1];
+            String linkId = (String) values[2];
+            result.put(id, new IMObjectReference(archId, id, linkId));
         }
         return result;
     }

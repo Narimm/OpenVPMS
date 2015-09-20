@@ -38,12 +38,6 @@
         <constructor-arg ref="sessionFactory"/>
     </bean>
 
-    <!--  The AuditRecord DAO bean -->
-    <bean id="auditDao"
-          class="org.openvpms.component.business.dao.hibernate.im.audit.AuditDAOHibernate">
-        <property name="sessionFactory" ref="sessionFactory"/>
-    </bean>
-
     <!--  The Archetype Descriptor Cache -->
     <bean id="archetypeDescriptorCache"
           class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS">

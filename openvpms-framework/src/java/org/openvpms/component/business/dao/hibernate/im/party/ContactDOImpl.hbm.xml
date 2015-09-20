@@ -57,7 +57,7 @@
             </composite-element>
         </map>
         <set name="classifications" access="property" inverse="false"
-             table="contact_classifications" lazy="extra" batch-size="50"
+             table="contact_classifications" lazy="false" batch-size="50"
              cascade="none">
             <key column="contact_id"/>
             <many-to-many

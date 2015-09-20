@@ -414,6 +414,8 @@ public class ScheduleTestHelper extends TestHelper {
         EhCacheFactoryBean bean = new EhCacheFactoryBean();
         bean.setCacheName("foo" + System.nanoTime());
         bean.setMaxEntriesLocalHeap(maxElementsInMemory);
+        bean.setTimeToIdle(0);
+        bean.setTimeToLive(0);
         bean.setEternal(true);
         bean.setOverflowToDisk(false);
         bean.afterPropertiesSet();
