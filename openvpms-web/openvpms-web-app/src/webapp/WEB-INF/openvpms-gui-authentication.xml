@@ -29,7 +29,7 @@
 
     <bean id="guiExceptionTranslationFilter"
           class="org.springframework.security.web.access.ExceptionTranslationFilter">
-        <property name="authenticationEntryPoint" ref="guiAuthenticationEntryPoint"/>
+        <constructor-arg ref="guiAuthenticationEntryPoint"/>
     </bean>
 
     <!--security:http entry-point-ref="echoAuthenticationEntryPoint" >
@@ -43,7 +43,7 @@
 
 
     <bean id="guiAuthenticationEntryPoint" class="org.openvpms.web.echo.servlet.EchoAuthenticationEntryPoint">
-        <property name="loginFormUrl" value="/login"/>
+        <constructor-arg value="/login"/>
     </bean>
 
     <bean id="guiAuthenticationFilter"
@@ -51,7 +51,12 @@
         <property name="postOnly" value="true"/>
         <property name="authenticationManager" ref="guiAuthenticationManager"/>
         <property name="authenticationSuccessHandler" ref="guiAuthenticationSuccessHandler"/>
-        <property name="filterProcessesUrl" value="/j_spring_security_check"/>
+        <property name="requiresAuthenticationRequestMatcher">
+            <bean class="org.springframework.security.web.util.matcher.AntPathRequestMatcher">
+                <constructor-arg value="/j_spring_security_check"/>
+                <constructor-arg value="POST"/>
+            </bean>
+        </property>
         <property name="authenticationFailureHandler" ref="guiAuthenticationFailureHandler"/>
     </bean>
 
@@ -83,11 +88,11 @@
     <!-- bean id="skipLoginFilter" class="org.openvpms.web.servlet.SkipLoginFilter"/--> <!-- TODO -->
 
     <bean name="guiAuthenticationManager" class="org.springframework.security.authentication.ProviderManager">
-        <property name="providers">
+        <constructor-arg>
             <list>
                 <ref local="guiAuthenticationProvider"/>
             </list>
-        </property>
+        </constructor-arg>
     </bean>
 
     <bean id="guiAuthenticationProvider"
