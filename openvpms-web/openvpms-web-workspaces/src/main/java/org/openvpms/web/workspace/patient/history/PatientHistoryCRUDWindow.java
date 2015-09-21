@@ -65,6 +65,11 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     private PatientHistoryQuery query;
 
     /**
+     * The Smart Flow Sheet service factory.
+     */
+    private final FlowSheetServiceFactory flowSheetServiceFactory;
+
+    /**
      * Import flow sheet documents button identifier.
      */
     private static final String IMPORT_FLOWSHEET_ID = "button.importFlowSheet";
@@ -89,6 +94,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      */
     public PatientHistoryCRUDWindow(Archetypes<Act> archetypes, Context context, HelpContext help) {
         super(archetypes, PatientHistoryActions.INSTANCE, context, help);
+        this.flowSheetServiceFactory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
     }
 
     /**
@@ -101,6 +107,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     protected PatientHistoryCRUDWindow(Context context, PatientHistoryActions actions, HelpContext help) {
         super(Archetypes.create(PatientArchetypes.CLINICAL_EVENT, Act.class, Messages.get("patient.record.createtype")),
               actions, context, help);
+        this.flowSheetServiceFactory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
     }
 
     /**
@@ -126,6 +133,16 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     }
 
     /**
+     * Determines the actions that may be performed on the selected object.
+     *
+     * @return the actions
+     */
+    @Override
+    protected PatientHistoryActions getActions() {
+        return (PatientHistoryActions) super.getActions();
+    }
+
+    /**
      * Lays out the buttons.
      *
      * @param buttons the button row
@@ -148,7 +165,11 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
         buttons.setEnabled(PRINT_ID, enable);
-        buttons.setEnabled(IMPORT_FLOWSHEET_ID, enable && getEvent() != null);
+
+        Act event = getEvent();
+        Party location = getContext().getLocation();
+        boolean importFlowSheet = enable && getActions().canImportFlowSheet(event, location, flowSheetServiceFactory);
+        buttons.setEnabled(IMPORT_FLOWSHEET_ID, importFlowSheet);
     }
 
     /**
