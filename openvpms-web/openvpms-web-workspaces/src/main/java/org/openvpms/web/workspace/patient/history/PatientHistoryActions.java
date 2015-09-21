@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -20,7 +20,9 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.web.component.im.edit.ActActions;
 
 
@@ -91,5 +93,9 @@ public class PatientHistoryActions extends ActActions<Act> {
     @Override
     public boolean canPost(Act act) {
         return !TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM) && super.canPost(act);
+    }
+
+    public boolean canImportFlowSheet(Act event, Party location, FlowSheetServiceFactory factory) {
+        return (event != null && location != null && factory.supportsSmartFlowSheet(location));
     }
 }
