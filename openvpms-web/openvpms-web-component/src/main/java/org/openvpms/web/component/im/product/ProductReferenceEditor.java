@@ -69,14 +69,13 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
 
 
     /**
-     * Constructs a {@code ProductReferenceEditor}.
+     * Constructs a {@link ProductReferenceEditor}.
      *
      * @param editor   the parent editor
      * @param property the product reference property
      * @param context  the layout context
      */
-    public ProductReferenceEditor(ProductParticipationEditor editor,
-                                  Property property, LayoutContext context) {
+    public ProductReferenceEditor(ProductParticipationEditor editor, Property property, LayoutContext context) {
         super(property, editor.getParent(), new DefaultLayoutContext(context,
                                                                      context.getHelpContext().topic("product")));
         this.editor = editor;
@@ -173,6 +172,7 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
             if (location != null) {
                 productQuery.setStockLocation(location);
             }
+            productQuery.setExcludeTemplateOnlyProducts(editor.getExcludeTemplateOnlyProducts());
         }
         return query;
     }

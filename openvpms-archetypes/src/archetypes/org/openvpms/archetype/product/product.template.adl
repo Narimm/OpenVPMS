@@ -24,14 +24,16 @@
         </node>
         <node name="description" type="java.lang.String" path="/description"/>
         <node name="printedName" path="/details/printedName" type="java.lang.String" minCardinality="0"/>
-        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
-        <node name="invoiceNote" path="/details/invoiceNote" type="java.lang.String" maxLength="300"/>
-        <node name="visitNote" path="/details/visitNote" type="java.lang.String" maxLength="1000"/>
         <node name="printAggregate" path="/details/printAggregate" type="java.lang.Boolean" defaultValue="false()"
               minCardinality="0"/>
         <node name="type" path="/targetEntityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="1"
               filter="entityRelationship.productTypeProduct"/>
+        <node name="templateOnly" displayName="Use only in Templates" path="/details/templateOnly"
+              type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="invoiceNote" path="/details/invoiceNote" type="java.lang.String" maxLength="300"/>
+        <node name="visitNote" path="/details/visitNote" type="java.lang.String" maxLength="1000"/>
         <node name="includes" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
               minCardinality="0" maxCardinality="*" filter="entityLink.productIncludes"/>
         <node name="species" path="/classifications" parentChild="false"

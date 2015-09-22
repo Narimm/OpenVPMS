@@ -400,6 +400,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
         if (product != null) {
             // register the location in order to determine service ratios
             product.setLocation(getLocation());
+            product.setExcludeTemplateOnlyProducts(true);
         }
     }
 

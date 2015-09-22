@@ -36,6 +36,8 @@
         <node name="pharmacy" displayName="Pharmacy" path="/entityLinks"
               type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="1"
               filter="entityLink.productPharmacy"/>
+        <node name="templateOnly" displayName="Use only in Templates" path="/details/templateOnly"
+              type="java.lang.Boolean" defaultValue="false()"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="prices" path="/productPrices" parentChild="true"
               type="java.util.HashSet" baseName="ProductPrice" minCardinality="0" maxCardinality="*">

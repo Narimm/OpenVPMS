@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.product;
 
@@ -23,6 +23,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.query.AbstractEntityQueryTest;
 
@@ -197,6 +198,41 @@ public class ProductQueryTestCase extends AbstractEntityQueryTest<Product> {
         checkExists(felineStock1, query, matches, false);
         checkExists(felineNoStock, query, matches, true);
         checkExists(universalStock2, query, matches, true);
+    }
+
+    /**
+     * Tests exclusion of products via {@link ProductQuery#setExcludeTemplateOnlyProducts(boolean)}.
+     */
+    @Test
+    public void testExcludeTemplateOnlyProducts() {
+        Product product1 = createObject(true);
+        Product product2 = createObject(true);
+        Product product3 = createObject(true);
+        IMObjectBean bean = new IMObjectBean(product2);
+        bean.setValue("templateOnly", true);
+        bean.save();
+
+        ProductQuery query = createQuery();
+
+        // test default behaviour
+        List<IMObjectReference> matches = getObjectRefs(query);
+        checkExists(product1, query, matches, true);
+        checkExists(product2, query, matches, true);
+        checkExists(product3, query, matches, true);
+
+        // test exclusion
+        query.setExcludeTemplateOnlyProducts(true);
+        matches = getObjectRefs(query);
+        checkExists(product1, query, matches, true);
+        checkExists(product2, query, matches, false);
+        checkExists(product3, query, matches, true);
+
+        // test inclusion
+        query.setExcludeTemplateOnlyProducts(false);
+        matches = getObjectRefs(query);
+        checkExists(product1, query, matches, true);
+        checkExists(product2, query, matches, true);
+        checkExists(product3, query, matches, true);
     }
 
     /**

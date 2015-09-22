@@ -64,7 +64,7 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
         ArchetypeNodes nodes = new ArchetypeNodes();
         checkSimple(archetype, nodes, "id", "name", "description", "printedName", "drugSchedule", "activeIngredients",
                     "concentration", "sellingUnits", "dispensingUnits", "dispensingVerb", "label", "dispInstructions",
-                    "type", "pharmacy", "active", "usageNotes");
+                    "type", "pharmacy", "templateOnly", "active", "usageNotes");
         checkComplex(archetype, nodes, "prices", "doses", "linked", "investigationTypes", "suppliers", "stockLocations",
                      "reminders", "documents", "discounts", "species", "updates", "classifications", "identities",
                      "equivalents", "taxes", "sourceRelationships");
@@ -78,7 +78,7 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
         ArchetypeNodes nodes = new ArchetypeNodes(true, false);
         checkSimple(archetype, nodes, "id", "name", "description", "printedName", "drugSchedule", "activeIngredients",
                     "concentration", "sellingUnits", "dispensingUnits", "dispensingVerb", "label", "dispInstructions",
-                    "type", "pharmacy", "active", "usageNotes");
+                    "type", "pharmacy", "templateOnly", "active", "usageNotes");
         checkComplex(archetype, nodes);
     }
 
@@ -102,7 +102,7 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
         ArchetypeNodes nodes = new ArchetypeNodes().simple("species");
         checkSimple(archetype, nodes, "id", "name", "description", "printedName", "drugSchedule", "activeIngredients",
                     "concentration", "sellingUnits", "dispensingUnits", "dispensingVerb", "label", "dispInstructions",
-                    "type", "pharmacy", "active", "usageNotes", "species");
+                    "type", "pharmacy", "templateOnly", "active", "usageNotes", "species");
         checkComplex(archetype, nodes, "prices", "doses", "linked", "investigationTypes", "suppliers", "stockLocations",
                      "reminders", "documents", "discounts", "updates", "classifications", "identities",
                      "equivalents", "taxes", "sourceRelationships");
@@ -119,7 +119,7 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
         // verify label, dispInstructions and usageNotes are excluded from simple nodes
         checkSimple(archetype, nodes, product, "id", "name", "description", "printedName", "drugSchedule",
                     "activeIngredients", "concentration", "sellingUnits", "dispensingUnits", "dispensingVerb", "type",
-                    "pharmacy", "active");
+                    "pharmacy", "templateOnly", "active");
 
         // verify prices are excluded from complex nodes
         checkComplex(archetype, nodes, product, "doses", "linked", "investigationTypes", "suppliers", "stockLocations",
@@ -144,7 +144,7 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
         // verify label, dispInstructions and usageNotes are excluded from simple nodes
         checkSimple(archetype, nodes, product, "id", "name", "description", "printedName", "drugSchedule",
                     "activeIngredients", "concentration", "sellingUnits", "dispensingUnits", "dispensingVerb", "type",
-                    "pharmacy", "active");
+                    "pharmacy", "templateOnly", "active");
 
         // verify prices are excluded from complex nodes
         checkComplex(archetype, nodes, product, "doses", "linked", "investigationTypes", "suppliers",
@@ -159,7 +159,7 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
 
         checkSimple(archetype, nodes, product, "id", "name", "description", "printedName", "drugSchedule",
                     "activeIngredients", "concentration", "sellingUnits", "dispensingUnits", "dispensingVerb", "label",
-                    "dispInstructions", "type", "pharmacy", "active", "usageNotes");
+                    "dispInstructions", "type", "pharmacy", "templateOnly", "active", "usageNotes");
         checkComplex(archetype, nodes, product, "prices", "doses", "linked", "investigationTypes", "suppliers",
                      "stockLocations", "reminders", "documents", "discounts", "species", "updates", "classifications",
                      "identities", "equivalents", "taxes", "sourceRelationships");

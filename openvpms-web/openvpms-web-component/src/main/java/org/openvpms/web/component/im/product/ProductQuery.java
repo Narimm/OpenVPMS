@@ -21,17 +21,21 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.product.PricingGroup;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.AbstractEntityQuery;
+import org.openvpms.web.component.im.query.FilteredResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.List;
 
 /**
  * Query implementation that queries {@link Product} instances on short name,
@@ -55,6 +59,11 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
      * The pricing group.
      */
     private PricingGroup pricingGroup;
+
+    /**
+     * Determines if products with {@code templateOnly == true} should be excluded.
+     */
+    private boolean excludeTemplateOnlyProducts;
 
 
     /**
@@ -122,6 +131,35 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
     }
 
     /**
+     * Determines if products with {@code templateOnly == true} should be excluded by the query.
+     *
+     * @param exclude if {@code true}, exclude template-only products
+     */
+    public void setExcludeTemplateOnlyProducts(boolean exclude) {
+        this.excludeTemplateOnlyProducts = exclude;
+    }
+
+    /**
+     * Determines if the query selects a particular object reference.
+     *
+     * @param reference the object reference to check
+     * @return {@code true} if the object reference is selected by the query
+     */
+    @Override
+    public boolean selects(IMObjectReference reference) {
+        boolean result;
+        if (!excludeTemplateOnlyProducts) {
+            result = super.selects(reference);
+        } else {
+            ProductResultSet set = getResultSet(getDefaultSortConstraint());
+            set.setReferenceConstraint(reference);
+            ResultSet<Product> filtered = filterTemplateOnlyProducts(set);
+            result = filtered.hasNext();
+        }
+        return result;
+    }
+
+    /**
      * Sets the pricing group.
      * <p/>
      * NOTE: this does not update the selector, so should only be invoked prior to its construction.
@@ -139,8 +177,11 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
      * @return a new result set
      */
     protected ResultSet<Product> createResultSet(SortConstraint[] sort) {
-        return new ProductResultSet(getArchetypeConstraint(), getValue(), isIdentitySearch(), species, location,
-                                    sort, getMaxResults());
+        ResultSet<Product> result = getResultSet(sort);
+        if (excludeTemplateOnlyProducts) {
+            result = filterTemplateOnlyProducts(result);
+        }
+        return result;
     }
 
     /**
@@ -172,4 +213,36 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
     protected void onPricingGroupChanged(PricingGroup group) {
         pricingGroup = group;
     }
+
+    /**
+     * Excludes any products from the result set that have {@code templateOnly == true}.
+     * <p/>
+     * This needs to be done in memory until OBF-236 is supported.
+     *
+     * @param set the result set to filter
+     * @return the filtered result set
+     */
+    protected ResultSet<Product> filterTemplateOnlyProducts(final ResultSet<Product> set) {
+        return new FilteredResultSet<Product>(set) {
+            @Override
+            protected void filter(Product object, List<Product> results) {
+                IMObjectBean bean = new IMObjectBean(object);
+                if (!bean.hasNode("templateOnly") || !bean.getBoolean("templateOnly")) {
+                    results.add(object);
+                }
+            }
+        };
+    }
+
+    /**
+     * Creates a new {@link ProductResultSet}.
+     *
+     * @param sort the sort criteria. May be {@code null}
+     * @return a new {@link ProductResultSet}
+     */
+    private ProductResultSet getResultSet(SortConstraint[] sort) {
+        return new ProductResultSet(getArchetypeConstraint(), getValue(), isIdentitySearch(), species, location,
+                                    sort, getMaxResults());
+    }
+
 }
