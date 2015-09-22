@@ -95,6 +95,14 @@ public class PatientHistoryActions extends ActActions<Act> {
         return !TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM) && super.canPost(act);
     }
 
+    /**
+     * Determines if flow sheet reports can be imported.
+     *
+     * @param event    the visit. May be {@code null}
+     * @param location the practice location. May be {@code null}
+     * @param factory  the flow sheet service factory
+     * @return {@code true} if flow sheet reports can be imported
+     */
     public boolean canImportFlowSheet(Act event, Party location, FlowSheetServiceFactory factory) {
         return (event != null && location != null && factory.supportsSmartFlowSheet(location));
     }

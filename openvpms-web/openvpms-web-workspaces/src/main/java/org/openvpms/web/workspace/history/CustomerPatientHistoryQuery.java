@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.history;
@@ -33,8 +33,8 @@ import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.SelectionHistory;
-import org.openvpms.web.component.im.query.AbstractFilteredResultSet;
 import org.openvpms.web.component.im.query.AbstractQuery;
+import org.openvpms.web.component.im.query.FilteredResultSet;
 import org.openvpms.web.component.im.query.ListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -148,7 +148,7 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
         CustomerPatientResultSet resultSet = new CustomerPatientResultSet(history, getMaxResults());
         resultSet.sort(sort);
         String text = filter.getText();
-        return (!StringUtils.isEmpty(text)) ? new FilteredResultSet(resultSet, text) : resultSet;
+        return (!StringUtils.isEmpty(text)) ? new MatchingResultSet(resultSet, text) : resultSet;
     }
 
     /**
@@ -200,11 +200,9 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
      * @return a list of customer/patient pairs
      */
     private List<CustomerPatient> getHistory(SelectionHistory customers, SelectionHistory patients) {
-        List<CustomerPatient> result = new ArrayList<CustomerPatient>();
-        Set<SelectionHistory.Selection> allCustomers
-                = new HashSet<SelectionHistory.Selection>(customers.getSelections());
-        Set<SelectionHistory.Selection> allPatients
-                = new HashSet<SelectionHistory.Selection>(patients.getSelections());
+        List<CustomerPatient> result = new ArrayList<>();
+        Set<SelectionHistory.Selection> allCustomers = new HashSet<>(customers.getSelections());
+        Set<SelectionHistory.Selection> allPatients = new HashSet<>(patients.getSelections());
         for (SelectionHistory.Selection selection
                 : allPatients.toArray(new SelectionHistory.Selection[allPatients.size()])) {
             Party patient = (Party) selection.getObject();
@@ -326,7 +324,7 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
      * Result set that returns {@link CustomerPatient} instances that have a name or description matching the supplied
      * text. Matching is case-insensitive.
      */
-    private static class FilteredResultSet extends AbstractFilteredResultSet<CustomerPatient> {
+    private static class MatchingResultSet extends FilteredResultSet<CustomerPatient> {
 
         /**
          * The text to match on.
@@ -334,12 +332,12 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
         private final String match;
 
         /**
-         * Creates a new {@code FilteredResultSet}.
+         * Constructs a {@link MatchingResultSet}.
          *
          * @param set  the result set to filter
          * @param text the text to match on
          */
-        public FilteredResultSet(ResultSet<CustomerPatient> set, String text) {
+        public MatchingResultSet(ResultSet<CustomerPatient> set, String text) {
             super(set);
             this.match = text.toLowerCase();
         }

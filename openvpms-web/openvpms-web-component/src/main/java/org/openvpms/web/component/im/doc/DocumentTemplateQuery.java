@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -25,8 +25,8 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.AbstractArchetypeServiceResultSet;
-import org.openvpms.web.component.im.query.AbstractFilteredResultSet;
 import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
+import org.openvpms.web.component.im.query.FilteredResultSet;
 import org.openvpms.web.component.im.query.LocalSortResultSet;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.QueryHelper;
@@ -81,7 +81,7 @@ public class DocumentTemplateQuery extends AbstractIMObjectQuery<Entity> {
         result.sort(sort);
 
         if (types.length != 0) {
-            result = new AbstractFilteredResultSet<Entity>(result) {
+            result = new FilteredResultSet<Entity>(result) {
                 @Override
                 protected void filter(Entity object, List<Entity> results) {
                     IMObjectBean bean = new IMObjectBean(object);

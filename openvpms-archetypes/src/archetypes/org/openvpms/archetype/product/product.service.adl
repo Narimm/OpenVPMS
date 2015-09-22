@@ -24,7 +24,6 @@
         <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
               derivedValue="/name"/>
         <node name="printedName" path="/details/printedName" type="java.lang.String" minCardinality="0"/>
-        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="sellingUnits" displayName="Selling Units" path="/details/sellingUnits" type="java.lang.String"
               minCardinality="0">
             <assertion name="lookup">
@@ -34,6 +33,9 @@
         </node>
         <node name="type" path="/targetEntityRelationships" type="java.util.HashSet" baseName="EntityRelationship"
               minCardinality="0" maxCardinality="1" filter="entityRelationship.productTypeProduct"/>
+        <node name="templateOnly" displayName="Use only in Templates" path="/details/templateOnly"
+              type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="prices" path="/productPrices" parentChild="true"
               type="java.util.HashSet" baseName="ProductPrice" minCardinality="0" maxCardinality="*">
             <assertion name="archetypeRange">

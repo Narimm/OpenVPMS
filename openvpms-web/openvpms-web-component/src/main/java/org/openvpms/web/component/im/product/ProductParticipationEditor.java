@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -62,9 +62,13 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
      */
     private Party stockLocation;
 
+    /**
+     * Determines if products with {@code templateOnly == true} should be excluded.
+     */
+    private boolean excludeTemplateOnlyProducts;
 
     /**
-     * Constructs a new {@link ProductParticipationEditor}.
+     * Constructs a {@link ProductParticipationEditor}.
      *
      * @param participation the object to edit
      * @param parent        the parent object
@@ -173,6 +177,24 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
      */
     public void setProductSupplier(ProductSupplier relationship) {
         productSupplier = relationship;
+    }
+
+    /**
+     * Determines if products with {@code templateOnly == true} should be excluded by the query.
+     *
+     * @param exclude if {@code true}, exclude template-only products
+     */
+    public void setExcludeTemplateOnlyProducts(boolean exclude) {
+        this.excludeTemplateOnlyProducts = exclude;
+    }
+
+    /**
+     * Determines if products with {@code templateOnly == true} should be excluded by the query.
+     *
+     * @return {@code true} if template-only products should b excluded, otherwise include them
+     */
+    public boolean getExcludeTemplateOnlyProducts() {
+        return excludeTemplateOnlyProducts;
     }
 
     /**
