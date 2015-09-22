@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -81,11 +81,6 @@ public class PatientReminderTableModel extends AbstractActTableModel {
     private ReminderProcessor processor;
 
     /**
-     * The last processed row.
-     */
-    private int lastRow;
-
-    /**
      * The last processed event.
      */
     private ReminderEvent lastEvent;
@@ -133,9 +128,9 @@ public class PatientReminderTableModel extends AbstractActTableModel {
         if (index == nextDueIndex) {
             result = getDueDate(act);
         } else if (index == customerIndex) {
-            result = getCustomer(act, row);
+            result = getCustomer(act);
         } else if (index == actionIndex) {
-            result = getAction(act, row);
+            result = getAction(act);
         } else {
             result = super.getValue(act, column, row);
         }
@@ -154,21 +149,25 @@ public class PatientReminderTableModel extends AbstractActTableModel {
     protected Object getValue(Act object, DescriptorTableColumn column, int row) {
         Object result = null;
         String name = column.getName();
-        if (name.equals("reminderType")) {
-            // uses the cached reminder type to reduce queries
-            ReminderEvent event = getEvent(object, row);
-            if (event != null && event.getReminderType() != null) {
-                Entity reminderType = event.getReminderType().getEntity();
-                result = createReferenceViewer(reminderType, false);
-            }
-        } else if (name.equals("patient")) {
-            // use the cached patient in the event to reduce queries
-            Party patient = getPatient(object, row);
-            if (patient != null) {
-                result = createReferenceViewer(patient, true);
-            }
-        } else {
-            result = super.getValue(object, column, row);
+        switch (name) {
+            case "reminderType":
+                // uses the cached reminder type to reduce queries
+                ReminderEvent event = getEvent(object);
+                if (event != null && event.getReminderType() != null) {
+                    Entity reminderType = event.getReminderType().getEntity();
+                    result = createReferenceViewer(reminderType, false);
+                }
+                break;
+            case "patient":
+                // use the cached patient in the event to reduce queries
+                Party patient = getPatient(object);
+                if (patient != null) {
+                    result = createReferenceViewer(patient, true);
+                }
+                break;
+            default:
+                result = super.getValue(object, column, row);
+                break;
         }
         return result;
     }
@@ -231,12 +230,11 @@ public class PatientReminderTableModel extends AbstractActTableModel {
      * Returns a component for the customer of a reminder.
      *
      * @param act the reminder
-     * @param row the current row
      * @return the customer component, or {@code null}
      */
-    private Component getCustomer(Act act, int row) {
+    private Component getCustomer(Act act) {
         Component result = null;
-        Party customer = getPatientOwner(act, row);
+        Party customer = getPatientOwner(act);
         if (customer != null) {
             result = createReferenceViewer(customer, true);
         }
@@ -247,12 +245,11 @@ public class PatientReminderTableModel extends AbstractActTableModel {
      * Returns the action of a reminder.
      *
      * @param act the reminder
-     * @param row the current row
      * @return the action component, or {@code null}
      */
-    private Component getAction(Act act, int row) {
+    private Component getAction(Act act) {
         Label result = LabelFactory.create();
-        ReminderEvent event = getEvent(act, row);
+        ReminderEvent event = getEvent(act);
         if (event != null) {
             result.setText(Messages.get("patientremindertablemodel." + event.getAction().name()));
         } else {
@@ -266,14 +263,13 @@ public class PatientReminderTableModel extends AbstractActTableModel {
      * Returns the reminder event for the specified act and row.
      *
      * @param act the reminder
-     * @param row the current row
      * @return the corresponding reminder event, or {@code null} if the event can't be processed
      */
-    private ReminderEvent getEvent(Act act, int row) {
+    private ReminderEvent getEvent(Act act) {
         if (lastEvent == null || lastEvent.getReminder() != act) {
             IMObjectBean bean = new IMObjectBean(act);
             try {
-                lastEvent = getProcessor(row).process(act, bean.getInt("reminderCount"));
+                lastEvent = getProcessor().process(act, bean.getInt("reminderCount"));
             } catch (Throwable exception) {
                 lastEvent = null;
             }
@@ -285,11 +281,10 @@ public class PatientReminderTableModel extends AbstractActTableModel {
      * Returns the patient.
      *
      * @param act the reminder
-     * @param row the current row
      * @return the patient. May be {@code null}
      */
-    private Party getPatient(Act act, int row) {
-        ReminderEvent event = getEvent(act, row);
+    private Party getPatient(Act act) {
+        ReminderEvent event = getEvent(act);
         return (event != null) ? event.getPatient() : null;
     }
 
@@ -297,11 +292,10 @@ public class PatientReminderTableModel extends AbstractActTableModel {
      * Returns the owner for a patient.
      *
      * @param act the act
-     * @param row the current row
      * @return the patient owner, or {@code null}
      */
-    private Party getPatientOwner(Act act, int row) {
-        ReminderEvent event = getEvent(act, row);
+    private Party getPatientOwner(Act act) {
+        ReminderEvent event = getEvent(act);
         return (event != null) ? event.getCustomer() : null;
     }
 
@@ -320,22 +314,26 @@ public class PatientReminderTableModel extends AbstractActTableModel {
     }
 
     /**
-     * Returns a reminder processor.
-     * <p/>
-     * TODO - this is a hack to cache a processor, but not for too long (i.e don't want the processingDate to become
-     * too old, and internal caches too big).
+     * Invoked after the table has been rendered.
+     */
+    @Override
+    public void postRender() {
+        super.postRender();
+        processor = null; // disposes of the processor after rendering to release caches
+    }
+
+    /**
+     * Returns a reminder processor, creating it if required.
      *
-     * @param row the current row being rendered
      * @return a reminder processor
      */
-    private ReminderProcessor getProcessor(int row) {
-        if (processor == null || row < lastRow) {
+    private ReminderProcessor getProcessor() {
+        if (processor == null) {
             boolean disableSMS = !SMSHelper.isSMSEnabled(getLayoutContext().getContext().getPractice());
             processor = new ReminderProcessor(null, null, new Date(), disableSMS, ServiceHelper.getArchetypeService(),
                                               patientRules);
             processor.setEvaluateFully(true);
         }
-        lastRow = row;
         return processor;
     }
 
