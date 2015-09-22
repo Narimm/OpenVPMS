@@ -41,7 +41,7 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -76,6 +76,11 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
     private PracticeRules practiceRules;
 
     /**
+     * The practice location.
+     */
+    private Party location;
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -87,6 +92,7 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
         PatientRules patientRules = new PatientRules(practiceRules, service, lookups);
         handlers = new DocumentHandlers();
         exporter = new ReminderCSVExporter(practiceRules, partyRules, patientRules, service, lookups, handlers);
+        location = TestHelper.createLocation();
     }
 
     /**
@@ -163,7 +169,7 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
         reminderBean.save();
 
         ReminderEvent event = createReminderEvent(customer, address, patient, reminderType, reminder);
-        Document document = exporter.export(Arrays.asList(event));
+        Document document = exporter.export(Collections.singletonList(event));
         List<String[]> lines = readCSV(document);
         assertNotNull(lines);
         assertEquals(2, lines.size());
@@ -180,7 +186,7 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
                              getId(patient), patient.getName(), "Canine", "Kelpie", "Male", "Black", "2013-02-01",
                              getId(reminderType), reminderType.getName(),
                              getDate(reminder.getActivityEndTime()), "0", "2013-06-05", "10", "KILOGRAMS",
-                             "2015-01-01"};
+                             "2015-01-01", location.getName()};
         assertArrayEquals(expected, lines.get(1));
     }
 
@@ -219,6 +225,7 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
         bean.setValue("initials", initials);
         bean.setValue("lastName", lastName);
         bean.setValue("companyName", companyName);
+        bean.addNodeTarget("practice", location);
         bean.save();
         return customer;
     }

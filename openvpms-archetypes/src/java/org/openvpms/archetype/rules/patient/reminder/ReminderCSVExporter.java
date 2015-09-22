@@ -55,7 +55,7 @@ public class ReminderCSVExporter implements ReminderExporter {
             "Patient Identifier", "Patient Name", "Patient Species", "Patient Breed", "Patient Sex", "Patient Colour",
             "Patient Date of Birth", "Reminder Type Identifier", "Reminder Type Name", "Reminder Due Date",
             "Reminder Count", "Reminder Last Sent Date", "Patient Weight", "Patient Weight Units",
-            "Patient Weight Date"};
+            "Patient Weight Date", "Practice Location"};
 
     /**
      * The practice rules.
@@ -163,6 +163,7 @@ public class ReminderCSVExporter implements ReminderExporter {
         IMObjectBean location = new IMObjectBean(event.getContact(), service);
         IMObjectBean patient = new IMObjectBean(event.getPatient(), service);
         IMObjectBean reminder = new IMObjectBean(event.getReminder(), service);
+        Party practiceLocation = (Party) customer.getNodeTargetObject("practice");
         ReminderType reminderType = event.getReminderType();
 
         String customerId = Long.toString(customer.getObject().getId());
@@ -200,11 +201,12 @@ public class ReminderCSVExporter implements ReminderExporter {
             weightUnits = bean.getString("units");
             weightDate = getDate(lastWeight.getActivityStartTime());
         }
+        String locationName = (practiceLocation != null) ? practiceLocation.getName() : null;
 
         String[] line = {customerId, title, firstName, initials, lastName, companyName, address, suburb, state,
                          postCode, phone, sms, email, patientId, patientName, species, breed, sex, colour, dateOfBirth,
                          reminderTypeId, reminderTypeName, dueDate, reminderCount, lastSentDate, weight, weightUnits,
-                         weightDate};
+                         weightDate, locationName};
         writer.writeNext(line);
     }
 
