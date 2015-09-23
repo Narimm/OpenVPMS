@@ -163,6 +163,10 @@
     <template name="Clinician Sales Report" archetype="REPORT" reportType="FINANCIAL"
               description="Clinician Sales Report" path="Reporting/Reports/Financial/A4/Clinician Sales Report.jrxml"
               mimeType="text/xml" docType="document.other"/>
+    <template name="Key Performance Indicators" archetype="REPORT" reportType="FINANCIAL"
+              description="Key Performance Indicators"
+              path="Reporting/Reports/Financial/A4/Key Performance Indicators.jrxml"
+              mimeType="text/xml" docType="document.other"/>
     <template name="Outstanding Debtors" archetype="REPORT" reportType="FINANCIAL" description="Outstanding Debtors"
               path="Reporting/Reports/Financial/A4/Outstanding Debtors.jrxml" mimeType="text/xml"
               docType="document.other"/>
