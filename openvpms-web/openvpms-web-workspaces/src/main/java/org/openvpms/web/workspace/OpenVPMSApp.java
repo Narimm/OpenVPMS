@@ -154,6 +154,18 @@ public class OpenVPMSApp extends ContextApplicationInstance {
         return window;
     }
 
+
+    /**
+     * Invoked when the application is disposed and will not be used again.
+     */
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (window != null) {
+            window.dispose();
+        }
+    }
+
     /**
      * Returns the instance associated with the current thread.
      *
@@ -237,7 +249,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
 
     /**
      * Locks the application, until the user re-enters their password.
-     * <p/>
+     * <p>
      * This method may be invoked outside a servlet request, so a task is queued to lock the screen.
      * This task is invoked when the client synchronizes with the server, at most DEFAULT_LOCK_QUEUE seconds after
      * lock() is invoked.
@@ -259,8 +271,8 @@ public class OpenVPMSApp extends ContextApplicationInstance {
 
     /**
      * Unlocks the application.
-     * <p/>
-     * <p/>
+     * <p>
+     * <p>
      * This method may be invoked outside a servlet request, so a task is queued to unlock the screen.
      */
     @Override

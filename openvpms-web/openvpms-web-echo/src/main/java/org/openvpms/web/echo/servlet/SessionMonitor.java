@@ -502,6 +502,17 @@ public class SessionMonitor implements DisposableBean {
          * Invalidates a session.
          */
         private void invalidate() {
+            SpringApplicationInstance[] list = apps.values().toArray(new SpringApplicationInstance[apps.size()]);
+            for (SpringApplicationInstance app : list) {
+                if (app != null) {
+                    try {
+                        app.dispose();
+                    } catch (Throwable exception) {
+                        log.debug("Error disposing app", exception);
+                    }
+                }
+            }
+
             HttpSession httpSession = session.get();
             if (httpSession != null) {
                 httpSession.invalidate();
