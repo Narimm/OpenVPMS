@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.1.0.final using JasperReports Library version 6.1.0  -->
-<!-- 2015-09-07T05:13:27 -->
+<!-- Created with Jaspersoft Studio version 6.0.4.final using JasperReports Library version 6.0.4  -->
+<!-- 2015-09-23T09:44:22 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Key Performance Indicators" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="e1dde246-07e1-4c02-9c46-879b11400d3f">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -582,11 +582,11 @@ and ifnull(loc.name,"--NONE--") like concat(ifnull($P{Location},""),"%")]]>
 		<parameter name="DateFrom" class="java.util.Date">
 			<parameterDescription><![CDATA[Date From]]></parameterDescription>
 		</parameter>
-		<queryString>
+		<queryString language="SQL">
 			<![CDATA[select sum(if(cb.amount>0,cb.amount,0)) as credBalTot, 
 	sum(if(cb.amount>0,1,0)) as credBalCount,
 	sum(if(cb.amount>0,0,-cb.amount)) as outstBalTot, 
-	sum(if(cb.amount>0,0,1)) as outstBalCount,
+	sum(if(cb.amount<0,1,0)) as outstBalCount,
     sum(if(cb.amount=0,1,0)) as countZeroBal
 from 
 (select sum(if(fa.credit,fa.total,-fa.total)) as amount, c.entity_id as cid
@@ -5043,7 +5043,7 @@ group by c.entity_id) as cb]]>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Percentage of invoices issued in period that paid on date of issue]]></text>
+				<text><![CDATA[Percentage of invoices issued in period that were paid on date of issue]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="staticText-9" x="134" y="510" width="400" height="15" uuid="ed43566e-4aaf-491f-bfc6-f9f4fe128603">
