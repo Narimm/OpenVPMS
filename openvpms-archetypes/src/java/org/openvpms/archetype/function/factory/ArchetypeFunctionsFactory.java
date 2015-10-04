@@ -20,6 +20,7 @@ import org.apache.commons.jxpath.ClassFunctions;
 import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.Functions;
 import org.apache.commons.lang.WordUtils;
+import org.openvpms.archetype.function.date.DateFunctions;
 import org.openvpms.archetype.function.expression.ExpressionFunctions;
 import org.openvpms.archetype.function.history.HistoryFunctions;
 import org.openvpms.archetype.function.list.ListFunctions;
@@ -36,7 +37,6 @@ import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.system.common.jxpath.DateFunctions;
 import org.openvpms.component.system.common.jxpath.FunctionsFactory;
 import org.openvpms.component.system.common.jxpath.ObjectFunctions;
 
@@ -86,7 +86,7 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
         CustomerRules customerRules = new CustomerRules(service, lookups);
         ReminderRules reminderRules = new ReminderRules(service, patientRules);
         FunctionLibrary library = new FunctionLibrary();
-        library.addFunctions(create("date", DateFunctions.class));
+        library.addFunctions(create("date", new DateFunctions()));
         library.addFunctions(new ExpressionFunctions("expr"));
         library.addFunctions(create("history", new HistoryFunctions(service)));
         library.addFunctions(create("list", new ListFunctions(service, lookups)));
