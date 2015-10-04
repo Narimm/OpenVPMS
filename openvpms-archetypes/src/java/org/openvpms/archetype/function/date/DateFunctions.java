@@ -11,10 +11,10 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.component.system.common.jxpath;
+package org.openvpms.archetype.function.date;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -24,7 +24,7 @@ import java.util.TimeZone;
 
 
 /**
- * Date formatting functions for use in xpath expressions.
+ * Date functions for use in xpath expressions.
  *
  * @author Tim Anderson
  */
@@ -40,21 +40,58 @@ public class DateFunctions {
      */
     public static final String MEDIUM = "medium";
 
-
     /**
      * Long format style.
      */
     public static final String LONG = "long";
 
     /**
-     * The thread-specific locale to use to format dates.
+     * The locale.
      */
-    private static ThreadLocal<Locale> threadLocale = new ThreadLocal<Locale>();
+    private final Locale locale;
 
     /**
-     * The thread-specific time zone to use to format dates.
+     * The timezone.
      */
-    private static ThreadLocal<TimeZone> threadZone = new ThreadLocal<TimeZone>();
+    private final TimeZone zone;
+
+    /**
+     * The relative date parser.
+     */
+    private static final RelativeDateParser PARSER = new RelativeDateParser();
+
+    /**
+     * Default constructor.
+     * <p/>
+     * This uses the default locale and timezone.
+     */
+    public DateFunctions() {
+        this(Locale.getDefault(), TimeZone.getDefault());
+    }
+
+    /**
+     * Constructs a {@link DateFunctions}.
+     *
+     * @param locale the locale
+     * @param zone   the time zone
+     */
+    public DateFunctions(Locale locale, TimeZone zone) {
+        this.locale = locale;
+        this.zone = zone;
+    }
+
+    /**
+     * Adds a period to the specified date.
+     * <p/>
+     * The period must conform to the format specified by {@link RelativeDateParser}.
+     *
+     * @param date   the date. If {@code null}, the current date/time is used
+     * @param period the relative date string
+     * @return the relative date, or {@code null} if the period is invalid
+     */
+    public Date add(Date date, String period) {
+        return PARSER.parse(period, date);
+    }
 
     /**
      * Formats a date according to a {@code SimpleDateFormat} pattern.
@@ -63,13 +100,14 @@ public class DateFunctions {
      * @param pattern the format pattern. May be {@code null}
      * @return the formatted date, or {@code null} if the date is null
      */
-    public static String format(Date date, String pattern) {
+    public String format(Date date, String pattern) {
         String result = null;
         if (date != null) {
             if (pattern == null) {
                 result = formatDateTime(date);
             } else {
                 DateFormat format = new SimpleDateFormat(pattern, getLocale());
+                format.setTimeZone(getTimeZone());
                 result = format.format(date);
             }
         }
@@ -81,10 +119,9 @@ public class DateFunctions {
      * with the current thread, or the system default if none is specified.
      *
      * @param date the date
-     * @return the formatted date string, or <code>null</code> if no date was
-     *         passed
+     * @return the formatted date string, or {@code null} if no date was passed
      */
-    public static String formatDate(Date date) {
+    public String formatDate(Date date) {
         return formatDate(date, MEDIUM);
     }
 
@@ -93,11 +130,10 @@ public class DateFunctions {
      * with the current thread, or the system default if none is specified.
      *
      * @param date  the date
-     * @param style the date style. May be "short", "medium", or "long"
-     * @return the formatted date string, or <code>null</code> if no date was
-     *         passed
+     * @param style the date style. May be {@link #SHORT}, {@link #MEDIUM} or {@link #LONG}
+     * @return the formatted date string, or {@code null} if no date was passed
      */
-    public static String formatDate(Date date, String style) {
+    public String formatDate(Date date, String style) {
         if (date != null) {
             int type = getStyle(style);
             DateFormat format = DateFormat.getDateInstance(type, getLocale());
@@ -112,10 +148,9 @@ public class DateFunctions {
      * with the current thread, or the system default if none is specified.
      *
      * @param time the time
-     * @return the formatted time string or <code>null</code> if no time was
-     *         passed
+     * @return the formatted time string or {@code null} if no time was passed
      */
-    public static String formatTime(Date time) {
+    public String formatTime(Date time) {
         return formatTime(time, MEDIUM);
     }
 
@@ -124,11 +159,10 @@ public class DateFunctions {
      * with the current thread, or the system default if none is specified.
      *
      * @param time  the time
-     * @param style the time style. May be "short", "medium", or "long"
-     * @return the formatted time string or <code>null</code> if no time was
-     *         passed
+     * @param style the time style. May be {@link #SHORT}, {@link #MEDIUM} or {@link #LONG}
+     * @return the formatted time string or {@code null} if no time was passed
      */
-    public static String formatTime(Date time, String style) {
+    public String formatTime(Date time, String style) {
         if (time != null) {
             int type = getStyle(style);
             DateFormat format = DateFormat.getTimeInstance(type, getLocale());
@@ -143,10 +177,9 @@ public class DateFunctions {
      * with the current thread, or the system default if none is specified.
      *
      * @param dateTime the date/time
-     * @return a formatted date/time string or <code>null</code> if no date/time
-     *         was passed
+     * @return a formatted date/time string or {@code null} if no date/time was passed
      */
-    public static String formatDateTime(Date dateTime) {
+    public String formatDateTime(Date dateTime) {
         return formatDateTime(dateTime, MEDIUM);
     }
 
@@ -155,11 +188,10 @@ public class DateFunctions {
      * with the current thread, or the system default if none is specified.
      *
      * @param dateTime the date/time
-     * @param style    the style. May be "short", "medium", or "long"
-     * @return a formatted date/time string or <code>null</code> if no date/time
-     *         was passed
+     * @param style    the style. May be {@link #SHORT}, {@link #MEDIUM}, or {@link #LONG}
+     * @return a formatted date/time string or {@code null} if no date/time was passed
      */
-    public static String formatDateTime(Date dateTime, String style) {
+    public String formatDateTime(Date dateTime, String style) {
         return formatDateTime(dateTime, style, style);
     }
 
@@ -168,16 +200,13 @@ public class DateFunctions {
      * with the current thread, or the system default if none is specified.
      *
      * @param dateTime  the date/time
-     * @param dateStyle the date style. May be "short", "medium", or "long"
-     * @param timeStyle the time style. May be "short", "medium", or "long"
-     * @return a formatted date/time string or <code>null</code> if no date/time
-     *         was passed
+     * @param dateStyle the date style. May be {@link #SHORT}, {@link #MEDIUM}, or {@link #LONG}
+     * @param timeStyle the time style. May be {@link #SHORT}, {@link #MEDIUM}, or {@link #LONG}
+     * @return a formatted date/time string or {@code null} if no date/time was passed
      */
-    public static String formatDateTime(Date dateTime, String dateStyle,
-                                        String timeStyle) {
+    public String formatDateTime(Date dateTime, String dateStyle, String timeStyle) {
         if (dateTime != null) {
-            DateFormat format = DateFormat.getDateTimeInstance(
-                    getStyle(dateStyle), getStyle(timeStyle), getLocale());
+            DateFormat format = DateFormat.getDateTimeInstance(getStyle(dateStyle), getStyle(timeStyle), getLocale());
             format.setTimeZone(getTimeZone());
             return format.format(dateTime);
         }
@@ -185,31 +214,30 @@ public class DateFunctions {
     }
 
     /**
-     * Sets the locale for the current thread.
+     * Returns the timezone.
      *
-     * @param locale the locale. May be <code>null</code>
+     * @return the time zone
      */
-    public static void setLocale(Locale locale) {
-        threadLocale.set(locale);
+    protected TimeZone getTimeZone() {
+        return zone;
     }
 
     /**
-     * Sets the time zone for the current thread.
+     * Returns the locale.
      *
-     * @param zone the time zone. May be <tt>null</tt>
+     * @return the locale
      */
-    public static void setTimeZone(TimeZone zone) {
-        threadZone.set(zone);
+    protected Locale getLocale() {
+        return locale;
     }
 
     /**
      * Helper to convert a style string to the {@link DateFormat} equivalent.
      *
-     * @param style the style. One of "short", "medium", or "long"
-     * @return the date format style, or {@link DateFormat#LONG} if the style
-     *         is invalid
+     * @param style the style. One of {@link #SHORT}, {@link #MEDIUM}, or {@link #LONG}
+     * @return the date format style, or {@link #LONG} if the style is invalid
      */
-    private static int getStyle(String style) {
+    private int getStyle(String style) {
         int result;
         if (SHORT.equals(style)) {
             result = DateFormat.SHORT;
@@ -219,32 +247,6 @@ public class DateFunctions {
             result = DateFormat.LONG;
         }
         return result;
-    }
-
-    /**
-     * Returns the locale to use for formatting.
-     *
-     * @return the locale
-     */
-    private static Locale getLocale() {
-        Locale locale = threadLocale.get();
-        if (locale == null) {
-            locale = Locale.getDefault();
-        }
-        return locale;
-    }
-
-    /**
-     * Returns the timezone to use for formatting.
-     *
-     * @return the time zone
-     */
-    private static TimeZone getTimeZone() {
-        TimeZone zone = threadZone.get();
-        if (zone == null) {
-            zone = TimeZone.getDefault();
-        }
-        return zone;
     }
 
 }

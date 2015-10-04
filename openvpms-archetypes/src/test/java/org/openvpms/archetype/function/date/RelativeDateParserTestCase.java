@@ -11,10 +11,10 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.echo.date;
+package org.openvpms.archetype.function.date;
 
 import org.junit.Test;
 import org.openvpms.archetype.test.TestHelper;
