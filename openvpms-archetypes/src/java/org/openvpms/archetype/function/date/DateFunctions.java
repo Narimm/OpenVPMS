@@ -87,10 +87,14 @@ public class DateFunctions {
      *
      * @param date   the date. If {@code null}, the current date/time is used
      * @param period the relative date string
-     * @return the relative date, or {@code null} if the period is invalid
+     * @return the relative date, or {@code null} if the {@code date} is {@code null} or {@code period} is invalid
      */
     public Date add(Date date, String period) {
-        return PARSER.parse(period, date);
+        Date result = null;
+        if (date != null && period != null) {
+            result = PARSER.parse(period, date);
+        }
+        return result;
     }
 
     /**
