@@ -54,11 +54,6 @@ public class DateFunctionsTestCase {
     private Date dateTime;
 
     /**
-     * The AU locale.
-     */
-    private static final Locale AU = new Locale("en", "AU");
-
-    /**
      * The time zone.
      */
     private static final TimeZone GMT = TimeZone.getTimeZone("GMT");
@@ -72,6 +67,11 @@ public class DateFunctionsTestCase {
         assertEquals(DateRules.getDate(dateTime, -1, DateUnits.DAYS), functions.add(dateTime, "-1d"));
         assertEquals(DateRules.getDate(dateTime, 1, DateUnits.WEEKS), functions.add(dateTime, "1w"));
         assertEquals(DateRules.getDate(dateTime, -1, DateUnits.WEEKS), functions.add(dateTime, "-1w"));
+
+        // test nulls
+        assertNull(functions.add(null, "1d"));
+        assertNull(functions.add(dateTime, null));
+        assertNull(functions.add(null, null));
     }
 
     /**
@@ -197,7 +197,8 @@ public class DateFunctionsTestCase {
         DateTime time = new DateTime(2006, 9, 20, 17, 54, 22, 0, chronology);
         dateTime = time.toDate();
 
-        functions = new DateFunctions(AU, GMT);
+        final Locale locale = new Locale("en", "AU");
+        functions = new DateFunctions(locale, GMT);
     }
 }
 
