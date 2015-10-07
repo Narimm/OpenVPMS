@@ -22,7 +22,9 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
+import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
@@ -33,6 +35,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
@@ -129,11 +132,20 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         Party location = TestHelper.createLocation();
         Entity pharmacy = CustomerChargeTestHelper.createPharmacy(location);
         product = createProduct(ProductArchetypes.MEDICATION, fixedPrice, unitPrice);
+        IMObjectBean productBean = new IMObjectBean(product);
+        productBean.setValue("concentration", ONE);
+
         ProductTestHelper.addPharmacy(product, pharmacy);
+
+        // add a dose to the product. This should always be overridden
+        Entity dose = ProductTestHelper.createDose(null, BigDecimal.ZERO, BigDecimal.TEN, BigDecimal.TEN);
+        ProductTestHelper.addDose(product, dose);
 
         clinician = TestHelper.createClinician();
         customer = TestHelper.createCustomer();
         patient = TestHelper.createPatient(customer);
+        PatientTestHelper.createWeight(patient, BigDecimal.ONE, WeightUnits.KILOGRAMS);
+
         context = new LocalContext();
         context.setPractice(getPractice());
 
