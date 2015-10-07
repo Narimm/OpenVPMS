@@ -462,6 +462,8 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
 
         public void charge(AbstractCustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor) {
             FinancialAct object = (FinancialAct) itemEditor.getObject();
+            itemEditor.setPatientRef(patient);
+            itemEditor.setProductRef(product); // TODO - protect against product change
             if (TypeHelper.isA(object, CustomerAccountArchetypes.INVOICE_ITEM)) {
                 BigDecimal received = itemEditor.getReceivedQuantity();
                 BigDecimal returned = itemEditor.getReturnedQuantity();
@@ -486,11 +488,9 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
             } else {
                 itemEditor.setQuantity(quantity);
             }
-            itemEditor.setPatientRef(patient);
             if (clinician != null) {
                 itemEditor.setClinicianRef(clinician);
             }
-            itemEditor.setProductRef(product); // TODO - protect against product change
             editor.setOrdered((Act) itemEditor.getObject());
         }
 
