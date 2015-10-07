@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
@@ -55,7 +55,7 @@ public class SelectFieldBinder extends Binder {
 
 
     /**
-     * Constructs a <tt>SelectFieldBinder</tt>.
+     * Constructs a {@link SelectFieldBinder}.
      *
      * @param component the component to bind
      * @param property  the property to bind
@@ -190,18 +190,30 @@ public class SelectFieldBinder extends Binder {
      * Returns the index of a value in the list.
      *
      * @param value the value
-     * @return the index, or <tt>-1</tt> if the value wasn't found
+     * @return the index, or {@code -1} if the value wasn't found
      */
-    private int indexOf(Object value) {
+    protected int indexOf(Object value) {
         int result = -1;
         ListModel model = component.getModel();
         for (int i = 0; i < model.size(); ++i) {
-            if (ObjectUtils.equals(model.get(i), value)) {
+            if (equals(value, model, i)) {
                 result = i;
                 break;
             }
         }
         return result;
+    }
+
+    /**
+     * Determines if the value matches that at the specified index of the model.
+     *
+     * @param value the value to check. May be {@code null}
+     * @param model the list model
+     * @param index the index into the list model
+     * @return {@code true} if the values match, otherwise {@code false}
+     */
+    protected boolean equals(Object value, ListModel model, int index) {
+        return ObjectUtils.equals(model.get(index), value);
     }
 
 }
