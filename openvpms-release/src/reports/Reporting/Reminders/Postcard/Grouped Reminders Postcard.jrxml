@@ -69,7 +69,7 @@
                         <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     </box>
                     <textElement>
-                        <font size="8" isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/>
+                        <font size="8" isBold="true" isUnderline="true"/>
                     </textElement>
                     <text><![CDATA[Patient]]></text>
                 </staticText>
@@ -82,7 +82,7 @@
                         <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     </box>
                     <textElement>
-                        <font size="8" isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/>
+                        <font size="8" isBold="true" isUnderline="true"/>
                     </textElement>
                     <text><![CDATA[For]]></text>
                 </staticText>
@@ -124,7 +124,7 @@
                         <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     </box>
                     <textElement textAlignment="Center">
-                        <font size="8" isItalic="true" pdfFontName="Helvetica-Oblique"/>
+                        <font size="8" isItalic="true"/>
                     </textElement>
                     <text><![CDATA[It is important that you continue the health care program your vet has carefully selected to keep you well.
 If you are over 7 years old please bring a urine sample.
@@ -150,7 +150,7 @@ Please have your family phone us for an appointment and they can discuss any oth
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Center">
-                    <font size="18" isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="18" isBold="true" isUnderline="true"/>
                 </textElement>
                 <text><![CDATA[Reminders]]></text>
             </staticText>

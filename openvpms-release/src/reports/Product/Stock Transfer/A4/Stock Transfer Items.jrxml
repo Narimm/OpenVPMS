@@ -68,7 +68,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement verticalAlignment="Middle">
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="false"/>
                 </textElement>
                 <text><![CDATA[Product]]></text>
             </staticText>
@@ -81,7 +81,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right" verticalAlignment="Middle">
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="false"/>
                 </textElement>
                 <text><![CDATA[Quantity]]></text>
             </staticText>
@@ -132,7 +132,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Center">
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="false"/>
                 </textElement>
                 <text><![CDATA[Total quantity of items]]></text>
             </staticText>
@@ -156,7 +156,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Center">
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="false"/>
                 </textElement>
                 <text><![CDATA[Number of line items]]></text>
             </staticText>

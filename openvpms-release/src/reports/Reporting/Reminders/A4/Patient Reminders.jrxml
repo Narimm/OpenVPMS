@@ -63,7 +63,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Center">
-                    <font size="18" isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="18" isBold="true" isUnderline="true"/>
                 </textElement>
                 <text><![CDATA[Patient Reminders]]></text>
             </staticText>
@@ -76,7 +76,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font isBold="true"/>
                 </textElement>
                 <text><![CDATA[Customer]]></text>
             </staticText>
@@ -127,7 +127,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Left">
-                    <font isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font isBold="true"/>
                 </textElement>
                 <text><![CDATA[Patient]]></text>
             </staticText>
@@ -140,7 +140,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Left">
-                    <font isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font isBold="true"/>
                 </textElement>
                 <text><![CDATA[Type]]></text>
             </staticText>
@@ -153,7 +153,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font isBold="true"/>
                 </textElement>
                 <text><![CDATA[Due Date]]></text>
             </staticText>
@@ -166,7 +166,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font isBold="true"/>
                 </textElement>
                 <text><![CDATA[No Sent]]></text>
             </staticText>
@@ -179,7 +179,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font isBold="true"/>
                 </textElement>
                 <text><![CDATA[Last Sent]]></text>
             </staticText>
@@ -288,7 +288,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font isBold="true"/>
                 </textElement>
                 <text><![CDATA[Total Reminders :]]></text>
             </staticText>
@@ -301,7 +301,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Left">
-                    <font isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font isBold="true"/>
                 </textElement>
                 <textFieldExpression class="java.lang.Integer"><![CDATA[$V{TOTAL_REMINDERS}]]></textFieldExpression>
             </textField>
@@ -314,7 +314,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Center">
-                    <font size="18" isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="18" isBold="true" isUnderline="true"/>
                 </textElement>
                 <text><![CDATA[Reminder Summary]]></text>
             </staticText>

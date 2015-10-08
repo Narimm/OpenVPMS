@@ -92,7 +92,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="false"/>
                 </textElement>
                 <text><![CDATA[Product]]></text>
             </staticText>
@@ -106,7 +106,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="false"/>
                 </textElement>
                 <text><![CDATA[Quantity]]></text>
             </staticText>
@@ -120,7 +120,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="false"/>
                 </textElement>
                 <text><![CDATA[Patient]]></text>
             </staticText>
