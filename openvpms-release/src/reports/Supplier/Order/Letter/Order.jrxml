@@ -79,7 +79,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Center">
-                    <font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="18" isBold="true"/>
                 </textElement>
                 <text><![CDATA[Purchase Order]]></text>
             </staticText>
@@ -259,7 +259,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font size="12" isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="12" isBold="true" isUnderline="true"/>
                 </textElement>
                 <text><![CDATA[Order Notes:]]></text>
             </staticText>

@@ -77,7 +77,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Left">
-                    <font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="18" isBold="true"/>
                 </textElement>
                 <text><![CDATA[Stock Transfer]]></text>
             </staticText>

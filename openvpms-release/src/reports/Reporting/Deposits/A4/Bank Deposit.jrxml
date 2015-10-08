@@ -108,7 +108,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="12" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[($V{IS_CHEQUE}.booleanValue()?"Cheques":$V{IS_CREDIT}.booleanValue()?"Credit Card Payments":$V{IS_EFT}.booleanValue()?"EFT Payments":$V{IS_OTHER}.booleanValue()?"Other Payments":"Other Payments")]]></textFieldExpression>
 				</textField>
@@ -157,7 +157,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="18" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Bank Deposit]]></text>
 			</staticText>
@@ -346,7 +346,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="18" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Deposit Summary]]></text>
 			</staticText>
@@ -425,7 +425,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="12" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Cheques :]]></text>
 			</staticText>
@@ -438,7 +438,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="12" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Credit Cards :]]></text>
 			</staticText>
@@ -451,7 +451,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="12" isBold="true"/>
 				</textElement>
 				<text><![CDATA[EFT :]]></text>
 			</staticText>
@@ -464,7 +464,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="12" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Cash:]]></text>
 			</staticText>
@@ -510,7 +510,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="12" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Other :]]></text>
 			</staticText>

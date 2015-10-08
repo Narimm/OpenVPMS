@@ -102,7 +102,7 @@
                         <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                     </box>
                     <textElement textAlignment="Center">
-                        <font size="24" isBold="true" isItalic="true" pdfFontName="Helvetica-BoldOblique"/>
+                        <font size="24" isBold="true" isItalic="true"/>
                     </textElement>
                     <text><![CDATA[Clinic Name & Logo]]></text>
                 </staticText>

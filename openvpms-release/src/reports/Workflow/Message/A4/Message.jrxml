@@ -79,7 +79,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Center">
-                    <font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="18" isBold="true"/>
                 </textElement>
                 <text><![CDATA[Message]]></text>
             </staticText>

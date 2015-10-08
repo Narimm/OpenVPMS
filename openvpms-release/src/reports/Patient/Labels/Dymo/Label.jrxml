@@ -95,7 +95,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Left">
-                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="10" isBold="true"/>
                     <paragraph lineSpacing="Single"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{product.entity.name}]]></textFieldExpression>
@@ -259,7 +259,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Center">
-                    <font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+                    <font size="8" isBold="true"/>
                     <paragraph lineSpacing="Single"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{[party:getPartyFullName(party:getPractice())]}]]></textFieldExpression>

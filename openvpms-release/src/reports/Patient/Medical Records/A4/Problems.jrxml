@@ -69,7 +69,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <text><![CDATA[Owner :]]></text>
             </staticText>
@@ -82,7 +82,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.lang.String">
                     <![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
@@ -100,7 +100,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.lang.String">
                     <![CDATA[$F{patient.entity.description}]]></textFieldExpression>
@@ -114,7 +114,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
             </textField>
@@ -127,7 +127,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.lang.String">
                     <![CDATA[$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'description')]}]]></textFieldExpression>
@@ -141,7 +141,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <text><![CDATA[Printed:]]></text>
             </staticText>
@@ -154,7 +154,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.lang.String">
                     <![CDATA[$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'name')]}+" (ID: "+$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'id')]}+")"]]></textFieldExpression>
@@ -169,7 +169,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.lang.String">
                     <![CDATA[$F{patient.entity.name}+" (ID: "+$F{patient.entity.id}+")"]]></textFieldExpression>
@@ -183,7 +183,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.lang.String">
                     <![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
@@ -197,7 +197,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Center">
-                    <font fontName="SansSerif" isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"
+                    <font fontName="SansSerif" isBold="true" isUnderline="true"
                           pdfEncoding="Cp1252"/>
                 </textElement>
                 <text><![CDATA[Patient Clinical Problems]]></text>
@@ -212,7 +212,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <text><![CDATA[Patient :]]></text>
             </staticText>
@@ -231,7 +231,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Center">
-                    <font fontName="SansSerif" isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"
+                    <font fontName="SansSerif" isBold="true" isUnderline="true"
                           pdfEncoding="Cp1252"/>
                 </textElement>
                 <text><![CDATA[Patient Clinical Problems (cont)]]></text>
@@ -248,7 +248,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.lang.String">
                     <![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
@@ -262,7 +262,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.lang.String">
                     <![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
@@ -276,7 +276,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
             </textField>
@@ -289,7 +289,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <text><![CDATA[Printed:]]></text>
             </staticText>
@@ -313,7 +313,7 @@
                 </box>
                 <textElement>
                     <font fontName="SansSerif" size="8" isBold="true" isItalic="true" isUnderline="false"
-                          pdfFontName="Helvetica-BoldOblique" pdfEncoding="Cp1252"/>
+                          pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.util.Date"><![CDATA[$F{startTime}]]></textFieldExpression>
             </textField>
@@ -327,7 +327,7 @@
                 </box>
                 <textElement>
                     <font fontName="SansSerif" size="8" isBold="true" isItalic="true"
-                          pdfFontName="Helvetica-BoldOblique" pdfEncoding="Cp1252"/>
+                          pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.lang.String">
                     <![CDATA[$F{clinician.entity.description}]]></textFieldExpression>
@@ -342,7 +342,7 @@
                 </box>
                 <textElement>
                     <font fontName="SansSerif" size="8" isBold="true" isItalic="true"
-                          pdfFontName="Helvetica-BoldOblique" pdfEncoding="Cp1252"/>
+                          pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.lang.String"><![CDATA[$F{status}]]></textFieldExpression>
             </textField>
@@ -360,7 +360,7 @@
                 </box>
                 <textElement>
                     <font fontName="SansSerif" size="8" isBold="true" isItalic="true" isUnderline="false"
-                          pdfFontName="Helvetica-BoldOblique" pdfEncoding="Cp1252"/>
+                          pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.util.Date"><![CDATA[$F{endTime}]]></textFieldExpression>
             </textField>
@@ -376,7 +376,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" isItalic="true" isUnderline="false" pdfFontName="Helvetica"
+                    <font fontName="SansSerif" size="8" isItalic="true" isUnderline="false"
                           pdfEncoding="Cp1252"/>
                 </textElement>
                 <text><![CDATA[-]]></text>
@@ -400,7 +400,7 @@
                 </box>
                 <textElement>
                     <font fontName="SansSerif" size="8" isBold="true" isItalic="true"
-                          pdfFontName="Helvetica-BoldOblique" pdfEncoding="Cp1252"/>
+                          pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.lang.String">
                     <![CDATA[$F{reason} == null ? "No Diagnosis" : $F{reason}]]></textFieldExpression>
@@ -418,7 +418,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.util.Date"><![CDATA[$F{startTime}]]></textFieldExpression>
             </textField>
@@ -431,7 +431,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.lang.String"><![CDATA[$F{displayName}]]></textFieldExpression>
             </textField>
@@ -468,7 +468,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.lang.String"><![CDATA[$F{note}]]></textFieldExpression>
             </textField>
@@ -481,7 +481,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.lang.String"><![CDATA[$F{displayName}]]></textFieldExpression>
             </textField>
@@ -494,7 +494,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.util.Date"><![CDATA[$F{startTime}]]></textFieldExpression>
             </textField>
@@ -511,7 +511,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.util.Date"><![CDATA[$F{startTime}]]></textFieldExpression>
             </textField>
@@ -524,7 +524,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.lang.String"><![CDATA[$F{displayName}]]></textFieldExpression>
             </textField>
@@ -538,7 +538,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.lang.String">
                     <![CDATA[$F{description} + " [" + $F{status} + "]"]]></textFieldExpression>
@@ -556,7 +556,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.util.Date"><![CDATA[$F{startTime}]]></textFieldExpression>
             </textField>
@@ -569,21 +569,21 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.lang.String"><![CDATA[$F{displayName}]]></textFieldExpression>
             </textField>
             <textField pattern="(###0.##)">
                 <reportElement x="378" y="0" width="82" height="11"/>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{quantity}]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement x="164" y="0" width="195" height="11"/>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.lang.String"><![CDATA[$F{product.entity.name}]]></textFieldExpression>
             </textField>
@@ -596,7 +596,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font fontName="SansSerif" size="8" pdfFontName="Helvetica" pdfEncoding="Cp1252"/>
+                    <font fontName="SansSerif" size="8" pdfEncoding="Cp1252"/>
                 </textElement>
                 <textFieldExpression class="java.lang.String"><![CDATA[$F{label}]]></textFieldExpression>
             </textField>

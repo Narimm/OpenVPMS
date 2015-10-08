@@ -69,7 +69,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font isItalic="true" pdfFontName="Helvetica-Oblique"/>
+                    <font isItalic="true"/>
                 </textElement>
                 <textFieldExpression class="java.lang.String">
                     <![CDATA[($F{product.entity.printedName} == null) ? $F{product.entity.name}: $F{product.entity.printedName}]]></textFieldExpression>
@@ -77,7 +77,7 @@
             <textField pattern="dd/MM" isBlankWhenNull="false">
                 <reportElement key="textField-5" x="14" y="2" width="75" height="15"/>
                 <textElement>
-                    <font isItalic="true" pdfFontName="Helvetica-Oblique"/>
+                    <font isItalic="true"/>
                 </textElement>
                 <textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{startTime}]]></textFieldExpression>
             </textField>

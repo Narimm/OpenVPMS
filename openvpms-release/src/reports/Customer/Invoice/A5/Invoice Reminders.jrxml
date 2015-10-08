@@ -76,7 +76,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="false"/>
                 </textElement>
                 <text><![CDATA[Reminder]]></text>
             </staticText>
@@ -89,7 +89,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="false"/>
                 </textElement>
                 <text><![CDATA[Patient]]></text>
             </staticText>
@@ -102,7 +102,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="false"/>
                 </textElement>
                 <text><![CDATA[Due Date]]></text>
             </staticText>

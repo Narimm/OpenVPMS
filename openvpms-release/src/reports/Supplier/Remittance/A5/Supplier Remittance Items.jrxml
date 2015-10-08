@@ -64,7 +64,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="false"/>
                 </textElement>
                 <text><![CDATA[Payment Type]]></text>
             </staticText>
@@ -77,7 +77,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="false"/>
                 </textElement>
                 <text><![CDATA[Amount]]></text>
             </staticText>
@@ -123,7 +123,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="false"/>
                 </textElement>
                 <text><![CDATA[TOTAL]]></text>
             </staticText>
@@ -136,7 +136,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement textAlignment="Right">
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="false"/>
                 </textElement>
                 <textFieldExpression class="java.math.BigDecimal">
                     <![CDATA[$V{SUM_target.amount}]]></textFieldExpression>

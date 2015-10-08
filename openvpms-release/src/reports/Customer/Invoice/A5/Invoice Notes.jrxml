@@ -78,7 +78,7 @@
                     <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
                 </box>
                 <textElement>
-                    <font size="10" isBold="false" pdfFontName="Helvetica"/>
+                    <font size="10" isBold="false"/>
                 </textElement>
                 <text><![CDATA[Notes]]></text>
             </staticText>
