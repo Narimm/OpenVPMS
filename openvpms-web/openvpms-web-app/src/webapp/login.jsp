@@ -234,7 +234,7 @@
     </div>
 </form>
 <div class="footer">
-    <div><%=SubscriptionHelper.formatSubscription(ServiceHelper.getArchetypeService())%>
+    <div style="white-space:pre"><%=SubscriptionHelper.formatSubscription(ServiceHelper.getArchetypeService())%>
     </div>
     <div class="version"><%=Messages.format("openvpms.version", Version.VERSION, Version.REVISION)%>
     </div>

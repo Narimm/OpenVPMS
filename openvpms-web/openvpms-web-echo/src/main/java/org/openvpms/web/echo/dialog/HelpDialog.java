@@ -298,7 +298,7 @@ public class HelpDialog extends PopupDialog {
      */
     private LabelEx getSubscription(IArchetypeService service) {
         String subscription = SubscriptionHelper.formatSubscription(service);
-        String content = "<p xmlns='http://www.w3.org/1999/xhtml'>" + subscription + "</p>";
+        String content = "<p xmlns='http://www.w3.org/1999/xhtml' style='white-space:pre'>" + subscription + "</p>";
         LabelEx label = new LabelEx(new XhtmlFragment(content));
         label.setLineWrap(true);
         label.setTextAlignment(Alignment.ALIGN_CENTER);

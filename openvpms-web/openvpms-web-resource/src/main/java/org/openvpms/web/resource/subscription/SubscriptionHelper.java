@@ -18,6 +18,8 @@ package org.openvpms.web.resource.subscription;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
 import org.openvpms.archetype.rules.doc.DefaultDocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
@@ -71,8 +73,11 @@ public class SubscriptionHelper {
             Date expiryDate = subscription.getExpiryDate();
             if (expiryDate != null) {
                 String date = DateFormatter.getFullDateFormat().format(expiryDate);
-                if (expiryDate.before(new Date())) {
+                Date now = new Date();
+                if (expiryDate.before(now)) {
                     result = Messages.format("subscription.summary.expired", user, date);
+                } else if (Days.daysBetween(new DateTime(expiryDate), new DateTime(now)).getDays() <= 21) {
+                    result = Messages.format("subscription.summary.expiring", user, date);
                 } else {
                     result = Messages.format("subscription.summary.active", user, date);
                 }
