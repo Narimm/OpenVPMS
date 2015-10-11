@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -270,7 +270,7 @@ public class DocumentGenerator {
         MacroVariables variables = new MacroVariables(context, ServiceHelper.getArchetypeService(),
                                                       ServiceHelper.getLookupService());
         final ParameterDialog dialog = new ParameterDialog(title, parameters, act, context, help.subtopic("parameters"),
-                                                           variables, skip);
+                                                           variables, skip, true);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
