@@ -142,7 +142,7 @@ public class HL7ConnectorBrowser extends IMObjectTableBrowser<Entity> {
 
         private Object getRunning(Entity object, int row) {
             Statistics stats = getStats(object, row);
-            CheckBox box = CheckBoxFactory.create(stats != null);
+            CheckBox box = CheckBoxFactory.create(stats != null && stats.isRunning());
             box.setEnabled(false);
             return box;
         }

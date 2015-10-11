@@ -59,6 +59,16 @@ public class HL7MessageHelper {
     }
 
     /**
+     * Returns the MSH (message header) segment from a message, if it has one.
+     *
+     * @param message the message
+     * @return the segment, or {@code null} if none is found
+     */
+    public static MSH getMSH(Message message) {
+        return get(message, "MSH");
+    }
+
+    /**
      * Returns the MSA (message acknowledgement) segment from a message, if it has one.
      *
      * @param message the message
@@ -178,6 +188,17 @@ public class HL7MessageHelper {
      */
     public static String toString(Message message) throws HL7Exception {
         return message.encode().replaceAll("\r", "\n");
+    }
+
+    /**
+     * Formats a message header for logging.
+     *
+     * @param header the header
+     * @return the formatted header, or {@code null} if the header cannot be formatted
+     * @throws HL7Exception if the message cannot be encoded
+     */
+    public static String toString(MSH header) throws HL7Exception {
+        return header.encode().replaceAll("\r", "\n");
     }
 
     /**

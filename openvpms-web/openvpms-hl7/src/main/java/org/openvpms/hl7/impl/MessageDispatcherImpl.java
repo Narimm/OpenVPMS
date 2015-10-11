@@ -19,7 +19,6 @@ package org.openvpms.hl7.impl;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.app.Connection;
-import ca.uhn.hl7v2.app.HL7Service;
 import ca.uhn.hl7v2.llp.LLPException;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
@@ -105,9 +104,9 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
             = Collections.synchronizedMap(new HashMap<IMObjectReference, MessageReceiver>());
 
     /**
-     * The listeners, keyed on port.
+     * The demultiplexing receivers, keyed on port.
      */
-    private final Map<Integer, HL7Service> services = new HashMap<>();
+    private final Map<Integer, DemultiplexingReceiver> receivers = new HashMap<>();
 
     /**
      * The service to schedule dispatching.
@@ -158,11 +157,24 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      * @param rules          the practice rules
      */
     public MessageDispatcherImpl(MessageService messageService, ConnectorsImpl connectors, PracticeRules rules) {
+        this(messageService, connectors, rules, HapiContextFactory.create());
+    }
+
+    /**
+     * Constructs a {@link MessageDispatcherImpl}.
+     *
+     * @param messageService the message service
+     * @param connectors     the connectors
+     * @param rules          the practice rules
+     * @param context        the message context
+     */
+    public MessageDispatcherImpl(MessageService messageService, ConnectorsImpl connectors, PracticeRules rules,
+                                 HapiContext context) {
         this.messageService = messageService;
         this.connectors = connectors;
         this.rules = rules;
         populator = new HeaderPopulator();
-        messageContext = HapiContextFactory.create();
+        messageContext = context;
         generator = messageContext.getParserConfiguration().getIdGenerator();
         executor = Executors.newSingleThreadExecutor();
 
@@ -231,42 +243,43 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
     /**
      * Registers an application to handle messages from the specified connector.
      * <p/>
-     * Only one application can be registered to handle messages.
+     * Only one application can be registered to handle messages per connector.
+     * <p/>
+     * Listening only commences once {@link #start()} is invoked.
      *
      * @param connector   the connector
      * @param application the receiving application
      * @param user        the user responsible for messages received the connector
-     * @throws IllegalStateException if the connector is registered
      */
     @Override
     public void listen(Connector connector, ReceivingApplication application, User user) throws InterruptedException {
         if (connector instanceof MLLPReceiver) {
             int port = ((MLLPReceiver) connector).getPort();
-            HL7Service service;
-            synchronized (services) {
-                service = services.get(port);
-                if (service == null || !service.isRunning()) {
-                    service = messageContext.newServer(port, false);
-                } else {
-                    throw new IllegalStateException("Already receiving requests on port " + port);
+            DemultiplexingReceiver receiver;
+            synchronized (receivers) {
+                receiver = receivers.get(port);
+                if (receiver == null) {
+                    receiver = new DemultiplexingReceiver(messageService, messageContext, port);
+                    receivers.put(port, receiver);
                 }
             }
-            log.info("Starting listener for " + connector);
-            MessageReceiver receiver = new MessageReceiver(application, connector, messageService, user);
-            service.registerApplication(receiver);
-            service.setExceptionHandler(receiver);
-            service.startAndWait();
-            boolean added = false;
-            synchronized (services) {
-                if (service.isRunning()) {
-                    services.put(port, service);
-                    added = true;
-                } else {
-                    log.error("Failed to start listener for " + connector);
-                }
+            MessageReceiver messageReceiver = receiver.add(connector, application, user);
+            receiverMap.put(connector.getReference(), messageReceiver);
+        }
+    }
+
+    /**
+     * Start listening for messages.
+     */
+    @Override
+    public void start() {
+        for (Map.Entry<Integer, DemultiplexingReceiver> entry : receivers.entrySet()) {
+            DemultiplexingReceiver receiver = entry.getValue();
+            if (!receiver.isRunning()) {
+                receiver.start();
             }
-            if (added) {
-                receiverMap.put(connector.getReference(), receiver);
+            if (!receiver.isRunning()) {
+                log.error("Failed to start listener for port=" + entry.getKey());
             }
         }
     }
@@ -280,14 +293,18 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
     public void stop(Connector connector) {
         if (connector instanceof MLLPReceiver) {
             int port = ((MLLPReceiver) connector).getPort();
-            HL7Service service;
-            synchronized (services) {
-                service = services.remove(port);
-            }
-            receiverMap.remove(connector.getReference());
-            if (service != null) {
-                log.info("Stopping listener for " + connector);
-                service.stopAndWait();
+            synchronized (receivers) {
+                DemultiplexingReceiver receiver = receivers.get(port);
+                if (receiver != null) {
+                    synchronized (receiver) {
+                        receiver.remove(connector);
+                        receiverMap.remove(connector.getReference());
+                        if (receiver.isEmpty()) {
+                            receivers.remove(port);
+                            receiver.stop();
+                        }
+                    }
+                }
             }
         }
     }
@@ -357,9 +374,9 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
             // Preserve interrupt status
             Thread.currentThread().interrupt();
         }
-        synchronized (services) {
-            for (HL7Service service : services.values()) {
-                service.stop();
+        synchronized (receivers) {
+            for (DemultiplexingReceiver receiver : receivers.values()) {
+                receiver.stop();
             }
         }
     }
@@ -663,11 +680,14 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      */
     private void restartSender(Connector connector) {
         MessageQueue queue = queueMap.get(connector.getReference());
+        final MLLPSender sender = (MLLPSender) connector;
         if (queue != null) {
             log.info("Updating " + connector);
-            queue.setConnector((MLLPSender) connector);
+            queue.setConnector(sender);
             queue.setWaitUntil(-1);
             schedule();
+        } else {
+            getMessageQueue(sender);
         }
     }
 

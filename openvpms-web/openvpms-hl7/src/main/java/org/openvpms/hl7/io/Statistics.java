@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.io;
@@ -67,6 +67,13 @@ public interface Statistics {
      * @return the last error message. May be {@code null}
      */
     String getErrorMessage();
+
+    /**
+     * Determines if the connector is running.
+     *
+     * @return {@code true} if the connector is running
+     */
+    boolean isRunning();
 
     /**
      * Returns the connector that these statistics apply to.

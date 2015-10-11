@@ -55,13 +55,20 @@ public interface MessageDispatcher {
     /**
      * Registers an application to handle messages from the specified connector.
      * <p/>
-     * Only one application can be registered to handle messages.
+     * Only one application can be registered to handle messages per connector.
+     * <p/>
+     * Listening only commences once {@link #start()} is invoked.
      *
      * @param connector the connector
      * @param receiver  the receiver
      * @param user      the user responsible for messages received the connector
      */
     void listen(Connector connector, ReceivingApplication receiver, User user) throws InterruptedException;
+
+    /**
+     * Start listening for messages.
+     */
+    void start();
 
     /**
      * Stop receiving messages from a connector.
