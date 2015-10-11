@@ -20,6 +20,11 @@ import ca.uhn.hl7v2.AcknowledgmentCode;
 import ca.uhn.hl7v2.ErrorCode;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
+import ca.uhn.hl7v2.model.Message;
+import ca.uhn.hl7v2.model.v25.message.RDE_O11;
+import ca.uhn.hl7v2.protocol.ReceivingApplication;
+import ca.uhn.hl7v2.protocol.ReceivingApplicationException;
+import ca.uhn.hl7v2.util.StandardSocketFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +32,6 @@ import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.hl7.io.Connector;
@@ -35,9 +39,11 @@ import org.openvpms.hl7.io.MessageService;
 import org.openvpms.hl7.io.Statistics;
 import org.openvpms.hl7.util.HL7MessageStatuses;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -53,9 +59,14 @@ import static org.junit.Assert.fail;
 public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
 
     /**
-     * The sender.
+     * The first sender.
      */
-    private MLLPSender sender;
+    private MLLPSender sender1;
+
+    /**
+     * The second sender.
+     */
+    private MLLPSender sender2;
 
     /**
      * The message context.
@@ -78,23 +89,25 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
     private HL7Mapping config = new HL7Mapping();
 
     /**
+     * The socket factory.
+     */
+    private TestSocketFactory factory;
+
+    /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
-        sender = HL7TestHelper.createSender(-1, HL7TestHelper.createCubexMapping()); // dummy port
         context = HapiContextFactory.create();
+        factory = new TestSocketFactory();
+        context.setSocketFactory(factory);
         user = TestHelper.createUser();
+        context.setSocketFactory(factory);
         ConnectorsImpl connectors = new ConnectorsImpl(getArchetypeService()) {
 
             @Override
             public List<Connector> getConnectors() {
-                return Arrays.<Connector>asList(sender);
-            }
-
-            @Override
-            public Connector getConnector(IMObjectReference reference) {
-                return sender;
+                return new ArrayList<>();
             }
 
             @Override
@@ -111,7 +124,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
         };
 
         MessageService messageService = new MessageServiceImpl(getArchetypeService());
-        dispatcher = new TestMessageDispatcher(messageService, connectors, rules);
+        dispatcher = new TestMessageDispatcher(messageService, connectors, rules, context);
         dispatcher.afterPropertiesSet();
     }
 
@@ -121,7 +134,12 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
     @After
     public void tearDown() throws Exception {
         dispatcher.destroy();
-        HL7TestHelper.disable(sender);
+        if (sender1 != null) {
+            HL7TestHelper.disable(sender1);
+        }
+        if (sender2 != null) {
+            HL7TestHelper.disable(sender2);
+        }
     }
 
     /**
@@ -133,11 +151,13 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
     public void testSend() throws Exception {
         final int count = 10;
 
-        List<DocumentAct> queued = new ArrayList<DocumentAct>();
-        checkQueued(0, sender);
+        sender1 = HL7TestHelper.createSender(-1, HL7TestHelper.createCubexMapping());
+
+        List<DocumentAct> queued = new ArrayList<>();
+        checkQueued(0, sender1);
 
         for (int i = 0; i < count; i++) {
-            DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config, user);
+            DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender1, config, user);
             assertEquals(HL7MessageStatuses.PENDING, message.getStatus());
             queued.add(message);
         }
@@ -147,7 +167,7 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
             fail("Failed to receive " + count + " messages");
         }
 
-        checkQueued(0, sender);
+        checkQueued(0, sender1);
 
         // make sure the expected no. of messages were sent, in the correct order
         List<DocumentAct> processed = dispatcher.getProcessed();
@@ -168,32 +188,33 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
     public void testSuspendSender() throws Exception {
         final int count = 10;
 
-        List<DocumentAct> queued = new ArrayList<DocumentAct>();
-        DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config, user);
+        List<DocumentAct> queued = new ArrayList<>();
+        sender1 = HL7TestHelper.createSender(-1, HL7TestHelper.createCubexMapping());
+        DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender1, config, user);
         assertEquals(HL7MessageStatuses.PENDING, message.getStatus());
         queued.add(message);
 
-        assertTrue(dispatcher.waitForMessage());
+        assertTrue(dispatcher.waitForMessages(1));
 
-        HL7TestHelper.suspend(sender, true); // now suspend sends for the sender
+        HL7TestHelper.suspend(sender1, true); // now suspend sends for the sender
 
         for (int i = 0; i < count - 1; i++) {
-            message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config, user);
+            message = dispatcher.queue(HL7TestHelper.createOrder(context), sender1, config, user);
             assertEquals(HL7MessageStatuses.PENDING, message.getStatus());
             queued.add(message);
         }
 
         // verify the messages are queued
-        checkQueued(count - 1, sender);
-        checkErrors(0, sender);
+        checkQueued(count - 1, sender1);
+        checkErrors(0, sender1);
 
         // now enable the connector
-        HL7TestHelper.suspend(sender, false);
+        HL7TestHelper.suspend(sender1, false);
 
         // wait for the messages to be sent
         assertTrue(dispatcher.waitForMessages(count - 1));
 
-        checkQueued(0, sender);
+        checkQueued(0, sender1);
 
         // make sure the expected no. of messages were sent, in the correct order
         List<DocumentAct> processed = dispatcher.getProcessed();
@@ -214,11 +235,13 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
     public void testErrorOnSend() throws Exception {
         final int count = 10;
 
-        List<DocumentAct> queued = new ArrayList<DocumentAct>();
+        sender1 = HL7TestHelper.createSender(-1, HL7TestHelper.createCubexMapping());
+
+        List<DocumentAct> queued = new ArrayList<>();
         dispatcher.setExceptionOnSend(true);
 
         for (int i = 0; i < count; i++) {
-            DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config, user);
+            DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender1, config, user);
             assertEquals(HL7MessageStatuses.PENDING, message.getStatus());
             queued.add(message);
         }
@@ -229,18 +252,18 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
         // make sure the first message is pending
         checkStatus(queued.get(0), HL7MessageStatuses.PENDING);
 
-        assertEquals("simulated send exception", dispatcher.getStatistics(sender.getReference()).getErrorMessage());
-        checkQueued(count, sender);
+        assertEquals("simulated send exception", dispatcher.getStatistics(sender1.getReference()).getErrorMessage());
+        checkQueued(count, sender1);
 
         dispatcher.setExceptionOnSend(false);
 
         // force the sender to suspend and resume, to remove the delay to resend
-        HL7TestHelper.suspend(sender, true);
-        HL7TestHelper.suspend(sender, false);
+        HL7TestHelper.suspend(sender1, true);
+        HL7TestHelper.suspend(sender1, false);
 
         // wait for the messages to be sent
         assertTrue(dispatcher.waitForMessages(count));
-        assertNull(dispatcher.getStatistics(sender.getReference()).getErrorMessage());
+        assertNull(dispatcher.getStatistics(sender1.getReference()).getErrorMessage());
     }
 
     /**
@@ -250,10 +273,12 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
     public void testApplicationError() throws Exception {
         HL7Mapping config = new HL7Mapping();
 
+        sender1 = HL7TestHelper.createSender(-1, HL7TestHelper.createCubexMapping());
+
         dispatcher.setAcknowledgmentCode(AcknowledgmentCode.AE);
         dispatcher.setAcknowledgmentException(new HL7Exception("simulated application exception"));
 
-        DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config, user);
+        DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender1, config, user);
 
         // wait for a dispatch attempt
         assertTrue(dispatcher.waitForDispatch());
@@ -263,20 +288,20 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
 
         assertEquals("HL7 Error Code: 207 - Application internal error\n" +
                      "Original Text: simulated application exception",
-                     dispatcher.getStatistics(sender.getReference()).getErrorMessage());
-        checkQueued(1, sender);
-        checkErrors(0, sender);
+                     dispatcher.getStatistics(sender1.getReference()).getErrorMessage());
+        checkQueued(1, sender1);
+        checkErrors(0, sender1);
 
         dispatcher.setAcknowledgmentCode(AcknowledgmentCode.AA); // now flag to accept messages
         dispatcher.setAcknowledgmentException(null);
 
         // force the sender to suspend and resume, to remove the delay to resend
-        HL7TestHelper.suspend(sender, true);
-        HL7TestHelper.suspend(sender, false);
+        HL7TestHelper.suspend(sender1, true);
+        HL7TestHelper.suspend(sender1, false);
 
         // wait for the messages to be sent
         assertTrue(dispatcher.waitForMessage());
-        assertNull(dispatcher.getStatistics(sender.getReference()).getErrorMessage());
+        assertNull(dispatcher.getStatistics(sender1.getReference()).getErrorMessage());
     }
 
     /**
@@ -289,7 +314,8 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
         dispatcher.setAcknowledgmentException(new HL7Exception("simulated application reject",
                                                                ErrorCode.UNSUPPORTED_MESSAGE_TYPE));
 
-        DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender, config, user);
+        sender1 = HL7TestHelper.createSender(-1, HL7TestHelper.createCubexMapping());
+        DocumentAct message = dispatcher.queue(HL7TestHelper.createOrder(context), sender1, config, user);
 
         // wait for a dispatch attempt
         assertTrue(dispatcher.waitForDispatch());
@@ -299,9 +325,81 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
 
         assertEquals("HL7 Error Code: 200 - Unsupported message type\n" +
                      "Original Text: simulated application reject",
-                     dispatcher.getStatistics(sender.getReference()).getErrorMessage());
-        checkQueued(0, sender);
-        checkErrors(1, sender);
+                     dispatcher.getStatistics(sender1.getReference()).getErrorMessage());
+        checkQueued(0, sender1);
+        checkErrors(1, sender1);
+    }
+
+    /**
+     * Verifies that two receivers can receive messages from the same socket connection.
+     */
+    @Test
+    public void testMultiplex() throws Exception {
+        dispatcher.setSimulateSend(false);
+        MLLPReceiver receiver1 = HL7TestHelper.createReceiver(0, "OpenVPMS", "MainClinic");
+        MLLPReceiver receiver2 = HL7TestHelper.createReceiver(0, "OpenVPMS", "BranchClinic");
+
+        ReceivingApplication app = new ReceivingApplication() {
+            @Override
+            public Message processMessage(Message message, Map<String, Object> theMetadata)
+                    throws ReceivingApplicationException, HL7Exception {
+                try {
+                    return message.generateACK();
+                } catch (IOException exception) {
+                    throw new ReceivingApplicationException(exception);
+                }
+            }
+
+            @Override
+            public boolean canProcess(Message message) {
+                return message instanceof RDE_O11;
+            }
+        };
+        dispatcher.listen(receiver1, app, user);
+        dispatcher.listen(receiver2, app, user);
+        dispatcher.start();
+
+        int port = getPort();
+
+        sender1 = HL7TestHelper.createSender(port, HL7TestHelper.createCubexMapping(), "Cubex", "Cubex",
+                                             "OpenVPMS", "MainClinic");
+        sender2 = HL7TestHelper.createSender(port, HL7TestHelper.createCubexMapping(), "Cubex", "Cubex",
+                                             "OpenVPMS", "BranchClinic");
+        MLLPSender sender3 = HL7TestHelper.createSender(port, HL7TestHelper.createIDEXXMapping(), "Cubex", "Cubex",
+                                                        "OpenVPMS", "InvalidClinic");
+        DocumentAct message1 = dispatcher.queue(HL7TestHelper.createOrder(context), sender1, config, user);
+
+        assertTrue(dispatcher.waitForDispatch());
+        assertTrue(dispatcher.waitForMessage());
+        checkStatus(message1, HL7MessageStatuses.ACCEPTED);
+
+        DocumentAct message2 = dispatcher.queue(HL7TestHelper.createOrder(context), sender2, config, user);
+        assertTrue(dispatcher.waitForDispatch());
+        assertTrue(dispatcher.waitForMessage());
+        checkStatus(message2, HL7MessageStatuses.ACCEPTED);
+
+        // message sent via sender3 should fail as there is no receiver for it
+        DocumentAct message3 = dispatcher.queue(HL7TestHelper.createOrder(context), sender3, config, user);
+        assertTrue(dispatcher.waitForDispatch());
+        checkStatus(message3, HL7MessageStatuses.ERROR);
+        assertEquals("HL7 Error Code: 207 - Application internal error\n" +
+                     "Original Text: No appropriate destination could be found to which this message could be routed.",
+                     dispatcher.getStatistics(sender3.getReference()).getErrorMessage());
+        HL7TestHelper.disable(sender3);
+    }
+
+    /**
+     * Returns the port used by the receiver.
+     * <p/>
+     * Note that the receiver must have been created with a port of {@code 0}, and the dispatcher started
+     *
+     * @return the port
+     */
+    private int getPort() {
+        // there should only be one socket created
+        List<ServerSocket> sockets = factory.getSockets();
+        assertEquals(1, sockets.size());
+        return sockets.get(0).getLocalPort();
     }
 
     /**
@@ -337,6 +435,22 @@ public class MessageDispatcherImplTestCase extends ArchetypeServiceTest {
     private void checkStatus(DocumentAct message, String status) {
         message = get(message);
         assertEquals(status, message.getStatus());
+    }
+
+    private static class TestSocketFactory extends StandardSocketFactory {
+
+        private List<ServerSocket> sockets = new ArrayList<>();
+
+        public List<ServerSocket> getSockets() {
+            return sockets;
+        }
+
+        @Override
+        public ServerSocket createServerSocket() throws IOException {
+            ServerSocket socket = super.createServerSocket();
+            sockets.add(socket);
+            return socket;
+        }
     }
 
 }

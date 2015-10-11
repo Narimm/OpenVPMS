@@ -294,6 +294,16 @@ class MessageQueue implements Statistics {
     }
 
     /**
+     * Determines if the connector is running.
+     *
+     * @return {@code true} if the connector is running
+     */
+    @Override
+    public boolean isRunning() {
+        return !isSuspended();
+    }
+
+    /**
      * Invoked when a message is successfully processed.
      */
     private void processed() {

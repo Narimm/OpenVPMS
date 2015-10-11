@@ -17,6 +17,7 @@
 package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.HL7Exception;
+import ca.uhn.hl7v2.app.HL7Service;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.v25.message.ACK;
 import ca.uhn.hl7v2.model.v25.segment.MSH;
@@ -127,7 +128,8 @@ public class MessageReceiverTestCase extends AbstractRDSTest {
                 return true;
             }
         };
-        MessageReceiver receiver = new MessageReceiver(application, connector, service, user);
+        HL7Service hl7Service = Mockito.mock(HL7Service.class);
+        MessageReceiver receiver = new MessageReceiver(application, connector, service, user, hl7Service);
         Message message = createRDS(createProduct());
         assertTrue(receiver.canProcess(message));
         Message response = receiver.processMessage(message, new HashMap<String, Object>());
@@ -161,7 +163,8 @@ public class MessageReceiverTestCase extends AbstractRDSTest {
                 return true;
             }
         };
-        MessageReceiver receiver = new MessageReceiver(application, connector, service, user);
+        HL7Service hl7Service = Mockito.mock(HL7Service.class);
+        MessageReceiver receiver = new MessageReceiver(application, connector, service, user, hl7Service);
         Message message = createRDS(createProduct());
         assertTrue(receiver.canProcess(message));
         try {
@@ -187,7 +190,8 @@ public class MessageReceiverTestCase extends AbstractRDSTest {
     @Test
     public void testUnknownSender() throws Exception {
         ReceivingApplication application = Mockito.mock(ReceivingApplication.class);
-        MessageReceiver receiver = new MessageReceiver(application, connector, service, user);
+        HL7Service hl7Service = Mockito.mock(HL7Service.class);
+        MessageReceiver receiver = new MessageReceiver(application, connector, service, user, hl7Service);
         Message message = createRDS(createProduct());
         MSH msh = (MSH) message.get("MSH");
         msh.getSendingApplication().getNamespaceID().setValue("Foobar");

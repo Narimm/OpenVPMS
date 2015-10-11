@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -35,7 +35,7 @@ class MonitoringIMObjectCache<T extends IMObject> extends AbstractMonitoringIMOb
     /**
      * The cached objects, keyed on reference.
      */
-    private final Map<IMObjectReference, T> objects = new HashMap<IMObjectReference, T>();
+    private final Map<IMObjectReference, T> objects = new HashMap<>();
 
 
     /**
@@ -60,7 +60,7 @@ class MonitoringIMObjectCache<T extends IMObject> extends AbstractMonitoringIMOb
      */
     public List<T> getObjects() {
         synchronized (objects) {
-            return new ArrayList<T>(objects.values());
+            return new ArrayList<>(objects.values());
         }
     }
 
@@ -80,35 +80,8 @@ class MonitoringIMObjectCache<T extends IMObject> extends AbstractMonitoringIMOb
      * @param object the object to add
      */
     @Override
-    protected void addObject(T object) {
+    protected final void addObject(T object) {
         cache(object);
-    }
-
-    /**
-     * Adds an object to the cache, if it active, and newer than the existing instance, if any.
-     * If the object is inactive, any existing instance will be removed.
-     *
-     * @param object the object to add
-     * @return the cached object, or null if the object is inactive
-     */
-    protected T cache(T object) {
-        T result;
-        if (!object.isActive()) {
-            removeObject(object);
-            result = null;
-        } else {
-            synchronized (objects) {
-                IMObjectReference ref = object.getObjectReference();
-                T current = objects.get(ref);
-                if (current == null || current.getVersion() < object.getVersion()) {
-                    objects.put(ref, object);
-                    result = object;
-                } else {
-                    result = current;
-                }
-            }
-        }
-        return result;
     }
 
     /**
@@ -117,10 +90,36 @@ class MonitoringIMObjectCache<T extends IMObject> extends AbstractMonitoringIMOb
      * @param object the object to remove
      */
     @Override
-    protected void removeObject(T object) {
+    protected final void removeObject(T object) {
+        T removed;
         synchronized (objects) {
-            objects.remove(object.getObjectReference());
+            removed = objects.remove(object.getObjectReference());
         }
+        if (removed != null) {
+            removed(removed);
+        }
+    }
+
+    /**
+     * Invoked when an object is added to the cache.
+     * <p/>
+     * This implementation is a no-op
+     *
+     * @param object the added object
+     */
+    protected void added(T object) {
+
+    }
+
+    /**
+     * Invoked when an object is removed from the cache.
+     * <p/>
+     * This implementation is a no-op
+     *
+     * @param object the removed object
+     */
+    protected void removed(T object) {
+
     }
 
     /**
@@ -143,4 +142,38 @@ class MonitoringIMObjectCache<T extends IMObject> extends AbstractMonitoringIMOb
         }
         return result;
     }
+
+    /**
+     * Adds an object to the cache, if it active, and newer than the existing instance, if any.
+     * If the object is inactive, any existing instance will be removed using {@link #removeObject(IMObject)}.
+     *
+     * @param object the object to add
+     * @return the cached object, or null if the object is inactive
+     */
+    private T cache(T object) {
+        T result;
+        if (!object.isActive()) {
+            removeObject(object);
+            result = null;
+        } else {
+            T added = null;
+            synchronized (objects) {
+                IMObjectReference ref = object.getObjectReference();
+                T current = objects.get(ref);
+                if (current == null || current.getVersion() < object.getVersion()) {
+                    objects.put(ref, object);
+                    added(object);
+                    added = object;
+                    result = object;
+                } else {
+                    result = current;
+                }
+            }
+            if (added != null) {
+                added(object);
+            }
+        }
+        return result;
+    }
+
 }

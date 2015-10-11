@@ -18,6 +18,7 @@ package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.AcknowledgmentCode;
 import ca.uhn.hl7v2.HL7Exception;
+import ca.uhn.hl7v2.app.HL7Service;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.v25.datatype.DTM;
 import ca.uhn.hl7v2.model.v25.datatype.HD;
@@ -80,6 +81,11 @@ class MessageReceiver implements ReceivingApplication, ReceivingApplicationExcep
     private final HL7Mapping mapping;
 
     /**
+     * The service responsible for delegating messages to this.
+     */
+    private final HL7Service hl7Service;
+
+    /**
      * The timestamp of the last received message.
      */
     private Date lastReceived;
@@ -108,17 +114,20 @@ class MessageReceiver implements ReceivingApplication, ReceivingApplicationExcep
     /**
      * Constructs an {@link MessageReceiver}.
      *
-     * @param receiver  the receiver to delegate to
-     * @param connector the connector
-     * @param service   the message service
-     * @param user      the user responsible for messages received the connector
+     * @param receiver   the receiver to delegate to
+     * @param connector  the connector
+     * @param service    the message service
+     * @param user       the user responsible for messages received the connector
+     * @param hl7Service the service responsible for delegating messages to this
      */
-    public MessageReceiver(ReceivingApplication receiver, Connector connector, MessageService service, User user) {
+    public MessageReceiver(ReceivingApplication receiver, Connector connector, MessageService service, User user,
+                           HL7Service hl7Service) {
         this.connector = connector;
         mapping = connector.getMapping();
         this.receiver = receiver;
         this.service = service;
         this.user = user;
+        this.hl7Service = hl7Service;
     }
 
     /**
@@ -229,6 +238,15 @@ class MessageReceiver implements ReceivingApplication, ReceivingApplicationExcep
     @Override
     public int getErrors() {
         return 0;
+    }
+
+    /**
+     * Determines if the connector is running.
+     *
+     * @return {@code true} if the connector is running
+     */
+    public boolean isRunning() {
+        return hl7Service.isRunning();
     }
 
     /**
