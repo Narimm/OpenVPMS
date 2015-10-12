@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -97,8 +97,8 @@ class OrderGenerator {
      * @return the orderable stock
      */
     public List<Stock> getOrderableStock(Party supplier, Party stockLocation, boolean belowIdealQuantity) {
-        List<Stock> result = new ArrayList<Stock>();
-        Map<String, Object> parameters = new HashMap<String, Object>();
+        List<Stock> result = new ArrayList<>();
+        Map<String, Object> parameters = new HashMap<>();
         parameters.put("stockLocationId", stockLocation.getId());
         parameters.put("supplierId", supplier.getId());
         parameters.put("supplier", supplier.getObjectReference().toString());
@@ -128,7 +128,7 @@ class OrderGenerator {
      */
     public List<FinancialAct> createOrder(Party supplier, Party stockLocation, boolean belowIdealQuantity) {
         ActCalculator calculator = new ActCalculator(service);
-        List<FinancialAct> result = new ArrayList<FinancialAct>();
+        List<FinancialAct> result = new ArrayList<>();
         List<Stock> toOrder = getOrderableStock(supplier, stockLocation, belowIdealQuantity);
         if (!toOrder.isEmpty()) {
             FinancialAct order = (FinancialAct) service.create(SupplierArchetypes.ORDER);
@@ -136,7 +136,7 @@ class OrderGenerator {
             ActBean bean = new ActBean(order, service);
             bean.addNodeParticipation("supplier", supplier);
             bean.addNodeParticipation("stockLocation", stockLocation);
-            List<FinancialAct> items = new ArrayList<FinancialAct>();
+            List<FinancialAct> items = new ArrayList<>();
 
             for (Stock stock : toOrder) {
                 FinancialAct item = (FinancialAct) service.create(SupplierArchetypes.ORDER_ITEM);
@@ -212,19 +212,22 @@ class OrderGenerator {
                 toOrder = units.divide(decSize, 0, RoundingMode.UP);
             }
 
+            if (toOrder.compareTo(BigDecimal.ZERO) > 0
+                && ((belowIdealQuantity && current.compareTo(idealQty) <= 0) || current.compareTo(criticalQty) <= 0)) {
+                stock = new Stock(product, stockLocation, supplier, productSupplierId, quantity, idealQty,
+                                  onOrder, toOrder, reorderCode, reorderDesc, packageSize, packageUnits, nettPrice,
+                                  listPrice);
+            }
             if (log.isDebugEnabled()) {
                 log.debug("Stock: product=" + product.getName() + " (" + product.getId()
                           + "), location=" + stockLocation.getName() + " (" + stockLocation.getId()
                           + "), supplier=" + supplier.getName() + " (" + supplier.getId()
                           + "), onHand=" + quantity + ", onOrder=" + onOrder + ", toOrder=" + toOrder
-                          + ", idealQty=" + idealQty + ", criticalQty=" + criticalQty);
+                          + ", current=" + current + ", idealQty=" + idealQty + ", criticalQty=" + criticalQty
+                          + ", packageSize=" + packageSize + ", packageUnits=" + packageUnits
+                          + ", order=" + (stock != null));
             }
-            if (!MathRules.equals(ZERO, toOrder) && (belowIdealQuantity && current.compareTo(idealQty) <= 0
-                                                     || (current.compareTo(criticalQty) <= 0))) {
-                stock = new Stock(product, stockLocation, supplier, productSupplierId, quantity, idealQty,
-                                  onOrder, toOrder, reorderCode, reorderDesc, packageSize, packageUnits, nettPrice,
-                                  listPrice);
-            }
+
         } else {
             if (log.isDebugEnabled()) {
                 log.debug("Cannot order product=" + product.getName() + " (" + product.getId()
