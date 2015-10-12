@@ -180,6 +180,15 @@
             </includes>
         </fileSet>
 
+        <!-- license -->
+        <fileSet>
+            <directory>${basedir}/src/doc</directory>
+            <includes>
+                <include>LICENSE.txt</include>
+            </includes>
+            <outputDirectory>/</outputDirectory>
+        </fileSet>
+
         <!-- readme -->
         <fileSet>
             <directory>${basedir}/src/doc</directory>
@@ -189,13 +198,6 @@
             <outputDirectory>/</outputDirectory>
             <filtered>true</filtered>
             <useStrictFiltering>true</useStrictFiltering>
-        </fileSet>
-
-        <!-- License -->
-        <fileSet>
-            <includes>
-                <include>License.txt</include>
-            </includes>
         </fileSet>
 
         <!-- images -->
