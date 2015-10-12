@@ -34,7 +34,7 @@
         <node name="reason" path="/reason" type="java.lang.String" minCardinality="0">
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
-                <property name="source" value="lookup.visitReason"/>
+                <property name="source" value="lookup.visitReason*"/>
                 <errorMessage>Invalid Visit Reason</errorMessage>
             </assertion>
         </node>
