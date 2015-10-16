@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
@@ -37,6 +38,7 @@ import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
+import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.edit.act.SingleParticipationCollectionEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -45,6 +47,8 @@ import org.openvpms.web.component.im.product.ProductQuery;
 import org.openvpms.web.component.im.product.ProductResultSet;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.workspace.patient.mr.PatientDocumentActEditor;
 import org.openvpms.web.workspace.patient.mr.PatientInvestigationActLayoutStrategy;
@@ -120,6 +124,24 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
     }
 
     /**
+     * Returns the product.
+     *
+     * @return the product. May be {@code null}
+     */
+    public Product getProduct() {
+        return (Product) getParticipant("product");
+    }
+
+    /**
+     * Sets the location.
+     *
+     * @param location the product. May be {@code null}
+     */
+    public void setLocation(Party location) {
+        setParticipant("location", location);
+    }
+
+    /**
      * Save any edits.
      *
      * @return {@code true} if the save was successful
@@ -152,6 +174,15 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
      */
     public IMObjectReference getInvestigationTypeRef() {
         return getParticipantRef("investigationType");
+    }
+
+    /**
+     * Sets the patient.
+     *
+     * @param patient the patient. May be {@code null}
+     */
+    public void setPatient(Party patient) {
+        setPatient(patient != null ? patient.getObjectReference() : null);
     }
 
     /**
@@ -200,6 +231,36 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
         return strategy;
     }
 
+    /**
+     * Invoked when layout has completed.
+     */
+    @Override
+    protected void onLayoutCompleted() {
+        super.onLayoutCompleted();
+        ParticipationEditor editor = getParticipationEditor("investigationType", false);
+        if (editor != null) {
+            editor.addModifiableListener(new ModifiableListener() {
+                @Override
+                public void modified(Modifiable modifiable) {
+                    onInvestigationTypeChanged();
+                }
+            });
+        }
+    }
+
+    private void onInvestigationTypeChanged() {
+        IMObjectReference investigationType = getInvestigationTypeRef();
+        if (investigationType != null) {
+            Product product = getProduct();
+            if (product != null) {
+                IMObjectBean bean = new IMObjectBean(product);
+                if (bean.hasNode("investigationTypes")
+                    && !bean.getNodeTargetObjectRefs("investigationTypes").contains(investigationType)) {
+                    setProduct(null);
+                }
+            }
+        }
+    }
 
     /**
      * Determines if the product and investigation type should be read-only.
@@ -265,6 +326,20 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
             query.setAuto(true);
             return query;
         }
+
+        /**
+         * Determines if a reference is valid.
+         * <p/>
+         * This implementation determines if the query returned by {#link #createQuery} selects the reference.
+         *
+         * @param reference the reference to check
+         * @return {@code true} if the query selects the reference
+         */
+        @Override
+        protected boolean isValidReference(IMObjectReference reference) {
+            return true;
+        }
+
     }
 
     /**

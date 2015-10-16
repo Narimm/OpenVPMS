@@ -360,6 +360,11 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
                     result = (ParticipationEditor<T>) current;
                 }
             }
+        } else if (editor instanceof SingleParticipationCollectionEditor) {
+            IMObjectEditor current = ((SingleParticipationCollectionEditor) editor).getCurrentEditor();
+            if (current instanceof ParticipationEditor) {
+                result = (ParticipationEditor<T>) current;
+            }
         }
         return result;
     }
