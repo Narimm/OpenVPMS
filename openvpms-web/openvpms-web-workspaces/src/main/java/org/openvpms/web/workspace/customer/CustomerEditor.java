@@ -16,16 +16,21 @@
 
 package org.openvpms.web.workspace.customer;
 
-import org.openvpms.archetype.rules.party.PartyRules;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.component.edit.Editor;
+import org.openvpms.web.component.im.contact.ContactCollectionEditor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.DefaultLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -53,13 +58,6 @@ public class CustomerEditor extends AbstractIMObjectEditor {
         super(customer, parent, context);
 
         if (customer.isNew()) {
-            // add default contacts for new customers that don't have any
-            if (customer.getContacts().isEmpty()) {
-                PartyRules rules = new PartyRules(ServiceHelper.getArchetypeService(),
-                                                  ServiceHelper.getLookupService());
-                customer.setContacts(rules.getDefaultContacts());
-            }
-
             // initialise the practice location if one is not already present
             Party location = context.getContext().getLocation();
             CollectionProperty property = getCollectionProperty("practice");
@@ -76,6 +74,18 @@ public class CustomerEditor extends AbstractIMObjectEditor {
             }
         }
 
+        CollectionProperty contacts = getCollectionProperty("contacts");
+        if (contacts != null) {
+            ContactCollectionEditor editor = new ContactCollectionEditor(contacts, customer, context);
+            getEditors().add(editor);
+
+            if (contacts.getMinCardinality() == 0) {
+                editor.setExcludeUnmodifiedContacts(true);
+            }
+            addContact(editor, ContactArchetypes.LOCATION);
+            addContact(editor, ContactArchetypes.PHONE);
+            addContact(editor, ContactArchetypes.EMAIL);
+        }
         getLayoutContext().getContext().setCustomer(customer);
     }
 
@@ -86,6 +96,37 @@ public class CustomerEditor extends AbstractIMObjectEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new DefaultLayoutStrategy(NODES);
+        DefaultLayoutStrategy strategy = new DefaultLayoutStrategy(NODES);
+        ContactCollectionEditor editor = getContacts();
+        if (editor != null) {
+            strategy.addComponent(new ComponentState(editor));
+        }
+        return strategy;
+    }
+
+    /**
+     * Returns the contacts editor.
+     *
+     * @return the contacts editor, or {@code null} if none is registered
+     */
+    private ContactCollectionEditor getContacts() {
+        Editor editor = getEditor("contacts", false);
+        return (editor instanceof ContactCollectionEditor) ? (ContactCollectionEditor) editor : null;
+    }
+
+    /**
+     * Add a contact if no instance currently exists.
+     *
+     * @param editor    the contact editor
+     * @param shortName the contact archetype short name
+     */
+    private void addContact(ContactCollectionEditor editor, String shortName) {
+        if (IMObjectHelper.getObject(shortName, editor.getCurrentObjects()) == null) {
+            Contact contact = (Contact) IMObjectCreator.create(shortName);
+            if (contact != null) {
+                ServiceHelper.getArchetypeService().deriveValues(contact);
+                editor.add(contact);
+            }
+        }
     }
 }
