@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -55,13 +55,13 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
     /**
      * The set of edited objects.
      */
-    private final Set<IMObject> edited = new HashSet<IMObject>();
+    private final Set<IMObject> edited = new HashSet<>();
 
     /**
      * The editors. Where present, these will be responsible for saving/removing
      * the associated object.
      */
-    private Map<IMObject, IMObjectEditor> editors = new HashMap<IMObject, IMObjectEditor>();
+    private Map<IMObject, IMObjectEditor> editors = new HashMap<>();
 
     /**
      * Indicates if any object has been saved.
@@ -285,7 +285,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
         List values = property.getValues();
         int size = values.size();
         if (size != 0) {
-            objects = new ArrayList<T>();
+            objects = new ArrayList<>();
             for (Object value : values) {
                 objects.add((T) value);
             }
@@ -303,7 +303,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
         List<T> result;
         List<T> objects = getObjects();
         if (!objects.isEmpty()) {
-            result = new ArrayList<T>();
+            result = new ArrayList<>();
             CollectionUtils.select(objects, predicate, result);
         } else {
             result = Collections.emptyList();
@@ -361,17 +361,31 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
         boolean result = validator.validate(property);
         IArchetypeService service = ServiceHelper.getArchetypeService();
         for (IMObject object : getObjects()) {
-            IMObjectEditor editor = getEditor(object);
-            if (editor != null) {
-                if (!validator.validate(editor)) {
-                    result = false;
-                }
-            } else {
-                List<ValidatorError> errors = ValidationHelper.validate(object, service);
-                if (errors != null) {
-                    validator.add(property, errors);
-                    result = false;
-                }
+            result = doValidation(object, validator, service);
+        }
+        return result;
+    }
+
+    /**
+     * Validates an object.
+     *
+     * @param object the object to validate
+     * @param validator the  validator
+     * @param service the archetype service
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    protected boolean doValidation(IMObject object, Validator validator, IArchetypeService service) {
+        boolean result = true;
+        IMObjectEditor editor = getEditor(object);
+        if (editor != null) {
+            if (!validator.validate(editor)) {
+                result = false;
+            }
+        } else {
+            List<ValidatorError> errors = ValidationHelper.validate(object, service);
+            if (errors != null) {
+                validator.add(property, errors);
+                result = false;
             }
         }
         return result;

@@ -273,7 +273,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
      * Returns the focus group.
      *
      * @return the focus group, or {@code null} if the editor hasn't been
-     *         rendered
+     * rendered
      */
     public FocusGroup getFocusGroup() {
         return focusGroup;
@@ -515,12 +515,22 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
         IMObject object = getSelected();
         if (object != null) {
             if (addCurrentEdits(new DefaultValidator())) {
-                // need to add any edits after getting the selected object
-                // as this may change the order within the table
+                // need to add any edits after getting the selected object as this may change the order within the table
                 setSelected(object);
                 edit(object);
             } else {
+                // the current editor is invalid, so reselect its object in the table
+                IMObjectEditor current = getCurrentEditor();
+                if (current != null) {
+                    object = current.getObject();
+                } else {
+                    object = null;
+                }
+                setSelected(object);
                 enableNavigation(false);
+                if (current != null && current.getFocusGroup() != null) {
+                    current.getFocusGroup().setFocus();
+                }
             }
         }
     }
