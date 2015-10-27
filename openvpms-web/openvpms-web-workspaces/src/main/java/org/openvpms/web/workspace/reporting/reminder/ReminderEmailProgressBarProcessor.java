@@ -1,27 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.resource.i18n.Messages;
-import org.springframework.mail.javamail.JavaMailSender;
 
 import java.util.List;
 
@@ -40,20 +36,16 @@ class ReminderEmailProgressBarProcessor extends ReminderProgressBarProcessor {
 
 
     /**
-     * Constructs a new <tt>ReminderEmailProgressBarProcessor</tt>.
+     * Constructs a {@link ReminderEmailProgressBarProcessor}.
      *
-     * @param reminders     the reminders
-     * @param sender        the mail sender
-     * @param practice      the practice
-     * @param groupTemplate the grouped reminder document template
-     * @param statistics    the statistics
-     * @param context       the context
+     * @param reminders  the reminders
+     * @param processor  the email processor
+     * @param statistics the statistics
      */
-    public ReminderEmailProgressBarProcessor(List<List<ReminderEvent>> reminders, JavaMailSender sender,
-                                             Party practice, DocumentTemplate groupTemplate,
-                                             Statistics statistics, Context context) {
+    public ReminderEmailProgressBarProcessor(List<List<ReminderEvent>> reminders, ReminderEmailProcessor processor,
+                                             Statistics statistics) {
         super(reminders, statistics, Messages.get("reporting.reminder.run.email"));
-        processor = new ReminderEmailProcessor(sender, practice, groupTemplate, context);
+        this.processor = processor;
     }
 
     /**

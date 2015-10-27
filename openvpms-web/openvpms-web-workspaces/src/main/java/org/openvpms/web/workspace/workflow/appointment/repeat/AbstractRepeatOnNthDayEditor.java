@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.workflow.appointment.repeat;
 import nextapp.echo2.app.SelectField;
 import org.openvpms.web.component.bound.BoundSelectFieldFactory;
 import org.openvpms.web.component.bound.SpinBox;
+import org.openvpms.web.component.im.list.PairListModel;
 import org.openvpms.web.component.property.NumericPropertyTransformer;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.Validator;

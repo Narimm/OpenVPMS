@@ -19,6 +19,8 @@ package org.openvpms.web.component.mail;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
+import java.util.List;
+
 
 /**
  * Sends an email.
@@ -26,6 +28,13 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * @author Tim Anderson
  */
 public interface Mailer {
+
+    /**
+     * Returns the mail context.
+     *
+     * @return the mail context
+     */
+    MailContext getContext();
 
     /**
      * Sets the from address.
@@ -117,6 +126,13 @@ public interface Mailer {
      * @param document the document to attach
      */
     void addAttachment(Document document);
+
+    /**
+     * Returns the attachments.
+     *
+     * @return the attachments
+     */
+    List<Document> getAttachments();
 
     /**
      * Sends the mail.

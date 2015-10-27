@@ -11,14 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.archetype.rules.doc.DocumentHandler;
-import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
@@ -31,22 +29,20 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.report.IMObjectReporter;
 import org.openvpms.web.component.im.report.ObjectSetReporter;
 import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.im.report.Reporter;
-import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.component.mail.EmailAddress;
+import org.openvpms.web.component.mail.Mailer;
+import org.openvpms.web.component.mail.MailerFactory;
+import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.reporting.ReportingException;
-import org.openvpms.web.workspace.reporting.email.EmailAddress;
 import org.openvpms.web.workspace.reporting.email.PracticeEmailAddresses;
-import org.springframework.core.io.InputStreamSource;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 
-import javax.mail.internet.MimeMessage;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -64,14 +60,9 @@ import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.
 public class ReminderEmailProcessor extends AbstractReminderProcessor {
 
     /**
-     * The mail sender.
+     * The mailer factory.
      */
-    private final JavaMailSender sender;
-
-    /**
-     * The document handlers.
-     */
-    private final DocumentHandlers handlers;
+    private final MailerFactory factory;
 
     /**
      * The practice email addresses.
@@ -87,16 +78,15 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
     /**
      * Constructs a {@link ReminderEmailProcessor}.
      *
-     * @param sender        the mail sender
+     * @param factory       the mailer factory
      * @param practice      the practice
      * @param groupTemplate the template for grouped reminders
      * @param context       the context
      */
-    public ReminderEmailProcessor(JavaMailSender sender, Party practice, DocumentTemplate groupTemplate,
+    public ReminderEmailProcessor(MailerFactory factory, Party practice, DocumentTemplate groupTemplate,
                                   Context context) {
         super(groupTemplate, context);
-        this.sender = sender;
-        handlers = ServiceHelper.getDocumentHandlers();
+        this.factory = factory;
 
         addresses = new PracticeEmailAddresses(practice, "REMINDER");
         fields = ReportContextFactory.create(getContext());
@@ -110,55 +100,61 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
      * @param documentTemplate the document template to use. May be {@code null}
      */
     protected void process(List<ReminderEvent> events, String shortName, DocumentTemplate documentTemplate) {
-        ReminderEvent event = events.get(0);
-        Contact contact = event.getContact();
         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(documentTemplate, shortName, getContext());
         documentTemplate = locator.getTemplate();
         if (documentTemplate == null) {
             throw new ReportingException(ReminderMissingDocTemplate);
         }
+        ReminderEvent event = events.get(0);
+        Party patient = event.getPatient();
+        Party customer = event.getCustomer();
+        Context context = new LocalContext(getContext());
+        context.setPatient(patient);
+        context.setCustomer(customer);
+        Mailer mailer = factory.create(new CustomerMailContext(context));
 
         try {
-            EmailAddress from = addresses.getAddress(event.getCustomer());
-            IMObjectBean bean = new IMObjectBean(contact);
-            String to = bean.getString("emailAddress");
-
-            MimeMessage message = sender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            helper.setValidateAddresses(true);
-            helper.setFrom(from.getAddress(), from.getName());
-            helper.setTo(to);
-
-            String subject = documentTemplate.getEmailSubject();
-            if (StringUtils.isEmpty(subject)) {
-                subject = documentTemplate.getName();
-            }
-            String body = documentTemplate.getEmailText();
-            if (StringUtils.isEmpty(body)) {
-                throw new ReportingException(TemplateMissingEmailText, documentTemplate.getName());
-            }
-            helper.setText(body);
-
-            final Document reminder = createReport(events, documentTemplate);
-            final DocumentHandler handler = handlers.get(reminder.getName(), reminder.getArchetypeId().getShortName(),
-                                                         reminder.getMimeType());
-
-            helper.setSubject(subject);
-            helper.addAttachment(reminder.getName(), new InputStreamSource() {
-                public InputStream getInputStream() {
-                    return handler.getContent(reminder);
-                }
-            });
-            sender.send(message);
-        } catch (ArchetypeServiceException exception) {
-            throw exception;
-        } catch (ReminderProcessorException exception) {
-            throw exception;
-        } catch (ReportingException exception) {
+            send(customer, event.getContact(), events, documentTemplate, mailer);
+        } catch (ArchetypeServiceException | ReportingException | ReminderProcessorException exception) {
             throw exception;
         } catch (Throwable exception) {
             throw new ReportingException(FailedToProcessReminder, exception, exception.getMessage());
         }
+    }
+
+    /**
+     * Emails reminders.
+     *
+     * @param customer the customer
+     * @param contact  the email contact
+     * @param events   the events
+     * @param template the document template
+     * @param mailer   the mailer the mailer to user
+     */
+    protected void send(Party customer, Contact contact, List<ReminderEvent> events, DocumentTemplate template,
+                        Mailer mailer) {
+        String body = template.getEmailText();
+        if (StringUtils.isEmpty(body)) {
+            throw new ReportingException(TemplateMissingEmailText, template.getName());
+        }
+        IMObjectBean bean = new IMObjectBean(contact);
+        String to = bean.getString("emailAddress");
+
+        EmailAddress from = addresses.getAddress(customer);
+        mailer.setFrom(from.toString(true));
+        mailer.setTo(new String[]{to});
+
+        String subject = template.getEmailSubject();
+        if (StringUtils.isEmpty(subject)) {
+            subject = template.getName();
+        }
+        mailer.setSubject(subject);
+        mailer.setBody(body);
+
+        Document document = createReport(events, template);
+        mailer.addAttachment(document);
+
+        mailer.send();
     }
 
     /**
@@ -174,11 +170,11 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
             List<ObjectSet> sets = createObjectSets(events);
             result = getDocument(new ObjectSetReporter(sets, documentTemplate));
         } else {
-            List<Act> acts = new ArrayList<Act>();
+            List<Act> acts = new ArrayList<>();
             for (ReminderEvent event : events) {
                 acts.add(event.getReminder());
             }
-            result = getDocument(new IMObjectReporter<Act>(acts, documentTemplate));
+            result = getDocument(new IMObjectReporter<>(acts, documentTemplate));
         }
         return result;
     }

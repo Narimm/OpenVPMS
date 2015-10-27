@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.mail.EmailAddress;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
@@ -106,7 +107,8 @@ public class EmailEditor extends AbstractIMObjectEditor {
         if (StringUtils.equals(name, defaultEmailName)) {
             name = null;
         }
-        String email = ContactHelper.getEmail(getEmailAddress(), name, true);
+        EmailAddress address = new EmailAddress(getEmailAddress(), name);
+        String email = address.toString(true);
         try {
             new InternetAddress(email, true);
             valid = true;

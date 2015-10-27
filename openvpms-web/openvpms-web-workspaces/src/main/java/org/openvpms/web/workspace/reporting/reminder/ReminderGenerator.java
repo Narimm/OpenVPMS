@@ -35,11 +35,11 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.sms.Connection;
-import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.sms.SMSHelper;
+import org.openvpms.web.component.im.sms.SMSService;
 import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.component.mail.MailerFactory;
 import org.openvpms.web.component.processor.BatchProcessorTask;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
@@ -136,17 +136,17 @@ public class ReminderGenerator extends AbstractBatchProcessor {
 
         switch (event.getAction()) {
             case EMAIL:
-                processors.add(createEmailProcessor(reminders));
+                processors.add(createBatchEmailProcessor(reminders));
                 break;
             case PRINT:
-                processors.add(createPrintProcessor(reminders, true, mailContext));
+                processors.add(createBatchPrintProcessor(reminders, true));
                 break;
             case EXPORT:
                 processors.add(createExportProcessor(reminders));
                 break;
             case SMS:
                 if (sms) {
-                    processors.add(createSMSProcessor(reminders));
+                    processors.add(createBatchSMSProcessor(reminders));
                 } else {
                     processors.add(createListProcessor(reminders));
                 }
@@ -240,13 +240,13 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         }
 
         if (!printReminders.isEmpty()) {
-            processors.add(createPrintProcessor(printReminders, false, mailContext));
+            processors.add(createBatchPrintProcessor(printReminders, false));
         }
         if (!emailReminders.isEmpty()) {
-            processors.add(createEmailProcessor(emailReminders));
+            processors.add(createBatchEmailProcessor(emailReminders));
         }
         if (!smsReminders.isEmpty()) {
-            processors.add(createSMSProcessor(smsReminders));
+            processors.add(createBatchSMSProcessor(smsReminders));
         }
         if (!exportReminders.isEmpty()) {
             processors.add(createExportProcessor(exportReminders));
@@ -344,12 +344,148 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     }
 
     /**
+     * Returns the SMS service.
+     *
+     * @return the SMS service
+     */
+    protected SMSService getSMSService() {
+        return ServiceHelper.getBean(SMSService.class);
+    }
+
+    /**
+     * Returns the mailer factory.
+     *
+     * @return the mailer factory
+     */
+    protected MailerFactory getMailerFactory() {
+        return ServiceHelper.getBean(MailerFactory.class);
+    }
+
+    /**
+     * Returns the context.
+     *
+     * @return the context
+     */
+    protected Context getContext() {
+        return context;
+    }
+
+    /**
      * Returns the mail context.
      *
      * @return the mail context
      */
     protected MailContext getMailContext() {
         return mailContext;
+    }
+
+    /**
+     * Creates a processor to email a batch of reminders.
+     *
+     * @param reminders the reminders to email
+     * @return a new processor
+     */
+    protected ReminderBatchProcessor createBatchEmailProcessor(List<List<ReminderEvent>> reminders) {
+        ReminderEmailProcessor processor = createEmailProcessor(practice, groupTemplate, context);
+        return new ReminderEmailProgressBarProcessor(reminders, processor, statistics);
+    }
+
+    /**
+     * Creates a new processor to email reminders.
+     *
+     * @param practice      the practice
+     * @param groupTemplate the template for grouped reminders
+     * @param context       the context
+     * @return a new processor
+     */
+    protected ReminderEmailProcessor createEmailProcessor(Party practice, DocumentTemplate groupTemplate,
+                                                          Context context) {
+        return new ReminderEmailProcessor(getMailerFactory(), practice, groupTemplate, context);
+    }
+
+    /**
+     * Creates a new processor to print a batch of reminders.
+     *
+     * @param reminders   the print reminders
+     * @param interactive if {@code true}, reminders should always be printed interactively. If {@code false},
+     *                    reminders will only be printed interactively if a printer needs to be selected
+     * @return a new processor
+     */
+    protected ReminderBatchProcessor createBatchPrintProcessor(List<List<ReminderEvent>> reminders,
+                                                               boolean interactive) {
+        ReminderPrintProcessor processor = createPrintProcessor(groupTemplate, context, mailContext, help, interactive);
+        return new ReminderPrintProgressBarProcessor(reminders, processor, statistics);
+    }
+
+    /**
+     * Creates a new processor to print reminders.
+     *
+     * @param groupTemplate the grouped reminder document template
+     * @param context       the context
+     * @param mailContext   the mail context, used when printing interactively. May be {@code null}
+     * @param help          the help context
+     * @param interactive   if {@code true}, reminders should always be printed interactively. If {@code false},
+     *                      reminders will only be printed interactively if a printer needs to be selected
+     * @return a new processor
+     */
+    protected ReminderPrintProcessor createPrintProcessor(DocumentTemplate groupTemplate, Context context,
+                                                          MailContext mailContext, HelpContext help,
+                                                          boolean interactive) {
+        ReminderPrintProcessor processor = new ReminderPrintProcessor(groupTemplate, context, mailContext, help);
+        processor.setInteractiveAlways(interactive);
+        return processor;
+    }
+
+    /**
+     * Creates a processor to SMS a batch of reminders.
+     *
+     * @param reminders the reminders to SMS
+     * @return a new processor
+     */
+    protected ReminderBatchProcessor createBatchSMSProcessor(List<List<ReminderEvent>> reminders) {
+        ReminderSMSProcessor processor = createSMSProcessor(groupTemplate, context);
+        return new ReminderSMSProgressBarProcessor(reminders, processor, statistics);
+    }
+
+    /**
+     * Creates a processor for SMS reminders.
+     *
+     * @param groupTemplate the template for grouped reminders
+     * @param context       the context
+     * @return a new processor
+     */
+    protected ReminderSMSProcessor createSMSProcessor(DocumentTemplate groupTemplate, Context context) {
+        return new ReminderSMSProcessor(getSMSService(), groupTemplate, context);
+    }
+
+    /**
+     * Creates a new export processor.
+     *
+     * @param reminders the reminders to export
+     * @return a new processor
+     */
+    protected ReminderBatchProcessor createExportProcessor(List<List<ReminderEvent>> reminders) {
+        return new ReminderExportProcessor(reminders, statistics);
+    }
+
+    /**
+     * Creates a new list processor.
+     *
+     * @param reminders the reminders to list
+     * @return a new processor
+     */
+    protected ReminderBatchProcessor createListProcessor(List<List<ReminderEvent>> reminders) {
+        return createListProcessor(reminders, statistics, context, help);
+    }
+
+    /**
+     * Creates a new cancel processor.
+     *
+     * @param reminders the reminders to cancel
+     * @return a new processor
+     */
+    protected ReminderBatchProcessor createCancelProcessor(List<List<ReminderEvent>> reminders) {
+        return new ReminderCancelProcessor(reminders, statistics);
     }
 
     /**
@@ -389,77 +525,6 @@ public class ReminderGenerator extends AbstractBatchProcessor {
             processed += processor.getProcessed();
         }
         setProcessed(processed);
-    }
-
-    /**
-     * Creates a new email processor.
-     *
-     * @param reminders the email reminders
-     * @return a new processor
-     */
-    private ReminderBatchProcessor createEmailProcessor(List<List<ReminderEvent>> reminders) {
-        return new ReminderEmailProgressBarProcessor(reminders, ServiceHelper.getMailSender(),
-                                                     practice, groupTemplate, statistics, context);
-    }
-
-    /**
-     * Creates a new print processor.
-     *
-     * @param reminders   the print reminders
-     * @param interactive if {@code true}, reminders should always be printed interactively. If {@code false},
-     *                    reminders will only be printed interactively if a printer needs to be selected
-     * @param mailContext the mail context. May be {@code null}
-     * @return a new processor
-     */
-    private ReminderBatchProcessor createPrintProcessor(List<List<ReminderEvent>> reminders, boolean interactive,
-                                                        MailContext mailContext) {
-        ReminderPrintProgressBarProcessor result
-                = new ReminderPrintProgressBarProcessor(reminders, groupTemplate, statistics, context, help);
-        result.setInteractiveAlways(interactive);
-        result.setMailContext(mailContext);
-        return result;
-    }
-
-    /**
-     * Creates a new SMS processor.
-     *
-     * @param reminders the reminders to SMS
-     * @return a new processor
-     */
-    private ReminderBatchProcessor createSMSProcessor(List<List<ReminderEvent>> reminders) {
-        ConnectionFactory factory = ServiceHelper.getSMSConnectionFactory();
-        Connection connection = factory.createConnection();
-        return new ReminderSMSProgressBarProcessor(reminders, connection, groupTemplate, statistics, context);
-    }
-
-    /**
-     * Creates a new export processor.
-     *
-     * @param reminders the reminders to export
-     * @return a new processor
-     */
-    private ReminderBatchProcessor createExportProcessor(List<List<ReminderEvent>> reminders) {
-        return new ReminderExportProcessor(reminders, statistics);
-    }
-
-    /**
-     * Creates a new list processor.
-     *
-     * @param reminders the reminders to list
-     * @return a new processor
-     */
-    private ReminderBatchProcessor createListProcessor(List<List<ReminderEvent>> reminders) {
-        return createListProcessor(reminders, statistics, context, help);
-    }
-
-    /**
-     * Creates a new cancel processor.
-     *
-     * @param reminders the reminders to cancel
-     * @return a new processor
-     */
-    private ReminderBatchProcessor createCancelProcessor(List<List<ReminderEvent>> reminders) {
-        return new ReminderCancelProcessor(reminders, statistics);
     }
 
     /**
@@ -690,3 +755,4 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     }
 
 }
+

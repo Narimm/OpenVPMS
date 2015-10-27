@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient;
@@ -125,6 +125,15 @@ public class CustomerPatientSummary {
      */
     protected Context getContext() {
         return context;
+    }
+
+    /**
+     * Returns the help context.
+     *
+     * @return the help context
+     */
+    public HelpContext getHelpContext() {
+        return help;
     }
 
     /**

@@ -58,7 +58,16 @@ import java.util.Set;
 public class CustomerMailContext extends ContextMailContext {
 
     /**
-     * Constructs a {@code CustomerMailContext}.
+     * Constructs a {@link CustomerMailContext}.
+     *
+     * @param context the context
+     */
+    public CustomerMailContext(Context context) {
+        super(context);
+    }
+
+    /**
+     * Constructs a {@link CustomerMailContext} that registers an attachment browser.
      *
      * @param context the context
      * @param help    the help context
@@ -78,6 +87,33 @@ public class CustomerMailContext extends ContextMailContext {
                 return result;
             }
         });
+    }
+
+    /**
+     * Returns the customer.
+     *
+     * @return the customer. May be {@code null}
+     */
+    public Party getCustomer() {
+        return getContext().getCustomer();
+    }
+
+    /**
+     * Returns the patient.
+     *
+     * @return the patient. May be {@code null}
+     */
+    public Party getPatient() {
+        return getContext().getPatient();
+    }
+
+    /**
+     * Returns the practice location.
+     *
+     * @return the practice location. May be {@code null}
+     */
+    public Party getLocation() {
+        return getContext().getLocation();
     }
 
     /**
@@ -121,12 +157,12 @@ public class CustomerMailContext extends ContextMailContext {
      * @return the 'to' email addresses
      */
     public List<Contact> getToAddresses() {
-        List<Contact> result = new ArrayList<Contact>();
+        List<Contact> result = new ArrayList<>();
         result.addAll(ContactHelper.getEmailContacts(getContext().getCustomer()));
         Party patient = getContext().getPatient();
         if (patient != null) {
             EntityBean bean = new EntityBean(patient);
-            Set<IMObjectReference> practices = new HashSet<IMObjectReference>();
+            Set<IMObjectReference> practices = new HashSet<>();
             // tracks processed practices to avoid retrieving them more than once
 
             for (Entity referral : bean.getNodeTargetEntities("referrals")) {

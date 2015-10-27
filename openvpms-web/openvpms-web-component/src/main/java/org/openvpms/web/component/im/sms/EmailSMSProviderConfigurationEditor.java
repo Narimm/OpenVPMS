@@ -45,16 +45,16 @@ public class EmailSMSProviderConfigurationEditor extends AbstractIMObjectEditor 
 
 
     /**
-     * Constructs an <tt>EmailSMSProviderConfigurationEditor</tt>.
+     * Constructs an {@link EmailSMSProviderConfigurationEditor}.
      *
      * @param object        the object to edit
-     * @param parent        the parent object. May be <tt>null</tt>
-     * @param layoutContext the layout context. May be <tt>null</tt>.
+     * @param parent        the parent object. May be {@code null}
+     * @param layoutContext the layout context
      */
     public EmailSMSProviderConfigurationEditor(Entity object, IMObject parent, LayoutContext layoutContext) {
         super(object, parent, layoutContext);
 
-        sampler = new EmailSMSSampler(object);
+        sampler = new EmailSMSSampler(object, layoutContext.getContext().getLocation());
 
         if (object.isNew()) {
             // default the from address to that of the practice, if it has one

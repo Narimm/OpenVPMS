@@ -82,7 +82,7 @@ public class ReminderListProcessor extends AbstractReminderBatchProcessor {
      */
     public void process() {
         setStatus(Messages.get("reporting.reminder.list.status.begin"));
-        List<ReminderEvent> reminders = getReminders();
+        final List<ReminderEvent> reminders = getReminders();
         if (!reminders.isEmpty()) {
             try {
                 List<Act> acts = new ArrayList<>();

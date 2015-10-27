@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.summary;
 
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.workspace.customer.CustomerSummary;
 import org.openvpms.web.workspace.patient.CustomerPatientSummary;
 
 
@@ -36,6 +37,15 @@ public interface CustomerPatientSummaryFactory {
      * @return the summary
      */
     CustomerPatientSummary createCustomerPatientSummary(Context context, HelpContext help);
+
+    /**
+     * Creates a component to summarise customer details.
+     *
+     * @param context the context
+     * @param help    the help context
+     * @return the summary
+     */
+    CustomerSummary createCustomerSummary(Context context, HelpContext help);
 
     /**
      * Creates a component to summarise patient details.

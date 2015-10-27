@@ -54,6 +54,11 @@ import java.util.List;
 class MailHeader extends AbstractModifiable {
 
     /**
+     * The mail context.
+     */
+    private final MailContext mailContext;
+
+    /**
      * The to address.
      */
     private ToAddressSelector to;
@@ -102,6 +107,7 @@ class MailHeader extends AbstractModifiable {
      * @param context     the layout context
      */
     public MailHeader(MailContext mailContext, Contact preferredTo, LayoutContext context) {
+        this.mailContext = mailContext;
         List<Contact> fromAddresses = mailContext.getFromAddresses();
         focus = new FocusGroup("MailHeader");
 
@@ -155,6 +161,15 @@ class MailHeader extends AbstractModifiable {
         focus.add(cc.getField());
         focus.add(bcc.getField());
         focus.add(subjectText);
+    }
+
+    /**
+     * Returns the mail context.
+     *
+     * @return the mail context
+     */
+    public MailContext getMailContext() {
+        return mailContext;
     }
 
     /**

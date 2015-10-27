@@ -14,7 +14,7 @@
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.workflow.appointment.repeat;
+package org.openvpms.web.component.im.list;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.list.AbstractListComponent;
@@ -29,7 +29,25 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-class PairListModel extends AbstractListModel {
+public class PairListModel extends AbstractListModel {
+
+    public static class Pair {
+        final Object key;
+        final Object value;
+
+        public Pair(Object key, Object value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public Object getKey() {
+            return key;
+        }
+
+        public Object getValue() {
+            return value;
+        }
+    }
 
     /**
      * The default renderer.
@@ -46,16 +64,21 @@ class PairListModel extends AbstractListModel {
     /**
      * The pairs.
      */
-    private List<Pair> pairs = new ArrayList<Pair>();
+    private List<Pair> pairs = new ArrayList<>();
 
-    private static class Pair {
-        final Object key;
-        final Object value;
+    /**
+     * Default constructor.
+     */
+    public PairListModel() {
+    }
 
-        public Pair(Object key, Object value) {
-            this.key = key;
-            this.value = value;
-        }
+    /**
+     * Constructs a {@link PairListModel}.
+     *
+     * @param pairs the pairs
+     */
+    public PairListModel(List<Pair> pairs) {
+        this.pairs.addAll(pairs);
     }
 
     /**
@@ -88,7 +111,9 @@ class PairListModel extends AbstractListModel {
      * @param value the value to render. May be {@code null}
      */
     public void add(Object key, Object value) {
+        int index = pairs.size();
         pairs.add(new Pair(key, value));
+        fireIntervalAdded(index, index);
     }
 
     /**

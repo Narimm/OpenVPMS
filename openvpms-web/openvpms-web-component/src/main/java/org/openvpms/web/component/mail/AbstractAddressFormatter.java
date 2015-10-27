@@ -158,7 +158,7 @@ public abstract class AbstractAddressFormatter implements AddressFormatter {
      */
     private String getNameAddress(Contact contact, String name, boolean strict) {
         String address = getAddress(contact);
-        return ContactHelper.getEmail(address, name, strict);
+        return new EmailAddress(address, name).toString(strict);
     }
 
 }
