@@ -73,7 +73,12 @@ public abstract class AbstractMailer implements Mailer {
     /**
      * The attachments.
      */
-    private List<Document> attachments = new ArrayList<Document>();
+    private List<Document> attachments = new ArrayList<>();
+
+    /**
+     * The mail context.
+     */
+    private final MailContext context;
 
     /**
      * The mail sender.
@@ -89,12 +94,23 @@ public abstract class AbstractMailer implements Mailer {
     /**
      * Constructs an {@link AbstractMailer}.
      *
+     * @param context  the mail context
      * @param sender   the mail sender
      * @param handlers the document handlers
      */
-    public AbstractMailer(JavaMailSender sender, DocumentHandlers handlers) {
+    public AbstractMailer(MailContext context, JavaMailSender sender, DocumentHandlers handlers) {
+        this.context = context;
         this.sender = sender;
         this.handlers = handlers;
+    }
+
+    /**
+     * Returns the mail context.
+     *
+     * @return the mail context
+     */
+    public MailContext getContext() {
+        return context;
     }
 
     /**
@@ -221,6 +237,16 @@ public abstract class AbstractMailer implements Mailer {
     }
 
     /**
+     * Returns the attachments.
+     *
+     * @return the attachments
+     */
+    @Override
+    public List<Document> getAttachments() {
+        return attachments;
+    }
+
+    /**
      * Sends the object to the default email address.
      *
      * @throws OpenVPMSException for any error
@@ -228,7 +254,7 @@ public abstract class AbstractMailer implements Mailer {
     public void send() {
         MimeMessage message = sender.createMimeMessage();
         try {
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            MimeMessageHelper helper = createHelper(message);
             populateMessage(helper);
             sender.send(message);
         } catch (OpenVPMSException exception) {
@@ -237,6 +263,19 @@ public abstract class AbstractMailer implements Mailer {
             String address = (to != null) ? StringUtils.join(to, ", ") : null;
             throw new MailException(MailException.ErrorCode.FailedToSend, address, exception.getMessage());
         }
+    }
+
+    /**
+     * Creates a new message helper.
+     *
+     * @param message the message
+     * @return a new message helper
+     * @throws MessagingException for any messaging error
+     */
+    protected MimeMessageHelper createHelper(MimeMessage message) throws MessagingException {
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        helper.setValidateAddresses(true);
+        return helper;
     }
 
     /**

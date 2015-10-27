@@ -11,15 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
-import org.openvpms.sms.Connection;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.List;
@@ -41,15 +38,14 @@ class ReminderSMSProgressBarProcessor extends ReminderProgressBarProcessor {
     /**
      * Constructs a {@link ReminderSMSProgressBarProcessor}.
      *
-     * @param reminders     the reminders
-     * @param groupTemplate the grouped reminder document template
-     * @param statistics    the statistics
-     * @param context       the context
+     * @param reminders  the reminders
+     * @param processor  the SMS processor
+     * @param statistics the statistics
      */
-    public ReminderSMSProgressBarProcessor(List<List<ReminderEvent>> reminders, Connection connection,
-                                           DocumentTemplate groupTemplate, Statistics statistics, Context context) {
+    public ReminderSMSProgressBarProcessor(List<List<ReminderEvent>> reminders, ReminderSMSProcessor processor,
+                                           Statistics statistics) {
         super(reminders, statistics, Messages.get("reporting.reminder.run.sms"));
-        processor = new ReminderSMSProcessor(connection, groupTemplate, context);
+        this.processor = processor;
     }
 
     /**

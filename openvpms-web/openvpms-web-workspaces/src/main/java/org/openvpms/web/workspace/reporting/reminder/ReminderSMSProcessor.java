@@ -11,20 +11,23 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.sms.Connection;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.sms.SMSHelper;
+import org.openvpms.web.component.im.sms.SMSService;
 import org.openvpms.web.workspace.reporting.ReportingException;
 
 import java.util.List;
@@ -42,20 +45,25 @@ import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.
 public class ReminderSMSProcessor extends AbstractReminderProcessor {
 
     /**
-     * The SMS connection.
+     * The SMS service.
      */
-    private final Connection connection;
+    private final SMSService service;
 
     /**
-     * Constructs a {@code ReminderEmailProcessor}.
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(ReminderSMSProcessor.class);
+
+    /**
+     * Constructs a {@link ReminderSMSProcessor}.
      *
-     * @param connection    the SMS connection
+     * @param service       the SMS service
      * @param groupTemplate the template for grouped reminders
      * @param context       the context
      */
-    public ReminderSMSProcessor(Connection connection, DocumentTemplate groupTemplate, Context context) {
+    public ReminderSMSProcessor(SMSService service, DocumentTemplate groupTemplate, Context context) {
         super(groupTemplate, context);
-        this.connection = connection;
+        this.service = service;
     }
 
     /**
@@ -79,12 +87,15 @@ public class ReminderSMSProcessor extends AbstractReminderProcessor {
         }
         String phoneNumber = SMSHelper.getPhone(contact);
         if (StringUtils.isEmpty(phoneNumber)) {
-        }
-
-        try {
-            connection.send(phoneNumber, text);
-        } catch (Throwable exception) {
-            throw new ReportingException(FailedToProcessReminder, exception, exception.getMessage());
+            Party customer = event.getCustomer();
+            log.error("Contact has no phone number for customer=" + customer.getName() + " (" + customer.getId() + ")");
+        } else {
+            try {
+                service.send(phoneNumber, text, event.getCustomer(), event.getPatient(), contact,
+                             getContext().getLocation());
+            } catch (Throwable exception) {
+                throw new ReportingException(FailedToProcessReminder, exception, exception.getMessage());
+            }
         }
     }
 

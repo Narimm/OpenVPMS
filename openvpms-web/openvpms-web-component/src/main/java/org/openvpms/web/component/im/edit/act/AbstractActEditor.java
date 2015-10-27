@@ -86,7 +86,9 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
                 onEndTimeChanged();
             }
         };
-        initParticipant("author", context.getContext().getUser());
+        if (act.isNew()) {
+            initParticipant("author", context.getContext().getUser());
+        }
     }
 
     /**
@@ -342,7 +344,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * @param create if {@code true} force creation of the edit components if
      *               it hasn't already been done
      * @return the editor corresponding to {@code name} or }null} if
-     *         none exists or hasn't been created
+     * none exists or hasn't been created
      */
     @SuppressWarnings("unchecked")
     protected <T extends Entity> ParticipationEditor<T> getParticipationEditor(String name, boolean create) {

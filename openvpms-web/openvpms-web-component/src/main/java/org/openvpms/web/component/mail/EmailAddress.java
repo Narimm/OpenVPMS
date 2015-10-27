@@ -11,10 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.reporting.email;
+package org.openvpms.web.component.mail;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Email address.
@@ -62,5 +64,43 @@ public class EmailAddress {
     public String getName() {
         return name;
     }
+
+    /**
+     * Returns the address, conforming to RFC822.
+     *
+     * @return the formatted email address
+     */
+    public String toString() {
+        return toString(true);
+    }
+
+    /**
+     * Returns the formatted email address.
+     *
+     * @param strict if {@code true}, quote the name to ensure the address conforms to RFC822
+     * @return the formatted email address
+     */
+    public String toString(boolean strict) {
+        String result;
+        if (!StringUtils.isEmpty(name)) {
+            StringBuilder builder = new StringBuilder();
+            if (strict) {
+                builder.append('"');
+                builder.append(name.replaceAll("\"", "")); // remove all quotes, before quoting the name
+                builder.append("\" ");
+            } else {
+                builder.append(name);
+                builder.append(' ');
+            }
+            builder.append('<');
+            builder.append(address);
+            builder.append('>');
+            result = builder.toString();
+        } else {
+            result = address;
+        }
+        return result;
+    }
+
 }
 

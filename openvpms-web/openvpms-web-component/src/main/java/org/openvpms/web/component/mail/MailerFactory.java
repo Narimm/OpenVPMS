@@ -13,25 +13,23 @@
  *
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
-package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.web.component.processor.BatchProcessorComponent;
-
+package org.openvpms.web.component.mail;
 
 /**
- * Reminder batch processor.
+ * Factory for {@link Mailer} instances.
  *
  * @author Tim Anderson
  */
-public interface ReminderBatchProcessor extends BatchProcessorComponent {
+public class MailerFactory {
 
     /**
-     * Determines if reminders should be updated on completion.
-     * <p/>
-     * If set, the {@code reminderCount} is incremented the {@code lastSent} timestamp set on completed reminders.
+     * Creates a new {@link Mailer}.
      *
-     * @param update if {@code true} update reminders on completion
+     * @param context the mail context
+     * @return a new {@link Mailer}
      */
-    void setUpdateOnCompletion(boolean update);
-
+    public Mailer create(MailContext context) {
+        return new DefaultMailer(context);
+    }
 }

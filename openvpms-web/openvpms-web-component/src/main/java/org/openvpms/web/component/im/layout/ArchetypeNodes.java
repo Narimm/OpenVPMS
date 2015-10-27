@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.layout;
@@ -70,27 +70,27 @@ public class ArchetypeNodes {
     /**
      * Include the specified nodes as simple nodes.
      */
-    private Set<String> includeSimpleNodes = new LinkedHashSet<String>();
+    private Set<String> includeSimpleNodes = new LinkedHashSet<>();
 
     /**
      * Include the specified nodes as complex nodes.
      */
-    private Set<String> includeComplexNodes = new LinkedHashSet<String>();
+    private Set<String> includeComplexNodes = new LinkedHashSet<>();
 
     /**
      * Exclude the specified nodes.
      */
-    private Set<String> exclude = new HashSet<String>();
+    private Set<String> exclude = new HashSet<>();
 
     /**
      * Exclude nodes if they are empty.
      */
-    private Set<String> excludeIfEmpty = new HashSet<String>();
+    private Set<String> excludeIfEmpty = new HashSet<>();
 
     /**
      * Used to order nodes. The n-th element is placed before the n-th+1 element.
      */
-    private List<String> order = new ArrayList<String>();
+    private List<String> order = new ArrayList<>();
 
 
     /**
@@ -123,11 +123,11 @@ public class ArchetypeNodes {
         this.allComplexNodes = nodes.allSimpleNodes;
         this.first = nodes.first;
         this.second = nodes.second;
-        this.includeSimpleNodes = new LinkedHashSet<String>(nodes.includeSimpleNodes);
-        this.includeComplexNodes = new LinkedHashSet<String>(nodes.includeComplexNodes);
-        this.exclude = new HashSet<String>(nodes.exclude);
-        this.excludeIfEmpty = new HashSet<String>(nodes.excludeIfEmpty);
-        this.order = new ArrayList<String>(nodes.order);
+        this.includeSimpleNodes = new LinkedHashSet<>(nodes.includeSimpleNodes);
+        this.includeComplexNodes = new LinkedHashSet<>(nodes.includeComplexNodes);
+        this.exclude = new HashSet<>(nodes.exclude);
+        this.excludeIfEmpty = new HashSet<>(nodes.excludeIfEmpty);
+        this.order = new ArrayList<>(nodes.order);
     }
 
     /**
@@ -258,7 +258,7 @@ public class ArchetypeNodes {
      */
     public List<Property> getSimpleNodes(PropertySet properties, ArchetypeDescriptor archetype, IMObject object,
                                          NodeFilter filter) {
-        List<Property> result = new ArrayList<Property>();
+        List<Property> result = new ArrayList<>();
         for (NodeDescriptor descriptor : getSimpleNodes(archetype, object, filter)) {
             Property property = properties.get(descriptor);
             if (property != null) {
@@ -300,7 +300,7 @@ public class ArchetypeNodes {
      */
     public List<Property> getComplexNodes(PropertySet properties, ArchetypeDescriptor archetype, IMObject object,
                                           NodeFilter filter) {
-        List<Property> result = new ArrayList<Property>();
+        List<Property> result = new ArrayList<>();
         for (NodeDescriptor descriptor : getComplexNodes(archetype, object, filter)) {
             result.add(properties.get(descriptor));
         }
@@ -339,7 +339,7 @@ public class ArchetypeNodes {
      * @return the matching properties
      */
     public static List<Property> include(List<Property> properties, String... names) {
-        List<Property> result = new ArrayList<Property>();
+        List<Property> result = new ArrayList<>();
         List<String> values = Arrays.asList(names);
         for (Property property : properties) {
             if (values.contains(property.getName())) {
@@ -371,14 +371,14 @@ public class ArchetypeNodes {
     }
 
     /**
-     * Filters the descriptors, excluding those matching the specified names.
+     * Filters the properties, excluding those matching the specified names.
      *
-     * @param properties the descriptors
+     * @param properties the properties
      * @param names      the names to exclude
      * @return the descriptors excluding those matching the specified names
      */
     public static List<Property> exclude(List<Property> properties, String... names) {
-        List<Property> result = new ArrayList<Property>(properties);
+        List<Property> result = new ArrayList<>(properties);
         List<String> values = Arrays.asList(names);
         for (Property property : properties) {
             if (values.contains(property.getName())) {
@@ -396,7 +396,7 @@ public class ArchetypeNodes {
      * @return the matching nodes
      */
     private List<NodeDescriptor> getNodes(ArchetypeDescriptor archetype, Predicate predicate) {
-        List<NodeDescriptor> result = new ArrayList<NodeDescriptor>();
+        List<NodeDescriptor> result = new ArrayList<>();
         CollectionUtils.select(archetype.getAllNodeDescriptors(), predicate, result);
         reorder(result);
         return result;
@@ -417,7 +417,7 @@ public class ArchetypeNodes {
         List<NodeDescriptor> nodes = getNodes(archetype, predicate);
         List<NodeDescriptor> result;
         if (filter != null) {
-            result = new ArrayList<NodeDescriptor>();
+            result = new ArrayList<>();
             for (NodeDescriptor node : nodes) {
                 if (includes.contains(node.getName()) || filter.include(node, object)) {
                     result.add(node);

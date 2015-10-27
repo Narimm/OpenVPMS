@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -39,8 +39,8 @@ import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.im.report.TemplatedReporter;
+import org.openvpms.web.component.mail.EmailAddress;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.reporting.email.EmailAddress;
 import org.openvpms.web.workspace.reporting.email.PracticeEmailAddresses;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -180,9 +180,7 @@ public class StatementEmailProcessor
             if (!statement.isPreview() && !statement.isPrinted()) {
                 setPrinted(statement);
             }
-        } catch (ArchetypeServiceException exception) {
-            throw exception;
-        } catch (StatementProcessorException exception) {
+        } catch (ArchetypeServiceException | StatementProcessorException exception) {
             throw exception;
         } catch (Throwable exception) {
             throw new StatementProcessorException(exception, FailedToProcessStatement, exception.getMessage());

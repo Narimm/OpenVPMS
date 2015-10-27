@@ -13,15 +13,12 @@
  *
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.print.PrinterListener;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.List;
@@ -45,22 +42,14 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
     private List<ReminderEvent> events;
 
     /**
-     * The mail context, used when printing interactively. May be {@code null}
-     */
-    private MailContext mailContext;
-
-
-    /**
      * Constructs a {@link ReminderPrintProgressBarProcessor}.
      *
-     * @param reminders     the reminders
-     * @param groupTemplate the grouped reminder document template
-     * @param statistics    the statistics
-     * @param context       the context
-     * @param help          the help context
+     * @param reminders  the reminders
+     * @param processor  the reminder print processor
+     * @param statistics the statistics
      */
-    public ReminderPrintProgressBarProcessor(List<List<ReminderEvent>> reminders, DocumentTemplate groupTemplate,
-                                             Statistics statistics, Context context, HelpContext help) {
+    public ReminderPrintProgressBarProcessor(List<List<ReminderEvent>> reminders, ReminderPrintProcessor processor,
+                                             Statistics statistics) {
         super(reminders, statistics, Messages.get("reporting.reminder.run.print"));
 
         PrinterListener listener = new PrinterListener() {
@@ -86,41 +75,8 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
                 processError(cause, events);
             }
         };
-
-        processor = createProcessor(groupTemplate, context, help, listener);
-    }
-
-    /**
-     * Determines if reminders should always be printed interactively.
-     *
-     * @param interactive if {@code true}, reminders should always be printed interactively. If {@code false},
-     *                    reminders will only be printed interactively if a printer needs to be selected
-     */
-    public void setInteractiveAlways(boolean interactive) {
-        processor.setInteractiveAlways(interactive);
-    }
-
-    /**
-     * Sets the mail context, used for mailing from print dialogs.
-     *
-     * @param context the mail context. May be {@code null}
-     */
-    public void setMailContext(MailContext context) {
-        mailContext = context;
-    }
-
-    /**
-     * Creates a new print processor.
-     *
-     * @param groupTemplate the grouped reminder document template
-     * @param context       the context
-     * @param help          the help context
-     * @param listener      the printer listener
-     * @return a new print processor
-     */
-    protected ReminderPrintProcessor createProcessor(DocumentTemplate groupTemplate, Context context, HelpContext help,
-                                                     PrinterListener listener) {
-        return new ReminderPrintProcessor(groupTemplate, listener, context, mailContext, help);
+        this.processor = processor;
+        processor.setListener(listener);
     }
 
     /**

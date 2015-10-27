@@ -422,6 +422,15 @@ public class MailEditor extends AbstractModifiable {
     }
 
     /**
+     * Returns the mail context.
+     *
+     * @return the mail context
+     */
+    public MailContext getMailContext() {
+        return header.getMailContext();
+    }
+
+    /**
      * Validates the object.
      *
      * @param validator the validator

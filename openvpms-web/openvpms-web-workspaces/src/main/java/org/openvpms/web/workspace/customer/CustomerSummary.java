@@ -49,6 +49,7 @@ import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.alert.Alert;
 import org.openvpms.web.workspace.alert.AlertSummary;
@@ -98,21 +99,20 @@ public class CustomerSummary extends PartySummary {
      * @param party the party
      * @return a summary component
      */
+    @Override
     protected Component createSummary(Party party) {
         Component column = ColumnFactory.create();
-        IMObjectReferenceViewer customerName = new IMObjectReferenceViewer(party.getObjectReference(),
-                                                                           party.getName(), true, getContext());
-        customerName.setStyleName("hyperlink-bold");
-        column.add(RowFactory.create("Inset.Small", customerName.getComponent()));
+        Component customerName = getCustomerName(party);
+        column.add(ColumnFactory.create(Styles.SMALL_INSET, customerName));
         Label customerId = createLabel("customer.id", party.getId());
-        column.add(RowFactory.create("Inset.Small", customerId));
+        column.add(ColumnFactory.create(Styles.SMALL_INSET, customerId));
         Label phone = LabelFactory.create();
         phone.setText(partyRules.getTelephone(party, true));
-        column.add(RowFactory.create("Inset.Small", phone));
+        column.add(ColumnFactory.create(Styles.SMALL_INSET, phone));
 
         Contact email = ContactHelper.getPreferredEmail(party);
         if (email != null) {
-            column.add(RowFactory.create("Inset.Small", getEmail(email)));
+            column.add(ColumnFactory.create(Styles.SMALL_INSET, getEmail(email)));
         }
         final Context context = getContext();
         Party practice = context.getPractice();
@@ -151,7 +151,7 @@ public class CustomerSummary extends PartySummary {
         }
         AlertSummary alerts = getAlertSummary(party);
         if (alerts != null) {
-            column.add(ColumnFactory.create("Inset.Small", alerts.getComponent()));
+            column.add(ColumnFactory.create(Styles.SMALL_INSET, alerts.getComponent()));
         }
         Column result = ColumnFactory.create("PartySummary", column);
         if (SMSHelper.isSMSEnabled(practice)) {
@@ -165,11 +165,24 @@ public class CustomerSummary extends PartySummary {
                         dialog.show();
                     }
                 });
-                result.add(RowFactory.create("Inset.Small", button));
+                result.add(RowFactory.create(Styles.SMALL_INSET, button));
             }
         }
 
         return result;
+    }
+
+    /**
+     * Returns a component representing the customer name.
+     *
+     * @param customer the customer
+     * @return the customer component
+     */
+    protected Component getCustomerName(Party customer) {
+        IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(customer.getObjectReference(),
+                                                                     customer.getName(), true, getContext());
+        viewer.setStyleName("hyperlink-bold");
+        return viewer.getComponent();
     }
 
     /**

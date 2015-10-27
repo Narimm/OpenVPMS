@@ -99,36 +99,6 @@ public class ContactHelper {
     }
 
     /**
-     * Returns a formatted email address.
-     *
-     * @param address  the email address
-     * @param personal the personal name. May be {@code null}
-     * @param strict   if {@code true}, quote the name to ensure the address conforms to RFC822
-     * @return the formatted email address
-     */
-    public static String getEmail(String address, String personal, boolean strict) {
-        String result;
-        if (!StringUtils.isEmpty(personal)) {
-            StringBuilder builder = new StringBuilder();
-            if (strict) {
-                builder.append('"');
-                builder.append(personal.replaceAll("\"", "")); // remove all quotes, before quoting the name
-                builder.append("\" ");
-            } else {
-                builder.append(personal);
-                builder.append(' ');
-            }
-            builder.append('<');
-            builder.append(address);
-            builder.append('>');
-            result = builder.toString();
-        } else {
-            result = address;
-        }
-        return result;
-    }
-
-    /**
      * Returns the default value for the <em>contact.email</em> name node.
      *
      * @return the default email name
@@ -162,7 +132,7 @@ public class ContactHelper {
      * @return the matching contacts
      */
     private static List<Contact> getContacts(Party party, Predicate predicate, String sortNode) {
-        List<Contact> result = new ArrayList<Contact>();
+        List<Contact> result = new ArrayList<>();
         CollectionUtils.select(party.getContacts(), predicate, result);
         if (result.size() > 1) {
             SortConstraint[] sort = {new NodeSortConstraint("preferred", false),

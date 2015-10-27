@@ -49,6 +49,7 @@ import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.focus.FocusCommand;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -250,8 +251,8 @@ public class MailDialog extends PopupDialog {
      */
     private void attach() {
         final FocusCommand focus = new FocusCommand();
-        final BrowserDialog<Act> dialog = new BrowserDialog<Act>(Messages.get("mail.attach.title"), documents,
-                                                                 getHelpContext().subtopic("attach"));
+        final BrowserDialog<Act> dialog = new BrowserDialog<>(Messages.get("mail.attach.title"), documents,
+                                                              getHelpContext().subtopic("attach"));
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 focus.restore();
@@ -292,7 +293,7 @@ public class MailDialog extends PopupDialog {
         try {
             Validator validator = new DefaultValidator();
             if (editor.validate(validator)) {
-                Mailer mailer = new DefaultMailer();
+                Mailer mailer = ServiceHelper.getBean(MailerFactory.class).create(editor.getMailContext());
                 mailer.setFrom(editor.getFrom());
                 mailer.setTo(editor.getTo());
                 mailer.setCc(editor.getCc());

@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.workflow.appointment.repeat;
 
 import nextapp.echo2.app.list.ListModel;
 import org.openvpms.web.component.bound.BoundSelectField;
+import org.openvpms.web.component.im.list.PairListModel;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.style.Styles;
 

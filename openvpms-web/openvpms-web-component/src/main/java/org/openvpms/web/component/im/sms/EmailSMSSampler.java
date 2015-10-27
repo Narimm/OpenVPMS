@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.sms;
@@ -28,6 +28,7 @@ import nextapp.echo2.app.layout.ColumnLayoutData;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.sms.Connection;
 import org.openvpms.sms.SMSException;
@@ -37,6 +38,7 @@ import org.openvpms.sms.mail.MailMessageFactory;
 import org.openvpms.sms.mail.template.MailTemplate;
 import org.openvpms.sms.mail.template.MailTemplateFactory;
 import org.openvpms.sms.mail.template.TemplatedMailMessageFactory;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.Modifiable;
@@ -130,14 +132,15 @@ class EmailSMSSampler extends AbstractModifiable {
 
 
     /**
-     * Constructs a <tt>EmailSMSSampler</tt>.
+     * Constructs a {@link EmailSMSSampler}.
      *
-     * @param config the configuration
+     * @param config   the configuration
+     * @param location the practice location. May {@code null}
      */
-    public EmailSMSSampler(Entity config) {
+    public EmailSMSSampler(Entity config, Party location) {
         this.config = config;
         IMObjectBean bean = new IMObjectBean(config);
-        sms = new SMSEditor();
+        sms = new SMSEditor(new LocalContext());
         sms.setMessage(Messages.get("sms.sample.message"));
         sms.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -187,7 +190,7 @@ class EmailSMSSampler extends AbstractModifiable {
     /**
      * Determines if the object has been modified.
      *
-     * @return <tt>true</tt> if the object has been modified
+     * @return {@code true} if the object has been modified
      */
     public boolean isModified() {
         return sms.isModified();
@@ -360,7 +363,7 @@ class EmailSMSSampler extends AbstractModifiable {
      * Validates the object.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     protected boolean doValidation(Validator validator) {
         boolean result = false;
@@ -388,7 +391,7 @@ class EmailSMSSampler extends AbstractModifiable {
     /**
      * Validates the configuration.
      *
-     * @return validation errors, or <tt>null</tt> if there are none
+     * @return validation errors, or {@code null} if there are none
      */
     private List<ValidatorError> validateConfig() {
         return ValidationHelper.validate(config, ServiceHelper.getArchetypeService());

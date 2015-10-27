@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -40,7 +40,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-class ReminderPrintProcessor extends AbstractReminderProcessor {
+public class ReminderPrintProcessor extends AbstractReminderProcessor {
 
     /**
      * Determines if a print dialog is being displayed.
@@ -60,7 +60,7 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
     /**
      * The listener for printer events.
      */
-    private final PrinterListener listener;
+    private PrinterListener listener;
 
     /**
      * The mail context, used when printing interactively. May be {@code null}
@@ -73,27 +73,36 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
     private final HelpContext help;
 
     /**
-     * Constructs a {@code ReminderPrintProcessor}.
+     * Constructs a {@link ReminderPrintProcessor}.
      *
      * @param groupTemplate the grouped reminder document template
-     * @param listener      the listener for printer events
      * @param context       the context
      * @param mailContext   the mail context, used when printing interactively. May be {@code null}
      * @param help          the help context
      */
-    public ReminderPrintProcessor(DocumentTemplate groupTemplate, PrinterListener listener, Context context,
-                                  MailContext mailContext, HelpContext help) {
+    public ReminderPrintProcessor(DocumentTemplate groupTemplate, Context context, MailContext mailContext,
+                                  HelpContext help) {
         super(groupTemplate, context);
-        this.listener = listener;
         this.mailContext = mailContext;
         this.help = help;
+    }
+
+    /**
+     * Registers a listener for printer events.
+     * <p/>
+     * This must be registered prior to processing any reminders.
+     *
+     * @param listener the listener
+     */
+    public void setListener(PrinterListener listener) {
+        this.listener = listener;
     }
 
     /**
      * Determines if reminders are being printed interactively, or in the background.
      *
      * @return {@code true} if reminders are being printed interactively, or {@code false} if they are being
-     *         printed in the background
+     * printed in the background
      */
     public boolean isInteractive() {
         return alwaysInteractive || interactive;
@@ -122,14 +131,62 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
         if (events.size() > 1) {
             List<ObjectSet> sets = createObjectSets(events);
             IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(sets, locator, context);
-            print(printer);
+            print(printer, events);
         } else {
-            List<Act> acts = new ArrayList<Act>();
+            List<Act> acts = new ArrayList<>();
             for (ReminderEvent event : events) {
                 acts.add(event.getReminder());
             }
-            IMPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, locator, context);
-            print(printer);
+            IMPrinter<Act> printer = new IMObjectReportPrinter<>(acts, locator, context);
+            print(printer, events);
+        }
+    }
+
+    /**
+     * Invoked when reminders are printed.
+     *
+     * @param printer   the printer
+     * @param reminders the printed reminders
+     */
+    protected void onPrinted(String printer, List<ReminderEvent> reminders) {
+        if (fallbackPrinter == null) {
+            fallbackPrinter = printer;
+        }
+        if (listener != null) {
+            listener.printed(printer);
+        }
+    }
+
+    /**
+     * Invoked when printing is cancelled.
+     *
+     * @param reminders the cancelled reminders
+     */
+    protected void onPrintCancelled(List<ReminderEvent> reminders) {
+        if (listener != null) {
+            listener.cancelled();
+        }
+    }
+
+    /**
+     * Invoked when printing is skipped.
+     *
+     * @param reminders the skipped reminders
+     */
+    protected void onPrintSkipped(List<ReminderEvent> reminders) {
+        if (listener != null) {
+            listener.skipped();
+        }
+    }
+
+    /**
+     * Invoked when printing fails.
+     *
+     * @param reminders the reminders that failed to print
+     */
+    protected void onPrintFailed(List<ReminderEvent> reminders, Throwable cause) {
+        if (listener != null) {
+            listener.failed(cause);
         }
     }
 
@@ -139,9 +196,10 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
      * If a printer is configured, the print will occur in the background, otherwise a print dialog will be popped up.
      *
      * @param printer the printer
+     * @param events  the reminder events
      */
-    private <T> void print(IMPrinter<T> printer) {
-        final InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<T>(printer, getContext(), help);
+    private <T> void print(IMPrinter<T> printer, final List<ReminderEvent> events) {
+        final InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<>(printer, getContext(), help);
         String printerName = printer.getDefaultPrinter();
         if (printerName == null) {
             printerName = fallbackPrinter;
@@ -150,67 +208,28 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
         iPrinter.setInteractive(interactive);
         iPrinter.setMailContext(mailContext);
 
-        if (interactive) {
-            // register a listener to grab the selected printer, to avoid popping up a print dialog each time
-            PrinterListener l = new DelegatingPrinterListener(listener) {
-                public void printed(String printer) {
-                    fallbackPrinter = printer;
-                    super.printed(printer);
-                }
-            };
-            iPrinter.setListener(l);
-        } else {
-            iPrinter.setListener(listener);
-        }
+        iPrinter.setListener(new PrinterListener() {
+            @Override
+            public void printed(String printer) {
+                onPrinted(printer, events);
+            }
+
+            @Override
+            public void cancelled() {
+                onPrintCancelled(events);
+            }
+
+            @Override
+            public void skipped() {
+                onPrintSkipped(events);
+            }
+
+            @Override
+            public void failed(Throwable cause) {
+                onPrintFailed(events, cause);
+            }
+        });
         iPrinter.print(printerName);
     }
 
-    private static class DelegatingPrinterListener implements PrinterListener {
-
-        /**
-         * The listener to delegate to.
-         */
-        private final PrinterListener listener;
-
-        /**
-         * Creates a new {@code DelegatingPrinterListener}.
-         *
-         * @param listener the listener to delegate to
-         */
-        public DelegatingPrinterListener(PrinterListener listener) {
-            this.listener = listener;
-        }
-
-        /**
-         * Notifies of a successful print.
-         *
-         * @param printer the printer that was used. May be {@code null}
-         */
-        public void printed(String printer) {
-            listener.printed(printer);
-        }
-
-        /**
-         * Notifies that the print was cancelled.
-         */
-        public void cancelled() {
-            listener.cancelled();
-        }
-
-        /**
-         * Notifies that the print was skipped.
-         */
-        public void skipped() {
-            listener.skipped();
-        }
-
-        /**
-         * Invoked when a print fails.
-         *
-         * @param cause the reason for the failure
-         */
-        public void failed(Throwable cause) {
-            listener.failed(cause);
-        }
-    }
 }
