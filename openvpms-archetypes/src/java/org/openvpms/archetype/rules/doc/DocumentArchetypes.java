@@ -13,6 +13,7 @@
  *
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.archetype.rules.doc;
 
 
@@ -62,6 +63,11 @@ public class DocumentArchetypes {
      * Image document.
      */
     public static final String IMAGE_DOCUMENT = "document.image";
+
+    /**
+     * Text document.
+     */
+    public static final String TEXT_DOCUMENT = "document.text";
 
     /**
      * Logo document act.
