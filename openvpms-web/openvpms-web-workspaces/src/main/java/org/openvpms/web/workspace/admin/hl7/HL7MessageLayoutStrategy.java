@@ -114,7 +114,7 @@ public class HL7MessageLayoutStrategy extends AbstractLayoutStrategy {
         String content = null;
         if (document != null) {
             HL7DocumentHandler handler = new HL7DocumentHandler(ServiceHelper.getArchetypeService());
-            content = handler.getStringContent(document);
+            content = handler.toString(document);
         }
         TextArea text = TextComponentFactory.createTextArea();
         text.setStyleName("monospace");

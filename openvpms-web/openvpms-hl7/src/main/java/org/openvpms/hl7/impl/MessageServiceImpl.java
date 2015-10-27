@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -165,7 +165,7 @@ public class MessageServiceImpl implements MessageService {
         if (document == null) {
             throw new HL7Exception("No message content", ErrorCode.APPLICATION_INTERNAL_ERROR);
         }
-        String content = handler.getStringContent(document);
+        String content = handler.toString(document);
         return parser.parse(content);
     }
 
@@ -180,7 +180,7 @@ public class MessageServiceImpl implements MessageService {
         ArchetypeQuery query = createQuery(connector, HL7MessageStatuses.PENDING);
         query.add(Constraints.sort("id"));
         query.setMaxResults(1);
-        IMObjectQueryIterator<DocumentAct> iterator = new IMObjectQueryIterator<DocumentAct>(service, query);
+        IMObjectQueryIterator<DocumentAct> iterator = new IMObjectQueryIterator<>(service, query);
         return (iterator.hasNext()) ? iterator.next() : null;
     }
 
