@@ -109,7 +109,7 @@ public class CustomerEditor extends AbstractIMObjectEditor {
      *
      * @return the contacts editor, or {@code null} if none is registered
      */
-    private ContactCollectionEditor getContacts() {
+    protected ContactCollectionEditor getContacts() {
         Editor editor = getEditor("contacts", false);
         return (editor instanceof ContactCollectionEditor) ? (ContactCollectionEditor) editor : null;
     }
