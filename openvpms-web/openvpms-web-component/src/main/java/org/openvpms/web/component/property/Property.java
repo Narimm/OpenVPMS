@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -61,7 +61,7 @@ public interface Property extends Modifiable {
      *
      * @param value the property value
      * @return {@code true} if the value was set, {@code false} if it
-     *         cannot be set due to error, or is the same as the existing value
+     * cannot be set due to error, or is the same as the existing value
      */
     boolean setValue(Object value);
 
@@ -311,9 +311,16 @@ public interface Property extends Modifiable {
      * Determines if the property is required.
      *
      * @return {@code true} if the property is required; otherwise
-     *         {@code false}
+     * {@code false}
      */
     boolean isRequired();
+
+    /**
+     * Determines if the property is empty.
+     *
+     * @return {@code true} if the value is {@code null}, an empty string or collection; otherwise {@code false}
+     */
+    boolean isEmpty();
 
     /**
      * Sets the property transformer.

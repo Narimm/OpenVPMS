@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -308,6 +308,16 @@ public abstract class DelegatingProperty implements CollectionProperty {
      */
     public boolean isRequired() {
         return property.isRequired();
+    }
+
+    /**
+     * Determines if the property is empty.
+     *
+     * @return {@code true} if the value is {@code null}, an empty string or collection; otherwise {@code false}
+     */
+    @Override
+    public boolean isEmpty() {
+        return property.isEmpty();
     }
 
     /**

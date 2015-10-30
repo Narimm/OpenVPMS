@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -413,7 +413,7 @@ public abstract class AbstractPropertyTest extends ArchetypeServiceTest {
      * Verifies that when a {@link PropertyTransformer} throws an exception, the property is marked invalid.
      */
     @Test
-    public void testPropertyTransfomerValidation() {
+    public void testPropertyTransformerValidation() {
         final Property property = createStringProperty("foo");
         property.setValue("Foo");
         assertTrue(property.isValid());
@@ -424,6 +424,18 @@ public abstract class AbstractPropertyTest extends ArchetypeServiceTest {
         });
         property.setValue("Bar");
         checkValidationError(property, "Invalid");
+    }
+
+    /**
+     * Tests the {@link Property#isEmpty()} method for string properties.
+     */
+    public void testIsEmpty() {
+        Property property = createStringProperty("foo");
+        assertTrue(property.isEmpty());
+        property.setValue("");
+        assertTrue(property.isEmpty());
+        property.setValue("Foo");
+        assertFalse(property.isEmpty());
     }
 
     /**
