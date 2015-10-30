@@ -379,6 +379,18 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
     }
 
     /**
+     * Tests the {@link Property#isEmpty()} method for collection properties.
+     */
+    public void testIsEmptyCollection() {
+        Party customer = (Party) create(CustomerArchetypes.PERSON);
+        NodeDescriptor descriptor = PropertyTestHelper.getDescriptor(customer, "contacts");
+        IMObjectProperty property = new IMObjectProperty(customer, descriptor);
+        assertTrue(property.isEmpty());
+        property.add(TestHelper.createPhoneContact("03", "1234567"));
+        assertFalse(property.isEmpty());
+    }
+
+    /**
      * Creates a boolean property.
      *
      * @param name the property name
