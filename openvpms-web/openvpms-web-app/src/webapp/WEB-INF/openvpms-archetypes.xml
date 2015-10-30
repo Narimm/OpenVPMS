@@ -72,6 +72,11 @@
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
+    <bean id="practiceService" class="org.openvpms.archetype.rules.practice.PracticeService">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="practiceRules"/>
+    </bean>
+
     <bean id="discountRules" class="org.openvpms.archetype.rules.finance.discount.DiscountRules">
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="lookupService"/>
