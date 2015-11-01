@@ -14,7 +14,7 @@
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.echo.dialog;
+package org.openvpms.web.component.help;
 
 import echopointng.LabelEx;
 import echopointng.xhtml.XhtmlFragment;
@@ -37,6 +37,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.util.StringUtilities;
+import org.openvpms.web.component.subscription.SubscriptionHelper;
+import org.openvpms.web.echo.dialog.ModalDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -45,7 +47,6 @@ import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.subscription.SubscriptionHelper;
 import org.openvpms.web.resource.version.Version;
 
 import java.io.IOException;
@@ -357,9 +358,7 @@ public class HelpDialog extends ModalDialog {
                 }
                 path = uri.getPath();
             }
-        } catch (URISyntaxException exception) {
-            log.debug(exception, exception);
-        } catch (MalformedURLException exception) {
+        } catch (URISyntaxException | MalformedURLException exception) {
             log.debug(exception, exception);
         }
         return result;

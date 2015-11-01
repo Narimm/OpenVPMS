@@ -41,6 +41,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.help.HelpDialog;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.BrowserDialog;
@@ -54,7 +55,6 @@ import org.openvpms.web.component.workspace.WorkspacesFactory;
 import org.openvpms.web.echo.button.ButtonColumn;
 import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
-import org.openvpms.web.echo.dialog.HelpDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
@@ -86,7 +86,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
     /**
      * The workspace groups.
      */
-    private final List<Workspaces> workspaces = new ArrayList<Workspaces>();
+    private final List<Workspaces> workspaces = new ArrayList<>();
 
     /**
      * Menu button row.
@@ -573,7 +573,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         LayoutContext layout = new DefaultLayoutContext(context, currentWorkspace.getHelpContext());
         final CustomerPatientHistoryBrowser browser = new CustomerPatientHistoryBrowser(context, layout);
         BrowserDialog<CustomerPatient> dialog
-                = new BrowserDialog<CustomerPatient>(Messages.get("history.title"), browser, layout.getHelpContext());
+                = new BrowserDialog<>(Messages.get("history.title"), browser, layout.getHelpContext());
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 CustomerPatient selected = browser.getSelected();
