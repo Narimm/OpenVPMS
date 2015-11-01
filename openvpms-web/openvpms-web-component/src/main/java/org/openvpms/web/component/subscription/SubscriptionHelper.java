@@ -11,17 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.resource.subscription;
+package org.openvpms.web.component.subscription;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
 import org.openvpms.archetype.rules.doc.DefaultDocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -61,27 +64,11 @@ public class SubscriptionHelper {
      * @return the subscription message
      */
     public static String formatSubscription(IArchetypeService service) {
-        String result = null;
         Subscription subscription = getSubscription(service);
-        if (subscription != null) {
-            String user = subscription.getOrganisationName();
-            if (user == null) {
-                user = subscription.getSubscriberName();
-            }
-            Date expiryDate = subscription.getExpiryDate();
-            if (expiryDate != null) {
-                String date = DateFormatter.getFullDateFormat().format(expiryDate);
-                if (expiryDate.before(new Date())) {
-                    result = Messages.format("subscription.summary.expired", user, date);
-                } else {
-                    result = Messages.format("subscription.summary.active", user, date);
-                }
-            }
-        }
-        if (result == null) {
-            result = Messages.get("subscription.summary.nosubscription");
-        }
-        return result;
+        String organisation = (subscription != null) ? subscription.getOrganisationName() : null;
+        String name = (subscription != null) ? subscription.getSubscriberName() : null;
+        Date expiryDate = (subscription != null) ? subscription.getExpiryDate() : null;
+        return formatSubscription(organisation, name, expiryDate, new Date());
     }
 
     /**
@@ -160,6 +147,39 @@ public class SubscriptionHelper {
         query.setMaxResults(1);
         List<IMObject> rows = service.get(query).getResults();
         return (!rows.isEmpty()) ? (Participation) rows.get(0) : null;
+    }
+
+    /**
+     * Formats a subscription.
+     *
+     * @param organisation the organisation name. May be {@code null}
+     * @param name         the subscriber name. May be {@code null}
+     * @param expiryDate   the subscription expiry date. May be {@code null}
+     * @param now          the current date
+     * @return the subscription message
+     */
+    static String formatSubscription(String organisation, String name, Date expiryDate, Date now) {
+        String result = null;
+        if (organisation != null || name != null) {
+            String user = organisation;
+            if (user == null) {
+                user = name;
+            }
+            if (expiryDate != null) {
+                String date = DateFormatter.getFullDateFormat().format(expiryDate);
+                if (DateRules.compareDates(expiryDate, now) < 0) {
+                    result = Messages.format("subscription.summary.expired", user, date);
+                } else if (Days.daysBetween(new DateTime(now), new DateTime(expiryDate)).getDays() <= 21) {
+                    result = Messages.format("subscription.summary.expiring", user, date);
+                } else {
+                    result = Messages.format("subscription.summary.active", user, date);
+                }
+            }
+        }
+        if (result == null) {
+            result = Messages.get("subscription.summary.nosubscription");
+        }
+        return result;
     }
 
     /**
