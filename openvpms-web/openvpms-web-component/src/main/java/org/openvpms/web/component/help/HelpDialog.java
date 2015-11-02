@@ -46,6 +46,7 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.version.Version;
 
@@ -55,7 +56,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Enumeration;
 
 import static org.openvpms.web.echo.style.Styles.BOLD;
 import static org.openvpms.web.echo.style.Styles.INSET;
@@ -67,6 +67,11 @@ import static org.openvpms.web.echo.style.Styles.INSET;
  * @author Tim Anderson
  */
 public class HelpDialog extends ModalDialog {
+
+    /**
+     * The help topics.
+     */
+    private final HelpTopics topics;
 
     /**
      * Features to pass to window.open().
@@ -89,25 +94,29 @@ public class HelpDialog extends ModalDialog {
     private static final Log log = LogFactory.getLog(HelpDialog.class);
 
     /**
-     * Constructs a {@code HelpDialog}.
+     * Constructs a {@link HelpDialog}.
      *
+     * @param topics   the help topics
      * @param service  the archetype service
      * @param features browser feature string. May be {@code null}
      */
-    public HelpDialog(IArchetypeService service, String features) {
-        this(null, null, service, features);
+    public HelpDialog(HelpTopics topics, IArchetypeService service, String features) {
+        this(null, null, topics, service, features);
     }
 
     /**
-     * Constructs a {@code HelpDialog}.
+     * Constructs a {@link HelpDialog}.
      *
      * @param topic    the topic. May be {@code null}
      * @param topicURL the topic URL. May be {@code null}
+     * @param topics   the help topics
      * @param service  the archetype service
      * @param features browser feature string. May be {@code null}
      */
-    protected HelpDialog(String topic, final String topicURL, IArchetypeService service, String features) {
-        super(Messages.get("helpdialog.title"), "HelpDialog", OK);
+    protected HelpDialog(String topic, final String topicURL, HelpTopics topics, IArchetypeService service,
+                         String features) {
+        super(topics.get("helpdialog.title"), "HelpDialog", OK);
+        this.topics = topics;
         this.features = features;
 
         Component component = null;
@@ -137,17 +146,17 @@ public class HelpDialog extends ModalDialog {
             }
         }
 
-        Component topics = getTopics();
+        Component topicComponent = getTopics();
 
         Component content;
         if (component != null) {
             Grid hack = new Grid();
             hack.setStyleName("HelpDialog.content.size");
             Row container = RowFactory.create(component, hack);
-            content = SplitPaneFactory.create(SplitPane.ORIENTATION_HORIZONTAL, "HelpDialog.content", topics,
+            content = SplitPaneFactory.create(SplitPane.ORIENTATION_HORIZONTAL, "HelpDialog.content", topicComponent,
                                               container);
         } else {
-            content = topics;
+            content = topicComponent;
         }
         SplitPane footer = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP, "HelpDialog.footer",
                                                    ColumnFactory.create(INSET, getSubscription(service)), content);
@@ -160,14 +169,15 @@ public class HelpDialog extends ModalDialog {
      * Displays a help dialog for the specified help context.
      *
      * @param help     the help context. May be {@code null}
+     * @param topics   the help topics
      * @param service  the archetype service
      * @param features the browser features. May be {@code null}
      */
-    public static void show(HelpContext help, IArchetypeService service, String features) {
+    public static void show(HelpContext help, HelpTopics topics, IArchetypeService service, String features) {
         if (help == null) {
-            new HelpDialog(service, features).show();
+            new HelpDialog(topics, service, features).show();
         } else {
-            show(help.getTopic(), service, features);
+            show(help.getTopic(), topics, service, features);
         }
     }
 
@@ -175,20 +185,21 @@ public class HelpDialog extends ModalDialog {
      * Displays a help dialog for the specified topic.
      *
      * @param topic    the topic identifier
+     * @param topics   the help topics
      * @param service  the archetype service
      * @param features the browser features. May be {@code null}
      */
-    public static void show(String topic, IArchetypeService service, String features) {
-        String url = getTopicURL(topic);
+    public static void show(String topic, HelpTopics topics, IArchetypeService service, String features) {
+        String url = getTopicURL(topic, topics);
         if (url != null) {
             if (exists(url)) {
                 openWindow(url, features);
             } else {
-                HelpDialog dialog = new HelpDialog(topic, url, service, features);
+                HelpDialog dialog = new HelpDialog(topic, url, topics, service, features);
                 dialog.show();
             }
         } else {
-            HelpDialog dialog = new HelpDialog(topic, null, service, features);
+            HelpDialog dialog = new HelpDialog(topic, null, topics, service, features);
             dialog.show();
         }
     }
@@ -201,15 +212,15 @@ public class HelpDialog extends ModalDialog {
      * @return the topics hyperlink.
      */
     private Component getTopics() {
-        Column topics = ColumnFactory.create("WideCellSpacing");
+        Column container = ColumnFactory.create(Styles.WIDE_CELL_SPACING);
 
         for (int i = 0; ; ++i) {
-            String topic = Messages.get("help.topic." + i + ".title", Messages.HELP, true);
+            String topic = topics.get("help.topic." + i + ".title", true);
             if (topic != null) {
-                final String url = Messages.get("help.topic." + i + ".url", Messages.HELP, true);
+                final String url = topics.get("help.topic." + i + ".url", true);
                 if (url != null) {
                     Button helpLink = createHelpURL(topic, url);
-                    topics.add(RowFactory.create(helpLink)); // force to minimum width
+                    container.add(RowFactory.create(helpLink)); // force to minimum width
                 } else {
                     break;
                 }
@@ -217,7 +228,7 @@ public class HelpDialog extends ModalDialog {
                 break;
             }
         }
-        return ColumnFactory.create("Inset.Large", topics);
+        return ColumnFactory.create(Styles.LARGE_INSET, container);
     }
 
     /**
@@ -309,20 +320,19 @@ public class HelpDialog extends ModalDialog {
     /**
      * Returns the topic URL for a given topic identifier.
      *
-     * @param topic the topic identifier
+     * @param topic  the topic identifier
+     * @param topics the help topics
      * @return the topic URL or {@code null} if none is found
      */
-    private static String getTopicURL(String topic) {
+    private static String getTopicURL(String topic, HelpTopics topics) {
         String result = null;
-        String baseURL = Messages.get("help.url", Messages.HELP, true);
+        String baseURL = topics.get("help.url", true);
         if (baseURL != null) {
-            String fragment = Messages.get(topic, Messages.HELP, true);
+            String fragment = topics.get(topic, true);
             if (fragment == null) {
-                Enumeration<String> iter = Messages.getKeys(Messages.HELP);
-                while (iter.hasMoreElements()) {
-                    String key = iter.nextElement();
+                for (String key : topics.getKeys()) {
                     if (StringUtilities.matches(topic, key)) {
-                        fragment = Messages.get(key, Messages.HELP, true);
+                        fragment = topics.get(key, true);
                         break;
                     }
                 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -292,7 +292,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      */
     protected BrowserDialog<T> createBrowserDialog(Browser<T> browser, HelpContext help) {
         String title = Messages.format("imobject.select.title", getArchetypes().getDisplayName());
-        return new BrowserDialog<T>(title, browser, help);
+        return new BrowserDialog<>(title, browser, help);
     }
 
     /**
@@ -323,7 +323,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      * @return a new selector
      */
     private RepeatSelector<T> createSelector() {
-        RepeatSelector<T> selector = new RepeatSelector<T>();
+        RepeatSelector<T> selector = new RepeatSelector<>();
         selector.getSelect().addActionListener(new ActionListener() {
             public void onAction(ActionEvent actionEvent) {
                 onSelect();
