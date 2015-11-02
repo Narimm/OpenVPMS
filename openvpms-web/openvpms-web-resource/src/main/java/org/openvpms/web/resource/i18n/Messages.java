@@ -11,13 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.resource.i18n;
 
-import java.text.MessageFormat;
-import java.util.Enumeration;
+import org.openvpms.web.resource.i18n.message.DefaultMessageResource;
+import org.openvpms.web.resource.i18n.message.MessageResource;
+import org.springframework.context.support.ResourceBundleMessageSource;
+
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -36,15 +38,26 @@ public final class Messages {
     public static final String MESSAGES = "localisation.messages";
 
     /**
-     * The help resource bundle name.
-     */
-    public static final String HELP = "localisation.help";
-
-    /**
      * Default resource bundle name.
      */
-    private static final String DEFAULT_BUNDLE_NAME = "org.openvpms.web.resource.localisation.messages";
+    private static final String FALLBACK_MESSAGES = "org.openvpms.web.resource.localisation.messages";
 
+    /**
+     * The message resource.
+     */
+    private static MessageResource resource;
+
+    static {
+        ResourceBundleMessageSource source = new ResourceBundleMessageSource();
+        try {
+            ResourceBundle.getBundle(MESSAGES);
+            source.setBasenames(MESSAGES, FALLBACK_MESSAGES);
+        } catch (MissingResourceException exception) {
+            // if there is no localisation/messages.properties, just use the fallback
+            source.setBasenames(FALLBACK_MESSAGES);
+        }
+        setMessageResource(new DefaultMessageResource(source));
+    }
 
     /**
      * Returns a localised, formatted message.
@@ -54,12 +67,7 @@ public final class Messages {
      * @return the appropriate formatted localized text (if the key is not defined, the string "!key!" is returned)
      */
     public static String format(String key, Object... arguments) {
-        String result = null;
-        String pattern = get(key, false);
-        if (pattern != null) {
-            result = formatPattern(pattern, arguments);
-        }
-        return result;
+        return resource.format(key, arguments);
     }
 
     /**
@@ -70,12 +78,7 @@ public final class Messages {
      * @return the appropriate formatted localized text, or {@code null} if the key doesn't exist
      */
     public static String formatNull(String key, Object... arguments) {
-        String result = null;
-        String pattern = get(key, true);
-        if (pattern != null) {
-            result = formatPattern(pattern, arguments);
-        }
-        return result;
+        return resource.formatNull(key, arguments);
     }
 
     /**
@@ -85,7 +88,7 @@ public final class Messages {
      * @return the appropriate localized text (if the key is not defined, the string "!key!" is returned)
      */
     public static String get(String key) {
-        return get(key, false);
+        return resource.get(key);
     }
 
     /**
@@ -94,7 +97,7 @@ public final class Messages {
      * @return the current locale
      */
     public static Locale getLocale() {
-        return Locale.getDefault();
+        return resource.getLocale();
     }
 
     /**
@@ -103,90 +106,19 @@ public final class Messages {
      * @param key       the key of the text to be returned
      * @param allowNull determines behaviour if the key doesn't exist
      * @return the appropriate formatted localized text; or {@code null} if the key doesn't exist and {@code allowNull}
-     *         is {@code true}; or the string "!key!" if the key doesn't exist and {@code allowNull} is {@code false}
+     * is {@code true}; or the string "!key!" if the key doesn't exist and {@code allowNull} is {@code false}
      */
     public static String get(String key, boolean allowNull) {
-        String result = null;
-        try {
-            result = getString(key, getLocale(), MESSAGES, DEFAULT_BUNDLE_NAME);
-        } catch (MissingResourceException exception) {
-            if (!allowNull) {
-                result = '!' + key + '!';
-            }
-        }
-        return result;
+        return resource.get(key, allowNull);
     }
 
     /**
-     * Returns localised text.
+     * Registers the message resource.
      *
-     * @param key        the key of the text to be returned
-     * @param bundleName the resource bundle name
-     * @param allowNull  determines behaviour if the key doesn't exist
-     * @return the appropriate formatted localized text; or {@code null} if the key doesn't exist and {@code allowNull}
-     *         is {@code true}; or the string "!key!" if the key doesn't exist and {@code allowNull} is {@code false}
+     * @param resource the message resource
      */
-    public static String get(String key, String bundleName, boolean allowNull) {
-        String result = null;
-        try {
-            result = getString(key, getLocale(), bundleName);
-        } catch (MissingResourceException exception) {
-            if (!allowNull) {
-                result = '!' + key + '!';
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns the keys for the specified bundle.
-     *
-     * @param bundleName the resource bundle name
-     * @return the keys
-     */
-    public static Enumeration<String> getKeys(String bundleName) {
-        ResourceBundle bundle = ResourceBundle.getBundle(bundleName, getLocale());
-        return bundle.getKeys();
-    }
-
-    /**
-     * Returns localised text.
-     *
-     * @param key         the key of the text to be returned.
-     * @param locale      the locale
-     * @param bundleNames the resource bundles to look for the text
-     * @return the text
-     * @throws MissingResourceException if the resource cannot be found
-     */
-    private static String getString(String key, Locale locale, String... bundleNames) {
-        String result = null;
-        for (int i = 0; i < bundleNames.length; ++i) {
-            try {
-                ResourceBundle bundle = ResourceBundle.getBundle(bundleNames[i], locale);
-                result = bundle.getString(key);
-                break;
-            } catch (MissingResourceException exception) {
-                if (i == bundleNames.length - 1) {
-                    throw exception;
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Helper to format a string.
-     *
-     * @param pattern   the pattern
-     * @param arguments the arguments
-     * @return the formatted string
-     */
-    private static String formatPattern(String pattern, Object[] arguments) {
-        String result;
-        Locale locale = getLocale();
-        MessageFormat format = new MessageFormat(pattern, locale);
-        result = format.format(arguments);
-        return result;
+    public static void setMessageResource(MessageResource resource) {
+        Messages.resource = resource;
     }
 
 }

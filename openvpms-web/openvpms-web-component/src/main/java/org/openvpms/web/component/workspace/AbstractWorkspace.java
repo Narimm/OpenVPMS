@@ -22,6 +22,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpDialog;
+import org.openvpms.web.component.help.HelpTopics;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.util.StyleSheetHelper;
@@ -241,7 +242,8 @@ public abstract class AbstractWorkspace<T extends IMObject>
             help = new HelpContext(getHelpTopic(), new HelpListener() {
                 public void show(HelpContext help) {
                     String features = StyleSheetHelper.getProperty("HelpBrowser.features");
-                    HelpDialog.show(help, ServiceHelper.getArchetypeService(), features);
+                    HelpDialog.show(help, ServiceHelper.getBean(HelpTopics.class), ServiceHelper.getArchetypeService(),
+                                    features);
                 }
             });
         }

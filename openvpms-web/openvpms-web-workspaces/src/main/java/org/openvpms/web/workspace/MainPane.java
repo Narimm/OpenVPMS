@@ -42,6 +42,7 @@ import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.help.HelpDialog;
+import org.openvpms.web.component.help.HelpTopics;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.BrowserDialog;
@@ -254,7 +255,8 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         menu.addButton("help", new ActionListener() {
             public void onAction(ActionEvent event) {
                 String features = StyleSheetHelper.getProperty("HelpBrowser.features");
-                HelpDialog dialog = new HelpDialog(ServiceHelper.getArchetypeService(), features);
+                HelpDialog dialog = new HelpDialog(ServiceHelper.getBean(HelpTopics.class),
+                                                   ServiceHelper.getArchetypeService(), features);
                 dialog.show();
             }
         });

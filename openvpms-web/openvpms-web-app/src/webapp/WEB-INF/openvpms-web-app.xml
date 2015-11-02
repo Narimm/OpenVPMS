@@ -70,6 +70,8 @@
 
     <bean id="browserStates" class="org.openvpms.web.component.im.query.BrowserStates" scope="session"/>
 
+    <bean class="org.openvpms.web.component.help.HelpTopics"/>
+
     <bean id="preferences" class="org.openvpms.web.component.app.UserPreferences" scope="session"/>
 
     <bean id="messageMonitor" class="org.openvpms.web.workspace.workflow.messaging.MessageMonitor">
