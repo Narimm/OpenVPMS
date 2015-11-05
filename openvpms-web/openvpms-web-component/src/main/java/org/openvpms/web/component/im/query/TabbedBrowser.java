@@ -11,17 +11,21 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.query;
 
 import echopointng.TabbedPane;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.SplitPane;
 import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.factory.TabbedPaneFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.echo.tabpane.TabPaneModel;
+import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.tabpane.ObjectTabPaneModel;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -31,7 +35,10 @@ import java.util.List;
 
 
 /**
- * Browser that contains other browsers, rendered in a tab pane.
+ * Browser that contains other browsers, with each browser selected by a tab.
+ * <p/>
+ * The tabs and content are rendered in a split pane so that tabs don't scroll if the content is too
+ * large to fit on screen.
  *
  * @author Tim Anderson
  */
@@ -40,17 +47,22 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
     /**
      * The browsers.
      */
-    private List<Browser<T>> browsers = new ArrayList<Browser<T>>();
+    private List<Browser<T>> browsers = new ArrayList<>();
+
+    /**
+     * The tab container.
+     */
+    private Column tabContainer;
 
     /**
      * The container.
      */
-    private Column container;
+    private SplitPane container;
 
     /**
      * The tab pane model.
      */
-    private TabPaneModel model;
+    private ObjectTabPaneModel<Browser<T>> model;
 
     /**
      * The tabbed pane.
@@ -60,7 +72,7 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
     /**
      * The set of registered listeners.
      */
-    private List<BrowserListener<T>> listeners = new ArrayList<BrowserListener<T>>();
+    private List<BrowserListener<T>> listeners = new ArrayList<>();
 
     /**
      * The event listener.
@@ -82,8 +94,10 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
      * Constructs a {@code TabbedBrowser}.
      */
     public TabbedBrowser() {
-        container = ColumnFactory.create("InsetY");
-        model = new TabPaneModel(container);
+        tabContainer = ColumnFactory.create(Styles.INSET_Y);
+        container = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_TOP_BOTTOM, "TabbedBrowser");
+        container.add(tabContainer);
+        model = new ObjectTabPaneModel<>(tabContainer);
     }
 
     /**
@@ -111,6 +125,7 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
             tab = TabbedPaneFactory.create(model);
             if (model.size() > 0) {
                 selected = 0;
+                onBrowserSelected(selected);
             }
             tab.setSelectedIndex(selected);
 
@@ -123,7 +138,7 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
                     }
                 }
             });
-            container.add(tab);
+            tabContainer.add(tab);
             focusGroup.add(tab);
         }
         return container;
@@ -157,7 +172,7 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
     /**
      * Returns the objects matching the query.
      *
-     * @return the objects matcing the query.
+     * @return the objects matching the query.
      */
     public List<T> getObjects() {
         Browser<T> browser = getSelectedBrowser();
@@ -239,7 +254,7 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
     /**
      * Sets the browser listener.
      *
-     * @param listener the listener. May be <code>null</code>
+     * @param listener the listener. May be {@code null}
      */
     public void setListener(TabbedBrowserListener listener) {
         this.listener = listener;
@@ -291,6 +306,13 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
      * @param selected the selected index
      */
     protected void onBrowserSelected(@SuppressWarnings("unused") int selected) {
+        if (container.getComponentCount() == 2) {
+            container.remove(1);
+        }
+        Browser<T> browser = model.getObject(selected);
+        if (browser != null) {
+            container.add(browser.getComponent());
+        }
         if (listener != null) {
             listener.onBrowserChanged();
         }
@@ -337,9 +359,7 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
         int result = model.size();
         int shortcut = result + 1;
         String text = "&" + shortcut + " " + displayName;
-        Component component = browser.getComponent();
-        component = ColumnFactory.create("Inset", component);
-        model.addTab(text, component);
+        model.addTab(browser, text, new Label());
 
         // select the first available act, if any
         if (browser.getSelected() == null) {

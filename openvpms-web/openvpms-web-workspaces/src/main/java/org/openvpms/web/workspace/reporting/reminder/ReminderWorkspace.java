@@ -16,7 +16,6 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
@@ -47,7 +46,6 @@ import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.factory.GroupBoxFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
@@ -100,10 +98,9 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
         context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
 
         PatientReminderTableModel model = new PatientReminderTableModel(context);
-        browser = new DefaultIMObjectTableBrowser<Act>(query, model, context);
+        browser = new DefaultIMObjectTableBrowser<>(query, model, context);
 
-        GroupBox box = GroupBoxFactory.create(browser.getComponent());
-        container.add(box);
+        container.add(browser.getComponent());
         group.add(browser.getFocusGroup());
     }
 
@@ -171,7 +168,7 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
                         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(template, reminder,
                                                                                              context);
                         InteractivePrinter printer = new InteractivePrinter(
-                                new IMObjectReportPrinter<Act>(reminder, locator, context), context, help);
+                                new IMObjectReportPrinter<>(reminder, locator, context), context, help);
                         printer.setMailContext(mailContext);
                         printer.print();
                     }
@@ -208,7 +205,7 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
      */
     private void onReport() {
         Iterable<Act> objects = query.createReminderQuery().query();
-        IMPrinter<Act> printer = new IMObjectReportPrinter<Act>(objects, ReminderArchetypes.REMINDER, getContext());
+        IMPrinter<Act> printer = new IMObjectReportPrinter<>(objects, ReminderArchetypes.REMINDER, getContext());
         String title = Messages.get("reporting.reminder.print.title");
         try {
             HelpContext help = getHelpContext().subtopic("report");

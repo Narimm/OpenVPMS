@@ -373,8 +373,8 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
         refresh();
 
-        focusGroup.add(table);
-        container.add(table);
+        focusGroup.add(table.getFocusGroup());
+        container.add(table.getComponent());
     }
 
     /**

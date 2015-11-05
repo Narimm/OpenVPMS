@@ -11,12 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
+import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.TableModelEvent;
 import nextapp.echo2.app.event.TableModelListener;
@@ -29,6 +31,9 @@ import org.openvpms.web.component.im.table.PagedIMTableModel;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.style.Styles;
 
 
 /**
@@ -98,7 +103,7 @@ public abstract class AbstractQueryBrowser<T> extends AbstractTableBrowser<T> im
         doLayout(component, hasResults);
 
         if (set == null) {
-            set = new EmptyResultSet<T>(getQuery().getMaxResults());
+            set = new EmptyResultSet<>(getQuery().getMaxResults());
         }
         PagedIMTable<T> table = getTable();
         table.setResultSet(set);
@@ -126,10 +131,10 @@ public abstract class AbstractQueryBrowser<T> extends AbstractTableBrowser<T> im
     /**
      * Returns the browser state.
      *
-     * @return the browser state, or <tt>null</tt> if this browser doesn't support it
+     * @return the browser state, or {@code null} if this browser doesn't support it
      */
     public BrowserState getBrowserState() {
-        Memento<T> result = new Memento<T>(this);
+        Memento<T> result = new Memento<>(this);
         return (result.getQueryState() != null) ? result : null;
     }
 
@@ -193,7 +198,13 @@ public abstract class AbstractQueryBrowser<T> extends AbstractTableBrowser<T> im
      */
     protected void doLayout(Component container) {
         Component row = doQueryLayout();
-        container.add(row);
+        if (container instanceof SplitPane) {
+            Extent height = query.getHeight();
+            if (height != null) {
+                ((SplitPane) container).setSeparatorPosition(height);
+            }
+        }
+        container.add(ColumnFactory.create(Styles.INSET, row));
     }
 
     /**
@@ -205,7 +216,10 @@ public abstract class AbstractQueryBrowser<T> extends AbstractTableBrowser<T> im
         // query component
         Component component = query.getComponent();
 
-        ButtonRow row = new ButtonRow(getFocusGroup());
+        FocusGroup group = getFocusGroup();
+        group.add(query.getFocusGroup());
+
+        ButtonRow row = new ButtonRow(group);
         row.add(component);
         row.addButton(QUERY_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
@@ -228,7 +242,7 @@ public abstract class AbstractQueryBrowser<T> extends AbstractTableBrowser<T> im
             ErrorHelper.show(exception);
         }
         if (result == null) {
-            result = new EmptyResultSet<T>(query.getMaxResults());
+            result = new EmptyResultSet<>(query.getMaxResults());
         }
         return result;
     }
@@ -268,12 +282,12 @@ public abstract class AbstractQueryBrowser<T> extends AbstractTableBrowser<T> im
     protected static class Memento<T> implements BrowserState {
 
         /**
-         * The query state. May be <tt>null</tt>
+         * The query state. May be {@code null}
          */
         private final QueryState queryState;
 
         /**
-         * The selected row or <tt>-1</tt> if no row is selected
+         * The selected row or {@code -1} if no row is selected
          */
         private final int selectedRow;
 
@@ -294,7 +308,7 @@ public abstract class AbstractQueryBrowser<T> extends AbstractTableBrowser<T> im
 
 
         /**
-         * Constructs a <tt>Memento</tt>.
+         * Constructs a {@code Memento}.
          *
          * @param browser the browser
          */
@@ -316,7 +330,7 @@ public abstract class AbstractQueryBrowser<T> extends AbstractTableBrowser<T> im
         /**
          * Returns the query state.
          *
-         * @return the query state, or <tt>null</tt> if the query doesn't support it
+         * @return the query state, or {@code null} if the query doesn't support it
          */
         public QueryState getQueryState() {
             return queryState;
@@ -325,7 +339,7 @@ public abstract class AbstractQueryBrowser<T> extends AbstractTableBrowser<T> im
         /**
          * Returns the selected page.
          *
-         * @return the selected page, or <tt>-1</tt> if no page is selected
+         * @return the selected page, or {@code -1} if no page is selected
          */
         public int getPage() {
             return page;
@@ -334,7 +348,7 @@ public abstract class AbstractQueryBrowser<T> extends AbstractTableBrowser<T> im
         /**
          * Returns the selected row.
          *
-         * @return the selected row, or <tt>-1</tt> if no row is selected
+         * @return the selected row, or {@code -1} if no row is selected
          */
         public int getSelectedRow() {
             return selectedRow;
@@ -352,8 +366,7 @@ public abstract class AbstractQueryBrowser<T> extends AbstractTableBrowser<T> im
         /**
          * Determines if the sort column is sorted ascending or descending.
          *
-         * @return <tt>true</tt> if the column is sorted ascending;
-         *         <tt>false</tt> if it is sorted descending
+         * @return {@code true} if the column is sorted ascending; {@code false} if it is sorted descending
          */
         public boolean isSortedAscending() {
             return sortAscending;
@@ -363,7 +376,7 @@ public abstract class AbstractQueryBrowser<T> extends AbstractTableBrowser<T> im
          * Determines if this state is supported by the specified browser.
          *
          * @param browser the browser
-         * @return <tt>true</tt> if the state is supported by the browser; otherwise <tt>false</tt>
+         * @return {@code true} if the state is supported by the browser; otherwise {@code false}
          */
         public boolean supports(Browser browser) {
             return browser instanceof AbstractQueryBrowser;
@@ -374,7 +387,7 @@ public abstract class AbstractQueryBrowser<T> extends AbstractTableBrowser<T> im
          *
          * @param shortNames the archetype short names
          * @param type       the type returned by the underlying query
-         * @return <tt>true</tt> if the state supports the specified archetypes and type
+         * @return {@code true} if the state supports the specified archetypes and type
          */
         public boolean supports(String[] shortNames, Class type) {
             return queryState != null && queryState.supports(type, shortNames);

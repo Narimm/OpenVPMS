@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.stock;
@@ -51,13 +51,13 @@ public class StockImportErrorDialog extends PopupDialog {
         super(Messages.get("product.stock.import.error.title"), "BrowserDialog", OK, help);
         setModal(true);
 
-        ResultSet<StockData> resultSet = new ListResultSet<StockData>(errors, 20);
-        PagedIMTableModel<StockData, StockData> model
-                = new PagedIMTableModel<StockData, StockData>(new ErrorTableModel());
-        PagedIMTable<StockData> table = new PagedIMTable<StockData>(model, resultSet);
+        ResultSet<StockData> resultSet = new ListResultSet<>(errors, 20);
+        PagedIMTableModel<StockData, StockData> model = new PagedIMTableModel<>(new ErrorTableModel());
+        PagedIMTable<StockData> table = new PagedIMTable<>(model, resultSet);
         Label message = LabelFactory.create("product.stock.import.error.message");
         getLayout().add(ColumnFactory.create(Styles.LARGE_INSET,
-                                             ColumnFactory.create(Styles.WIDE_CELL_SPACING, message, table)));
+                                             ColumnFactory.create(Styles.WIDE_CELL_SPACING, message,
+                                                                  table.getComponent())));
     }
 
     private static class ErrorTableModel extends StockDataTableModel {

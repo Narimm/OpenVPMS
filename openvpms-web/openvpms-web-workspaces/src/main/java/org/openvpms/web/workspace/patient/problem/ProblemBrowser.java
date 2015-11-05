@@ -148,9 +148,7 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
         ProblemQuery query = getQuery();
         pagedModel = new PagedProblemTableModel(model, query);
         pagedModel.setSortAscending(query.isSortAscending());
-        PagedIMTable<Act> result = super.createTable(pagedModel);
-        initTable(result);
-        return result;
+        return super.createTable(pagedModel);
     }
 
     /**

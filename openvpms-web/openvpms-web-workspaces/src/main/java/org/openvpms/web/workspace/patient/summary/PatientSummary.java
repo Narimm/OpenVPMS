@@ -13,6 +13,7 @@
  *
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient.summary;
 
 import nextapp.echo2.app.Button;
@@ -133,7 +134,7 @@ public class PatientSummary extends PartySummary {
      * @return the summary components
      */
     protected List<Component> getSummaryComponents(Party patient) {
-        List<Component> result = new ArrayList<Component>();
+        List<Component> result = new ArrayList<>();
         result.add(getPatientName(patient));
         result.add(getPatientId(patient));
         if (rules.isDeceased(patient)) {
@@ -422,7 +423,7 @@ public class PatientSummary extends PartySummary {
         IConstraint dateRange = QueryHelper.createDateRangeConstraint(new Date());
         // constrain to alerts that intersect today
 
-        return new ActResultSet<Act>(archetypes, participants, dateRange, statuses, false, null, pageSize, null);
+        return new ActResultSet<>(archetypes, participants, dateRange, statuses, false, null, pageSize, null);
     }
 
     /**
@@ -436,7 +437,7 @@ public class PatientSummary extends PartySummary {
         String[] statuses = {ActStatus.IN_PROGRESS};
         ShortNameConstraint archetypes = new ShortNameConstraint(shortNames, true, true);
         ParticipantConstraint[] participants = {new ParticipantConstraint("patient", PATIENT_PARTICIPATION, patient)};
-        return new ActResultSet<Act>(archetypes, participants, null, statuses, false, null, pageSize, null);
+        return new ActResultSet<>(archetypes, participants, null, statuses, false, null, pageSize, null);
     }
 
     /**
@@ -447,7 +448,7 @@ public class PatientSummary extends PartySummary {
      */
     private ReminderRules.DueState getDueState(Party patient) {
         ActResultSet<Act> reminders = createActResultSet(patient, 20, ReminderArchetypes.REMINDER);
-        ResultSetIterator<Act> iterator = new ResultSetIterator<Act>(reminders);
+        ResultSetIterator<Act> iterator = new ResultSetIterator<>(reminders);
         ReminderRules.DueState result = null;
         while (iterator.hasNext()) {
             ReminderRules.DueState due = reminderRules.getDueState(iterator.next());
@@ -470,8 +471,8 @@ public class PatientSummary extends PartySummary {
      * @param patient the patient
      */
     private void onShowReminders(Party patient) {
-        PagedIMTable<Act> table = new PagedIMTable<Act>(new ReminderTableModel(getContext(), getHelpContext()),
-                                                        getReminders(patient));
+        PagedIMTable<Act> table = new PagedIMTable<>(new ReminderTableModel(getContext(), getHelpContext()),
+                                                     getReminders(patient));
         table.getTable().setDefaultRenderer(Object.class, new ReminderTableCellRenderer());
         new ViewerDialog(Messages.get("patient.summary.reminders"), "PatientSummary.ReminderDialog", table);
     }
@@ -560,8 +561,7 @@ public class PatientSummary extends PartySummary {
                 new ParticipantConstraint("patient", "participation.patient", patient)
         };
         SortConstraint[] sort = {new NodeSortConstraint("endTime", true)};
-        return new ActResultSet<Act>(archetypes, participants, null,
-                                     statuses, false, null, 10, sort);
+        return new ActResultSet<>(archetypes, participants, null, statuses, false, null, 10, sort);
     }
 
     /**
@@ -608,7 +608,7 @@ public class PatientSummary extends PartySummary {
         public ViewerDialog(String title, String style, PagedIMTable<Act> table) {
             super(title, style, OK);
             setModal(true);
-            getLayout().add(ColumnFactory.create("Inset", table));
+            getLayout().add(ColumnFactory.create(Styles.INSET, table.getComponent()));
             show();
         }
     }

@@ -11,14 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.order;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -37,6 +39,7 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.workspace.supplier.SupplierActQuery;
 
 import java.util.ArrayList;
@@ -58,7 +61,7 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
     /**
      * The act statuses.
      */
-    private static final ActStatuses STATUSES = new ActStatuses("act.supplierOrder");
+    private static final ActStatuses STATUSES = new ActStatuses(SupplierArchetypes.ORDER);
 
 
     /**
@@ -92,6 +95,16 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
     }
 
     /**
+     * Returns the preferred height of the query when rendered.
+     *
+     * @return the preferred height, or {@code null} if it has no preferred height
+     */
+    @Override
+    public Extent getHeight() {
+        return getHeight(2);
+    }
+
+    /**
      * Filters the result set on delivery status.
      *
      * @param set            the result set to filter
@@ -99,7 +112,7 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
      * @return the filtered result set
      */
     private ResultSet<FinancialAct> filterOnDeliveryStatus(ResultSet<FinancialAct> set, String deliveryStatus) {
-        List<FinancialAct> matches = new ArrayList<FinancialAct>();
+        List<FinancialAct> matches = new ArrayList<>();
         while (set.hasNext()) {
             IPage<FinancialAct> page = set.next();
             for (FinancialAct act : page.getResults()) {
@@ -109,19 +122,18 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
                 }
             }
         }
-        return new IMObjectListResultSet<FinancialAct>(matches, getMaxResults(), set.getSortConstraints(), null);
+        return new IMObjectListResultSet<>(matches, getMaxResults(), set.getSortConstraints(), null);
     }
 
     /**
-     * Lays out the component in a container, and sets focus on the instance
-     * name.
+     * Lays out the component in a container, and sets focus on the instance name.
      *
      * @param container the container
      */
     @Override
     protected void doLayout(Component container) {
-        Row row1 = RowFactory.create("CellSpacing");
-        Row row2 = RowFactory.create("CellSpacing");
+        Row row1 = RowFactory.create(Styles.CELL_SPACING);
+        Row row2 = RowFactory.create(Styles.CELL_SPACING);
 
         addSupplierSelector(row1);
         addStockLocationSelector(row1);
@@ -129,7 +141,7 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
         addDeliveryStatus(row1);
         addDateRange(row2);
 
-        container.add(ColumnFactory.create("CellSpacing", row1, row2));
+        container.add(ColumnFactory.create(Styles.CELL_SPACING, row1, row2));
     }
 
     /**
@@ -148,10 +160,9 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
      */
     private void addDeliveryStatus(Component container) {
         Label label = LabelFactory.create();
-        String displayName = DescriptorHelper.getDisplayName(
-                "act.supplierOrder", "deliveryStatus");
+        String displayName = DescriptorHelper.getDisplayName(SupplierArchetypes.ORDER, "deliveryStatus");
         label.setText(displayName);
-        NodeLookupQuery source = new NodeLookupQuery("act.supplierOrder", "deliveryStatus");
+        NodeLookupQuery source = new NodeLookupQuery(SupplierArchetypes.ORDER, "deliveryStatus");
         deliveryStatus = LookupFieldFactory.create(source, true);
         getFocusGroup().add(deliveryStatus);
         container.add(label);
@@ -166,11 +177,8 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
      * @return a new result set
      */
     protected ResultSet<FinancialAct> createResultSet(ParticipantConstraint[] participants, SortConstraint[] sort) {
-        return new ActResultSet<FinancialAct>(getArchetypeConstraint(),
-                                              participants, getFrom(), getTo(),
-                                              getStatuses(), excludeStatuses(),
-                                              getConstraints(), getMaxResults(),
-                                              sort);
+        return new ActResultSet<>(getArchetypeConstraint(), participants, getFrom(), getTo(), getStatuses(),
+                                  excludeStatuses(), getConstraints(), getMaxResults(), sort);
     }
 
 }

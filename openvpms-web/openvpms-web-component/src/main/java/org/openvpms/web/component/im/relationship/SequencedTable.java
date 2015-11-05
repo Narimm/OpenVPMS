@@ -82,7 +82,7 @@ abstract class SequencedTable<T> {
      * @param focusGroup the focus group
      */
     public void layout(Component container, FocusGroup focusGroup) {
-        focusGroup.add(table);
+        focusGroup.add(table.getFocusGroup());
         moveButtons = new ButtonColumn(focusGroup);
         moveButtons.addButton(MOVEUP_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
@@ -101,8 +101,8 @@ abstract class SequencedTable<T> {
         GridLayoutData alignTop = new GridLayoutData();
         alignTop.setAlignment(Alignment.ALIGN_TOP);
         row.setLayoutData(alignTop);
-        table.setLayoutData(alignTop);
-        Grid grid = GridFactory.create(2, table, row);
+        table.getComponent().setLayoutData(alignTop);
+        Grid grid = GridFactory.create(2, table.getComponent(), row);
         grid.setWidth(Styles.FULL_WIDTH);
 
         container.add(grid);

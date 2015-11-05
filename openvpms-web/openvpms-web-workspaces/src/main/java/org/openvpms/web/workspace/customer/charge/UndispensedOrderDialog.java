@@ -71,13 +71,13 @@ public class UndispensedOrderDialog extends ConfirmationDialog {
               Messages.get("customer.order.nondispensed.message"));
 
         LayoutContext layout = new DefaultLayoutContext(new LocalContext(), help);
-        DefaultDescriptorTableModel<Act> model = new DefaultDescriptorTableModel<Act>(INVOICE_ITEM, layout, NODES);
+        DefaultDescriptorTableModel<Act> model = new DefaultDescriptorTableModel<>(INVOICE_ITEM, layout, NODES);
         DescriptorTableColumn column = model.getColumn(RECEIVED_QUANTITY);
         if (column != null) {
             column.setDefaultValue(BigDecimal.ZERO);
         }
-        table = new PagedIMTable<Act>(model);
-        table.setResultSet(new IMObjectListResultSet<Act>(items, 5));
+        table = new PagedIMTable<>(model);
+        table.setResultSet(new IMObjectListResultSet<>(items, 5));
     }
 
     /**
@@ -87,7 +87,7 @@ public class UndispensedOrderDialog extends ConfirmationDialog {
     protected void doLayout() {
         Label message = LabelFactory.create(true, true);
         message.setText(getMessage());
-        Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, message, table);
+        Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, message, table.getComponent());
         Row row = RowFactory.create(Styles.LARGE_INSET, column);
         getLayout().add(row);
     }

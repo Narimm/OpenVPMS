@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.order;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
@@ -93,6 +94,16 @@ public class CustomerOrderQuery extends DateRangeActQuery<FinancialAct> {
     }
 
     /**
+     * Returns the preferred height of the query when rendered.
+     *
+     * @return the preferred height, or {@code null} if it has no preferred height
+     */
+    @Override
+    public Extent getHeight() {
+        return super.getHeight(2);
+    }
+
+    /**
      * Creates a new result set.
      *
      * @param sort the sort constraint. May be {@code null}
@@ -102,16 +113,16 @@ public class CustomerOrderQuery extends DateRangeActQuery<FinancialAct> {
     protected ResultSet<FinancialAct> createResultSet(SortConstraint[] sort) {
         Party location = (Party) locationSelector.getSelectedItem();
 
-        List<ParticipantConstraint> list = new ArrayList<ParticipantConstraint>();
+        List<ParticipantConstraint> list = new ArrayList<>();
         addParticipantConstraint(list, "customer", CustomerArchetypes.CUSTOMER_PARTICIPATION,
                                  customerSelector.getObject());
         addParticipantConstraint(list, "clinician", UserArchetypes.CLINICIAN_PARTICIPATION,
                                  (Entity) clinicianSelector.getSelectedItem());
         ParticipantConstraint[] participants = list.toArray(new ParticipantConstraint[list.size()]);
 
-        return new LocationActResultSet<FinancialAct>(getArchetypeConstraint(), participants, location,
-                                                      locationSelector.getLocations(), getFrom(), getTo(),
-                                                      getStatuses(), excludeStatuses(), getMaxResults(), sort);
+        return new LocationActResultSet<>(getArchetypeConstraint(), participants, location,
+                                          locationSelector.getLocations(), getFrom(), getTo(),
+                                          getStatuses(), excludeStatuses(), getMaxResults(), sort);
     }
 
     /**
@@ -217,7 +228,7 @@ public class CustomerOrderQuery extends DateRangeActQuery<FinancialAct> {
      * @return a new selector
      */
     private IMObjectSelector<Party> createCustomerSelector(LayoutContext context) {
-        IMObjectSelector<Party> selector = new IMObjectSelector<Party>(
+        IMObjectSelector<Party> selector = new IMObjectSelector<>(
                 DescriptorHelper.getDisplayName(CustomerArchetypes.PERSON), context, CustomerArchetypes.PERSON);
         AbstractIMObjectSelectorListener<Party> listener = new AbstractIMObjectSelectorListener<Party>() {
             @Override

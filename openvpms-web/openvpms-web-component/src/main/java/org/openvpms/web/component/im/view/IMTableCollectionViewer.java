@@ -172,7 +172,7 @@ public abstract class IMTableCollectionViewer<T>
     protected Component doLayout() {
         Column column = new IMObjectCollectionComponent();
         column.setStyleName(Styles.CELL_SPACING);
-        column.add(getTable());
+        column.add(getTable().getComponent());
         populateTable();
         return column;
     }

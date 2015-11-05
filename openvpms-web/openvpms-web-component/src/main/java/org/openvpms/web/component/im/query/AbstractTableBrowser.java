@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -20,9 +20,9 @@ import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.layout.ColumnLayoutData;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMTable;
@@ -31,6 +31,7 @@ import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.echo.style.Styles;
 
@@ -156,7 +157,7 @@ public abstract class AbstractTableBrowser<T> extends AbstractBrowser<T> {
      * Lay out this component.
      */
     protected void doLayout() {
-        Column container = ColumnFactory.create(STYLE);
+        SplitPane container = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_TOP_BOTTOM, STYLE);
         doLayout(container);
         setComponent(container);
     }
@@ -201,8 +202,8 @@ public abstract class AbstractTableBrowser<T> extends AbstractBrowser<T> {
      */
     protected void doLayoutForResults(Component container) {
         PagedIMTable<T> table = getTable();
-        container.add(table);
-        getFocusGroup().add(table);
+        container.add(table.getComponent());
+        getFocusGroup().add(table.getFocusGroup());
     }
 
     /**
@@ -212,11 +213,12 @@ public abstract class AbstractTableBrowser<T> extends AbstractBrowser<T> {
      */
     protected void doLayoutForNoResults(Component container) {
         Label label = LabelFactory.create("browser.noresults", Styles.BOLD);
-        ColumnLayoutData layout = new ColumnLayoutData();
-        layout.setAlignment(Alignment.ALIGN_CENTER);
-        label.setLayoutData(layout);
+        label.setLayoutData(ColumnFactory.layout(Alignment.ALIGN_CENTER));
 
-        container.add(label);
+        Column wrapper = ColumnFactory.create(label);
+        wrapper.setLayoutData(SplitPaneFactory.layout(Alignment.ALIGN_CENTER));
+
+        container.add(wrapper);
     }
 
     /**
@@ -226,7 +228,7 @@ public abstract class AbstractTableBrowser<T> extends AbstractBrowser<T> {
      * @return a new paged table
      */
     protected PagedIMTable<T> createTable(IMTableModel<T> model) {
-        return new PagedIMTable<T>(model);
+        return new PagedIMTable<>(model, true);
     }
 
     /**
@@ -338,7 +340,7 @@ public abstract class AbstractTableBrowser<T> extends AbstractBrowser<T> {
      */
     private void destroyTable() {
         if (table != null) {
-            getFocusGroup().remove(table);
+            getFocusGroup().remove(table.getFocusGroup());
             table = null;
         }
         if (createModel) {

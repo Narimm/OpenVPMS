@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.product.io;
 
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
@@ -176,6 +177,16 @@ public class ProductExportQuery extends ProductQuery {
      */
     public boolean includeLinkedPrices() {
         return includeLinkedPrices.isSelected();
+    }
+
+    /**
+     * Returns the preferred height of the query when rendered.
+     *
+     * @return the preferred height, or {@code null} if it has no preferred height
+     */
+    @Override
+    public Extent getHeight() {
+        return getHeight(3);
     }
 
     /**

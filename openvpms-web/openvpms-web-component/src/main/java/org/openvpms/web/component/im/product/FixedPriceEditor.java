@@ -240,7 +240,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
             }
             List<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, date, pricingGroup);
             if (!prices.isEmpty()) {
-                table = createPriceTable(prices);
+                table = createPriceTable(prices).getComponent();
             }
         }
         if (table != null) {

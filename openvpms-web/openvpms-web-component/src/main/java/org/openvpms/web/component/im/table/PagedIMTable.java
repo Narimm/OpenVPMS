@@ -11,14 +11,21 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
 
-import nextapp.echo2.app.Column;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
+import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.util.StyleSheetHelper;
+import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.SplitPaneFactory;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.table.PageListener;
@@ -31,7 +38,7 @@ import org.openvpms.web.echo.table.TableNavigator;
  *
  * @author Tim Anderson
  */
-public class PagedIMTable<T> extends Column {
+public class PagedIMTable<T> {
 
     /**
      * The underlying table.
@@ -44,31 +51,31 @@ public class PagedIMTable<T> extends Column {
     private TableNavigator navigator;
 
     /**
-     * Constructs a <tt>PagedIMTable</tt>.
+     * The container component.
+     */
+    private final Container container;
+
+    /**
+     * The focus group.
+     */
+    private FocusGroup group = new FocusGroup(PagedIMTable.class.getSimpleName());
+
+    /**
+     * Used to hide the navigator.
+     */
+    private static final Extent ZERO_PX = new Extent(0);
+
+    /**
+     * Constructs a {@link PagedIMTable}.
      *
      * @param model the table model
      */
     public PagedIMTable(IMTableModel<T> model) {
-        setStyleName(Styles.CELL_SPACING);
-        IMTableModel<T> paged;
-        if (!(model instanceof PagedIMTableModel)) {
-            paged = new PagedIMTableModel<T, T>(model);
-        } else {
-            paged = model;
-        }
-        table = new IMTable<T>(paged);
-        table.setDefaultHeaderRenderer(new SortableTableHeaderRenderer());
-        table.setRolloverEnabled(false);
-        add(table);
-        table.addPageListener(new PageListener() {
-            public void onAction(ActionEvent event) {
-                doPage(event);
-            }
-        });
+        this(model, false);
     }
 
     /**
-     * Constructs a <tt>PagedIMTable</tt>.
+     * Constructs a {@link PagedIMTable}.
      *
      * @param model the model to render results
      * @param set   the result set
@@ -76,6 +83,33 @@ public class PagedIMTable<T> extends Column {
     public PagedIMTable(IMTableModel<T> model, ResultSet<T> set) {
         this(model);
         setResultSet(set);
+    }
+
+    /**
+     * Constructs a {@link PagedIMTable}.
+     *
+     * @param model        the model to render results
+     * @param useSplitPane if {@code true}, render the navigator and table in a split pane. This ensures that the
+     *                     navigator doesn't scroll with the table
+     */
+    public PagedIMTable(IMTableModel<T> model, boolean useSplitPane) {
+        container = (useSplitPane) ? new SplitPaneContainer() : new DefaultContainer();
+        IMTableModel<T> paged;
+        if (!(model instanceof PagedIMTableModel)) {
+            paged = new PagedIMTableModel<>(model);
+        } else {
+            paged = model;
+        }
+        table = new IMTable<>(paged);
+        table.setDefaultHeaderRenderer(new SortableTableHeaderRenderer());
+        table.setRolloverEnabled(false);
+        table.addPageListener(new PageListener() {
+            public void onAction(ActionEvent event) {
+                doPage(event);
+            }
+        });
+        group.add(table);
+        this.container.setTable(table);
     }
 
     /**
@@ -94,19 +128,20 @@ public class PagedIMTable<T> extends Column {
         // . the no. of pages are known and > 1
         if (navigator == null) {
             navigator = new TableNavigator(table);
-            add(navigator, 0);
+            container.setNavigator(navigator);
+            group.add(0, navigator);
         }
         if ((!actual && pages > 0) || pages > 1) {
-            navigator.setVisible(true);
+            container.showNavigator(true);
         } else {
-            navigator.setVisible(false);
+            container.showNavigator(false);
         }
     }
 
     /**
      * Returns the selected object.
      *
-     * @return the selected object, or <tt>null</tt> if no object is selected
+     * @return the selected object, or {@code null} if no object is selected
      */
     public T getSelected() {
         return table.getSelected();
@@ -124,7 +159,7 @@ public class PagedIMTable<T> extends Column {
     /**
      * Returns the result set.
      *
-     * @return the result set, or <tt>null</tt> if none has been set
+     * @return the result set, or {@code null} if none has been set
      */
     public ResultSet<T> getResultSet() {
         return getModel().getResultSet();
@@ -150,26 +185,21 @@ public class PagedIMTable<T> extends Column {
     }
 
     /**
-     * Sets the focus traversal (tab) index of the component.
-     *
-     * @param newValue the new focus traversal index
-     * @see #getFocusTraversalIndex()
-     */
-    @Override
-    public void setFocusTraversalIndex(int newValue) {
-        if (navigator != null) {
-            navigator.setFocusTraversalIndex(newValue);
-        }
-        table.setFocusTraversalIndex(newValue);
-    }
-
-    /**
      * Returns the table navigator.
      *
-     * @return the table navigator, or <tt>null</tt> if there is no result set
+     * @return the table navigator, or {@code null} if there is no result set
      */
     public TableNavigator getNavigator() {
         return navigator;
+    }
+
+    /**
+     * Returns the component.
+     *
+     * @return the component
+     */
+    public Component getComponent() {
+        return container.getComponent();
     }
 
     /**
@@ -199,6 +229,97 @@ public class PagedIMTable<T> extends Column {
 
             // refocus on the table
             FocusHelper.setFocus(table);
+        }
+    }
+
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group
+     */
+    public FocusGroup getFocusGroup() {
+        return group;
+    }
+
+    private interface Container {
+
+        void setTable(IMTable table);
+
+        void setNavigator(TableNavigator navigator);
+
+        void showNavigator(boolean show);
+
+        Component getComponent();
+    }
+
+    private class DefaultContainer implements Container {
+
+        private final Component container;
+
+        public DefaultContainer() {
+            this.container = ColumnFactory.create(Styles.CELL_SPACING);
+        }
+
+        @Override
+        public void setTable(IMTable table) {
+            container.add(table);
+        }
+
+        @Override
+        public void setNavigator(TableNavigator navigator) {
+            container.add(navigator, 0);
+        }
+
+        @Override
+        public void showNavigator(boolean show) {
+            if (navigator != null) {
+                navigator.setVisible(show);
+            }
+        }
+
+        @Override
+        public Component getComponent() {
+            return container;
+        }
+    }
+
+    private class SplitPaneContainer implements Container {
+
+        private final SplitPane container;
+        private Extent position;
+
+        public SplitPaneContainer() {
+            this.container = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_TOP_BOTTOM, "PagedIMTable");
+            position = container.getSeparatorPosition();
+            if (position == null && container.getStyleName() != null) {
+                position = StyleSheetHelper.getExtent(SplitPane.class, container.getStyleName(),
+                                                      SplitPane.PROPERTY_SEPARATOR_POSITION);
+            }
+            container.add(LabelFactory.create()); // spacer until the navigator is displayed
+        }
+
+        @Override
+        public void setTable(IMTable table) {
+            container.add(ColumnFactory.create(Styles.INSET, table));
+        }
+
+        @Override
+        public void setNavigator(TableNavigator navigator) {
+            if (container.getComponentCount() == 2) {
+                // remove spacer
+                container.remove(0);
+            }
+            container.add(ColumnFactory.create(Styles.INSET, navigator), 0);
+        }
+
+        @Override
+        public void showNavigator(boolean show) {
+            container.setSeparatorPosition(show ? position : ZERO_PX);
+        }
+
+        @Override
+        public Component getComponent() {
+            return container;
         }
     }
 

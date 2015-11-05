@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.supplier.delivery;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Row;
 import org.openvpms.archetype.rules.supplier.OrderStatus;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
@@ -83,6 +84,16 @@ public class PostedOrderQuery extends SupplierActQuery<FinancialAct> {
             return super.query(sort);
         }
         return null;
+    }
+
+    /**
+     * Returns the preferred height of the query when rendered.
+     *
+     * @return the preferred height, or {@code null} if it has no preferred height
+     */
+    @Override
+    public Extent getHeight() {
+        return (includeDateRange) ? getHeight(2) : getHeight(1);
     }
 
     /**
