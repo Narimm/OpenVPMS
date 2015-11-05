@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.workflow.investigation;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
@@ -160,6 +161,16 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
      */
     public void setClinician(User clinician) {
         this.clinician.setSelectedItem(clinician);
+    }
+
+    /**
+     * Returns the preferred height of the query when rendered.
+     *
+     * @return the preferred height, or {@code null} if it has no preferred height
+     */
+    @Override
+    public Extent getHeight() {
+        return getHeight(2);
     }
 
     /**

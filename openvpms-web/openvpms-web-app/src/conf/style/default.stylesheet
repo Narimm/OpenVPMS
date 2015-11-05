@@ -466,6 +466,13 @@
         </properties>
     </style>
 
+    <style name="TabbedBrowser" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="${TabbedBrowser.height}"/>
+        </properties>
+    </style>
+
     <style name="AlertsViewer" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
         <properties>
@@ -1018,10 +1025,10 @@
         </properties>
     </style>
 
-    <style name="Browser" type="nextapp.echo2.app.Column">
+    <style name="Browser" type="nextapp.echo2.app.SplitPane">
         <properties>
-            <property name="cellSpacing" value="${padding.medium}"/>
-            <property name="insets" value="${padding.medium}"/>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="${Browser.separatorPosition}"/>
         </properties>
     </style>
 
@@ -1281,6 +1288,13 @@
     <!-- =================================================================== -->
     <!--  Table                                                              -->
     <!-- =================================================================== -->
+
+    <style name="PagedIMTable" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="${PagedIMTable.separatorPosition}"/>
+        </properties>
+    </style>
 
     <style name="Table.Header" type="nextapp.echo2.app.Label">
         <properties>

@@ -110,9 +110,7 @@ public class PatientHistoryBrowser extends AbstractPatientHistoryBrowser {
         PatientHistoryQuery query = getQuery();
         pagedModel = createPagedModel((IMObjectTableModel<Act>) model, query);
         pagedModel.setSortAscending(query.isSortAscending());
-        PagedIMTable<Act> result = super.createTable(pagedModel);
-        initTable(result);
-        return result;
+        return super.createTable(pagedModel);
     }
 
     /**

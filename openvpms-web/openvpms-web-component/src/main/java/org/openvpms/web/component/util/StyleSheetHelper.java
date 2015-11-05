@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.util;
 
+import nextapp.echo2.app.Extent;
 import org.openvpms.web.echo.style.Style;
 import org.openvpms.web.echo.style.UserStyleSheets;
 import org.openvpms.web.system.ServiceHelper;
@@ -67,6 +68,27 @@ public class StyleSheetHelper {
         Style style = styleSheets.getStyle();
         if (style != null) {
             result = style.getProperty(name, defaultValue);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the value of an extent property for a given component style.
+     *
+     * @param component the component class
+     * @param styleName the style name
+     * @param name      the property name
+     * @return the extent, or {@code null} if the style doesn't exist
+     */
+    public static Extent getExtent(Class component, String styleName, String name) {
+        Extent result = null;
+        UserStyleSheets styleSheets = ServiceHelper.getBean(UserStyleSheets.class);
+        Style style = styleSheets.getStyle();
+        if (style != null) {
+            nextapp.echo2.app.Style s = style.getStylesheet().getStyle(component, styleName);
+            if (s != null) {
+                result = (Extent) s.getProperty(name);
+            }
         }
         return result;
     }

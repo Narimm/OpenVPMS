@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.messaging;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Row;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.workflow.MessageArchetypes;
@@ -36,6 +37,7 @@ import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 
 
@@ -77,7 +79,7 @@ public class MessageQuery extends DateRangeActQuery<Act> {
     public MessageQuery(Entity user, LayoutContext context) {
         super(user, "to", "participation.user", ARCHETYPES, STATUSES, Act.class);
 
-        this.user = new IMObjectSelector<Entity>(Messages.get("messaging.user"), context, UserArchetypes.USER);
+        this.user = new IMObjectSelector<>(Messages.get("messaging.user"), context, UserArchetypes.USER);
         this.user.setListener(new AbstractIMObjectSelectorListener<Entity>() {
             public void selected(Entity object) {
                 setEntity(object);
@@ -105,12 +107,8 @@ public class MessageQuery extends DateRangeActQuery<Act> {
             } else {
                 participants = new ParticipantConstraint[0];
             }
-            result = new ActResultSet<Act>(getArchetypeConstraint(),
-                                           participants,
-                                           getFrom(), getTo(),
-                                           getStatuses(), excludeStatuses(),
-                                           getConstraints(), getMaxResults(),
-                                           sort);
+            result = new ActResultSet<>(getArchetypeConstraint(), participants, getFrom(), getTo(), getStatuses(),
+                                        excludeStatuses(), getConstraints(), getMaxResults(), sort);
         }
         return result;
     }
@@ -125,6 +123,16 @@ public class MessageQuery extends DateRangeActQuery<Act> {
     }
 
     /**
+     * Returns the preferred height of the query when rendered.
+     *
+     * @return the preferred height, or {@code null} if it has no preferred height
+     */
+    @Override
+    public Extent getHeight() {
+        return getHeight(2);
+    }
+
+    /**
      * Creates a container component to lay out the query component in.
      *
      * @return a new container
@@ -132,20 +140,19 @@ public class MessageQuery extends DateRangeActQuery<Act> {
      */
     @Override
     protected Component createContainer() {
-        return ColumnFactory.create("WideCellSpacing");
+        return ColumnFactory.create(Styles.CELL_SPACING);
     }
 
     /**
-     * Lays out the component in a container, and sets focus on the instance
-     * name.
+     * Lays out the component in a container, and sets focus on the instance name.
      *
      * @param container the container
      */
     @Override
     protected void doLayout(Component container) {
-        Row row1 = RowFactory.create("CellSpacing");
+        Row row1 = RowFactory.create(Styles.CELL_SPACING);
         super.doLayout(row1);
-        Row row2 = RowFactory.create("CellSpacing", LabelFactory.create("messaging.user"), user.getComponent());
+        Row row2 = RowFactory.create(Styles.CELL_SPACING, LabelFactory.create("messaging.user"), user.getComponent());
         container.add(row1);
         container.add(row2);
         getFocusGroup().add(user.getFocusGroup());

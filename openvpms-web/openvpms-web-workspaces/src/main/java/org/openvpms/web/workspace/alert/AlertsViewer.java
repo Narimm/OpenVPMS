@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.alert;
 
@@ -44,9 +44,10 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -91,7 +92,7 @@ public class AlertsViewer extends PopupDialog {
      * @param help    the help context
      */
     public AlertsViewer(Alert alert, Context context, HelpContext help) {
-        this(Arrays.asList(alert), context, help);
+        this(Collections.singletonList(alert), context, help);
         if (alert.getAlert() != null) {
             setTitle(DescriptorHelper.getDisplayName(alert.getAlert()));
         } else {
@@ -128,14 +129,14 @@ public class AlertsViewer extends PopupDialog {
      * @return the component
      */
     private Component getComponent() {
-        ResultSet<Alert> set = new ListResultSet<Alert>(alerts, 20);
+        ResultSet<Alert> set = new ListResultSet<>(alerts, 20);
         Model model = new Model();
-        table = new PagedIMTable<Alert>(model, set);
+        table = new PagedIMTable<>(model, set);
 
         table.getTable().setStyleName("AlertsViewerTable");
         // this style disables the selection blur style used in other tables, as it hides white text
 
-        column = ColumnFactory.create("CellSpacing", table);
+        column = ColumnFactory.create(Styles.CELL_SPACING, table.getComponent());
 
         if (alerts.size() == 1) {
             show(alerts.get(0));
@@ -220,7 +221,7 @@ public class AlertsViewer extends PopupDialog {
          * @param ascending if {@code true} sort in ascending order; otherwise
          *                  sort in {@code descending} order
          * @return the sort criteria, or {@code null} if the column isn't
-         *         sortable
+         * sortable
          */
         public SortConstraint[] getSortConstraints(int column, boolean ascending) {
             return null;

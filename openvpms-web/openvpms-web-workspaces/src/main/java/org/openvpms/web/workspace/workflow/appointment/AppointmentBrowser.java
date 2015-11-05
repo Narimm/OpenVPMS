@@ -145,6 +145,11 @@ public class AppointmentBrowser extends ScheduleBrowser {
     private int freeSlotsTab;
 
     /**
+     * The last selected tab, to avoid redundant updates.
+     */
+    private int lastTab;
+
+    /**
      * The default cell renderer.
      */
     private final AppointmentTableCellRenderer defaultRenderer;
@@ -321,6 +326,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
         freeSlotsTab = addTab(Messages.get("workflow.scheduling.appointment.find.title"),
                               ColumnFactory.create(Styles.INSET));
         tab.setSelectedIndex(appointmentsTab);
+        lastTab = appointmentsTab;
 
         Table table = getTable();
         tabContainer.add(tab);
@@ -457,13 +463,16 @@ public class AppointmentBrowser extends ScheduleBrowser {
      */
     private void onBrowserChanged() {
         int index = tab.getSelectedIndex();
-        if (index == appointmentsTab) {
-            onAppointmentsSelected();
-        } else {
-            onFreeSlotsSelected();
-        }
-        if (listener != null) {
-            listener.onBrowserChanged();
+        if (index != lastTab) {
+            lastTab = index;
+            if (index == appointmentsTab) {
+                onAppointmentsSelected();
+            } else {
+                onFreeSlotsSelected();
+            }
+            if (listener != null) {
+                listener.onBrowserChanged();
+            }
         }
     }
 

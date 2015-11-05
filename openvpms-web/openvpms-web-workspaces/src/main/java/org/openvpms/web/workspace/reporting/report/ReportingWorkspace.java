@@ -11,13 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.report;
 
 import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
@@ -40,7 +39,6 @@ import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
-import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
@@ -132,8 +130,7 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
                 setObject(object);
             }
         });
-        Column entities = ColumnFactory.create("Inset", browser.getComponent());
-        container.add(entities);
+        container.add(browser.getComponent());
         if (!query.isAuto()) {
             browser.query();
         }
@@ -197,9 +194,9 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
      */
     private Browser<Entity> createBrowser(ReportQuery query) {
         DefaultLayoutContext context = new DefaultLayoutContext(getContext(), getHelpContext());
-        DefaultDescriptorTableModel<Entity> model = new DefaultDescriptorTableModel<Entity>(
+        DefaultDescriptorTableModel<Entity> model = new DefaultDescriptorTableModel<>(
                 query.getShortNames(), context, "id", "name", "description", "archetype", "reportType");
-        return new DefaultIMObjectTableBrowser<Entity>(query, model, context);
+        return new DefaultIMObjectTableBrowser<>(query, model, context);
     }
 
     /**

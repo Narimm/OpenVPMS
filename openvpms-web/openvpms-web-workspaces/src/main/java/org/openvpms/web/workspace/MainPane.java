@@ -31,7 +31,6 @@ import nextapp.echo2.app.TaskQueueHandle;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.layout.RowLayoutData;
-import nextapp.echo2.app.layout.SplitPaneLayoutData;
 import org.openvpms.archetype.rules.workflow.MessageArchetypes;
 import org.openvpms.archetype.rules.workflow.MessageStatus;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -230,10 +229,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         OpenVPMSApp.getInstance().setContextChangeListener(this);
 
         menu = new ButtonRow(ButtonRow.STYLE, BUTTON_STYLE);
-        SplitPaneLayoutData layout = new SplitPaneLayoutData();
-        layout.setAlignment(new Alignment(Alignment.CENTER,
-                                          Alignment.DEFAULT));
-        menu.setLayoutData(layout);
+        menu.setLayoutData(SplitPaneFactory.layout(new Alignment(Alignment.CENTER, Alignment.DEFAULT)));
         subMenu = new ButtonColumn(BUTTON_COLUMN_STYLE, BUTTON_STYLE);
         leftMenu = ColumnFactory.create(LEFT_MENU_STYLE, subMenu);
         currentWorkspaces = ContentPaneFactory.create(WORKSPACE_STYLE);

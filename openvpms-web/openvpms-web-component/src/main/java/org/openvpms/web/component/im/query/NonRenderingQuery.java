@@ -17,6 +17,7 @@
 package org.openvpms.web.component.im.query;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -84,5 +85,15 @@ public abstract class NonRenderingQuery<T> extends AbstractQuery<T> {
      */
     public FocusGroup getFocusGroup() {
         return group;
+    }
+
+    /**
+     * Returns the preferred height of the query when rendered.
+     *
+     * @return {@code null} as the query doesn't have a preferred height
+     */
+    @Override
+    public Extent getHeight() {
+        return null;
     }
 }

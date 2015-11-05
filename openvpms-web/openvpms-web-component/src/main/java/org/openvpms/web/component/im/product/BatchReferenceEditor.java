@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -353,9 +353,9 @@ class BatchReferenceEditor extends AbstractPropertyEditor implements IMObjectRef
         }
         if (table != null) {
             table.getTable().setSelected(batch);
-            Column newValue = ColumnFactory.create(Styles.INSET, table);
+            Column newValue = ColumnFactory.create(Styles.INSET, table.getComponent());
             dropDown.setPopUp(newValue);
-            dropDown.setFocusComponent(table);
+            dropDown.setFocusComponent(table.getComponent());
         } else {
             Label component = LabelFactory.create("imobject.none");
             Column newValue = ColumnFactory.create(Styles.INSET, component);
@@ -375,7 +375,7 @@ class BatchReferenceEditor extends AbstractPropertyEditor implements IMObjectRef
      */
     private PagedIMTable<Entity> createTable(ProductBatchResultSet set) {
         ProductBatchTableModel model = new ProductBatchTableModel(context, false, false);
-        final PagedIMTable<Entity> table = new PagedIMTable<Entity>(model, set);
+        final PagedIMTable<Entity> table = new PagedIMTable<>(model, set);
         table.getTable().addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 setObject(table.getTable().getSelected());

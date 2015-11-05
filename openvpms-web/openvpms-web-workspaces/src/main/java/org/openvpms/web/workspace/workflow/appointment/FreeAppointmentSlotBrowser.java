@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -32,6 +32,8 @@ import org.openvpms.web.component.im.query.QueryListener;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
+import org.openvpms.web.echo.factory.ContentPaneFactory;
+import org.openvpms.web.echo.pane.ContentPane;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.text.DateFormat;
@@ -110,7 +112,7 @@ class FreeAppointmentSlotBrowser extends AbstractTableBrowser<Slot> {
             }
         };
         ((SlotTableModel) getTableModel()).setSchedules(query.getSelectedSchedules());
-        ResultSet<Slot> set = new IterableBackedResultSet<Slot>(iterable, 20);
+        ResultSet<Slot> set = new IterableBackedResultSet<>(iterable, 20);
 
         Component component = getComponent();
 
@@ -122,13 +124,23 @@ class FreeAppointmentSlotBrowser extends AbstractTableBrowser<Slot> {
     }
 
     /**
+     * Lay out this component.
+     */
+    @Override
+    protected void doLayout() {
+        // create a ContentPane to hold the results table
+        ContentPane container = ContentPaneFactory.create();
+        setComponent(container);
+    }
+
+    /**
      * Lays out this component.
      *
      * @param container the container
      */
     @Override
     protected void doLayout(Component container) {
-        // do nothing.
+        // do nothing. The query component is rendered in a SplitPane managed by AppointmentBrowser.
     }
 
     /**
@@ -181,7 +193,7 @@ class FreeAppointmentSlotBrowser extends AbstractTableBrowser<Slot> {
          * @param schedules the schedules
          */
         public void setSchedules(List<Entity> schedules) {
-            names = new HashMap<Long, String>();
+            names = new HashMap<>();
             for (Entity schedule : schedules) {
                 names.put(schedule.getId(), schedule.getName());
             }

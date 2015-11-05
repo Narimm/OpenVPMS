@@ -16,7 +16,6 @@
 
 package org.openvpms.web.workspace.reporting.statement;
 
-import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
@@ -40,7 +39,6 @@ import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.factory.GroupBoxFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
@@ -113,8 +111,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
         query.getComponent();
         query.setDate(getYesterday()); // default statement date to yesterday
         browser = new CustomerBalanceBrowser(query, new DefaultLayoutContext(getContext(), getHelpContext()));
-        GroupBox box = GroupBoxFactory.create(browser.getComponent());
-        container.add(box);
+        container.add(browser.getComponent());
         group.add(browser.getFocusGroup());
     }
 
@@ -321,8 +318,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
             }
             String title = Messages.format("imobject.print.title", type);
             HelpContext help = getHelpContext().subtopic("report");
-            InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<ObjectSet>(title, printer, getContext(),
-                                                                                           help);
+            InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<>(title, printer, getContext(), help);
             iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {

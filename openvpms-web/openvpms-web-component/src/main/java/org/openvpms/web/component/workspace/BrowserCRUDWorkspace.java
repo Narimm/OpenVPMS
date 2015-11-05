@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -29,7 +29,6 @@ import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.select.IMObjectSelector;
-import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 
 import java.util.List;
@@ -45,7 +44,7 @@ import java.util.List;
  * @author Tim Anderson
  */
 public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extends IMObject>
-    extends AbstractCRUDWorkspace<Parent, Child> {
+        extends AbstractCRUDWorkspace<Parent, Child> {
 
     /**
      * The query.
@@ -71,7 +70,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      * performing any operations.
      *
      * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId the workspace localisation identifier
+     * @param workspaceId  the workspace localisation identifier
      */
     public BrowserCRUDWorkspace(String workspacesId, String workspaceId, Context context) {
         this(workspacesId, workspaceId, context, true);
@@ -84,7 +83,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      * be invoked to set archetypes that the workspace supports, before
      * performing any operations.
      *
-     * @param workspacesId  the workspaces localisation identifier
+     * @param workspacesId the workspaces localisation identifier
      * @param workspaceId  the workspace localisation identifier
      * @param context      the context
      * @param showSelector if {@code true}, show the selector
@@ -101,10 +100,10 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      * that the workspace supports, before performing any operations.
      *
      * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId the workspace localisation identifier
-     * @param archetypes  the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
-     *                    method must be invoked to set a non-null value before performing any operation
-     * @param context     the context
+     * @param workspaceId  the workspace localisation identifier
+     * @param archetypes   the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
+     *                     method must be invoked to set a non-null value before performing any operation
+     * @param context      the context
      */
     public BrowserCRUDWorkspace(String workspacesId, String workspaceId, Archetypes<Parent> archetypes,
                                 Context context) {
@@ -115,7 +114,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      * Constructs a new {@code BrowserCRUDWorkspace}, with a selector for
      * the parent object.
      *
-     * @param workspacesId     the workspaces localisation identifier
+     * @param workspacesId    the workspaces localisation identifier
      * @param workspaceId     the workspace localisation identifier
      * @param archetypes      the archetypes that this operates on.
      *                        If {@code null}, the {@link #setArchetypes}
@@ -134,7 +133,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
     /**
      * Constructs a new {@code BrowserCRUDWorkspace}.
      *
-     * @param workspacesId     the workspaces localisation identifier
+     * @param workspacesId    the workspaces localisation identifier
      * @param workspaceId     the workspace localisation identifier
      * @param archetypes      the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
      *                        method must be invoked to set a non-null value before performing any operation
@@ -399,10 +398,8 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      * @return a new workspace
      */
     protected Component createWorkspace() {
-        Component browser = ColumnFactory.create("Inset", getBrowser().getComponent());
-        return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
-                                       "BrowserCRUDWorkspace.Layout", browser,
-                                       getCRUDWindow().getComponent());
+        return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, "BrowserCRUDWorkspace.Layout",
+                                       getBrowser().getComponent(), getCRUDWindow().getComponent());
     }
 
     /**
@@ -412,7 +409,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      * This implementation always returns {@code true}.
      *
      * @return {@code true} if a notification should be made, otherwise
-     *         {@code false}
+     * {@code false}
      */
     protected boolean updateSummaryOnChildUpdate() {
         return true;
@@ -429,7 +426,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      * This implementation always returns {@code false}.
      *
      * @return {@code true} if the parent object is optional, otherwise
-     *         {@code false}
+     * {@code false}
      */
     protected boolean isParentOptional() {
         return false;
