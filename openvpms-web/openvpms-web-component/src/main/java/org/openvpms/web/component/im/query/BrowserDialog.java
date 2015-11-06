@@ -11,21 +11,25 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
 
-import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.PaneContainer;
 import nextapp.echo2.app.Row;
+import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
 
@@ -206,11 +210,20 @@ public class BrowserDialog<T> extends PopupDialog {
             Label label = LabelFactory.create(null, Styles.BOLD);
             label.setText(message);
             Row inset = RowFactory.create(Styles.INSET, label);
-            Column column = ColumnFactory.create(Styles.CELL_SPACING, inset, component);
-            getLayout().add(column);
-        } else {
-            getLayout().add(component);
+            if (component instanceof PaneContainer) {
+                SplitPane pane = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL);
+                int size = StyleSheetHelper.getProperty("font.size", -1);
+                if (size != -1) {
+                    pane.setSeparatorPosition(new Extent(size * 2));
+                }
+                pane.add(inset);
+                pane.add(component);
+                component = pane;
+            } else {
+                component = ColumnFactory.create(Styles.CELL_SPACING, inset, component);
+            }
         }
+        getLayout().add(component);
 
         browser.addBrowserListener(new BrowserListener<T>() {
             public void query() {

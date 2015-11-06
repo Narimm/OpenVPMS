@@ -215,7 +215,7 @@ public abstract class AbstractTableBrowser<T> extends AbstractBrowser<T> {
         Label label = LabelFactory.create("browser.noresults", Styles.BOLD);
         label.setLayoutData(ColumnFactory.layout(Alignment.ALIGN_CENTER));
 
-        Column wrapper = ColumnFactory.create(label);
+        Column wrapper = ColumnFactory.create(Styles.LARGE_INSET, label);
         wrapper.setLayoutData(SplitPaneFactory.layout(Alignment.ALIGN_CENTER));
 
         container.add(wrapper);

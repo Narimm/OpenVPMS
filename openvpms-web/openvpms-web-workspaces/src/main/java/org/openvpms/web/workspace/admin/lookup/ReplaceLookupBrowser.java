@@ -13,10 +13,12 @@
  *
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.admin.lookup;
 
 import echopointng.GroupBox;
 import nextapp.echo2.app.CheckBox;
+import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
@@ -26,11 +28,14 @@ import org.openvpms.web.component.im.query.FilteredResultSet;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.table.IMTableModel;
+import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.echo.factory.CheckBoxFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.GroupBoxFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.List;
@@ -65,7 +70,7 @@ class ReplaceLookupBrowser extends IMObjectTableBrowser<Lookup> {
 
 
     /**
-     * Constructs a {@code ReplaceLookupBrowser}.
+     * Constructs a {@link ReplaceLookupBrowser}.
      *
      * @param query   the query
      * @param lookup  the lookup to replace
@@ -76,8 +81,8 @@ class ReplaceLookupBrowser extends IMObjectTableBrowser<Lookup> {
         query.setMaxResults(15);
         this.replace = lookup;
         deleteSource = CheckBoxFactory.create("lookup.replace.delete", false);
-        gridContainer = ColumnFactory.create("Inset");
-        queryContainer = ColumnFactory.create("WideCellSpacing");
+        gridContainer = ColumnFactory.create(Styles.INSET);
+        queryContainer = ColumnFactory.create(Styles.WIDE_CELL_SPACING);
     }
 
     /**
@@ -99,6 +104,27 @@ class ReplaceLookupBrowser extends IMObjectTableBrowser<Lookup> {
         gridContainer.removeAll();
         gridContainer.add(createGrid());
         super.notifySelected(selected);
+    }
+
+    /**
+     * Creates a new paged table.
+     *
+     * @param model the table model
+     * @return a new paged table
+     */
+    @Override
+    protected PagedIMTable<Lookup> createTable(IMTableModel<Lookup> model) {
+        return new PagedIMTable<>(model);
+    }
+
+    /**
+     * Lay out this component.
+     */
+    @Override
+    protected void doLayout() {
+        Column container = ColumnFactory.create(Styles.INSET);
+        doLayout(container);
+        setComponent(container);
     }
 
     /**
