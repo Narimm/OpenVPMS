@@ -186,7 +186,7 @@ public class ProductExportQuery extends ProductQuery {
      */
     @Override
     public Extent getHeight() {
-        return getHeight(3);
+        return getHeight(4);
     }
 
     /**

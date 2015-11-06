@@ -184,7 +184,7 @@ public class StockExportObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
      */
     @Override
     public Extent getHeight() {
-        return getHeight(2);
+        return getHeight(3);
     }
 
     /**

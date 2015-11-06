@@ -41,6 +41,10 @@ public abstract class NonRenderingQuery<T> extends AbstractQuery<T> {
      */
     private FocusGroup group;
 
+    /**
+     * Zero pixel extent.
+     */
+    private static final Extent ZERO_PX = new Extent(0);
 
     /**
      * Constructs a {@link NonRenderingQuery} that queries objects with the specified primary short names.
@@ -90,10 +94,10 @@ public abstract class NonRenderingQuery<T> extends AbstractQuery<T> {
     /**
      * Returns the preferred height of the query when rendered.
      *
-     * @return {@code null} as the query doesn't have a preferred height
+     * @return an extent zero pixels high
      */
     @Override
     public Extent getHeight() {
-        return null;
+        return ZERO_PX;
     }
 }

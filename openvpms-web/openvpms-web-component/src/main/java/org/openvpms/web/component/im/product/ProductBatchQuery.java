@@ -155,7 +155,7 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
      */
     @Override
     public Extent getHeight() {
-        return getHeight(2);
+        return getHeight(3);
     }
 
     /**
