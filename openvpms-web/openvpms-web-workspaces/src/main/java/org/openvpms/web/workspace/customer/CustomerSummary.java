@@ -104,10 +104,9 @@ public class CustomerSummary extends PartySummary {
         Component column = ColumnFactory.create();
         Component customerName = getCustomerName(party);
         column.add(ColumnFactory.create(Styles.SMALL_INSET, customerName));
-        Label customerId = createLabel("customer.id", party.getId());
+        Component customerId = getCustomerId(party);
         column.add(ColumnFactory.create(Styles.SMALL_INSET, customerId));
-        Label phone = LabelFactory.create();
-        phone.setText(partyRules.getTelephone(party, true));
+        Component phone = getCustomerPhone(party);
         column.add(ColumnFactory.create(Styles.SMALL_INSET, phone));
 
         Contact email = ContactHelper.getPreferredEmail(party);
@@ -176,13 +175,35 @@ public class CustomerSummary extends PartySummary {
      * Returns a component representing the customer name.
      *
      * @param customer the customer
-     * @return the customer component
+     * @return the customer name component
      */
     protected Component getCustomerName(Party customer) {
         IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(customer.getObjectReference(),
                                                                      customer.getName(), true, getContext());
         viewer.setStyleName("hyperlink-bold");
         return viewer.getComponent();
+    }
+
+    /**
+     * Returns a component representing the customer identifier.
+     *
+     * @param customer the customer
+     * @return the customer identifier component
+     */
+    protected Component getCustomerId(Party customer) {
+        return createLabel("customer.id", customer.getId());
+    }
+
+    /**
+     * Returns a component representing the customer phone contact.
+     *
+     * @param customer the customer
+     * @return the customer identifier component
+     */
+    protected Label getCustomerPhone(Party customer) {
+        Label phone = LabelFactory.create();
+        phone.setText(partyRules.getTelephone(customer, true));
+        return phone;
     }
 
     /**
