@@ -164,13 +164,26 @@
     <template name="Clinician Sales Report" archetype="REPORT" reportType="FINANCIAL"
               description="Clinician Sales Report" path="Reporting/Reports/Financial/A4/Clinician Sales Report.jrxml"
               mimeType="text/xml" docType="document.other"/>
+    <template name="Debtors - Current" archetype="REPORT" reportType="FINANCIAL"
+              description="Provides the current debtors position"
+              path="Reporting/Reports/Financial/A4/Debtors - Current.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Debtors - Current - SubReport1" archetype="SUBREPORT" reportType="FINANCIAL"
+              description="Debtors - Current - SubReport1"
+              path="Reporting/Reports/Financial/A4/Debtors - Current - SubReport1.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Debtors - Current - SubReport2" archetype="SUBREPORT" reportType="FINANCIAL"
+              description="Debtors - Current - SubReport2"
+              path="Reporting/Reports/Financial/A4/Debtors - Current - SubReport2.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Debtors - Historical" archetype="REPORT" reportType="FINANCIAL"
+              description="Provides the debtors position at any date"
+              path="Reporting/Reports/Financial/A4/Debtors - Historical.jrxml" mimeType="text/xml"
+              docType="document.other"/>
     <template name="Key Performance Indicators" archetype="REPORT" reportType="FINANCIAL"
               description="Key Performance Indicators"
               path="Reporting/Reports/Financial/A4/Key Performance Indicators.jrxml"
               mimeType="text/xml" docType="document.other"/>
-    <template name="Outstanding Debtors" archetype="REPORT" reportType="FINANCIAL" description="Outstanding Debtors"
-              path="Reporting/Reports/Financial/A4/Outstanding Debtors.jrxml" mimeType="text/xml"
-              docType="document.other"/>
     <template name="Practice Clinician Sales Report" archetype="REPORT" reportType="FINANCIAL"
               description="Practice Clinician Sales Report"
               path="Reporting/Reports/Financial/A4/Practice Clinician Sales Report.jrxml" mimeType="text/xml"
