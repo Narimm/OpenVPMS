@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.0.4.final using JasperReports Library version 6.0.4  -->
-<!-- 2015-09-23T09:44:22 -->
+<!-- Created with Jaspersoft Studio version 6.1.1.final using JasperReports Library version 6.1.1  -->
+<!-- 2015-11-04T03:50:19 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Key Performance Indicators" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="e1dde246-07e1-4c02-9c46-879b11400d3f">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
@@ -184,6 +183,7 @@
 	</style>
 	<subDataset name="DS-General" uuid="a9097a2d-1fc7-40c0-8f12-acdd32db6d1b">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<parameter name="Set" class="java.lang.Integer">
 			<parameterDescription><![CDATA[Set]]></parameterDescription>
 			<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
@@ -218,9 +218,12 @@ where e.arch_short_name = 'party.customerperson'
     and (e.active=1
 		or exists ( select * 
                       from  participations p
+                      join financial_acts fa on fa.financial_act_id = p.act_id
                       where p.entity_id = e.entity_id
                           and p.arch_short_name = 'participation.customer'
-                          and p.activity_start_time > date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND))
+                          and p.activity_start_time > date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND)
+						  and ((p.act_arch_short_name <> 'act.customerAccountOpeningBalance')
+							and (p.act_arch_short_name <> 'act.customerAccountClosingBalance')))
 		 )
 		and ifnull(loc.name,"--NONE--") like  concat(ifnull( $P{Location},""),"%")
 ) as custCountStart,
@@ -236,9 +239,12 @@ where e.arch_short_name = 'party.customerperson'
     and (e.active=1
 		or exists ( select * 
                       from  participations p
+                      join financial_acts fa on fa.financial_act_id = p.act_id
                       where p.entity_id = e.entity_id
                           and p.arch_short_name = 'participation.customer'
-                          and p.activity_start_time > date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND))
+                          and p.activity_start_time > date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND)
+						  and ((p.act_arch_short_name <> 'act.customerAccountOpeningBalance')
+							and (p.act_arch_short_name <> 'act.customerAccountClosingBalance')))
 		 )
 		and ifnull(loc.name,"--NONE--") like  concat(ifnull( $P{Location},""),"%")
 ) as custCountEnd,
@@ -284,9 +290,12 @@ where e.arch_short_name = 'party.patientpet'
     and (e.active=1
 		or exists ( select * 
                       from  participations p
+                      join financial_acts fa on fa.financial_act_id = p.act_id
                       where p.entity_id = e.entity_id
-                          and p.arch_short_name = 'participation.patient'
-                          and p.activity_start_time > date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND))
+                          and p.arch_short_name = 'participation.customer'
+                          and p.activity_start_time > date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND)
+						  and ((p.act_arch_short_name <> 'act.customerAccountOpeningBalance')
+							and (p.act_arch_short_name <> 'act.customerAccountClosingBalance')))
 		 )
 		and ifnull(loc.name,"--NONE--") like  concat(ifnull( $P{Location} ,""),"%")
 ) as patientCountStart,
@@ -307,9 +316,12 @@ where e.arch_short_name = 'party.patientpet'
     and (e.active=1
 		or exists ( select * 
                       from  participations p
+                      join financial_acts fa on fa.financial_act_id = p.act_id
                       where p.entity_id = e.entity_id
-                          and p.arch_short_name = 'participation.patient'
-                          and p.activity_start_time > date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND))
+                          and p.arch_short_name = 'participation.customer'
+                          and p.activity_start_time > date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND)
+						  and ((p.act_arch_short_name <> 'act.customerAccountOpeningBalance')
+							and (p.act_arch_short_name <> 'act.customerAccountClosingBalance')))
 		 )
 		and ifnull(loc.name,"--NONE--") like  concat(ifnull( $P{Location} ,""),"%")
 ) as patientCountEnd,
@@ -452,6 +464,7 @@ join (
 	</subDataset>
 	<subDataset name="DS-Money" uuid="1f0d4e4d-e644-467c-a2f2-5a1fe8212063">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<parameter name="Set" class="java.lang.Integer">
 			<parameterDescription><![CDATA[Set]]></parameterDescription>
 			<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
@@ -565,6 +578,7 @@ and ifnull(loc.name,"--NONE--") like concat(ifnull($P{Location},""),"%")]]>
 	</subDataset>
 	<subDataset name="DS-Outstanding" uuid="21a5f180-0cbf-4c52-890d-588eaddc4899">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<parameter name="Set" class="java.lang.Integer">
 			<parameterDescription><![CDATA[Set]]></parameterDescription>
 			<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
@@ -583,31 +597,82 @@ and ifnull(loc.name,"--NONE--") like concat(ifnull($P{Location},""),"%")]]>
 			<parameterDescription><![CDATA[Date From]]></parameterDescription>
 		</parameter>
 		<queryString language="SQL">
-			<![CDATA[select sum(if(cb.amount>0,cb.amount,0)) as credBalTot, 
-	sum(if(cb.amount>0,1,0)) as credBalCount,
-	sum(if(cb.amount>0,0,-cb.amount)) as outstBalTot, 
-	sum(if(cb.amount<0,1,0)) as outstBalCount,
-    sum(if(cb.amount=0,1,0)) as countZeroBal
-from 
-(select sum(if(fa.credit,fa.total,-fa.total)) as amount, c.entity_id as cid
-from entities c
-left join entity_links el on el.source_id = c.entity_id and el.arch_short_name = 'entityLink.customerLocation'
-left join entities loc on loc.entity_id = el.target_id
-join participations p on p.entity_id = c.entity_id and p.arch_short_name = 'participation.customer'
-join acts a on a.act_id = p.act_id
-join financial_acts fa on fa.financial_act_id = a.act_id
-where c.arch_short_name = 'party.customerperson'
-	and ifnull(loc.name,"--NONE--") like concat(ifnull($P{Location},""),"%") 
-    and a.status='POSTED'
-    and ((p.act_arch_short_name != 'act.customerAccountClosingBalance') and (p.act_arch_short_name != 'act.customerAccountOpeningBalance')) 
-    and p.activity_start_time <= date_add(date_sub( $P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL "23:59:59" HOUR_SECOND)
-group by c.entity_id) as cb]]>
+			<![CDATA[/* Works by looking for the last Opening Balance transaction with amount 0 before the
+   as at date, then adding transactions between that and the end of the as at date
+ */
+
+SELECT 
+    SUM(IF(cb.balance > 0, cb.balance, 0)) AS outstBalTot,
+    SUM(IF(cb.balance > 0, 1, 0)) AS outstBalCount,
+    SUM(IF(cb.balance < 0, - cb.balance, 0)) AS credBalTot,
+    SUM(IF(cb.balance < 0, 1, 0)) AS credBalCount
+FROM
+    (SELECT 
+        txn.custName AS custName,
+            txn.cid AS cid,
+            SUM(txn.amount) AS balance
+    FROM
+        (SELECT 
+        e.name AS custName,
+            e.entity_id AS cid,
+            obzc.obDate AS obDate,
+            IF(fa.credit, -(fa.total), (fa.total)) AS amount
+    FROM
+        entities e
+    JOIN participations pc ON pc.entity_id = e.entity_id
+        AND pc.arch_short_name = 'participation.customer'
+        AND ((pc.act_arch_short_name <> 'act.customerAccountOpeningBalance')
+        AND (pc.act_arch_short_name <> 'act.customerAccountClosingBalance'))
+    JOIN acts a ON a.act_id = pc.act_id
+    JOIN financial_acts fa ON fa.financial_act_id = a.act_id
+    JOIN (SELECT 
+        MAX(obz.obDate) AS obDate, obz.cid
+    FROM
+        (SELECT 
+        MAX(pc.activity_start_time) AS obDate, pc.entity_id AS cid
+    FROM
+        participations pc
+    JOIN financial_acts fa ON fa.financial_act_id = pc.act_id
+    WHERE
+        pc.arch_short_name = 'participation.customer'
+            AND pc.act_arch_short_name = 'act.customerAccountOpeningBalance'
+            AND fa.total = 0
+            AND pc.activity_start_time < DATE_SUB($P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH)
+    GROUP BY pc.entity_id UNION ALL SELECT 
+        '1970-01-01' obDate, e.entity_id AS cid
+    FROM
+        entities e
+    WHERE
+        e.arch_short_name = 'party.customerperson') AS obz
+    GROUP BY obz.cid) AS obzc ON obzc.cid = e.entity_id
+    WHERE
+        e.arch_short_name = 'party.customerperson'
+            AND a.status = 'POSTED'
+            AND pc.activity_start_time > obzc.obDate
+            AND pc.activity_start_time <= DATE_ADD(DATE_SUB($P{DateTo}, INTERVAL ($P{Set}* $P{MonthsPrior}) MONTH), INTERVAL '23:59:59' HOUR_SECOND)
+            AND ((e.active)
+            OR ((! e.active)
+				# this returns true if there are transactions after the asat date, ie the customer was active at the asat date
+				AND EXISTS( SELECT 1
+					FROM
+						participations pc
+							JOIN
+						financial_acts fa ON fa.financial_act_id = pc.act_id
+					WHERE
+						pc.arch_short_name = 'participation.customer'
+							AND pc.activity_start_time > DATE_ADD(DATE_SUB('2015-05-01',
+								INTERVAL (0 * 12) MONTH),
+							INTERVAL '23:59:59' HOUR_SECOND)
+							AND ((pc.act_arch_short_name <> 'act.customerAccountOpeningBalance')
+							AND (pc.act_arch_short_name <> 'act.customerAccountClosingBalance'))
+							AND pc.entity_id = e.entity_id)))
+			) AS txn
+    GROUP BY txn.cid) AS cb;]]>
 		</queryString>
-		<field name="credBalTot" class="java.math.BigDecimal"/>
-		<field name="credBalCount" class="java.math.BigDecimal"/>
 		<field name="outstBalTot" class="java.math.BigDecimal"/>
 		<field name="outstBalCount" class="java.math.BigDecimal"/>
-		<field name="countZeroBal" class="java.math.BigDecimal"/>
+		<field name="credBalTot" class="java.math.BigDecimal"/>
+		<field name="credBalCount" class="java.math.BigDecimal"/>
 		<variable name="outstBalTot" class="java.math.BigDecimal">
 			<variableExpression><![CDATA[$F{outstBalTot}]]></variableExpression>
 		</variable>
@@ -4923,7 +4988,7 @@ group by c.entity_id) as cb]]>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Sum of the adjustments (Credit & Debit Adjustments & Bad Debts)  (see Note 3)]]></text>
+				<text><![CDATA[Sum of the adjustments (Credit & Debit Adjustments & Bad Debts)  (see Note 2)]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="staticText-9" x="134" y="390" width="400" height="15" uuid="bb297fe7-83e0-4057-85a9-e29333eeff77">
@@ -5103,7 +5168,7 @@ group by c.entity_id) as cb]]>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Total of customer's outstanding balances at end of period (see Note 2)]]></text>
+				<text><![CDATA[Total of active customer's outstanding balances at end of period (see Note 1)]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="staticText-9" x="134" y="570" width="400" height="15" uuid="f7a9e627-622b-4982-97f3-a171c1c0decc">
@@ -5148,7 +5213,7 @@ group by c.entity_id) as cb]]>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Total of customer's credit balances at end of period (see Note 2)]]></text>
+				<text><![CDATA[Total of active customer's credit balances at end of period (see Note 1)]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="staticText-9" x="0" y="555" width="134" height="15" uuid="29e14341-5fa9-4c66-b2b4-975f41f51482">
@@ -5301,7 +5366,7 @@ group by c.entity_id) as cb]]>
 				<text><![CDATA[Total_Billed/Distinct_Customers_Seen]]></text>
 			</staticText>
 		</band>
-		<band height="271">
+		<band height="261">
 			<printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
 			<staticText>
 				<reportElement key="staticText-9" x="0" y="3" width="134" height="15" uuid="1a6c38ab-88bb-476e-9d62-19873ab5283e">
@@ -5368,7 +5433,7 @@ The specified location has % added so that leaving it blank will find all locati
 Specifying '-' as the location will find the cases where no location is recorded.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="0" y="159" width="134" height="30" uuid="717c63ad-b52e-4252-bba9-8b1bf1d258b2">
+				<reportElement key="staticText-9" x="0" y="190" width="134" height="30" uuid="717c63ad-b52e-4252-bba9-8b1bf1d258b2">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 				<box>
@@ -5383,7 +5448,7 @@ Specifying '-' as the location will find the cases where no location is recorded
 				<text><![CDATA[Notes: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-9" x="134" y="159" width="400" height="101" uuid="a30b184b-47b4-4614-bb9f-5dcb9fe526a3"/>
+				<reportElement key="staticText-9" x="134" y="190" width="400" height="71" uuid="a30b184b-47b4-4614-bb9f-5dcb9fe526a3"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -5394,12 +5459,39 @@ Specifying '-' as the location will find the cases where no location is recorded
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[1) A customer or patient is taken to be active at a given date if they have a Date Created prior to or equal to the given date and either have their Active flag set, or have activities after the given date.
-2) To improve performance calculating customer balances, no attempt is made to ignore inactive customers. You should ensure that deactivated customers have zero balances.
-3) Prior to release 1.8, no location was set for adjustment transactions. Hence if you select a location, the adjustment totals will be zero in historical periods prior to the use of 1.8]]></text>
+2) Prior to release 1.8, no location was set for adjustment transactions. Hence if you select a location, the adjustment totals will be zero in historical periods prior to the use of 1.8]]></text>
 			</staticText>
 			<break>
 				<reportElement x="0" y="29" width="535" height="1" uuid="0faed26a-f98e-4c0d-a381-7f27ef3365da"/>
 			</break>
+			<staticText>
+				<reportElement key="staticText-9" x="134" y="158" width="400" height="30" uuid="5d078264-950d-40f0-b979-32cab5c889ac"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[The From and To dates are inclusive, ie the period is from 00:00:00 on the From date to 23:59:59 on the To date.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-9" x="0" y="158" width="134" height="30" uuid="067a1d92-3a52-468d-b3ae-3950be93e58e">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Dates: ]]></text>
+			</staticText>
 		</band>
 	</detail>
 	<summary>
