@@ -13,6 +13,7 @@
  *
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.im.query;
 
 import echopointng.TabbedPane;
@@ -312,6 +313,15 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
         Browser<T> browser = model.getObject(selected);
         if (browser != null) {
             container.add(browser.getComponent());
+
+            // select the first available act, if any
+            if (browser.getSelected() == null) {
+                List<T> objects = browser.getObjects();
+                if (!objects.isEmpty()) {
+                    T current = objects.get(0);
+                    browser.setSelected(current);
+                }
+            }
         }
         if (listener != null) {
             listener.onBrowserChanged();
@@ -360,15 +370,6 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
         int shortcut = result + 1;
         String text = "&" + shortcut + " " + displayName;
         model.addTab(browser, text, new Label());
-
-        // select the first available act, if any
-        if (browser.getSelected() == null) {
-            List<T> objects = browser.getObjects();
-            if (!objects.isEmpty()) {
-                T current = objects.get(0);
-                browser.setSelected(current);
-            }
-        }
         return result;
     }
 }
