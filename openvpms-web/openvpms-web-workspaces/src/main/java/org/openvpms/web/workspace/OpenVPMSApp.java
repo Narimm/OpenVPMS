@@ -542,6 +542,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
          */
         public SubscriptionDialog(Date installDate, Date expiryDate, LightBox lightBox) {
             super(Messages.get("subscription.title"), "MessageDialog", BUTTONS);
+            setModal(true);
             this.installDate = installDate;
             this.expiryDate = expiryDate;
             this.lightBox = lightBox;
