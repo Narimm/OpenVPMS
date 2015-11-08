@@ -125,7 +125,7 @@ public abstract class AbstractTableBrowser<T> extends AbstractBrowser<T> {
     /**
      * Returns the objects matching the query.
      *
-     * @return the objects matcing the query.
+     * @return the objects matching the query.
      */
     public List<T> getObjects() {
         return (model != null) ? model.getObjects() : Collections.<T>emptyList();
