@@ -115,7 +115,7 @@ public class HelpDialog extends ModalDialog {
      */
     protected HelpDialog(String topic, final String topicURL, HelpTopics topics, IArchetypeService service,
                          String features) {
-        super(topics.get("helpdialog.title"), "HelpDialog", OK);
+        super(Messages.get("helpdialog.title"), "HelpDialog", OK);
         this.topics = topics;
         this.features = features;
 
