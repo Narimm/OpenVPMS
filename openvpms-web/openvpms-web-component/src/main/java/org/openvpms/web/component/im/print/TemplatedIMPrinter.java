@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.print;
@@ -27,6 +27,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.im.report.TemplatedReporter;
 import org.openvpms.web.component.im.util.LookupNameHelper;
+import org.openvpms.web.component.print.PrintHelper;
 
 import java.util.Map;
 
@@ -98,8 +99,14 @@ public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
      * @throws OpenVPMSException for any error
      */
     public String getDefaultPrinter() {
+        String printer;
         DocumentTemplate template = getTemplate();
-        return (template != null) ? getDefaultPrinter(template, context) : null;
+        if (template != null) {
+            printer = getDefaultPrinter(template, context);
+        } else {
+            printer = PrintHelper.getDefaultLocationPrinter(context.getLocation());
+        }
+        return printer;
     }
 
     /**

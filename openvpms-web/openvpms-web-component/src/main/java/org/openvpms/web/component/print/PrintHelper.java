@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.print;
@@ -33,8 +31,7 @@ import javax.print.PrintServiceLookup;
 /**
  * Print helper.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PrintHelper {
 
@@ -46,7 +43,7 @@ public class PrintHelper {
      *
      * @param template the document template
      * @param context  the context
-     * @return the default printer, or <tt>null</tt> if none is defined
+     * @return the default printer, or {@code null} if none is defined
      */
     public static String getDefaultPrinter(DocumentTemplate template, Context context) {
         String result;
@@ -67,7 +64,7 @@ public class PrintHelper {
      *
      * @param template an <em>entity.documentTemplate</em>
      * @param context  the context
-     * @return the corresponding document template printer relationship, or <tt>null</tt> if none is found
+     * @return the corresponding document template printer relationship, or {@code null} if none is found
      */
     public static DocumentTemplatePrinter getDocumentTemplatePrinter(Entity template, Context context) {
         return getDocumentTemplatePrinter(new DocumentTemplate(template, ServiceHelper.getArchetypeService()), context);
@@ -81,7 +78,7 @@ public class PrintHelper {
      *
      * @param template the document template
      * @param context  the context
-     * @return the corresponding document template printer relationship, or <tt>null</tt> if none is found
+     * @return the corresponding document template printer relationship, or {@code null} if none is found
      */
     public static DocumentTemplatePrinter getDocumentTemplatePrinter(DocumentTemplate template, Context context) {
         DocumentTemplatePrinter printer = null;
@@ -99,7 +96,7 @@ public class PrintHelper {
     /**
      * Returns the default printer.
      *
-     * @return the default printer, or <tt>null</tt> if none is defined
+     * @return the default printer, or {@code null} if none is defined
      */
     public static String getDefaultPrinter() {
         PrintService printer = PrintServiceLookup.lookupDefaultPrintService();
@@ -125,10 +122,10 @@ public class PrintHelper {
      * Helper to return the default printer for a location.
      * If no default printer set than returns system default printer.
      *
-     * @param location the location. May be <tt>null</tt>
-     * @return the printer name. May be <tt>null</tt> if none is defined
+     * @param location the location. May be {@code null}
+     * @return the printer name. May be {@code null} if none is defined
      */
-    private static String getDefaultLocationPrinter(Party location) {
+    public static String getDefaultLocationPrinter(Party location) {
         if (location != null) {
             IMObjectBean bean = new IMObjectBean(location);
             if (bean.hasNode("defaultPrinter")) {
