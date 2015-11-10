@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.etl.tools.doc;
 
@@ -25,7 +23,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 
 import java.io.File;
-import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -83,7 +80,7 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
         FileUtils.touch(file4);
 
         String[] args = {"--byname", "-s", source.getPath(), "-d", target.getPath()};
-        DocumentLoader loader = new DocumentLoader(args, service, transactionManager);
+        DocumentLoader loader = new DocumentLoader(args, getArchetypeService(), transactionManager);
         loader.load();
 
         // verify documents have been loaded.
@@ -125,7 +122,7 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
         File file4 = createFile(act4, sub2);
 
         String[] args = {"--byid", "-s", root.getPath(), "-d", target.getPath(), "--recurse"};
-        DocumentLoader loader = new DocumentLoader(args, service, transactionManager);
+        DocumentLoader loader = new DocumentLoader(args, getArchetypeService(), transactionManager);
         loader.load();
 
         checkFiles(target, file1, file2, file3, file4);
@@ -179,7 +176,7 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
 
         // load all files which have an <act id>.gif extension
         String[] args = {"--byid", "-s", source.getPath(), "-d", target.getPath(), "--regexp", "(\\d+).gif"};
-        DocumentLoader loader = new DocumentLoader(args, service, transactionManager);
+        DocumentLoader loader = new DocumentLoader(args, getArchetypeService(), transactionManager);
         loader.load();
 
         // verify only act1 was processed
@@ -211,7 +208,7 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
 
         String[] args = {"--byid", "--type", "act.customerDocumentAttachment", "-s", source.getPath(), "-d",
                          target.getPath()};
-        DocumentLoader loader = new DocumentLoader(args, service, transactionManager);
+        DocumentLoader loader = new DocumentLoader(args, getArchetypeService(), transactionManager);
         loader.load();
 
         checkFiles(source, file1, file2, file3, file4);
@@ -219,7 +216,7 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
 
         String[] args2 = {"--byid", "--type", "act.patientDocumentAttachment", "-s", source.getPath(), "-d",
                           target.getPath()};
-        DocumentLoader loader2 = new DocumentLoader(args2, service, transactionManager);
+        DocumentLoader loader2 = new DocumentLoader(args2, getArchetypeService(), transactionManager);
         loader2.load();
 
         checkFiles(source);
@@ -239,20 +236,20 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
         assertTrue(target.mkdirs());
 
         // create an act.documentTemplate and associated template
-        DocumentAct act = (DocumentAct) service.create("act.documentTemplate");
-        Entity template = (Entity) service.create("entity.documentTemplate");
+        DocumentAct act = (DocumentAct) create("act.documentTemplate");
+        Entity template = (Entity) create("entity.documentTemplate");
         ActBean actBean = new ActBean(act);
         actBean.setValue("description", "A description");
         actBean.addNodeParticipation("template", template);
         template.setName("X Test template");
-        service.save(Arrays.asList(act, template));
+        save(act, template);
 
         // create a file with an id the same as the act
         File file = createFile(act, source);
 
         // verify the file isn't loaded with the default --type value of "act.*Document*".
         String[] args = {"--byid", "-s", source.getPath(), "-d", target.getPath()};
-        DocumentLoader loader = new DocumentLoader(args, service, transactionManager);
+        DocumentLoader loader = new DocumentLoader(args, getArchetypeService(), transactionManager);
         loader.load();
 
         checkFiles(source, file);
@@ -263,7 +260,7 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
         try {
             String[] args2 = {"--byid", "--type", "act.documentTemplate", "-s", source.getPath(), "-d",
                               target.getPath()};
-            new DocumentLoader(args2, service, transactionManager);
+            new DocumentLoader(args2, getArchetypeService(), transactionManager);
             fail("Expected DocumentLoader constructor to fail");
         } catch (IllegalArgumentException expected) {
             // the expected behaviour
@@ -289,7 +286,7 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
      */
     private void checkConstructException(String[] args, DocumentLoaderException.ErrorCode expected) {
         try {
-            new DocumentLoader(args, service, transactionManager);
+            new DocumentLoader(args, getArchetypeService(), transactionManager);
             fail("Expected a DocumentLoaderException");
         } catch (DocumentLoaderException exception) {
             assertEquals(expected, exception.getErrorCode());

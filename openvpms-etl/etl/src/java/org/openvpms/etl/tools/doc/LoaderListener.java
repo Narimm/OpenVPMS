@@ -62,6 +62,13 @@ public interface LoaderListener {
      * Notifies that a file couldn't be loaded as there was no corresponding act.
      *
      * @param file the file
+     */
+    void missingAct(File file);
+
+    /**
+     * Notifies that a file couldn't be loaded as there was no corresponding act.
+     *
+     * @param file the file
      * @param id   the corresponding act identifier
      */
     void missingAct(File file, long id);

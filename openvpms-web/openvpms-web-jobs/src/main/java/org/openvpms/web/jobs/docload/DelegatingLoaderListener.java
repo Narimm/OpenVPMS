@@ -87,6 +87,16 @@ class DelegatingLoaderListener implements LoaderListener {
      * Notifies that a file couldn't be loaded as there was no corresponding act.
      *
      * @param file the file
+     */
+    @Override
+    public void missingAct(File file) {
+        listener.missingAct(file);
+    }
+
+    /**
+     * Notifies that a file couldn't be loaded as there was no corresponding act.
+     *
+     * @param file the file
      * @param id   the corresponding act identifier
      */
     @Override

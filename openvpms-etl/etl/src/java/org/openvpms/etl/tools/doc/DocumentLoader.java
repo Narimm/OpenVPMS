@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007-2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
@@ -83,7 +83,7 @@ public class DocumentLoader {
 
 
     /**
-     * Creates a new <tt>DocumentLoader</tt>.
+     * Constructs a {@link DocumentLoader}.
      *
      * @param loader the loader to use
      */
@@ -92,12 +92,12 @@ public class DocumentLoader {
     }
 
     /**
-     * Creates a new <tt>DocumentLoader</tt> from command line arguments.
+     * Constructs a {@link DocumentLoader} from command line arguments.
      *
      * @param args               the arguments to parse
-     * @param service            the achetype service. If <tt>null</tt> it will be bootstrapped from the default
+     * @param service            the achetype service. If {@code null} it will be bootstrapped from the default
      *                           spring context
-     * @param transactionManager the transaction manager. If <tt>null</tt> it will be bootstrapped from the default
+     * @param transactionManager the transaction manager. If {@code null} it will be bootstrapped from the default
      *                           spring context
      * @throws DocumentLoaderException if the arguments are invalid
      */
@@ -106,7 +106,7 @@ public class DocumentLoader {
     }
 
     /**
-     * Creates a new <tt>DocumentLoader</tt> from command line arguments.
+     * Constructs a {@link DocumentLoader} from command line arguments.
      *
      * @param args   the arguments to parse
      * @param parser the argument parser
@@ -117,13 +117,13 @@ public class DocumentLoader {
     }
 
     /**
-     * Creates a new <tt>DocumentLoader</tt> from command line arguments.
+     * Constructs a {@link DocumentLoader} from command line arguments.
      *
      * @param args               the arguments to parse
      * @param parser             the argument parser
-     * @param service            the achetype service. If <tt>null</tt> it will be bootstrapped from the default
+     * @param service            the achetype service. If {@code null} it will be bootstrapped from the default
      *                           spring context
-     * @param transactionManager the transaction manager. If <tt>null</tt> it will be bootstrapped from the default
+     * @param transactionManager the transaction manager. If {@code null} it will be bootstrapped from the default
      *                           spring context
      * @throws DocumentLoaderException if the arguments are invalid
      */
@@ -157,17 +157,19 @@ public class DocumentLoader {
                                                                      : new DefaultLoaderListener(target);
 
             String type[] = config.getStringArray("type");
+            boolean recurse = config.getBoolean("recurse");
+            boolean overwrite = config.getBoolean("overwrite");
+
+            if (transactionManager == null) {
+                transactionManager = getContext().getBean(PlatformTransactionManager.class);
+            }
+            
             if (byId) {
-                boolean recurse = config.getBoolean("recurse");
-                boolean overwrite = config.getBoolean("overwrite");
                 String regexp = config.getString("regexp");
                 Pattern pattern = Pattern.compile(regexp);
-                if (transactionManager == null) {
-                    transactionManager = (PlatformTransactionManager) getContext().getBean("txnManager");
-                }
                 loader = new IdLoader(source, type, service, factory, transactionManager, recurse, overwrite, pattern);
             } else {
-                loader = new NameLoader(source, type, service, factory);
+                loader = new NameLoader(source, type, service, factory, transactionManager, recurse, overwrite);
             }
             loader.setListener(listener);
             setFailOnError(config.getBoolean("failOnError"));
@@ -176,9 +178,9 @@ public class DocumentLoader {
 
     /**
      * Determines if generation should fail when an error occurs.
-     * Defaults to <tt>true</tt>.
+     * Defaults to {@code true}.
      *
-     * @param failOnError if <tt>true</tt> fail when an error occurs
+     * @param failOnError if {@code true} fail when an error occurs
      */
     public void setFailOnError(boolean failOnError) {
         this.failOnError = failOnError;
@@ -249,7 +251,7 @@ public class DocumentLoader {
      * Verifies that the source and target directories are valid.
      *
      * @param source the source directory
-     * @param target the target directory. May be <tt>null</tt>
+     * @param target the target directory. May be {@code null}
      */
     private void checkDirs(File source, File target) {
         if (source == null) {
@@ -319,7 +321,7 @@ public class DocumentLoader {
             parser.registerParameter(new Switch("overwrite").setShortFlag('o')
                                              .setLongFlag("overwrite")
                                              .setDefault("false")
-                                             .setHelp("Overwrite existing attachments. Ony applies when --byid is used"));
+                                             .setHelp("Overwrite existing attachments"));
             parser.registerParameter(new FlaggedOption("regexp")
                                              .setLongFlag("regexp")
                                              .setDefault(IdLoader.DEFAULT_REGEXP)
@@ -331,7 +333,8 @@ public class DocumentLoader {
                                              .setHelp("The directory to move files to on successful load."));
             parser.registerParameter(new FlaggedOption("type").setShortFlag('t')
                                              .setLongFlag("type")
-                                             .setDefault(new String[]{"act.*Document*", InvestigationArchetypes.PATIENT_INVESTIGATION})
+                                             .setDefault(new String[]{"act.*Document*", 
+                                                                      InvestigationArchetypes.PATIENT_INVESTIGATION})
                                              .setAllowMultipleDeclarations(true)
                                              .setHelp("The archetype short name. May contain wildcards."));
             parser.registerParameter(new FlaggedOption("failOnError")
@@ -341,7 +344,8 @@ public class DocumentLoader {
                                              .setStringParser(BooleanStringParser.getParser())
                                              .setHelp("Fail on error"));
             parser.registerParameter(new Switch("verbose").setShortFlag('v')
-                                             .setLongFlag("verbose").setDefault("false").setHelp("Displays verbose info to the console."));
+                                             .setLongFlag("verbose").setDefault("false")
+                                             .setHelp("Displays verbose info to the console."));
             parser.registerParameter(new FlaggedOption("context").setShortFlag('c')
                                              .setLongFlag("context")
                                              .setDefault(APPLICATION_CONTEXT)

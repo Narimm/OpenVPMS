@@ -16,19 +16,22 @@
 
 package org.openvpms.etl.tools.doc;
 
-import org.junit.Before;
-import org.junit.Rule;
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.doc.DocumentHelper;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +42,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 
@@ -47,10 +51,7 @@ import static org.junit.Assert.fail;
  *
  * @author Tim Anderson
  */
-public class NameLoaderTestCase extends AbstractLoaderTest {
-
-    @Rule
-    public TemporaryFolder folder = new TemporaryFolder();
+public class NameLoaderTestCase extends AbstractBasicLoaderTest {
 
     /**
      * Tests the {@link NameLoader}.
@@ -58,18 +59,18 @@ public class NameLoaderTestCase extends AbstractLoaderTest {
      * @throws IOException for any I/O error
      */
     @Test
-    public void testNameLoader() throws IOException {
+    public void testLoad() throws IOException {
         File source = folder.newFolder("sdocs");
         File target = folder.newFolder("tdocs");
 
-        DocumentAct act1 = createPatientDocAct("file1.gif");
-        DocumentAct act2 = createPatientDocAct("file2.pdf");
-        DocumentAct act3 = createPatientDocAct("file3.html");
-        DocumentAct act4 = createPatientDocAct("file4.png");
-        DocumentAct act5 = createPatientDocAct("file5.htm");
-        DocumentAct act6 = createPatientDocAct("file6.txt");
-        DocumentAct act7 = createPatientDocAct("file7.doc");
-        DocumentAct act8 = createPatientDocAct("file8.odt");
+        DocumentAct act1 = createPatientDocAct("file1-" + System.nanoTime() + ".gif");
+        DocumentAct act2 = createPatientDocAct("file2-" + System.nanoTime() + ".pdf");
+        DocumentAct act3 = createPatientDocAct("file3-" + System.nanoTime() + ".html");
+        DocumentAct act4 = createPatientDocAct("file4-" + System.nanoTime() + ".png");
+        DocumentAct act5 = createPatientDocAct("file5-" + System.nanoTime() + ".htm");
+        DocumentAct act6 = createPatientDocAct("file6-" + System.nanoTime() + ".txt");
+        DocumentAct act7 = createPatientDocAct("file7-" + System.nanoTime() + ".doc");
+        DocumentAct act8 = createPatientDocAct("file8-" + System.nanoTime() + ".odt");
         List<DocumentAct> expected = Arrays.asList(act1, act2, act3, act4, act5, act6, act7, act8);
 
         File act1File = createFile(source, act1.getFileName(), null);
@@ -81,14 +82,11 @@ public class NameLoaderTestCase extends AbstractLoaderTest {
         File act7File = createFile(source, act7.getFileName(), null);
         File act8File = createFile(source, act8.getFileName(), null);
 
-        Loader loader = new NameLoader(source, new String[]{PatientArchetypes.DOCUMENT_ATTACHMENT}, service,
-                                       new DefaultDocumentFactory());
-        LoggingLoaderListener listener = new LoggingLoaderListener(DocumentLoader.log, target);
-        load(loader, listener);
+        LoaderListener listener = load(source, target, false);
 
         // verify there a no acts left to load documents for.
         ArchetypeQuery query = createQuery();
-        Iterator<DocumentAct> iter = new IMObjectQueryIterator<DocumentAct>(query);
+        Iterator<DocumentAct> iter = new IMObjectQueryIterator<>(query);
         while (iter.hasNext()) {
             ActBean bean = new ActBean(iter.next());
             String fileName = bean.getString("fileName");
@@ -101,14 +99,77 @@ public class NameLoaderTestCase extends AbstractLoaderTest {
         assertEquals(expected.size(), listener.getProcessed());
         assertEquals(0, listener.getErrors());
         for (DocumentAct e : expected) {
-            e = (DocumentAct) service.get(e.getObjectReference());
+            e = get(e);
             assertNotNull(e);
             checkMimeType(e);
         }
     }
 
     /**
+     * Verifies behaviour when an act is missing.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testMissingAct() throws Exception {
+        File source = folder.newFolder("sdocs");
+        File target = folder.newFolder("tdocs");
+
+        // create a file with no corresponding act.
+        File file = new File(source, System.nanoTime() + ".gif");
+        FileUtils.touch(file);
+
+        LoaderListener listener = load(source, target, false);
+
+        assertEquals(0, listener.getLoaded());
+        assertEquals(1, listener.getErrors());
+        assertEquals(1, listener.getProcessed());
+        assertEquals(1, listener.getMissingAct());
+        assertEquals(0, listener.getAlreadyLoaded());
+
+        checkFiles(source, file);
+        checkFiles(target);
+    }
+
+    /**
+     * Verifies that when overwrite is {@code false}, files are skipped if they are already loaded.
+     * Note that for the {@link NameLoader}, such documents are flagged as having missing acts, to avoid a full table
+     * scan.
+     * <p/>
+     * This is because there is no index on the fileName column.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testSkipProcessed() throws Exception {
+        File source = folder.newFolder("sdocs");
+        File target = folder.newFolder("tdocs");
+
+        // create a file and associate it with the act. The loader will skip it
+        DocumentAct preLoaded = createPatientDocAct();
+        File preloadedFile = createFile(preLoaded, source, null);
+        Document doc = DocumentHelper.create(preloadedFile, "image/gif", new DocumentHandlers());
+        preLoaded.setDocument(doc.getObjectReference());
+        preLoaded.setFileName(doc.getName());
+        save(doc, preLoaded);
+
+        LoaderListener listener = load(source, target, false);
+        assertEquals(0, listener.getLoaded());
+        assertEquals(1, listener.getErrors());
+        assertEquals(1, listener.getProcessed());
+        assertEquals(1, listener.getMissingAct());
+        assertEquals(0, listener.getAlreadyLoaded());
+
+        checkFiles(source, preloadedFile);
+        checkFiles(target);
+    }
+
+    /**
      * Verifies that document templates cannot be loaded to.
+     * <p/>
+     * Note that the documents are flagged as having missing acts, to avoid a full table scan.
+     * <p/>
+     * This is because there is no index on the fileName column.
      */
     @Test
     public void testLoadDocumentTemplate() throws Exception {
@@ -117,8 +178,8 @@ public class NameLoaderTestCase extends AbstractLoaderTest {
 
         // verify that the loader cannot be constructed to load act.documentTemplate acts
         try {
-            new NameLoader(source, new String[]{DocumentArchetypes.DOCUMENT_TEMPLATE_ACT}, service,
-                           new DefaultDocumentFactory());
+            new NameLoader(source, new String[]{DocumentArchetypes.DOCUMENT_TEMPLATE_ACT}, getArchetypeService(),
+                           new DefaultDocumentFactory(), transactionManager, false, false);
             fail("Expected exception to be thrown");
         } catch (Throwable exception) {
             assertEquals(exception.getMessage(), "Argument 'shortNames' doesn't refer to any valid archetype for "
@@ -126,49 +187,108 @@ public class NameLoaderTestCase extends AbstractLoaderTest {
         }
 
         // verify that an act.documentTemplate cannot be overwritten by a load
-        DocumentAct act = (DocumentAct) service.create(DocumentArchetypes.DOCUMENT_TEMPLATE_ACT);
+        DocumentAct act = (DocumentAct) create(DocumentArchetypes.DOCUMENT_TEMPLATE_ACT);
         File file = createFile(act, source, null, "-Z", "A");
 
-        Entity template = (Entity) service.create(DocumentArchetypes.DOCUMENT_TEMPLATE);
+        Entity template = (Entity) create(DocumentArchetypes.DOCUMENT_TEMPLATE);
         act.setName("foo");
         act.setDescription("bar");
         template.setName("ZTemplate");
         ActBean bean = new ActBean(act);
         bean.setValue("fileName", file.getName());
         bean.addNodeParticipation("template", template);
-        service.save(Arrays.asList(act, template));
+        save(act, template);
 
-
-        Loader loader = new NameLoader(source, new String[]{PatientArchetypes.DOCUMENT_ATTACHMENT}, service,
-                                       new DefaultDocumentFactory());
-        LoggingLoaderListener listener = new LoggingLoaderListener(DocumentLoader.log, target);
-
-        load(loader, listener);
+        LoaderListener listener = load(source, target, true);
         assertEquals(0, listener.getLoaded());
         assertEquals(0, listener.getAlreadyLoaded());
-        assertEquals(0, listener.getMissingAct());
-        assertEquals(0, listener.getErrors());
+        assertEquals(1, listener.getMissingAct());
+        assertEquals(1, listener.getErrors());
     }
 
+    /**
+     * Verifies that duplicate documents are only loaded if they have a different file name to the original
+     * content.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testDuplicates() throws Exception {
+        File source = folder.newFolder("sdocs");
+        File target = folder.newFolder("tdocs");
+
+        File first = createFile(source, System.nanoTime() + ".gif", "A");
+        DocumentAct act = createPatientDocAct(first.getName());
+
+        // create a file and load it
+        LoaderListener listener1 = load(source, target, true);
+        assertEquals(1, listener1.getLoaded());
+        assertEquals(0, listener1.getErrors());
+        assertEquals(1, listener1.getProcessed());
+        assertEquals(0, listener1.getMissingAct());
+        assertEquals(0, listener1.getAlreadyLoaded());
+
+        // delete from the target so another can be loaded with the same name
+        assertTrue(new File(target, first.getName()).delete());
+
+        // verify the act has a document, and it is the first instance
+        Document firstDoc = checkAct(act, first.getName());
+
+        // create a file that duplicates the first in name and content
+        createFile(source, first.getName(), "A");
+        LoaderListener listenerDup = load(source, target, true);
+        assertEquals(0, listenerDup.getLoaded());
+        assertEquals(1, listenerDup.getErrors());
+        assertEquals(1, listenerDup.getProcessed());
+        assertEquals(0, listenerDup.getMissingAct());
+        assertEquals(1, listenerDup.getAlreadyLoaded());
+
+        File second = createFile(source, first.getName(), "B");
+        LoaderListener listener2 = load(source, target, true);
+        assertEquals(1, listener2.getLoaded());
+        assertEquals(0, listener2.getErrors());
+        assertEquals(1, listener2.getProcessed());
+        assertEquals(0, listener2.getMissingAct());
+        assertEquals(0, listener2.getAlreadyLoaded());
+
+        // verify the act has a document, and it is the second instance
+        Document secondDoc = checkAct(act, second.getName());
+        checkVersions(act, firstDoc);
+
+        // create a third file that duplicates the content of the first. This won't be loaded
+        // as it has the same name.
+        File third = createFile(source, first.getName(), "A");
+        assertTrue(third.setLastModified(second.lastModified() + 1000));
+        LoaderListener listener3 = load(source, target, true);
+        assertEquals(0, listener3.getLoaded());
+        assertEquals(1, listener3.getErrors());
+        assertEquals(1, listener3.getProcessed());
+        assertEquals(0, listener3.getMissingAct());
+        assertEquals(1, listener3.getAlreadyLoaded());
+
+        act = get(act);
+        checkAct(act, second.getName());
+        assertEquals(act.getDocument(), secondDoc.getObjectReference());
+
+        // there should a single version and reference the first document,
+        checkVersions(act, firstDoc);
+    }
 
     /**
-     * Removes all <em>act.patientDocumentAttachment</em> acts with no document, and a non-null file name.
+     * Creates a loader.
+     *
+     * @param source             the source directory to load from
+     * @param shortNames         the document archetype(s) that may be loaded to. May be {@code null}
+     * @param service            the archetype service
+     * @param factory            the document factory
+     * @param transactionManager the transaction manager
+     * @param overwrite          if {@code true} overwrite existing documents
+     * @return a new loader
      */
-    @Before
-    public void setUp() {
-        // remove all documents matching the short name with null doc references
-        // and non-null filenames
-        ArchetypeQuery query = createQuery();
-        Iterator<DocumentAct> iter = new IMObjectQueryIterator<DocumentAct>(query);
-        while (iter.hasNext()) {
-            DocumentAct act = iter.next();
-            ActBean bean = new ActBean(act);
-            String fileName = bean.getString("fileName");
-            if (fileName != null) {
-                service.remove(act);
-            }
-        }
-
+    @Override
+    protected Loader createLoader(File source, String[] shortNames, IArchetypeService service, DocumentFactory factory,
+                                  PlatformTransactionManager transactionManager, boolean overwrite) {
+        return new NameLoader(source, shortNames, service, factory, transactionManager, false, overwrite);
     }
 
     /**
