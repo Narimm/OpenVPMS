@@ -17,9 +17,7 @@
 package org.openvpms.etl.tools.doc;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentHelper;
@@ -27,10 +25,11 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -45,10 +44,7 @@ import static org.junit.Assert.fail;
  *
  * @author Tim Anderson
  */
-public class IdLoaderTestCase extends AbstractLoaderTest {
-
-    @Rule
-    public TemporaryFolder folder = new TemporaryFolder();
+public class IdLoaderTestCase extends AbstractBasicLoaderTest {
 
     /**
      * Tests the loader.
@@ -126,7 +122,7 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
     }
 
     /**
-     * Tests the loader.
+     * Verifies that when overwrite is {@code false}, files are skipped if they are already loaded
      *
      * @throws Exception for any error
      */
@@ -140,7 +136,8 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         File preloadedFile = createFile(preLoaded, source, null);
         Document doc = DocumentHelper.create(preloadedFile, "image/gif", new DocumentHandlers());
         preLoaded.setDocument(doc.getObjectReference());
-        service.save(Arrays.asList(doc, preLoaded));
+        preLoaded.setFileName(doc.getName());
+        save(doc, preLoaded);
 
         LoaderListener listener = load(source, target, false);
         assertEquals(0, listener.getLoaded());
@@ -176,8 +173,7 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         assertTrue(third.setLastModified(second.lastModified() + 1000));
 
         // for the first load, set overwrite = false. Only first should be loaded.
-        boolean overwrite = false;
-        LoaderListener listener1 = load(source, target, overwrite);
+        LoaderListener listener1 = load(source, target, false);
 
         assertEquals(1, listener1.getLoaded());
         assertEquals(2, listener1.getErrors()); // errors as overwrite = false
@@ -190,8 +186,7 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         checkFiles(source, second, third); // not moved as overwrite = false
 
         // now re-run with overwrite = true. The second and third file should now be loaded
-        overwrite = true;
-        LoaderListener listener2 = load(source, target, overwrite);
+        LoaderListener listener2 = load(source, target, true);
 
         assertEquals(2, listener2.getLoaded());
         assertEquals(0, listener2.getErrors());
@@ -203,7 +198,7 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         checkFiles(target, first, second, third);
 
         // verify the act has a document, and it is the third instance
-        act = (DocumentAct) service.get(act.getObjectReference());
+        act = get(act);
         checkAct(act, third.getName());
 
         // now check the first and second versions are present.
@@ -349,8 +344,8 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         // verify that the loader cannot be constructed to load act.documentTemplate acts
         String[] shortNames = {DocumentArchetypes.DOCUMENT_TEMPLATE_ACT};
         try {
-            new IdLoader(source, shortNames, service,
-                         new DefaultDocumentFactory(), transactionManager, true, true);
+            new IdLoader(source, shortNames, getArchetypeService(), new DefaultDocumentFactory(), transactionManager,
+                         true, true);
             fail("Expected exception to be thrown");
         } catch (Throwable exception) {
             assertEquals(exception.getMessage(), "Argument 'shortNames' doesn't refer to any valid archetype for "
@@ -358,19 +353,36 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         }
 
         // verify that an act.documentTemplate cannot be overwritten by a load
-        DocumentAct act = (DocumentAct) service.create(DocumentArchetypes.DOCUMENT_TEMPLATE_ACT);
-        Entity template = (Entity) service.create(DocumentArchetypes.DOCUMENT_TEMPLATE);
+        DocumentAct act = (DocumentAct) create(DocumentArchetypes.DOCUMENT_TEMPLATE_ACT);
+        Entity template = (Entity) create(DocumentArchetypes.DOCUMENT_TEMPLATE);
         act.setName("foo");
         act.setDescription("bar");
         template.setName("ZTemplate");
         ActBean bean = new ActBean(act);
         bean.addNodeParticipation("template", template);
-        service.save(Arrays.asList(act, template));
+        save(act, template);
 
         createFile(act, source, null, "-Z", "A");
         LoaderListener listener = load(source, target, true);
         assertEquals(1, listener.getMissingAct());
         assertEquals(1, listener.getErrors());
+    }
+
+    /**
+     * Creates a loader.
+     *
+     * @param source             the source directory to load from
+     * @param shortNames         the document archetype(s) that may be loaded to. May be {@code null}
+     * @param service            the archetype service
+     * @param factory            the document factory
+     * @param transactionManager the transaction manager
+     * @param overwrite          if {@code true} overwrite existing documents
+     * @return a new loader
+     */
+    @Override
+    protected Loader createLoader(File source, String[] shortNames, IArchetypeService service, DocumentFactory factory,
+                                  PlatformTransactionManager transactionManager, boolean overwrite) {
+        return new IdLoader(source, shortNames, service, factory, transactionManager, true, overwrite);
     }
 
     /**
@@ -387,59 +399,6 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
             }
         }
         return null;
-    }
-
-    /**
-     * Helper to load files.
-     *
-     * @param source    the source directory to load from
-     * @param target    the target directory to move processed files to
-     * @param overwrite if <tt>true</tt> overwrite existing documents
-     * @return the loader listener
-     */
-    private LoaderListener load(File source, File target, boolean overwrite) {
-        return load(source, null, target, overwrite);
-    }
-
-    /**
-     * Helper to load files.
-     *
-     * @param source    the source directory to load from
-     * @param shortName the document archetype(s) that may be loaded to. May be <tt>null</tt>, or contain wildcards
-     * @param target    the target directory to move processed files to
-     * @param overwrite if <tt>true</tt> overwrite existing documents
-     * @return the loader listener
-     */
-    private LoaderListener load(File source, String shortName, File target, boolean overwrite) {
-        Loader loader = new IdLoader(source, shortName != null ? new String[]{shortName} : null, service,
-                                     new DefaultDocumentFactory(), transactionManager, true, overwrite);
-        LoaderListener listener = new LoggingLoaderListener(DocumentLoader.log, target);
-        load(loader, listener);
-        return listener;
-    }
-
-    /**
-     * Verifies the document versions associated with the version node of document act.
-     *
-     * @param act      the document act
-     * @param versions the expected document versions
-     */
-    private void checkVersions(DocumentAct act, Document... versions) {
-        act = (DocumentAct) service.get(act.getObjectReference());
-        ActBean bean = new ActBean(act);
-        List<DocumentAct> acts = bean.getNodeActs("versions", DocumentAct.class);
-        assertEquals(versions.length, acts.size());
-        for (DocumentAct childAct : acts) {
-            checkAct(childAct);
-            boolean found = false;
-            for (Document version : versions) {
-                if (childAct.getDocument().equals(version.getObjectReference())) {
-                    found = true;
-                    break;
-                }
-            }
-            assertTrue(found);
-        }
     }
 
 }
