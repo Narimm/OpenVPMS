@@ -148,14 +148,17 @@ public class DocumentLoader {
             File error = config.getFile("err");
             checkDirs(source, target, error);
 
+            boolean rename = config.getBoolean("rename");
+
             contextPath = config.getString("context");
 
             if (service == null) {
                 service = (IArchetypeService) getContext().getBean("archetypeService");
             }
             DocumentFactory factory = new DefaultDocumentFactory();
-            LoaderListener listener = (config.getBoolean("verbose")) ? new LoggingLoaderListener(log, target, error)
-                                                                     : new DefaultLoaderListener(target, error);
+            LoaderListener listener = (config.getBoolean("verbose"))
+                                      ? new LoggingLoaderListener(log, target, error, rename)
+                                      : new DefaultLoaderListener(target, error, rename);
 
             String type[] = config.getStringArray("type");
             boolean recurse = config.getBoolean("recurse");
@@ -370,6 +373,9 @@ public class DocumentLoader {
                                              .setDefault("false")
                                              .setStringParser(BooleanStringParser.getParser())
                                              .setHelp("Fail on error"));
+            parser.registerParameter(new Switch("rename")
+                                             .setLongFlag("rename").setDefault("false")
+                                             .setHelp("Rename files on move if a file already exists."));
             parser.registerParameter(new Switch("verbose").setShortFlag('v')
                                              .setLongFlag("verbose").setDefault("false")
                                              .setHelp("Displays verbose info to the console."));

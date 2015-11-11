@@ -41,18 +41,19 @@ public class LoggingLoaderListener extends AbstractLoaderListener {
      * @param dir if non-null, files will be moved here on successful load
      */
     public LoggingLoaderListener(Log log, File dir) {
-        this(log, dir, null);
+        this(log, dir, null, false);
     }
 
     /**
      * Constructs a {@link LoggingLoaderListener}.
      *
-     * @param log      the log
-     * @param dir      the directory to move files to on successful load. May be {@code null}
-     * @param errorDir the directory to move files to on error. May be {@code null}
+     * @param log              the log
+     * @param dir              the directory to move files to on successful load. May be {@code null}
+     * @param errorDir         the directory to move files to on error. May be {@code null}
+     * @param renameDuplicates if {@code true}, rename files on move, if a file exists with the same name
      */
-    public LoggingLoaderListener(Log log, File dir, File errorDir) {
-        super(dir, errorDir);
+    public LoggingLoaderListener(Log log, File dir, File errorDir, boolean renameDuplicates) {
+        super(dir, errorDir, renameDuplicates);
         this.log = log;
     }
 

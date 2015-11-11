@@ -146,8 +146,8 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
 
             IdLoader loader = new IdLoader(source, types, service, transactionManager, recurse, overwrite,
                                            Pattern.compile(idPattern));
-            LoaderListener delegate = logLoad ? new LoggingLoaderListener(log, target, error)
-                                              : new DefaultLoaderListener(target, error);
+            LoaderListener delegate = logLoad ? new LoggingLoaderListener(log, target, error, true)
+                                              : new DefaultLoaderListener(target, error, true);
             listener = new Listener(delegate);
             loader.setListener(listener);
 
