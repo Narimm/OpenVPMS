@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -32,7 +32,12 @@
         <node name="quantity" path="/details/quantity" type="java.math.BigDecimal" minCardinality="1"
               defaultValue="0.0"/>
         <node name="idealQty" path="/details/idealQty" type="java.math.BigDecimal" minCardinality="0"
-              defaultValue="0.0"/>
+              defaultValue="0.0">
+            <assertion name="expression">
+                <property name="expression" value="idealQty >= criticalQty"/>
+                <errorMessage>Ideal Qty must be &gt;= Critical Qty</errorMessage>
+            </assertion>
+        </node>
         <node name="criticalQty" path="/details/criticalQty" type="java.math.BigDecimal" minCardinality="0"
               defaultValue="0.0"/>
         <node name="alwaysOrder" path="/details/alwaysOrder" type="java.lang.Boolean" minCardinality="0"
@@ -44,15 +49,12 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="product.medication"/>
+                        <property name="shortName" value="product.medication"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="product.merchandise"/>
+                        <property name="shortName" value="product.merchandise"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="target" displayName="Stock Location" path="/target"
@@ -60,11 +62,9 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="party.organisationStockLocation"/>
+                        <property name="shortName" value="party.organisationStockLocation"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="supplier" displayName="Preferred Supplier" path="/details/supplier"

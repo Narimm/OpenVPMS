@@ -2,7 +2,7 @@
 # Security authorities for OVPMS-1646 Practice Location branding for 1.9 archetypes
 #
 DROP TABLE IF EXISTS new_authorities;
-CREATE TABLE new_authorities (
+CREATE TEMPORARY TABLE new_authorities (
   name        VARCHAR(255) PRIMARY KEY,
   description VARCHAR(255),
   method      VARCHAR(255),
@@ -46,4 +46,44 @@ INSERT INTO roles_authorities (security_role_id, authority_id)
    WHERE x.security_role_id = r.security_role_id AND x.authority_id = g.granted_authority_id);
 
 DROP TABLE new_authorities;
+
+#
+# Ensure idealQty >= criticalQty for OVPMS-1678 Add validation to idealQty and criticalQty nodes of
+# entityRelationship.productStockLocation
+#
+DROP TABLE IF EXISTS ideal_critical_qty;
+CREATE TEMPORARY TABLE ideal_critical_qty (
+  id          BIGINT NOT NULL PRIMARY KEY,
+  idealQty    DECIMAL(18, 3),
+  criticalQty DECIMAL(18, 3)
+);
+
+INSERT INTO ideal_critical_qty (id, idealQty, criticalQty)
+  SELECT
+    r.entity_relationship_id,
+    cast(idealQty.value AS DECIMAL(18, 3)),
+    cast(criticalQty.value AS DECIMAL(18, 3))
+  FROM entity_relationships r
+    JOIN entity_relationship_details criticalQty
+      ON r.entity_relationship_id = criticalQty.entity_relationship_id
+         AND criticalQty.name = "criticalQty"
+    JOIN entity_relationship_details idealQty
+      ON r.entity_relationship_id = idealQty.entity_relationship_id
+         AND idealQty.name = "idealQty"
+         AND idealQty.value < criticalQty.value
+  WHERE r.arch_short_name = "entityRelationship.productStockLocation";
+
+UPDATE entity_relationships r
+  JOIN ideal_critical_qty i
+    ON i.id = r.entity_relationship_id
+  JOIN entity_relationship_details criticalQty
+    ON r.entity_relationship_id = criticalQty.entity_relationship_id
+       AND criticalQty.name = "criticalQty"
+  JOIN entity_relationship_details idealQty
+    ON r.entity_relationship_id = idealQty.entity_relationship_id
+       AND idealQty.name = "idealQty"
+SET idealQty.value  = i.criticalQty,
+  criticalQty.value = i.idealQty;
+
+DROP TABLE ideal_critical_qty;
 
