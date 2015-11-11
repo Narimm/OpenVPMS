@@ -13,13 +13,14 @@
   ~
   ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="lookup.country.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.lookup.Lookup"
                displayName="Country">
         <node name="id" path="/id" type="java.lang.Long"
               hidden="true" readOnly="true"/>
-        <node name="code" path="/code" type="java.lang.String" minCardinality="1" maxLengh="2">
+        <node name="code" path="/code" type="java.lang.String" minCardinality="1" maxLength="2">
             <assertion name="regularExpression">
                 <property name="expression" value="[A-Z]*"/>
                 <errorMessage>Invalid Code</errorMessage>
