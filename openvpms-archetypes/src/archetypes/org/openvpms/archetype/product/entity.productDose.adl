@@ -19,6 +19,7 @@
                type="org.openvpms.component.business.domain.im.common.Entity" displayName="Dose">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" minCardinality="0" hidden="true" derived="true"
+              maxLength="100"
               derivedValue="concat('Dose for ', expr:if(boolean(openvpms:get(., 'species')), concat(openvpms:get(., 'species.name'), 's'), 'all species'),' between ', /details/minWeight, '-', /details/maxWeight, ' ', openvpms:lookup(., 'weightUnits'))"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
               derivedValue="concat('Rate: ', /details/rate)"/>

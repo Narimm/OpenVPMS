@@ -19,7 +19,7 @@
                type="org.openvpms.component.business.domain.im.common.Entity"
                displayName="Job Configuration: Document Loader">
         <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
-        <node name="name" path="/name" type="java.lang.String" minCardinality="1"/>
+        <node name="name" path="/name" type="java.lang.String" minCardinality="1"  maxLength="100"/>
         <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="class" path="/details/class" type="java.lang.String" minCardinality="1" readOnly="true"
