@@ -31,8 +31,9 @@ public interface LoaderListener {
      *
      * @param file the file
      * @param id   the corresponding act identifier
+     * @return the new location of the file. May be {@code null}
      */
-    void loaded(File file, long id);
+    File loaded(File file, long id);
 
     /**
      * Returns the no. of files loaded.
@@ -47,8 +48,9 @@ public interface LoaderListener {
      *
      * @param file the file
      * @param id   the corresponding act identifier
+     * @return the new location of the file. May be {@code null}
      */
-    void alreadyLoaded(File file, long id);
+    File alreadyLoaded(File file, long id);
 
     /**
      * Returns the no. of files that weren't loaded as the corresponding act
@@ -62,16 +64,18 @@ public interface LoaderListener {
      * Notifies that a file couldn't be loaded as there was no corresponding act.
      *
      * @param file the file
+     * @return the new location of the file. May be {@code null}
      */
-    void missingAct(File file);
+    File missingAct(File file);
 
     /**
      * Notifies that a file couldn't be loaded as there was no corresponding act.
      *
      * @param file the file
      * @param id   the corresponding act identifier
+     * @return the new location of the file. May be {@code null}
      */
-    void missingAct(File file, long id);
+    File missingAct(File file, long id);
 
     /**
      * Returns the no. of files that don't have a corresponding act.
@@ -85,8 +89,9 @@ public interface LoaderListener {
      *
      * @param file      the file
      * @param exception the error
+     * @return the new location of the file. May be {@code null}
      */
-    void error(File file, Throwable exception);
+    File error(File file, Throwable exception);
 
     /**
      * Returns the no. of files that failed load due to error.

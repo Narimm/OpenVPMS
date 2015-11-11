@@ -35,13 +35,24 @@ public class LoggingLoaderListener extends AbstractLoaderListener {
 
 
     /**
-     * Constructs a {@code LoggingLoaderListener}.
+     * Constructs a {@link LoggingLoaderListener}.
      *
      * @param log the log
      * @param dir if non-null, files will be moved here on successful load
      */
     public LoggingLoaderListener(Log log, File dir) {
-        super(dir);
+        this(log, dir, null);
+    }
+
+    /**
+     * Constructs a {@link LoggingLoaderListener}.
+     *
+     * @param log      the log
+     * @param dir      the directory to move files to on successful load. May be {@code null}
+     * @param errorDir the directory to move files to on error. May be {@code null}
+     */
+    public LoggingLoaderListener(Log log, File dir, File errorDir) {
+        super(dir, errorDir);
         this.log = log;
     }
 
@@ -50,24 +61,37 @@ public class LoggingLoaderListener extends AbstractLoaderListener {
      *
      * @param file the file
      * @param id   the corresponding act identifier
+     * @return the new location of the file. May be {@code null}
      */
     @Override
-    public void loaded(File file, long id) {
-        if (doLoaded(file)) {
+    public File loaded(File file, long id) {
+        int loaded = getLoaded();
+        File target = doLoaded(file);
+        if (target != null) {
+            file = target;
+        }
+        if (getLoaded() > loaded) {
             log.info("Loaded " + file.getPath() + ", identifier=" + id);
         }
+        return target;
     }
 
     /**
-     * Notifies that a file couldn't be loaded as it or another file had already been processed.
+     * Notifies that a file couldn't be loaded as it or another file had
+     * already been processed.
      *
      * @param file the file
      * @param id   the corresponding act identifier
+     * @return the new location of the file. May be {@code null}
      */
     @Override
-    public void alreadyLoaded(File file, long id) {
-        super.alreadyLoaded(file, id);
+    public File alreadyLoaded(File file, long id) {
+        File target = super.alreadyLoaded(file, id);
+        if (target != null) {
+            file = target;
+        }
         log.info("Skipping " + file.getPath() + ", identifier=" + id);
+        return target;
     }
 
     /**
@@ -75,11 +99,32 @@ public class LoggingLoaderListener extends AbstractLoaderListener {
      *
      * @param file the file
      * @param id   the corresponding act identifier
+     * @return the new location of the file. May be {@code null}
      */
     @Override
-    public void missingAct(File file, long id) {
-        super.missingAct(file, id);
+    public File missingAct(File file, long id) {
+        File target = super.missingAct(file, id);
+        if (target != null) {
+            file = target;
+        }
         log.info("Missing act for " + file.getPath() + ", identifier=" + id);
+        return target;
+    }
+
+    /**
+     * Notifies that a file couldn't be loaded as there was no corresponding act.
+     *
+     * @param file the file
+     * @return the new location of the file. May be {@code null}
+     */
+    @Override
+    public File missingAct(File file) {
+        File target = super.missingAct(file);
+        if (target != null) {
+            file = target;
+        }
+        log.info("Missing act for " + file.getPath());
+        return target;
     }
 
     /**
@@ -87,10 +132,26 @@ public class LoggingLoaderListener extends AbstractLoaderListener {
      *
      * @param file      the file
      * @param exception the error
+     * @return the new location of the file. May be {@code null}
      */
     @Override
-    public void error(File file, Throwable exception) {
-        super.error(file, exception);
+    public File error(File file, Throwable exception) {
+        File target = super.error(file, exception);
+        if (target != null) {
+            file = target;
+        }
         log.info("Error " + file.getPath(), exception);
+        return target;
+    }
+
+    /**
+     * Handles a file in error.
+     *
+     * @param file the file
+     * @return the new location of the file. May be {@code null}
+     */
+    @Override
+    protected File handleError(File file) {
+        return moveFileToErrorDir(file, log);
     }
 }

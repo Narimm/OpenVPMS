@@ -13,35 +13,28 @@
  *
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.etl.tools.doc;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 
 import java.io.File;
+import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 
 /**
  * Tests the {@link DocumentLoader} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentLoaderTestCase extends AbstractLoaderTest {
-
-    /**
-     * The parent directory for test files.
-     */
-    private File parent;
-
 
     /**
      * Verifies that an exception is thrown if no arguments are specified.
@@ -59,10 +52,8 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
      */
     @Test
     public void testByName() throws Exception {
-        File source = new File(parent, "sdocs1" + System.currentTimeMillis());
-        File target = new File(parent, "tdocs1" + System.currentTimeMillis());
-        assertTrue(source.mkdirs());
-        assertTrue(target.mkdirs());
+        File source = folder.newFolder("source");
+        File target = folder.newFolder("target");
 
         File file1 = new File(source, "file1-" + System.currentTimeMillis() + ".gif");
         File file2 = new File(source, "file2-" + System.currentTimeMillis() + ".gif");
@@ -92,7 +83,6 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
         // verify files have been moved from source to target
         checkFiles(source);
         checkFiles(target, file1, file2, file3, file4);
-
     }
 
     /**
@@ -102,14 +92,10 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
      */
     @Test
     public void testByIdRecurse() throws Exception {
-        File root = new File(parent, "root" + System.currentTimeMillis());
-        File sub1 = new File(root, "sub1");
-        File sub2 = new File(root, "sub2");
-        File target = new File(parent, "tdocs2" + System.currentTimeMillis());
-        assertTrue(root.mkdirs());
-        assertTrue(target.mkdirs());
-        assertTrue(sub1.mkdirs());
-        assertTrue(sub2.mkdirs());
+        File root = folder.newFolder("root");
+        File sub1 = folder.newFolder("root", "sub1");
+        File sub2 = folder.newFolder("root", "sub2");
+        File target = folder.newFolder("target");
 
         DocumentAct act1 = createPatientDocAct();
         DocumentAct act2 = createPatientDocAct();
@@ -132,23 +118,31 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
 
     /**
      * Tests the behaviour of using --byid with various combinations of invalid directory arguments.
+     *
+     * @throws IOException for any I/O error
      */
     @Test
-    public void testByIdInvalidDirs() {
+    public void testByIdInvalidDirs() throws IOException {
         String[] args1 = {"--byid", "-s", "target/invalidsource"};
         checkConstructException(args1, DocumentLoaderException.ErrorCode.InvalidArguments);  // invalid directory
 
         String[] args2 = {"--byid", "-d", "target/invalidtarget"};
         checkConstructException(args2, DocumentLoaderException.ErrorCode.InvalidArguments);  // invalid directory
 
-        File target = new File(parent, "sdocs" + System.currentTimeMillis());
-        assertTrue(target.mkdirs());
+        File parent = folder.newFolder("parent");
+        File target = folder.newFolder("parent", "target");
 
         String[] args3 = {"--byid", "-s", parent.getPath(), "-d", target.getPath()};
         checkConstructException(args3, DocumentLoaderException.ErrorCode.TargetChildOfSource);
 
         String[] args4 = {"--byid", "-s", parent.getPath(), "-d", parent.getPath()};
         checkConstructException(args4, DocumentLoaderException.ErrorCode.SourceTargetSame);
+
+        String[] args5 = {"--byid", "-s", parent.getPath(), "--err", target.getPath()};
+        checkConstructException(args5, DocumentLoaderException.ErrorCode.ErrorChildOfSource);
+
+        String[] args6 = {"--byid", "-s", parent.getPath(), "--err", parent.getPath()};
+        checkConstructException(args6, DocumentLoaderException.ErrorCode.SourceErrorSame);
     }
 
     /**
@@ -158,10 +152,8 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
      */
     @Test
     public void testByIdCustomRegexp() throws Exception {
-        File source = new File(parent, "sdocs2" + System.currentTimeMillis());
-        File target = new File(parent, "tdocs2" + System.currentTimeMillis());
-        assertTrue(source.mkdirs());
-        assertTrue(target.mkdirs());
+        File source = folder.newFolder("source");
+        File target = folder.newFolder("target");
 
         DocumentAct act1 = createPatientDocAct();
         DocumentAct act2 = createPatientDocAct();
@@ -191,10 +183,8 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
      */
     @Test
     public void testByIdAndType() throws Exception {
-        File source = new File(parent, "sdocs3" + System.currentTimeMillis());
-        File target = new File(parent, "tdocs3" + System.currentTimeMillis());
-        assertTrue(source.mkdirs());
-        assertTrue(target.mkdirs());
+        File source = folder.newFolder("source");
+        File target = folder.newFolder("target");
 
         DocumentAct act1 = createPatientDocAct();
         DocumentAct act2 = createPatientDocAct();
@@ -230,10 +220,9 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
      */
     @Test
     public void testDocumentTemplateActNotLoadedByDefault() throws Exception {
-        File source = new File(parent, "sdocs4" + System.currentTimeMillis());
-        File target = new File(parent, "tdocs4" + System.currentTimeMillis());
-        assertTrue(source.mkdirs());
-        assertTrue(target.mkdirs());
+        File source = folder.newFolder("source");
+        File target = folder.newFolder("target");
+        File error = folder.newFolder("error");
 
         // create an act.documentTemplate and associated template
         DocumentAct act = (DocumentAct) create("act.documentTemplate");
@@ -248,12 +237,14 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
         File file = createFile(act, source);
 
         // verify the file isn't loaded with the default --type value of "act.*Document*".
-        String[] args = {"--byid", "-s", source.getPath(), "-d", target.getPath()};
+        String[] args = {"--byid", "-s", source.getPath(), "-d", target.getPath(),
+                         "--err", error.getPath()};
         DocumentLoader loader = new DocumentLoader(args, getArchetypeService(), transactionManager);
         loader.load();
 
-        checkFiles(source, file);
+        checkFiles(source);
         checkFiles(target);
+        checkFiles(error, file);
 
         // verify that specifying act.documentTemplate throws an IllegalArgumentException as it doesn't have a
         // document node
@@ -264,17 +255,6 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
             fail("Expected DocumentLoader constructor to fail");
         } catch (IllegalArgumentException expected) {
             // the expected behaviour
-        }
-    }
-
-    /**
-     * Sets up the test case.
-     */
-    @Before
-    public void setUp() {
-        parent = new File("target");
-        if (!parent.exists()) {
-            assertTrue(parent.mkdir());
         }
     }
 

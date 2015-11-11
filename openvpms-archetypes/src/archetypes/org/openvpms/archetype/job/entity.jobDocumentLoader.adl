@@ -28,6 +28,8 @@
               minCardinality="1"/>
         <node name="targetDir" displayName="Destination Directory" path="/details/targetDir" type="java.lang.String"
               minCardinality="1"/>
+        <node name="errorDir" displayName="Error Directory" path="/details/errorDir" type="java.lang.String"
+              minCardinality="0"/>
         <node name="idPattern" path="/details/idPattern" type="java.lang.String" minCardinality="1"
               defaultValue="'[^\d]*(\d+).*'"/>
         <node name="overwrite" path="/details/overwrite" type="java.lang.Boolean"

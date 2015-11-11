@@ -13,9 +13,12 @@
  *
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.etl.tools.doc;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -49,6 +52,9 @@ import static org.junit.Assert.fail;
  */
 @ContextConfiguration("/applicationContext.xml")
 public abstract class AbstractLoaderTest extends ArchetypeServiceTest {
+
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
 
     /**
      * The transaction manager.

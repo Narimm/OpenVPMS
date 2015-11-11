@@ -46,10 +46,11 @@ class DelegatingLoaderListener implements LoaderListener {
      *
      * @param file the file
      * @param id   the corresponding act identifier
+     * @return the new location of the file. May be {@code null}
      */
     @Override
-    public void loaded(File file, long id) {
-        listener.loaded(file, id);
+    public File loaded(File file, long id) {
+        return listener.loaded(file, id);
     }
 
     /**
@@ -62,15 +63,18 @@ class DelegatingLoaderListener implements LoaderListener {
         return listener.getLoaded();
     }
 
+
     /**
-     * Notifies that a file couldn't be loaded as it or another file had already been processed.
+     * Notifies that a file couldn't be loaded as it or another file had
+     * already been processed.
      *
      * @param file the file
      * @param id   the corresponding act identifier
+     * @return the new location of the file. May be {@code null}
      */
     @Override
-    public void alreadyLoaded(File file, long id) {
-        listener.alreadyLoaded(file, id);
+    public File alreadyLoaded(File file, long id) {
+        return listener.alreadyLoaded(file, id);
     }
 
     /**
@@ -87,10 +91,11 @@ class DelegatingLoaderListener implements LoaderListener {
      * Notifies that a file couldn't be loaded as there was no corresponding act.
      *
      * @param file the file
+     * @return the new location of the file. May be {@code null}
      */
     @Override
-    public void missingAct(File file) {
-        listener.missingAct(file);
+    public File missingAct(File file) {
+        return listener.missingAct(file);
     }
 
     /**
@@ -98,10 +103,11 @@ class DelegatingLoaderListener implements LoaderListener {
      *
      * @param file the file
      * @param id   the corresponding act identifier
+     * @return the new location of the file. May be {@code null}
      */
     @Override
-    public void missingAct(File file, long id) {
-        listener.missingAct(file, id);
+    public File missingAct(File file, long id) {
+        return listener.missingAct(file, id);
     }
 
     /**
@@ -119,10 +125,11 @@ class DelegatingLoaderListener implements LoaderListener {
      *
      * @param file      the file
      * @param exception the error
+     * @return the new location of the file. May be {@code null}
      */
     @Override
-    public void error(File file, Throwable exception) {
-        listener.error(file, exception);
+    public File error(File file, Throwable exception) {
+        return listener.error(file, exception);
     }
 
     /**
