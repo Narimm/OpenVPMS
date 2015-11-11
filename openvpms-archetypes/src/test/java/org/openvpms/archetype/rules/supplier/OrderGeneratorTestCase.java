@@ -559,28 +559,6 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
     }
 
     /**
-     * Verifies that no orders are generated if the ideal and critical quantity have been swapped, and the on hand
-     * and on order quantity mean that a negative quantity would be ordered.
-     */
-    @Test
-    public void testIdealQtyLessThanCriticalQty() {
-        OrderGenerator generator = new OrderGenerator(taxRules, getArchetypeService());
-        Party stockLocation = SupplierTestHelper.createStockLocation();
-        Party supplier = TestHelper.createSupplier();
-
-        Product product1 = TestHelper.createProduct();
-
-        addRelationships(product1, stockLocation, supplier, true, new BigDecimal("5.1"), 8, 15, BigDecimal.ONE, 1);
-        createOrder(product1, supplier, stockLocation, 3, 1, OrderStatus.ACCEPTED);
-
-        supplier = get(supplier);
-        List<Stock> stock1 = generator.getOrderableStock(supplier, stockLocation, false);
-        assertEquals(0, stock1.size());
-        List<Stock> stock2 = generator.getOrderableStock(supplier, stockLocation, true);
-        assertEquals(0, stock2.size());
-    }
-
-    /**
      * Verifies an order item is present in an order
      *
      * @param order    the order
