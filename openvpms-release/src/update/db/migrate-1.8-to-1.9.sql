@@ -87,3 +87,18 @@ SET idealQty.value  = i.criticalQty,
 
 DROP TABLE ideal_critical_qty;
 
+#
+# Insert template include print flag for OVPMS-1664 Product templates created prior to 1.8 display Print flag as unset
+#
+INSERT INTO entity_link_details (id, type, value, name)
+  SELECT
+    l.id,
+    "boolean",
+    "true",
+    "print"
+  FROM entity_links l
+  WHERE l.arch_short_name = "entityLink.productIncludes"
+        AND NOT exists(SELECT *
+                       FROM entity_link_details d
+                       WHERE d.id = l.id
+                             AND d.name = "print");
