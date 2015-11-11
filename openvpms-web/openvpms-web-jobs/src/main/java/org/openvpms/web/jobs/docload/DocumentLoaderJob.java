@@ -177,7 +177,7 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
     /**
      * Invoked on completion of a jobSends a message notifying the registered users of completion or failure of the job.
      *
-     * @param listener  the loader listener
+     * @param listener  the loader listener. May be {@code null}
      * @param exception the exception, if the job failed, otherwise {@code null}
      */
     private void complete(Listener listener, Throwable exception) {
@@ -193,7 +193,7 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
     /**
      * Notifies users of completion or failure of the job.
      *
-     * @param listener  the loader listener
+     * @param listener  the loader listener. May be {@code null}, if {@code exception} non-null
      * @param exception the exception, if the job failed, otherwise {@code null}
      * @param users     the users to notify
      */
@@ -217,39 +217,10 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
             }
         }
         if (listener != null) {
-            if (!listener.errors.isEmpty()) {
-                if (text.length() != 0) {
-                    text.append("\n\n");
-                }
-                text.append(Messages.get("docload.error"));
-                text.append("\n");
-                for (Map.Entry<File, String> entry : listener.errors.entrySet()) {
-                    text.append(Messages.format("docload.error.item", entry.getKey(), entry.getValue()));
-                    text.append("\n");
-                }
-            }
-            if (!listener.missingAct.isEmpty()) {
-                if (text.length() != 0) {
-                    text.append("\n\n");
-                }
-                text.append(Messages.get("docload.missingAct"));
-                text.append("\n");
-                for (Map.Entry<File, Long> entry : listener.missingAct.entrySet()) {
-                    text.append(Messages.format("docload.missingAct.item", entry.getValue(), entry.getKey()));
-                    text.append("\n");
-                }
-            }
-            if (!listener.alreadyLoaded.isEmpty()) {
-                if (text.length() != 0) {
-                    text.append("\n\n");
-                }
-                text.append(Messages.get("docload.alreadyLoaded"));
-                text.append("\n");
-                for (Map.Entry<File, Long> entry : listener.alreadyLoaded.entrySet()) {
-                    text.append(Messages.format("docload.alreadyLoaded.item", entry.getValue(), entry.getKey()));
-                    text.append("\n");
-                }
-            }
+            append(text, listener.errors, "docload.error", "docload.error.item");
+            append(text, listener.missingAct, "docload.missingAct", "docload.missingAct.item");
+            append(text, listener.alreadyLoaded, "docload.alreadyLoaded", "docload.alreadyLoaded.item");
+            append(text, listener.loaded, "docload.loaded", "docload.loaded.item");
         }
         subject = truncate(subject, subjectLength);
         String message = truncate(text.toString(), messageLength);
@@ -305,6 +276,28 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
     }
 
     /**
+     * Appends items to the text.
+     *
+     * @param text       the message text
+     * @param entries    the entries to append
+     * @param headingKey the heading resource bundle key
+     * @param itemKey    the item resource bundle key
+     */
+    private <T> void append(StringBuilder text, Map<File, T> entries, String headingKey, String itemKey) {
+        if (!entries.isEmpty()) {
+            if (text.length() != 0) {
+                text.append("\n\n");
+            }
+            text.append(Messages.get(headingKey));
+            text.append("\n");
+            for (Map.Entry<File, T> entry : entries.entrySet()) {
+                text.append(Messages.format(itemKey, entry.getKey(), entry.getValue()));
+                text.append("\n");
+            }
+        }
+    }
+
+    /**
      * Helper to truncate a string if it exceeds a maximum length.
      *
      * @param value     the value to truncate
@@ -312,11 +305,13 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
      * @return the new value
      */
     private String truncate(String value, int maxLength) {
-        return value != null && value.length() > maxLength ? value.substring(0, maxLength) : value;
+        return value != null && value.length() > maxLength ? value.substring(0, maxLength - 3) + "..." : value;
     }
 
 
     private class Listener extends DelegatingLoaderListener {
+
+        private LinkedHashMap<File, Long> loaded = new LinkedHashMap<>();
 
         private LinkedHashMap<File, Long> alreadyLoaded = new LinkedHashMap<>();
 
@@ -332,6 +327,23 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
          */
         public Listener(org.openvpms.etl.tools.doc.LoaderListener listener) {
             super(listener);
+        }
+
+        /**
+         * Notifies when a file is loaded.
+         *
+         * @param file the file
+         * @param id   the corresponding act identifier
+         * @return the new location of the file. May be {@code null}
+         */
+        @Override
+        public File loaded(File file, long id) {
+            File target = super.loaded(file, id);
+            if (target != null) {
+                file = target;
+            }
+            loaded.put(file, id);
+            return target;
         }
 
         /**
