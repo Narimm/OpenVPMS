@@ -13,16 +13,16 @@
  *
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.etl.tools.doc;
 
 import org.apache.commons.resources.Messages;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 /**
- * Exception class for exceptions raised by {@link DocumentLoader}
+ * Exception class for exceptions raised by {@link DocumentLoader}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentLoaderException extends OpenVPMSException {
 
@@ -39,6 +39,8 @@ public class DocumentLoaderException extends OpenVPMSException {
         InvalidArguments,
         SourceTargetSame,
         TargetChildOfSource,
+        SourceErrorSame,
+        ErrorChildOfSource,
         DuplicateAct
     }
 
@@ -56,7 +58,7 @@ public class DocumentLoaderException extends OpenVPMSException {
                                    + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
-     * Creates a new <tt>DocumentLoaderException</tt>.
+     * Constructs a {@link DocumentLoaderException}.
      *
      * @param errorCode the error code
      * @param args      arguments to create the message with
@@ -67,7 +69,7 @@ public class DocumentLoaderException extends OpenVPMSException {
     }
 
     /**
-     * Creates a new <tt>DocumentLoaderException</tt>.
+     * Constructs a {@link DocumentLoaderException}.
      *
      * @param errorCode the error code
      * @param cause the root cause

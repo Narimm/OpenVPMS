@@ -145,7 +145,8 @@ public class DocumentLoader {
         } else {
             File source = config.getFile("source");
             File target = config.getFile("dest");
-            checkDirs(source, target);
+            File error = config.getFile("err");
+            checkDirs(source, target, error);
 
             contextPath = config.getString("context");
 
@@ -153,8 +154,8 @@ public class DocumentLoader {
                 service = (IArchetypeService) getContext().getBean("archetypeService");
             }
             DocumentFactory factory = new DefaultDocumentFactory();
-            LoaderListener listener = (config.getBoolean("verbose")) ? new LoggingLoaderListener(log, target)
-                                                                     : new DefaultLoaderListener(target);
+            LoaderListener listener = (config.getBoolean("verbose")) ? new LoggingLoaderListener(log, target, error)
+                                                                     : new DefaultLoaderListener(target, error);
 
             String type[] = config.getStringArray("type");
             boolean recurse = config.getBoolean("recurse");
@@ -163,7 +164,7 @@ public class DocumentLoader {
             if (transactionManager == null) {
                 transactionManager = getContext().getBean(PlatformTransactionManager.class);
             }
-            
+
             if (byId) {
                 String regexp = config.getString("regexp");
                 Pattern pattern = Pattern.compile(regexp);
@@ -252,24 +253,46 @@ public class DocumentLoader {
      *
      * @param source the source directory
      * @param target the target directory. May be {@code null}
+     * @param error  the error directory. May be {@code null}
      */
-    private void checkDirs(File source, File target) {
+    private void checkDirs(File source, File target, File error) {
         if (source == null) {
             throw new IllegalArgumentException("Argument 'source' is null");
         }
         if (target != null) {
             if (target.equals(source)) {
                 throw new DocumentLoaderException(DocumentLoaderException.ErrorCode.SourceTargetSame);
-
             }
-            File parent = target.getParentFile();
-            while (parent != null) {
-                if (parent.equals(source)) {
-                    throw new DocumentLoaderException(DocumentLoaderException.ErrorCode.TargetChildOfSource);
-                }
-                parent = parent.getParentFile();
+            if (isSubdir(source, target)) {
+                throw new DocumentLoaderException(DocumentLoaderException.ErrorCode.TargetChildOfSource);
             }
         }
+        if (error != null) {
+            if (error.equals(source)) {
+                throw new DocumentLoaderException(DocumentLoaderException.ErrorCode.SourceErrorSame);
+            }
+            if (isSubdir(source, error)) {
+                throw new DocumentLoaderException(DocumentLoaderException.ErrorCode.ErrorChildOfSource);
+            }
+        }
+    }
+
+    /**
+     * Determines if a directory is a subdirectory of the source.
+     *
+     * @param source the source directory
+     * @param dir    the directory to check
+     * @return {@code true} if the directory is a subdirectory of the source
+     */
+    private boolean isSubdir(File source, File dir) {
+        File parent = dir.getParentFile();
+        while (parent != null) {
+            if (parent.equals(source)) {
+                return true;
+            }
+            parent = parent.getParentFile();
+        }
+        return false;
     }
 
     /**
@@ -304,8 +327,8 @@ public class DocumentLoader {
         try {
             parser.registerParameter(
                     new Switch("byid").setShortFlag('i')
-                                             .setLongFlag("byid")
-                                             .setHelp("Load files using the identifiers in their names"));
+                            .setLongFlag("byid")
+                            .setHelp("Load files using the identifiers in their names"));
             parser.registerParameter(new Switch("byname").setShortFlag('n')
                                              .setLongFlag("byname")
                                              .setHelp("Load files by matching their names with document acts"));
@@ -331,9 +354,13 @@ public class DocumentLoader {
                                              .setLongFlag("dest")
                                              .setStringParser(dirParser)
                                              .setHelp("The directory to move files to on successful load."));
+            parser.registerParameter(new FlaggedOption("err")
+                                             .setLongFlag("err")
+                                             .setStringParser(dirParser)
+                                             .setHelp("The directory to move files to on error."));
             parser.registerParameter(new FlaggedOption("type").setShortFlag('t')
                                              .setLongFlag("type")
-                                             .setDefault(new String[]{"act.*Document*", 
+                                             .setDefault(new String[]{"act.*Document*",
                                                                       InvestigationArchetypes.PATIENT_INVESTIGATION})
                                              .setAllowMultipleDeclarations(true)
                                              .setHelp("The archetype short name. May contain wildcards."));

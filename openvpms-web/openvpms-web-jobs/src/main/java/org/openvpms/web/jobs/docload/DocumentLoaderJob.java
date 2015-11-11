@@ -132,6 +132,10 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
             if (target == null || !target.exists()) {
                 throw new IllegalStateException("Invalid destination directory: " + target);
             }
+            File error = getDir(bean.getString("errorDir"));
+            if (error != null && !error.exists()) {
+                throw new IllegalStateException("Invalid error directory: " + error);
+            }
             String idPattern = bean.getString("idPattern");
             boolean overwrite = bean.getBoolean("overwrite");
             boolean recurse = bean.getBoolean("recurse");
@@ -142,8 +146,8 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
 
             IdLoader loader = new IdLoader(source, types, service, transactionManager, recurse, overwrite,
                                            Pattern.compile(idPattern));
-            LoaderListener delegate = logLoad ? new LoggingLoaderListener(log, target)
-                                              : new DefaultLoaderListener(target);
+            LoaderListener delegate = logLoad ? new LoggingLoaderListener(log, target, error)
+                                              : new DefaultLoaderListener(target, error);
             listener = new Listener(delegate);
             loader.setListener(listener);
 
@@ -314,11 +318,11 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
 
     private class Listener extends DelegatingLoaderListener {
 
-        private LinkedHashMap<File, Long> alreadyLoaded = new LinkedHashMap<File, Long>();
+        private LinkedHashMap<File, Long> alreadyLoaded = new LinkedHashMap<>();
 
-        private LinkedHashMap<File, Long> missingAct = new LinkedHashMap<File, Long>();
+        private LinkedHashMap<File, Long> missingAct = new LinkedHashMap<>();
 
-        private LinkedHashMap<File, String> errors = new LinkedHashMap<File, String>();
+        private LinkedHashMap<File, String> errors = new LinkedHashMap<>();
 
 
         /**
@@ -337,9 +341,13 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
          * @param id   the corresponding act identifier
          */
         @Override
-        public void alreadyLoaded(File file, long id) {
-            super.alreadyLoaded(file, id);
+        public File alreadyLoaded(File file, long id) {
+            File target = super.alreadyLoaded(file, id);
+            if (target != null) {
+                file = target;
+            }
             alreadyLoaded.put(file, id);
+            return target;
         }
 
         /**
@@ -349,9 +357,13 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
          * @param id   the corresponding act identifier
          */
         @Override
-        public void missingAct(File file, long id) {
-            super.missingAct(file, id);
+        public File missingAct(File file, long id) {
+            File target = super.missingAct(file, id);
+            if (target != null) {
+                file = target;
+            }
             missingAct.put(file, id);
+            return target;
         }
 
         /**
@@ -361,9 +373,13 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
          * @param exception the error
          */
         @Override
-        public void error(File file, Throwable exception) {
-            super.error(file, exception);
+        public File error(File file, Throwable exception) {
+            File target = super.error(file, exception);
+            if (target != null) {
+                file = target;
+            }
             errors.put(file, exception.getMessage());
+            return target;
         }
 
     }

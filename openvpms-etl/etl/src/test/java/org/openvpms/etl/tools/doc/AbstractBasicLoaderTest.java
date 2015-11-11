@@ -16,8 +16,6 @@
 
 package org.openvpms.etl.tools.doc;
 
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -36,10 +34,6 @@ import static org.junit.Assert.assertTrue;
  * @author Tim Anderson
  */
 public abstract class AbstractBasicLoaderTest extends AbstractLoaderTest {
-
-    @Rule
-    public TemporaryFolder folder = new TemporaryFolder();
-
 
     /**
      * Helper to load files.

@@ -29,9 +29,19 @@ public class DefaultLoaderListener extends AbstractLoaderListener {
     /**
      * Constructs a {@link DefaultLoaderListener}.
      *
-     * @param dir if non-null, files will be moved here on successful load
+     * @param dir the directory to move files to on successful load. May be {@code null}
      */
     public DefaultLoaderListener(File dir) {
         super(dir);
+    }
+
+    /**
+     * Constructs a {@link DefaultLoaderListener}.
+     *
+     * @param dir      the directory to move files to on successful load. May be {@code null}
+     * @param errorDir the directory to move files to on error. May be {@code null}
+     */
+    public DefaultLoaderListener(File dir, File errorDir) {
+        super(dir, errorDir);
     }
 }

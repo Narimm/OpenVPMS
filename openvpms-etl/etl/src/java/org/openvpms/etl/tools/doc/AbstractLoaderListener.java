@@ -16,10 +16,12 @@
 
 package org.openvpms.etl.tools.doc;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 
 /**
@@ -30,9 +32,14 @@ import java.io.IOException;
 abstract class AbstractLoaderListener implements LoaderListener {
 
     /**
-     * The directory to move loaded files to. May be <tt>null</tt>
+     * The directory to move loaded files to. May be {@code null}
      */
     private final File dir;
+
+    /**
+     * The directory to move files that failed to load to. May be {@code null}
+     */
+    private final File errorDir;
 
     /**
      * The no. of loaded files.
@@ -54,21 +61,29 @@ abstract class AbstractLoaderListener implements LoaderListener {
      */
     private int errors = 0;
 
-
     /**
-     * Creates a new <tt>AbstractLoaderListener</tt>.
+     * The logger.
      */
-    public AbstractLoaderListener() {
-        this(null);
-    }
+    private static final Log log = LogFactory.getLog(AbstractLoaderListener.class);
 
     /**
-     * Creates a new <tt>AbstractLoaderListener</tt>.
+     * Constructs an {@link AbstractLoaderListener}.
      *
      * @param dir if non-null, files will be moved here on successful load
      */
     public AbstractLoaderListener(File dir) {
+        this(dir, null);
+    }
+
+    /**
+     * Constructs an {@link AbstractLoaderListener}.
+     *
+     * @param dir      the directory to move files to on successful load. May be {@code null}
+     * @param errorDir the directory to move files to on error. May be {@code null}
+     */
+    public AbstractLoaderListener(File dir, File errorDir) {
         this.dir = dir;
+        this.errorDir = errorDir;
     }
 
     /**
@@ -76,9 +91,11 @@ abstract class AbstractLoaderListener implements LoaderListener {
      *
      * @param file the file
      * @param id   the corresponding act identifier
+     * @return the new location of the file. May be {@code null}
      */
-    public void loaded(File file, long id) {
-        doLoaded(file);
+    @Override
+    public File loaded(File file, long id) {
+        return doLoaded(file);
     }
 
     /**
@@ -96,10 +113,13 @@ abstract class AbstractLoaderListener implements LoaderListener {
      *
      * @param file the file
      * @param id   the corresponding act identifier
+     * @return the new location of the file. May be {@code null}
      */
-    public void alreadyLoaded(File file, long id) {
+    @Override
+    public File alreadyLoaded(File file, long id) {
         ++skipped;
         ++errors;
+        return handleError(file);
     }
 
     /**
@@ -115,22 +135,23 @@ abstract class AbstractLoaderListener implements LoaderListener {
      * Notifies that a file couldn't be loaded as there was no corresponding act.
      *
      * @param file the file
+     * @return the new location of the file. May be {@code null}
      */
     @Override
-    public void missingAct(File file) {
-        ++missing;
-        ++errors;
+    public File missingAct(File file) {
+        return handleMissingAct(file);
     }
 
     /**
-     * Notifies that a file couldn't be loaded as there was no corresponding
-     * act.
+     * Notifies that a file couldn't be loaded as there was no corresponding act.
      *
      * @param file the file
      * @param id   the corresponding act identifier
+     * @return the new location of the file. May be {@code null}
      */
-    public void missingAct(File file, long id) {
-        missingAct(file);
+    @Override
+    public File missingAct(File file, long id) {
+        return handleMissingAct(file);
     }
 
     /**
@@ -147,9 +168,12 @@ abstract class AbstractLoaderListener implements LoaderListener {
      *
      * @param file      the file
      * @param exception the error
+     * @return the new location of the file. May be {@code null}
      */
-    public void error(File file, Throwable exception) {
+    @Override
+    public File error(File file, Throwable exception) {
         ++errors;
+        return handleError(file);
     }
 
     /**
@@ -176,31 +200,82 @@ abstract class AbstractLoaderListener implements LoaderListener {
      * If a target directory is configured, the file will be moved to it.
      *
      * @param file the file
-     * @return <tt>true</tt> if the file doesn't need to be moved, or was moved
-     *         successfully, otherwise <tt>false</tt>
+     * @return the new location of the file. May be {@code null}
      */
-    protected boolean doLoaded(File file) {
-        boolean result = true;
+    protected File doLoaded(File file) {
+        File result;
         if (dir != null) {
             try {
-                File target = new File(dir, file.getName());
-                if (target.exists()) {
-                    throw new IOException("Cannot copy " + file.getPath()
-                                          + " to " + dir.getPath() + ": file exists");
-                }
-                FileUtils.copyFile(file, target);
-                if (!file.delete()) {
-                    throw new IOException("Failed to delete " + file.getPath());
-                }
+                result = move(file, dir);
                 ++loaded;
             } catch (IOException exception) {
-                result = false;
-                error(file, exception);
+                result = error(file, exception);
             }
         } else {
             ++loaded;
+            result = file;
         }
         return result;
     }
 
+    /**
+     * Handles a missing act.
+     *
+     * @param file the file
+     * @return the new location of the file. May be {@code null}
+     */
+    protected File handleMissingAct(File file) {
+        ++missing;
+        ++errors;
+        return handleError(file);
+    }
+
+    /**
+     * Handles a file in error.
+     * <p/>
+     * This implementation delegates to {@link #moveFileToErrorDir(File, Log)}.
+     *
+     * @param file the file
+     * @return the new location of the file. May be {@code null}
+     */
+    protected File handleError(File file) {
+        return moveFileToErrorDir(file, log);
+    }
+
+    /**
+     * Moves a file to the error directory, if one is configured.
+     *
+     * @param file the file to move
+     * @param log  the log to use if the file cannot be moved
+     * @return the new location of the file. May be {@code null}
+     */
+    protected File moveFileToErrorDir(File file, Log log) {
+        File result = file;
+        if (errorDir != null) {
+            try {
+                result = move(file, errorDir);
+            } catch (IOException exception) {
+                log.error("Failed to move " + file.getPath() + " to " + errorDir, exception);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Moves a file to a directory.
+     *
+     * @param file the file
+     * @param dir  the directory to move to
+     * @return the new location of the file
+     * @throws IOException for any I/O error
+     */
+    private File move(File file, File dir) throws IOException {
+        File target = new File(dir, file.getName());
+        if (target.exists()) {
+            throw new IOException("Cannot copy " + file.getPath()
+                                  + " to " + dir.getPath() + ": file exists");
+        }
+        Files.move(file.toPath(), target.toPath());
+        return target;
+    }
 }

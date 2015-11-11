@@ -65,7 +65,7 @@ public class DocumentLoaderJobConfigurationEditor extends JobConfigurationEditor
     }
 
     /**
-     * Validates the source and target directories.
+     * Validates the source, target and error directories.
      *
      * @param validator the validator
      * @return {@code true} if the directories are valid
@@ -74,11 +74,20 @@ public class DocumentLoaderJobConfigurationEditor extends JobConfigurationEditor
         boolean result = false;
         Property source = getProperty("sourceDir");
         Property target = getProperty("targetDir");
+        Property error = getProperty("errorDir");
         File sourceDir = new File(source.getString());
         File targetDir = new File(target.getString());
-        if (validateDir(source, sourceDir, validator) && validateDir(target, targetDir, validator)) {
+        File errorDir = error.getString() != null ? new File(error.getString()) : null;
+        if (validateDir(source, sourceDir, validator) && validateDir(target, targetDir, validator)
+            && (errorDir == null || validateDir(error, errorDir, validator))) {
             if (sourceDir.equals(targetDir)) {
-                validator.add(this, new ValidatorError(Messages.get("docload.dir.samedirs")));
+                String message = Messages.format("docload.dir.samedirs", source.getDisplayName(),
+                                                 target.getDisplayName());
+                validator.add(this, new ValidatorError(message));
+            } else if (errorDir != null && sourceDir.equals(errorDir)) {
+                String message = Messages.format("docload.dir.samedirs", source.getDisplayName(),
+                                                 error.getDisplayName());
+                validator.add(this, new ValidatorError(message));
             } else {
                 result = true;
             }
