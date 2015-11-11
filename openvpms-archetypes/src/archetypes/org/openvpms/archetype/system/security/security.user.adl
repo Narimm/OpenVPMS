@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="security.user.1.0"
                latest="true" primary="true"
@@ -26,14 +27,14 @@
             </assertion>
         </node>
         <node name="password" path="/password" type="java.lang.String" displayName="Password"
-              minCardinality="1">
+              minCardinality="1" maxLength="20">
             <assertion name="regularExpression">
                 <property name="expression" value="[a-zA-Z0-9_]*"/>
                 <errorMessage>Invalid password</errorMessage>
             </assertion>
         </node>
         <node name="name" path="/name" type="java.lang.String" displayName="Full Name"
-              minCardinality="1">
+              minCardinality="1" maxLength="100">
             <assertion name="propercase"/>
         </node>
         <node name="description" path="/description" type="java.lang.String" displayName="Description"/>

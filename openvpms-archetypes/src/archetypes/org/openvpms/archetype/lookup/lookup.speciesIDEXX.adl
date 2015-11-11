@@ -20,7 +20,7 @@
                displayName="Species (IDEXX)">
         <node name="id" path="/id" displayName="id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="species" path="/code" type="java.lang.String" minCardinality="1"/>
-        <node name="code" path="/code" type="java.lang.String" hidden="true" minCardinality="1"/>
+        <node name="code" path="/code" type="java.lang.String" hidden="true" minCardinality="1" maxLength="100"/>
         <node name="name" type="java.lang.String" path="/name" minCardinality="1"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
               derivedValue="/name"/>

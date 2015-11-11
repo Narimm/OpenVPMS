@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -20,7 +20,7 @@
                displayName="Job Configuration: ESCI Inbox Reader">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" path="/name" type="java.lang.String" minCardinality="1"
-              defaultValue="'ESCI Inbox Reader'"/>
+              defaultValue="'ESCI Inbox Reader'"  maxLength="100"/>
         <node name="description" type="java.lang.String" path="/description" minCardinality="0"
               defaultValue="'Periodically checks ESCI Inboxes for supplier messages'"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
