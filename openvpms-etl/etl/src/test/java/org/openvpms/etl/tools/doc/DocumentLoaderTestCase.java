@@ -259,7 +259,39 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
     }
 
     /**
-     * Verifies that constructing a <tt>DocumentLoader</tt> with the supplied arguments throws an exception.
+     * Tests the behaviour of the --rename option.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testRenameDuplicates() throws Exception {
+        File source = folder.newFolder("source");
+        File target = folder.newFolder("target");
+
+        DocumentAct act = createPatientDocAct();
+
+        createFile(act, source);
+        File file1 = createFile(act, target);
+        File file2 = new File(target, act.getId() + "(1).gif");
+
+        String[] args = {"--byid", "-s", source.getPath(), "-d", target.getPath(), "--rename", "--overwrite"};
+        DocumentLoader loader = new DocumentLoader(args, getArchetypeService(), transactionManager);
+        loader.load();
+
+        checkFiles(source);
+        checkFiles(target, file1, file2);
+
+        createFile(act, source);
+        File file3 = new File(target, act.getId() + "(2).gif");
+
+        loader = new DocumentLoader(args, getArchetypeService(), transactionManager);
+        loader.load();
+        checkFiles(source);
+        checkFiles(target, file1, file2, file3);
+    }
+
+    /**
+     * Verifies that constructing a {@link DocumentLoader} with the supplied arguments throws an exception.
      *
      * @param args     the arguments
      * @param expected the expected error code

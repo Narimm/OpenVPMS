@@ -40,8 +40,9 @@ public class DefaultLoaderListener extends AbstractLoaderListener {
      *
      * @param dir      the directory to move files to on successful load. May be {@code null}
      * @param errorDir the directory to move files to on error. May be {@code null}
+     * @param renameDuplicates if {@code true}, rename files on move, if a file exists with the same name
      */
-    public DefaultLoaderListener(File dir, File errorDir) {
-        super(dir, errorDir);
+    public DefaultLoaderListener(File dir, File errorDir, boolean renameDuplicates) {
+        super(dir, errorDir, renameDuplicates);
     }
 }

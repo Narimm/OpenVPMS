@@ -16,6 +16,8 @@
 
 package org.openvpms.etl.tools.doc;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -40,6 +42,11 @@ abstract class AbstractLoaderListener implements LoaderListener {
      * The directory to move files that failed to load to. May be {@code null}
      */
     private final File errorDir;
+
+    /**
+     * If {@code true}, rename files on move, if a file exists with the same name.
+     */
+    private final boolean renameDuplicates;
 
     /**
      * The no. of loaded files.
@@ -72,18 +79,20 @@ abstract class AbstractLoaderListener implements LoaderListener {
      * @param dir if non-null, files will be moved here on successful load
      */
     public AbstractLoaderListener(File dir) {
-        this(dir, null);
+        this(dir, null, false);
     }
 
     /**
      * Constructs an {@link AbstractLoaderListener}.
      *
-     * @param dir      the directory to move files to on successful load. May be {@code null}
-     * @param errorDir the directory to move files to on error. May be {@code null}
+     * @param dir              the directory to move files to on successful load. May be {@code null}
+     * @param errorDir         the directory to move files to on error. May be {@code null}
+     * @param renameDuplicates if {@code true}, rename files on move, if a file exists with the same name
      */
-    public AbstractLoaderListener(File dir, File errorDir) {
+    public AbstractLoaderListener(File dir, File errorDir, boolean renameDuplicates) {
         this.dir = dir;
         this.errorDir = errorDir;
+        this.renameDuplicates = renameDuplicates;
     }
 
     /**
@@ -272,10 +281,42 @@ abstract class AbstractLoaderListener implements LoaderListener {
     private File move(File file, File dir) throws IOException {
         File target = new File(dir, file.getName());
         if (target.exists()) {
-            throw new IOException("Cannot copy " + file.getPath()
-                                  + " to " + dir.getPath() + ": file exists");
+            if (renameDuplicates) {
+                target = getUniqueFile(target);
+            } else {
+                throw new IOException("Cannot copy " + file.getPath() + " to " + dir.getPath() + ": file exists");
+            }
         }
         Files.move(file.toPath(), target.toPath());
         return target;
+    }
+
+    /**
+     * Generates a unique file.
+     *
+     * @param file the file
+     * @return a unique file
+     */
+    private File getUniqueFile(File file) {
+        File parent = file.getParentFile();
+        String baseName = FilenameUtils.getBaseName(file.getName());
+        String ext = FilenameUtils.getExtension(file.getName());
+        int id = 1;
+        while ((file = new File(parent, getName(baseName, id, ext))).exists()) {
+            ++id;
+        }
+        return file;
+    }
+
+    /**
+     * Returns a file name given a base name, index and extension.
+     *
+     * @param baseName the base name
+     * @param ext      the extension. May be {@code null}
+     * @return a file name
+     */
+    private String getName(String baseName, int index, String ext) {
+        String result = baseName + "(" + index + ")";
+        return (!StringUtils.isEmpty(ext)) ? result + "." + ext : result;
     }
 }
