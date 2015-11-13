@@ -822,20 +822,15 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         }
         updateTaxAmount();
 
+        updatePatientMedication(product);
+        updateInvestigations(product);
+        updateReminders(product);
+
         boolean showPrint = updatePrint(product);
 
         // update the layout if nodes require filtering
         updateLayout(product, showPrint);
 
-        updatePatientMedication(product);
-        updateInvestigations(product);
-        updateReminders(product);
-
-//        boolean showPrint = updatePrint(product);
-//
-//        // update the layout if nodes require filtering
-//        updateLayout(product, showPrint);
-//
         notifyProductListener(product);
         getProperty(FIXED_PRICE).addModifiableListener(discountListener);
         getProperty(QUANTITY).addModifiableListener(discountListener);
