@@ -172,7 +172,6 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         addStartEndTimeListeners();
         updateRelativeDate();
         updateDuration();
-        updateAlerts();
     }
 
     /**
@@ -308,6 +307,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         if (getEndTime() == null) {
             calculateEndTime();
         }
+        updateAlerts();
     }
 
     /**
@@ -414,7 +414,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     }
 
     /**
-     * Updates the alerts associated with the custopmer and patient.
+     * Updates the alerts associated with the customer and patient.
      */
     private void updateAlerts() {
         Component container = getAlertsContainer();
