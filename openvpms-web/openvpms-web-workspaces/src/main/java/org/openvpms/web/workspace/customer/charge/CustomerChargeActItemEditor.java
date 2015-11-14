@@ -1082,6 +1082,10 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                             reminder.setPatient(getPatient());
                             reminder.setProduct(product);
 
+                            // marking matching reminders completed are handled via AbstractCustomerChargeActEditor.
+                            // Need to disable it here to avoid the rule updating other reminders in the invoice.
+                            reminder.setMarkMatchingRemindersCompleted(false);
+
                             // override the due date calculated from the reminder type
                             Date dueDate = reminderRules.calculateProductReminderDueDate(startTime, relationship);
                             reminder.setEndTime(dueDate);

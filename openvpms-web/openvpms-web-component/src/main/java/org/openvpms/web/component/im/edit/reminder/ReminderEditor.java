@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.reminder;
@@ -43,6 +43,11 @@ public class ReminderEditor extends PatientActEditor {
      * The reminder rules.
      */
     private final ReminderRules rules;
+
+    /**
+     * Determines if matching reminders should be marked completed on save.
+     */
+    private boolean markCompleted = true;
 
     /**
      * Constructs a {@link ReminderEditor}.
@@ -97,6 +102,18 @@ public class ReminderEditor extends PatientActEditor {
     }
 
     /**
+     * Determines if matching reminders should be marked completed, if the reminder is new and IN_PROGRESS when it is
+     * saved.
+     * <p/>
+     * Defaults to {@code true}.
+     *
+     * @param markCompleted if {@code true}, mark matching reminders as completed
+     */
+    public void setMarkMatchingRemindersCompleted(boolean markCompleted) {
+        this.markCompleted = markCompleted;
+    }
+
+    /**
      * Invoked when layout has completed. All editors have been created.
      */
     @Override
@@ -121,8 +138,11 @@ public class ReminderEditor extends PatientActEditor {
      */
     @Override
     protected boolean doSave() {
+        boolean isNew = getObject().isNew();
         boolean saved = super.doSave();
-        getProperty("status").refresh(); // may be updated by rules
+        if (markCompleted && isNew) {
+            rules.markMatchingRemindersCompleted((Act) getObject());
+        }
         return saved;
     }
 

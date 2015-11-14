@@ -620,12 +620,22 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      */
     protected Entity addReminder(Product product) {
         Entity reminderType = ReminderTestHelper.createReminderType();
+        addReminder(product, reminderType);
+        return reminderType;
+    }
+
+    /**
+     * Adds an interactive reminder type to a product.
+     *
+     * @param product      the product
+     * @param reminderType the reminder type
+     */
+    protected void addReminder(Product product, Entity reminderType) {
         EntityBean productBean = new EntityBean(product);
         EntityRelationship rel = productBean.addNodeRelationship("reminders", reminderType);
         IMObjectBean relBean = new IMObjectBean(rel);
         relBean.setValue("interactive", true);
         save(product, reminderType);
-        return reminderType;
     }
 
     /**
