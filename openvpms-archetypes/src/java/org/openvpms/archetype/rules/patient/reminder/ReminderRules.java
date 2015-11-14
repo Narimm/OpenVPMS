@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -46,7 +46,6 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
@@ -134,7 +133,7 @@ public class ReminderRules {
      */
     public void markMatchingRemindersCompleted(List<Act> reminders) {
         if (!reminders.isEmpty()) {
-            reminders = new ArrayList<Act>(reminders);  // copy it so it can be modified
+            reminders = new ArrayList<>(reminders);  // copy it so it can be modified
             while (!reminders.isEmpty()) {
                 Act reminder = reminders.remove(0);
                 if (ReminderStatus.IN_PROGRESS.equals(reminder.getStatus())) {
@@ -164,16 +163,12 @@ public class ReminderRules {
      * the supplied reminder to COMPLETED.
      * <p/>
      * This only has effect if the reminder is new and has IN_PROGRESS status.
-     * <p/>
-     * This method is intended to be invoked just prior to a new reminder being saved.
      *
      * @param reminder the reminder
      * @throws ArchetypeServiceException for any archetype service exception
      */
     public void markMatchingRemindersCompleted(Act reminder) {
-        if (reminder.isNew()) {
-            doMarkMatchingRemindersCompleted(reminder);
-        }
+        doMarkMatchingRemindersCompleted(reminder);
     }
 
     /**
@@ -230,8 +225,7 @@ public class ReminderRules {
      * @throws ArchetypeServiceException for any error
      */
     public int countReminders(Party patient) {
-        NamedQuery query = new NamedQuery("act.patientReminder-count",
-                                          Arrays.asList("count"));
+        NamedQuery query = new NamedQuery("act.patientReminder-count", Collections.singletonList("count"));
         query.setParameter("patientId", patient.getId());
         return count(query);
     }
@@ -246,8 +240,7 @@ public class ReminderRules {
      * @throws ArchetypeServiceException for any error
      */
     public int countAlerts(Party patient, Date date) {
-        NamedQuery query = new NamedQuery("act.patientAlert-count",
-                                          Arrays.asList("count"));
+        NamedQuery query = new NamedQuery("act.patientAlert-count", Collections.singletonList("count"));
         query.setParameter("patientId", patient.getId());
         query.setParameter("date", date);
         return count(query);
@@ -751,7 +744,7 @@ public class ReminderRules {
             query.add(Constraints.ne("id", reminder.getId()));
         }
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS); // must query all, otherwise the iteration would change
-        IMObjectQueryIterator<Act> reminders = new IMObjectQueryIterator<Act>(service, query);
+        IMObjectQueryIterator<Act> reminders = new IMObjectQueryIterator<>(service, query);
         while (reminders.hasNext()) {
             Act act = reminders.next();
             if (hasMatchingTypeOrGroup(act, reminderType)) {

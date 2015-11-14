@@ -30,7 +30,9 @@ import org.openvpms.archetype.rules.patient.InvestigationActStatus;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.patient.prescription.PrescriptionTestHelper;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderStatus;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
@@ -1001,6 +1003,112 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
+     * Verifies that existing reminders are completed if a product is used with the same reminder type.
+     */
+    @Test
+    public void testMarkMatchingRemindersCompleted() {
+        Product product1 = createProduct(MEDICATION);
+        Entity reminderType = addReminder(product1);
+
+        Act existing = ReminderTestHelper.createReminder(patient, reminderType);
+        assertEquals(ActStatus.IN_PROGRESS, existing.getStatus());
+        save(existing);
+
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        ChargeEditorQueue queue = editor.getQueue();
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        CustomerChargeActItemEditor itemEditor = addItem(editor, patient, product1, BigDecimal.ONE, queue);
+        assertTrue(SaveHelper.save(editor));
+
+        Act reminder = getReminder((Act) itemEditor.getObject(), reminderType);
+        existing = get(existing);
+        reminder = get(reminder);
+
+        assertEquals(ActStatus.COMPLETED, existing.getStatus());
+        assertEquals(ActStatus.IN_PROGRESS, reminder.getStatus());
+    }
+
+    /**
+     * Verifies that when products are changed from one with a reminder to one without, the reminder is deleted.
+     */
+    @Test
+    public void testChangeProductWithReminderToOneWithout() {
+        // create a product with a reminder
+        Product product1 = createProduct(MEDICATION);
+        Entity reminderType1 = addReminder(product1);
+
+        // and one without
+        Product product2 = createProduct(MEDICATION);
+
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        ChargeEditorQueue queue = editor.getQueue();
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        CustomerChargeActItemEditor itemEditor = addItem(editor, patient, product1, BigDecimal.ONE, queue);
+        assertTrue(SaveHelper.save(editor));
+
+        Act reminder = getReminder((Act) itemEditor.getObject(), reminderType1);
+        assertEquals(ActStatus.IN_PROGRESS, reminder.getStatus());
+
+        itemEditor.setProduct(product2);
+        assertTrue(SaveHelper.save(editor));
+
+        assertNull(get(reminder));
+    }
+
+    /**
+     * Verifies that the product can be changed multiple times with reminders.
+     */
+    @Test
+    public void testChangeProductWithReminders() {
+        // create a product with a reminder
+        Product product1 = createProduct(MEDICATION);
+        Entity reminderType1 = addReminder(product1);
+
+        // and one without
+        Product product2 = createProduct(MEDICATION);
+
+        // and a 3rd with the same reminder type
+        Product product3 = createProduct(MEDICATION);
+        addReminder(product3, reminderType1);
+
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        ChargeEditorQueue queue = editor.getQueue();
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        CustomerChargeActItemEditor itemEditor = addItem(editor, patient, product1, BigDecimal.ONE, queue);
+        assertTrue(SaveHelper.save(editor));
+
+        Act reminder1 = getReminder((Act) itemEditor.getObject(), reminderType1);
+        assertEquals(ActStatus.IN_PROGRESS, reminder1.getStatus());
+
+        // change to a product with no reminder
+        itemEditor.setProduct(product2);
+
+        // immediately change to a product with a reminder
+        itemEditor.setProduct(product3);
+
+        // make sure there is popup, as the reminder is interactive
+        CustomerChargeTestHelper.checkSavePopup(queue, ReminderArchetypes.REMINDER, false);
+        assertTrue(SaveHelper.save(editor));
+
+        // make sure reminder1 has been deleted, and reminder2 is IN_PROGRESS
+        assertNull(get(reminder1));
+        Act reminder2 = getReminder((Act) itemEditor.getObject(), reminderType1);
+        assertEquals(ActStatus.IN_PROGRESS, reminder2.getStatus());
+    }
+
+    /**
      * Tests template expansion.
      *
      * @param shortName the charge short name
@@ -1024,6 +1132,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
         ChargeEditorQueue queue = editor.getQueue();
+
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -1455,6 +1564,11 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
         assertEquals(location.getObjectReference(), bean.getNodeParticipantRef("location"));
         assertEquals(status, event.getStatus());
+        if (ActStatus.COMPLETED.equals(event.getStatus())) {
+            assertNotNull(event.getActivityEndTime());
+        } else {
+            assertNull(event.getActivityEndTime());
+        }
     }
 
     /**

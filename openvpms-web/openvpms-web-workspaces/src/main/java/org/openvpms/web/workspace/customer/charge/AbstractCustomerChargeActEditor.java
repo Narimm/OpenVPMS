@@ -389,15 +389,15 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                     if (ActStatus.POSTED.equals(getStatus())) {
                         changes.complete(new Date());
                     }
-
-                    // mark reminders that match the new reminders completed
-                    if (!reminders.isEmpty()) {
-                        ReminderRules rules = ServiceHelper.getBean(ReminderRules.class);
-                        rules.markMatchingRemindersCompleted(reminders);
-                    }
                 }
                 if (chargeContext != null) {
                     chargeContext.save();
+                }
+
+                // mark reminders that match the new reminders completed
+                if (!reminders.isEmpty()) {
+                    ReminderRules rules = ServiceHelper.getBean(ReminderRules.class);
+                    rules.markMatchingRemindersCompleted(reminders);
                 }
 
                 if (invoice) {
