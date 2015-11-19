@@ -134,16 +134,15 @@ public class ReminderEditor extends PatientActEditor {
     /**
      * Save any edits.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
+    protected void doSave() {
         boolean isNew = getObject().isNew();
-        boolean saved = super.doSave();
+        super.doSave();
         if (markCompleted && isNew) {
-            rules.markMatchingRemindersCompleted((Act) getObject());
+            rules.markMatchingRemindersCompleted(getObject());
         }
-        return saved;
     }
 
     /**
@@ -151,7 +150,7 @@ public class ReminderEditor extends PatientActEditor {
      */
     private void onReminderTypeChanged() {
         try {
-            rules.calculateReminderDueDate((Act) getObject());
+            rules.calculateReminderDueDate(getObject());
             Property property = getProperty("endTime");
             property.refresh();
         } catch (OpenVPMSException exception) {

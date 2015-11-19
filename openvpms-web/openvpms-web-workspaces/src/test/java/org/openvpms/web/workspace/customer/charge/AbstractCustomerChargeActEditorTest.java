@@ -97,7 +97,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param mgr      the popup editor manager
      * @return the editor for the new item
      */
-    protected CustomerChargeActItemEditor addItem(CustomerChargeActEditor editor, Party patient, Product product,
+    protected CustomerChargeActItemEditor addItem(AbstractCustomerChargeActEditor editor, Party patient, Product product,
                                                   BigDecimal quantity, ChargeEditorQueue mgr) {
         return CustomerChargeTestHelper.addItem(editor, patient, product, quantity, mgr);
     }

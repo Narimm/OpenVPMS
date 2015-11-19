@@ -87,7 +87,7 @@ public class ReminderEditorTestCase extends AbstractAppTest {
         Act reminder = (Act) create(ReminderArchetypes.REMINDER);
 
         ReminderEditor editor = createEditor(reminder, reminderType);
-        assertTrue(editor.save());
+        editor.save();
 
         existing = get(existing);
         assertEquals(ActStatus.COMPLETED, existing.getStatus());
@@ -111,7 +111,7 @@ public class ReminderEditorTestCase extends AbstractAppTest {
 
         ReminderEditor editor = createEditor(reminder, reminderType);
         editor.setMarkMatchingRemindersCompleted(false);
-        assertTrue(editor.save());
+        editor.save();
 
         existing = get(existing);
         assertEquals(ActStatus.IN_PROGRESS, existing.getStatus());
@@ -139,7 +139,7 @@ public class ReminderEditorTestCase extends AbstractAppTest {
         assertEquals(ActStatus.IN_PROGRESS, editor.getStatus());
         assertTrue(rules.shouldCancel(reminder, new Date()));
 
-        assertTrue(editor.save());
+        editor.save();
         assertEquals(ActStatus.COMPLETED, reminder.getStatus());
     }
 

@@ -21,6 +21,7 @@ import org.apache.commons.collections4.Predicate;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.ErrorListener;
@@ -147,7 +148,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
 
     /**
      * Returns the editors.
-     * <p/>
+     * <p>
      * There may be fewer editors than there are objects in the collection,
      * as objects may not have an associated editor.
      *
@@ -252,15 +253,10 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
 
     /**
      * Saves any edits.
-     *
-     * @return {@code true} if the save was successful
      */
-    public boolean save() {
-        boolean saved = doSave();
-        if (saved) {
-            clearModified();
-        }
-        return saved;
+    public void save() {
+        doSave();
+        clearModified();
     }
 
     /**
@@ -331,7 +327,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
 
     /**
      * Registers a handler to be notified to remove an object from the collection.
-     * <p/>
+     * <p>
      * The handler is only invoked when the collection is saved. It takes on the responsibility of object removal.
      *
      * @param handler the handler. May be {@code null}
@@ -369,9 +365,9 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
     /**
      * Validates an object.
      *
-     * @param object the object to validate
+     * @param object    the object to validate
      * @param validator the  validator
-     * @param service the archetype service
+     * @param service   the archetype service
      * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     protected boolean doValidation(IMObject object, Validator validator, IArchetypeService service) {
@@ -409,35 +405,26 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
     /**
      * Saves the collection.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
-    protected boolean doSave() {
+    protected void doSave() {
         saved = false;
         if (!edited.isEmpty() || !editors.isEmpty()) {
             for (IMObjectEditor editor : editors.values()) {
-                boolean result = editor.save();
-                if (result) {
-                    edited.remove(editor.getObject());
-                    saved = true;
-                } else {
-                    return false;
-                }
+                editor.save();
+                edited.remove(editor.getObject());
+                saved = true;
             }
 
             // now save objects with no associated editor
             IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
             IMObject[] edited = this.edited.toArray(new IMObject[this.edited.size()]);
             for (IMObject object : edited) {
-                boolean result = SaveHelper.save(object, service);
-                if (result) {
-                    this.edited.remove(object);
-                    saved = true;
-                } else {
-                    return false;
-                }
+                service.save(object);
+                this.edited.remove(object);
+                saved = true;
             }
         }
-        return true;
     }
 
     /**

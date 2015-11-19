@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -20,6 +20,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditorFactory;
@@ -135,14 +136,16 @@ public abstract class ParticipationEditor<T extends Entity> extends AbstractIMOb
     /**
      * Deletes the object.
      * <p/>
-     * This implementation always returns {@code true} if this is the child of an act, as the act manages its deletion.
+     * This implementation is a no-op if this is the child of an act, as the act manages its deletion.
      * If the participation is not the child of an act, deletion fails.
      *
-     * @return {@code true} if the delete was successful
+     * @throws OpenVPMSException if the delete fails
      */
     @Override
-    protected boolean doDelete() {
-        return getParent() != null;
+    protected void doDelete() {
+        if (getParent() != null) {
+            throw new IllegalStateException("Parent is not set");
+        }
     }
 
     /**

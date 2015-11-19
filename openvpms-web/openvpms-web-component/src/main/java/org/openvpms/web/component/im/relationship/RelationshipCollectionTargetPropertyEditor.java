@@ -30,10 +30,9 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -203,10 +202,10 @@ public abstract class RelationshipCollectionTargetPropertyEditor
 
     /**
      * Removes a relationship.
-     * <p/>
+     * <p>
      * Note that this should invoke {@link CollectionProperty#remove} method to remove the relationship
      * but must also perform removal on the target of the relationship.
-     * <p/>
+     * <p>
      * The former is required in order for the {@link #isModified()} state to be correctly determined.
      *
      * @param source       the source object to remove from
@@ -219,59 +218,42 @@ public abstract class RelationshipCollectionTargetPropertyEditor
     /**
      * Saves the collection.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
-        boolean saved = true;
+    protected void doSave() {
         if (!removed.isEmpty()) {
-            saved = remove();
+            remove();
         }
-        if (saved) {
-            saved = super.doSave();
-        }
-        return saved;
+        super.doSave();
     }
 
     /**
      * Invoked by {@link #doSave()} to remove objects queued for removal.
      *
-     * @return {@code true} if they were removed
+     * @throws OpenVPMSException if the save fails
      */
-    protected boolean remove() {
-        boolean saved = true;
+    protected void remove() {
         IMObject[] toRemove = removed.toArray(new IMObject[removed.size()]);
-        boolean deleted;
         RemoveHandler handler = getRemoveHandler();
         for (IMObject object : toRemove) {
             IMObjectEditor editor = removedEditors.get(object);
             if (editor != null) {
                 if (handler != null) {
                     handler.remove(editor);
-                    deleted = true;
                 } else {
-                    deleted = editor.delete();
+                    editor.delete();
                 }
             } else {
                 if (handler != null) {
                     handler.remove(object);
-                    deleted = true;
                 } else {
-                    deleted = SaveHelper.delete(object, new DefaultIMObjectDeletionListener<>());
+                    ServiceHelper.getArchetypeService().remove(object);
                 }
             }
-            if (deleted) {
-                removed.remove(object);
-                removedEditors.remove(object);
-            } else {
-                saved = false;
-                break;
-            }
+            removed.remove(object);
+            removedEditors.remove(object);
         }
-        if (saved) {
-            setSaved(true);
-        }
-        return saved;
     }
 
     /**

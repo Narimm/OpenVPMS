@@ -74,13 +74,23 @@ public class FinancialActEditor extends ActEditor {
     }
 
     /**
+     * Returns the object being edited.
+     *
+     * @return the object being edited
+     */
+    @Override
+    public FinancialAct getObject() {
+        return (FinancialAct) super.getObject();
+    }
+
+    /**
      * Update the tax amounts for the act.
      */
     public void calculateTax() {
         Property taxAmount = getProperty("tax");
         if (taxAmount != null) {
             List<Act> acts = getItems().getActs();
-            BigDecimal tax = ActHelper.sum((Act) getObject(), acts, "tax");
+            BigDecimal tax = ActHelper.sum(getObject(), acts, "tax");
             taxAmount.setValue(tax);
         }
     }
@@ -109,7 +119,7 @@ public class FinancialActEditor extends ActEditor {
     protected boolean validateAmounts(Validator validator) {
         boolean result;
         ActCalculator calc = new ActCalculator(ServiceHelper.getArchetypeService());
-        FinancialAct act = (FinancialAct) getObject();
+        FinancialAct act = getObject();
         BigDecimal total = calc.getTotal(act);
 
         List<Act> acts = getItems().getActs();
@@ -156,7 +166,7 @@ public class FinancialActEditor extends ActEditor {
      */
     private void calculateAmount() {
         Property amount = getProperty("amount");
-        BigDecimal value = ActHelper.sum((Act) getObject(), getItems().getCurrentActs(), "total");
+        BigDecimal value = ActHelper.sum(getObject(), getItems().getCurrentActs(), "total");
         amount.setValue(value);
     }
 
@@ -174,7 +184,7 @@ public class FinancialActEditor extends ActEditor {
                 items.getEditor(act);
             }
             BigDecimal previousTax = (BigDecimal) taxAmount.getValue();
-            BigDecimal tax = ActHelper.sum((Act) getObject(), acts, "tax");
+            BigDecimal tax = ActHelper.sum(getObject(), acts, "tax");
             if (tax.compareTo(previousTax) != 0) {
                 taxAmount.setValue(tax);
             }

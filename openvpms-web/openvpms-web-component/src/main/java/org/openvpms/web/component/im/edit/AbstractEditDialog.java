@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -20,12 +20,12 @@ import echopointng.KeyStrokes;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.macro.MacroDialog;
-import org.openvpms.web.component.property.DefaultValidator;
-import org.openvpms.web.component.property.ValidationHelper;
-import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.ActionListener;
@@ -34,7 +34,6 @@ import org.openvpms.web.echo.event.Vetoable;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -78,9 +77,13 @@ public abstract class AbstractEditDialog extends PopupDialog {
      */
     protected static final String STYLE = "EditDialog";
 
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(AbstractEditDialog.class);
 
     /**
-     * Constructs an {@code AbstractEditDialog}.
+     * Constructs an {@link AbstractEditDialog}.
      *
      * @param title   the dialog title
      * @param buttons the buttons to display
@@ -93,7 +96,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
     }
 
     /**
-     * Constructs an {@code AbstractEditDialog}.
+     * Constructs an {@link AbstractEditDialog}.
      *
      * @param editor  the editor
      * @param buttons the buttons to display
@@ -105,7 +108,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
     }
 
     /**
-     * Constructs an {@code AbstractEditDialog}.
+     * Constructs an {@link AbstractEditDialog}.
      *
      * @param editor  the editor. May be {@code null}
      * @param title   the dialog title
@@ -144,7 +147,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
 
     /**
      * Saves the editor, optionally closing the dialog.
-     * <p/>
+     * <p>
      * If the the save fails, the dialog will remain open.
      *
      * @param close if {@code true} close the dialog
@@ -225,7 +228,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
 
     /**
      * Sets the editor.
-     * <p/>
+     * <p>
      * If there is an existing editor, its selection path will be set on the editor.
      *
      * @param editor the editor. May be {@code null}
@@ -247,8 +250,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
         if (editor != null) {
             setTitle(editor.getTitle());
             editor.addPropertyChangeListener(
-                    IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
-                    new PropertyChangeListener() {
+                    IMObjectEditor.COMPONENT_CHANGED_PROPERTY, new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent event) {
                             onComponentChange(event);
                         }
@@ -270,9 +272,9 @@ public abstract class AbstractEditDialog extends PopupDialog {
 
     /**
      * Saves the current object, if saving is enabled.
-     * <p/>
-     * If it is, and the object is valid, then {@link #doSave()} is called. If {@link #doSave()} fails
-     * (i.e returns {@code false}), then {@link #saveFailed()} is called.
+     * <p>
+     * If it is, and the object is valid, then {@link #doSave(IMObjectEditor)} is called.
+     * If {@link #doSave(IMObjectEditor)} fails (i.e returns {@code false}), then {@link #saveFailed()} is called.
      *
      * @return {@code true} if the object was saved
      */
@@ -280,15 +282,24 @@ public abstract class AbstractEditDialog extends PopupDialog {
         boolean result = false;
         if (!savedDisabled) {
             if (save && editor != null) {
-                Validator validator = new DefaultValidator();
-                if (editor.validate(validator)) {
-                    result = doSave();
-                    if (!result) {
+                IMObjectEditorSaver saver = new IMObjectEditorSaver() {
+                    @Override
+                    protected void save(IMObjectEditor editor, TransactionStatus status) {
+                        AbstractEditDialog.this.doSave(editor);
+                    }
+
+                    @Override
+                    protected boolean reload(IMObjectEditor editor) {
+                        return AbstractEditDialog.this.reload(editor);
+                    }
+
+                    @Override
+                    protected void failed(IMObjectEditor editor, Throwable exception) {
+                        super.failed(editor, exception);
                         saveFailed();
                     }
-                } else {
-                    ValidationHelper.showError(validator);
-                }
+                };
+                result = saver.save(editor);
             }
         }
         return result;
@@ -296,40 +307,36 @@ public abstract class AbstractEditDialog extends PopupDialog {
 
     /**
      * Saves the current object.
-     * <p/>
-     * This saves the editor and invokes {@link #saved(IMObjectEditor)} in a single transaction, to allow subclasses
-     * to participate in the save transaction.
      *
-     * @return {@code true} if the object was saved
+     * @param editor the editor
+     * @throws OpenVPMSException if the save fails
      */
-    protected boolean doSave() {
-        boolean result = (editor != null);
-        if (result) {
-            result = SaveHelper.save(editor, new TransactionCallback<Boolean>() {
-                @Override
-                public Boolean doInTransaction(TransactionStatus transactionStatus) {
-                    return saved(editor);
-                }
-            });
-        }
-        return result;
+    protected void doSave(IMObjectEditor editor) {
+        editor.save();
     }
 
     /**
-     * Invoked when the editor is saved, to allow subclasses to participate in the save transaction.
-     * <p/>
-     * This implementation always returns {@code true}.
+     * Invoked to reload the object being edited when save fails.
      *
      * @param editor the editor
-     * @return {@code true} if the save was successful
+     * @return a {@code true} if the editor was reloaded
      */
-    protected boolean saved(IMObjectEditor editor) {
-        return true;
+    protected boolean reload(IMObjectEditor editor) {
+        IMObjectEditor newEditor = null;
+        try {
+            newEditor = editor.newInstance();
+            if (newEditor != null) {
+                setEditor(newEditor);
+            }
+        } catch (Throwable exception) {
+            log.error("Failed to reload editor", exception);
+        }
+        return newEditor != null;
     }
 
     /**
      * Invoked by {@link #save} when saving fails.
-     * <p/>
+     * <p>
      * This implementation disables saves.
      * TODO - this is a workaround for OVPMS-855
      */
@@ -395,7 +402,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
 
     /**
      * Returns the component containing the editor.
-     * <p/>
+     * <p>
      * This implementation returns {@link #getLayout()}.
      *
      * @return the editor container

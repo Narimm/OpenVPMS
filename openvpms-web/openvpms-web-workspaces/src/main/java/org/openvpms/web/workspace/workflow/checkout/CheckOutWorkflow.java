@@ -48,6 +48,7 @@ import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.EvalTask;
 import org.openvpms.web.component.workflow.NodeConditionTask;
+import org.openvpms.web.component.workflow.ReloadTask;
 import org.openvpms.web.component.workflow.RetryableUpdateIMObjectTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.Task;
@@ -126,7 +127,9 @@ public class CheckOutWorkflow extends WorkflowImpl {
                 }
             });
         }
-        addTask(new UpdateIMObjectTask(act, appProps));
+        String shortName = act.getArchetypeId().getShortName();
+        addTask(new ReloadTask(shortName));
+        addTask(new UpdateIMObjectTask(shortName, appProps));
 
         // add a task to update the context at the end of the workflow
         addTask(new SynchronousTask() {
@@ -160,6 +163,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
         User clinician = external.getClinician();
 
         initial = new DefaultTaskContext(help);
+        initial.addObject(act);
         initial.setCustomer(customer);
         initial.setPatient(patient);
         initial.setClinician(clinician);

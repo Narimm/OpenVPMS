@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -26,7 +26,7 @@ import org.openvpms.web.component.app.Context;
 public class EditDialog extends AbstractEditDialog {
 
     /**
-     * Constructs an {@code EditDialog}.
+     * Constructs an {@link EditDialog}.
      *
      * @param editor  the editor
      * @param context the context
@@ -36,7 +36,7 @@ public class EditDialog extends AbstractEditDialog {
     }
 
     /**
-     * Constructs an {@code EditDialog}.
+     * Constructs an {@link EditDialog}.
      *
      * @param editor  the editor
      * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
@@ -47,7 +47,7 @@ public class EditDialog extends AbstractEditDialog {
     }
 
     /**
-     * Constructs an {@code EditDialog}.
+     * Constructs an {@link EditDialog}.
      *
      * @param editor  the editor
      * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
@@ -59,7 +59,7 @@ public class EditDialog extends AbstractEditDialog {
     }
 
     /**
-     * Constructs an {@code EditDialog}.
+     * Constructs an {@link EditDialog}.
      *
      * @param editor  the editor
      * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
@@ -72,7 +72,7 @@ public class EditDialog extends AbstractEditDialog {
     }
 
     /**
-     * Constructs an {@code EditDialog}.
+     * Constructs an {@link EditDialog}.
      *
      * @param editor  the editor
      * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier;
@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.system.ServiceHelper;
@@ -44,8 +45,7 @@ import java.math.BigDecimal;
  * </li>
  * </ul>
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class SupplierStockItemEditor extends SupplierActItemEditor {
 
@@ -217,10 +217,10 @@ public abstract class SupplierStockItemEditor extends SupplierActItemEditor {
     /**
      * Save any edits.
      *
-     * @return <tt>true</tt> if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
+    protected void doSave() {
         if (getObject().isNew()) {
             getComponent(); // ensure the component has been laid out
             ProductParticipationEditor editor = getProductEditor();
@@ -230,7 +230,7 @@ public abstract class SupplierStockItemEditor extends SupplierActItemEditor {
                 checkProductSupplier(product, supplier);
             }
         }
-        return super.doSave();
+        super.doSave();
     }
 
     /**

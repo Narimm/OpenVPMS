@@ -31,6 +31,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ComponentGrid;
@@ -254,6 +255,17 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     }
 
     /**
+     * Creates a new instance of the editor, with the latest instance of the object to edit.
+     *
+     * @return {@code null}
+     */
+    @Override
+    public IMObjectEditor newInstance() {
+        boolean editSeries = seriesEditor != null;
+        return new AppointmentActEditor(reload(getObject()), getParent(), editSeries, getLayoutContext());
+    }
+
+    /**
      * Validates the object.
      *
      * @param validator the validator
@@ -267,15 +279,14 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     /**
      * Save any edits.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
-        boolean result = super.doSave();
-        if (result && seriesEditor != null) {
+    protected void doSave() {
+        super.doSave();
+        if (seriesEditor != null) {
             seriesEditor.save();
         }
-        return result;
     }
 
     /**
@@ -358,7 +369,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     /**
      * Invoked when the customer changes. Sets the patient to null if no
      * relationship exists between the two.
-     * <p/>
+     * <p>
      * The alerts will be updated.
      */
     @Override
@@ -594,7 +605,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      *
      * @param schedule the schedule
      * @return the default appointment type, or the the first appointment type
-     *         if there is no default, or {@code null} if none is found
+     * if there is no default, or {@code null} if none is found
      */
     private Entity getDefaultAppointmentType(Party schedule) {
         return rules.getDefaultAppointmentType(schedule);
@@ -671,7 +682,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
 
         /**
          * Returns the default focus component.
-         * <p/>
+         * <p>
          * This implementation returns the customer component.
          *
          * @param components the components

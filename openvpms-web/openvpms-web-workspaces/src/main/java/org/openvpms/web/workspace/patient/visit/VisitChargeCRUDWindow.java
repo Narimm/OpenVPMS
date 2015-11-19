@@ -26,13 +26,13 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
-import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.IMObjectEditorSaver;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectViewer;
-import org.openvpms.web.component.property.DefaultValidator;
-import org.openvpms.web.component.property.ValidationHelper;
-import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.workspace.AbstractCRUDWindow;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
@@ -43,7 +43,8 @@ import org.openvpms.web.workspace.customer.charge.OrderChargeManager;
 import org.openvpms.web.workspace.customer.order.OrderCharger;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
+
+import java.util.List;
 
 
 /**
@@ -150,21 +151,28 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
     public void setObject(FinancialAct object) {
         container.removeAll();
         if (object != null) {
+            List<Selection> path = (editor != null) ? editor.getSelectionPath() : null;
             posted = ActStatus.POSTED.equals(object.getStatus());
             if (posted) {
                 IMObjectViewer viewer = new IMObjectViewer(object, new DefaultLayoutContext(getContext(),
                                                                                             getHelpContext()));
                 container.add(viewer.getComponent());
+                if (path != null) {
+                    viewer.setSelectionPath(path);
+                }
                 editor = null;
             } else {
                 HelpContext edit = createEditTopic(object);
                 editor = createVisitChargeEditor(object, event, createLayoutContext(edit));
-                manager.clear();
                 container.add(editor.getComponent());
+                if (path != null) {
+                    editor.setSelectionPath(path);
+                }
             }
         } else {
             editor = null;
         }
+        manager.clear();
         super.setObject(object);
     }
 
@@ -210,29 +218,34 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
      * @return {@code true} if the invoice was saved
      */
     public boolean save() {
-        boolean result;
+        boolean saved;
         if (editor != null && !posted) {
-            Validator validator = new DefaultValidator();
-            if (editor.validate(validator)) {
-                result = SaveHelper.save(editor, new TransactionCallback<Boolean>() {
-                    @Override
-                    public Boolean doInTransaction(TransactionStatus status) {
-                        return manager.save();
-                    }
-                });
-                if (result) {
-                    manager.clear();
+            IMObjectEditorSaver saver = new IMObjectEditorSaver() {
+
+                @Override
+                protected void save(IMObjectEditor editor, TransactionStatus status) {
+                    super.save(editor, status);
+                    manager.save();
                 }
-                posted = ActStatus.POSTED.equals(getObject().getStatus());
-            } else {
-                result = false;
-                ValidationHelper.showError(validator);
+
+                @Override
+                protected boolean reload(IMObjectEditor editor) {
+                    FinancialAct act = (FinancialAct) IMObjectHelper.reload(editor.getObject());
+                    setObject(act);
+                    return act != null;
+                }
+            };
+            saved = saver.save(editor);
+            if (saved) {
+                manager.clear();
             }
+            FinancialAct object = getObject();
+            posted = object != null && ActStatus.POSTED.equals(getObject().getStatus());
         } else {
-            result = true;
+            saved = true;
         }
         manager.check();
-        return result;
+        return saved;
     }
 
     /**
