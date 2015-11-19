@@ -200,7 +200,7 @@ class OrderGenerator {
             BigDecimal decSize = BigDecimal.valueOf(packageSize);
             BigDecimal onOrder;
             if (receivedQty.compareTo(orderedQty) > 0) {
-                onOrder = receivedQty;
+                onOrder = BigDecimal.ZERO;
             } else {
                 onOrder = orderedQty.subtract(receivedQty).subtract(cancelledQty);
             }
