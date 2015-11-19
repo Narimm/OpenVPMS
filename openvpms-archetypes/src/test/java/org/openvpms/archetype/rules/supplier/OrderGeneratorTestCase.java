@@ -225,7 +225,7 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
 
         stock = generator.getOrderableStock(supplier1, stockLocation, true);
         assertEquals(1, stock.size());
-        checkStock(stock, product1, supplier1, stockLocation, 0, 150, 50);
+        checkStock(stock, product1, supplier1, stockLocation, 0, 0, 200);
     }
 
     /**
