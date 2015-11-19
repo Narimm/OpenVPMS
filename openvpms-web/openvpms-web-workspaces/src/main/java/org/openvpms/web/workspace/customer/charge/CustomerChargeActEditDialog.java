@@ -22,6 +22,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
@@ -36,7 +37,7 @@ import java.util.List;
 
 /**
  * An edit dialog for {@link CustomerChargeActEditor} editors.
- * <p/>
+ * <p>
  * This performs printing of unprinted documents that have their <em>interactive</em> flag set to {@code true}
  * when <em>Apply</em> or <em>OK</em> is pressed.
  *
@@ -143,7 +144,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
      * Saves the current object.
-     * <p/>
+     * <p>
      * This delegates to {@link #prepare(boolean)}.
      */
     @Override
@@ -154,7 +155,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
      * Saves the current object.
-     * <p/>
+     * <p>
      * Any documents added as part of the save that have a template with an IMMEDIATE print mode will be printed.
      */
     @Override
@@ -165,26 +166,28 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
     /**
      * Saves the current object.
      *
-     * @return {@code true} if the object was saved
+     * @param editor the editor
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
-        boolean result = super.doSave();
-        if (result) {
-            manager.clear();
-        }
-        return result;
+    protected void doSave(IMObjectEditor editor) {
+        super.doSave(editor);
+        manager.save();
+        manager.clear();
     }
 
     /**
-     * Invoked when the editor is saved, to allow subclasses to participate in the save transaction.
+     * Invoked to reload the object being edited when save fails.
+     * <p>
+     * This implementation reloads the editor, but returns {@code false} if the act has been POSTED.
      *
      * @param editor the editor
-     * @return {@code true} if the save was successful
+     * @return a {@code true} if the editor was reloaded and the act is not now POSTED.
      */
     @Override
-    protected boolean saved(IMObjectEditor editor) {
-        return manager.save();
+    protected boolean reload(IMObjectEditor editor) {
+        manager.clear(); // discard any charged orders
+        return super.reload(editor);
     }
 
     /**
@@ -236,10 +239,10 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
      * Prepares to save the charge.
-     * <p/>
+     * <p>
      * This determines if an invoice is being posted, and if so, displays a confirmation dialog if there are
      * any orders waiting to be dispensed.
-     * <p/>
+     * <p>
      * If not, or the user confirms that the save should go ahead, delegates to {@link #saveCharge(boolean)}.
      *
      * @param close if {@code true}, closes the dialog when the save is successful
@@ -256,7 +259,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
      * Saves the current object.
-     * <p/>
+     * <p>
      * Any documents added as part of the save that have a template with an IMMEDIATE print mode will be printed.
      */
     private void saveCharge(boolean close) {
@@ -286,7 +289,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
      * Invoked when the 'In Progress' button is pressed.
-     * <p/>
+     * <p>
      * If the act hasn't been POSTED, then this sets the status to IN_PROGRESS, and attempts to save and close the
      * dialog.
      */
@@ -300,7 +303,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
      * Invoked when the 'Completed' button is pressed.
-     * <p/>
+     * <p>
      * If the act hasn't been POSTED, then this sets the status to COMPLETED, and attempts to save and close the
      * dialog.
      */

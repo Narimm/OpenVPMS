@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
@@ -46,10 +46,10 @@ import static org.openvpms.archetype.rules.act.FinancialActStatus.CANCELLED;
 public class TaskActEditor extends AbstractScheduleActEditor {
 
     /**
-     * Construct a new <tt>TaskActEditor</tt>.
+     * Constructs a {@link TaskActEditor}.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <tt>null</tt>
+     * @param parent  the parent object. May be {@code null}
      * @param context the layout context
      */
     public TaskActEditor(Act act, IMObject parent, LayoutContext context) {
@@ -88,7 +88,7 @@ public class TaskActEditor extends AbstractScheduleActEditor {
     /**
      * Returns the work list.
      *
-     * @return the work list. May be <tt>null</tt>
+     * @return the work list. May be {@code null}
      */
     public Party getWorkList() {
         return (Party) getParticipant("worklist");
@@ -110,16 +110,6 @@ public class TaskActEditor extends AbstractScheduleActEditor {
      */
     public Entity getTaskType() {
         return (Entity) getParticipant("taskType");
-    }
-
-    /**
-     * Save any edits.
-     *
-     * @return <tt>true</tt> if the save was successful
-     */
-    @Override
-    public boolean save() {
-        return checkMaxSlots() && super.save();
     }
 
     /**
@@ -162,8 +152,7 @@ public class TaskActEditor extends AbstractScheduleActEditor {
 
     /**
      * Invoked when the status changes. Sets the end time to today if the
-     * status is 'Completed' or 'Cancelled', or <tt>null</tt> if it is
-     * 'Pending'
+     * status is 'Completed' or 'Cancelled', or {@code null} if it is 'Pending'
      */
     private void onStatusChanged() {
         Property status = getProperty("status");
@@ -186,7 +175,7 @@ public class TaskActEditor extends AbstractScheduleActEditor {
      */
     private boolean checkMaxSlots() {
         boolean result;
-        Act act = (Act) getObject();
+        Act act = getObject();
         if (TaskQueryHelper.tooManyTasks(act)) {
             String title = Messages.get("workflow.worklist.toomanytasks.title");
             String message = Messages.get("workflow.worklist.toomanytasks.message");

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -20,9 +20,9 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -37,7 +37,7 @@ import java.util.Set;
 
 /**
  * A {@link CollectionPropertyEditor} for collections of {@link IMObjectRelationship}s.
- * <p/>
+ * <p>
  * NOTE: this collection editor is dependent on the order of saves - the parent object must be saved after the related
  * objects. This is because the parent is populated with the relationships, but the related objects are only retrieved
  * and populated when saving. If the parent is saved first, the related objects end up containing the relationship,
@@ -71,18 +71,17 @@ public abstract class RelationshipCollectionPropertyEditor
     /**
      * The relationship states, keyed on their corresponding relationships.
      */
-    private Map<IMObjectRelationship, RelationshipState> states
-            = new LinkedHashMap<IMObjectRelationship, RelationshipState>();
+    private Map<IMObjectRelationship, RelationshipState> states = new LinkedHashMap<>();
 
     /**
      * The added relationships.
      */
-    private Set<IMObjectRelationship> added = new HashSet<IMObjectRelationship>();
+    private Set<IMObjectRelationship> added = new HashSet<>();
 
     /**
      * The removed relationships.
      */
-    private Set<IMObjectRelationship> removed = new HashSet<IMObjectRelationship>();
+    private Set<IMObjectRelationship> removed = new HashSet<>();
 
 
     /**
@@ -133,7 +132,7 @@ public abstract class RelationshipCollectionPropertyEditor
      * Determines if the parent is the source or target of the relationships.
      *
      * @return {@code true} if the parent is the source, {@code false} if it
-     *         is the target
+     * is the target
      */
     public boolean parentIsSource() {
         return parentIsSource;
@@ -148,7 +147,7 @@ public abstract class RelationshipCollectionPropertyEditor
     public Collection<RelationshipState> getRelationships() {
         Collection<RelationshipState> result;
         if (exclude) {
-            result = new ArrayList<RelationshipState>();
+            result = new ArrayList<>();
             for (RelationshipState relationship : states.values()) {
                 if (relationship.isActive()) {
                     result.add(relationship);
@@ -223,7 +222,7 @@ public abstract class RelationshipCollectionPropertyEditor
     /**
      * Adds an object to the set of objects to save when the collection is
      * saved.
-     * <p/>
+     * <p>
      * This implementation is a no-op as the saving of relationship collections
      * is handled by the parent object.
      *
@@ -236,31 +235,24 @@ public abstract class RelationshipCollectionPropertyEditor
 
     /**
      * Saves the collection.
-     * <p/>
-     * For each removed relationship, this implementation also removes it
-     * from the related object.
-     * For each added relationship, this implementation also adds it to the
-     * related object.
+     * <p>
+     * For each removed relationship, this implementation also removes it from the related object.
+     * <p>
+     * For each added relationship, this implementation also adds it to the related object.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
-        boolean saved = false;
-        Map<IMObjectReference, IMObject> toSave = new HashMap<IMObjectReference, IMObject>();
+    protected void doSave() {
+        Map<IMObjectReference, IMObject> toSave = new HashMap<>();
         removeRelationships(removed, toSave);
         addRelationships(added, toSave);
         if (!toSave.isEmpty()) {
-            if (SaveHelper.save(toSave.values())) {
-                removed.clear();
-                added.clear();
-                saved = true;
-            }
-        } else {
-            saved = true;
+            ServiceHelper.getArchetypeService().save(toSave.values());
+            removed.clear();
+            added.clear();
         }
-        setSaved(saved);
-        return saved;
+        setSaved(true);
     }
 
     /**
@@ -311,7 +303,7 @@ public abstract class RelationshipCollectionPropertyEditor
 
     /**
      * Helper to return the related object in a relationship, first consulting the supplied cache.
-     * <p/>
+     * <p>
      * Objects are added to the cache.
      *
      * @param relationship the relationship

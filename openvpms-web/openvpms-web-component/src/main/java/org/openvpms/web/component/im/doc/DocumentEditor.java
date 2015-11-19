@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -35,12 +35,12 @@ import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
 import org.openvpms.web.component.edit.Saveable;
-import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.select.BasicSelector;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.help.HelpContext;
 
 import java.util.Iterator;
 
@@ -93,7 +93,7 @@ public class DocumentEditor extends AbstractPropertyEditor implements Saveable, 
         super(property);
         this.help = help;
 
-        selector = new BasicSelector<Document>();
+        selector = new BasicSelector<>();
         selector.getSelect().addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 onSelect();
@@ -195,19 +195,11 @@ public class DocumentEditor extends AbstractPropertyEditor implements Saveable, 
     /**
      * Save any edits.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
-    public boolean save() {
-        boolean result;
-        try {
-            refMgr.commit();
-            saved = true;
-            result = true;
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-            result = false;
-        }
-        return result;
+    public void save() {
+        refMgr.commit();
+        saved = true;
     }
 
     /**
@@ -233,18 +225,10 @@ public class DocumentEditor extends AbstractPropertyEditor implements Saveable, 
     /**
      * Perform deletion.
      *
-     * @return {@code true} if deletion was successful
+     * @throws OpenVPMSException if the delete fails
      */
-    public boolean delete() {
-        boolean result;
-        try {
-            refMgr.delete();
-            result = true;
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-            result = false;
-        }
-        return result;
+    public void delete() {
+        refMgr.delete();
     }
 
     /**
@@ -269,7 +253,7 @@ public class DocumentEditor extends AbstractPropertyEditor implements Saveable, 
      */
     private void init(IMObjectReference reference) {
         ArchetypeQuery query = new ArchetypeQuery(
-            new ObjectRefConstraint("doc", reference));
+                new ObjectRefConstraint("doc", reference));
         query.add(new NodeSelectConstraint("doc.name"));
         query.add(new NodeSelectConstraint("doc.description"));
         query.add(new NodeSelectConstraint("doc.mimeType"));

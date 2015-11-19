@@ -49,7 +49,7 @@ public class EntityLinkEditor extends AbstractRelationshipEditor {
      */
     public boolean isEmpty() {
         boolean result = false;
-        List<Property> editable = new ArrayList<Property>(getProperties().getEditable());
+        List<Property> editable = new ArrayList<>(getProperties().getEditable());
         editable.remove(getSource());
         editable.remove(getTarget());
         if (editable.isEmpty()) {

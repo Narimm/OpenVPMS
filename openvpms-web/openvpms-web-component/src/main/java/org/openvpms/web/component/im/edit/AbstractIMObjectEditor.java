@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
@@ -37,6 +38,7 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.lookup.LookupField;
 import org.openvpms.web.component.im.lookup.LookupPropertyEditor;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.AbstractIMObjectView;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.IMObjectView;
@@ -45,7 +47,6 @@ import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -117,7 +118,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Lookup editors. These may need to be refreshed.
      */
-    private Map<PropertyEditor, ModifiableListener> lookups = new HashMap<PropertyEditor, ModifiableListener>();
+    private Map<PropertyEditor, ModifiableListener> lookups = new HashMap<>();
 
     /**
      * The layout context.
@@ -258,29 +259,18 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Save any edits.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
-    public boolean save() {
+    public void save() {
         if (cancelled) {
-            return false;
+            throw new IllegalStateException("Editor has been cancelled");
         }
-        boolean result = false;
-        Validator validator = createValidator();
-        if (validator.validate(this)) {
-            boolean isNew = object.isNew();
-            if (!isNew && !isModified()) {
-                result = true;
-            } else {
-                result = doSave();
-                if (result) {
-                    saved = true;
-                    clearModified();
-                }
-            }
-        } else {
-            showErrors(validator);
+        boolean isNew = object.isNew();
+        if (isNew || isModified()) {
+            doSave();
+            saved = true;
+            clearModified();
         }
-        return result;
     }
 
     /**
@@ -293,17 +283,16 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     }
 
     /**
-     * Delete the current object.
+     * Perform deletion.
      *
-     * @return {@code true} if the object was deleted successfully
+     * @throws OpenVPMSException if the delete fails
      */
-    public boolean delete() {
+    public void delete() {
         if (cancelled) {
-            return false;
+            throw new IllegalStateException("Editor has been cancelled");
         }
-        boolean result = doDelete();
-        deleted |= result;
-        return result;
+        doDelete();
+        deleted = true;
     }
 
     /**
@@ -435,7 +424,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * Returns the focus group.
      *
      * @return the focus group, or {@code null} if the editor hasn't been
-     *         rendered
+     * rendered
      */
     public FocusGroup getFocusGroup() {
         return getView().getFocusGroup();
@@ -499,23 +488,14 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     }
 
     /**
-     * Creates a validator to perform validation on save.
+     * Creates a new instance of the editor, with the latest instance of the object to edit.
      *
-     * @return a new validator
+     * @return {@code null}
      */
-    protected Validator createValidator() {
-        return new DefaultValidator();
+    @Override
+    public IMObjectEditor newInstance() {
+        return null;
     }
-
-    /**
-     * Displays validation errors.
-     *
-     * @param validator the validator
-     */
-    protected void showErrors(Validator validator) {
-        ValidationHelper.showError(validator);
-    }
-
 
     /**
      * Resets the cached validity state of the object.
@@ -552,82 +532,70 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Save any edits.
-     * <p/>
-     * This uses {@link #saveChildren()} to save the children prior to
-     * invoking {@link #saveObject()}.
+     * <p>
+     * This uses {@link #saveChildren()} to save the children prior to invoking {@link #saveObject()}.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
-    protected boolean doSave() {
-        boolean saved = saveChildren();
-        if (saved) {
-            saved = saveObject();
-        }
-        return saved;
+    protected void doSave() {
+        saveChildren();
+        saveObject();
     }
 
     /**
      * Saves the object.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
-    protected boolean saveObject() {
+    protected void saveObject() {
         IMObject object = getObject();
-        return SaveHelper.save(object);
+        ServiceHelper.getArchetypeService().save(object);
     }
 
     /**
      * Save any modified child Saveable instances.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
-    protected boolean saveChildren() {
+    protected void saveChildren() {
         for (Saveable saveable : editors.getModifiedSaveable()) {
-            if (!saveable.save()) {
-                return false;
-            }
+            saveable.save();
         }
-        return true;
     }
 
     /**
      * Deletes the object.
-     * <p/>
-     * This uses {@link #deleteChildren()} to delete the children prior to
-     * invoking {@link #deleteObject()}.
+     * <p>
+     * This uses {@link #deleteChildren()} to delete the children prior to invoking {@link #deleteObject()}.
      *
-     * @return {@code true} if the delete was successful
+     * @throws OpenVPMSException if the delete fails
      */
-    protected boolean doDelete() {
-        boolean result = deleteChildren();
-        if (result) {
-            result = deleteObject();
-        }
-        return result;
+    protected void doDelete() {
+        deleteChildren();
+        deleteObject();
     }
 
     /**
      * Deletes the object.
      *
-     * @return {@code true} if the delete was successful
+     * @throws OpenVPMSException if the delete fails
      */
-    protected boolean deleteObject() {
+    protected void deleteObject() {
         IMObject object = getObject();
-        return object.isNew() || SaveHelper.delete(object, getLayoutContext().getDeletionListener());
+        if (!object.isNew()) {
+            ServiceHelper.getArchetypeService().remove(object);
+        }
     }
 
     /**
      * Deletes any child Deletable instances.
      *
-     * @return {@code true} if the delete was successful
+     * @throws OpenVPMSException if the delete fails
      */
-    protected boolean deleteChildren() {
+    protected void deleteChildren() {
         for (Deletable deletable : editors.getDeletable()) {
-            if (!deletable.delete()) {
-                return false;
-            }
+            deletable.delete();
         }
-        return true;
     }
 
     /**
@@ -771,7 +739,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Invoked by {@link #onLayout} to dispose of existing editors.
-     * <p/>
+     * <p>
      * This implementation disposes each editor for which {@link #disposeOnChangeLayout(Editor)} returns {@code true}.
      */
     protected void disposeOnChangeLayout() {
@@ -797,7 +765,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Invoked when layout has completed.
-     * <p/>
+     * <p>
      * This can be used to perform processing that requires all editors to be created.
      */
     protected void onLayoutCompleted() {
@@ -805,7 +773,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Invoked when any of the child editors or properties update.
-     * <p/>
+     * <p>
      * This resets the cached valid state
      *
      * @param modifiable the updated object
@@ -861,7 +829,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Helper to return an editor associated with a property, given the property
      * name.
-     * <p/>
+     * <p>
      * This performs a layout of the component if it hasn't already been done, to ensure the editors are created
      *
      * @param name the property name
@@ -899,7 +867,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Helper to return an object given its reference.
-     * <p/>
+     * <p>
      * This implementation uses the cache associated with the layout context.
      *
      * @param reference the reference. May be {@code null}
@@ -921,6 +889,25 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
         if (editor != null && editor.getFocusGroup() != null) {
             editor.getFocusGroup().setFocus();
             result = true;
+        }
+        return result;
+    }
+
+    /**
+     * Reloads an object, if it has been saved previously.
+     *
+     * @param object the object to reload. May be {@code null}
+     * @return the reloaded object
+     * @throws IllegalStateException if the object no longer exists
+     */
+    protected <T extends IMObject> T reload(T object) {
+        T result = object;
+        if (object != null && !object.isNew()) {
+            result = IMObjectHelper.reload(object);
+            if (result == null) {
+                throw new IllegalStateException(Messages.format("imobject.noexist",
+                                                                DescriptorHelper.getDisplayName(object)));
+            }
         }
         return result;
     }

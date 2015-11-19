@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -92,7 +92,7 @@ public class SaveHelperTestCase extends AbstractAppTest {
         editor.getProperty("lastName").setValue("ZFoo2"); // need to modify it in order for save to proceed
         assertFalse(SaveHelper.save(editor));
         expected = Messages.format("imobject.notfound", bean.getDisplayName());
-        assertEquals(2, errors.size());
+        assertEquals(1, errors.size());
         assertEquals(expected, errors.get(0)); // Only care about the first exception. Second is a rollback exception
     }
 
@@ -165,7 +165,7 @@ public class SaveHelperTestCase extends AbstractAppTest {
     @Override
     public void setUp() {
         super.setUp();
-        errors = new ArrayList<String>();
+        errors = new ArrayList<>();
 
         // register an ErrorHandler to collect errors
         ErrorHandler.setInstance(new ErrorHandler() {

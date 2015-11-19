@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow;
@@ -35,7 +35,7 @@ public class TestVisitChargeEditor extends VisitChargeEditor implements EditorQu
     /**
      * The editor queue.
      */
-    private EditorQueueHandle queue;
+    private ChargeEditorQueue queue;
 
     /**
      * Constructs a {@code TestVisitChargeEditor}.
@@ -45,7 +45,7 @@ public class TestVisitChargeEditor extends VisitChargeEditor implements EditorQu
      * @param event   the visit to edit
      * @param context the layout context
      */
-    public TestVisitChargeEditor(EditorQueueHandle queue, FinancialAct charge, Act event, LayoutContext context) {
+    public TestVisitChargeEditor(ChargeEditorQueue queue, FinancialAct charge, Act event, LayoutContext context) {
         super(charge, event, context, false); // don't add a default item...
         this.queue = queue;
     }
@@ -57,12 +57,18 @@ public class TestVisitChargeEditor extends VisitChargeEditor implements EditorQu
      */
     @Override
     public ChargeEditorQueue getEditorQueue() {
-        return queue.getEditorQueue();
+        return queue;
     }
 
+    /**
+     * Creates a collection editor for the items collection.
+     *
+     * @param act   the act
+     * @param items the items collection
+     * @return a new collection editor
+     */
     @Override
-    protected ActRelationshipCollectionEditor createItemsEditor(Act act,
-                                                                CollectionProperty items) {
+    protected ActRelationshipCollectionEditor createItemsEditor(Act act, CollectionProperty items) {
         VisitChargeItemRelationshipCollectionEditor result
                 = new VisitChargeItemRelationshipCollectionEditor(items, act, getLayoutContext());
         result.setEditorQueue(new DelegatingEditorQueue(this));

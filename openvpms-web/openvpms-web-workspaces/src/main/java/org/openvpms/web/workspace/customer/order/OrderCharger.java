@@ -31,9 +31,9 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
-import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -141,7 +141,7 @@ public class OrderCharger {
 
     /**
      * Determines if the customer has pending orders.
-     * <p/>
+     * <p>
      * If a patient was supplied at construction, this limits the query to those orders that are for the patient.
      *
      * @return {@code true} if the customer has pending orders
@@ -159,15 +159,17 @@ public class OrderCharger {
     /**
      * Saves any charged orders.
      *
-     * @return {@code true} if the orders were successfully saved
+     * @throws OpenVPMSException for any error
      */
-    public boolean save() {
-        return charged.isEmpty() || SaveHelper.save(charged);
+    public void save() {
+        if (!charged.isEmpty()) {
+            ServiceHelper.getArchetypeService().save(charged);
+        }
     }
 
     /**
      * Clears any charged orders.
-     * <p/>
+     * <p>
      * This should be invoked after a successful {@link #save()}
      */
     public void clear() {

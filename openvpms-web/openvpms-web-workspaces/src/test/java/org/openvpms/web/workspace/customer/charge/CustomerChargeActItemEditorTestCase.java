@@ -1042,7 +1042,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
                 ChargeContext context = new ChargeContext();
                 context.setHistoryChanges(changes);
                 editor.setChargeContext(context);
-                boolean saved = SaveHelper.save(charge) && editor.save();
+                boolean saved = SaveHelper.save(charge);
+                editor.save();
                 if (saved) {
                     context.save();
                 }

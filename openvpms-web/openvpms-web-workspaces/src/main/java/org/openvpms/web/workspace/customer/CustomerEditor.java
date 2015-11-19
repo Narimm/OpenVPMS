@@ -21,9 +21,11 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.contact.ContactCollectionEditor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.DefaultLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -87,6 +89,17 @@ public class CustomerEditor extends AbstractIMObjectEditor {
             addContact(editor, ContactArchetypes.EMAIL);
         }
         getLayoutContext().getContext().setCustomer(customer);
+    }
+
+    /**
+     * Creates a new instance of the editor, with the latest instance of the object to edit.
+     *
+     * @return a new instance
+     * @throws OpenVPMSException if a new instance cannot be created
+     */
+    @Override
+    public IMObjectEditor newInstance() {
+        return new CustomerEditor(reload((Party) getObject()), getParent(), getLayoutContext());
     }
 
     /**

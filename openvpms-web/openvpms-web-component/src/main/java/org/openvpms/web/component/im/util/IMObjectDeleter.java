@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
@@ -34,7 +34,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 
@@ -149,18 +149,17 @@ public abstract class IMObjectDeleter {
         boolean removed = false;
         try {
             DefaultLayoutContext layout = new DefaultLayoutContext(true, context, help);
-            layout.setDeletionListener(new DeletionListenerAdapter<T>(object, listener));
+            layout.setDeletionListener(new DeletionListenerAdapter<>(object, listener));
             final IMObjectEditor editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, layout);
             TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
-            Boolean result = template.execute(new TransactionCallback<Boolean>() {
-                public Boolean doInTransaction(TransactionStatus status) {
-                    return editor.delete();
+            template.execute(new TransactionCallbackWithoutResult() {
+                @Override
+                protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                    editor.delete();
                 }
             });
-            removed = (result != null) && result;
-            if (removed) {
-                listener.deleted(object);
-            }
+            listener.deleted(object);
+            removed = true;
         } catch (Throwable exception) {
             listener.failed(object, exception);
         }

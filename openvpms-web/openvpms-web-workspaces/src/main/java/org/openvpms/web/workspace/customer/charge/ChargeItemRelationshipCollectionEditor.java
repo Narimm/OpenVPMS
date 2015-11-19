@@ -21,6 +21,7 @@ import org.openvpms.archetype.rules.patient.prescription.PrescriptionRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.ActCollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -183,16 +184,14 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     /**
      * Saves any current edits.
      *
-     * @return {@code true} if edits were saved successfully, otherwise {@code false}
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
-        boolean result = (prescriptions == null) || prescriptions.save();
-        // Need to save prescriptions first, as invoice item deletion can cause StaleObjectStateExceptions otherwise
-
-        if (result) {
-            result = super.doSave();
+    protected void doSave() {
+        if (prescriptions != null) {
+            prescriptions.save();
         }
-        return result;
+        // Need to save prescriptions first, as invoice item deletion can cause StaleObjectStateExceptions otherwise
+        super.doSave();
     }
 }

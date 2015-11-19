@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -40,7 +40,7 @@ public class BatchParticipationEditor extends ParticipationEditor<Entity> {
      *
      * @param participation the object to edit
      * @param parent        the parent object
-     * @param context       the layout context. May be {@code null}
+     * @param context       the layout context
      */
     public BatchParticipationEditor(Participation participation, Act parent, LayoutContext context) {
         super(participation, parent, context);

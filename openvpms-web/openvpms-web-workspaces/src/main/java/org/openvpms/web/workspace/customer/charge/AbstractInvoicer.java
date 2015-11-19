@@ -21,19 +21,20 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
+import org.openvpms.web.system.ServiceHelper;
 
 /**
  * Base class for classes invoicing an act.
  *
  * @author Tim Anderson
  */
-public class AbstractInvoicer {
+public abstract class AbstractInvoicer {
 
     /**
      * Creates a new {@link CustomerChargeActEditor}.
@@ -77,7 +78,7 @@ public class AbstractInvoicer {
 
     /**
      * Returns the next item editor for population.
-     * <p/>
+     * <p>
      * This returns the current editor, if it has no product, else it creates a new one.
      *
      * @param editor the charge editor
@@ -148,28 +149,16 @@ public class AbstractInvoicer {
         /**
          * Saves the current object.
          *
-         * @return {@code true} if the object was saved
+         * @param editor the editor
+         * @throws OpenVPMSException if the save fails
          */
         @Override
-        protected boolean doSave() {
-            boolean result = super.doSave();
-            if (result && !saved) {
+        protected void doSave(IMObjectEditor editor) {
+            super.doSave(editor);
+            if (!saved) {
+                ServiceHelper.getArchetypeService().save(act);
                 saved = true;
             }
-            return result;
-        }
-
-        /**
-         * Invoked when the editor is saved, to allow subclasses to participate in the save transaction.
-         * <p/>
-         * This implementation always returns {@code true}.
-         *
-         * @param editor the editor
-         * @return {@code true} if the save was successful
-         */
-        @Override
-        protected boolean saved(final IMObjectEditor editor) {
-            return saved || SaveHelper.save(act);
         }
     }
 

@@ -208,7 +208,8 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
                         ((CustomerChargeActItemEditor) editor).setChargeContext(context);
                     }
                 }
-                boolean saved = SaveHelper.save(parent) && itemsEditor.save();
+                boolean saved = SaveHelper.save(parent);
+                itemsEditor.save();
                 if (saved) {
                     context.save();
                 }

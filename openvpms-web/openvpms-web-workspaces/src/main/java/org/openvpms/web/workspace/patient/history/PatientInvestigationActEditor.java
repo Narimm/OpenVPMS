@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.Constraints;
@@ -144,18 +145,17 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
     /**
      * Save any edits.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    public boolean save() {
+    public void save() {
         boolean isNew = getObject().isNew();
-        boolean saved = super.save();
-        if (saved && isNew) {
+        super.save();
+        if (isNew) {
             // enable printing of the form if the act has been saved and was previously unsaved
             enableButton = true; // getObject().isNew() will be true until transaction commits, so need this flag
             onLayout();
         }
-        return saved;
     }
 
     /**
@@ -272,7 +272,7 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
         if (TypeHelper.isA(getParent(), CustomerAccountArchetypes.INVOICE_ITEM)) {
             result = true;
         } else {
-            ActBean bean = new ActBean((Act) getObject());
+            ActBean bean = new ActBean(getObject());
             result = (bean.getRelationship("actRelationship.invoiceItemInvestigation") != null);
         }
         return result;
