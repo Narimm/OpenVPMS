@@ -65,6 +65,11 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     private final ChargeContext chargeContext;
 
     /**
+     * Listener invoked when {@link #onAdd()} is invoked.
+     */
+    private Runnable listener;
+
+    /**
      * The start time node name.
      */
     private static final String START_TIME = "startTime";
@@ -151,6 +156,44 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
         if (prescriptions != null) {
             prescriptions.removeItem((Act) object);
         }
+    }
+
+    /**
+     * Registers a listener that is invoked when the user adds an item.
+     * <p>
+     * Note that this is not invoked for template expansion.
+     *
+     * @param listener the listener to invoke. May be {@code null}
+     */
+    public void setAddItemListener(Runnable listener) {
+        this.listener = listener;
+    }
+
+    /**
+     * Invoked when the "Add" button is pressed. Creates a new instance of the selected archetype, and displays it in
+     * an editor.
+     *
+     * @return the new editor, or {@code null} if one could not be created
+     */
+    @Override
+    protected IMObjectEditor onAdd() {
+        IMObjectEditor editor = add();
+        if (editor != null && listener != null) {
+            EditorQueue queue = getEditorQueue();
+            if (!queue.isComplete()) {
+                queue.queue(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (listener != null) {
+                            listener.run();
+                        }
+                    }
+                });
+            } else {
+                listener.run();
+            }
+        }
+        return editor;
     }
 
     /**

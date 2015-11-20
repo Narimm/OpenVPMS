@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.resource.i18n.Messages;
@@ -47,7 +48,7 @@ public class DefaultEditorQueue implements EditorQueue {
     /**
      * The queue of editors.
      */
-    private LinkedList<State> queue = new LinkedList<State>();
+    private LinkedList<State> queue = new LinkedList<>();
 
     /**
      * Determines if an edit is in progress.
@@ -84,6 +85,22 @@ public class DefaultEditorQueue implements EditorQueue {
     @Override
     public void queue(PopupDialog dialog) {
         queue(new DialogState(dialog));
+    }
+
+    /**
+     * Queues a callback.
+     * <p/>
+     * These must execute synchronously.
+     * <p/>
+     * Note that calls to {@link #isComplete()} return {@code true} if the queue is empty but a callback is in progress.
+     * <p/>
+     * This is required so that callbacks can trigger automatic saves without affecting the valid status of editors.
+     *
+     * @param runnable the callback
+     */
+    @Override
+    public void queue(Runnable runnable) {
+        queue(new RunnableState(runnable));
     }
 
     /**
@@ -134,6 +151,25 @@ public class DefaultEditorQueue implements EditorQueue {
     protected void show(PopupDialog dialog) {
         editing = true;
         dialog.show();
+    }
+
+    /**
+     * Executes a callback.
+     *
+     * @param runnable the callback
+     */
+    protected void execute(Runnable runnable) {
+        try {
+            runnable.run();
+            editNext();
+        } catch (Throwable exception) {
+            ErrorHelper.show(exception, new WindowPaneListener() {
+                @Override
+                public void windowPaneClosing(WindowPaneEvent windowPaneEvent) {
+                    editNext();
+                }
+            });
+        }
     }
 
     /**
@@ -290,4 +326,17 @@ public class DefaultEditorQueue implements EditorQueue {
     }
 
 
+    private class RunnableState implements State {
+
+        private final Runnable runnable;
+
+        public RunnableState(Runnable runnable) {
+            this.runnable = runnable;
+        }
+
+        @Override
+        public void show() {
+            execute(runnable);
+        }
+    }
 }

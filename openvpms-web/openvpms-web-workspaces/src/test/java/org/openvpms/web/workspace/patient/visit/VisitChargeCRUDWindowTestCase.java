@@ -34,6 +34,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.test.AbstractAppTest;
 import org.openvpms.web.workspace.customer.charge.ChargeEditorQueue;
+import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelper;
 import org.openvpms.web.workspace.customer.order.PharmacyTestHelper;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
@@ -70,7 +71,15 @@ public class VisitChargeCRUDWindowTestCase extends AbstractAppTest {
      */
     private Party patient;
 
+    /**
+     * The clinical event.
+     */
+    private Act event;
 
+
+    /**
+     * Sets up the test case.
+     */
     @Before
     public void setUp() {
         super.setUp();
@@ -83,6 +92,8 @@ public class VisitChargeCRUDWindowTestCase extends AbstractAppTest {
         context.setPatient(patient);
         context.setUser(TestHelper.createUser());
         context.setLocation(TestHelper.createLocation());
+
+        event = PatientTestHelper.createEvent(patient);
     }
 
     /**
@@ -90,7 +101,6 @@ public class VisitChargeCRUDWindowTestCase extends AbstractAppTest {
      */
     @Test
     public void testReload() {
-        Act event = PatientTestHelper.createEvent(patient);
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
         VisitChargeCRUDWindow window = new VisitChargeCRUDWindow(event, context, new HelpContext("foo", null));
         window.setObject(charge);
@@ -121,7 +131,6 @@ public class VisitChargeCRUDWindowTestCase extends AbstractAppTest {
      */
     @Test
     public void testPostOutsideEditor() {
-        Act event = PatientTestHelper.createEvent(patient);
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
         VisitChargeCRUDWindow window = new VisitChargeCRUDWindow(event, context, new HelpContext("foo", null));
         window.setObject(charge);
@@ -157,16 +166,8 @@ public class VisitChargeCRUDWindowTestCase extends AbstractAppTest {
         Product product = TestHelper.createProduct();
         FinancialAct order = PharmacyTestHelper.createOrder(customer, patient, product, BigDecimal.ONE, null);
 
-        Act event = PatientTestHelper.createEvent(patient);
-
-        final ChargeEditorQueue queue = new ChargeEditorQueue();
-
-        VisitChargeCRUDWindow window = new VisitChargeCRUDWindow(event, context, new HelpContext("foo", null)) {
-            @Override
-            protected VisitChargeEditor createVisitChargeEditor(FinancialAct charge, Act event, LayoutContext context) {
-                return new TestVisitChargeEditor(queue, charge, event, context);
-            }
-        };
+        ChargeEditorQueue queue = new ChargeEditorQueue();
+        VisitChargeCRUDWindow window = new TestVisitChargeCRUDWindow(event, queue);
         window.setObject(charge);
         window.show();
         CustomerChargeTestHelper.checkSavePopup(queue, PatientArchetypes.PATIENT_MEDICATION, false);
@@ -198,4 +199,171 @@ public class VisitChargeCRUDWindowTestCase extends AbstractAppTest {
         assertEquals(ActStatus.IN_PROGRESS, order.getStatus());
     }
 
+    /**
+     * Verifies that the invoice is automatically saved when Add is clicked, and the invoice is:
+     * <ul>
+     * <li>not new</li>
+     * <li>not POSTED</li>
+     * <li>valid</li>
+     * </ul>
+     */
+    @Test
+    public void testAutoSave() {
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+
+        ChargeEditorQueue queue = new ChargeEditorQueue();
+        TestVisitChargeCRUDWindow window = new TestVisitChargeCRUDWindow(event, queue);
+        window.setObject(charge);
+        window.show();
+
+        TestVisitChargeEditor editor = window.getEditor();
+        assertNotNull(editor);
+        CustomerChargeActItemEditor item1 = (CustomerChargeActItemEditor) editor.getItems().onAdd();
+        assertNotNull(item1);
+
+        // verify the invoice hasn't auto-saved, as it is new
+        assertTrue(editor.getObject().isNew());
+
+        // populate the item
+        item1.setProduct(TestHelper.createProduct());
+        item1.setQuantity(BigDecimal.TEN);
+        CustomerChargeTestHelper.checkSavePopup(editor.getQueue(), PatientArchetypes.PATIENT_MEDICATION, false);
+
+        // add a new item
+        CustomerChargeActItemEditor item2 = (CustomerChargeActItemEditor) editor.getItems().onAdd();
+        assertNotNull(item2);
+
+        // verify the invoice hasn't auto-saved, as it is still new
+        assertTrue(editor.getObject().isNew());
+
+        // now save it.
+        assertTrue(window.save());
+
+        // populate the second item
+        Product product2 = TestHelper.createProduct();
+        item2.setProduct(product2);
+        item2.setQuantity(BigDecimal.ONE);
+        CustomerChargeTestHelper.checkSavePopup(editor.getQueue(), PatientArchetypes.PATIENT_MEDICATION, false);
+
+        // add a new item
+        CustomerChargeActItemEditor item3 = (CustomerChargeActItemEditor) editor.getItems().onAdd();
+        assertNotNull(item3);
+
+        // verify the invoice has saved, and has 2 items
+        checkInvoice(editor, ActStatus.IN_PROGRESS, 2);
+
+        // populate the third item
+        item3.setProduct(TestHelper.createProduct());
+        item3.setQuantity(BigDecimal.TEN);
+        CustomerChargeTestHelper.checkSavePopup(editor.getQueue(), PatientArchetypes.PATIENT_MEDICATION, false);
+
+        // mark the second item invalid. Auto-save should be disabled
+        item2.setProduct(null);
+
+        // add a new item
+        CustomerChargeActItemEditor item4 = (CustomerChargeActItemEditor) editor.getItems().onAdd();
+        assertNotNull(item4);
+        item4.setProduct(TestHelper.createProduct());
+        item4.setQuantity(BigDecimal.ONE);
+        CustomerChargeTestHelper.checkSavePopup(editor.getQueue(), PatientArchetypes.PATIENT_MEDICATION, false);
+
+        // verify the invoice has not auto-saved, and still has 2 items
+        checkInvoice(editor, ActStatus.IN_PROGRESS, 2);
+
+        // now make the invoice valid again
+        item2.setProduct(TestHelper.createProduct());
+        CustomerChargeTestHelper.checkSavePopup(editor.getQueue(), PatientArchetypes.PATIENT_MEDICATION, false);
+        assertTrue(editor.isValid());
+
+        // add a new item
+        CustomerChargeActItemEditor item5 = (CustomerChargeActItemEditor) editor.getItems().onAdd();
+        assertNotNull(item5);
+
+        // verify the invoice has saved, and has 4 items
+        checkInvoice(editor, ActStatus.IN_PROGRESS, 4);
+
+        item5.setProduct(TestHelper.createProduct());
+        item5.setQuantity(BigDecimal.TEN);
+        CustomerChargeTestHelper.checkSavePopup(editor.getQueue(), PatientArchetypes.PATIENT_MEDICATION, false);
+
+        // set the invoice POSTED. Auto-save should now be disabled
+        editor.setStatus(ActStatus.POSTED);
+
+        CustomerChargeActItemEditor item6 = (CustomerChargeActItemEditor) editor.getItems().onAdd();
+        assertNotNull(item6);
+
+        // verify the invoice has not auto-saved, and still has 2 items
+        checkInvoice(editor, ActStatus.IN_PROGRESS, 4);
+
+        // now save, and verify it has 5 items and is posted.
+        assertTrue(window.save());
+        checkInvoice(editor, ActStatus.POSTED, 5);
+
+        assertEquals(4, window.getSaves());
+        // save should now succeed even if POSTED. The editor save won't actually be invoked
+        assertTrue(window.save());
+        assertEquals(4, window.getSaves());
+    }
+
+    /**
+     * Verifies an invoice has been saved and has the expected status and no. of items.
+     *
+     * @param editor the invoice editor
+     * @param status the expected status
+     * @param items  the expected no. of items
+     */
+    private void checkInvoice(VisitChargeEditor editor, String status, int items) {
+        FinancialAct charge = get(editor.getObject());
+        assertNotNull(charge);
+        assertEquals(status, charge.getStatus());
+        ActBean bean = new ActBean(charge);
+        assertEquals(items, bean.getNodeActs("items").size());
+    }
+
+    private class TestVisitChargeCRUDWindow extends VisitChargeCRUDWindow {
+
+        private final ChargeEditorQueue queue;
+
+        private int saves;
+
+        public TestVisitChargeCRUDWindow(Act event, ChargeEditorQueue queue) {
+            super(event, VisitChargeCRUDWindowTestCase.this.context, new HelpContext("foo", null));
+            this.queue = queue;
+        }
+
+        /**
+         * Returns the charge editor.
+         *
+         * @return the charge editor. May be {@code null}
+         */
+        @Override
+        public TestVisitChargeEditor getEditor() {
+            return (TestVisitChargeEditor) super.getEditor();
+        }
+
+        /**
+         * Returns the no. of invocations of {@link #doSave()}.
+         *
+         * @return the no. of saves
+         */
+        public int getSaves() {
+            return saves;
+        }
+
+        /**
+         * Saves the invoice.
+         *
+         * @return {@code true} if the invoice was saved
+         */
+        @Override
+        protected boolean doSave() {
+            ++saves;
+            return super.doSave();
+        }
+
+        @Override
+        protected VisitChargeEditor createVisitChargeEditor(FinancialAct charge, Act event, LayoutContext context) {
+            return new TestVisitChargeEditor(queue, charge, event, context);
+        }
+    }
 }

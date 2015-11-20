@@ -52,7 +52,7 @@ public class TestEditVisitTask extends EditVisitTask implements EditorQueueHandl
      *
      * @return the popup dialog manager
      */
-    public ChargeEditorQueue getEditorQueue() {
+    public ChargeEditorQueue getQueue() {
         return queue;
     }
 

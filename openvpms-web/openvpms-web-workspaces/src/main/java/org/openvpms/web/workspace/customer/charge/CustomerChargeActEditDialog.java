@@ -22,6 +22,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -59,6 +60,11 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      * Determines if customer orders are automatically charged.
      */
     private final boolean autoChargeOrders;
+
+    /**
+     * Listener to be invoked to auto-save the charge.
+     */
+    private Runnable autoSaveListener;
 
     /**
      * Completed button identifier.
@@ -152,7 +158,6 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
         prepare(true);
     }
 
-
     /**
      * Saves the current object.
      * <p>
@@ -174,6 +179,33 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
         super.doSave(editor);
         manager.save();
         manager.clear();
+    }
+
+    /**
+     * Sets the editor.
+     * <p>
+     * If there is an existing editor, its selection path will be set on the editor.
+     *
+     * @param editor the editor. May be {@code null}
+     */
+    @Override
+    protected void setEditor(IMObjectEditor editor) {
+        CustomerChargeActEditor existing = getEditor();
+        if (existing != null) {
+            existing.setAddItemListener(null);
+        }
+        super.setEditor(editor);
+        if (editor != null) {
+            if (autoSaveListener == null) {
+                autoSaveListener = new Runnable() {
+                    @Override
+                    public void run() {
+                        autoSave();
+                    }
+                };
+            }
+            ((CustomerChargeActEditor) editor).setAddItemListener(autoSaveListener);
+        }
     }
 
     /**
@@ -321,6 +353,19 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
     private void chargeOrders() {
         if (!isPosted()) {
             manager.chargeSelected(getEditor());
+        }
+    }
+
+    /**
+     * Auto save the invoice if it is valid, isn't new and isn't POSTED.
+     */
+    private void autoSave() {
+        CustomerChargeActEditor editor = getEditor();
+        FinancialAct object = editor.getObject();
+        if (!object.isNew() && !ActStatus.POSTED.equals(editor.getStatus())) {
+            if (editor.isValid()) {
+                save();
+            }
         }
     }
 

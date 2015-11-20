@@ -122,6 +122,16 @@ public class TestChargeEditor extends CustomerChargeActEditor {
     }
 
     /**
+     * Returns the items collection editor.
+     *
+     * @return the items collection editor. May be {@code null}
+     */
+    @Override
+    public TestChargeItemRelationshipCollectionEditor getItems() {
+        return (TestChargeItemRelationshipCollectionEditor) super.getItems();
+    }
+
+    /**
      * Creates a collection editor for the items collection.
      *
      * @param act   the act
@@ -130,11 +140,10 @@ public class TestChargeEditor extends CustomerChargeActEditor {
      */
     @Override
     protected ActRelationshipCollectionEditor createItemsEditor(Act act, CollectionProperty items) {
-        ActRelationshipCollectionEditor editor = super.createItemsEditor(act, items);
-        if (editor instanceof ChargeItemRelationshipCollectionEditor) {
-            // register a handler for act popups
-            ((ChargeItemRelationshipCollectionEditor) editor).setEditorQueue(getQueue());
-        }
+        TestChargeItemRelationshipCollectionEditor editor
+                = new TestChargeItemRelationshipCollectionEditor(items, act, getLayoutContext());
+        // register a handler for act popups
+        editor.setEditorQueue(getQueue());
         return editor;
     }
 

@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -30,11 +28,9 @@ import org.openvpms.web.component.property.CollectionProperty;
 /**
  * Tests the {@link LookupRelationshipCollectionPropertyEditor} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class LookupRelationshipCollectionPropertyEditorTestCase
-    extends AbstractCollectionPropertyEditorTest {
+public class LookupRelationshipCollectionPropertyEditorTestCase extends AbstractCollectionPropertyEditorTest {
 
     private Lookup state;
 
@@ -77,10 +73,8 @@ public class LookupRelationshipCollectionPropertyEditorTestCase
      * @param parent   the parent of the collection
      * @return a new editor for the property
      */
-    protected CollectionPropertyEditor createEditor(CollectionProperty property,
-                                                    IMObject parent) {
-        return new LookupRelationshipCollectionPropertyEditor(property,
-                                                              (Lookup) parent);
+    protected CollectionPropertyEditor createEditor(CollectionProperty property, IMObject parent) {
+        return new LookupRelationshipCollectionPropertyEditor(property, (Lookup) parent);
     }
 
     /**
@@ -92,9 +86,31 @@ public class LookupRelationshipCollectionPropertyEditorTestCase
     protected IMObject createObject(IMObject parent) {
         LookupRelationship result = (LookupRelationship) TestHelper.create("lookupRelationship.stateSuburb");
         result.setSource(parent.getObjectReference());
-        String code = "ASUBURB" + System.currentTimeMillis() + System.nanoTime();
-        Lookup target = TestHelper.getLookup("lookup.suburb", code);
+        Lookup target = createLookup();
         result.setTarget(target.getObjectReference());
         return result;
     }
+
+    /**
+     * Makes an object valid or invalid.
+     *
+     * @param object the object
+     * @param valid  if {@code true}, make it valid, otherwise make it invalid
+     */
+    @Override
+    protected void makeValid(IMObject object, boolean valid) {
+        LookupRelationship relationship = (LookupRelationship) object;
+        relationship.setTarget(valid ? createLookup().getObjectReference() : null);
+    }
+
+    /**
+     * Creates a new lookup.
+     *
+     * @return a new lookup
+     */
+    private Lookup createLookup() {
+        String code = "ASUBURB" + System.currentTimeMillis() + System.nanoTime();
+        return TestHelper.getLookup("lookup.suburb", code);
+    }
+
 }

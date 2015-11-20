@@ -150,6 +150,9 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
     @Override
     public void setObject(FinancialAct object) {
         container.removeAll();
+        if (editor != null) {
+            editor.setAddItemListener(null);
+        }
         if (object != null) {
             List<Selection> path = (editor != null) ? editor.getSelectionPath() : null;
             posted = ActStatus.POSTED.equals(object.getStatus());
@@ -164,6 +167,12 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
             } else {
                 HelpContext edit = createEditTopic(object);
                 editor = createVisitChargeEditor(object, event, createLayoutContext(edit));
+                editor.setAddItemListener(new Runnable() {
+                    @Override
+                    public void run() {
+                        autoSave();
+                    }
+                });
                 container.add(editor.getComponent());
                 if (path != null) {
                     editor.setSelectionPath(path);
@@ -215,35 +224,11 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
     /**
      * Saves the invoice.
      *
-     * @return {@code true} if the invoice was saved
+     * @return {@code true} if the invoice was saved, or no save was required.
      */
     public boolean save() {
         boolean saved;
-        if (editor != null && !posted) {
-            IMObjectEditorSaver saver = new IMObjectEditorSaver() {
-
-                @Override
-                protected void save(IMObjectEditor editor, TransactionStatus status) {
-                    super.save(editor, status);
-                    manager.save();
-                }
-
-                @Override
-                protected boolean reload(IMObjectEditor editor) {
-                    FinancialAct act = (FinancialAct) IMObjectHelper.reload(editor.getObject());
-                    setObject(act);
-                    return act != null;
-                }
-            };
-            saved = saver.save(editor);
-            if (saved) {
-                manager.clear();
-            }
-            FinancialAct object = getObject();
-            posted = object != null && ActStatus.POSTED.equals(getObject().getStatus());
-        } else {
-            saved = true;
-        }
+        saved = !(editor != null && !posted) || doSave();
         manager.check();
         return saved;
     }
@@ -314,6 +299,35 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
     }
 
     /**
+     * Saves the invoice.
+     *
+     * @return {@code true} if the invoice was saved
+     */
+    protected boolean doSave() {
+        boolean saved;
+        IMObjectEditorSaver saver = new IMObjectEditorSaver() {
+
+            @Override
+            protected void save(IMObjectEditor editor, TransactionStatus status) {
+                super.save(editor, status);
+                manager.save();
+            }
+
+            @Override
+            protected boolean reload(IMObjectEditor editor) {
+                FinancialAct act = (FinancialAct) IMObjectHelper.reload(editor.getObject());
+                setObject(act);
+                return act != null;
+            }
+        };
+        saved = saver.save(editor);
+        manager.clear();
+        FinancialAct object = getObject();
+        posted = object != null && ActStatus.POSTED.equals(getObject().getStatus());
+        return saved;
+    }
+
+    /**
      * Lays out the component.
      *
      * @return the component
@@ -364,4 +378,15 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
         }
     }
 
+    /**
+     * Auto save the invoice if it is valid, isn't new and isn't POSTED.
+     */
+    protected void autoSave() {
+        FinancialAct object = editor.getObject();
+        if (!object.isNew() && !ActStatus.POSTED.equals(editor.getStatus())) {
+            if (editor.isValid()) {
+                save();
+            }
+        }
+    }
 }

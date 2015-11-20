@@ -321,7 +321,7 @@ public class OverTheCounterWorkflowTestCase extends AbstractCustomerChargeActEdi
 
         TestOTCChargeTask chargeTask = workflow.getChargeTask();
         OTCChargeEditor chargeEditor = workflow.getChargeEditor();
-        addItem(chargeEditor, null, product, ONE, chargeTask.getEditorQueue());
+        addItem(chargeEditor, null, product, ONE, chargeTask.getQueue());
         fireDialogButton(chargeTask.getEditDialog(), PopupDialog.APPLY_ID); // force the charge to save
 
         FinancialAct charge = get(chargeEditor.getObject());
