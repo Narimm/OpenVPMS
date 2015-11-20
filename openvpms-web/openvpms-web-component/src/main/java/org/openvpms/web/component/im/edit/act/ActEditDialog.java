@@ -80,6 +80,16 @@ public class ActEditDialog extends EditDialog {
     }
 
     /**
+     * Determines if the current object can be saved.
+     *
+     * @return {@code true} if the current object can be saved
+     */
+    @Override
+    protected boolean canSave() {
+        return super.canSave() && (getEditor().getObject().isNew() || !posted);
+    }
+
+    /**
      * Determines if the act has been saved with POSTED status.
      *
      * @return {@code true} if the act has been saved

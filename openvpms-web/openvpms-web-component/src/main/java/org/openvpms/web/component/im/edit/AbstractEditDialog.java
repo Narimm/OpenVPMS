@@ -146,6 +146,39 @@ public abstract class AbstractEditDialog extends PopupDialog {
     }
 
     /**
+     * Saves the current object, if saving is enabled.
+     * <p>
+     * If it is, and the object is valid, then {@link #doSave(IMObjectEditor)} is called.
+     * If {@link #doSave(IMObjectEditor)} fails (i.e returns {@code false}), then {@link #saveFailed()} is called.
+     *
+     * @return {@code true} if the object was saved
+     */
+    public boolean save() {
+        boolean result = false;
+        if (canSave()) {
+            IMObjectEditorSaver saver = new IMObjectEditorSaver() {
+                @Override
+                protected void save(IMObjectEditor editor, TransactionStatus status) {
+                    AbstractEditDialog.this.doSave(editor);
+                }
+
+                @Override
+                protected boolean reload(IMObjectEditor editor) {
+                    return AbstractEditDialog.this.reload(editor);
+                }
+
+                @Override
+                protected void failed(IMObjectEditor editor, Throwable exception) {
+                    super.failed(editor, exception);
+                    saveFailed();
+                }
+            };
+            result = saver.save(editor);
+        }
+        return result;
+    }
+
+    /**
      * Saves the editor, optionally closing the dialog.
      * <p>
      * If the the save fails, the dialog will remain open.
@@ -191,6 +224,15 @@ public abstract class AbstractEditDialog extends PopupDialog {
                 group.setFocus();
             }
         }
+    }
+
+    /**
+     * Determines if the current object can be saved.
+     *
+     * @return {@code true} if the current object can be saved
+     */
+    protected boolean canSave() {
+        return !savedDisabled && save && editor != null;
     }
 
     /**
@@ -268,41 +310,6 @@ public abstract class AbstractEditDialog extends PopupDialog {
                 editor.setSelectionPath(path);
             }
         }
-    }
-
-    /**
-     * Saves the current object, if saving is enabled.
-     * <p>
-     * If it is, and the object is valid, then {@link #doSave(IMObjectEditor)} is called.
-     * If {@link #doSave(IMObjectEditor)} fails (i.e returns {@code false}), then {@link #saveFailed()} is called.
-     *
-     * @return {@code true} if the object was saved
-     */
-    protected boolean save() {
-        boolean result = false;
-        if (!savedDisabled) {
-            if (save && editor != null) {
-                IMObjectEditorSaver saver = new IMObjectEditorSaver() {
-                    @Override
-                    protected void save(IMObjectEditor editor, TransactionStatus status) {
-                        AbstractEditDialog.this.doSave(editor);
-                    }
-
-                    @Override
-                    protected boolean reload(IMObjectEditor editor) {
-                        return AbstractEditDialog.this.reload(editor);
-                    }
-
-                    @Override
-                    protected void failed(IMObjectEditor editor, Throwable exception) {
-                        super.failed(editor, exception);
-                        saveFailed();
-                    }
-                };
-                result = saver.save(editor);
-            }
-        }
-        return result;
     }
 
     /**

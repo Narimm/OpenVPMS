@@ -43,8 +43,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Tim Anderson
  */
-public abstract class AbstractCollectionPropertyEditorTest
-        extends AbstractAppTest {
+public abstract class AbstractCollectionPropertyEditorTest extends AbstractAppTest {
 
     /**
      * Tests the behaviour of performing query operations on an empty
@@ -320,6 +319,48 @@ public abstract class AbstractCollectionPropertyEditorTest
     }
 
     /**
+     * Verifies that if one item in the collection is invalid, the collection is invalid.
+     */
+    @Test
+    public void testValidation() {
+        final IMObject parent = createParent();
+        CollectionProperty property = getCollectionProperty(parent);
+        final CollectionPropertyEditor editor = createEditor(property, parent);
+
+        IMObject element1 = createObject(parent);
+        IMObject element2 = createObject(parent);
+        IMObject element3 = createObject(parent);
+        editor.add(element1);
+        editor.add(element2);
+        editor.add(element3);
+        assertTrue(editor.isValid());
+
+        makeValid(element1, false);
+        editor.resetValid();
+        assertFalse(editor.isValid());
+
+        makeValid(element1, true);
+        editor.resetValid();
+        assertTrue(editor.isValid());
+
+        makeValid(element2, false);
+        editor.resetValid();
+        assertFalse(editor.isValid());
+
+        makeValid(element2, true);
+        editor.resetValid();
+        assertTrue(editor.isValid());
+
+        makeValid(element3, false);
+        editor.resetValid();
+        assertFalse(editor.isValid());
+
+        makeValid(element3, true);
+        editor.resetValid();
+        assertTrue(editor.isValid());
+    }
+
+    /**
      * Returns the parent of the collection.
      *
      * @return the parent object
@@ -366,6 +407,14 @@ public abstract class AbstractCollectionPropertyEditorTest
      * @return a new object to add to the collection
      */
     protected abstract IMObject createObject(IMObject parent);
+
+    /**
+     * Makes an object valid or invalid.
+     *
+     * @param object the object
+     * @param valid  if {@code true}, make it valid, otherwise make it invalid
+     */
+    protected abstract void makeValid(IMObject object, boolean valid);
 
     /**
      * Executes a callback in a transaction.

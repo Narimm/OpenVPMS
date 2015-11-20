@@ -139,6 +139,20 @@ public abstract class AbstractCustomerChargeActEditor extends FinancialActEditor
     }
 
     /**
+     * Registers a listener that is invoked when the user adds an item.
+     * <p/>
+     * Note that this is not invoked for template expansion.
+     *
+     * @param listener the listener to invoke. May be {@code null}
+     */
+    public void setAddItemListener(Runnable listener) {
+        ActRelationshipCollectionEditor items = getItems();
+        if (items instanceof ChargeItemRelationshipCollectionEditor) {
+            ((ChargeItemRelationshipCollectionEditor) items).setAddItemListener(listener);
+        }
+    }
+
+    /**
      * Returns all acts that may be associated with pharmacy or laboratory orders.
      *
      * @return the acts

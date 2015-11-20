@@ -23,7 +23,6 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.workspace.customer.charge.ChargeEditorQueue;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
-import org.openvpms.web.workspace.patient.charge.VisitChargeItemRelationshipCollectionEditor;
 
 /**
  * A test {@link VisitChargeEditor}.
@@ -51,12 +50,22 @@ public class TestVisitChargeEditor extends VisitChargeEditor implements EditorQu
     }
 
     /**
+     * Returns the items collection editor.
+     *
+     * @return the items collection editor. May be {@code null}
+     */
+    @Override
+    public TestVisitChargeItemRelationshipCollectionEditor getItems() {
+        return (TestVisitChargeItemRelationshipCollectionEditor) super.getItems();
+    }
+
+    /**
      * Returns the popup dialog manager.
      *
      * @return the popup dialog manager
      */
     @Override
-    public ChargeEditorQueue getEditorQueue() {
+    public ChargeEditorQueue getQueue() {
         return queue;
     }
 
@@ -69,8 +78,8 @@ public class TestVisitChargeEditor extends VisitChargeEditor implements EditorQu
      */
     @Override
     protected ActRelationshipCollectionEditor createItemsEditor(Act act, CollectionProperty items) {
-        VisitChargeItemRelationshipCollectionEditor result
-                = new VisitChargeItemRelationshipCollectionEditor(items, act, getLayoutContext());
+        TestVisitChargeItemRelationshipCollectionEditor result
+                = new TestVisitChargeItemRelationshipCollectionEditor(items, act, getLayoutContext());
         result.setEditorQueue(new DelegatingEditorQueue(this));
         return result;
     }

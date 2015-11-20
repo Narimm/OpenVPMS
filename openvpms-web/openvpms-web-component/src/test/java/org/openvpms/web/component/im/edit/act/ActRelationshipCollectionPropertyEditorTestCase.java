@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.im.edit.act;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.test.TestHelper;
@@ -44,6 +45,21 @@ import static org.junit.Assert.assertTrue;
  */
 public class ActRelationshipCollectionPropertyEditorTestCase
     extends AbstractCollectionPropertyEditorTest {
+
+    /**
+     * The product.
+     */
+    private Product product;
+
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        super.setUp();
+        product = TestHelper.createProduct();
+    }
 
     /**
      * Tests {@link CollectionPropertyEditor#getArchetypeRange()}.
@@ -161,7 +177,6 @@ public class ActRelationshipCollectionPropertyEditorTestCase
     protected IMObject createObject(IMObject parent) {
         Act act = (Act) create("act.customerEstimationItem");
 
-        Product product = TestHelper.createProduct();
         Party patient = TestHelper.createPatient(true);
         ActBean bean = new ActBean(act);
         bean.addParticipation("participation.patient", patient);
@@ -170,4 +185,19 @@ public class ActRelationshipCollectionPropertyEditorTestCase
         return act;
     }
 
+    /**
+     * Makes an object valid or invalid.
+     *
+     * @param object the object
+     * @param valid  if {@code true}, make it valid, otherwise make it invalid
+     */
+    @Override
+    protected void makeValid(IMObject object, boolean valid) {
+        ActBean bean = new ActBean((Act) object);
+        if (!valid) {
+            bean.setNodeParticipant("product", (Product) null);
+        } else {
+            bean.setNodeParticipant("product", product);
+        }
+    }
 }

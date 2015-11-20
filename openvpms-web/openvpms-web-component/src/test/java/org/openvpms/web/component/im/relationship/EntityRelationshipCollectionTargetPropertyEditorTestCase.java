@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -21,6 +19,7 @@ package org.openvpms.web.component.im.relationship;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditorTest;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -29,8 +28,7 @@ import org.openvpms.web.component.property.CollectionProperty;
 /**
  * Tests the {@link EntityRelationshipCollectionTargetPropertyEditor} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class EntityRelationshipCollectionTargetPropertyEditorTestCase
     extends AbstractCollectionPropertyEditorTest {
@@ -60,8 +58,7 @@ public class EntityRelationshipCollectionTargetPropertyEditorTestCase
      * @param parent   the parent of the collection
      * @return a new editor for the property
      */
-    protected CollectionPropertyEditor createEditor(CollectionProperty property,
-                                                    IMObject parent) {
+    protected CollectionPropertyEditor createEditor(CollectionProperty property, IMObject parent) {
         return new EntityRelationshipCollectionTargetPropertyEditor(property, (Entity) parent);
     }
 
@@ -73,5 +70,17 @@ public class EntityRelationshipCollectionTargetPropertyEditorTestCase
      */
     protected IMObject createObject(IMObject parent) {
         return TestHelper.createPatient(true);
+    }
+
+    /**
+     * Makes an object valid or invalid.
+     *
+     * @param object the object
+     * @param valid  if {@code true}, make it valid, otherwise make it invalid
+     */
+    @Override
+    protected void makeValid(IMObject object, boolean valid) {
+        IMObjectBean bean = new IMObjectBean(object);
+        bean.setValue("species", valid ? "CANINE" : null);
     }
 }

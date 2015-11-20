@@ -357,7 +357,10 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
         boolean result = validator.validate(property);
         IArchetypeService service = ServiceHelper.getArchetypeService();
         for (IMObject object : getObjects()) {
-            result = doValidation(object, validator, service);
+            if (!doValidation(object, validator, service)) {
+                result = false;
+                break;
+            }
         }
         return result;
     }
