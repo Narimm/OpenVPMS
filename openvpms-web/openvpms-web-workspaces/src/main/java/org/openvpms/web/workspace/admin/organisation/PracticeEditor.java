@@ -30,7 +30,7 @@ import org.openvpms.web.system.ServiceHelper;
 
 /**
  * Editor for <em>party.organisationPractice</em>.
- * <p/>
+ * <p>
  * This adds a tab to manage subscription.
  *
  * @author Tim Anderson
@@ -43,11 +43,11 @@ public class PracticeEditor extends AbstractIMObjectEditor {
     private IMObjectEditor participationEditor;
 
     /**
-     * Constructs an <tt>OrganisationPracticeEditor</tt>.
+     * Constructs a {@link PracticeEditor}.
      *
      * @param practice the practice to edit
-     * @param parent   the parent object. May be <tt>null</tt>
-     * @param context  the layout context. May be <tt>null</tt>.
+     * @param parent   the parent object. May be {@code null}
+     * @param context  the layout context.
      */
     public PracticeEditor(Party practice, IMObject parent, LayoutContext context) {
         super(practice, parent, context);

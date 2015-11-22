@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
@@ -190,29 +191,24 @@ public class DocumentActEditor extends AbstractActEditor {
     /**
      * Save any edits.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
-        boolean saved = saveObject();
-        if (saved) {
-            saved = saveChildren();
-        }
-        return saved;
+    protected void doSave() {
+        saveObject();
+        saveChildren();
     }
 
     /**
      * Deletes the object.
      *
-     * @return {@code true} if the delete was successful
+     * @throws OpenVPMSException if the delete fails
      */
     @Override
-    protected boolean doDelete() {
-        boolean deleted = deleteObject();
-        if (deleted) {
-            deleted = deleteChildren();
-        }
-        if (deleted && versionsEditor != null) {
+    protected void doDelete() {
+        deleteObject();
+        deleteChildren();
+        if (versionsEditor != null) {
             // delete the prior versions. Need to jump through some hoops to do this to avoid stale object errors
             // TODO - ideally this would be done from within a delete rule
             for (Act act : versionsEditor.getActs()) {
@@ -221,15 +217,11 @@ public class DocumentActEditor extends AbstractActEditor {
                     if (act != null) {
                         DefaultLayoutContext context = new DefaultLayoutContext(getLayoutContext());
                         IMObjectEditor editor = versionsEditor.createEditor(act, context);
-                        deleted = editor.delete();
-                        if (!deleted) {
-                            break;
-                        }
+                        editor.delete();
                     }
                 }
             }
         }
-        return deleted;
     }
 
     /**
@@ -283,7 +275,7 @@ public class DocumentActEditor extends AbstractActEditor {
 
     /**
      * Invoked when the document template updates.
-     * <p/>
+     * <p>
      * If the template is different to the prior instance, and there is a document node, the template will be used
      * to generate a new document.
      */
@@ -300,7 +292,7 @@ public class DocumentActEditor extends AbstractActEditor {
 
     /**
      * Generates the document.
-     * <p/>
+     * <p>
      * If the act supports versioning, any existing saved document will be copied to new version act.
      */
     private void generateDoc() {
@@ -353,8 +345,7 @@ public class DocumentActEditor extends AbstractActEditor {
          * Sets the document.
          *
          * @param document the new document
-         * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
-         *          for any error
+         * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException for any error
          */
         @Override
         public void setDocument(Document document) {

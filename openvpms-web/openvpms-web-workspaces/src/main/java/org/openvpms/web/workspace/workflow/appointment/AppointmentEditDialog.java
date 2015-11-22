@@ -93,7 +93,7 @@ public class AppointmentEditDialog extends EditDialog {
      */
     @Override
     protected void onApply() {
-        if (canSave()) {
+        if (noOverlapCheckRequired()) {
             save();
         } else if (!checkForOverlappingAppointment(false)) {
             if (save()) {
@@ -107,7 +107,7 @@ public class AppointmentEditDialog extends EditDialog {
      */
     @Override
     protected void onOK() {
-        if (canSave()) {
+        if (noOverlapCheckRequired()) {
             super.onOK();
         } else if (!checkForOverlappingAppointment(true)) {
             super.onOK();
@@ -116,7 +116,7 @@ public class AppointmentEditDialog extends EditDialog {
 
     /**
      * Determines if the appointment overlaps an existing appointment.
-     * <p/>
+     * <p>
      * If so, and double scheduling is allowed, a confirmation dialog is shown prompting to save or continue editing.
      * If double scheduling is not allowed, an error dialog is shown and no save is performed.
      *
@@ -182,7 +182,7 @@ public class AppointmentEditDialog extends EditDialog {
      *
      * @return {@code true} if the appointment can be saved
      */
-    private boolean canSave() {
+    private boolean noOverlapCheckRequired() {
         Act appointment = getAppointment();
         return !appointment.isNew() && !timeSeriesModified();
     }
@@ -203,7 +203,7 @@ public class AppointmentEditDialog extends EditDialog {
      * Determines if the appointment times or series have been modified since the act was saved.
      *
      * @return {@code true} if the appointment times have been modified,
-     *         otherwise {@code false}
+     * otherwise {@code false}
      */
     private boolean timeSeriesModified() {
         AppointmentSeries series = getEditor().getSeries();
@@ -220,7 +220,7 @@ public class AppointmentEditDialog extends EditDialog {
      * @return the appointment
      */
     private Act getAppointment() {
-        return (Act) getEditor().getObject();
+        return getEditor().getObject();
     }
 
 }

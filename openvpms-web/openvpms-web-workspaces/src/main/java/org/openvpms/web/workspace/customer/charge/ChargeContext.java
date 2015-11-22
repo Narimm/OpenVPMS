@@ -18,18 +18,18 @@ package org.openvpms.web.workspace.customer.charge;
 
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
-import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Charge context, used to defer manipulation of relationships to patient history until the charge items are saved.
- * <p/>
+ * <p>
  * At save, the approach is:
  * <ol>
  * <li>save charge</li>
@@ -85,7 +85,7 @@ public class ChargeContext implements CollectionPropertyEditor.RemoveHandler {
 
     /**
      * Invoked to remove an object.
-     * <p/>
+     * <p>
      * Removal is deferred until {@link #save()} is invoked.
      *
      * @param object the object to remove
@@ -97,7 +97,7 @@ public class ChargeContext implements CollectionPropertyEditor.RemoveHandler {
 
     /**
      * Invoked to remove an object.
-     * <p/>
+     * <p>
      * Removal is deferred until {@link #save()} is invoked.
      *
      * @param editor the object editor
@@ -110,29 +110,18 @@ public class ChargeContext implements CollectionPropertyEditor.RemoveHandler {
     /**
      * Saves changes.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
-    public boolean save() {
-        boolean result = false;
-        try {
-            changes.save();
-            DefaultIMObjectDeletionListener<IMObject> listener = new DefaultIMObjectDeletionListener<>();
-            for (IMObject object : toRemove.toArray(new IMObject[toRemove.size()])) {
-                if (!SaveHelper.delete(object, listener)) {
-                    return false;
-                }
-                toRemove.remove(object);
-            }
-            for (IMObjectEditor editor : toRemoveEditors.toArray(new IMObjectEditor[toRemoveEditors.size()])) {
-                if (!editor.delete()) {
-                    return false;
-                }
-                toRemoveEditors.remove(editor);
-            }
-            result = true;
-        } catch (Throwable exception) {
-            ErrorHelper.show(exception);
+    public void save() {
+        changes.save();
+        for (IMObject object : toRemove.toArray(new IMObject[toRemove.size()])) {
+            IArchetypeRuleService service = ServiceHelper.getArchetypeService();
+            service.remove(object);
+            toRemove.remove(object);
         }
-        return result;
+        for (IMObjectEditor editor : toRemoveEditors.toArray(new IMObjectEditor[toRemoveEditors.size()])) {
+            editor.delete();
+            toRemoveEditors.remove(editor);
+        }
     }
 }

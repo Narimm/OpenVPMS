@@ -205,7 +205,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Invoked when an act is selected.
-     * <p/>
+     * <p>
      * This implementation edits the selected act, if the current view is a history view and it has been double
      * clicked on.
      *
@@ -226,7 +226,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Invoked when a browser object is viewed (aka 'browsed').
-     * <p/>
+     * <p>
      * This implementation sets the object in the CRUD window.
      *
      * @param object the selected object
@@ -239,7 +239,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Invoked when the object has been deleted.
-     * <p/>
+     * <p>
      * If the current window is a history view, this implementation attempts to select the next object in the browser,
      * or the prior object if there is no next object. This is so that when the browser is refreshed, the selection will
      * be retained.
@@ -263,7 +263,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Invoked when the browser is queried.
-     * <p/>
+     * <p>
      * This implementation selects the first available object and determines the associated event, if any.
      */
     @Override
@@ -294,7 +294,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Updates the current selection.
-     * <p/>
+     * <p>
      * TODO - this needs to be cleaned up. The CRUD window needs to be hooked directly into the browsers.
      * Main limitation at present is that CRUD window is created independently of the browser, and the workspace
      * acts as the intermediary. Should be refactored along the lines of VisitEditor

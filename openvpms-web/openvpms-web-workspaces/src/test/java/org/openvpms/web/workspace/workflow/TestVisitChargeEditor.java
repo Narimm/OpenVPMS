@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow;
@@ -23,7 +23,6 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.workspace.customer.charge.ChargeEditorQueue;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
-import org.openvpms.web.workspace.patient.charge.VisitChargeItemRelationshipCollectionEditor;
 
 /**
  * A test {@link VisitChargeEditor}.
@@ -35,7 +34,7 @@ public class TestVisitChargeEditor extends VisitChargeEditor implements EditorQu
     /**
      * The editor queue.
      */
-    private EditorQueueHandle queue;
+    private ChargeEditorQueue queue;
 
     /**
      * Constructs a {@code TestVisitChargeEditor}.
@@ -45,9 +44,19 @@ public class TestVisitChargeEditor extends VisitChargeEditor implements EditorQu
      * @param event   the visit to edit
      * @param context the layout context
      */
-    public TestVisitChargeEditor(EditorQueueHandle queue, FinancialAct charge, Act event, LayoutContext context) {
+    public TestVisitChargeEditor(ChargeEditorQueue queue, FinancialAct charge, Act event, LayoutContext context) {
         super(charge, event, context, false); // don't add a default item...
         this.queue = queue;
+    }
+
+    /**
+     * Returns the items collection editor.
+     *
+     * @return the items collection editor. May be {@code null}
+     */
+    @Override
+    public TestVisitChargeItemRelationshipCollectionEditor getItems() {
+        return (TestVisitChargeItemRelationshipCollectionEditor) super.getItems();
     }
 
     /**
@@ -56,15 +65,21 @@ public class TestVisitChargeEditor extends VisitChargeEditor implements EditorQu
      * @return the popup dialog manager
      */
     @Override
-    public ChargeEditorQueue getEditorQueue() {
-        return queue.getEditorQueue();
+    public ChargeEditorQueue getQueue() {
+        return queue;
     }
 
+    /**
+     * Creates a collection editor for the items collection.
+     *
+     * @param act   the act
+     * @param items the items collection
+     * @return a new collection editor
+     */
     @Override
-    protected ActRelationshipCollectionEditor createItemsEditor(Act act,
-                                                                CollectionProperty items) {
-        VisitChargeItemRelationshipCollectionEditor result
-                = new VisitChargeItemRelationshipCollectionEditor(items, act, getLayoutContext());
+    protected ActRelationshipCollectionEditor createItemsEditor(Act act, CollectionProperty items) {
+        TestVisitChargeItemRelationshipCollectionEditor result
+                = new TestVisitChargeItemRelationshipCollectionEditor(items, act, getLayoutContext());
         result.setEditorQueue(new DelegatingEditorQueue(this));
         return result;
     }

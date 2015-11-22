@@ -17,6 +17,7 @@
 package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -224,7 +225,7 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
      */
     @Override
     public Collection<IMObjectEditor> getEditors() {
-        Set<IMObjectEditor> editors = new HashSet<IMObjectEditor>();
+        Set<IMObjectEditor> editors = new HashSet<>();
         editors.addAll(getCollectionPropertyEditor().getEditors());
         if (getCurrentEditor() != null) {
             editors.add(getCurrentEditor());
@@ -241,7 +242,7 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
      */
     @Override
     public Collection<IMObject> getCurrentObjects() {
-        Set<IMObject> result = new LinkedHashSet<IMObject>(getCollectionPropertyEditor().getObjects());
+        Set<IMObject> result = new LinkedHashSet<>(getCollectionPropertyEditor().getObjects());
         if (editor != null) {
             result.add(editor.getObject());
         }
@@ -342,14 +343,14 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
     /**
      * Saves any current edits.
      *
-     * @return {@code true} if edits were saved successfully, otherwise {@code false}
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
+    protected void doSave() {
         if (editor != null) {
             addEdited(editor);
         }
-        return super.doSave();
+        super.doSave();
     }
 
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
@@ -33,6 +33,14 @@ public interface IMObjectSaveListener {
      * @param objects the saved objects
      */
     void saved(Collection<? extends IMObject> objects);
+
+    /**
+     * Invoked when an object fails to save.
+     *
+     * @param object    the object
+     * @param exception the error
+     */
+    <T extends IMObject> void error(T object, Throwable exception);
 
     /**
      * Invoked when a collection of objects fail to save.

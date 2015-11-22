@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.otc;
@@ -59,7 +59,7 @@ public class OverTheCounterWorkflowTestCase extends AbstractCustomerChargeActEdi
     /**
      * Tracks errors logged.
      */
-    private List<String> errors = new ArrayList<String>();
+    private List<String> errors = new ArrayList<>();
 
     /**
      * Test context.
@@ -141,9 +141,9 @@ public class OverTheCounterWorkflowTestCase extends AbstractCustomerChargeActEdi
 
     /**
      * Verifies that an error is raised if the charge is posted externally.
-     * <p/>
+     * <p>
      * This could happen if a user goes into the OTC account and posts the charge while the workflow is active.
-     * <p/>
+     * <p>
      * At present, the workflow will terminate with an error, and both the charge and payment will need to be
      * manually cleaned up. TODO
      */
@@ -181,9 +181,9 @@ public class OverTheCounterWorkflowTestCase extends AbstractCustomerChargeActEdi
 
     /**
      * Verifies that an error is raised if the payment is posted externally.
-     * <p/>
+     * <p>
      * This could happen if a user goes into the OTC account and posts the payment while the workflow is active.
-     * <p/>
+     * <p>
      * At present, the workflow will terminate with an error, and both the charge and payment will need to be
      * manually cleaned up. TODO
      */
@@ -321,10 +321,10 @@ public class OverTheCounterWorkflowTestCase extends AbstractCustomerChargeActEdi
 
         TestOTCChargeTask chargeTask = workflow.getChargeTask();
         OTCChargeEditor chargeEditor = workflow.getChargeEditor();
-        addItem(chargeEditor, null, product, ONE, chargeTask.getEditorQueue());
+        addItem(chargeEditor, null, product, ONE, chargeTask.getQueue());
         fireDialogButton(chargeTask.getEditDialog(), PopupDialog.APPLY_ID); // force the charge to save
 
-        FinancialAct charge = (FinancialAct) get(chargeEditor.getObject());
+        FinancialAct charge = get(chargeEditor.getObject());
         assertNotNull(charge);
         checkCharge(charge, otc, author, null, BigDecimal.ZERO, ONE);
         assertEquals(ActStatus.IN_PROGRESS, charge.getStatus());

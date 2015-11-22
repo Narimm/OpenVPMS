@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.customer;
@@ -48,19 +48,17 @@ public class CustomerParticipationEditor extends ParticipationEditor<Party> {
 
 
     /**
-     * Constructs a {@code CustomerParticipationEditor}.
+     * Constructs a {@link CustomerParticipationEditor}.
      *
      * @param participation the object to edit
      * @param parent        the parent object
      * @param layout        the layout context. May be {@code null}
      */
-    public CustomerParticipationEditor(Participation participation,
-                                       Act parent, LayoutContext layout) {
+    public CustomerParticipationEditor(Participation participation, Act parent, LayoutContext layout) {
         super(participation, parent, layout);
         if (!TypeHelper.isA(participation, "participation.customer")) {
-            throw new IllegalArgumentException(
-                "Invalid participation type:"
-                + participation.getArchetypeId().getShortName());
+            throw new IllegalArgumentException("Invalid participation type:"
+                                               + participation.getArchetypeId().getShortName());
         }
         Context context = getLayoutContext().getContext();
         IMObjectReference customerRef = participation.getEntity();

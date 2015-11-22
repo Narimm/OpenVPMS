@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.order;
@@ -33,8 +33,6 @@ import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
 import java.util.List;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the {@link OrderEditor}.
@@ -116,7 +114,7 @@ public class OrderEditorTestCase extends AbstractAppTest {
         DefaultLayoutContext layoutContext = new DefaultLayoutContext(context, new HelpContext("foo", null));
         OrderEditor editor = new OrderEditor(order, null, layoutContext);
         editor.getComponent();
-        assertTrue(editor.save());
+        editor.save();
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.contact;
@@ -35,14 +35,13 @@ import org.openvpms.web.system.ServiceHelper;
 public class LocationEditor extends AbstractIMObjectEditor {
 
     /**
-     * Construct a new <tt>LocationEditor</tt>.
+     * Constructs a {@link LocationEditor}.
      *
      * @param object        the object to edit
-     * @param parent        the parent object. May be <tt>null</tt>
-     * @param layoutContext the layout context. May be <tt>null</tt>.
+     * @param parent        the parent object. May be {@code null}
+     * @param layoutContext the layout context. May be {@code null}.
      */
-    public LocationEditor(IMObject object, IMObject parent,
-                          LayoutContext layoutContext) {
+    public LocationEditor(IMObject object, IMObject parent, LayoutContext layoutContext) {
         super(object, parent, layoutContext);
         final Property suburb = getProperty("suburb");
         suburb.addModifiableListener(new ModifiableListener() {

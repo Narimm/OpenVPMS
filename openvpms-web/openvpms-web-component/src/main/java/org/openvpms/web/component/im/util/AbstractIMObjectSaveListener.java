@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
@@ -53,6 +53,18 @@ public abstract class AbstractIMObjectSaveListener implements IMObjectSaveListen
     }
 
     /**
+     * Displays a save error.
+     *
+     * @param object    the object that failed to save
+     * @param exception the cause
+     */
+    public void error(IMObject object, Throwable exception) {
+        String displayName = DescriptorHelper.getDisplayName(object);
+        String context = Messages.format("imobject.save.failed", object.getObjectReference());
+        error(displayName, context, exception);
+    }
+
+    /**
      * Invoked when a collection of objects fail to save.
      *
      * @param objects   the objects
@@ -72,18 +84,6 @@ public abstract class AbstractIMObjectSaveListener implements IMObjectSaveListen
      */
     protected void onErrorClosed() {
 
-    }
-
-    /**
-     * Displays a save error.
-     *
-     * @param object    the object that failed to save
-     * @param exception the cause
-     */
-    private void error(IMObject object, Throwable exception) {
-        String displayName = DescriptorHelper.getDisplayName(object);
-        String context = Messages.format("imobject.save.failed", object.getObjectReference());
-        error(displayName, context, exception);
     }
 
     /**

@@ -21,6 +21,7 @@ import org.openvpms.archetype.rules.patient.prescription.PrescriptionRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.ActCollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -62,6 +63,11 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
      * The charge context.
      */
     private final ChargeContext chargeContext;
+
+    /**
+     * Listener invoked when {@link #onAdd()} is invoked.
+     */
+    private Runnable listener;
 
     /**
      * The start time node name.
@@ -153,6 +159,44 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     }
 
     /**
+     * Registers a listener that is invoked when the user adds an item.
+     * <p>
+     * Note that this is not invoked for template expansion.
+     *
+     * @param listener the listener to invoke. May be {@code null}
+     */
+    public void setAddItemListener(Runnable listener) {
+        this.listener = listener;
+    }
+
+    /**
+     * Invoked when the "Add" button is pressed. Creates a new instance of the selected archetype, and displays it in
+     * an editor.
+     *
+     * @return the new editor, or {@code null} if one could not be created
+     */
+    @Override
+    protected IMObjectEditor onAdd() {
+        IMObjectEditor editor = add();
+        if (editor != null && listener != null) {
+            EditorQueue queue = getEditorQueue();
+            if (!queue.isComplete()) {
+                queue.queue(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (listener != null) {
+                            listener.run();
+                        }
+                    }
+                });
+            } else {
+                listener.run();
+            }
+        }
+        return editor;
+    }
+
+    /**
      * Initialises an editor.
      *
      * @param editor the editor
@@ -183,16 +227,14 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     /**
      * Saves any current edits.
      *
-     * @return {@code true} if edits were saved successfully, otherwise {@code false}
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
-        boolean result = (prescriptions == null) || prescriptions.save();
-        // Need to save prescriptions first, as invoice item deletion can cause StaleObjectStateExceptions otherwise
-
-        if (result) {
-            result = super.doSave();
+    protected void doSave() {
+        if (prescriptions != null) {
+            prescriptions.save();
         }
-        return result;
+        // Need to save prescriptions first, as invoice item deletion can cause StaleObjectStateExceptions otherwise
+        super.doSave();
     }
 }

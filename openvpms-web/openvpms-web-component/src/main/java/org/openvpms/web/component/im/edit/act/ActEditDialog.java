@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.edit.act;
 import nextapp.echo2.app.Button;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -41,43 +42,51 @@ public class ActEditDialog extends EditDialog {
     private boolean posted;
 
     /**
-     * Constructs an {@code ActEditDialog}.
+     * Monitors act status changes.
+     */
+    private ModifiableListener statusListener;
+
+    /**
+     * Constructs an {@link ActEditDialog}.
      *
      * @param editor  the editor
      * @param context the context
      */
     public ActEditDialog(IMObjectEditor editor, Context context) {
-        super(editor, context);
-        init(editor);
+        this(editor, true, context);
     }
 
     /**
-     * Constructs an {@code ActEditDialog}.
+     * Constructs an {@link ActEditDialog}.
      *
      * @param editor  the editor
      * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
      * @param context the context
      */
     public ActEditDialog(IMObjectEditor editor, boolean save, Context context) {
-        super(editor, save, context);
-        init(editor);
+        this(editor, save, false, context);
     }
 
     /**
-     * Constructs an {@code EditDialog}.
+     * Constructs an {@link ActEditDialog}.
      *
      * @param editor  the editor
-     * @param save    if {@code true}, saves the editor when the 'OK' or
-     *                'Apply' buttons are pressed.
-     * @param skip    if {@code true} display a 'Skip' button that simply
-     *                closes the dialog
+     * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
+     * @param skip    if {@code true} display a 'Skip' button that simply closes the dialog
      * @param context the context
      */
     public ActEditDialog(IMObjectEditor editor, boolean save, boolean skip, Context context) {
-        super(editor, save, skip, context);
-        init(editor);
+        super(editor, getButtons(true, true, skip), save, context);
+    }
 
-        posted = getPosted();
+    /**
+     * Determines if the current object can be saved.
+     *
+     * @return {@code true} if the current object can be saved
+     */
+    @Override
+    protected boolean canSave() {
+        return super.canSave() && (getEditor().getObject().isNew() || !posted);
     }
 
     /**
@@ -92,32 +101,64 @@ public class ActEditDialog extends EditDialog {
     /**
      * Saves the current object.
      *
-     * @return {@code true} if the object was saved
+     * @param editor the editor
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
-        boolean result = super.doSave();
-        if (!posted && result) {
+    protected void doSave(IMObjectEditor editor) {
+        super.doSave(editor);
+        if (!posted) {
             posted = getPosted();
         }
-        return result;
     }
 
     /**
-     * Initialises this.
+     * Sets the editor.
+     * <p>
+     * If there is an existing editor, its selection path will be set on the editor.
+     *
+     * @param editor the editor. May be {@code null}
+     */
+    @Override
+    protected void setEditor(IMObjectEditor editor) {
+        if (editor != null) {
+            if (statusListener != null) {
+                // remove the old listener
+                IMObjectEditor old = getEditor();
+                if (old != null) {
+                    Property status = editor.getProperty("status");
+                    if (status != null) {
+                        status.removeModifiableListener(statusListener);
+                    }
+                }
+                statusListener = null;
+            }
+            final Property status = editor.getProperty("status");
+            if (status != null) {
+                onStatusChanged(status);
+                statusListener = new ModifiableListener() {
+                    public void modified(Modifiable modifiable) {
+                        onStatusChanged(status);
+                    }
+                };
+                status.addModifiableListener(statusListener);
+            }
+        }
+        super.setEditor(editor);
+        posted = getPosted();
+    }
+
+    /**
+     * Invoked to reload the object being edited when save fails.
+     * <p/>
+     * This implementation reloads the editor, but returns {@code false} if the act has been POSTED.
      *
      * @param editor the editor
+     * @return a {@code true} if the editor was reloaded and the act is not now POSTED.
      */
-    private void init(IMObjectEditor editor) {
-        final Property status = editor.getProperty("status");
-        if (status != null) {
-            onStatusChanged(status);
-            status.addModifiableListener(new ModifiableListener() {
-                public void modified(Modifiable modifiable) {
-                    onStatusChanged(status);
-                }
-            });
-        }
+    @Override
+    protected boolean reload(IMObjectEditor editor) {
+        return super.reload(editor) && !getPosted();
     }
 
     /**
@@ -126,10 +167,9 @@ public class ActEditDialog extends EditDialog {
      * @param status the act status property
      */
     private void onStatusChanged(Property status) {
-        String value = (String) status.getValue();
         Button apply = getButtons().getButton(APPLY_ID);
         if (apply != null) {
-            if (ActStatus.POSTED.equals(value)) {
+            if (ActStatus.POSTED.equals(status.getString())) {
                 apply.setEnabled(false);
             } else if (!isSaveDisabled()) {
                 apply.setEnabled(true);
@@ -143,9 +183,12 @@ public class ActEditDialog extends EditDialog {
      * @return {@code true} if the act is posted
      */
     private boolean getPosted() {
-        Act act = (Act) getEditor().getObject();
-        String status = act.getStatus();
-        return ActStatus.POSTED.equals(status);
+        IMObjectEditor editor = getEditor();
+        if (editor != null) {
+            Act act = (Act) editor.getObject();
+            return ActStatus.POSTED.equals(act.getStatus());
+        }
+        return false;
     }
 
 }

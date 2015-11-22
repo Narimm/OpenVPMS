@@ -27,13 +27,14 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.act.ActHelper;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
@@ -50,7 +51,7 @@ import java.util.List;
 
 /**
  * Visit charge editor.
- * <p/>
+ * <p>
  * This displays the total amount and tax amount for the current patient.
  *
  * @author Tim Anderson
@@ -78,7 +79,7 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude("amount", "tax", "printed");
 
     /**
-     * Constructs a {@code VisitChargeActEditor}.
+     * Constructs a {@link VisitChargeEditor}.
      *
      * @param act     the act to edit
      * @param event   the event to link charge items to
@@ -94,7 +95,7 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
      * @param act            the act to edit
      * @param event          the event to link charge items to
      * @param context        the layout context
-     * @param addDefaultItem if{@code true} add a default item if the act has none
+     * @param addDefaultItem if {@code true} add a default item if the act has none
      */
     public VisitChargeEditor(FinancialAct act, Act event, LayoutContext context, boolean addDefaultItem) {
         super(act, null, context, addDefaultItem);
@@ -113,6 +114,17 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
      */
     public Act getEvent() {
         return event;
+    }
+
+    /**
+     * Creates a new instance of the editor, with the latest instance of the object to edit.
+     *
+     * @return a new instance
+     * @throws OpenVPMSException if a new instance cannot be created
+     */
+    @Override
+    public IMObjectEditor newInstance() {
+        return new VisitChargeEditor(reload(getObject()), reload(event), getLayoutContext(), getAddDefaultIem());
     }
 
     /**
@@ -174,19 +186,16 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
 
     /**
      * Save any edits.
-     * <p/>
+     * <p>
      * For invoices, this links items to their corresponding clinical events, creating events as required, and marks
      * matching reminders completed.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
-        boolean result = super.doSave();
-        if (result) {
-            addTemplateNotes();
-        }
-        return result;
+    protected void doSave() {
+        super.doSave();
+        addTemplateNotes();
     }
 
     /**
@@ -197,8 +206,8 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     @Override
     protected void linkToEvents(PatientHistoryChanges changes) {
         List<Act> items = getItems().getPatientActs();
-        event = IMObjectHelper.reload(event); // make sure the most recent instance is being used
-        if (event != null && !items.isEmpty()) {
+        if (!items.isEmpty()) {
+            event = reload(event); // make sure the most recent instance is being used
             changes.addEvent(event);
             ChargeItemEventLinker linker = new ChargeItemEventLinker(ServiceHelper.getArchetypeService());
             linker.prepare(event, items, changes);
@@ -221,10 +230,10 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     private void calculateVisitTotals() {
         VisitChargeItemRelationshipCollectionEditor items = getItems();
         List<Act> acts = items.getCurrentPatientActs();
-        BigDecimal total = ActHelper.sum((Act) getObject(), acts, "total");
+        BigDecimal total = ActHelper.sum(getObject(), acts, "total");
         visitTotal.setValue(total);
 
-        BigDecimal tax = ActHelper.sum((Act) getObject(), acts, "tax");
+        BigDecimal tax = ActHelper.sum(getObject(), acts, "tax");
         visitTax.setValue(tax);
     }
 
@@ -267,7 +276,7 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
 
         /**
          * Creates a component for a property.
-         * <p/>
+         * <p>
          * This makes the status node read-only.
          *
          * @param property the property
