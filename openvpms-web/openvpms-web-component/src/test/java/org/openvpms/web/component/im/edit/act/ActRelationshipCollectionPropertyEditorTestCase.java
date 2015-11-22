@@ -1,29 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-/**
- * Add description here.
- *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
- */
 package org.openvpms.web.component.im.edit.act;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.test.TestHelper;
@@ -48,11 +41,25 @@ import static org.junit.Assert.assertTrue;
 /**
  * {@link ActRelationshipCollectionPropertyEditor} test case.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ActRelationshipCollectionPropertyEditorTestCase
     extends AbstractCollectionPropertyEditorTest {
+
+    /**
+     * The product.
+     */
+    private Product product;
+
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        super.setUp();
+        product = TestHelper.createProduct();
+    }
 
     /**
      * Tests {@link CollectionPropertyEditor#getArchetypeRange()}.
@@ -101,7 +108,7 @@ public class ActRelationshipCollectionPropertyEditorTestCase
         execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
                 assertTrue(SaveHelper.save(parent));
-                assertTrue(editor.save());
+                editor.save();
                 return null;
             }
         });
@@ -111,7 +118,7 @@ public class ActRelationshipCollectionPropertyEditorTestCase
         // now save the parent and child again
         assertTrue(SaveHelper.save(parent));
         editor.add(element); // doesn't add, but marks dirty to enable save
-        assertTrue(editor.save());
+        editor.save();
         assertEquals(1, parent.getVersion());
         assertEquals(1, element.getVersion());
 
@@ -170,7 +177,6 @@ public class ActRelationshipCollectionPropertyEditorTestCase
     protected IMObject createObject(IMObject parent) {
         Act act = (Act) create("act.customerEstimationItem");
 
-        Product product = TestHelper.createProduct();
         Party patient = TestHelper.createPatient(true);
         ActBean bean = new ActBean(act);
         bean.addParticipation("participation.patient", patient);
@@ -179,4 +185,19 @@ public class ActRelationshipCollectionPropertyEditorTestCase
         return act;
     }
 
+    /**
+     * Makes an object valid or invalid.
+     *
+     * @param object the object
+     * @param valid  if {@code true}, make it valid, otherwise make it invalid
+     */
+    @Override
+    protected void makeValid(IMObject object, boolean valid) {
+        ActBean bean = new ActBean((Act) object);
+        if (!valid) {
+            bean.setNodeParticipant("product", (Product) null);
+        } else {
+            bean.setNodeParticipant("product", product);
+        }
+    }
 }

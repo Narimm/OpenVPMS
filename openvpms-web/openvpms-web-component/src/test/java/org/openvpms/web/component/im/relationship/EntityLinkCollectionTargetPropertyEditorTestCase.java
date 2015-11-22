@@ -80,4 +80,16 @@ public class EntityLinkCollectionTargetPropertyEditorTestCase extends AbstractCo
         bean.setValue("roundTo", 2);
         return object;
     }
+
+    /**
+     * Makes an object valid or invalid.
+     *
+     * @param object the object
+     * @param valid  if {@code true}, make it valid, otherwise make it invalid
+     */
+    @Override
+    protected void makeValid(IMObject object, boolean valid) {
+        IMObjectBean bean = new IMObjectBean(object);
+        bean.setValue("minWeight", valid ? BigDecimal.ZERO : null);
+    }
 }

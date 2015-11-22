@@ -192,7 +192,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
      * Creates a new object, subject to a short name being selected, and
      * current collection cardinality. This must be registered with the
      * collection.
-     * <p/>
+     * <p>
      * If an {@link IMObjectCreationListener} is registered, it will be
      * notified on successful creation of an object.
      *
@@ -303,10 +303,10 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Returns the target of a selection.
-     * <p/>
+     * <p>
      * This is to support situations where a selection path from a viewer uses a related object to that used by the
      * editor.
-     * <p/>
+     * <p>
      * This implementation returns {@code object}.
      *
      * @param object the selected object
@@ -397,7 +397,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
         ActionListener addListener = new ActionListener() {
             public void onAction(ActionEvent event) {
-                onNew();
+                onAdd();
             }
         };
         buttons.addButton(ADD_ID, disableShortcut, addListener);
@@ -450,7 +450,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Adds the object being edited to the collection, if it doesn't exist.
-     * <p/>
+     * <p>
      * The object will be selected if visible in the table.
      *
      * @param editor the editor
@@ -478,11 +478,13 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
     }
 
     /**
-     * Invoked when the "New" button is pressed. Creates a new instance of the
-     * selected archetype, and displays it in an editor.
+     * Invoked when the "Add" button is pressed. Creates a new instance of the selected archetype, and displays it in
+     * an editor.
+     *
+     * @return the new editor, or {@code null} if one could not be created
      */
-    protected void onNew() {
-        add();
+    protected IMObjectEditor onAdd() {
+        return add();
     }
 
     /**
@@ -624,7 +626,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Sets the current editor.
-     * <p/>
+     * <p>
      * This registers a listener so that {@link #onCurrentEditorModified()} is invoked when the editor changes.
      * If there is an existing editor, its listener is removed.
      *
@@ -707,7 +709,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Enable/disables the buttons.
-     * <p/>
+     * <p>
      * Note that the delete button is enabled if {@link #getCurrentEditor()} or {@link #getSelected()} return non-null.
      *
      * @param enable if {@code true} enable buttons (subject to criteria), otherwise disable them
@@ -718,9 +720,9 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Enable/disables the buttons.
-     * <p/>
+     * <p>
      * This allows the Add button to be enabled independently of the other buttons.
-     * <p/>
+     * <p>
      * Note that the delete button is enabled if {@link #getCurrentEditor()} or {@link #getSelected()} return non-null.
      *
      * @param enable    if {@code true}, enable buttons (subject to criteria), otherwise disable them
@@ -751,7 +753,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
 
     /**
      * Changes the focus group to that belonging to the specified editor.
-     * <p/>
+     * <p>
      * The focus is moved to the default focus component for the editor.
      *
      * @param editor the editor

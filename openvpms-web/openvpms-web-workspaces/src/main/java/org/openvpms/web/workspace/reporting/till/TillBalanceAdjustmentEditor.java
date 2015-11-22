@@ -17,13 +17,14 @@
 package org.openvpms.web.workspace.reporting.till;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Validator;
 
 /**
  * An editor for <em>act.tillBalanceAdjustment</em> acts.
- * <p/>
+ * <p>
  * This links the act to the <em>act.tillBalance</em> supplied at construction.
  *
  * @author Tim Anderson
@@ -60,20 +61,15 @@ public class TillBalanceAdjustmentEditor extends AbstractActEditor {
 
     /**
      * Save any edits.
-     * <p/>
+     * <p>
      * This links the adjustment to the <em>act.tillBalance</em> and forces a recalculation, if one is present.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
-        boolean result = updater.prepare();
-        if (result) {
-            result = super.doSave();
-            if (result) {
-                updater.commit();
-            }
-        }
-        return result;
+    protected void doSave() {
+        updater.prepare();
+        super.doSave();
+        updater.commit();
     }
 }

@@ -50,6 +50,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -62,7 +63,7 @@ import org.openvpms.web.resource.i18n.format.NumberFormatter;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.charge.TestLaboratoryOrderService.LabOrder;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
@@ -265,13 +266,13 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             assertTrue(itemTotal.compareTo(total) == 0);
 
             if (j == 0) {
-                editor.delete((Act) itemEditor1.getObject());
+                editor.delete(itemEditor1.getObject());
                 total = total.subtract(itemTotal1);
             } else if (j == 1) {
-                editor.delete((Act) itemEditor2.getObject());
+                editor.delete(itemEditor2.getObject());
                 total = total.subtract(itemTotal2);
             } else if (j == 2) {
-                editor.delete((Act) itemEditor3.getObject());
+                editor.delete(itemEditor3.getObject());
                 total = total.subtract(itemTotal3);
             }
             ++j;
@@ -319,13 +320,13 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             editor.getComponent();
 
             if (j == 0) {
-                editor.delete((Act) itemEditor1.getObject());
+                editor.delete(itemEditor1.getObject());
                 total = total.subtract(itemTotal1);
             } else if (j == 1) {
-                editor.delete((Act) itemEditor2.getObject());
+                editor.delete(itemEditor2.getObject());
                 total = total.subtract(itemTotal2);
             } else if (j == 2) {
-                editor.delete((Act) itemEditor3.getObject());
+                editor.delete(itemEditor3.getObject());
                 total = total.subtract(itemTotal3);
             }
             ++j;
@@ -365,13 +366,13 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             CustomerChargeActItemEditor itemEditor3 = addItem(editor, patient, product3, quantity, queue);
 
             if (j == 0) {
-                editor.delete((Act) itemEditor1.getObject());
+                editor.delete(itemEditor1.getObject());
                 total = total.subtract(itemTotal1);
             } else if (j == 1) {
-                editor.delete((Act) itemEditor2.getObject());
+                editor.delete(itemEditor2.getObject());
                 total = total.subtract(itemTotal2);
             } else if (j == 2) {
-                editor.delete((Act) itemEditor3.getObject());
+                editor.delete(itemEditor3.getObject());
                 total = total.subtract(itemTotal3);
             }
             ++j;
@@ -436,7 +437,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
 
     /**
      * Verifies that the {@link CustomerChargeActEditor#delete()} method deletes an invoice and its item.
-     * <p/>
+     * <p>
      * If any pharmacy or lab orders have been created, these are cancelled.
      */
     @Test
@@ -704,7 +705,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         assertTrue(SaveHelper.save(editor));
 
         checkPrescription(prescription, itemEditor1);
-        editor.removeItem((Act) itemEditor1.getObject());
+        editor.removeItem(itemEditor1.getObject());
         assertTrue(SaveHelper.save(editor));
 
         prescription = get(prescription);
@@ -850,7 +851,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         assertTrue(editor.isValid());
 
         CustomerChargeActItemEditor itemEditor = addItem(editor, patient, product, TEN, queue);
-        Act item = (Act) itemEditor.getObject();
+        Act item = itemEditor.getObject();
         assertTrue(SaveHelper.save(editor));
 
         List<Order> orders = editor.getPharmacyOrderService().getOrders(true);
@@ -884,8 +885,8 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         editor.getComponent();
         assertTrue(editor.isValid());
 
-        Act item1 = (Act) addItem(editor, patient, product1, TEN, queue).getObject();
-        Act item2 = (Act) addItem(editor, patient, product2, ONE, queue).getObject();
+        Act item1 = addItem(editor, patient, product1, TEN, queue).getObject();
+        Act item2 = addItem(editor, patient, product2, ONE, queue).getObject();
         assertTrue(SaveHelper.save(editor));
 
         List<Order> orders = editor.getPharmacyOrderService().getOrders(true);
@@ -922,7 +923,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         editor.getComponent();
         assertTrue(editor.isValid());
 
-        Act item1 = (Act) addItem(editor, patient, product1, TEN, queue).getObject();
+        Act item1 = addItem(editor, patient, product1, TEN, queue).getObject();
         addItem(editor, patient, product2, ONE, queue).getObject();
         assertTrue(SaveHelper.save(editor));
 
@@ -1024,7 +1025,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         CustomerChargeActItemEditor itemEditor = addItem(editor, patient, product1, BigDecimal.ONE, queue);
         assertTrue(SaveHelper.save(editor));
 
-        Act reminder = getReminder((Act) itemEditor.getObject(), reminderType);
+        Act reminder = getReminder(itemEditor.getObject(), reminderType);
         existing = get(existing);
         reminder = get(reminder);
 
@@ -1054,7 +1055,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         CustomerChargeActItemEditor itemEditor = addItem(editor, patient, product1, BigDecimal.ONE, queue);
         assertTrue(SaveHelper.save(editor));
 
-        Act reminder = getReminder((Act) itemEditor.getObject(), reminderType1);
+        Act reminder = getReminder(itemEditor.getObject(), reminderType1);
         assertEquals(ActStatus.IN_PROGRESS, reminder.getStatus());
 
         itemEditor.setProduct(product2);
@@ -1089,7 +1090,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         CustomerChargeActItemEditor itemEditor = addItem(editor, patient, product1, BigDecimal.ONE, queue);
         assertTrue(SaveHelper.save(editor));
 
-        Act reminder1 = getReminder((Act) itemEditor.getObject(), reminderType1);
+        Act reminder1 = getReminder(itemEditor.getObject(), reminderType1);
         assertEquals(ActStatus.IN_PROGRESS, reminder1.getStatus());
 
         // change to a product with no reminder
@@ -1104,8 +1105,20 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
 
         // make sure reminder1 has been deleted, and reminder2 is IN_PROGRESS
         assertNull(get(reminder1));
-        Act reminder2 = getReminder((Act) itemEditor.getObject(), reminderType1);
+        Act reminder2 = getReminder(itemEditor.getObject(), reminderType1);
         assertEquals(ActStatus.IN_PROGRESS, reminder2.getStatus());
+    }
+
+    /**
+     * Tests the {@link CustomerChargeActEditor#newInstance()} method.
+     */
+    @Test
+    public void testNewInstance() {
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+
+        CustomerChargeActEditor editor = new CustomerChargeActEditor(charge, null, layoutContext);
+        IMObjectEditor newInstance = editor.newInstance();
+        assertTrue(newInstance instanceof CustomerChargeActEditor);
     }
 
     /**
@@ -1172,7 +1185,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         // add items for product1 and product2, but delete product1 item before save
         CustomerChargeActItemEditor itemEditor1 = addItem(editor, patient, product1, ONE, queue);
         addItem(editor, patient, product2, ONE, queue);
-        editor.removeItem((Act) itemEditor1.getObject());
+        editor.removeItem(itemEditor1.getObject());
         assertTrue(editor.isValid());
         assertTrue(SaveHelper.save(editor));
 
@@ -1239,11 +1252,11 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext);
         editor.getComponent();
         assertTrue(editor.isValid());
-        assertTrue(editor.save());
+        editor.save();
         checkBalance(customer, ZERO, ZERO);
 
         editor.setStatus(ActStatus.POSTED);
-        assertTrue(editor.save());
+        editor.save();
         checkBalance(customer, ZERO, ZERO);
     }
 
@@ -1297,16 +1310,16 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         assertTrue(editor.isValid());
 
         BigDecimal quantity = ONE;
-        Act item1 = (Act) addItem(editor, patient, product1, quantity, queue).getObject();
-        Act item2 = (Act) addItem(editor, patient, product2, quantity, queue).getObject();
-        Act item3 = (Act) addItem(editor, patient, product3, quantity, queue).getObject();
+        Act item1 = addItem(editor, patient, product1, quantity, queue).getObject();
+        Act item2 = addItem(editor, patient, product2, quantity, queue).getObject();
+        Act item3 = addItem(editor, patient, product3, quantity, queue).getObject();
 
         assertTrue(editor.isValid());
         assertTrue(SaveHelper.save(editor));
         BigDecimal balance = (charge.isCredit()) ? total.negate() : total;
         checkBalance(customer, balance, ZERO);
         editor.setStatus(ActStatus.POSTED);
-        assertTrue(editor.save());
+        editor.save();
         checkBalance(customer, ZERO, balance);
 
         if (invoice) {
@@ -1581,7 +1594,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         prescription = get(prescription);
         assertNotNull(prescription);
         ActBean prescriptionBean = new ActBean(prescription);
-        Act item = (Act) itemEditor.getObject();
+        Act item = itemEditor.getObject();
         ActBean bean = new ActBean(item);
         List<Act> dispensing = bean.getNodeActs("dispensing");
         assertEquals(1, dispensing.size());
@@ -1596,12 +1609,20 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      * @return {@code true} if the delete was successful
      */
     private boolean delete(final CustomerChargeActEditor editor) {
-        TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
-        return template.execute(new TransactionCallback<Boolean>() {
-            public Boolean doInTransaction(TransactionStatus status) {
-                return editor.delete();
-            }
-        });
+        boolean result = false;
+        try {
+            TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
+            template.execute(new TransactionCallbackWithoutResult() {
+                @Override
+                protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                    editor.delete();
+                }
+            });
+            result = true;
+        } catch (Throwable exception) {
+            logger.error(exception, exception);
+        }
+        return result;
     }
 
     /**

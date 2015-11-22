@@ -20,7 +20,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
-import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
@@ -64,6 +63,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.web.workspace.customer.order.PharmacyTestHelper.createOrder;
+import static org.openvpms.web.workspace.customer.order.PharmacyTestHelper.createReturn;
 
 /**
  * Tests the {@link PharmacyOrderInvoicer}.
@@ -160,7 +161,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
 
     /**
      * Tests charging an order that isn't linked to an existing invoice.
-     * <p/>
+     * <p>
      * This should create a new invoice.
      */
     @Test
@@ -179,7 +180,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         TestChargeEditor editor = (TestChargeEditor) dialog.getEditor();
         CustomerChargeTestHelper.checkSavePopup(editor.getQueue(), PatientArchetypes.PATIENT_MEDICATION, false);
         assertTrue(SaveHelper.save(editor));
-        FinancialAct charge = (FinancialAct) get(editor.getObject());
+        FinancialAct charge = get(editor.getObject());
         assertTrue(TypeHelper.isA(charge, CustomerAccountArchetypes.INVOICE));
         checkItem(charge, patient, product, quantity, unitPrice, fixedPrice, tax, total, quantity, null);
         checkCharge(charge, customer, author, clinician, tax, total);
@@ -187,7 +188,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
 
     /**
      * Tests charging a return that isn't linked to an existing invoice.
-     * <p/>
+     * <p>
      * This should create a Credit.
      */
     @Test
@@ -205,7 +206,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         CustomerChargeActEditDialog dialog = charger.charge(null, null, layoutContext);
         TestChargeEditor editor = (TestChargeEditor) dialog.getEditor();
         assertTrue(SaveHelper.save(editor));
-        FinancialAct charge = (FinancialAct) get(editor.getObject());
+        FinancialAct charge = get(editor.getObject());
         assertTrue(TypeHelper.isA(charge, CustomerAccountArchetypes.CREDIT));
         checkItem(charge, patient, product, quantity, unitPrice, fixedPrice, tax, total, null, null);
         checkCharge(charge, customer, author, clinician, tax, total);
@@ -213,7 +214,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
 
     /**
      * Tests charging an order that is linked to an existing IN_PROGRESS invoice.
-     * <p/>
+     * <p>
      * The invoice quantity should remain the same, and the receivedQuantity updated.
      */
     @Test
@@ -225,7 +226,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         editor1.setStatus(ActStatus.IN_PROGRESS);
         assertTrue(SaveHelper.save(editor1));
 
-        FinancialAct invoice = (FinancialAct) editor1.getObject();
+        FinancialAct invoice = editor1.getObject();
         FinancialAct invoiceItem = getInvoiceItem(editor1);
 
         FinancialAct order = createOrder(customer, patient, product, quantity, invoiceItem);
@@ -238,7 +239,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         CustomerChargeActEditDialog dialog = charger.charge(invoice, null, layoutContext);
         TestChargeEditor editor2 = (TestChargeEditor) dialog.getEditor();
         assertTrue(SaveHelper.save(editor2));
-        FinancialAct charge = (FinancialAct) get(editor2.getObject());
+        FinancialAct charge = get(editor2.getObject());
         assertEquals(invoice, charge);
         checkItem(charge, patient, product, quantity, unitPrice, fixedPrice, tax, total, quantity, null);
         checkCharge(charge, customer, author, clinician, tax, total);
@@ -247,7 +248,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
     /**
      * Tests charging an order that is linked to an existing IN_PROGRESS invoice, with a greater quantity than that
      * invoiced.
-     * <p/>
+     * <p>
      * The invoice quantity should be updated.
      */
     @Test
@@ -262,7 +263,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         editor1.setStatus(ActStatus.IN_PROGRESS);
         assertTrue(SaveHelper.save(editor1));
 
-        FinancialAct invoice = (FinancialAct) editor1.getObject();
+        FinancialAct invoice = editor1.getObject();
         FinancialAct invoiceItem = getInvoiceItem(editor1);
 
         FinancialAct order = createOrder(customer, patient, product, newQty, invoiceItem);
@@ -275,7 +276,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         CustomerChargeActEditDialog dialog = charger.charge(invoice, null, layoutContext);
         TestChargeEditor editor2 = (TestChargeEditor) dialog.getEditor();
         assertTrue(SaveHelper.save(editor2));
-        FinancialAct charge = (FinancialAct) get(editor2.getObject());
+        FinancialAct charge = get(editor2.getObject());
         assertEquals(invoice, charge);
         checkItem(charge, patient, product, newQty, unitPrice, fixedPrice, newTax, newTotal, newQty, null);
         checkCharge(charge, customer, author, clinician, newTax, newTotal);
@@ -284,7 +285,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
     /**
      * Tests charging an order that is linked to an existing POSTED invoice, with a greater quantity than that
      * invoiced.
-     * <p/>
+     * <p>
      * A new invoice should be created with the difference between that invoiced and that ordered.
      */
     @Test
@@ -300,7 +301,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         editor1.setStatus(ActStatus.POSTED);
         assertTrue(SaveHelper.save(editor1));
 
-        FinancialAct invoice = (FinancialAct) editor1.getObject();
+        FinancialAct invoice = editor1.getObject();
         FinancialAct invoiceItem = getInvoiceItem(editor1);
 
         FinancialAct order = createOrder(customer, patient, product, newOrderQty, invoiceItem);
@@ -315,7 +316,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         CustomerChargeTestHelper.checkSavePopup(editor.getQueue(), PatientArchetypes.PATIENT_MEDICATION, false);
         TestChargeEditor editor2 = (TestChargeEditor) dialog.getEditor();
         assertTrue(SaveHelper.save(editor2));
-        FinancialAct charge = (FinancialAct) get(editor2.getObject());
+        FinancialAct charge = get(editor2.getObject());
         assertNotEquals(invoice, charge);
 
         // NOTE: item tax not rounded.
@@ -327,7 +328,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
     /**
      * Tests charging an order that is linked to an existing IN_PROGRESS invoice, with a lesser quantity than that
      * invoiced.
-     * <p/>
+     * <p>
      * The invoice quantity should be updated.
      */
     @Test
@@ -342,7 +343,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         editor1.setStatus(ActStatus.IN_PROGRESS);
         assertTrue(SaveHelper.save(editor1));
 
-        FinancialAct invoice = (FinancialAct) editor1.getObject();
+        FinancialAct invoice = editor1.getObject();
         FinancialAct invoiceItem = getInvoiceItem(editor1);
 
         FinancialAct order = createOrder(customer, patient, product, newQty, invoiceItem);
@@ -355,7 +356,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         CustomerChargeActEditDialog dialog = charger.charge(invoice, null, layoutContext);
         TestChargeEditor editor2 = (TestChargeEditor) dialog.getEditor();
         assertTrue(SaveHelper.save(editor2));
-        FinancialAct charge = (FinancialAct) get(editor2.getObject());
+        FinancialAct charge = get(editor2.getObject());
         assertTrue(TypeHelper.isA(charge, CustomerAccountArchetypes.INVOICE));
 
         // NOTE: item tax not rounded.
@@ -366,7 +367,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
 
     /**
      * Tests charging an order that is linked to an existing POSTED invoice, with a lesser quantity than that invoiced.
-     * <p/>
+     * <p>
      * A new credit should be created with the difference between that invoiced and that ordered.
      */
     @Test
@@ -392,7 +393,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         CustomerChargeActEditDialog dialog = charger.charge(null, null, layoutContext);
         TestChargeEditor editor2 = (TestChargeEditor) dialog.getEditor();
         assertTrue(SaveHelper.save(editor2));
-        FinancialAct charge = (FinancialAct) get(editor2.getObject());
+        FinancialAct charge = get(editor2.getObject());
         assertTrue(TypeHelper.isA(charge, CustomerAccountArchetypes.CREDIT));
 
         // NOTE: item tax not rounded.
@@ -414,7 +415,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         editor.setStatus(ActStatus.IN_PROGRESS);
         assertTrue(SaveHelper.save(editor));
 
-        FinancialAct invoice = (FinancialAct) editor.getObject();
+        FinancialAct invoice = editor.getObject();
         FinancialAct invoiceItem = getInvoiceItem(editor);
 
         // charge two orders
@@ -435,7 +436,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
 
     /**
      * Tests applying an order and return for the same quantity to an IN_PROGRESS invoice.
-     * <p/>
+     * <p>
      * This will set the invoice quantity to 0.
      */
     @Test
@@ -444,7 +445,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         editor.setStatus(ActStatus.IN_PROGRESS);
         assertTrue(SaveHelper.save(editor));
 
-        FinancialAct invoice = (FinancialAct) editor.getObject();
+        FinancialAct invoice = editor.getObject();
         FinancialAct invoiceItem = getInvoiceItem(editor);
 
         FinancialAct order = createOrder(customer, patient, product, ONE, invoiceItem);
@@ -494,7 +495,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         CustomerChargeActEditDialog dialog = charger2.charge(null, null, layoutContext);
         TestChargeEditor editor2 = (TestChargeEditor) dialog.getEditor();
         assertTrue(SaveHelper.save(editor2));
-        FinancialAct charge = (FinancialAct) get(editor2.getObject());
+        FinancialAct charge = get(editor2.getObject());
         assertTrue(TypeHelper.isA(charge, CustomerAccountArchetypes.CREDIT));
         checkItem(charge, patient, product, quantity, unitPrice, fixedPrice, tax, total, null, null);
         checkCharge(charge, customer, author, clinician, tax, total);
@@ -576,7 +577,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
 
     /**
      * Verifies that a validation error is raised if a required field is missing.
-     * <p/>
+     * <p>
      * Validation cannot occur using the archetype as as the delivery processor must be able to save incomplete/invalid
      * orders and returns.
      *
@@ -619,74 +620,6 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         TestChargeEditor editor = new TestChargeEditor(charge, layoutContext, false);
         editor.getComponent();
         return editor;
-    }
-
-    /**
-     * Creates a pharmacy order.
-     *
-     * @param customer    the customer. May be {@code null}
-     * @param patient     the patient. May be {@code null}
-     * @param product     the product. May be {@code null}
-     * @param quantity    the order quantity
-     * @param invoiceItem the related invoice item. May be {@code null}
-     * @return a new order
-     */
-    private FinancialAct createOrder(Party customer, Party patient, Product product, BigDecimal quantity,
-                                     FinancialAct invoiceItem) {
-        return createOrderReturn(true, customer, patient, product, quantity, invoiceItem);
-    }
-
-    /**
-     * Creates a pharmacy return.
-     *
-     * @param customer    the customer. May be {@code null}
-     * @param patient     the patient. May be {@code null}
-     * @param product     the product. May be {@code null}
-     * @param quantity    the order quantity
-     * @param invoiceItem the related invoice item. May be {@code null}
-     * @return a new return
-     */
-    private FinancialAct createReturn(Party customer, Party patient, Product product, BigDecimal quantity,
-                                      FinancialAct invoiceItem) {
-        return createOrderReturn(false, customer, patient, product, quantity, invoiceItem);
-    }
-
-    /**
-     * Creates a pharmacy order/return.
-     *
-     * @param isOrder     if {@code true}, create an order, else create a return
-     * @param customer    the customer. May be {@code null}
-     * @param patient     the patient. May be {@code null}
-     * @param product     the product. May be {@code null}
-     * @param quantity    the order quantity
-     * @param invoiceItem the related invoice item. May be {@code null}
-     * @return a new order
-     */
-    private FinancialAct createOrderReturn(boolean isOrder, Party customer, Party patient, Product product,
-                                           BigDecimal quantity, FinancialAct invoiceItem) {
-        FinancialAct act = (FinancialAct) create(isOrder ? OrderArchetypes.PHARMACY_ORDER
-                                                         : OrderArchetypes.PHARMACY_RETURN);
-        FinancialAct item = (FinancialAct) create(isOrder ? OrderArchetypes.PHARMACY_ORDER_ITEM
-                                                          : OrderArchetypes.PHARMACY_RETURN_ITEM);
-        ActBean bean = new ActBean(act);
-        if (customer != null) {
-            bean.addNodeParticipation("customer", customer);
-        }
-        bean.addNodeRelationship("items", item);
-
-        ActBean itemBean = new ActBean(item);
-        if (patient != null) {
-            itemBean.addNodeParticipation("patient", patient);
-        }
-        if (product != null) {
-            itemBean.addNodeParticipation("product", product);
-        }
-        if (invoiceItem != null) {
-            itemBean.setValue("sourceInvoiceItem", invoiceItem.getObjectReference());
-        }
-        item.setQuantity(quantity);
-        save(act, item);
-        return act;
     }
 
     /**

@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.ErrorListener;
@@ -114,9 +115,9 @@ public abstract class DelegatingCollectionEditor implements EditableIMObjectColl
 
     /**
      * Creates a new object.
-     * <p/>
+     * <p>
      * The object is not automatically added to the collection.
-     * <p/>
+     * <p>
      * If an {@link IMObjectCreationListener} is registered, it will be
      * notified on successful creation of an object.
      *
@@ -263,10 +264,10 @@ public abstract class DelegatingCollectionEditor implements EditableIMObjectColl
     /**
      * Save any edits.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
-    public boolean save() {
-        return editor.save();
+    public void save() {
+        editor.save();
     }
 
     /**
@@ -291,7 +292,7 @@ public abstract class DelegatingCollectionEditor implements EditableIMObjectColl
      * Returns the focus group.
      *
      * @return the focus group, or {@code null} if the editor hasn't been
-     *         rendered
+     * rendered
      */
     public FocusGroup getFocusGroup() {
         return editor.getFocusGroup();
@@ -327,7 +328,7 @@ public abstract class DelegatingCollectionEditor implements EditableIMObjectColl
 
     /**
      * Returns editors for items in the collection.
-     * <p/>
+     * <p>
      * These include any editors that have been created for objects in the
      * collection, and the current editor, which may be for an uncommitted object.
      *
@@ -340,7 +341,7 @@ public abstract class DelegatingCollectionEditor implements EditableIMObjectColl
 
     /**
      * Returns the objects in the collection.
-     * <p/>
+     * <p>
      * This includes the object of the current editor, which may be uncommitted.
      *
      * @return the objects

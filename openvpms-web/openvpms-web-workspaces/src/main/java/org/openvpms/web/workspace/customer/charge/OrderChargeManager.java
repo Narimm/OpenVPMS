@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.customer.charge;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.message.InformationMessage;
@@ -150,10 +151,10 @@ public class OrderChargeManager {
     /**
      * Saves any charged orders.
      *
-     * @return {@code true} if the orders were successfully saved
+     * @throws OpenVPMSException for any error
      */
-    public boolean save() {
-        return charger.save();
+    public void save() {
+        charger.save();
     }
 
     /**

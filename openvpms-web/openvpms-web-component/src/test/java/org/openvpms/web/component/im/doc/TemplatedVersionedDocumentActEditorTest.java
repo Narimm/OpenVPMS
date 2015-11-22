@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -62,8 +62,7 @@ public abstract class TemplatedVersionedDocumentActEditorTest extends VersionedD
         assertEquals("blank.pdf", doc.getName());
 
         // now delete the act and verify both it and the document were deleted
-        boolean result = delete(editor);
-        assertTrue(result);
+        delete(editor);
         assertNull(get(act));
         assertNull(get(docRef));
     }
@@ -101,8 +100,7 @@ public abstract class TemplatedVersionedDocumentActEditorTest extends VersionedD
         assertEquals(docRef1, version1.getDocument());
 
         // now delete the act and verify both it and the document were deleted
-        boolean result = delete(editor);
-        assertTrue(result);
+        delete(editor);
         assertNull(get(act));
         assertNull(get(version1));
         assertNull(get(docRef1));

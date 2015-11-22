@@ -48,8 +48,7 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.DoseManager;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -187,7 +186,7 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
 
     /**
      * Tests a product with a 10% discount where discounts are disabled at the practice location.
-     * <p/>
+     * <p>
      * The calculated discount should be zero.
      */
     @Test
@@ -445,10 +444,10 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
      * @param editor   the charge item editor
      */
     private void checkSave(final Act estimate, final EstimateItemEditor editor) {
-        TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
-        boolean saved = template.execute(new TransactionCallback<Boolean>() {
-            public Boolean doInTransaction(TransactionStatus status) {
-                return SaveHelper.save(estimate) && editor.save();
+        boolean saved = SaveHelper.save(editor, new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                ServiceHelper.getArchetypeService().save(estimate);
             }
         });
         assertTrue(saved);

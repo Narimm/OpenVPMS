@@ -21,10 +21,11 @@ import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -130,10 +131,11 @@ public class EntityLinkCollectionTargetPropertyEditor extends RelationshipCollec
      * <p>
      * For entity links, the parent must first be saved, otherwise constraint violations will occur.
      *
-     * @return {@code true} if they were removed
+     * @throws OpenVPMSException if the remove fails
      */
     @Override
-    protected boolean remove() {
-        return SaveHelper.save(getParent()) && super.remove();
+    protected void remove() {
+        ServiceHelper.getArchetypeService().save(getParent());
+        super.remove();
     }
 }

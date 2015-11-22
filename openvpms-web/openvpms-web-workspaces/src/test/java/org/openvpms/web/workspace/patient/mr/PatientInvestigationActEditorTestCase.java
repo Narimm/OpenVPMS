@@ -66,7 +66,7 @@ public class PatientInvestigationActEditorTestCase extends VersionedDocumentActE
         editor.setProduct(product);
         editor.setAuthor(TestHelper.createUser());
         editor.setLocation(TestHelper.createLocation());
-        assertTrue(editor.save());
+        editor.save();
 
         EntityBean productBean = new EntityBean(product);
         productBean.removeRelationship(productBean.getRelationship(type));
@@ -75,7 +75,7 @@ public class PatientInvestigationActEditorTestCase extends VersionedDocumentActE
         editor = createInvestigationEditor(act);
         editor.getProperty("description").setValue("Some notes to flag the editor as modified");
         assertTrue(editor.isModified());
-        assertTrue(editor.save());
+        editor.save();
     }
 
     /**

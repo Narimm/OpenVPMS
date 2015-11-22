@@ -160,29 +160,26 @@ public abstract class PriceActItemEditor extends ActItemEditor {
 
     /**
      * Save any edits.
-     * <p/>
+     * <p>
      * This implementation saves the current object before children, to ensure deletion of child acts
      * don't result in StaleObjectStateException exceptions.
-     * <p/>
+     * <p>
      * This implementation will throw an exception if the product is an <em>product.template</em>.
      * Ideally, the act would be flagged invalid if this is the case, but template expansion only works for valid
      * acts. TODO
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException     if the save fails
      * @throws IllegalStateException if the product is a template
      */
     @Override
-    protected boolean doSave() {
+    protected void doSave() {
         if (TypeHelper.isA(getProductRef(), ProductArchetypes.TEMPLATE)) {
             Product product = getProduct();
             String name = product != null ? product.getName() : null;
             throw new IllegalStateException("Cannot save with product template: " + name);
         }
-        boolean saved = saveObject();
-        if (saved) {
-            saved = saveChildren();
-        }
-        return saved;
+        saveObject();
+        saveChildren();
     }
 
     /**
@@ -324,7 +321,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
 
     /**
      * Calculates the discount amount, updating the 'discount' node.
-     * <p/>
+     * <p>
      * If discounts are disabled, any existing discount will be set to {@code 0}.
      *
      * @return {@code true} if the discount was updated
@@ -450,7 +447,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
 
     /**
      * Returns the price of a product.
-     * <p/>
+     * <p>
      * This:
      * <ul>
      * <li>applies any service ratio to the price</li>

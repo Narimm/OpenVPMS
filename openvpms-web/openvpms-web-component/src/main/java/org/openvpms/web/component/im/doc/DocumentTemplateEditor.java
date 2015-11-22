@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -75,8 +75,7 @@ public class DocumentTemplateEditor extends AbstractIMObjectEditor {
                 }
             });
 
-            // get the participation editor to delete the associated act
-            // when the template is deleted
+            // get the participation editor to delete the associated act when the template is deleted
             ((DocumentParticipationEditor) participationEditor).setDeleteAct(true);
         }
     }
@@ -88,9 +87,8 @@ public class DocumentTemplateEditor extends AbstractIMObjectEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new DocumentTemplateLayoutStrategy(
-                participationEditor.getComponent(),
-                participationEditor.getFocusGroup());
+        return new DocumentTemplateLayoutStrategy(participationEditor.getComponent(),
+                                                  participationEditor.getFocusGroup());
     }
 
     /**
@@ -99,8 +97,7 @@ public class DocumentTemplateEditor extends AbstractIMObjectEditor {
      */
     private void onNameUpdated() {
         String name = (String) getProperty("name").getValue();
-        DocumentParticipationEditor editor
-                = ((DocumentParticipationEditor) participationEditor);
+        DocumentParticipationEditor editor = ((DocumentParticipationEditor) participationEditor);
         editor.setDescription(name);
     }
 }

@@ -38,6 +38,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.hl7.laboratory.Laboratories;
 import org.openvpms.hl7.laboratory.LaboratoryOrderService;
 import org.openvpms.hl7.patient.PatientContextFactory;
@@ -75,7 +76,7 @@ import java.util.Set;
  *
  * @author Tim Anderson
  */
-public class AbstractCustomerChargeActEditor extends FinancialActEditor {
+public abstract class AbstractCustomerChargeActEditor extends FinancialActEditor {
 
     /**
      * Determines if a default item should added if no items are present.
@@ -134,6 +135,20 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
             orderPlacer = createOrderPlacer(customer, location, context.getContext().getUser());
             List<Act> acts = getOrderActs();
             orderPlacer.initialise(acts);
+        }
+    }
+
+    /**
+     * Registers a listener that is invoked when the user adds an item.
+     * <p/>
+     * Note that this is not invoked for template expansion.
+     *
+     * @param listener the listener to invoke. May be {@code null}
+     */
+    public void setAddItemListener(Runnable listener) {
+        ActRelationshipCollectionEditor items = getItems();
+        if (items instanceof ChargeItemRelationshipCollectionEditor) {
+            ((ChargeItemRelationshipCollectionEditor) items).setAddItemListener(listener);
         }
     }
 
@@ -230,7 +245,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
         if (customerNotes == null) {
             CollectionProperty notes = (CollectionProperty) getProperty("customerNotes");
             if (notes != null && !notes.isHidden()) {
-                customerNotes = createCustomerNotesEditor((Act) getObject(), notes);
+                customerNotes = createCustomerNotesEditor(getObject(), notes);
                 getEditors().add(customerNotes);
             }
         }
@@ -246,7 +261,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
         if (documents == null) {
             CollectionProperty notes = (CollectionProperty) getProperty("documents");
             if (notes != null && !notes.isHidden()) {
-                documents = createDocumentsEditor((Act) getObject(), notes);
+                documents = createDocumentsEditor(getObject(), notes);
                 getEditors().add(documents);
             }
         }
@@ -300,7 +315,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
 
     /**
      * Flags an invoice item as being ordered via a pharmacy/laboratory.
-     * <p/>
+     * <p>
      * This suppresses it from being ordered again when the invoice is saved and updates the display.
      *
      * @param item the invoice item
@@ -357,17 +372,16 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
 
     /**
      * Save any edits.
-     * <p/>
+     * <p>
      * For invoices, this links items to their corresponding clinical events, creating events as required, and marks
      * matching reminders completed.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
+    protected void doSave() {
         List<Act> reminders = getNewReminders();
         ChargeContext chargeContext = null;
-        boolean saved;
         try {
             PatientHistoryChanges changes = null;
 
@@ -380,46 +394,44 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                 chargeContext.setHistoryChanges(changes);
             }
 
-            saved = super.doSave();
-            if (saved) {
-                boolean invoice = TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE);
-                if (changes != null && invoice) {
-                    // link the items to their corresponding clinical events
-                    linkToEvents(changes);
-                    if (ActStatus.POSTED.equals(getStatus())) {
-                        changes.complete(new Date());
-                    }
+            super.doSave();
+            boolean invoice = TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE);
+            if (changes != null && invoice) {
+                // link the items to their corresponding clinical events
+                linkToEvents(changes);
+                if (ActStatus.POSTED.equals(getStatus())) {
+                    changes.complete(new Date());
                 }
-                if (chargeContext != null) {
-                    chargeContext.save();
-                }
+            }
+            if (chargeContext != null) {
+                chargeContext.save();
+            }
 
-                // mark reminders that match the new reminders completed
-                if (!reminders.isEmpty()) {
-                    ReminderRules rules = ServiceHelper.getBean(ReminderRules.class);
-                    rules.markMatchingRemindersCompleted(reminders);
-                }
+            // mark reminders that match the new reminders completed
+            if (!reminders.isEmpty()) {
+                ReminderRules rules = ServiceHelper.getBean(ReminderRules.class);
+                rules.markMatchingRemindersCompleted(reminders);
+            }
 
-                if (invoice) {
-                    Set<Act> updated = orderPlacer.order(getOrderActs(), changes);
-                    if (!updated.isEmpty()) {
-                        // need to save the items again. This time do it skipping rules
-                        ServiceHelper.getArchetypeService(false).save(updated);
+            if (invoice) {
+                Set<Act> updated = orderPlacer.order(getOrderActs(), changes);
+                if (!updated.isEmpty()) {
+                    // need to save the items again. This time do it skipping rules
+                    ServiceHelper.getArchetypeService(false).save(updated);
 
-                        // notify the editors that orders have been placed
-                        for (Act item : updated) {
-                            if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
-                                IMObjectEditor editor = getItems().getEditor(item);
-                                if (editor instanceof CustomerChargeActItemEditor) {
-                                    ((CustomerChargeActItemEditor) editor).ordered();
-                                }
+                    // notify the editors that orders have been placed
+                    for (Act item : updated) {
+                        if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
+                            IMObjectEditor editor = getItems().getEditor(item);
+                            if (editor instanceof CustomerChargeActItemEditor) {
+                                ((CustomerChargeActItemEditor) editor).ordered();
                             }
                         }
                     }
-                    if (FinancialActStatus.POSTED.equals(getStatus())) {
-                        // need to discontinue orders as Cubex will leave them visible, even after patient check-out
-                        orderPlacer.discontinue();
-                    }
+                }
+                if (FinancialActStatus.POSTED.equals(getStatus())) {
+                    // need to discontinue orders as Cubex will leave them visible, even after patient check-out
+                    orderPlacer.discontinue();
                 }
             }
         } finally {
@@ -427,25 +439,22 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
                 chargeContext.setHistoryChanges(null);  // clear the history changes
             }
         }
-        return saved;
     }
 
     /**
      * Deletes the object.
-     * <p/>
-     * This uses {@link #deleteChildren()} to delete the children prior to
-     * invoking {@link #deleteObject()}.
+     * <p>
+     * This uses {@link #deleteChildren()} to delete the children prior to invoking {@link #deleteObject()}.
      *
-     * @return {@code true} if the delete was successful
+     * @throws OpenVPMSException     if the delete fails
      * @throws IllegalStateException if the act is POSTED
      */
     @Override
-    protected boolean doDelete() {
-        boolean deleted = super.doDelete();
-        if (deleted && orderPlacer != null) {
+    protected void doDelete() {
+        super.doDelete();
+        if (orderPlacer != null) {
             orderPlacer.cancel();
         }
-        return deleted;
     }
 
     /**
@@ -492,7 +501,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
 
     /**
      * Invoked when layout has completed.
-     * <p/>
+     * <p>
      * This invokes {@link #initItems()}.
      */
     @Override
@@ -553,6 +562,15 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
+     * Determines if a default item should added if no items are present.
+     *
+     * @return {@code true} if a default item should added if no items are present
+     */
+    protected boolean getAddDefaultIem() {
+        return addDefaultItem;
+    }
+
+    /**
      * Adds a default invoice item if there are no items present and {@link #addDefaultItem} is {@code true}.
      */
     private void initItems() {
@@ -571,7 +589,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
      */
     private void calculateCosts() {
         Property fixedCost = getProperty("fixedCost");
-        BigDecimal fixed = ActHelper.sum((Act) getObject(), getItems().getCurrentActs(), "fixedCost");
+        BigDecimal fixed = ActHelper.sum(getObject(), getItems().getCurrentActs(), "fixedCost");
         fixedCost.setValue(fixed);
 
         Property unitCost = getProperty("unitCost");
@@ -619,7 +637,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
 
     /**
      * Invoked when a template product is expanded on an invoice.
-     * <p/>
+     * <p>
      * This appends any invoiceNote to the notes.
      *
      * @param product the template product

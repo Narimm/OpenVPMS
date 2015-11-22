@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.edit;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -226,19 +227,13 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     /**
      * Save any edits.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
-    public boolean save() {
-        boolean saved;
-        if (!isModified()) {
-            saved = true;
-        } else {
-            saved = doSave();
-            if (saved) {
-                clearModified();
-            }
+    public void save() {
+        if (isModified()) {
+            doSave();
+            clearModified();
         }
-        return saved;
     }
 
     /**
@@ -270,7 +265,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
 
     /**
      * Returns the listener to receive update notifications.
-     * <p/>
+     * <p>
      * This delegates to {@link #onModified(Modifiable)}.
      *
      * @return the listener
@@ -281,7 +276,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
 
     /**
      * Validates the object.
-     * <p/>
+     * <p>
      * This validates the collection.
      *
      * @param validator the validator
@@ -340,15 +335,15 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     /**
      * Saves any current edits.
      *
-     * @return {@code true} if edits were saved successfully, otherwise {@code false}
+     * @throws OpenVPMSException if the save fails
      */
-    protected boolean doSave() {
-        return collection.save();
+    protected void doSave() {
+        collection.save();
     }
 
     /**
      * Helper to return an object given its reference.
-     * <p/>
+     * <p>
      * This implementation uses the cache associated with the layout context.
      *
      * @param reference the reference. May be {@code null}

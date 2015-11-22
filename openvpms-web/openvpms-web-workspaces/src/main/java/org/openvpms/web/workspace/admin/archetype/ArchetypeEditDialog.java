@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.archetype;
@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.AbstractIMObjectFactory;
 import org.openvpms.component.business.service.archetype.IMObjectFactory;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.tools.archetype.comparator.ArchetypeChange;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
@@ -41,7 +42,7 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 
 /**
@@ -81,27 +82,23 @@ public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor
     /**
      * Saves the current object.
      *
-     * @return {@code true} if the object was saved
+     * @param editor the editor
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
-        IMObjectEditor editor = getEditor();
-        boolean saved = false;
-        if (editor != null) {
-            ArchetypeDescriptor current = (ArchetypeDescriptor) editor.getObject();
-            ArchetypeDescriptor old = IMObjectHelper.reload(current);
-            saved = super.doSave();
-            if (saved && old != null) {
-                ArchetypeChange change = new ArchetypeChange(current, old);
-                boolean updateDerived = change.hasChangedDerivedNodes();
-                boolean updateAssertions = change.hasAddedAssertions(BatchArchetypeUpdater.ASSERTIONS);
-                if (updateDerived || updateAssertions) {
-                    ConfirmingBatchArchetypeUpdater updater = new ConfirmingBatchArchetypeUpdater();
-                    updater.confirmUpdate(Arrays.asList(change));
-                }
+    protected void doSave(IMObjectEditor editor) {
+        ArchetypeDescriptor current = (ArchetypeDescriptor) editor.getObject();
+        ArchetypeDescriptor old = IMObjectHelper.reload(current);
+        super.doSave(editor);
+        if (old != null) {
+            ArchetypeChange change = new ArchetypeChange(current, old);
+            boolean updateDerived = change.hasChangedDerivedNodes();
+            boolean updateAssertions = change.hasAddedAssertions(BatchArchetypeUpdater.ASSERTIONS);
+            if (updateDerived || updateAssertions) {
+                ConfirmingBatchArchetypeUpdater updater = new ConfirmingBatchArchetypeUpdater();
+                updater.confirmUpdate(Collections.singletonList(change));
             }
         }
-        return saved;
     }
 
     /**
@@ -142,13 +139,13 @@ public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor
 
         /**
          * Returns an archetype descriptor for the specified archetype short name.
-         * <p/>
+         * <p>
          * If the short name matches that of the archetype being edited, this will be returned, otherwise
          * that held by the archetype service will be used.
          *
          * @param shortName the archetype short name
          * @return the archetype descriptor or null if there is no corresponding archetype descriptor for
-         *         {@code shortName}
+         * {@code shortName}
          */
         protected ArchetypeDescriptor getArchetypeDescriptor(String shortName) {
             ArchetypeDescriptor descriptor = getArchetype();

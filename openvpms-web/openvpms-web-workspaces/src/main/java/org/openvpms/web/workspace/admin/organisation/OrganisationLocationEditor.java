@@ -43,7 +43,7 @@ import java.util.List;
 
 /**
  * Editor for <em>party.organisationLocation</em>
- * <p/>
+ * <p>
  * This:
  * <ul>
  * <li>displays a password field for the "mailPassword" node.

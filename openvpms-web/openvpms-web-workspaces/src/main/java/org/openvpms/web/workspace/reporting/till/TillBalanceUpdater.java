@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * Links an act.tillBalanceAdjustment, act.customerAccountPayment, or act.customerAccountRefund to
  * an act.tillBalance, and updates the balance.
- * <p/>
+ * <p>
  * This is designed to be used within an editor.
  *
  * @author Tim Anderson
@@ -97,20 +97,23 @@ class TillBalanceUpdater {
 
     /**
      * Adds the act to the balance, it the balance exists.
-     * <p/>
+     * <p>
      * This should be invoked just prior to saving the act.
      *
-     * @return {@code true} if the act was added
+     * @throws IllegalStateException if there is no current till balance, or it has been cleared
      */
-    public boolean prepare() {
-        if (currentBalance != null && !TillBalanceStatus.CLEARED.equals(currentBalance.getStatus())) {
-            List<Act> changed = rules.addToBalance(act, currentBalance);
-            if (!changed.isEmpty()) {
-                service.save(changed);
-            }
-            return true;
+    public void prepare() {
+        if (currentBalance == null) {
+            throw new IllegalStateException("There is no current balance");
+
         }
-        return false;
+        if (TillBalanceStatus.CLEARED.equals(currentBalance.getStatus())) {
+            throw new IllegalStateException("The current till balance has been cleared");
+        }
+        List<Act> changed = rules.addToBalance(act, currentBalance);
+        if (!changed.isEmpty()) {
+            service.save(changed);
+        }
     }
 
     /**

@@ -34,6 +34,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.DefaultCollectionResultSetFactory;
@@ -295,19 +296,17 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
     /**
      * Saves any current edits.
      *
-     * @return {@code true} if edits were saved successfully, otherwise {@code false}
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
-        boolean saved;
+    protected void doSave() {
         if (!excludeObjectWithDefaultValues()) {
             // save the current editor and collection
-            saved = super.doSave();
+            super.doSave();
         } else {
             // save the collection, excluding the current editor
-            saved = getCollectionPropertyEditor().save();
+            getCollectionPropertyEditor().save();
         }
-        return saved;
     }
 
     /**
@@ -392,7 +391,7 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
 
         IMObjectCopier copier = new IMObjectCopier(new ActItemCopyHandler());
         Collection<TemplateProduct> includes = getProductIncludes(template, editor.getPatient());
-        Act act = (Act) editor.getObject();
+        Act act = editor.getObject();
         Act copy = act; // replace the existing act with the first
         Date startTime = act.getActivityStartTime();
         for (TemplateProduct include : includes) {

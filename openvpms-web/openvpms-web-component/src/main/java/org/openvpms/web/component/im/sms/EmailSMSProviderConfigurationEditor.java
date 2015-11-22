@@ -90,7 +90,7 @@ public class EmailSMSProviderConfigurationEditor extends AbstractIMObjectEditor 
 
     /**
      * Invoked when an object is modified.
-     * <p/>
+     * <p>
      * This implementation refreshes the sampler
      *
      * @param modifiable the modified object
