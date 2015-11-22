@@ -35,7 +35,6 @@ import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
@@ -207,8 +206,8 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     @Override
     protected void linkToEvents(PatientHistoryChanges changes) {
         List<Act> items = getItems().getPatientActs();
-        event = IMObjectHelper.reload(event); // make sure the most recent instance is being used
-        if (event != null && !items.isEmpty()) {
+        if (!items.isEmpty()) {
+            event = reload(event); // make sure the most recent instance is being used
             changes.addEvent(event);
             ChargeItemEventLinker linker = new ChargeItemEventLinker(ServiceHelper.getArchetypeService());
             linker.prepare(event, items, changes);
