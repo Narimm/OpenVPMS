@@ -64,12 +64,12 @@ public class IMObjectEditorSaver {
             result = template.execute(new TransactionCallback<Boolean>() {
                 @Override
                 public Boolean doInTransaction(TransactionStatus transactionStatus) {
-                    Validator validator = new DefaultValidator();
+                    Validator validator = createValidator();
                     boolean result = editor.validate(validator);
                     if (result) {
                         save(editor, transactionStatus);
                     } else {
-                        ValidationHelper.showError(validator);
+                        showError(validator);
                     }
                     return result;
                 }
@@ -92,6 +92,24 @@ public class IMObjectEditorSaver {
             }
         }
         return result;
+    }
+
+    /**
+     * Creates a validator to validate an editor.
+     *
+     * @return a new validator
+     */
+    protected Validator createValidator() {
+        return new DefaultValidator();
+    }
+
+    /**
+     * Displays validation errors.
+     *
+     * @param validator the validator
+     */
+    protected void showError(Validator validator) {
+        ValidationHelper.showError(validator);
     }
 
     /**
