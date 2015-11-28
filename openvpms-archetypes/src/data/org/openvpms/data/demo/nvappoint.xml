@@ -16,9 +16,11 @@
 
 <archetype>
     <data id="OS1" archetype="party.organisationSchedule" name="Main Appointment Schedule" slotSize="15"
-          slotUnits="MINUTES" allowDoubleBooking="true" startTime="1/1/1970 09:00:00" endTime="1/1/1970 17:30:00"/>
+          slotUnits="MINUTES" allowDoubleBooking="true" startTime="1/1/1970 09:00:00" endTime="1/1/1970 17:30:00"
+          sendReminders="true"/>
     <data id="OS2" archetype="party.organisationSchedule" name="Branch Appointment Schedule" slotSize="15"
-          slotUnits="MINUTES" allowDoubleBooking="true" startTime="1/1/1970 09:00:00" endTime="1/1/1970 17:30:00"/>
+          slotUnits="MINUTES" allowDoubleBooking="true" startTime="1/1/1970 09:00:00" endTime="1/1/1970 17:30:00"
+          sendReminders="true"/>
     <data id="OS3" archetype="party.organisationSchedule" name="Main Surgery Schedule" slotSize="30"
           slotUnits="MINUTES" allowDoubleBooking="false" startTime="1/1/1970 08:00:00" endTime="1/1/1970 18:00:00"/>
     <data id="OS4" archetype="party.organisationSchedule" name="Branch Surgery Schedule" slotSize="30"

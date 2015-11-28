@@ -39,7 +39,10 @@
     <!-- ================================================================== -->
     <!--                        EMAIL                                       -->
     <!-- ================================================================== -->
-    <bean id="mailSender" class="org.openvpms.web.component.service.MailService" scope="session"/>
+    <bean id="mailSender" class="org.openvpms.web.component.service.CurrentLocationMailService" scope="session">
+        <constructor-arg ref="practiceService"/>
+        <constructor-arg ref="locationRules"/>
+    </bean>
 
     <!-- ================================================================== -->
     <!--                        APPLICATION                                 -->
@@ -133,7 +136,18 @@
     <!-- ================================================================== -->
     <!--                        SMS                                         -->
     <!-- ================================================================== -->
-    <bean id="smsService" class="org.openvpms.web.component.im.sms.SMSService" scope="session">
+    <bean id="smsService" class="org.openvpms.web.component.service.SMSService">
         <constructor-arg ref="smsConnectionFactory"/>
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
+    <!-- =========================================================================================================== -->
+    <!-- Appointment reminders                                                                                       -->
+    <!-- =========================================================================================================== -->
+    <bean id="appointmentReminderEvaluator"
+          class="org.openvpms.web.workspace.workflow.appointment.reminder.AppointmentReminderEvaluator">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="macros"/>
     </bean>
 </beans>

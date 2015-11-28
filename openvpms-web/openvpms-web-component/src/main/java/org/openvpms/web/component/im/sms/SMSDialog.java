@@ -88,6 +88,16 @@ public class SMSDialog extends PopupDialog {
                 onMacro(context);
             }
         });
+        editor.getFocusGroup().setFocus();
+    }
+
+    /**
+     * Sets the message to send.
+     *
+     * @param message the message
+     */
+    public void setMessage(String message) {
+        editor.setMessage(message);
     }
 
     /**

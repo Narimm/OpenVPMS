@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
@@ -56,6 +56,7 @@ class TextComponentBinder extends Binder {
     public TextComponentBinder(TextComponent component, Property property) {
         super(property, false);
         this.component = component;
+        component.setEnabled(!property.isReadOnly());
 
         listener = new DocumentListener() {
             public void onUpdate(DocumentEvent event) {

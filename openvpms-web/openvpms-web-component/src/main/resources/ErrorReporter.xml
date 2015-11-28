@@ -54,6 +54,9 @@
         <className>org.openvpms.web.component.mail.MailException</className>
     </exclude-exception>
     <exclude-exception>
+        <className>org.openvpms.web.workspace.workflow.appointment.reminder.AppointmentReminderException</className>
+    </exclude-exception>
+    <exclude-exception>
         <className>org.openvpms.web.workspace.reporting.ReportingException</className>
     </exclude-exception>
     <exclude-exception>
@@ -70,5 +73,8 @@
     </exclude-exception>
     <exclude-exception>
         <className>javax.print.PrintException</className>
+    </exclude-exception>
+    <exclude-exception>
+        <className>java.awt.print.PrinterException</className>
     </exclude-exception>
 </error-reporter-config>

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -25,13 +25,16 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.FilterHelper;
+import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -50,7 +53,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
 
 
     /**
-     * Constructs a {@code DescriptorTableModel}.
+     * Constructs a {@link DescriptorTableModel}.
      * <p/>
      * The column model must be set using {@link #setTableColumnModel}.
      *
@@ -66,7 +69,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
     }
 
     /**
-     * Creates a new {@code DescriptorTableModel}.
+     * Constructs a {@link DescriptorTableModel}.
      *
      * @param shortNames the archetype short names
      * @param context    the layout context
@@ -126,7 +129,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      */
     protected List<SortConstraint> getSortConstraints(DescriptorTableColumn primary, boolean ascending,
                                                       String... names) {
-        List<SortConstraint> result = new ArrayList<SortConstraint>();
+        List<SortConstraint> result = new ArrayList<>();
         result.add(primary.createSortConstraint(ascending));
         for (String name : names) {
             DescriptorTableColumn column = getColumn(name);
@@ -208,7 +211,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
         int idIndex = names.indexOf("id");
         if (idIndex != -1) {
             if (!(names instanceof ArrayList)) {
-                names = new ArrayList<String>(names);  // Arrays.asList() doesn't support remove
+                names = new ArrayList<>(names);  // Arrays.asList() doesn't support remove
             }
             names.remove(idIndex);
             // use default formatting for ID columns.
@@ -264,7 +267,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      *         the archetypes
      */
     protected TableColumn addColumn(ArchetypeDescriptor archetype, String name, TableColumnModel columns) {
-        return addColumn(Arrays.asList(archetype), name, getNextModelIndex(columns), columns);
+        return addColumn(Collections.singletonList(archetype), name, getNextModelIndex(columns), columns);
     }
 
     /**
@@ -411,7 +414,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * @return a filtered list of node descriptor names for the archetype
      */
     protected List<String> getNodeNames(ArchetypeDescriptor archetype, LayoutContext context) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         List<NodeDescriptor> descriptors
                 = filter(archetype.getSimpleNodeDescriptors(), context);
         for (NodeDescriptor descriptor : descriptors) {
@@ -443,14 +446,30 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
     }
 
     /**
-     * Filters descriptors using the context's default node filter.
+     * Filters descriptors using the context's default node filter, and excludes large text fields.
      *
      * @param descriptors the column descriptors
      * @param context     the layout context
      * @return the filtered descriptors
      */
     protected List<NodeDescriptor> filter(List<NodeDescriptor> descriptors, LayoutContext context) {
-        return FilterHelper.filter(null, context.getDefaultNodeFilter(), descriptors);
+        NodeFilter filter = context.getDefaultNodeFilter();
+        NodeFilter size = new NodeFilter() {
+            @Override
+            public boolean include(NodeDescriptor descriptor, IMObject object) {
+                return descriptor.getClazz() != String.class
+                       || descriptor.getMaxLength() <= NodeDescriptor.DEFAULT_MAX_LENGTH;
+            }
+        };
+        if (filter != null) {
+            ChainedNodeFilter chain = new ChainedNodeFilter();
+            chain.add(filter);
+            chain.add(size);
+            filter = chain;
+        } else {
+            filter = size;
+        }
+        return FilterHelper.filter(null, filter, descriptors);
     }
 
     /**
@@ -462,7 +481,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * @return the intersection of the two lists
      */
     private List<String> getIntersection(List<String> first, List<String> second) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (String a : first) {
             for (String b : second) {
                 if (a.equals(b)) {

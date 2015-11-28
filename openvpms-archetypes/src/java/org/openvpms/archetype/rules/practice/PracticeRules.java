@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.practice;
@@ -32,8 +32,13 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -74,7 +79,7 @@ public class PracticeRules {
     public boolean isActivePractice(Party practice) {
         if (practice.isActive()) {
             ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.PRACTICE, true, true);
-            IMObjectQueryIterator<Party> iter = new IMObjectQueryIterator<Party>(service, query);
+            IMObjectQueryIterator<Party> iter = new IMObjectQueryIterator<>(service, query);
             IMObjectReference practiceRef = practice.getObjectReference();
             while (iter.hasNext()) {
                 Party party = iter.next();
@@ -96,7 +101,7 @@ public class PracticeRules {
     public Party getPractice() {
         ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.PRACTICE, true, true);
         query.setMaxResults(1);
-        IMObjectQueryIterator<Party> iter = new IMObjectQueryIterator<Party>(service, query);
+        IMObjectQueryIterator<Party> iter = new IMObjectQueryIterator<>(service, query);
         return (iter.hasNext()) ? iter.next() : null;
     }
 
@@ -144,7 +149,7 @@ public class PracticeRules {
      *
      * @param practice the practice
      * @return the default location, or the first location if there is no
-     *         default location or <tt>null</tt> if none is found
+     * default location or <tt>null</tt> if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getDefaultLocation(Party practice) {
@@ -182,6 +187,44 @@ public class PracticeRules {
             separator = '\t';
         }
         return separator;
+    }
+
+    /**
+     * Determines if SMS is configured for the practice.
+     *
+     * @param practice the practice
+     * @return {@code true} if SMS is configured, otherwise {@code false}
+     */
+    public boolean isSMSEnabled(Party practice) {
+        boolean enabled = false;
+        EntityBean bean = new EntityBean(practice, service);
+        List<IMObjectReference> refs = bean.getNodeTargetEntityRefs("SMS");
+        for (IMObjectReference ref : refs) {
+            if (isActive(ref)) {
+                enabled = true;
+                break;
+            }
+        }
+        return enabled;
+    }
+
+    /**
+     * Determines if an object associated with a reference is active.
+     *
+     * @param reference the object reference. May be {@code null}
+     * @return {@code true} if the object is active, otherwise {@code false}
+     */
+    private boolean isActive(IMObjectReference reference) {
+        ObjectRefConstraint constraint = new ObjectRefConstraint("o", reference);
+        ArchetypeQuery query = new ArchetypeQuery(constraint);
+        query.add(new NodeSelectConstraint("o.active"));
+        query.setMaxResults(1);
+        Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(service, query);
+        if (iterator.hasNext()) {
+            ObjectSet set = iterator.next();
+            return set.getBoolean("o.active");
+        }
+        return false;
     }
 
 }

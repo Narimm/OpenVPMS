@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -122,6 +122,21 @@ public class ScheduleEvent {
      * The arrival time.
      */
     public static final String ARRIVAL_TIME = "arrivalTime";
+
+    /**
+     * The send reminder flag.
+     */
+    public static final String SEND_REMINDER = "sendReminder";
+
+    /**
+     * The reminder sent time.
+     */
+    public static final String REMINDER_SENT = "reminderSent";
+
+    /**
+     * The reminder error.
+     */
+    public static final String REMINDER_ERROR = "reminderError";
 
     /**
      * The consult start time.

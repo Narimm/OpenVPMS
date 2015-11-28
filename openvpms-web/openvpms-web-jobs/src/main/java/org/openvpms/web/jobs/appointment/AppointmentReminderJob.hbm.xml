@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <!--
+      Returns reminder ids for PENDING reminders that are flagged to have reminders sent.
+      -->
+    <sql-query name="AppointmentReminderJob.getReminders" cache-mode="ignore">
+        <return-scalar column="id" type="long"/>
+        <![CDATA[
+select a.act_id as id
+from acts a
+join participations p
+    on a.act_id = p.act_id
+        and p.arch_short_name = "participation.schedule"
+join entity_details sendReminders
+    on p.entity_id = sendReminders.entity_id
+        and sendReminders.name = "sendReminders"
+        and sendReminders.value = "true"
+join act_details sendReminder
+    on a.act_id = sendReminder.act_id
+        and sendReminder.name = "sendReminder"
+        and sendReminder.value = "true"
+left join act_details reminderSent
+    on a.act_id = reminderSent.act_id
+        and reminderSent.name = "reminderSent"
+where a.arch_short_name = "act.customerAppointment"
+	and a.status = 'PENDING'
+    and a.activity_start_time between :from and :to
+    and reminderSent.value is null
+order by a.activity_start_time
+      ]]>
+    </sql-query>
+
+</hibernate-mapping>

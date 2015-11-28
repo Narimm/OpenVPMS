@@ -42,6 +42,8 @@ import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
+import org.openvpms.web.component.service.SMSService;
+import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -64,6 +66,11 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class SMSEditor extends AbstractModifiable {
+
+    /**
+     * Maximum SMS length.
+     */
+    public static final int MAX_LENGTH = 160;
 
     /**
      * The context.
@@ -104,11 +111,6 @@ public class SMSEditor extends AbstractModifiable {
      * Focus group.
      */
     private FocusGroup focus;
-
-    /**
-     * Maximum SMS length.
-     */
-    private static final int MAX_LENGTH = 160;
 
     /**
      * Used to track property modification, and perform validation.
@@ -229,6 +231,10 @@ public class SMSEditor extends AbstractModifiable {
      * @param message the message
      */
     public void setMessage(String message) {
+        if (message != null && message.length() > MAX_LENGTH) {
+            message = message.substring(0, MAX_LENGTH);
+            InformationDialog.show(Messages.get("sms.truncated"));
+        }
         messageProperty.setValue(message);
     }
 
