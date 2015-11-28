@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -102,6 +102,9 @@ class AppointmentFactory extends ScheduleEventFactory {
         String typeName = getName(typeRef);
         target.set(ScheduleEvent.SCHEDULE_TYPE_REFERENCE, typeRef);
         target.set(ScheduleEvent.SCHEDULE_TYPE_NAME, typeName);
+        target.set(ScheduleEvent.SEND_REMINDER, source.getBoolean(ScheduleEvent.SEND_REMINDER));
+        target.set(ScheduleEvent.REMINDER_SENT, source.getDate(ScheduleEvent.REMINDER_SENT));
+        target.set(ScheduleEvent.REMINDER_ERROR, source.getString(ScheduleEvent.REMINDER_ERROR));
         target.set(ScheduleEvent.ARRIVAL_TIME, source.getDate(ScheduleEvent.ARRIVAL_TIME));
     }
 

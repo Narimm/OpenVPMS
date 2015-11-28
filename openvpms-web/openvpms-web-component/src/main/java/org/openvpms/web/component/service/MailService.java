@@ -16,32 +16,43 @@
 
 package org.openvpms.web.component.service;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.archetype.rules.practice.MailServer;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.springframework.mail.MailAuthenticationException;
 import org.springframework.mail.MailException;
+import org.springframework.mail.MailParseException;
+import org.springframework.mail.MailPreparationException;
 import org.springframework.mail.MailSendException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.javamail.MimeMessagePreparator;
 
-import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
+import java.io.InputStream;
 import java.util.Properties;
 
 
 /**
  * Mail service that configures the SMTP details from <em>party.organisationLocation</em> from
  * {@link Context#getLocation()}, if available.
- * <p/>
- * Note that instances of this must be per-session. It obtains the context from
- * {@code ContextApplicationInstance#getInstance().getContext()}. A user may have multiple application instances,
- * each with a different location selected, so mail sending is synchronized.
+ * <p>
  *
  * @author Tim Anderson
  */
-public class MailService extends JavaMailSenderImpl {
+public abstract class MailService implements JavaMailSender {
+
+    /**
+     * The sender to delegate to.
+     */
+    private JavaMailSender sender;
+
+    /**
+     * The settings used to configure the sender.
+     */
+    private MailServer settings;
 
     /**
      * Property name for STARTTLS flag.
@@ -53,162 +64,201 @@ public class MailService extends JavaMailSenderImpl {
      */
     private static final String MAIL_SMTP_AUTH = "mail.smtp.auth";
 
-    /**
-     * Constructs a {@link MailService}.
-     * <p/>
-     * This sets the default encoding to UTF-8.
-     */
-    public MailService() {
-        setDefaultEncoding("UTF-8");
-    }
 
     /**
-     * Return the mail server host.
+     * Create a new JavaMail MimeMessage for the underlying JavaMail Session
+     * of this sender. Needs to be called to create MimeMessage instances
+     * that can be prepared by the client and passed to send(MimeMessage).
      *
-     * @return the mail server host
+     * @return the new MimeMessage instance
+     * @see #send(MimeMessage)
+     * @see #send(MimeMessage[])
      */
     @Override
-    public String getHost() {
-        String host = getString("mailHost");
-        return (host != null) ? host : super.getHost();
+    public MimeMessage createMimeMessage() {
+        return getSender().createMimeMessage();
     }
 
     /**
-     * Return the mail server port.
-     */
-    @Override
-    public int getPort() {
-        IMObjectBean bean = getLocationBean();
-        int port = 0;
-        if (bean != null) {
-            port = bean.getInt("mailPort");
-        }
-        if (port == 0) {
-            port = super.getPort();
-        }
-        return port;
-    }
-
-    /**
-     * Return the username for the account at the mail host.
-     */
-    @Override
-    public String getUsername() {
-        String username = getString("mailUsername");
-        return (username != null) ? username : super.getUsername();
-    }
-
-    /**
-     * Return the password for the account at the mail host.
-     */
-    @Override
-    public String getPassword() {
-        String password = getString("mailPassword");
-        return (password != null) ? password : super.getPassword();
-    }
-
-    /**
-     * Return the mail protocol.
-     */
-    @Override
-    public String getProtocol() {
-        String security = getConnectionSecurity();
-        if ("SSL_TLS".equals(security)) {
-            return "smtps";
-        }
-        return super.getProtocol();
-    }
-
-    /**
-     * Return the JavaMail <code>Session</code>,
-     * lazily initializing it if hasn't been specified explicitly.
-     */
-    @Override
-    public synchronized Session getSession() {
-        String protocol = getConnectionSecurity();
-        String username = getUsername();
-
-        setProperty(MAIL_SMTP_AUTH, !StringUtils.isEmpty(username));
-        setProperty(MAIL_SMTP_STARTTLS_ENABLE, "STARTTLS".equals(protocol));
-        return super.getSession();
-    }
-
-    /**
-     * Actually send the given array of MimeMessages via JavaMail.
+     * Create a new JavaMail MimeMessage for the underlying JavaMail Session
+     * of this sender, using the given input stream as the message source.
      *
-     * @param mimeMessages     MimeMessage objects to send
-     * @param originalMessages corresponding original message objects
-     *                         that the MimeMessages have been created from (with same array
-     *                         length and indices as the "mimeMessages" array), if any
+     * @param contentStream the raw MIME input stream for the message
+     * @return the new MimeMessage instance
+     * @throws MailParseException in case of message creation failure
+     */
+    @Override
+    public MimeMessage createMimeMessage(InputStream contentStream) throws MailException {
+        return getSender().createMimeMessage(contentStream);
+    }
+
+    /**
+     * Send the given JavaMail MIME message.
+     * The message needs to have been created with {@link #createMimeMessage()}.
+     *
+     * @param mimeMessage message to send
+     * @throws MailAuthenticationException in case of authentication failure
+     * @throws MailSendException           in case of failure when sending the message
+     * @see #createMimeMessage
+     */
+    @Override
+    public void send(MimeMessage mimeMessage) throws MailException {
+        getSender().send(mimeMessage);
+    }
+
+    /**
+     * Send the given array of JavaMail MIME messages in batch.
+     * The messages need to have been created with {@link #createMimeMessage()}.
+     *
+     * @param mimeMessages messages to send
+     * @throws MailAuthenticationException in case of authentication failure
+     * @throws MailSendException           in case of failure when sending a message
+     * @see #createMimeMessage
+     */
+    @Override
+    public void send(MimeMessage[] mimeMessages) throws MailException {
+        getSender().send(mimeMessages);
+    }
+
+    /**
+     * Send the JavaMail MIME message prepared by the given MimeMessagePreparator.
+     * <p>Alternative way to prepare MimeMessage instances, instead of
+     * {@link #createMimeMessage()} and {@link #send(MimeMessage)} calls.
+     * Takes care of proper exception conversion.
+     *
+     * @param mimeMessagePreparator the preparator to use
+     * @throws MailPreparationException    in case of failure when preparing the message
+     * @throws MailParseException          in case of failure when parsing the message
+     * @throws MailAuthenticationException in case of authentication failure
+     * @throws MailSendException           in case of failure when sending the message
+     */
+    @Override
+    public void send(MimeMessagePreparator mimeMessagePreparator) throws MailException {
+        getSender().send(mimeMessagePreparator);
+    }
+
+    /**
+     * Send the JavaMail MIME messages prepared by the given MimeMessagePreparators.
+     * <p>Alternative way to prepare MimeMessage instances, instead of
+     * {@link #createMimeMessage()} and {@link #send(MimeMessage[])} calls.
+     * Takes care of proper exception conversion.
+     *
+     * @param mimeMessagePreparators the preparator to use
+     * @throws MailPreparationException    in case of failure when preparing a message
+     * @throws MailParseException          in case of failure when parsing a message
      * @throws MailAuthenticationException in case of authentication failure
      * @throws MailSendException           in case of failure when sending a message
      */
     @Override
-    protected synchronized void doSend(MimeMessage[] mimeMessages, Object[] originalMessages) throws MailException {
-        super.doSend(mimeMessages, originalMessages);
+    public void send(MimeMessagePreparator[] mimeMessagePreparators) throws MailException {
+        getSender().send(mimeMessagePreparators);
     }
 
     /**
-     * Returns the <em>party.organisationLocation</em> wrapped in a bean, if one is present in the global context.
+     * Send the given simple mail message.
      *
-     * @return the location, or <tt>null</tt> if none is present.
+     * @param simpleMessage the message to send
+     * @throws MailParseException          in case of failure when parsing the message
+     * @throws MailAuthenticationException in case of authentication failure
+     * @throws MailSendException           in case of failure when sending the message
      */
-    private IMObjectBean getLocationBean() {
-        // need to use the context associated with the current instance. Be nice if the context could be injected
-        // by Spring, but the context is scoped to the application instance, not the session, as there may be
-        // multiple application instances per session.
-        Party location = null;
-        ContextApplicationInstance instance = ContextApplicationInstance.getInstance();
-        if (instance != null) {
-            Context context = instance.getContext();
-            location = context.getLocation();
+    @Override
+    public void send(SimpleMailMessage simpleMessage) throws MailException {
+        getSender().send(simpleMessage);
+    }
+
+    /**
+     * Send the given array of simple mail messages in batch.
+     *
+     * @param simpleMessages the messages to send
+     * @throws MailParseException          in case of failure when parsing a message
+     * @throws MailAuthenticationException in case of authentication failure
+     * @throws MailSendException           in case of failure when sending a message
+     */
+    @Override
+    public void send(SimpleMailMessage[] simpleMessages) throws MailException {
+        getSender().send(simpleMessages);
+    }
+
+    /**
+     * Returns a mail sender, creating it if none is present, or the settings have changed.
+     *
+     * @return a mail sender
+     */
+    protected JavaMailSender getSender() {
+        JavaMailSender result;
+        MailServer current;
+        synchronized (this) {
+            result = sender;
+            current = settings;
         }
-        return (location != null) ? new IMObjectBean(location) : null;
+        MailServer newSettings = getMailServer();
+        if (newSettings != null && !ObjectUtils.equals(newSettings, current)) {
+            result = setSender(createMailSender(newSettings), newSettings);
+        } else if (result == null) {
+            result = setSender(createMailSender(), newSettings);
+        }
+        return result;
     }
 
     /**
-     * Helper to return a string node value from an <em>party.organisationLocation</em>, if there is a location in
-     * the global context.
+     * Creates a new mail sender.
      *
-     * @param name the node name
-     * @return the corresponding value. May be <tt>null</tt>
+     * @param settings the mail server settings
+     * @return a new mail sender
      */
-    private String getString(String name) {
-        IMObjectBean bean = getLocationBean();
-        return (bean != null) ? StringUtils.trimToNull(bean.getString(name)) : null;
-    }
-
-    /**
-     * Returns the mail connection security value.
-     *
-     * @return the mail connection security. May be {@code null}
-     */
-    private String getConnectionSecurity() {
-        return getString("mailSecurity");
-    }
-
-    /**
-     * Helper to set a configuration property.
-     * This only sets the property if it is unset or different, to avoid closing the session unecessarily.
-     *
-     * @param name  the property name
-     * @param value the property value
-     */
-    private void setProperty(String name, boolean value) {
-        Properties properties = getJavaMailProperties();
-        boolean update = false;
+    protected JavaMailSender createMailSender(MailServer settings) {
+        JavaMailSenderImpl result;
+        result = createMailSender();
+        Properties properties = result.getJavaMailProperties();
         if (properties == null) {
             properties = new Properties();
-            update = true;
-        } else {
-            String current = properties.getProperty(name);
-            if (current == null || Boolean.valueOf(current) != value) {
-                update = true;
-            }
+            result.setJavaMailProperties(properties);
         }
-        if (update) {
-            properties.setProperty(name, Boolean.toString(value));
-            setJavaMailProperties(properties); // closes current session
+        result.setHost(settings.getHost());
+        result.setPort(settings.getPort());
+        String username = settings.getUsername();
+        result.setUsername(username);
+        result.setPassword(settings.getPassword());
+        if (settings.getSecurity() == MailServer.Security.SSL_TLS) {
+            result.setProtocol("smtps");
+        } else if (settings.getSecurity() == MailServer.Security.STARTTLS) {
+            properties.setProperty(MAIL_SMTP_AUTH, Boolean.toString(!StringUtils.isEmpty(username)));
+            properties.setProperty(MAIL_SMTP_STARTTLS_ENABLE, Boolean.TRUE.toString());
         }
+        return result;
+    }
+
+    /**
+     * Creates a new mail sender.
+     * <p>
+     * This implementation sets the default encoding to UTF-8.
+     *
+     * @return a new mail sender
+     */
+    protected JavaMailSenderImpl createMailSender() {
+        JavaMailSenderImpl result = new JavaMailSenderImpl();
+        result.setDefaultEncoding("UTF-8");
+        return result;
+    }
+
+    /**
+     * Returns the mail server settings.
+     *
+     * @return the settings, or {@code null} if none is configured
+     */
+    protected abstract MailServer getMailServer();
+
+    /**
+     * Register the sender and settings used to configure it.
+     *
+     * @param sender   the sender
+     * @param settings the settings. May be {@code null}
+     * @return the sender
+     */
+    private synchronized JavaMailSender setSender(JavaMailSender sender, MailServer settings) {
+        this.sender = sender;
+        this.settings = settings;
+        return sender;
     }
 }

@@ -154,7 +154,7 @@ public class AppointmentRules {
      *         if there is no default, or {@code null} if none is found
      * @throws OpenVPMSException for any error
      */
-    public Entity getDefaultAppointmentType(Party schedule) {
+    public Entity getDefaultAppointmentType(Entity schedule) {
         return EntityRelationshipHelper.getDefaultTarget(schedule, "appointmentTypes", service);
     }
 

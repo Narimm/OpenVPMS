@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.practice;
@@ -29,8 +29,11 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.practice.PracticeArchetypes.PRACTICE_LOCATION_RELATIONSHIP;
 
 
@@ -177,6 +180,40 @@ public class LocationRulesTestCase extends ArchetypeServiceTest {
 
         assertEquals(stockLocation, rules.getDefaultStockLocation(location));
         assertEquals(stockLocation.getObjectReference(), rules.getDefaultStockLocationRef(location));
+    }
+
+    /**
+     * Tests the {@link LocationRules#getLocations(Entity)} method.
+     */
+    @Test
+    public void testGetLocations() {
+        Party location1 = TestHelper.createLocation();
+        Party location2 = TestHelper.createLocation();
+
+        Party schedule1 = ScheduleTestHelper.createSchedule();
+        Party schedule2 = ScheduleTestHelper.createSchedule();
+        Entity view1 = ScheduleTestHelper.createScheduleView(schedule1);
+        Entity view2 = ScheduleTestHelper.createScheduleView(schedule1, schedule2);
+
+        List<Party> locations = rules.getLocations(schedule1);
+        assertEquals(0, locations.size());
+
+        EntityBean bean1 = new EntityBean(location1);
+        bean1.addNodeTarget("scheduleViews", view1);
+        bean1.save();
+
+        locations = rules.getLocations(schedule1);
+        assertEquals(1, locations.size());
+        assertTrue(locations.contains(location1));
+
+        EntityBean bean2 = new EntityBean(location2);
+        bean2.addNodeTarget("scheduleViews", view2);
+        bean2.save();
+
+        locations = rules.getLocations(schedule1);
+        assertEquals(2, locations.size());
+        assertTrue(locations.contains(location1));
+        assertTrue(locations.contains(location2));
     }
 
     /**

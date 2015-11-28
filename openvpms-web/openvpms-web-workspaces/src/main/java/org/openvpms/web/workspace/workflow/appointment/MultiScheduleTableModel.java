@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -121,7 +121,9 @@ class MultiScheduleTableModel extends AppointmentTableModel {
         }
 
         String notes = event.getString(ScheduleEvent.ACT_DESCRIPTION);
-        return createLabelWithNotes(text, notes);
+        return createLabelWithNotes(text, notes, event.getBoolean(ScheduleEvent.SEND_REMINDER),
+                                    event.getDate(ScheduleEvent.REMINDER_SENT),
+                                    event.getString(ScheduleEvent.REMINDER_ERROR));
     }
 
     /**

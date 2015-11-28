@@ -27,7 +27,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.sms.SMSHelper;
-import org.openvpms.web.component.im.sms.SMSService;
+import org.openvpms.web.component.service.SMSService;
 import org.openvpms.web.workspace.reporting.ReportingException;
 
 import java.util.List;

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -170,8 +170,7 @@ public class ScheduleTestHelper extends TestHelper {
                                         Party schedule) {
         Party customer = TestHelper.createCustomer();
         Party patient = TestHelper.createPatient();
-        return createAppointment(startTime, endTime, schedule, customer,
-                                 patient);
+        return createAppointment(startTime, endTime, schedule, customer, patient);
     }
 
     /**
@@ -184,9 +183,7 @@ public class ScheduleTestHelper extends TestHelper {
      * @param patient   the patient. May be {@code null}
      * @return a new act
      */
-    public static Act createAppointment(Date startTime, Date endTime,
-                                        Party schedule, Party customer,
-                                        Party patient) {
+    public static Act createAppointment(Date startTime, Date endTime, Entity schedule, Party customer, Party patient) {
         Entity appointmentType = createAppointmentType();
         appointmentType.setName("XAppointmentType");
         return createAppointment(startTime, endTime, schedule, appointmentType, customer, patient, null, null);
@@ -205,9 +202,8 @@ public class ScheduleTestHelper extends TestHelper {
      * @param author          the author. May be {@code null}
      * @return a new act
      */
-    public static Act createAppointment(Date startTime, Date endTime,
-                                        Party schedule, Entity appointmentType, Party customer,
-                                        Party patient, User clinician, User author) {
+    public static Act createAppointment(Date startTime, Date endTime, Entity schedule, Entity appointmentType,
+                                        Party customer, Party patient, User clinician, User author) {
         Act act = (Act) create(ScheduleArchetypes.APPOINTMENT);
         Lookup reason = TestHelper.getLookup(ScheduleArchetypes.VISIT_REASON, "XREASON", "Reason X", true);
 

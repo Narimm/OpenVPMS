@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.sms.mail.template;
@@ -19,6 +19,7 @@ package org.openvpms.sms.mail.template;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -61,7 +62,9 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
             bean.removeRelationship(relationship);
         }
         save(practice);
-        config = new PracticeMailTemplateConfig(getArchetypeService(), new PracticeRules(getArchetypeService(), null));
+        PracticeService practiceService = new PracticeService(getArchetypeService(),
+                                                              new PracticeRules(getArchetypeService(), null));
+        config = new PracticeMailTemplateConfig(getArchetypeService(), practiceService);
     }
 
     /**
@@ -84,7 +87,9 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
     @Test
     public void testNoPractice() {
         remove(practice);
-        config = new PracticeMailTemplateConfig(getArchetypeService(), new PracticeRules(getArchetypeService(), null));
+        PracticeService practiceService = new PracticeService(getArchetypeService(),
+                                                              new PracticeRules(getArchetypeService(), null));
+        config = new PracticeMailTemplateConfig(getArchetypeService(), practiceService);
         try {
             config.getTemplate();
             fail("Expected getTemplate() to fail");

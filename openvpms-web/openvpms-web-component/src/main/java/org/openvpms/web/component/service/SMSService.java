@@ -14,15 +14,19 @@
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.im.sms;
+package org.openvpms.web.component.service;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.sms.Connection;
 import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.sms.SMSException;
+import org.openvpms.web.component.im.sms.SMSHelper;
 
 /**
  * SMS service.
@@ -37,6 +41,11 @@ public class SMSService {
     private final ConnectionFactory factory;
 
     /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(SMSService.class);
@@ -45,9 +54,31 @@ public class SMSService {
      * Constructs a {@link SMSService}.
      *
      * @param factory the factory
+     * @param service the archetype service
      */
-    public SMSService(ConnectionFactory factory) {
+    public SMSService(ConnectionFactory factory, IArchetypeService service) {
         this.factory = factory;
+        this.service = service;
+    }
+
+    /**
+     * Sends an SMS.
+     *
+     * @param message  the SMS text
+     * @param party    the party associated with the phone number. May be {@code null}
+     * @param contact  the phone contact
+     * @param location the practice location. May be {@code null}
+     * @throws IllegalArgumentException if the phone contact is incomplete
+     * @throws SMSException             if the send fails
+     */
+    public void send(String message, Contact contact, Party party, Party location) {
+        IMObjectBean bean = new IMObjectBean(contact, service);
+        String telephoneNumber = bean.getString("telephoneNumber");
+        if (StringUtils.isEmpty(telephoneNumber)) {
+            throw new IllegalArgumentException("Argument 'contact' doesn't have a telephoneNumber");
+        }
+        String phone = SMSHelper.getPhone(contact);
+        send(phone, message, party, contact, location);
     }
 
     /**

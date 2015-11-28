@@ -45,7 +45,7 @@ import java.util.StringTokenizer;
 /**
  * An implementation of {@link Macros} that obtains macro definitions from <em>lookup.macro</em> and
  * <em>lookup.macroReport</em> lookups.
- * <p/>
+ * <p>
  * These are monitored for updates to ensure that the macros reflect those in the database.
  *
  * @author Tim Anderson
@@ -76,7 +76,7 @@ public class LookupMacros implements Macros, DisposableBean {
      * The per-thread variables. These are required so that variables may be supplied to nested macros when they
      * are invoked via macro:eval().
      */
-    private final ThreadLocal<ScopedVariables> scopedVariables = new ThreadLocal<ScopedVariables>();
+    private final ThreadLocal<ScopedVariables> scopedVariables = new ThreadLocal<>();
 
     /**
      * The logger.
@@ -124,7 +124,7 @@ public class LookupMacros implements Macros, DisposableBean {
 
     /**
      * Runs a macro.
-     * <p/>
+     * <p>
      * If the macro code is preceded by a numeric expression, the value will be declared as a variable <em>$number</em>.
      *
      * @param macro  the macro code
@@ -138,7 +138,7 @@ public class LookupMacros implements Macros, DisposableBean {
 
     /**
      * Runs a macro.
-     * <p/>
+     * <p>
      * If the macro code is preceded by a numeric expression, the value will be declared as a variable <em>$number</em>.
      *
      * @param macro     the macro code
@@ -169,9 +169,9 @@ public class LookupMacros implements Macros, DisposableBean {
 
     /**
      * Runs all macros in the supplied text.
-     * <p/>
+     * <p>
      * When a macro is encountered, it will be replaced with the macro value.
-     * <p/>
+     * <p>
      * If a macro is preceded by a numeric expression, the value will be declared as a variable <em>$number</em>.
      *
      * @param text   the text to parse
@@ -184,9 +184,9 @@ public class LookupMacros implements Macros, DisposableBean {
 
     /**
      * Runs all macros in the supplied text.
-     * <p/>
+     * <p>
      * When a macro is encountered, it will be replaced with the macro value.
-     * <p/>
+     * <p>
      * If a macro is preceded by a numeric expression, the value will be declared as a variable <em>$number</em>.
      *
      * @param text      the text to parse
@@ -197,6 +197,30 @@ public class LookupMacros implements Macros, DisposableBean {
      * @return the text will macros substituted for their values
      */
     public String runAll(String text, Object object, Variables variables, Position position) {
+        return runAll(text, object, variables, position, false);
+    }
+
+    /**
+     * Runs all macros in the supplied text.
+     * <p>
+     * When a macro is encountered, it will be replaced with the macro value.
+     * <p>
+     * If a macro is preceded by a numeric expression, the value will be declared as a variable <em>$number</em>.
+     * <p>
+     * If a macro fails to expand, the macro will be left in the text, unless {@code failOnError} is {@code true},
+     * where an exception will be thrown.
+     *
+     * @param text        the text to parse
+     * @param object      the object to evaluate macros against. May be {@code null}
+     * @param variables   variables to supply to macros. May be {@code null}
+     * @param position    tracks the cursor position. The cursor position will be moved if macros before it are expanded.
+     *                    May be {@code null}
+     * @param failOnError if {@code true}, throw an exception if a macro fails to expand
+     * @return the text will macros substituted for their values
+     * @throws MacroException if an error occurs, and {@code failOnError == true}
+     */
+    @Override
+    public String runAll(String text, Object object, Variables variables, Position position, boolean failOnError) {
         StringBuilder result = new StringBuilder();
         ScopedVariables scoped = pushVariables(variables);
         int oldPos = position != null ? position.getOldPosition() : -1;
@@ -216,8 +240,16 @@ public class LookupMacros implements Macros, DisposableBean {
                         value = context.run(macro, token.getNumericPrefix());
                         expanded = true;
                     } catch (Throwable exception) {
-                        log.warn(exception, exception);
-                        value = token.getText();
+                        if (failOnError) {
+                            if (exception instanceof MacroException) {
+                                throw exception;
+                            } else {
+                                throw new MacroException(exception.getMessage(), exception);
+                            }
+                        } else {
+                            log.warn(exception, exception);
+                            value = token.getText();
+                        }
                     }
                 } else {
                     value = token.getText();
@@ -429,7 +461,7 @@ public class LookupMacros implements Macros, DisposableBean {
 
     private static class ScopedVariables implements Variables {
 
-        private final List<Variables> stack = new ArrayList<Variables>();
+        private final List<Variables> stack = new ArrayList<>();
 
         public void push(Variables variables) {
             stack.add(variables);

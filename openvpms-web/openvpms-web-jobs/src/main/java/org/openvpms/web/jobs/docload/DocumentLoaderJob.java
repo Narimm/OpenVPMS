@@ -164,7 +164,7 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
     }
 
     /**
-     * <p/>
+     * <p>
      * Called by the {@link Scheduler} when a user interrupts the {@code Job}.
      *
      * @throws UnableToInterruptJobException if there is an exception while interrupting the job.
@@ -305,7 +305,7 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
      * @return the new value
      */
     private String truncate(String value, int maxLength) {
-        return value != null && value.length() > maxLength ? value.substring(0, maxLength - 3) + "..." : value;
+        return org.apache.commons.lang.StringUtils.abbreviate(value, maxLength);
     }
 
 

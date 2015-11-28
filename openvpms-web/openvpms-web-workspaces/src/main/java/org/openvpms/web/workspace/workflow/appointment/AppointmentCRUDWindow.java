@@ -33,6 +33,8 @@ import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -40,12 +42,16 @@ import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.archetype.Archetypes;
+import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.TabbedBrowserListener;
+import org.openvpms.web.component.im.sms.SMSDialog;
+import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.Selection;
@@ -69,6 +75,7 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.info.PatientContextHelper;
 import org.openvpms.web.workspace.workflow.LocalClinicianContext;
 import org.openvpms.web.workspace.workflow.WorkflowFactory;
+import org.openvpms.web.workspace.workflow.appointment.reminder.AppointmentReminderEvaluator;
 import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeriesState;
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatCondition;
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatExpression;
@@ -104,7 +111,12 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     /**
      * Check-in button identifier.
      */
-    private static final String CHECKIN_ID = "checkin";
+    private static final String CHECKIN_ID = "button.checkin";
+
+    /**
+     * SMS button identifier.
+     */
+    private static final String SMS_ID = "button.sms.send";
 
     /**
      * Constructs an {@link AppointmentCRUDWindow}.
@@ -326,6 +338,14 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                 onPaste();
             }
         });
+        if (SMSHelper.isSMSEnabled(getContext().getPractice())) {
+            buttons.add(ButtonFactory.create(SMS_ID, new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    onSMS();
+                }
+            }));
+        }
     }
 
     /**
@@ -340,6 +360,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         super.enableButtons(buttons, enable);
         boolean checkInEnabled = false;
         boolean checkoutConsultEnabled = false;
+        boolean smsEnabled = false;
         if (enable) {
             Act act = getObject();
             AppointmentActions actions = getActions();
@@ -350,12 +371,16 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                 checkInEnabled = false;
                 checkoutConsultEnabled = true;
             }
+            if (actions.canSMS(act)) {
+                smsEnabled = true;
+            }
         }
         buttons.setEnabled(NEW_ID, canCreateAppointment());
         buttons.setEnabled(CHECKIN_ID, checkInEnabled);
         buttons.setEnabled(CONSULT_ID, checkoutConsultEnabled);
         buttons.setEnabled(CHECKOUT_ID, checkoutConsultEnabled);
         buttons.setEnabled(OVER_THE_COUNTER_ID, browser.isAppointmentsSelected());
+        buttons.setEnabled(SMS_ID, smsEnabled);
     }
 
     /**
@@ -532,6 +557,45 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     }
 
     /**
+     * Invoked to send an SMS reminder for the selected appointment.
+     */
+    private void onSMS() {
+        final Act object = getObject();
+        final ActBean bean = new ActBean(object);
+        Party customer = (Party) bean.getNodeParticipant("customer");
+        Party patient = (Party) bean.getNodeParticipant("patient");
+        Context context = getContext();
+        Party location = context.getLocation();
+        final List<Contact> contacts = ContactHelper.getSMSContacts(customer);
+        if (!contacts.isEmpty() && location != null) {
+            final Context local = new LocalContext(context);
+            local.setCustomer(customer);
+            local.setPatient(patient);
+            Entity template = SMSHelper.getAppointmentTemplate(location);
+            SMSDialog dialog = new SMSDialog(contacts, local, getHelpContext().subtopic("sms"));
+            dialog.show();
+            if (template != null) {
+                try {
+                    AppointmentReminderEvaluator evaluator = ServiceHelper.getBean(AppointmentReminderEvaluator.class);
+                    String message = evaluator.evaluate(template, object, location, context.getPractice());
+                    dialog.setMessage(message);
+                } catch (Throwable exception) {
+                    ErrorHelper.show(exception);
+                }
+            }
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onOK() {
+                    bean.setValue("reminderSent", new Date());
+                    bean.setValue("reminderError", null);
+                    bean.save();
+                    onSaved(object, false);
+                }
+            });
+        }
+    }
+
+    /**
      * Cuts an appointment and pastes it to the specified schedule and start time.
      *
      * @param appointment the appointment
@@ -560,6 +624,8 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         ActBean bean = new ActBean(appointment);
         bean.setValue("status", AppointmentStatus.PENDING);
         bean.setValue("arrivalTime", null);
+        bean.setValue("reminderSent", null);
+        bean.setValue("reminderError", null);
         bean.setParticipant(UserArchetypes.AUTHOR_PARTICIPATION, getContext().getUser());
         RepeatExpression expression = (series != null) ? series.getExpression() : null;
         RepeatCondition condition = (series != null) ? series.getCondition(index) : null;
@@ -664,6 +730,18 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                    || AppointmentStatus.IN_PROGRESS.equals(status)
                    || AppointmentStatus.COMPLETED.equals(status)
                    || AppointmentStatus.BILLED.equals(status);
+        }
+
+        /**
+         * Determines if a customer can receive SMS messages.
+         *
+         * @param act the appointment
+         * @return {@code true} if the customer can receive SMS messages
+         */
+        public boolean canSMS(Act act) {
+            ActBean bean = new ActBean(act);
+            return AppointmentStatus.PENDING.equals(act.getStatus()) && bean.getBoolean("sendReminder")
+                   && SMSHelper.canSMS((Party) bean.getNodeParticipant("customer"));
         }
     }
 
