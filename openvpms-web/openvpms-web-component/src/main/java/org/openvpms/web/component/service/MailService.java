@@ -55,6 +55,16 @@ public abstract class MailService implements JavaMailSender {
     private MailServer settings;
 
     /**
+     * Used to turn on JavaMail debugging.
+     */
+    private boolean debug = false;
+
+    /**
+     * Used to turn on protocol authentication commands in the reference implementation of JavaMail.
+     */
+    private boolean debugAuth = false;
+
+    /**
      * Property name for STARTTLS flag.
      */
     private static final String MAIL_SMTP_STARTTLS_ENABLE = "mail.smtp.starttls.enable";
@@ -64,6 +74,15 @@ public abstract class MailService implements JavaMailSender {
      */
     private static final String MAIL_SMTP_AUTH = "mail.smtp.auth";
 
+    /**
+     * Property name for the debug flag.
+     */
+    private static final String MAIL_DEBUG = "mail.debug";
+
+    /**
+     * Property name for the authentication debug flag.
+     */
+    private static final String MAIL_DEBUG_AUTH = "mail.debug.auth";
 
     /**
      * Create a new JavaMail MimeMessage for the underlying JavaMail Session
@@ -181,6 +200,29 @@ public abstract class MailService implements JavaMailSender {
     }
 
     /**
+     * Determines if JavaMail debugging output is enabled.
+     * <p/>
+     * Corresponds to the JavaMail mail.debug property.
+     *
+     * @param debug if {@code true} turn on debugging output
+     */
+    public void setDebug(boolean debug) {
+        this.debug = debug;
+    }
+
+    /**
+     * Determines if JavaMail protocol authentication commands (including usernames and passwords) are
+     * included in the debug output.
+     * <p/>
+     * Corresponds to the JavaMail mail.debug.auth property.
+     *
+     * @param debug if {@code true} turn on debugging output
+     */
+    public void setDebugAuth(boolean debug) {
+        this.debugAuth = debug;
+    }
+
+    /**
      * Returns a mail sender, creating it if none is present, or the settings have changed.
      *
      * @return a mail sender
@@ -226,6 +268,8 @@ public abstract class MailService implements JavaMailSender {
             properties.setProperty(MAIL_SMTP_AUTH, Boolean.toString(!StringUtils.isEmpty(username)));
             properties.setProperty(MAIL_SMTP_STARTTLS_ENABLE, Boolean.TRUE.toString());
         }
+        properties.setProperty(MAIL_DEBUG, Boolean.toString(debug));
+        properties.setProperty(MAIL_DEBUG_AUTH, Boolean.toString(debugAuth));
         return result;
     }
 

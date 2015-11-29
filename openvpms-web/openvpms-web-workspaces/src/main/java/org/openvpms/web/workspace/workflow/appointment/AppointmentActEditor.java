@@ -191,7 +191,6 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         Entity schedule = getSchedule();
         smsPractice = SMSHelper.isSMSEnabled(getLayoutContext().getContext().getPractice());
         scheduleReminders = isScheduleRemindersEnabled(schedule);
-        smsCustomer = isCustomerSMSEnabled(getCustomer());
 
         if (appointmentType == null) {
             // set the appointment type to the default for the schedule
@@ -221,6 +220,11 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         addStartEndTimeListeners();
         updateRelativeDate();
         updateDuration();
+        if (act.isNew()) {
+            updateSendReminderForCustomer();
+        } else {
+            smsCustomer = isCustomerSMSEnabled(getCustomer());
+        }
     }
 
     /**
@@ -425,13 +429,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         editor.removeModifiableListener(patientListener);
         super.onCustomerChanged();
         editor.addModifiableListener(patientListener);
-        smsCustomer = isCustomerSMSEnabled(getCustomer());
-        updateSendReminder();
-        if (sendReminder.isEnabled() && smsCustomer) {
-            sendReminder.setSelected(true);
-        } else {
-            sendReminder.setSelected(false);
-        }
+        updateSendReminderForCustomer();
         updateAlerts();
     }
 
@@ -710,6 +708,25 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         boolean enabled = smsPractice && scheduleReminders && smsCustomer;
         sendReminder.setEnabled(enabled);
     }
+
+    /**
+     * Updates the sendReminder flag when the customer changes.
+     * <p>
+     * If SMS is disabled for the practice, schedule or customer, the flag is toggled off and disabled.
+     * <p>
+     * If not, it is enabled, and toggled on.
+     */
+    private void updateSendReminderForCustomer() {
+        smsCustomer = isCustomerSMSEnabled(getCustomer());
+        updateSendReminder();
+        if (sendReminder.isEnabled() && smsCustomer) {
+            sendReminder.setSelected(true);
+        } else {
+            sendReminder.setSelected(false);
+        }
+    }
+
+
 
     private class AppointmentLayoutStrategy extends AbstractLayoutStrategy {
 
