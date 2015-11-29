@@ -42,6 +42,13 @@
     <bean id="mailSender" class="org.openvpms.web.component.service.CurrentLocationMailService" scope="session">
         <constructor-arg ref="practiceService"/>
         <constructor-arg ref="locationRules"/>
+
+        <!-- Set the following to "true" to turn on JavaMail debugging output -->
+        <!-- The debugAuth flag includes protocol authentication commands in  -->
+        <!-- the debug output (including usernames and passwords) and may not -->
+        <!-- be supported in all JavaMail implementations                     -->
+        <property name="debug" value="false"/>
+        <property name="debugAuth" value="false"/>
     </bean>
 
     <!-- ================================================================== -->

@@ -16,6 +16,7 @@
 
 package org.openvpms.web.jobs.appointment;
 
+import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,11 +26,13 @@ import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
+import org.openvpms.archetype.rules.workflow.SystemMessageReason;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
@@ -38,7 +41,9 @@ import org.openvpms.component.system.common.query.NamedQuery;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.sms.SMSException;
 import org.openvpms.web.component.service.SMSService;
+import org.openvpms.web.jobs.JobCompletionNotifier;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.workspace.workflow.appointment.reminder.AppointmentReminderEvaluator;
 import org.openvpms.web.workspace.workflow.appointment.reminder.AppointmentReminderException;
 import org.quartz.InterruptableJob;
@@ -49,12 +54,15 @@ import org.quartz.StatefulJob;
 import org.quartz.Trigger;
 import org.quartz.UnableToInterruptJobException;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * A job that sends SMS appointment reminders.
@@ -64,6 +72,11 @@ import java.util.Set;
  * @author Tim Anderson
  */
 public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
+
+    /**
+     * The job configuration.
+     */
+    private final Entity configuration;
 
     /**
      * The SMS service.
@@ -121,10 +134,37 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
     private volatile boolean stop;
 
     /**
+     * Used to send messages to users on completion or failure.
+     */
+    private final JobCompletionNotifier notifier;
+
+    /**
+     * The total no. of reminders processed.
+     */
+    private int total;
+
+    /**
+     * The no. of reminders sent.
+     */
+    private int sent;
+
+    /**
+     * Schedules that failed to have reminders sent, and the corresponding dates, ordered on schedule name.
+     */
+    private Map<Entity, Set<Date>> errors = new TreeMap<>(new Comparator<Entity>() {
+        @Override
+        @SuppressWarnings("unchecked")
+        public int compare(Entity o1, Entity o2) {
+            return ComparatorUtils.nullLowComparator(null).compare(o1.getName(), o2.getName());
+        }
+    });
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(AppointmentReminderJob.class);
-
+    private Date from;
+    private Date to;
 
     /**
      * Constructs an {@link AppointmentReminderJob}.
@@ -140,6 +180,7 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
     public AppointmentReminderJob(Entity configuration, SMSService service, IArchetypeRuleService archetypeService,
                                   CustomerRules customerRules, PracticeService practiceService,
                                   LocationRules locationRules, AppointmentReminderEvaluator evaluator) {
+        this.configuration = configuration;
         this.service = service;
         this.archetypeService = archetypeService;
         this.customerRules = customerRules;
@@ -151,6 +192,7 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
         fromUnits = DateUnits.fromString(bean.getString("smsFromUnits", "WEEKS"));
         toInteval = bean.getInt("smsTo");
         toUnits = DateUnits.fromString(bean.getString("smsToUnits", "DAYS"));
+        notifier = new JobCompletionNotifier(archetypeService);
     }
 
     /**
@@ -170,9 +212,24 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
      */
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
+        try {
+            execute();
+            complete(null);
+        } catch (Throwable exception) {
+            log.error(exception, exception);
+            complete(exception);
+        }
+    }
+
+    /**
+     * Sends appointment reminders.
+     */
+    protected void execute() {
+        total = 0;
+        sent = 0;
         Party practice = practiceService.getPractice();
         if (practice == null) {
-            throw new JobExecutionException("No current practice");
+            throw new IllegalStateException("No current practice");
         }
         List<Party> locations = practiceService.getLocations();
         Entity defaultTemplate = practiceService.getAppointmentSMSTemplate();
@@ -181,19 +238,23 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
             addTemplate(location, templates);
         }
         if (defaultTemplate == null && templates.isEmpty()) {
-            throw new JobExecutionException("No Appointment Reminder SMS Templates have been configured");
+            throw new IllegalStateException("No Appointment Reminder SMS Templates have been configured");
         }
         NamedQuery query = new NamedQuery("AppointmentReminderJob.getReminders", "id");
-        Date from = getStartDate();
-        Date to = DateRules.getDate(DateRules.getDate(from, fromInterval, fromUnits), -toInteval, toUnits);
+        from = getStartDate();
+        to = DateRules.getDate(DateRules.getDate(from, fromInterval, fromUnits), -toInteval, toUnits);
+
+        if (log.isInfoEnabled()) {
+            log.info("Sending reminders for appointments between " + DateFormatter.formatDateTime(from)
+                     + " and " + DateFormatter.formatDateTime(to));
+        }
+
         query.setParameter("from", from);
         query.setParameter("to", to);
         int pageSize = getPageSize();
         query.setMaxResults(pageSize);
-        // pull in count results at a time. Note that sending updating an appointment affects paging, so the query
-        // needs to be re-issued from the start if any have updated
-        int total = 0;
-        int sent = 0;
+        // pull in count results at a time. Note that sending updates the appointment, which affects paging, so the
+        // query needs to be re-issued from the start if any have updated
         boolean done = false;
         Set<Long> exclude = new HashSet<>();
         while (!stop && !done) {
@@ -208,8 +269,7 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
                         ++sent;
                         updated = true;
                     } else {
-                        // failed to send the reminder, so flag the act for exclusion if a query retrieves it
-                        // again
+                        // failed to send the reminder, so flag the act for exclusion if a query retrieves it again
                         exclude.add(id);
                     }
                 }
@@ -260,25 +320,25 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
         if (customer != null) {
             Contact contact = getSMSContact(customer);
             if (contact == null) {
-                setError(bean, Messages.get("sms.appointment.nocontact"));
+                addError(bean, Messages.get("sms.appointment.nocontact"));
             } else {
                 Party location = getLocation(bean);
                 if (location == null) {
-                    setError(bean, Messages.get("sms.appointment.nolocation"));
+                    addError(bean, Messages.get("sms.appointment.nolocation"));
                 } else {
                     Entity template = templates.get(location);
                     if (template == null) {
                         template = defaultTemplate;
                     }
                     if (template == null) {
-                        setError(bean, Messages.format("sms.appointment.notemplate", location.getName()));
+                        addError(bean, Messages.format("sms.appointment.notemplate", location.getName()));
                     } else {
                         try {
                             String message = evaluator.evaluate(template, bean.getAct(), location, practice);
                             if (StringUtils.isEmpty(message)) {
-                                setError(bean, Messages.get("sms.appointment.empty"));
+                                addError(bean, Messages.get("sms.appointment.empty"));
                             } else if (message.length() > 160) {
-                                setError(bean, Messages.format("sms.appointment.toolong", message));
+                                addError(bean, Messages.format("sms.appointment.toolong", message));
                             } else {
                                 service.send(message, contact, customer, location);
                                 bean.setValue("reminderSent", new Date());
@@ -288,7 +348,7 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
                             }
                         } catch (AppointmentReminderException exception) {
                             log.error(exception, exception);
-                            setError(bean, exception.getMessage());
+                            addError(bean, exception.getMessage());
                         }
                     }
                 }
@@ -315,7 +375,7 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
      * @return {@code true} if the appointment is past
      */
     protected boolean isPast(ActBean bean) {
-        return DateRules.compareTo(bean.getDate("startTime"), new Date()) > 0;
+        return DateRules.compareTo(bean.getDate("startTime"), new Date()) <= 0;
     }
 
     /**
@@ -330,15 +390,28 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
     }
 
     /**
-     * Populates the reminderError node, ensuring the contents don't exceed the maximum length.
+     * Adds an error.
+     * <p>
+     * This populates the reminderError node, ensuring the contents don't exceed the maximum length, and
+     * logs the schedule and date of the reminder for reporting by {@link #notifyUsers}.
      *
      * @param bean    the reminder bean
      * @param message the error message
      */
-    private void setError(ActBean bean, String message) {
+    private void addError(ActBean bean, String message) {
+        log.error("Failed to send reminder, id=" + bean.getAct().getId() + ", message=" + message);
         int maxLength = bean.getDescriptor("reminderError").getMaxLength();
         bean.setValue("reminderError", StringUtils.abbreviate(message, maxLength));
         bean.save();
+        Entity schedule = bean.getNodeParticipant("schedule");
+        if (schedule != null) {
+            Set<Date> dates = errors.get(schedule);
+            if (dates == null) {
+                dates = new TreeSet<>();
+                errors.put(schedule, dates);
+            }
+            dates.add(DateRules.getDate(bean.getDate("startTime")));
+        }
     }
 
     /**
@@ -390,5 +463,65 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
         if (template != null) {
             templates.put(location, template);
         }
+    }
+
+    /**
+     * Invoked on completion of a job. Sends a message notifying the registered users of completion or failure of the
+     * job if required.
+     *
+     * @param exception the exception, if the job failed, otherwise {@code null}
+     */
+    private void complete(Throwable exception) {
+        if (exception != null || sent != 0 || total != 0) {
+            Set<User> users = notifier.getUsers(configuration);
+            if (!users.isEmpty()) {
+                notifyUsers(users, exception);
+            }
+        }
+    }
+
+    /**
+     * Notifies users of completion or failure of the job.
+     *
+     * @param users     the users to notify
+     * @param exception the exception, if the job failed, otherwise {@code null}
+     */
+    private void notifyUsers(Set<User> users, Throwable exception) {
+        String subject;
+        String reason;
+        StringBuilder text = new StringBuilder();
+        if (exception != null) {
+            reason = SystemMessageReason.ERROR;
+            subject = Messages.format("appointmentreminder.subject.exception", configuration.getName());
+            text.append(Messages.format("appointmentreminder.exception", exception.getMessage()));
+        } else {
+            if (sent != total || !errors.isEmpty()) {
+                reason = SystemMessageReason.ERROR;
+                subject = Messages.format("appointmentreminder.subject.errors", configuration.getName(), total - sent);
+            } else {
+                reason = SystemMessageReason.COMPLETED;
+                subject = Messages.format("appointmentreminder.subject.success", configuration.getName(), sent);
+            }
+        }
+        if (from != null && to != null) {
+            text.append(Messages.format("appointmentreminder.period", DateFormatter.formatDateTime(from),
+                                        DateFormatter.formatDateTime(to)));
+            text.append("\n");
+        }
+        text.append(Messages.format("appointmentreminder.sent", sent, total));
+
+        if (!errors.isEmpty()) {
+            text.append("\n\n");
+            text.append(Messages.get("appointmentreminder.error"));
+            text.append("\n");
+            for (Map.Entry<Entity, Set<Date>> entry : errors.entrySet()) {
+                for (Date date : entry.getValue()) {
+                    text.append(Messages.format("appointmentreminder.error.item", entry.getKey().getName(),
+                                                DateFormatter.formatDate(date, false)));
+                    text.append("\n");
+                }
+            }
+        }
+        notifier.send(users, subject, reason, text.toString());
     }
 }

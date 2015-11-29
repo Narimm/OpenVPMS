@@ -692,7 +692,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * @param notes         the notes. May be {@code null}
      * @param sendReminder  if {@code true}, a reminder should be sent for this appointment
      * @param reminderSent  the date a reminder was sent. May be {@code null}
-     * @param reminderError the reminder error, if the reminder couldb't be sent. May be {@code null}
+     * @param reminderError the reminder error, if the reminder couldn't be sent. May be {@code null}
      * @return a component representing the label with optional popup
      */
     protected Component createLabelWithNotes(String text, String notes, boolean sendReminder, Date reminderSent,
@@ -702,19 +702,30 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
             if (!(result instanceof Row)) {
                 result = RowFactory.create(Styles.CELL_SPACING, result);
             }
-            String style;
-            if (!StringUtils.isEmpty(reminderError)) {
-                style = "AppointmentReminder.error";
-            } else if (reminderSent != null) {
-                style = "AppointmentReminder.sent";
-            } else {
-                style = "AppointmentReminder.unsent";
-            }
-            Label bell = LabelFactory.create(null, style);
-            bell.setLayoutData(RowFactory.layout(new Alignment(Alignment.RIGHT, Alignment.TOP), Styles.FULL_WIDTH));
-            result.add(bell);
+            Label reminder = createReminderIcon(reminderSent, reminderError);
+            reminder.setLayoutData(RowFactory.layout(new Alignment(Alignment.RIGHT, Alignment.TOP), Styles.FULL_WIDTH));
+            result.add(reminder);
         }
         return result;
+    }
+
+    /**
+     * Helper to create a label indicating the reminder status of an appointment.
+     *
+     * @param reminderSent  the date a reminder was sent. May be {@code null}
+     * @param reminderError the reminder error, if the reminder couldn't be sent. May be {@code null}
+     * @return a new label
+     */
+    protected Label createReminderIcon(Date reminderSent, String reminderError) {
+        String style;
+        if (!StringUtils.isEmpty(reminderError)) {
+            style = "AppointmentReminder.error";
+        } else if (reminderSent != null) {
+            style = "AppointmentReminder.sent";
+        } else {
+            style = "AppointmentReminder.unsent";
+        }
+        return LabelFactory.create(null, style);
     }
 
     /**

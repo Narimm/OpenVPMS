@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
@@ -27,6 +28,8 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.workspace.workflow.scheduling.Cell;
@@ -99,7 +102,7 @@ class SingleScheduleTableModel extends AppointmentTableModel {
 
     /**
      * Determines if a cell is cut.
-     * <p/>
+     * <p>
      * This implementation returns true if the row matches the cut row, and the column is any
      * other than the start time column.
      *
@@ -197,7 +200,7 @@ class SingleScheduleTableModel extends AppointmentTableModel {
                 result = getViewer(set, ScheduleEvent.SCHEDULE_TYPE_REFERENCE, ScheduleEvent.SCHEDULE_TYPE_NAME, false);
                 break;
             case CUSTOMER_INDEX:
-                result = getViewer(set, ScheduleEvent.CUSTOMER_REFERENCE, ScheduleEvent.CUSTOMER_NAME, true);
+                result = getCustomer(set);
                 break;
             case PATIENT_INDEX:
                 result = getViewer(set, ScheduleEvent.PATIENT_REFERENCE, ScheduleEvent.PATIENT_NAME, true);
@@ -220,6 +223,24 @@ class SingleScheduleTableModel extends AppointmentTableModel {
         for (int i = 0; i < names.length; ++i) {
             ScheduleColumn column = new ScheduleColumn(i, schedule, names[i]);
             result.addColumn(column);
+        }
+        return result;
+    }
+
+    /**
+     * Returns a component representing the customer.
+     *
+     * @param event the appointment event
+     * @return a new component
+     */
+    private Component getCustomer(PropertySet event) {
+        Component result = getViewer(event, ScheduleEvent.CUSTOMER_REFERENCE, ScheduleEvent.CUSTOMER_NAME, true);
+        boolean sendReminder = event.getBoolean(ScheduleEvent.SEND_REMINDER);
+        if (sendReminder) {
+            Label reminder = createReminderIcon(event.getDate(ScheduleEvent.REMINDER_SENT),
+                                                event.getString(ScheduleEvent.REMINDER_ERROR));
+            reminder.setLayoutData(RowFactory.layout(new Alignment(Alignment.RIGHT, Alignment.TOP), Styles.FULL_WIDTH));
+            result = RowFactory.create(Styles.CELL_SPACING, result, reminder);
         }
         return result;
     }
