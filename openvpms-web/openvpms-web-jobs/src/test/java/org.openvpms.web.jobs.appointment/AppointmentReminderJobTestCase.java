@@ -39,6 +39,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -112,20 +113,32 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
      */
     private Entity template;
 
+    /**
+     * The evaluator.
+     */
+    private AppointmentReminderEvaluator evaluator;
+
 
     /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
+        evaluator = new AppointmentReminderEvaluator(getArchetypeService(), getLookupService(),
+                                                     Mockito.mock(Macros.class));
         customerRules = new CustomerRules(getArchetypeService(), getLookupService());
         dateFrom = TestHelper.getDate("2015-11-01");
-        schedule1 = createSchedule();
-        schedule2 = createSchedule();
-        Entity scheduleView1 = ScheduleTestHelper.createScheduleView(schedule1);
-        Entity scheduleView2 = ScheduleTestHelper.createScheduleView(schedule2);
+
+        Entity scheduleView1 = ScheduleTestHelper.createScheduleView();
+        Entity scheduleView2 = ScheduleTestHelper.createScheduleView();
+
         location1 = createLocation("Vets R Us", scheduleView1);
         location2 = createLocation("Vets Be Us", scheduleView2);
+
+        schedule1 = createSchedule(location1);
+        schedule2 = createSchedule(location2);
+        ScheduleTestHelper.addSchedules(scheduleView1, schedule1);
+        ScheduleTestHelper.addSchedules(scheduleView2, schedule2);
 
         // disable SMS reminders for existing acts for the test period
         ArchetypeQuery query = new ArchetypeQuery(ScheduleArchetypes.APPOINTMENT);
@@ -262,16 +275,37 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
     public void testScheduleWithNoLocation() throws Exception {
         Entity config = createJobConfig();
 
-        // link the schedule2 to a second practice location
-        Entity scheduleView2 = ScheduleTestHelper.createScheduleView(schedule2);
-        createLocation("AAA Vet", scheduleView2);
-
-        Act appointment1 = createAppointment(dateFrom, schedule1, true);
+        final Act appointment1 = createAppointment(dateFrom, schedule1, true);
         Act appointment2 = createAppointment(dateFrom, schedule2, true);
 
         final Date startDate = DateRules.getDate(dateFrom, -2, DateUnits.DAYS);
         SMSService smsService = Mockito.mock(SMSService.class);
-        runJob(config, startDate, smsService);
+
+        IArchetypeRuleService archetypeService = (IArchetypeRuleService) getArchetypeService();
+        LocationRules locationRules = new LocationRules(getArchetypeService());
+        AppointmentReminderJob job = new AppointmentReminderJob(config, smsService, archetypeService, customerRules,
+                                                                practiceService, locationRules, evaluator) {
+            @Override
+            protected Date getStartDate() {
+                return startDate;
+            }
+
+            @Override
+            protected int getPageSize() {
+                return 5;
+            }
+
+            @Override
+            protected boolean isPast(ActBean bean) {
+                return false;
+            }
+
+            @Override
+            protected Party getLocation(ActBean bean) {
+                return bean.getAct().equals(appointment1) ? super.getLocation(bean) : null;
+            }
+        };
+        job.execute(null);
 
         checkSent(appointment1);
         checkNotSent(appointment2, "Cannot determine the practice location of the appointment");
@@ -377,9 +411,6 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
      * @throws JobExecutionException for any job execution error
      */
     private void runJob(Entity config, final Date startDate, SMSService smsService) throws JobExecutionException {
-        AppointmentReminderEvaluator evaluator = new AppointmentReminderEvaluator(getArchetypeService(),
-                                                                                  getLookupService(),
-                                                                                  Mockito.mock(Macros.class));
         IArchetypeRuleService archetypeService = (IArchetypeRuleService) getArchetypeService();
         LocationRules locationRules = new LocationRules(getArchetypeService());
         AppointmentReminderJob job = new AppointmentReminderJob(config, smsService, archetypeService, customerRules,
@@ -427,19 +458,20 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
     private Party createLocation(String name, Entity scheduleView) {
         Party location = TestHelper.createLocation();
         location.setName(name);
-        IMObjectBean locationBean = new IMObjectBean(location);
-        locationBean.addNodeTarget("scheduleViews", scheduleView);
-        locationBean.save();
+        EntityBean locationBean = new EntityBean(location);
+        locationBean.addNodeRelationship("scheduleViews", scheduleView);
+        save(location, scheduleView);
         return location;
     }
 
     /**
      * Creates a new appointment schedule, configured to send reminders.
      *
+     * @param location the practice location
      * @return a new schedule
      */
-    private Entity createSchedule() {
-        Entity schedule = ScheduleTestHelper.createSchedule();
+    private Entity createSchedule(Party location) {
+        Entity schedule = ScheduleTestHelper.createSchedule(location);
         IMObjectBean bean = new IMObjectBean(schedule);
         bean.setValue("sendReminders", true);
         bean.save();

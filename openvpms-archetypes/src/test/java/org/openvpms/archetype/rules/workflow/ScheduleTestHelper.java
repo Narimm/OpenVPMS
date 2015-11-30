@@ -35,7 +35,10 @@ import org.springframework.cache.ehcache.EhCacheFactoryBean;
 
 import java.io.IOException;
 import java.sql.Time;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -67,12 +70,25 @@ public class ScheduleTestHelper extends TestHelper {
     public static Entity createScheduleView(Entity... schedules) {
         Entity view = (Entity) create("entity.organisationScheduleView");
         view.setName("XScheduleView");
+        addSchedules(view, schedules);
+        return view;
+    }
+
+    /**
+     * Adds schedules to a schedule view.
+     *
+     * @param view      the view
+     * @param schedules the schedules to add
+     */
+    public static void addSchedules(Entity view, Entity... schedules) {
         EntityBean bean = new EntityBean(view);
         for (Entity schedule : schedules) {
             bean.addNodeRelationship("schedules", schedule);
         }
-        bean.save();
-        return view;
+        List<Entity> list = new ArrayList<>();
+        list.add(view);
+        list.addAll(Arrays.asList(schedules));
+        save(list);
     }
 
     /**
@@ -103,10 +119,11 @@ public class ScheduleTestHelper extends TestHelper {
     /**
      * Helper to create and save a <em>party.organisationSchedule</em>.
      *
+     * @param location the practice location
      * @return a new schedule
      */
-    public static Party createSchedule() {
-        return createSchedule(15, "MINUTES", 2, createAppointmentType());
+    public static Party createSchedule(Party location) {
+        return createSchedule(15, "MINUTES", 2, createAppointmentType(), location);
     }
 
     /**
@@ -116,10 +133,11 @@ public class ScheduleTestHelper extends TestHelper {
      * @param slotUnits       the schedule slot units
      * @param noSlots         the appointment no. of slots
      * @param appointmentType the appointment type. May be {@code null}
+     * @param location        the practice location
      * @return a new schedule
      */
     public static Party createSchedule(int slotSize, String slotUnits,
-                                       int noSlots, Entity appointmentType) {
+                                       int noSlots, Entity appointmentType, Party location) {
         Party schedule = (Party) create(ScheduleArchetypes.ORGANISATION_SCHEDULE);
         EntityBean bean = new EntityBean(schedule);
         bean.setValue("name", "XSchedule");
@@ -130,6 +148,7 @@ public class ScheduleTestHelper extends TestHelper {
         if (appointmentType != null) {
             addAppointmentType(schedule, appointmentType, noSlots, true);
         }
+        bean.addNodeTarget("location", location);
         bean.save();
         return schedule;
     }
@@ -421,4 +440,5 @@ public class ScheduleTestHelper extends TestHelper {
         }
         return bean.getObject();
     }
+
 }

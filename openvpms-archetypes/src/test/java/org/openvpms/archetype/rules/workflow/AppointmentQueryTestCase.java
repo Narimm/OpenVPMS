@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -49,7 +49,7 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
     @Test
     public void testQuery() {
         final int count = 10;
-        Party schedule = ScheduleTestHelper.createSchedule();
+        Party schedule = ScheduleTestHelper.createSchedule(TestHelper.createLocation());
         Date from = new Date();
         Act[] appointments = new Act[count];
         Date[] startTimes = new Date[count];

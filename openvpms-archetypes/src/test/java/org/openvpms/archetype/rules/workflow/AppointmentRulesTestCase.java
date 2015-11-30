@@ -66,8 +66,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link AppointmentRules#getDefaultAppointmentType(Party)}
-     * method.
+     * Tests the {@link AppointmentRules#getDefaultAppointmentType} * method.
      */
     @Test
     public void testGetDefaultAppointmentType() {
@@ -76,17 +75,13 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         Party schedule = createSchedule(15, "MINUTES", 2, null);
         assertNull(rules.getDefaultAppointmentType(schedule));
 
-        ScheduleTestHelper.addAppointmentType(schedule, appointmentType1, 2,
-                                              false);
+        ScheduleTestHelper.addAppointmentType(schedule, appointmentType1, 2, false);
 
         // no default appointment type, so should pick the first available
-        assertEquals(rules.getDefaultAppointmentType(schedule),
-                     appointmentType1);
+        assertEquals(rules.getDefaultAppointmentType(schedule), appointmentType1);
 
-        ScheduleTestHelper.addAppointmentType(schedule, appointmentType2, 2,
-                                              true);
-        assertEquals(rules.getDefaultAppointmentType(schedule),
-                     appointmentType2);
+        ScheduleTestHelper.addAppointmentType(schedule, appointmentType2, 2, true);
+        assertEquals(rules.getDefaultAppointmentType(schedule), appointmentType2);
     }
 
     /**
@@ -252,10 +247,10 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         Party location1 = TestHelper.createLocation();
         Party location2 = TestHelper.createLocation();
 
-        Entity scheduleA = ScheduleTestHelper.createSchedule();
-        Entity scheduleB = ScheduleTestHelper.createSchedule();
-        Entity scheduleC = ScheduleTestHelper.createSchedule();
-        Entity scheduleD = ScheduleTestHelper.createSchedule();
+        Entity scheduleA = ScheduleTestHelper.createSchedule(location1);
+        Entity scheduleB = ScheduleTestHelper.createSchedule(location1);
+        Entity scheduleC = ScheduleTestHelper.createSchedule(location2);
+        Entity scheduleD = ScheduleTestHelper.createSchedule(location2);
 
         Entity view1 = ScheduleTestHelper.createScheduleView(scheduleA, scheduleB);
         Entity view2 = ScheduleTestHelper.createScheduleView(scheduleC);
@@ -280,23 +275,8 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     @Test
     public void testGetLocation() {
         Party location1 = TestHelper.createLocation();
-        Party location2 = TestHelper.createLocation();
-
-        Entity scheduleA = ScheduleTestHelper.createSchedule();
-        Entity scheduleB = ScheduleTestHelper.createSchedule();
-        Entity scheduleC = ScheduleTestHelper.createSchedule();
-        Entity scheduleD = ScheduleTestHelper.createSchedule();
-
-        Entity view1 = ScheduleTestHelper.createScheduleView(scheduleA, scheduleB);
-        Entity view2 = ScheduleTestHelper.createScheduleView(scheduleC);
-
-        ScheduleTestHelper.addScheduleView(location1, view1);
-        ScheduleTestHelper.addScheduleView(location2, view2);
-
+        Entity scheduleA = ScheduleTestHelper.createSchedule(location1);
         assertEquals(location1, rules.getLocation(scheduleA));
-        assertEquals(location1, rules.getLocation(scheduleB));
-        assertEquals(location2, rules.getLocation(scheduleC));
-        assertNull(rules.getLocation(scheduleD));
     }
 
     /**
@@ -383,10 +363,9 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      * @param appointmentType the appointment type
      * @return a new schedule
      */
-    protected Party createSchedule(int slotSize, String slotUnits,
-                                   int noSlots, Entity appointmentType) {
-        return ScheduleTestHelper.createSchedule(slotSize, slotUnits,
-                                                 noSlots, appointmentType);
+    protected Party createSchedule(int slotSize, String slotUnits, int noSlots, Entity appointmentType) {
+        return ScheduleTestHelper.createSchedule(slotSize, slotUnits, noSlots, appointmentType,
+                                                 TestHelper.createLocation());
     }
 
     /**

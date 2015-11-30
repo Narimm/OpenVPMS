@@ -37,6 +37,7 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.hl7.patient.PatientContext;
@@ -564,8 +565,9 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         final ActBean bean = new ActBean(object);
         Party customer = (Party) bean.getNodeParticipant("customer");
         Party patient = (Party) bean.getNodeParticipant("patient");
+        Party location = getLocation(bean);
         Context context = getContext();
-        Party location = context.getLocation();
+
         final List<Contact> contacts = ContactHelper.getSMSContacts(customer);
         if (!contacts.isEmpty() && location != null) {
             final Context local = new LocalContext(context);
@@ -592,7 +594,26 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                     onSaved(object, false);
                 }
             });
+        } else if (contacts.isEmpty()) {
+            InformationDialog.show(Messages.get("sms.appointment.nocontact"));
+        } else {
+            InformationDialog.show(Messages.get("sms.appointment.nolocation"));
         }
+    }
+
+    /**
+     * Returns the location associated with an appointment.
+     *
+     * @param bean the appointment bean
+     * @return the location, or {@code null} if one cannot be found
+     */
+    private Party getLocation(ActBean bean) {
+        Entity schedule = bean.getNodeParticipant("schedule");
+        if (schedule != null) {
+            IMObjectBean scheduleBean = new IMObjectBean(schedule);
+            return (Party) scheduleBean.getNodeTargetObject("location");
+        }
+        return null;
     }
 
     /**

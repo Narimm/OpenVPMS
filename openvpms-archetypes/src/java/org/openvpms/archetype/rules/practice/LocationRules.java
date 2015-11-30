@@ -24,14 +24,8 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IPage;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import static org.openvpms.component.system.common.query.Constraints.eq;
-import static org.openvpms.component.system.common.query.Constraints.join;
 
 
 /**
@@ -161,24 +155,6 @@ public class LocationRules {
         IMObjectBean bean = new IMObjectBean(location, service);
         List<Lookup> values = bean.getValues("pricingGroup", Lookup.class);
         return !values.isEmpty() ? values.get(0) : null;
-    }
-
-    /**
-     * Returns the locations associated with a schedule.
-     *
-     * @param schedule the schedule
-     * @return the locations
-     */
-    @SuppressWarnings("unchecked")
-    public List<Party> getLocations(Entity schedule) {
-        ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.LOCATION, true);
-        query.add(join("scheduleViews").add(join("target").add(join("schedules").add(eq("target", schedule)))));
-        query.setDistinct(true);
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        IPage page = service.get(query);
-        ArrayList<Party> parties = new ArrayList<>();
-        parties.addAll((List<Party>) page.getResults());
-        return parties;
     }
 
     /**

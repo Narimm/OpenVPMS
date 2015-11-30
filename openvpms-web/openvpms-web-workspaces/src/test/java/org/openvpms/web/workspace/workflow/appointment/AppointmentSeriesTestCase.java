@@ -109,7 +109,8 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         clinician = TestHelper.createClinician();
         author = TestHelper.createUser();
         appointmentType = ScheduleTestHelper.createAppointmentType();
-        schedule = ScheduleTestHelper.createSchedule(15, DateUnits.MINUTES.toString(), 1, appointmentType);
+        schedule = ScheduleTestHelper.createSchedule(15, DateUnits.MINUTES.toString(), 1, appointmentType,
+                                                     TestHelper.createLocation());
     }
 
     /**
@@ -265,7 +266,8 @@ public class AppointmentSeriesTestCase extends ArchetypeServiceTest {
         AppointmentSeries series = createSeries(appointment, Repeats.yearly(), times(2));
         checkSeries(series, appointment, 1, DateUnits.YEARS, 3);
 
-        Entity schedule2 = ScheduleTestHelper.createSchedule(15, DateUnits.MINUTES.toString(), 1, appointmentType);
+        Entity schedule2 = ScheduleTestHelper.createSchedule(15, DateUnits.MINUTES.toString(), 1, appointmentType,
+                                                             TestHelper.createLocation());
 
         ActBean bean = new ActBean(appointment);
         bean.setNodeParticipant("schedule", schedule2);

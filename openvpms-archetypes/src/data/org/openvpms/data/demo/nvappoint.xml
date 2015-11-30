@@ -17,24 +17,42 @@
 <archetype>
     <data id="OS1" archetype="party.organisationSchedule" name="Main Appointment Schedule" slotSize="15"
           slotUnits="MINUTES" allowDoubleBooking="true" startTime="1/1/1970 09:00:00" endTime="1/1/1970 17:30:00"
-          sendReminders="true"/>
+          sendReminders="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS1" target="id:OL1"/>
+    </data>
     <data id="OS2" archetype="party.organisationSchedule" name="Branch Appointment Schedule" slotSize="15"
           slotUnits="MINUTES" allowDoubleBooking="true" startTime="1/1/1970 09:00:00" endTime="1/1/1970 17:30:00"
-          sendReminders="true"/>
+          sendReminders="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS2" target="id:OL2"/>
+    </data>
     <data id="OS3" archetype="party.organisationSchedule" name="Main Surgery Schedule" slotSize="30"
-          slotUnits="MINUTES" allowDoubleBooking="false" startTime="1/1/1970 08:00:00" endTime="1/1/1970 18:00:00"/>
+          slotUnits="MINUTES" allowDoubleBooking="false" startTime="1/1/1970 08:00:00" endTime="1/1/1970 18:00:00">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS3" target="id:OL1"/>
+    </data>
     <data id="OS4" archetype="party.organisationSchedule" name="Branch Surgery Schedule" slotSize="30"
-          slotUnits="MINUTES" allowDoubleBooking="false" startTime="1/1/1970 08:00:00" endTime="1/1/1970 18:00:00"/>
+          slotUnits="MINUTES" allowDoubleBooking="false" startTime="1/1/1970 08:00:00" endTime="1/1/1970 18:00:00">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS4" target="id:OL2"/>
+    </data>
     <data id="OS5" archetype="party.organisationSchedule" name="Dog Run" slotSize="1" slotUnits="HOURS"
-          allowDoubleBooking="false"/>
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS5" target="id:OL1"/>
+    </data>
     <data id="OS6" archetype="party.organisationSchedule" name="Dog Lg Cage" slotSize="1" slotUnits="HOURS"
-          allowDoubleBooking="false"/>
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS6" target="id:OL1"/>
+    </data>
     <data id="OS7" archetype="party.organisationSchedule" name="Dog Med Cage" slotSize="1" slotUnits="HOURS"
-          allowDoubleBooking="false"/>
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS7" target="id:OL1"/>
+    </data>
     <data id="OS8" archetype="party.organisationSchedule" name="Dog Sm Cage" slotSize="1" slotUnits="HOURS"
-          allowDoubleBooking="false"/>
+          allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS8" target="id:OL1"/>
+    </data>
     <data id="OS9" archetype="party.organisationSchedule" name="Cat Cage" slotSize="1" slotUnits="HOURS"
-          allowDoubleBooking="true"/>
+          allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS9" target="id:OL1"/>
+    </data>
     <data id="VS1" archetype="entity.organisationScheduleView" name="Main Schedule View">
         <data archetype="entityRelationship.viewSchedule" source="id:VS1" target="id:OS1" sequence="0"/>
         <data archetype="entityRelationship.viewSchedule" source="id:VS1" target="id:OS3" sequence="1"/>
