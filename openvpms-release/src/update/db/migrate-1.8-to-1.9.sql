@@ -283,3 +283,45 @@ FROM entity_details d
        AND d.name IN ('mailHost', 'mailPort', 'mailUsername', 'mailPassword', 'mailSecurity');
 
 DROP TABLE tmp_mail_servers;
+
+#
+# Link schedules to locations, where only one relationship exists.
+#
+INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, description, active_start_time,
+                          active_end_time, sequence, source_id, target_id)
+  SELECT
+    0,
+    UUID(),
+    'entityLink.scheduleLocation',
+    '1.0',
+    'Schedule Location',
+    NULL,
+    NULL,
+    NULL,
+    0,
+    schedule.entity_id,
+    location.entity_id
+  FROM entities location
+    JOIN entity_relationships lr
+      ON location.entity_id = lr.source_id
+         AND location.arch_short_name = 'party.organisationLocation'
+         AND lr.arch_short_name = 'entityRelationship.locationView'
+    JOIN entities scheduleView
+      ON lr.target_id = scheduleView.entity_id
+    JOIN entity_relationships ls
+      ON scheduleView.entity_id = ls.source_id
+         AND ls.arch_short_name = 'entityRelationship.viewSchedule'
+    JOIN entities schedule
+      ON ls.target_id = schedule.entity_id
+  WHERE location.active = 1
+        AND scheduleView.active = 1
+        AND schedule.active = 1
+        AND NOT exists
+  (
+      SELECT *
+      FROM entity_links l
+      WHERE l.source_id = schedule.entity_id
+            AND l.target_id = location.entity_id
+            AND l.arch_short_name = 'entityLink.scheduleLocation')
+  GROUP BY schedule.entity_id
+  HAVING count(location.entity_id) = 1;

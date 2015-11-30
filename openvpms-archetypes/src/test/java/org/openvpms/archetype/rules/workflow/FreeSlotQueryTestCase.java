@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -441,7 +442,7 @@ public class FreeSlotQueryTestCase extends ArchetypeServiceTest {
      * @return the schedule
      */
     private Party createSchedule(String startTime, String endTime) {
-        Party schedule = ScheduleTestHelper.createSchedule();
+        Party schedule = ScheduleTestHelper.createSchedule(TestHelper.createLocation());
         IMObjectBean bean = new IMObjectBean(schedule);
         bean.setValue("startTime", (startTime != null) ? Time.valueOf(startTime) : null);
         bean.setValue("endTime", (endTime != null) ? Time.valueOf(endTime) : null);

@@ -379,6 +379,25 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
     }
 
     /**
+     * Returns the location associated with an appointment.
+     *
+     * @param bean the appointment bean
+     * @return the location, or {@code null} if none can be determined
+     */
+    protected Party getLocation(ActBean bean) {
+        Party location = null;
+        Entity schedule = bean.getNodeParticipant("schedule");
+        if (schedule != null) {
+            IMObjectBean scheduleBean = new IMObjectBean(schedule, archetypeService);
+            location = (Party) scheduleBean.getNodeTargetObject("location");
+            if (location == null) {
+                log.warn("Cannot determine the practice location for: " + schedule.getName());
+            }
+        }
+        return location;
+    }
+
+    /**
      * Returns an appointment given its identifier.
      *
      * @param id the appointment identifier
@@ -426,27 +445,6 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
             IMObjectBean contactBean = new IMObjectBean(contact, archetypeService);
             if (!StringUtils.isEmpty(contactBean.getString("telephoneNumber"))) {
                 return contact;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns the location associated with an appointment.
-     *
-     * @param bean the appointment bean
-     * @return the location, or {@code null} if none can be determined
-     */
-    private Party getLocation(ActBean bean) {
-        Entity schedule = bean.getNodeParticipant("schedule");
-        if (schedule != null) {
-            List<Party> locations = locationRules.getLocations(schedule);
-            if (locations.size() == 1) {
-                return locations.get(0);
-            } else if (locations.isEmpty()) {
-                log.warn("Cannot determine the practice location for: " + schedule.getName());
-            } else {
-                log.warn("Schedule has multiple practice locations: " + schedule.getName());
             }
         }
         return null;

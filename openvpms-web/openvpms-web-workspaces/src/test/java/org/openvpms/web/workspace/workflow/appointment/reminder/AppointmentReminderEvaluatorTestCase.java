@@ -76,7 +76,7 @@ public class AppointmentReminderEvaluatorTestCase extends ArchetypeServiceTest {
         save(patient);
         act = ScheduleTestHelper.createAppointment(TestHelper.getDatetime("2015-11-28 09:00:00"),
                                                    TestHelper.getDatetime("2015-11-28 09:30:00"),
-                                                   ScheduleTestHelper.createSchedule(), customer, patient);
+                                                   ScheduleTestHelper.createSchedule(location), customer, patient);
     }
 
     /**

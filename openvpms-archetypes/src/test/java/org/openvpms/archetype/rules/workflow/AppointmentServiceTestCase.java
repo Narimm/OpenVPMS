@@ -63,6 +63,11 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
      */
     private Party schedule;
 
+    /**
+     * The practice location.
+     */
+    private Party location;
+
 
     /**
      * Tests addition of an appointment.
@@ -141,12 +146,11 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
     @Test
     public void testGetEvents() {
         final int count = 10;
-        Party schedule = ScheduleTestHelper.createSchedule();
+        Party schedule = ScheduleTestHelper.createSchedule(location);
         Act[] appointments = new Act[count];
         Date date = getDate("2007-01-01");
         for (int i = 0; i < count; ++i) {
-            Date startTime = DateRules.getDate(date, 15 * count,
-                                               DateUnits.MINUTES);
+            Date startTime = DateRules.getDate(date, 15 * count, DateUnits.MINUTES);
             Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
             Date arrivalTime = (i % 2 == 0) ? new Date() : null;
             Party customer = TestHelper.createCustomer();
@@ -355,7 +359,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
 
         // create some appointments
         for (int i = 0; i < 10; ++i) {
-            Set<Long> appointments = new HashSet<Long>();
+            Set<Long> appointments = new HashSet<>();
             Date date = DateRules.getDate(start, i, DateUnits.DAYS);
             for (int j = 0; j < 100; ++j) {
                 Act appointment = createAppointment(date, schedule, patient, true);
@@ -386,8 +390,8 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         Date end = getDatetime("2015-05-14 09:15:00");
 
         Entity appointmentType = ScheduleTestHelper.createAppointmentType();
-        Party schedule1 = ScheduleTestHelper.createSchedule(15, "MINUTES", 2, appointmentType);
-        Party schedule2 = ScheduleTestHelper.createSchedule(15, "MINUTES", 2, appointmentType);
+        Party schedule1 = ScheduleTestHelper.createSchedule(15, "MINUTES", 2, appointmentType, location);
+        Party schedule2 = ScheduleTestHelper.createSchedule(15, "MINUTES", 2, appointmentType, location);
         save(schedule1);
         save(schedule2);
 
@@ -483,7 +487,8 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
      */
     @Before
     public void setUp() {
-        schedule = ScheduleTestHelper.createSchedule();
+        location = TestHelper.createLocation();
+        schedule = ScheduleTestHelper.createSchedule(location);
     }
 
     /**
@@ -519,7 +524,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
      */
     @Override
     protected Entity createSchedule() {
-        return ScheduleTestHelper.createSchedule();
+        return ScheduleTestHelper.createSchedule(location);
     }
 
     /**
