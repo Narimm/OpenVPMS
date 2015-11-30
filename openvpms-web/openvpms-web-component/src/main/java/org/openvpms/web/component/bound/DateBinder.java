@@ -53,6 +53,7 @@ public class DateBinder extends Binder {
     public DateBinder(DateField field, Property property) {
         super(property, false);
         this.field = field;
+        field.setEnabled(!property.isReadOnly());
         listener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
                 String name = event.getPropertyName();

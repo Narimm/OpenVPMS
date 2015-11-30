@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.till;
@@ -84,7 +84,7 @@ public class TillActTableModel extends ActAmountTableModel<FinancialAct> {
         if (index == DATE_INDEX) {
             Date date = act.getActivityStartTime();
             if (date != null) {
-                result = DateFormatter.formatDateTime(date, false);
+                result = DateFormatter.formatDateTime(date);
             }
         } else if (index == customerIndex) {
             ActBean bean = new ActBean(act);

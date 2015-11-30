@@ -19,7 +19,9 @@ package org.openvpms.web.workspace.workflow.appointment;
 import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -45,7 +47,8 @@ public class AppointmentActEditorTestCase extends AbstractAppTest {
     public void testNewInstance() {
         Date start = DateRules.getToday();
         Date end = DateRules.getTomorrow();
-        Act appointment = ScheduleTestHelper.createAppointment(start, end, ScheduleTestHelper.createSchedule());
+        Party schedule = ScheduleTestHelper.createSchedule(TestHelper.createLocation());
+        Act appointment = ScheduleTestHelper.createAppointment(start, end, schedule);
         LayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
         AppointmentActEditor editor = new AppointmentActEditor(appointment, null, context);
 

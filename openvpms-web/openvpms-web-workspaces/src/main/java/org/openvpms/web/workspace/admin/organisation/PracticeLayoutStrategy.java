@@ -56,10 +56,15 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
     private ComponentState subscription;
 
     /**
-     * The archetype nodes. This excludes the prescription expiry units as they are rendered inline with the
-     * expiry period.
+     * Prescription expiry units node.
      */
-    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude("prescriptionExpiryUnits");
+    private static final String PRESCRIPTION_EXPIRY_UNITS = "prescriptionExpiryUnits";
+
+    /**
+     * The archetype nodes. This excludes the prescription expiry units as they are rendered inline with the expiry
+     * period.
+     */
+    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude(PRESCRIPTION_EXPIRY_UNITS);
 
     /**
      * Default constructor.
@@ -75,12 +80,13 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
      * @param focusGroup   the subscription component's focus group. May be {@code null}
      */
     public PracticeLayoutStrategy(Component subscription, FocusGroup focusGroup) {
+        super(NODES);
         this.subscription = new ComponentState(subscription, focusGroup);
     }
 
     /**
      * Apply the layout strategy.
-     * <p/>
+     * <p>
      * This renders an object in a {@code Component}, using a factory to create the child components.
      *
      * @param object     the object to apply
@@ -139,7 +145,7 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
      */
     private void addPrescriptionExpiry(IMObject object, PropertySet properties, IMObjectComponentFactory factory) {
         Property period = properties.get("prescriptionExpiryPeriod");
-        Property units = properties.get("prescriptionExpiryUnits");
+        Property units = properties.get(PRESCRIPTION_EXPIRY_UNITS);
 
         ComponentState periodComponent = factory.create(period, object);
         ComponentState unitsComponent = factory.create(units, object);

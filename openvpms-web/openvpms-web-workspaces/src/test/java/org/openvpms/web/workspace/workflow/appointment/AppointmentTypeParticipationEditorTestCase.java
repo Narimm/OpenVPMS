@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -19,9 +19,11 @@ package org.openvpms.web.workspace.workflow.appointment;
 import org.junit.Test;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -52,8 +54,9 @@ public class AppointmentTypeParticipationEditorTestCase extends AbstractAppTest 
 
         Entity appointmentType1 = ScheduleTestHelper.createAppointmentType();
         Entity appointmentType2 = ScheduleTestHelper.createAppointmentType();
-        Entity schedule1 = ScheduleTestHelper.createSchedule(15, "MINUTES", 2, appointmentType1);
-        Entity schedule2 = ScheduleTestHelper.createSchedule(15, "MINUTES", 2, appointmentType2);
+        Party location = TestHelper.createLocation();
+        Entity schedule1 = ScheduleTestHelper.createSchedule(15, "MINUTES", 2, appointmentType1, location);
+        Entity schedule2 = ScheduleTestHelper.createSchedule(15, "MINUTES", 2, appointmentType2, location);
 
         editor.setSchedule(schedule1);
         assertFalse(editor.isValid());      // need the appointment type to be valid

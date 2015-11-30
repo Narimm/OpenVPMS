@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -72,6 +72,9 @@ class AppointmentQuery extends ScheduleEventQuery {
     protected ObjectSet createEvent(IMObjectReference actRef, ObjectSet set) {
         ObjectSet event = super.createEvent(actRef, set);
         event.set(ScheduleEvent.ARRIVAL_TIME, null);
+        event.set(ScheduleEvent.SEND_REMINDER, null);
+        event.set(ScheduleEvent.REMINDER_SENT, null);
+        event.set(ScheduleEvent.REMINDER_ERROR, null);
         return event;
     }
 }

@@ -18,25 +18,18 @@ package org.openvpms.web.jobs.docload;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.archetype.rules.workflow.MessageArchetypes;
 import org.openvpms.archetype.rules.workflow.SystemMessageReason;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.etl.tools.doc.DefaultLoaderListener;
 import org.openvpms.etl.tools.doc.IdLoader;
 import org.openvpms.etl.tools.doc.LoaderListener;
 import org.openvpms.etl.tools.doc.LoggingLoaderListener;
+import org.openvpms.web.jobs.JobCompletionNotifier;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.workspace.workflow.messaging.MessageHelper;
 import org.quartz.InterruptableJob;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -76,16 +69,6 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
     private final PlatformTransactionManager transactionManager;
 
     /**
-     * The maximum subject length.
-     */
-    private final int subjectLength;
-
-    /**
-     * The maximum message length.
-     */
-    private final int messageLength;
-
-    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(DocumentLoaderJob.class);
@@ -94,6 +77,11 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
      * Determines if loading should stop.
      */
     private volatile boolean stop;
+
+    /**
+     * Used to send messages to users on completion or failure.
+     */
+    private final JobCompletionNotifier notifier;
 
     /**
      * Constructs a {@link DocumentLoaderJob}.
@@ -108,9 +96,7 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
         this.configuration = configuration;
         this.service = service;
         this.transactionManager = transactionManager;
-        ArchetypeDescriptor descriptor = DescriptorHelper.getArchetypeDescriptor(MessageArchetypes.SYSTEM, service);
-        subjectLength = getMaxLength(descriptor, "description");
-        messageLength = getMaxLength(descriptor, "message");
+        notifier = new JobCompletionNotifier(service);
     }
 
     /**
@@ -122,7 +108,6 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
     public void execute(JobExecutionContext context) throws JobExecutionException {
         Listener listener = null;
         try {
-            stop = false;
             IMObjectBean bean = new IMObjectBean(configuration, service);
             File source = getDir(bean.getString("sourceDir"));
             if (source == null || !source.exists()) {
@@ -164,7 +149,7 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
     }
 
     /**
-     * <p/>
+     * <p>
      * Called by the {@link Scheduler} when a user interrupts the {@code Job}.
      *
      * @throws UnableToInterruptJobException if there is an exception while interrupting the job.
@@ -175,15 +160,15 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
     }
 
     /**
-     * Invoked on completion of a jobSends a message notifying the registered users of completion or failure of the job.
+     * Invoked on completion of a job. Sends a message notifying the registered users of completion or failure of the
+     * job.
      *
      * @param listener  the loader listener. May be {@code null}
      * @param exception the exception, if the job failed, otherwise {@code null}
      */
     private void complete(Listener listener, Throwable exception) {
         if ((listener != null && (listener.getErrors() != 0 || listener.getLoaded() != 0)) || exception != null) {
-            EntityBean bean = new EntityBean(configuration, service);
-            Set<User> users = MessageHelper.getUsers(bean.getNodeTargetEntities("notify"));
+            Set<User> users = notifier.getUsers(configuration);
             if (!users.isEmpty()) {
                 notifyUsers(listener, exception, users);
             }
@@ -222,47 +207,7 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
             append(text, listener.alreadyLoaded, "docload.alreadyLoaded", "docload.alreadyLoaded.item");
             append(text, listener.loaded, "docload.loaded", "docload.loaded.item");
         }
-        subject = truncate(subject, subjectLength);
-        String message = truncate(text.toString(), messageLength);
-        for (User user : users) {
-            send(user, subject, reason, message);
-        }
-    }
-
-    /**
-     * Sends a message to a user.
-     *
-     * @param user    the user to send to
-     * @param subject the subject
-     * @param reason  the reason
-     * @param text    the message text
-     */
-    private void send(User user, String subject, String reason, String text) {
-        Act act = (Act) service.create(MessageArchetypes.SYSTEM);
-        ActBean message = new ActBean(act);
-        message.addNodeParticipation("to", user);
-        message.setValue("reason", reason);
-        message.setValue("description", subject);
-        message.setValue("message", text);
-        message.save();
-    }
-
-    /**
-     * Helper to determine the maximum length of a node.
-     *
-     * @param archetype the archetype descriptor
-     * @param node      the node name
-     * @return the maximum length of the node
-     */
-    private int getMaxLength(ArchetypeDescriptor archetype, String node) {
-        int result = NodeDescriptor.DEFAULT_MAX_LENGTH;
-        if (archetype != null) {
-            NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
-            if (descriptor != null) {
-                result = descriptor.getMaxLength();
-            }
-        }
-        return result;
+        notifier.send(users, subject, reason, text.toString());
     }
 
     /**
@@ -296,18 +241,6 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
             }
         }
     }
-
-    /**
-     * Helper to truncate a string if it exceeds a maximum length.
-     *
-     * @param value     the value to truncate
-     * @param maxLength the maximum length
-     * @return the new value
-     */
-    private String truncate(String value, int maxLength) {
-        return value != null && value.length() > maxLength ? value.substring(0, maxLength - 3) + "..." : value;
-    }
-
 
     private class Listener extends DelegatingLoaderListener {
 

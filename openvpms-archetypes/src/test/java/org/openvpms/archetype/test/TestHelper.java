@@ -156,7 +156,6 @@ public class TestHelper {
      * @return a new customer
      */
     public static Party createCustomer(boolean save) {
-
         return createCustomer("J", "Zoo-" + nextId(), save);
     }
 

@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetype>
@@ -20,9 +20,9 @@
         <data collection="contacts" archetype="contact.location" address="123 Boronia Road" suburb="Boronia" state="VIC"
               postcode="3088"/>
         <data collection="serviceUser" archetype="entityLink.practiceServiceUser" source="id:OP1" target="id:ADMIN"/>
+        <data collection="mailServer" archetype="entityLink.organisationMailServer" source="id:OP1" target="id:MS1"/>
     </data>
-    <data id="OL1" archetype="party.organisationLocation" name="Main Clinic" stockControl="true"
-          mailHost="mail.bigpond.com" mailUsername="opv.demo@bigpond.com" mailPassword="sample">
+    <data id="OL1" archetype="party.organisationLocation" name="Main Clinic" stockControl="true">
         <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97628777"/>
         <data collection="contacts" archetype="contact.phoneNumber" telephoneNumber="041312345"/>
         <data collection="contacts" archetype="contact.location" address="123 Boronia Road" suburb="Boronia" state="VIC"
@@ -41,6 +41,8 @@
         <data collection="contacts" archetype="contact.location" address="4/18 Station Street" suburb="Bayswater"
               state="VIC" postcode="3082"/>
     </data>
+    <data id="MS1" archetype="entity.mailServer" name="Bigpond" host="mail.bigpond.com" port="587"
+          username="opv.demo@bigpond.com" password="sample"/>
     <data archetype="entityRelationship.practiceLocation" source="id:OP1" target="id:OL1" default="true"/>
     <data archetype="entityRelationship.practiceLocation" source="id:OP1" target="id:OL2"/>
     <data id="OD1" archetype="party.organisationDeposit" name="OpenVPMS Account" accountName="OpenVPMS Pty Ltd"

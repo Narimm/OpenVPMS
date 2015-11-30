@@ -78,4 +78,9 @@ public class DocumentArchetypes {
      * Logo participation.
      */
     public static final String LOGO_PARTICIPATION = "participation.logo";
+
+    /**
+     * Appointment reminder SMS template.
+     */
+    public static final String APPOINTMENT_SMS_TEMPLATE = "entity.documentTemplateSMSAppointment";
 }

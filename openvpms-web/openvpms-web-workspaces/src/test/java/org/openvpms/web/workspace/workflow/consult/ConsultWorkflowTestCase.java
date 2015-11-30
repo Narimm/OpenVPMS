@@ -90,7 +90,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     @Test
     public void testConsultForAppointment() {
         Date date = new Date();
-        Act appointment = createAppointment(date, customer, patient, clinician);
+        Act appointment = createAppointment(date, customer, patient, clinician, location);
 
         // create a COMPLETED event for the previous date, with no end date. This should not be used by check-in
         // or consult
@@ -122,7 +122,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         previousEvent.setStatus(ActStatus.COMPLETED);
         save(previousEvent);
 
-        Act appointment = createAppointment(date, customer, patient, clinician);
+        Act appointment = createAppointment(date, customer, patient, clinician, location);
         Entity taskType = ScheduleTestHelper.createTaskType();
         Party workList = createWorkList(taskType, 1);
         CheckInWorkflowRunner runner = new CheckInWorkflowRunner(appointment, getPractice(), context);
@@ -165,7 +165,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testCompleteInvoiceStatusForAppointment() {
-        Act appointment = createAppointment(customer, patient, clinician);
+        Act appointment = createAppointment(customer, patient, clinician, location);
         checkCompleteInvoiceStatus(appointment);
     }
 
@@ -184,7 +184,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testInProgressInvoiceStatusForBilledAppointment() {
-        Act appointment = createAppointment(customer, patient, clinician);
+        Act appointment = createAppointment(customer, patient, clinician, location);
         checkChangeCompleteInvoiceToInProgress(appointment, WorkflowStatus.BILLED);
     }
 
@@ -194,7 +194,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testInProgressInvoiceStatusForCompletedAppointment() {
-        Act appointment = createAppointment(customer, patient, clinician);
+        Act appointment = createAppointment(customer, patient, clinician, location);
         checkChangeCompleteInvoiceToInProgress(appointment, WorkflowStatus.COMPLETED);
     }
 
@@ -269,7 +269,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      * @param userClose if <tt>true</tt> cancel by clicking the 'x' button, otherwise cancel via the 'Cancel' button
      */
     private void checkCancelInvoice(boolean save, boolean userClose) {
-        Act appointment = createAppointment(customer, patient, clinician);
+        Act appointment = createAppointment(customer, patient, clinician, location);
         ConsultWorkflowRunner workflow = new ConsultWorkflowRunner(appointment, getPractice(), context);
         workflow.start();
 

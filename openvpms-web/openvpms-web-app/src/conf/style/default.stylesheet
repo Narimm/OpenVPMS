@@ -584,6 +584,32 @@
         </properties>
     </style>
 
+    <!--  Appointment reminders -->
+
+    <style name="AppointmentReminder.sent" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/bell-amber.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="AppointmentReminder.unsent" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/bell-grey.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="AppointmentReminder.error" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/bell-red.png"/>
+            </property>
+        </properties>
+    </style>
+
     <!--  Schedule table styles. -->
 
     <style name="ScheduleTable" base-name="default" type="nextapp.echo2.app.Table">

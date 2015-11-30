@@ -357,9 +357,9 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
             result = false;
             Times appointment1 = overlap.getAppointment1();
             Times appointment2 = overlap.getAppointment2();
-            String startTime1 = formatDateTime(appointment1.getStartTime(), false);
+            String startTime1 = formatDateTime(appointment1.getStartTime());
             String endTime1 = formatDateTimeAbbrev(appointment1.getEndTime(), appointment1.getStartTime());
-            String startTime2 = formatDateTime(appointment2.getStartTime(), false);
+            String startTime2 = formatDateTime(appointment2.getStartTime());
             String endTime2 = formatDateTimeAbbrev(appointment2.getEndTime(), appointment2.getStartTime());
             validator.add(this, new ValidatorError(Messages.format("workflow.scheduling.appointment.overlap",
                                                                    startTime1, endTime1, startTime2, endTime2)));
@@ -474,7 +474,7 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
      * @return a new tab model
      */
     private ObjectTabPaneModel<ExpressionTab> createRepeatModel() {
-        ObjectTabPaneModel<ExpressionTab> model = new ObjectTabPaneModel<ExpressionTab>(null);
+        ObjectTabPaneModel<ExpressionTab> model = new ObjectTabPaneModel<>(null);
         addTab(model, new Daily());
         addTab(model, new Weekly());
         addTab(model, new Monthly());
@@ -515,8 +515,8 @@ public class AppointmentSeriesEditor extends AbstractModifiable {
 
         private final ButtonGroup group = new ButtonGroup();
 
-        private List<RadioButton> buttons = new ArrayList<RadioButton>();
-        private List<Component> components = new ArrayList<Component>();
+        private List<RadioButton> buttons = new ArrayList<>();
+        private List<Component> components = new ArrayList<>();
 
         public RadioButton add(Component component) {
             RadioButton button = new RadioButton();

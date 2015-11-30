@@ -121,7 +121,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     public void testCheckInFromAppointmentNoPatient() {
         Date startTime = TestHelper.getDatetime("2013-01-01 09:00:00");
         Date arrivalTime = TestHelper.getDatetime("2013-01-01 08:50:00"); // arrived early
-        Act appointment = createAppointment(startTime, customer, null, clinician);
+        Act appointment = createAppointment(startTime, customer, null, clinician, location);
 
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setPatient(patient);                              // need to pre-set patient and work list
@@ -158,7 +158,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     public void testCheckInFromAppointmentWithPatient() {
         Date startTime = TestHelper.getDatetime("2013-01-01 09:00:00");
         Date arrivalTime = TestHelper.getDatetime("2013-01-01 09:33:00"); // arrived late
-        Act appointment = createAppointment(startTime, customer, patient, clinician);
+        Act appointment = createAppointment(startTime, customer, patient, clinician, location);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setArrivalTime(arrivalTime);
         runCheckInToVisit(workflow);
@@ -175,7 +175,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testCreatePatient() {
-        Act appointment = createAppointment(customer, null, clinician);
+        Act appointment = createAppointment(customer, null, clinician, location);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setWorkList(workList); // need to pre-set work list so it can be selected in popup
         workflow.start();
@@ -208,7 +208,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testCancelCreatePatient() {
-        Act appointment = createAppointment(customer, null, clinician);
+        Act appointment = createAppointment(customer, null, clinician, location);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.start();
 
@@ -226,7 +226,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testCancelCreatePatientByUserClose() {
-        Act appointment = createAppointment(customer, null, clinician);
+        Act appointment = createAppointment(customer, null, clinician, location);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.start();
 
@@ -261,7 +261,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     @Test
     public void testSkipSelectWorkList() {
         Date startTime = TestHelper.getDatetime("2013-01-01 09:00:00");
-        Act appointment = createAppointment(startTime, customer, patient, clinician);
+        Act appointment = createAppointment(startTime, customer, patient, clinician, location);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
         workflow.setArrivalTime(startTime);
@@ -293,7 +293,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testNoDefaultClinicianFromContext() {
-        Act appointment = createAppointment(customer, patient, null);  // no clinician on appointment
+        Act appointment = createAppointment(customer, patient, null, location);  // no clinician on appointment
         context.setClinician(clinician);
         checkClinician(appointment, null, context);
     }
@@ -303,7 +303,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testNoClinician() {
-        Act appointment = createAppointment(customer, patient, null);  // no clinician on appointment
+        Act appointment = createAppointment(customer, patient, null, location);  // no clinician on appointment
         checkClinician(appointment, null, context);
     }
 
@@ -360,7 +360,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testSkipPatientWeight() {
-        Act appointment = createAppointment(customer, patient, clinician);
+        Act appointment = createAppointment(customer, patient, clinician, location);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         runCheckInToWeight(workflow);
 
@@ -428,7 +428,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         assertTrue(SaveHelper.save(editor));
 
         // Verify that an event has been created, linked to the charge
-        Act item1 = (Act) itemEditor1.getObject();
+        Act item1 = itemEditor1.getObject();
         ActBean bean = new ActBean(item1);
         Act event1 = bean.getSourceAct(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM);
         assertNotNull(event1);
@@ -440,7 +440,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         event1.setStatus(ActStatus.COMPLETED);
         save(event1);
 
-        Act appointment = createAppointment(date2, customer, patient, clinician);
+        Act appointment = createAppointment(date2, customer, patient, clinician, location);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setArrivalTime(date2);
 
@@ -457,7 +457,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         workflow.checkComplete(true, customer, patient, context);
 
         // verify the second item is linked to event2
-        Act item2 = (Act) itemEditor2.getObject();
+        Act item2 = itemEditor2.getObject();
         ActBean bean2 = new ActBean(item2);
         assertEquals(event2, bean2.getSourceAct(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM));
 
@@ -479,7 +479,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     @Test
     public void testChangeClinicianOnInvoiceItem() {
         Date startTime = TestHelper.getDatetime("2013-01-01 09:00:00");
-        Act appointment = createAppointment(startTime, customer, patient, clinician);
+        Act appointment = createAppointment(startTime, customer, patient, clinician, location);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setArrivalTime(startTime);
         workflow.start();
@@ -554,7 +554,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      * @param userClose if <tt>true</tt> cancel via the 'user close' button, otherwise use the 'cancel' button
      */
     private void checkCancelSelectPatient(boolean userClose) {
-        Act appointment = createAppointment(customer, null, clinician);
+        Act appointment = createAppointment(customer, null, clinician, location);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setPatient(patient);         // need to pre-set patient so it can be selected in popup
         workflow.start();
@@ -570,7 +570,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      * @param userClose if <tt>true</tt> cancel via the 'user close' button, otherwise use the 'cancel' button
      */
     private void checkCancelSelectWorkList(boolean userClose) {
-        Act appointment = createAppointment(customer, patient, clinician);
+        Act appointment = createAppointment(customer, patient, clinician, location);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setWorkList(workList);        // need to pre-set work-list so it can be selected in popup
         workflow.start();
@@ -590,7 +590,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      * @param userClose if <tt>true</tt> cancel the selection by the 'user close' button otherwise via the cancel button
      */
     private void checkCancelSelectDialog(boolean userClose) {
-        Act appointment = createAppointment(customer, patient, clinician);
+        Act appointment = createAppointment(customer, patient, clinician, location);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         runCheckInToWeight(workflow);
 
@@ -608,7 +608,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      * @param userClose if <tt>true</tt> cancel the edit by the 'user close' button otherwise via the cancel button
      */
     private void checkCancelEditEvent(boolean userClose) {
-        Act appointment = createAppointment(customer, patient, clinician);
+        Act appointment = createAppointment(customer, patient, clinician, location);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         runCheckInToVisit(workflow);
 
@@ -628,7 +628,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      * @param userClose if <tt>true</tt> cancel via the 'user close' button, otherwise use the 'cancel' button
      */
     private void checkCancelPatientWeight(boolean userClose) {
-        Act appointment = createAppointment(customer, patient, clinician);
+        Act appointment = createAppointment(customer, patient, clinician, location);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         runCheckInToWeight(workflow);
 
@@ -694,7 +694,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      * @return the documents
      */
     private List<Act> getDocuments(VisitChargeItemEditor itemEditor) {
-        ActBean bean = new ActBean((Act) itemEditor.getObject());
+        ActBean bean = new ActBean(itemEditor.getObject());
         return bean.getNodeActs("documents");
     }
 

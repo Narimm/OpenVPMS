@@ -63,5 +63,11 @@
               hidden="true" minCardinality="0" maxCardinality="1" filter="actRelationship.customerAppointmentTask"/>
         <node name="repeat" path="/targetActRelationships" type="java.util.HashSet" baseName="TargetActRelationship"
               hidden="true" minCardinality="0" maxCardinality="1" filter="actRelationship.customerAppointmentSeries"/>
+        <node name="sendReminder" path="/details/sendReminder" type="java.lang.Boolean" minCardinality="0"
+              maxCardinality="1" defaultValue="false()"/>
+        <node name="reminderSent" path="/details/reminderSent" type="java.util.Date" minCardinality="0"
+              maxCardinality="1" readOnly="true"/>
+        <node name="reminderError" path="/details/reminderError" type="java.lang.String" minCardinality="0"
+              maxCardinality="1" maxLength="5000" readOnly="true"/>
     </archetype>
 </archetypes>

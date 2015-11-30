@@ -23,7 +23,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.bound.BoundSelectFieldFactory;
-import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.im.doc.LogoParticipationEditor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -46,7 +45,6 @@ import java.util.List;
  * <p>
  * This:
  * <ul>
- * <li>displays a password field for the "mailPassword" node.
  * <li>displays a list of a available printers for the "defaultPrinter" node
  * <li>displays an editor for the practice location logo</li>
  * </ul>
@@ -131,9 +129,7 @@ public class OrganisationLocationEditor extends AbstractIMObjectEditor {
         @Override
         protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
             ComponentState result;
-            if (property.getName().equals("mailPassword")) {
-                result = new ComponentState(BoundTextComponentFactory.createPassword(property), property);
-            } else if (property.getName().equals("defaultPrinter")) {
+            if (property.getName().equals("defaultPrinter")) {
                 DefaultListModel model = new DefaultListModel(PrintHelper.getPrinters());
                 SelectField field = BoundSelectFieldFactory.create(property, model);
                 result = new ComponentState(field, property);
