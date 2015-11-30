@@ -17,7 +17,6 @@
 package org.openvpms.archetype.rules.workflow;
 
 import org.openvpms.archetype.rules.act.DefaultActCopyHandler;
-import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
@@ -52,9 +51,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import static org.openvpms.component.system.common.query.Constraints.eq;
-import static org.openvpms.component.system.common.query.Constraints.join;
-
 
 /**
  * Appointment rules.
@@ -87,7 +83,7 @@ public class AppointmentRules {
      * @return the schedules associated with the view
      */
     public List<Party> getSchedules(Entity scheduleView) {
-        List<Party> result = new ArrayList<Party>();
+        List<Party> result = new ArrayList<>();
         EntityBean bean = new EntityBean(scheduleView, service);
         List<EntityRelationship> relationships = bean.getValues("schedules", EntityRelationship.class);
         Collections.sort(relationships, SequenceComparator.INSTANCE);
@@ -121,17 +117,14 @@ public class AppointmentRules {
     }
 
     /**
-     * Returns the first practice location that has a view containing the specified schedule.
+     * Returns the practice location associated with a schedule.
      *
      * @param schedule the schedule
      * @return the location, or {@code null} if none is found
      */
     public Party getLocation(Entity schedule) {
-        ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.LOCATION);
-        query.add(join("scheduleViews").add(join("target").add(join("schedules").add(eq("target", schedule)))));
-        query.setMaxResults(1);
-        IMObjectQueryIterator<Party> iterator = new IMObjectQueryIterator<Party>(service, query);
-        return iterator.hasNext() ? iterator.next() : null;
+        IMObjectBean bean = new IMObjectBean(schedule, service);
+        return (Party) bean.getNodeTargetObject("location");
     }
 
     /**
@@ -154,7 +147,7 @@ public class AppointmentRules {
      *         if there is no default, or {@code null} if none is found
      * @throws OpenVPMSException for any error
      */
-    public Entity getDefaultAppointmentType(Party schedule) {
+    public Entity getDefaultAppointmentType(Entity schedule) {
         return EntityRelationshipHelper.getDefaultTarget(schedule, "appointmentTypes", service);
     }
 
@@ -231,8 +224,7 @@ public class AppointmentRules {
                                      AppointmentStatus.COMPLETED,
                                      AppointmentStatus.BILLED));
         query.setMaxResults(1);
-        IMObjectQueryIterator<Act> iter
-                = new IMObjectQueryIterator<Act>(service, query);
+        IMObjectQueryIterator<Act> iter = new IMObjectQueryIterator<>(service, query);
         return (iter.hasNext()) ? iter.next() : null;
     }
 

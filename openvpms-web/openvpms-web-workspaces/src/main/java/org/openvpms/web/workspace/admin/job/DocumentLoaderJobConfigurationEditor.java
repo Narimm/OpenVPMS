@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.admin.job;
 
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -39,7 +40,7 @@ import static org.openvpms.archetype.rules.doc.DocumentArchetypes.DOCUMENT_TEMPL
  *
  * @author Tim Anderson
  */
-public class DocumentLoaderJobConfigurationEditor extends JobConfigurationEditor {
+public class DocumentLoaderJobConfigurationEditor extends AbstractJobConfigurationEditor {
 
     /**
      * Constructs a {@link DocumentLoaderJobConfigurationEditor}.
@@ -48,7 +49,7 @@ public class DocumentLoaderJobConfigurationEditor extends JobConfigurationEditor
      * @param parent        the parent object. May be {@code null}
      * @param layoutContext the layout context
      */
-    public DocumentLoaderJobConfigurationEditor(IMObject object, IMObject parent, LayoutContext layoutContext) {
+    public DocumentLoaderJobConfigurationEditor(Entity object, IMObject parent, LayoutContext layoutContext) {
         super(object, parent, layoutContext);
     }
 

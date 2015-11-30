@@ -21,7 +21,6 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
@@ -31,16 +30,16 @@ import org.openvpms.web.system.ServiceHelper;
 /**
  * Editor for <em>party.organisationPractice</em>.
  * <p>
- * This adds a tab to manage subscription.
+ * This adds a tab to manage the subscription.
  *
  * @author Tim Anderson
  */
 public class PracticeEditor extends AbstractIMObjectEditor {
 
     /**
-     * The participation editor.
+     * The subscription participation editor.
      */
-    private IMObjectEditor participationEditor;
+    private SubscriptionParticipationEditor participationEditor;
 
     /**
      * Constructs a {@link PracticeEditor}.
@@ -58,7 +57,7 @@ public class PracticeEditor extends AbstractIMObjectEditor {
             participation = (Participation) IMObjectCreator.create("participation.subscription");
         }
         participationEditor = new SubscriptionParticipationEditor(participation, practice, context);
-        ((SubscriptionParticipationEditor) participationEditor).setDeleteAct(true);
+        participationEditor.setDeleteAct(true);
 
         getEditors().add(participationEditor);
     }
@@ -72,4 +71,5 @@ public class PracticeEditor extends AbstractIMObjectEditor {
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new PracticeLayoutStrategy(participationEditor.getComponent(), participationEditor.getFocusGroup());
     }
+
 }

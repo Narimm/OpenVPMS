@@ -43,7 +43,7 @@ public class ComponentGrid {
     /**
      * The grid cells, in rows and columns.
      */
-    private List<List<Cell>> cells = new ArrayList<List<Cell>>();
+    private List<List<Cell>> cells = new ArrayList<>();
 
     /**
      * The no. of grid columns
@@ -53,7 +53,7 @@ public class ComponentGrid {
     /**
      * Grid column widths.
      */
-    private ArrayList<Extent> columnWidths = new ArrayList<Extent>();
+    private ArrayList<Extent> columnWidths = new ArrayList<>();
 
     /**
      * Indicates a cell that is spanned by another.
@@ -72,7 +72,7 @@ public class ComponentGrid {
      * @param components the component to add
      */
     public void add(Component... components) {
-        List<Cell> row = new ArrayList<Cell>();
+        List<Cell> row = new ArrayList<>();
         for (Component component : components) {
             row.add(new Cell(component));
         }
@@ -102,7 +102,7 @@ public class ComponentGrid {
 
     /**
      * Adds components to the end of the grid.
-     * <p/>
+     * <p>
      * Each state spans two grid columns. If a state has a label, then this is displayed in the first column, and
      * the component in the second. If the state has no label, then the component is displayed in the first column
      * and spans the second.
@@ -110,7 +110,7 @@ public class ComponentGrid {
      * @param states the component states to add
      */
     public void add(ComponentState... states) {
-        List<Cell> row = new ArrayList<Cell>();
+        List<Cell> row = new ArrayList<>();
         for (ComponentState state : states) {
             if (state.hasLabel()) {
                 row.add(new Cell(getLabel(state)));
@@ -125,7 +125,7 @@ public class ComponentGrid {
 
     /**
      * Adds a set of components to the end of the grid.
-     * <p/>
+     * <p>
      * For sets of of {@code <= 2} components, one column group will be used, otherwise 2 column groups will be used.
      * <br/>
      * This corresponds to 2 and 4 grid columns respectively.
@@ -192,7 +192,14 @@ public class ComponentGrid {
      * @param component  the component
      */
     public void set(int row, int column, int rowSpan, int columnSpan, Component component) {
-        set(row, column, layout(rowSpan, columnSpan), component);
+        GridLayoutData layout = (GridLayoutData) component.getLayoutData();
+        if (layout == null) {
+            layout = layout(rowSpan, columnSpan);
+        } else {
+            layout.setRowSpan(rowSpan);
+            layout.setColumnSpan(columnSpan);
+        }
+        set(row, column, layout, component);
     }
 
     /**
@@ -374,20 +381,18 @@ public class ComponentGrid {
             for (int col = 0; col < columns; ) {
                 Cell cell = getCell(row, col);
                 if (cell != null && cell.getComponent() != null) {
-                    if (cell.getComponent() != null) {
-                        Component component = cell.getComponent();
-                        if (component instanceof SelectField) {
-                            // workaround for render bug in firefox. See OVPMS-239
-                            component = RowFactory.create(component);
-                        }
-                        int columnSpan = cell.getColumnSpan();
-                        if (columnSpan <= 1) {
-                            columnSpan = 1;
-                        }
-                        component.setLayoutData(cell.getLayoutData());
-                        grid.add(component);
-                        col += columnSpan;
+                    Component component = cell.getComponent();
+                    if (component instanceof SelectField) {
+                        // workaround for render bug in firefox. See OVPMS-239
+                        component = RowFactory.create(component);
                     }
+                    int columnSpan = cell.getColumnSpan();
+                    if (columnSpan <= 1) {
+                        columnSpan = 1;
+                    }
+                    component.setLayoutData(cell.getLayoutData());
+                    grid.add(component);
+                    col += columnSpan;
                 } else if (cell != SPAN) {
                     grid.add(LabelFactory.create());
                     col++;

@@ -19,8 +19,10 @@ package org.openvpms.web.workspace.workflow.scheduling;
 import echopointng.BalloonHelp;
 import echopointng.layout.TableLayoutDataEx;
 import echopointng.table.TableColumnEx;
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
 import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
@@ -325,7 +327,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
 
     /**
      * Determines the scheme to colour cells.
-     * <p/>
+     * <p>
      * Defaults to {@link Highlight#EVENT_TYPE}.
      *
      * @param highlight the highlight
@@ -559,7 +561,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * @return the columns
      */
     protected List<ScheduleColumn> getColumns() {
-        List<ScheduleColumn> result = new ArrayList<ScheduleColumn>();
+        List<ScheduleColumn> result = new ArrayList<>();
         Iterator iterator = model.getColumns();
         while (iterator.hasNext()) {
             result.add((ScheduleColumn) iterator.next());
@@ -604,7 +606,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
 
     /**
      * Returns the cell column corresponding to a slot.
-     * <p/>
+     * <p>
      * This implementation returns the slot unchanged.
      *
      * @param slot the slot
@@ -616,7 +618,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
 
     /**
      * Returns the cell row corresponding to a slot.
-     * <p/>
+     * <p>
      * This implementation returns the slot unchanged.
      *
      * @param slot the slot
@@ -641,7 +643,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     /**
      * Evaluates the view's displayExpression expression against the supplied
      * event. If no displayExpression is present, {@code null} is returned.
-     * <p/>
+     * <p>
      * If the event has an {@link ScheduleEvent#ARRIVAL_TIME} property,
      * a formatted string named <em>waiting</em> will be added to the set prior
      * to evaluation of the expression. This indicates the waiting time, and
@@ -682,6 +684,51 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     }
 
     /**
+     * Helper to create a multiline label with optional notes popup,
+     * if the supplied notes are non-null and {@code displayNotes} is
+     * {@code true}.
+     *
+     * @param text          the label text
+     * @param notes         the notes. May be {@code null}
+     * @param sendReminder  if {@code true}, a reminder should be sent for this appointment
+     * @param reminderSent  the date a reminder was sent. May be {@code null}
+     * @param reminderError the reminder error, if the reminder couldn't be sent. May be {@code null}
+     * @return a component representing the label with optional popup
+     */
+    protected Component createLabelWithNotes(String text, String notes, boolean sendReminder, Date reminderSent,
+                                             String reminderError) {
+        Component result = createLabelWithNotes(text, notes);
+        if (sendReminder) {
+            if (!(result instanceof Row)) {
+                result = RowFactory.create(Styles.CELL_SPACING, result);
+            }
+            Label reminder = createReminderIcon(reminderSent, reminderError);
+            reminder.setLayoutData(RowFactory.layout(new Alignment(Alignment.RIGHT, Alignment.TOP), Styles.FULL_WIDTH));
+            result.add(reminder);
+        }
+        return result;
+    }
+
+    /**
+     * Helper to create a label indicating the reminder status of an appointment.
+     *
+     * @param reminderSent  the date a reminder was sent. May be {@code null}
+     * @param reminderError the reminder error, if the reminder couldn't be sent. May be {@code null}
+     * @return a new label
+     */
+    protected Label createReminderIcon(Date reminderSent, String reminderError) {
+        String style;
+        if (!StringUtils.isEmpty(reminderError)) {
+            style = "AppointmentReminder.error";
+        } else if (reminderSent != null) {
+            style = "AppointmentReminder.sent";
+        } else {
+            style = "AppointmentReminder.unsent";
+        }
+        return LabelFactory.create(null, style);
+    }
+
+    /**
      * Returns a column given its model index.
      *
      * @param column the column index
@@ -707,7 +754,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * @return the columns
      */
     private List<ScheduleColumn> getColumns(IMObjectReference scheduleRef) {
-        List<ScheduleColumn> result = new ArrayList<ScheduleColumn>();
+        List<ScheduleColumn> result = new ArrayList<>();
         for (ScheduleColumn column : getColumns()) {
             if (column.getSchedule() != null) {
                 Entity schedule = column.getSchedule().getSchedule();
@@ -726,7 +773,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * @return the rows
      */
     private List<ScheduleRow> getRows(IMObjectReference scheduleRef) {
-        List<ScheduleRow> result = new ArrayList<ScheduleRow>();
+        List<ScheduleRow> result = new ArrayList<>();
         int index = 0;
         for (Schedule schedule : grid.getSchedules()) {
             if (schedule.getSchedule().getId() == scheduleRef.getId()) {

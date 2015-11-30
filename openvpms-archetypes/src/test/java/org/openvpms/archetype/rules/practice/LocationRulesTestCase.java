@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.practice;
@@ -118,8 +118,8 @@ public class LocationRulesTestCase extends ArchetypeServiceTest {
         Party location = TestHelper.createLocation();
         assertNull(rules.getDefaultScheduleView(location));
 
-        Party schedule1 = ScheduleTestHelper.createSchedule();
-        Party schedule2 = ScheduleTestHelper.createSchedule();
+        Party schedule1 = ScheduleTestHelper.createSchedule(location);
+        Party schedule2 = ScheduleTestHelper.createSchedule(location);
         Entity view1 = ScheduleTestHelper.createScheduleView(schedule1);
         Entity view2 = ScheduleTestHelper.createScheduleView(schedule1,
                                                              schedule2);

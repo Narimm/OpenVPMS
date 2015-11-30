@@ -29,16 +29,22 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.bound.BoundCheckBox;
+import org.openvpms.web.component.bound.BoundDateTimeField;
+import org.openvpms.web.component.bound.BoundDateTimeFieldFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.patient.PatientParticipationEditor;
+import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -50,6 +56,7 @@ import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.alert.AlertSummary;
@@ -111,14 +118,49 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     private final AppointmentRules rules;
 
     /**
+     * Determines if SMS is enabled at the practice.
+     */
+    private boolean smsPractice;
+
+    /**
+     * Determines if reminders are enabled on the schedule.
+     */
+    private boolean scheduleReminders;
+
+    /**
+     * Determines if the customer can receive SMS messages.
+     */
+    private boolean smsCustomer;
+
+    /**
      * The appointment duration.
      */
     private Label duration = LabelFactory.create();
 
     /**
+     * The send reminder flag.
+     */
+    private BoundCheckBox sendReminder;
+
+    /**
      * The appointment duration formatter.
      */
     private static DurationFormatter formatter = DateDurationFormatter.create(false, false, false, true, true, true);
+
+    /**
+     * The 'send reminder' node name.
+     */
+    private static final String SEND_REMINDER = "sendReminder";
+
+    /**
+     * The 'reminder sent' node name.
+     */
+    private static final String REMINDER_SENT = "reminderSent";
+
+    /**
+     * The 'reminder error' node name.
+     */
+    private static final String REMINDER_ERROR = "reminderError";
 
     /**
      * Constructs an {@link AppointmentActEditor}.
@@ -143,11 +185,15 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         super(act, parent, context);
         rules = ServiceHelper.getBean(AppointmentRules.class);
         initParticipant("schedule", context.getContext().getSchedule());
+        initParticipant("customer", context.getContext().getCustomer());
 
         Entity appointmentType = (Entity) getParticipant("appointmentType");
+        Entity schedule = getSchedule();
+        smsPractice = SMSHelper.isSMSEnabled(getLayoutContext().getContext().getPractice());
+        scheduleReminders = isScheduleRemindersEnabled(schedule);
+
         if (appointmentType == null) {
             // set the appointment type to the default for the schedule
-            Party schedule = (Party) getParticipant("schedule");
             if (schedule != null) {
                 appointmentType = getDefaultAppointmentType(schedule);
                 setParticipant("appointmentType", appointmentType);
@@ -170,9 +216,15 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         });
         series = new AppointmentSeries(act, ServiceHelper.getArchetypeService());
         seriesEditor = (editSeries) ? new AppointmentSeriesEditor(series) : null;
+        sendReminder = new BoundCheckBox(getProperty(SEND_REMINDER));
         addStartEndTimeListeners();
         updateRelativeDate();
         updateDuration();
+        if (act.isNew()) {
+            updateSendReminderForCustomer();
+        } else {
+            smsCustomer = isCustomerSMSEnabled(getCustomer());
+        }
     }
 
     /**
@@ -306,7 +358,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     protected void onLayoutCompleted() {
         super.onLayoutCompleted();
 
-        Party schedule = (Party) getParticipant("schedule");
+        Entity schedule = getSchedule();
         AppointmentTypeParticipationEditor editor = onScheduleChanged(schedule);
         editor.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -367,8 +419,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     }
 
     /**
-     * Invoked when the customer changes. Sets the patient to null if no
-     * relationship exists between the two.
+     * Invoked when the customer changes. Sets the patient to null if no relationship exists between the two.
      * <p>
      * The alerts will be updated.
      */
@@ -378,6 +429,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         editor.removeModifiableListener(patientListener);
         super.onCustomerChanged();
         editor.addModifiableListener(patientListener);
+        updateSendReminderForCustomer();
         updateAlerts();
     }
 
@@ -414,6 +466,8 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         if (schedule != null) {
             slotSize = rules.getSlotSize((Party) schedule);
         }
+        scheduleReminders = isScheduleRemindersEnabled(schedule);
+        updateSendReminder();
         return editor;
     }
 
@@ -607,7 +661,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      * @return the default appointment type, or the the first appointment type
      * if there is no default, or {@code null} if none is found
      */
-    private Entity getDefaultAppointmentType(Party schedule) {
+    private Entity getDefaultAppointmentType(Entity schedule) {
         return rules.getDefaultAppointmentType(schedule);
     }
 
@@ -623,14 +677,77 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         return alerts;
     }
 
+    /**
+     * Determines if schedule reminders are enabled.
+     *
+     * @param schedule the schedule. May be {@code null}
+     * @return {@code true} if reminders are enabled for the schedule
+     */
+    private boolean isScheduleRemindersEnabled(Entity schedule) {
+        if (schedule != null) {
+            IMObjectBean bean = new IMObjectBean(schedule);
+            return bean.getBoolean("sendReminders");
+        }
+        return false;
+    }
+
+    /**
+     * Determines if the customer can receive SMS messages.
+     *
+     * @param customer the customer. May be {@code null}
+     * @return {@code true} if the customer can receive SMS messages
+     */
+    private boolean isCustomerSMSEnabled(Party customer) {
+        return SMSHelper.canSMS(customer);
+    }
+
+    /**
+     * Updates the enabled status of the send reminder flag.
+     */
+    private void updateSendReminder() {
+        boolean enabled = smsPractice && scheduleReminders && smsCustomer;
+        sendReminder.setEnabled(enabled);
+    }
+
+    /**
+     * Updates the sendReminder flag when the customer changes.
+     * <p/>
+     * If SMS is disabled for the practice, schedule or customer, the flag is toggled off and disabled.
+     * <p/>
+     * If not, it is enabled, and toggled on.
+     */
+    private void updateSendReminderForCustomer() {
+        smsCustomer = isCustomerSMSEnabled(getCustomer());
+        updateSendReminder();
+        if (sendReminder.isEnabled() && smsCustomer) {
+            sendReminder.setSelected(true);
+        } else {
+            sendReminder.setSelected(false);
+        }
+    }
+
+
+
     private class AppointmentLayoutStrategy extends AbstractLayoutStrategy {
 
         /**
          * Constructs an {@link AppointmentLayoutStrategy}.
          */
         public AppointmentLayoutStrategy() {
+            super(new ArchetypeNodes());
             addComponent(new ComponentState(getStartTimeEditor()));
             addComponent(new ComponentState(getEndTimeEditor()));
+            ArchetypeNodes archetypeNodes = getArchetypeNodes();
+            if (!smsPractice || !scheduleReminders) {
+                archetypeNodes.exclude(SEND_REMINDER, REMINDER_SENT, REMINDER_ERROR);
+            } else {
+                archetypeNodes.excludeIfEmpty(REMINDER_SENT, REMINDER_ERROR);
+
+                BoundDateTimeField reminderSent = BoundDateTimeFieldFactory.create(getProperty(REMINDER_SENT));
+                reminderSent.setStyleName(Styles.EDIT);
+                addComponent(new ComponentState(sendReminder, sendReminder.getProperty()));
+                addComponent(new ComponentState(reminderSent));
+            }
         }
 
         /**

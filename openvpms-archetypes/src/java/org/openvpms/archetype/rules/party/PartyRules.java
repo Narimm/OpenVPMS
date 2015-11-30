@@ -175,7 +175,7 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Set<Contact> getDefaultContacts() {
-        Set<Contact> contacts = new HashSet<Contact>();
+        Set<Contact> contacts = new HashSet<>();
         Contact phone = (Contact) service.create(ContactArchetypes.PHONE);
         Contact location = (Contact) service.create(ContactArchetypes.LOCATION);
         service.deriveValues(phone);
@@ -187,7 +187,7 @@ public class PartyRules {
 
     /**
      * Returns a formatted string of preferred contacts for a party.
-     * <p/>
+     * <p>
      * If there are multiple preferred contacts, these are sorted on identifier.
      *
      * @param party the party
@@ -241,7 +241,7 @@ public class PartyRules {
      *
      * @param party the party
      * @return a formatted billing address for a party. May be empty if
-     *         there is no corresponding <em>contact.location</em> contact
+     * there is no corresponding <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getBillingAddress(Party party) {
@@ -255,8 +255,8 @@ public class PartyRules {
      *
      * @param act the act
      * @return a formatted billing address for a party. May be empty if
-     *         the act has no customer party or the party has no corresponding
-     *         <em>contact.location</em> contact
+     * the act has no customer party or the party has no corresponding
+     * <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getBillingAddress(Act act) {
@@ -272,7 +272,7 @@ public class PartyRules {
      *
      * @param party the party
      * @return a formatted correspondence address for a party. May be empty if
-     *         there is no corresponding <em>contact.location</em> contact
+     * there is no corresponding <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getCorrespondenceAddress(Party party) {
@@ -284,16 +284,11 @@ public class PartyRules {
      *
      * @param party the party
      * @return a formatted correspondence name and address for a party. May be empty if
-     *         there is no corresponding <em>contact.location</em> contact
+     * there is no corresponding <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getCorrespondenceNameAddress(Party party) {
-        StringBuilder result = new StringBuilder();
-        result.append(getFullName(party));
-        result.append("\n");
-        result.append(getAddress(party, "CORRESPONDENCE"));
-
-        return result.toString();
+        return getFullName(party) + "\n" + getAddress(party, "CORRESPONDENCE");
     }
 
     /**
@@ -303,8 +298,8 @@ public class PartyRules {
      *
      * @param act the act
      * @return a formatted billing address for a party. May be empty if
-     *         the act has no customer party or the party has no corresponding
-     *         <em>contact.location</em> contact
+     * the act has no customer party or the party has no corresponding
+     * <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getCorrespondenceAddress(Act act) {
@@ -322,8 +317,8 @@ public class PartyRules {
      *
      * @param act the act
      * @return a formatted name and billing address for a party. May be empty if
-     *         the act has no customer party or the party has no corresponding
-     *         <em>contact.location</em> contact
+     * the act has no customer party or the party has no corresponding
+     * <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getCorrespondenceNameAddress(Act act) {
@@ -341,7 +336,7 @@ public class PartyRules {
      * @param party   the party
      * @param purpose the contact purpose of the address
      * @return a formatted address. May be empty if there is no corresponding
-     *         <em>contact.location</em> contact
+     * <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getAddress(Party party, String purpose) {
@@ -354,7 +349,7 @@ public class PartyRules {
      *
      * @param party the party
      * @return a formatted telephone number for the party. May be empty if there is no corresponding
-     *         <em>contact.phoneNumber</em> contact
+     * <em>contact.phoneNumber</em> contact
      */
     public String getTelephone(Party party) {
         return getTelephone(party, false);
@@ -366,7 +361,7 @@ public class PartyRules {
      * @param party    the party
      * @param withName if {@code true} includes the name, if it is not the default value for the contact
      * @return a formatted telephone number for the party. May be empty if there is no corresponding
-     *         <em>contact.phoneNumber</em> contact
+     * <em>contact.phoneNumber</em> contact
      */
     public String getTelephone(Party party, boolean withName) {
         Contact contact = getContact(party, ContactArchetypes.PHONE, false, FAX_PURPOSE);
@@ -379,7 +374,7 @@ public class PartyRules {
      *
      * @param act the act
      * @return a formatted telephone number for the party. May be empty if there is no corresponding
-     *         <em>contact.phoneNumber</em> contact
+     * <em>contact.phoneNumber</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getTelephone(Act act) {
@@ -395,7 +390,7 @@ public class PartyRules {
      *
      * @param party the party
      * @return a formatted home telephone number for the party. May be empty if
-     *         there is no corresponding <em>contact.phoneNumber</em> contact
+     * there is no corresponding <em>contact.phoneNumber</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getHomeTelephone(Party party) {
@@ -409,8 +404,8 @@ public class PartyRules {
      *
      * @param act the act
      * @return a formatted home telephone number for the party. May be empty if
-     *         there is no customer, or corresponding
-     *         <em>contact.phoneNumber</em> contact
+     * there is no customer, or corresponding
+     * <em>contact.phoneNumber</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getHomeTelephone(Act act) {
@@ -426,7 +421,7 @@ public class PartyRules {
      *
      * @param party the party
      * @return a formatted mobile telephone number for the party. May be empty if
-     *         there is no corresponding <em>contact.phoneNumber</em> contact
+     * there is no corresponding <em>contact.phoneNumber</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getMobileTelephone(Party party) {
@@ -440,8 +435,8 @@ public class PartyRules {
      *
      * @param act the act
      * @return a formatted mobile telephone number for the party. May be empty if
-     *         there is no customer, or corresponding
-     *         <em>contact.phoneNumber</em> contact
+     * there is no customer, or corresponding
+     * <em>contact.phoneNumber</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getMobileTelephone(Act act) {
@@ -457,7 +452,7 @@ public class PartyRules {
      *
      * @param party the party
      * @return a formatted telephone number for the party. May be empty if
-     *         there is no corresponding <em>contact.phoneNumber</em> contact
+     * there is no corresponding <em>contact.phoneNumber</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getWorkTelephone(Party party) {
@@ -471,8 +466,8 @@ public class PartyRules {
      *
      * @param act the act
      * @return a formatted work telephone number for the party. May be empty if
-     *         there is no customer, or corresponding
-     *         <em>contact.phoneNumber</em> contact
+     * there is no customer, or corresponding
+     * <em>contact.phoneNumber</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getWorkTelephone(Act act) {
@@ -488,12 +483,23 @@ public class PartyRules {
      *
      * @param party the party
      * @return a formatted telephone number for the party. May be empty if
-     *         there is no corresponding <em>contact.phoneNumber</em> contact with sms set {@code true}
+     * there is no corresponding <em>contact.phoneNumber</em> contact with sms set {@code true}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getSMSTelephone(Party party) {
-        Contact contact = (party != null) ? getContact(party, new SMSMatcher(service)) : null;
+        Contact contact = getSMSContact(party);
         return (contact != null) ? formatPhone(contact, false) : "";
+    }
+
+    /**
+     * Returns an SMS contact for a party.
+     *
+     * @param party the party
+     * @return a <em>contact.phoneNumber</em> contact with sms set {@code true}, or {@code} null if none exists
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Contact getSMSContact(Party party) {
+        return (party != null) ? getContact(party, new SMSMatcher(service)) : null;
     }
 
     /**
@@ -501,8 +507,8 @@ public class PartyRules {
      *
      * @param party the party
      * @return a formatted fax number for a party. May be empty if
-     *         there is no corresponding <em>contact.phoneNumber</em> contact
-     *         with a purpose as FAX
+     * there is no corresponding <em>contact.phoneNumber</em> contact
+     * with a purpose as FAX
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getFaxNumber(Party party) {
@@ -515,7 +521,7 @@ public class PartyRules {
      *
      * @param party the party
      * @return a formatted email address for a party. May be empty if
-     *         there is no corresponding <em>contact.email</em> contact
+     * there is no corresponding <em>contact.email</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getEmailAddress(Party party) {

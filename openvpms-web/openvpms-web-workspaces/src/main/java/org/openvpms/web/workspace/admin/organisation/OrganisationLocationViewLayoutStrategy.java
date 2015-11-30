@@ -33,17 +33,16 @@ import org.openvpms.web.resource.i18n.Messages;
 import java.util.List;
 
 /**
- * Layout strategy for <em>party.organisationLocation<em> that masks the "mailPassword" node.
+ * Layout strategy for <em>party.organisationLocation<em>.
  *
  * @author Tim Anderson
  */
 public class OrganisationLocationViewLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
-     * Exclude the mailPassword node from display.
+     * The nodes to display.
      */
-    private static final ArchetypeNodes NODES
-            = new ArchetypeNodes().simple("pricingGroup").exclude("mailPassword");
+    private static final ArchetypeNodes NODES = new ArchetypeNodes().simple("pricingGroup");
 
     /**
      * Constructs an {@link OrganisationLocationViewLayoutStrategy}.

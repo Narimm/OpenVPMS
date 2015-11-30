@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.practice;
@@ -57,8 +57,7 @@ public class LocationRules {
      * @return the practice associated with the location, or {@code null} if none is found
      */
     public Party getPractice(Party location) {
-        EntityBean bean = new EntityBean(location, service);
-        return (Party) bean.getNodeSourceEntity("practice");
+        return (Party) getBean(location).getNodeSourceEntity("practice");
     }
 
     /**
@@ -98,8 +97,7 @@ public class LocationRules {
      * @return the schedules views
      */
     public List<Entity> getScheduleViews(Party location) {
-        EntityBean bean = new EntityBean(location, service);
-        return bean.getNodeTargetEntities("scheduleViews");
+        return getBean(location).getNodeTargetEntities("scheduleViews");
     }
 
     /**
@@ -120,7 +118,7 @@ public class LocationRules {
      * @return the work list views
      */
     public List<Entity> getWorkListViews(Party location) {
-        EntityBean bean = new EntityBean(location, service);
+        EntityBean bean = getBean(location);
         return bean.getNodeTargetEntities("workListViews");
     }
 
@@ -136,7 +134,7 @@ public class LocationRules {
 
     /**
      * Returns the default stock location associated with a location.
-     * <p/>
+     * <p>
      * NOTE: retrieval of stock locations may be an expensive operation,
      * due to the no. of relationships to products.
      *
@@ -157,6 +155,36 @@ public class LocationRules {
         IMObjectBean bean = new IMObjectBean(location, service);
         List<Lookup> values = bean.getValues("pricingGroup", Lookup.class);
         return !values.isEmpty() ? values.get(0) : null;
+    }
+
+    /**
+     * Returns the appointment reminder SMS template configured for the location.
+     *
+     * @param location the location
+     * @return the template or {@code null} if none is configured
+     */
+    public Entity getAppointmentSMSTemplate(Party location) {
+        return getBean(location).getNodeTargetEntity("smsAppointment");
+    }
+
+    /**
+     * Returns the location mail server.
+     *
+     * @return the location server, or {@code null} if none is configured
+     */
+    public MailServer getMailServer(Party location) {
+        Entity entity = getBean(location).getNodeTargetEntity("mailServer");
+        return (entity != null) ? new MailServer(entity, service) : null;
+    }
+
+    /**
+     * Wraps the location in a bean.
+     *
+     * @param location the location
+     * @return the bean
+     */
+    protected EntityBean getBean(Party location) {
+        return new EntityBean(location, service);
     }
 
 }

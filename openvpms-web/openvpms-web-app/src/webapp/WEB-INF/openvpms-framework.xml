@@ -115,6 +115,7 @@
             <list>
                 <value>classpath:org/openvpms/component/business/dao/**/*.hbm.xml</value>
                 <value>classpath:org/openvpms/archetype/rules/**/*.hbm.xml</value>
+                <value>classpath:org/openvpms/web/jobs/**/*.hbm.xml</value>
             </list>
         </property>
     </bean>
