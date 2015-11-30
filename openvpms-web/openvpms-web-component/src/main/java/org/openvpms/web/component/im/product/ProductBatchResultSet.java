@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -103,6 +103,8 @@ public class ProductBatchResultSet extends EntityResultSet<Entity> {
 
     /**
      * Constructs a {@link ProductBatchResultSet}.
+     * <p/>
+     * This constructor excludes inactive batches.
      *
      * @param value         the value to query on. May be {@code null}
      * @param product       the product to search on. May be {@code null}
@@ -111,8 +113,8 @@ public class ProductBatchResultSet extends EntityResultSet<Entity> {
      */
     public ProductBatchResultSet(String value, Product product, Date from, IMObjectReference stockLocation,
                                  int rows) {
-        this(Constraints.shortName(ProductArchetypes.PRODUCT_BATCH), value, product, null, from, null, stockLocation,
-             from, null, EXPIRY_DATES, rows);
+        this(Constraints.shortName(ProductArchetypes.PRODUCT_BATCH, true), value, product, null, from, null,
+             stockLocation, from, null, EXPIRY_DATES, rows);
     }
 
     /**
