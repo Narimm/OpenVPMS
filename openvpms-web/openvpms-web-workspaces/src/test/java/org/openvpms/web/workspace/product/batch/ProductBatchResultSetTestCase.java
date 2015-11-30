@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.batch;
@@ -188,6 +188,27 @@ public class ProductBatchResultSetTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies that the
+     * {@link ProductBatchResultSet#ProductBatchResultSet(String, Product, Date, IMObjectReference, int)}
+     * constructor excludes inactive batches.
+     */
+    @Test
+    public void testQueryOnValueExcludesInactive() {
+        Product product1 = createProduct("Z Test Product A");
+        Entity batch1 = createBatch("batch1", product1, DateRules.getTomorrow());
+        Entity batch2 = createBatch("batch2", product1, DateRules.getTomorrow());
+        ProductBatchResultSet set1 = new ProductBatchResultSet(null, product1, null, null, 20);
+        checkBatches(set1, true, batch1, batch2);
+
+        batch1.setActive(false);
+        batch2.setActive(false);
+        save(batch1, batch2);
+
+        ProductBatchResultSet set2 = new ProductBatchResultSet(null, product1, null, null, 20);
+        checkBatches(set2, false, batch1, batch2);
+    }
+
+    /**
      * Verifies batches are returned in the correct order.
      *
      * @param set     the set
@@ -195,7 +216,7 @@ public class ProductBatchResultSetTestCase extends ArchetypeServiceTest {
      */
     private void checkOrder(ProductBatchResultSet set, Entity... batches) {
         int index = 0;
-        ResultSetIterator<Entity> iterator = new ResultSetIterator<Entity>(set);
+        ResultSetIterator<Entity> iterator = new ResultSetIterator<>(set);
         while (iterator.hasNext()) {
             Entity next = iterator.next();
             if (next.getName().equals(batches[index].getName())) {
@@ -314,7 +335,7 @@ public class ProductBatchResultSetTestCase extends ArchetypeServiceTest {
         checkBatches(set, include, batches);
     }
 
-    private void checkBatches(ProductBatchResultSet set, boolean include, Entity[] batches) {
+    private void checkBatches(ProductBatchResultSet set, boolean include, Entity... batches) {
         List<IMObjectReference> objectRefs = QueryTestHelper.getObjectRefs(set);
         for (IMObject object : batches) {
             if (include) {
