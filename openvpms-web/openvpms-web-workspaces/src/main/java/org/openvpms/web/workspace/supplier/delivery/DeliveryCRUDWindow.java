@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.delivery;
@@ -34,6 +34,7 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
@@ -75,7 +76,7 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
 
 
     /**
-     * Constructs a {@code DeliveryCRUDWindow}.
+     * Constructs a {@link DeliveryCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
      * @param help       the help context
@@ -199,7 +200,7 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
         boolean result = false;
         // use the editor to ensure that the validation rules are invoked
         HelpContext context = getHelpContext().subtopic("finalise");
-        DeliveryEditor editor = new DeliveryEditor(getObject(), null, createLayoutContext(context));
+        DeliveryEditor editor = new DeliveryEditor(act, null, createLayoutContext(context));
         editor.setStatus(ActStatus.POSTED);
         Validator validator = new DefaultValidator();
         if (!editor.validate(validator)) {
@@ -221,8 +222,7 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
      * @param browser the order browser
      */
     private void onCreated(FinancialAct act, OrderTableBrowser browser) {
-        addParticipations(act, browser.getSupplier(),
-                          browser.getStockLocation());
+        addParticipations(act, browser.getSupplier(), browser.getStockLocation());
         boolean delivery = TypeHelper.isA(act, SupplierArchetypes.DELIVERY);
         HelpContext edit = createEditTopic(act);
         DeliveryEditor editor = new DeliveryEditor(act, null, createLayoutContext(edit));
@@ -238,16 +238,19 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
      *
      * @param act the delivery act
      */
-    private void onInvoice(final Act act) {
-        String title = Messages.get("supplier.delivery.invoice.title");
-        String message = Messages.get("supplier.delivery.invoice.message");
-        ConfirmationDialog dialog = new ConfirmationDialog(title, message, getHelpContext().subtopic("invoice"));
-        dialog.addWindowPaneListener(new PopupDialogListener() {
-            public void onOK() {
-                invoice(act);
-            }
-        });
-        dialog.show();
+    private void onInvoice(Act act) {
+        final Act object = IMObjectHelper.reload(act);
+        if (object != null) {
+            String title = Messages.get("supplier.delivery.invoice.title");
+            String message = Messages.get("supplier.delivery.invoice.message");
+            ConfirmationDialog dialog = new ConfirmationDialog(title, message, getHelpContext().subtopic("invoice"));
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                public void onOK() {
+                    invoice(object);
+                }
+            });
+            dialog.show();
+        }
     }
 
     /**
@@ -255,39 +258,44 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
      *
      * @param act the return act
      */
-    private void onCredit(final Act act) {
-        String title = Messages.get("supplier.delivery.credit.title");
-        String message = Messages.get("supplier.delivery.credit.message");
-        ConfirmationDialog dialog = new ConfirmationDialog(title, message, getHelpContext().subtopic("credit"));
-        dialog.addWindowPaneListener(new PopupDialogListener() {
-            public void onOK() {
-                credit(act);
-            }
-        });
-        dialog.show();
+    private void onCredit(Act act) {
+        final Act object = IMObjectHelper.reload(act);
+        if (object != null) {
+            String title = Messages.get("supplier.delivery.credit.title");
+            String message = Messages.get("supplier.delivery.credit.message");
+            ConfirmationDialog dialog = new ConfirmationDialog(title, message, getHelpContext().subtopic("credit"));
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                public void onOK() {
+                    credit(object);
+                }
+            });
+            dialog.show();
+        }
     }
 
     /**
      * Reverse a delivery or return.
      */
     private void onReverse() {
-        final Act act = getObject();
-        String title;
-        String message;
-        if (TypeHelper.isA(act, SupplierArchetypes.DELIVERY)) {
-            title = Messages.get("supplier.delivery.reverseDelivery.title");
-            message = Messages.get("supplier.delivery.reverseDelivery.message");
-        } else {
-            title = Messages.get("supplier.delivery.reverseReturn.title");
-            message = Messages.get("supplier.delivery.reverseReturn.message");
-        }
-        ConfirmationDialog dialog = new ConfirmationDialog(title, message, getHelpContext().subtopic("reverse"));
-        dialog.addWindowPaneListener(new PopupDialogListener() {
-            public void onOK() {
-                reverse(act);
+        final FinancialAct act = IMObjectHelper.reload(getObject());
+        if (act != null) {
+            String title;
+            String message;
+            if (TypeHelper.isA(act, SupplierArchetypes.DELIVERY)) {
+                title = Messages.get("supplier.delivery.reverseDelivery.title");
+                message = Messages.get("supplier.delivery.reverseDelivery.message");
+            } else {
+                title = Messages.get("supplier.delivery.reverseReturn.title");
+                message = Messages.get("supplier.delivery.reverseReturn.message");
             }
-        });
-        dialog.show();
+            ConfirmationDialog dialog = new ConfirmationDialog(title, message, getHelpContext().subtopic("reverse"));
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                public void onOK() {
+                    reverse(act);
+                }
+            });
+            dialog.show();
+        }
     }
 
     /**
@@ -329,13 +337,15 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
      *
      * @param act the delivery/return to reverse
      */
-    private void reverse(Act act) {
+    private void reverse(FinancialAct act) {
         try {
+            FinancialAct reversal;
             if (TypeHelper.isA(act, SupplierArchetypes.DELIVERY)) {
-                rules.reverseDelivery(act);
+                reversal = (FinancialAct) rules.reverseDelivery(act);
             } else {
-                rules.reverseReturn(act);
+                reversal = (FinancialAct) rules.reverseReturn(act);
             }
+            onSaved(reversal, false);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
