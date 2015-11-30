@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.macro;
@@ -28,10 +28,8 @@ import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.focus.FocusCommand;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.text.TextComponent;
 import org.openvpms.web.resource.i18n.Messages;
 
@@ -76,7 +74,7 @@ public class MacroDialog extends PopupDialog {
             public void query() {
             }
         });
-        getLayout().add(ColumnFactory.create(Styles.INSET, browser.getComponent()));
+        getLayout().add(browser.getComponent());
         getFocusGroup().add(0, browser.getFocusGroup());
         getButtons().addKeyListener(KeyStrokes.VK_ESCAPE, new ActionListener() {
             public void onAction(ActionEvent event) {
