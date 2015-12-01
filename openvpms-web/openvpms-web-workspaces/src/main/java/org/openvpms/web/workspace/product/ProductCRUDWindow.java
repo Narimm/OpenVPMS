@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product;
@@ -43,6 +43,7 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.ResultSetCRUDWindow;
@@ -158,7 +159,7 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
      * Invoked when the 'copy' button is pressed.
      */
     protected void onCopy() {
-        final Product product = getObject();
+        final Product product = IMObjectHelper.reload(getObject());
         if (product != null) {
             String displayName = getArchetypeDescriptor().getDisplayName();
             String name = product.getName();
@@ -246,7 +247,7 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
             List<SimpleDateFormat> dmy = getFormats(formats, ProductCSVReader.DAY_MONTH_YEAR_FORMATS);
             List<SimpleDateFormat> mdy = getFormats(formats, ProductCSVReader.MONTH_DAY_YEAR_FORMATS);
             List<SimpleDateFormat> ymd = getFormats(formats, ProductCSVReader.YEAR_MONTH_DAY_FORMATS);
-            List<List<SimpleDateFormat>> formatList = new ArrayList<List<SimpleDateFormat>>();
+            List<List<SimpleDateFormat>> formatList = new ArrayList<>();
             if (!dmy.isEmpty()) {
                 formatList.add(dmy);
             }
@@ -337,7 +338,7 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
      * @return the matches that appear in formats
      */
     private List<SimpleDateFormat> getFormats(List<SimpleDateFormat> matches, SimpleDateFormat[] formats) {
-        List<SimpleDateFormat> result = new ArrayList<SimpleDateFormat>();
+        List<SimpleDateFormat> result = new ArrayList<>();
         for (SimpleDateFormat match : matches) {
             for (SimpleDateFormat format : formats) {
                 if (match == format) {
