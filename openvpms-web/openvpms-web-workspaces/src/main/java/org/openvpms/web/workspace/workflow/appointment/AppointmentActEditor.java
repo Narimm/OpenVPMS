@@ -128,11 +128,6 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     private boolean scheduleReminders;
 
     /**
-     * Determines if the customer can receive SMS messages.
-     */
-    private boolean smsCustomer;
-
-    /**
      * The appointment duration.
      */
     private Label duration = LabelFactory.create();
@@ -220,10 +215,10 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         addStartEndTimeListeners();
         updateRelativeDate();
         updateDuration();
-        if (act.isNew()) {
-            updateSendReminderForCustomer();
-        } else {
-            smsCustomer = isCustomerSMSEnabled(getCustomer());
+        updateSendReminder();
+        if (act.isNew() && sendReminder.isEnabled()) {
+            // for new acts, the only way the flag will be enabled is if SMS is supported.
+            sendReminder.setSelected(true);
         }
     }
 
@@ -429,7 +424,12 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         editor.removeModifiableListener(patientListener);
         super.onCustomerChanged();
         editor.addModifiableListener(patientListener);
-        updateSendReminderForCustomer();
+        updateSendReminder();
+        if (sendReminder.isEnabled()) {
+            sendReminder.setSelected(true);
+        }
+        getProperty(REMINDER_SENT).setValue(null);
+        getProperty(REMINDER_ERROR).setValue(null);
         updateAlerts();
     }
 
@@ -692,41 +692,19 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     }
 
     /**
-     * Determines if the customer can receive SMS messages.
-     *
-     * @param customer the customer. May be {@code null}
-     * @return {@code true} if the customer can receive SMS messages
-     */
-    private boolean isCustomerSMSEnabled(Party customer) {
-        return SMSHelper.canSMS(customer);
-    }
-
-    /**
-     * Updates the enabled status of the send reminder flag.
-     */
-    private void updateSendReminder() {
-        boolean enabled = smsPractice && scheduleReminders && smsCustomer;
-        sendReminder.setEnabled(enabled);
-    }
-
-    /**
-     * Updates the sendReminder flag when the customer changes.
+     * Updates the send reminder flag, based on the practice, schedule and customer.
      * <p/>
      * If SMS is disabled for the practice, schedule or customer, the flag is toggled off and disabled.
      * <p/>
      * If not, it is enabled, and toggled on.
      */
-    private void updateSendReminderForCustomer() {
-        smsCustomer = isCustomerSMSEnabled(getCustomer());
-        updateSendReminder();
-        if (sendReminder.isEnabled() && smsCustomer) {
-            sendReminder.setSelected(true);
-        } else {
+    private void updateSendReminder() {
+        boolean enabled = smsPractice && scheduleReminders && SMSHelper.canSMS(getCustomer());
+        if (!enabled) {
             sendReminder.setSelected(false);
         }
+        sendReminder.setEnabled(enabled);
     }
-
-
 
     private class AppointmentLayoutStrategy extends AbstractLayoutStrategy {
 

@@ -236,9 +236,10 @@ class SingleScheduleTableModel extends AppointmentTableModel {
     private Component getCustomer(PropertySet event) {
         Component result = getViewer(event, ScheduleEvent.CUSTOMER_REFERENCE, ScheduleEvent.CUSTOMER_NAME, true);
         boolean sendReminder = event.getBoolean(ScheduleEvent.SEND_REMINDER);
-        if (sendReminder) {
-            Label reminder = createReminderIcon(event.getDate(ScheduleEvent.REMINDER_SENT),
-                                                event.getString(ScheduleEvent.REMINDER_ERROR));
+        Date reminderSent = event.getDate(ScheduleEvent.REMINDER_SENT);
+        String reminderError = event.getString(ScheduleEvent.REMINDER_ERROR);
+        if (sendReminder || reminderSent != null || reminderError != null) {
+            Label reminder = createReminderIcon(reminderSent, reminderError);
             reminder.setLayoutData(RowFactory.layout(new Alignment(Alignment.RIGHT, Alignment.TOP), Styles.FULL_WIDTH));
             result = RowFactory.create(Styles.CELL_SPACING, result, reminder);
         }

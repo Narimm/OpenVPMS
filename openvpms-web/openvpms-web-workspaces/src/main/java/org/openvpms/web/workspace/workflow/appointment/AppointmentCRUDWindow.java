@@ -115,9 +115,9 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     private static final String CHECKIN_ID = "button.checkin";
 
     /**
-     * SMS button identifier.
+     * SMS reminder button identifier.
      */
-    private static final String SMS_ID = "button.sms.send";
+    private static final String REMIND_ID = "button.sms.remind";
 
     /**
      * Constructs an {@link AppointmentCRUDWindow}.
@@ -340,7 +340,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
             }
         });
         if (SMSHelper.isSMSEnabled(getContext().getPractice())) {
-            buttons.add(ButtonFactory.create(SMS_ID, new ActionListener() {
+            buttons.add(ButtonFactory.create(REMIND_ID, new ActionListener() {
                 @Override
                 public void onAction(ActionEvent event) {
                     onSMS();
@@ -381,7 +381,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         buttons.setEnabled(CONSULT_ID, checkoutConsultEnabled);
         buttons.setEnabled(CHECKOUT_ID, checkoutConsultEnabled);
         buttons.setEnabled(OVER_THE_COUNTER_ID, browser.isAppointmentsSelected());
-        buttons.setEnabled(SMS_ID, smsEnabled);
+        buttons.setEnabled(REMIND_ID, smsEnabled);
     }
 
     /**
@@ -478,7 +478,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
 
     /**
      * Invoked to paste an appointment.
-     * <p>
+     * <p/>
      * For the paste to be successful:
      * <ul>
      * <li>the appointment must still exist
@@ -618,6 +618,9 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
 
     /**
      * Cuts an appointment and pastes it to the specified schedule and start time.
+     * <p/>
+     * If the appointment is being moved to a different day, and a reminder has already been sent, the reminder
+     * status is reset.
      *
      * @param appointment the appointment
      * @param schedule    the new schedule
@@ -625,6 +628,11 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * @param series      the appointment series. May be {@code null}
      */
     private void cut(Act appointment, Entity schedule, Date startTime, AppointmentSeriesState series) {
+        if (DateRules.compareTo(appointment.getActivityStartTime(), startTime) != 0) {
+            ActBean bean = new ActBean(appointment);
+            bean.setValue("reminderSent", null);
+            bean.setValue("reminderError", null);
+        }
         int duration = getDuration(appointment.getActivityStartTime(), appointment.getActivityEndTime());
         paste(appointment, schedule, startTime, duration, series, false, null, null);
         browser.clearMarked();
@@ -754,14 +762,16 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         }
 
         /**
-         * Determines if a customer can receive SMS messages.
+         * Determines if a customer can receive SMS reminder messages for an appointment.
          *
          * @param act the appointment
-         * @return {@code true} if the customer can receive SMS messages
+         * @return {@code true} if the appointment is PENDING, starts today or in the future, and the customer can
+         * receive SMS messages
          */
         public boolean canSMS(Act act) {
             ActBean bean = new ActBean(act);
-            return AppointmentStatus.PENDING.equals(act.getStatus()) && bean.getBoolean("sendReminder")
+            return AppointmentStatus.PENDING.equals(act.getStatus())
+                   && DateRules.compareDateToToday(act.getActivityStartTime()) >= 0
                    && SMSHelper.canSMS((Party) bean.getNodeParticipant("customer"));
         }
     }
