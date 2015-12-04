@@ -51,7 +51,7 @@ public class SMSHelper {
      * @return {@code true} if the customer can receive SMS messages
      */
     public static boolean canSMS(Party customer) {
-        return !ContactHelper.getSMSContacts(customer).isEmpty();
+        return customer != null && !ContactHelper.getSMSContacts(customer).isEmpty();
     }
 
     /**
