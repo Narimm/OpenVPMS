@@ -16,7 +16,6 @@
 
 package org.openvpms.web.component.workspace;
 
-import nextapp.echo2.app.Button;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Label;
@@ -29,6 +28,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.doc.DocumentGenerator;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
@@ -52,11 +52,15 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     /**
      * Refresh button identifier.
      */
-    private static final String REFRESH_ID = "refresh";
-
+    private static final String REFRESH_ID = "button.refresh";
 
     /**
-     * Constructs a {@code DocumentCRUDWindow}.
+     * External edit button identifier.
+     */
+    private static final String EXTERNAL_EDIT_ID = "button.externaledit";
+
+    /**
+     * Constructs a {@link DocumentCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
      * @param context    the context
@@ -67,6 +71,16 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     }
 
     /**
+     * Returns the actions that may be performed on the selected object.
+     *
+     * @return the actions
+     */
+    @Override
+    protected DocumentActActions getActions() {
+        return (DocumentActActions) super.getActions();
+    }
+
+    /**
      * Lays out the buttons.
      *
      * @param buttons the button row
@@ -74,13 +88,18 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     @Override
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
-        Button refresh = ButtonFactory.create(REFRESH_ID, new ActionListener() {
+        buttons.add(createPrintButton());
+        buttons.add(ButtonFactory.create(REFRESH_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onRefresh();
             }
-        });
-        buttons.add(createPrintButton());
-        buttons.add(refresh);
+        }));
+        buttons.add(ButtonFactory.create(EXTERNAL_EDIT_ID, new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                onExternalEdit();
+            }
+        }));
     }
 
     /**
@@ -153,15 +172,26 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
         generator.generate(true, version);
     }
 
+
+    /**
+     * Launches an external editor to edit the selected document, if editing of the document is supported.
+     */
+    private void onExternalEdit() {
+        DocumentAct act = IMObjectHelper.reload(getObject());
+        if (act != null) {
+            getActions().externalEdit(act);
+        }
+    }
+
     /**
      * Determines if a document can be refreshed.
      *
      * @return {@code true} if the document can be refreshed, otherwise
-     *         {@code false}
+     * {@code false}
      */
     private boolean canRefresh() {
         DocumentAct act = getObject();
-        return (act != null && ((DocumentActActions) getActions()).canRefresh(act));
+        return (act != null && getActions().canRefresh(act));
     }
 
     private class RefreshDialog extends ConfirmationDialog {

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.echo.servlet;
@@ -33,8 +31,7 @@ import java.util.Enumeration;
 /**
  * Servlet helper methods.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ServletHelper {
 
@@ -42,11 +39,58 @@ public class ServletHelper {
      * Determines if a request is from echo2.
      *
      * @param request the request
-     * @return <tt>true</tt> if the request came from echo2
+     * @return {@code true} if the request came from echo2
      */
     public static boolean isEchoRequest(HttpServletRequest request) {
         String query = request.getQueryString();
         return (query != null && query.contains("service"));
+    }
+
+    /**
+     * Returns the server URL.
+     * <p>
+     * This contains the scheme, host and port.
+     *
+     * @return the server URL or {@code null} if there is no active connection
+     */
+    public static String getServerURL() {
+        String url = null;
+        Connection connection = WebRenderServlet.getActiveConnection();
+        if (connection != null) {
+            HttpServletRequest request = connection.getRequest();
+            url = getServerURL(request);
+        }
+        return url;
+    }
+
+    /**
+     * Returns the server URL.
+     * <p>
+     * This contains the scheme, host and port.
+     *
+     * @return the server URL
+     */
+    public static String getServerURL(HttpServletRequest request) {
+        String url = request.getRequestURL().toString();
+        url = url.substring(0, url.length() - request.getRequestURI().length());
+        return url;
+    }
+
+    /**
+     * Returns the context URL.
+     * <p>
+     * This contains the scheme, host and port and servlet context.
+     *
+     * @return the context URL or {@code null} if there is no active connection
+     */
+    public static String getContextURL() {
+        String url = null;
+        Connection connection = WebRenderServlet.getActiveConnection();
+        if (connection != null) {
+            HttpServletRequest request = connection.getRequest();
+            url = getServerURL() + request.getContextPath();
+        }
+        return url;
     }
 
     /**
@@ -70,8 +114,7 @@ public class ServletHelper {
      * @param servlet the servlet name
      * @return a URI to redirect to the servlet
      */
-    public static String getRedirectURI(HttpServletRequest request,
-                                        String servlet) {
+    public static String getRedirectURI(HttpServletRequest request, String servlet) {
         String uri = request.getRequestURI();
         int start = (uri.startsWith("/")) ? 1 : 0;
         int index = uri.indexOf("/", start);
@@ -109,23 +152,21 @@ public class ServletHelper {
     }
 
     /**
-     * Forces an echo2 client to redirect to the
-     * <tt>ClientConfiguration.PROPERTY_SESSION_EXPIRATION_URI</tt> (if
-     * it has been configured).
-     * <p/>
+     * Forces an echo2 client to redirect to the {@code ClientConfiguration.PROPERTY_SESSION_EXPIRATION_URI}
+     * (if it has been configured).
+     * <p>
      * This is done by sending an sending an
-     * <tt>HttpServletResponse.SC_BAD_REQUEST</tt> status. The echo2 client
+     * {@code HttpServletResponse.SC_BAD_REQUEST} status. The echo2 client
      * interprets this as a redirection when the above property is set.
-     * <p/>
+     * <p>
      * This is the only mechanism available to perform redirections when the
-     * caller is an echo2 client. The <tt>HttpServletResponse.sendRedirect()</tt>
+     * caller is an echo2 client. The {@code HttpServletResponse.sendRedirect()}
      * method doesn't work as XmlHttpRequest automatically follows redirections.
      *
      * @param response the response
      * @throws IOException
      */
-    public static void forceExpiry(HttpServletResponse response) throws
-                                                                 IOException {
+    public static void forceExpiry(HttpServletResponse response) throws IOException {
         response.setContentType(ContentType.TEXT_HTML.getMimeType());
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         response.getWriter().write("Session Expired");

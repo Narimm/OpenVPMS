@@ -40,8 +40,11 @@
         <module>openvpms-hl7</module>
         <module>openvpms-smartflow</module>
         <module>openvpms-web-workspaces</module>
-        <module>openvpms-web-app</module>
         <module>openvpms-web-jobs</module>
+        <module>openvpms-webdav</module>
+        <module>openvpms-webdav-launcher</module>
+        <module>openvpms-webdav-package</module>
+        <module>openvpms-web-app</module>
     </modules>
 
     <dependencyManagement>

@@ -22,6 +22,7 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -40,6 +41,7 @@ import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.retry.Retryer;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.workspace.DocumentActActions;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.event.ActionListener;
@@ -68,6 +70,16 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      * The Smart Flow Sheet service factory.
      */
     private final FlowSheetServiceFactory flowSheetServiceFactory;
+
+    /**
+     * Determines the operations that can be performed on document acts.
+     */
+    private final DocumentActActions documentActions = new DocumentActActions();
+
+    /**
+     * External edit button identifier.
+     */
+    private static final String EXTERNAL_EDIT_ID = "button.externaledit";
 
     /**
      * Import flow sheet documents button identifier.
@@ -152,6 +164,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         super.layoutButtons(buttons);
         buttons.add(createPrintButton());
         buttons.add(createAddNoteButton());
+        buttons.add(createExternalEditButton());
         buttons.add(createImportFlowSheetButton());
     }
 
@@ -165,6 +178,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
         buttons.setEnabled(PRINT_ID, enable);
+        buttons.setEnabled(EXTERNAL_EDIT_ID, enable && documentActions.canExternalEdit(getObject()));
 
         Act event = getEvent();
         Party location = getContext().getLocation();
@@ -281,6 +295,29 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
             PatientInformationService service = ServiceHelper.getBean(PatientInformationService.class);
             service.updated(context, getContext().getUser());
         }
+    }
+
+    /**
+     * Launches an external editor to edit a document, if external editing of the document is supported.
+     */
+    protected void onExternalEdit() {
+        Act object = IMObjectHelper.reload(getObject());
+        if (object instanceof DocumentAct) {
+            documentActions.externalEdit((DocumentAct) object);
+        }
+    }
+
+    /**
+     * Creates a button to externally edit a a document.
+     *
+     * @return a new button
+     */
+    protected Button createExternalEditButton() {
+        return ButtonFactory.create(EXTERNAL_EDIT_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onExternalEdit();
+            }
+        });
     }
 
     /**

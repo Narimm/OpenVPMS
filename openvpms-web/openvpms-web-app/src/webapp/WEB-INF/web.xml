@@ -113,6 +113,21 @@
         <servlet-class>org.openvpms.web.echo.servlet.LogoutServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>WebDAVServlet</servlet-name>
+        <servlet-class>org.openvpms.web.webdav.servlet.WebDAVServlet</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>JnlpDownloadServlet</servlet-name>
+        <servlet-class>jnlp.sample.servlet.JnlpDownloadServlet</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>WebDAVLaunchServlet</servlet-name>
+        <servlet-class>org.openvpms.web.webdav.servlet.WebDAVEditorLauncherServlet</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>LoginServlet</servlet-name>
         <url-pattern>/login</url-pattern>
@@ -136,6 +151,26 @@
     <servlet-mapping>
         <servlet-name>LogoutServlet</servlet-name>
         <url-pattern>/logout</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>WebDAVServlet</servlet-name>
+        <url-pattern>/document/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>WebDAVServlet</servlet-name>
+        <url-pattern>/document</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>WebDAVLaunchServlet</servlet-name>
+        <url-pattern>/externaledit</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>JnlpDownloadServlet</servlet-name>
+        <url-pattern>/webstart/*</url-pattern>
     </servlet-mapping>
 
     <session-config>

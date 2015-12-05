@@ -100,6 +100,14 @@
                                     <outputDirectory>${project.build.directory}/localisation</outputDirectory>
                                     <includes>**/messages*.properties</includes>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.openvpms</groupId>
+                                    <artifactId>openvpms-webdav-package</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>war</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}/webapp/webstart</outputDirectory>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
@@ -126,6 +134,22 @@
                             </resources>
                         </configuration>
                     </execution>
+                    <execution>
+                        <!-- copy webapp for tomcat plugin -->
+                        <id>webapp</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/webapp</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/src/webapp/</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -137,6 +161,13 @@
                     <archive>
                         <addMavenDescriptor>false</addMavenDescriptor>
                     </archive>
+                    <overlays>
+                        <overlay>
+                            <groupId>org.openvpms</groupId>
+                            <artifactId>openvpms-webdav-package</artifactId>
+                            <targetPath>webstart</targetPath>
+                        </overlay>
+                    </overlays>
                 </configuration>
             </plugin>
             <plugin>
@@ -150,7 +181,7 @@
                     <server>openvpms-tomcat</server>
                     <!--port>${maven.tomcat.port}</port-->
                     <path>/${project.build.finalName}</path>
-                    <warSourceDirectory>${basedir}/src/webapp</warSourceDirectory>
+                    <warSourceDirectory>${basedir}/target/webapp</warSourceDirectory>
                 </configuration>
                 <dependencies>
                     <dependency>
@@ -168,7 +199,7 @@
                     <server>openvpms-tomcat</server>
                     <!--port>${maven.tomcat.port}</port-->
                     <path>/${project.build.finalName}</path>
-                    <warSourceDirectory>${basedir}/src/webapp</warSourceDirectory>
+                    <warSourceDirectory>${basedir}/target/webapp</warSourceDirectory>
                 </configuration>
                 <dependencies>
                     <dependency>
@@ -185,10 +216,10 @@
                 <groupId>org.mortbay.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <configuration>
-                    <webAppSourceDirectory>${basedir}/src/webapp</webAppSourceDirectory>
+                    <webAppSourceDirectory>${basedir}/target/webapp</webAppSourceDirectory>
                     <webAppConfig>
                         <contextPath>/openvpms</contextPath>
-                        <descriptor>${basedir}/src/webapp/WEB-INF/web.xml</descriptor>
+                        <descriptor>${basedir}/target/webapp/WEB-INF/web.xml</descriptor>
                     </webAppConfig>
                     <connectors>
                         <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
@@ -235,6 +266,27 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-web-jobs</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-webdav</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-webdav-package</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.mojo.webstart</groupId>
+            <artifactId>webstart-jnlp-servlet</artifactId>
+            <version>1.0-6.0.02_ea_b02.2</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

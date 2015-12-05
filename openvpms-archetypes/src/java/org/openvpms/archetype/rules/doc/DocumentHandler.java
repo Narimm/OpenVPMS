@@ -73,6 +73,16 @@ public interface DocumentHandler {
     Document create(String name, InputStream stream, String mimeType, int size);
 
     /**
+     * Updates a {@link Document} from a stream.
+     *
+     * @param document the document to update
+     * @param stream   a stream representing the new document content
+     * @param mimeType the mime type of the document. May be {@code null}
+     * @param size     the size of stream, or {@code -1} if the size is not known
+     */
+    void update(Document document, InputStream stream, String mimeType, int size);
+
+    /**
      * Returns the document content as a stream.
      *
      * @param document the document

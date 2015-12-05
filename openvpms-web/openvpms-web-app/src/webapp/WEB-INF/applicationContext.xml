@@ -29,6 +29,7 @@
     <import resource="openvpms-hl7.xml"/>
     <import resource="openvpms-smartflow.xml"/>
     <import resource="openvpms-authentication.xml"/>
+    <import resource="openvpms-webdav.xml"/>
     <import resource="openvpms-web-app.xml"/>
 
 </beans>
