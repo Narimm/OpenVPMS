@@ -29,6 +29,7 @@
     <!--                            FILTER CHAIN                            -->
     <!-- ================================================================== -->
 
+    <!--
     <bean id="springSecurityFilterChain" class="org.springframework.security.web.FilterChainProxy">
         <security:filter-chain-map request-matcher="ant">
             <security:filter-chain pattern="/**"
@@ -43,8 +44,9 @@
     <bean id="securityContextPersistenceFilter"
           class="org.springframework.security.web.context.SecurityContextPersistenceFilter">
     </bean>
-
+-->
     <!-- security context persistence filter, with allowSessionCreation set false. Use for web services -->
+    <!--
     <bean id="securityContextPersistenceFilterWithASCFalse"
           class="org.springframework.security.web.context.SecurityContextPersistenceFilter">
         <property name="securityContextRepository">
@@ -64,7 +66,7 @@
           class="org.springframework.security.authentication.AnonymousAuthenticationProvider">
         <property name="key" value="foobar"/>
     </bean>
-
+-->
 
     <!-- This bean automatically receives AuthenticationEvent messages from Spring Security  -->
     <bean id="loggerListener" class="org.springframework.security.authentication.event.LoggerListener"/>
@@ -75,11 +77,11 @@
 
     <bean id="authenticatedVoterAccessDecisionManager"
           class="org.springframework.security.access.vote.AffirmativeBased">
-        <property name="decisionVoters">
+        <constructor-arg name="decisionVoters">
             <list>
                 <bean class="org.springframework.security.access.vote.AuthenticatedVoter"/>
             </list>
-        </property>
+        </constructor-arg>
     </bean>
 
 
@@ -125,11 +127,11 @@
 
     <!--  Define the access decision manager for authorization -->
     <bean id="accessDecisionManager" class="org.springframework.security.access.vote.AffirmativeBased">
-        <property name="decisionVoters">
+        <constructor-arg name="decisionVoters">
             <list>
                 <ref bean="archetypeAwareVoter"/>
             </list>
-        </property>
+        </constructor-arg>
     </bean>
 
     <!--  Use the standard role vote -->

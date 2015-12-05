@@ -15,10 +15,16 @@
  */
 package org.openvpms.web.component.workspace;
 
+import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
+import org.apache.commons.io.FilenameUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.echo.servlet.ServletHelper;
 
 
 /**
@@ -43,5 +49,49 @@ public class DocumentActActions extends ActActions<DocumentAct> {
             }
         }
         return refresh;
+    }
+
+    /**
+     * Determines if an act is a document that can be edited externally by OpenOffice.
+     *
+     * @param act the act
+     * @return {@code true} if the act is a document can be edited
+     */
+    public boolean canExternalEdit(Act act) {
+        return (act instanceof DocumentAct) && canExternalEdit((DocumentAct) act);
+    }
+
+    /**
+     * Determines if a document can be edited externally by OpenOffice.
+     *
+     * @param act the document act
+     * @return {@code true} if the document can be edited
+     */
+    public boolean canExternalEdit(DocumentAct act) {
+        if (canEdit(act) && act.getDocument() != null) {
+            String ext = FilenameUtils.getExtension(act.getFileName());
+            if (DocFormats.ODT_EXT.equalsIgnoreCase(ext)
+                || DocFormats.DOC_EXT.equalsIgnoreCase(ext)
+                || DocFormats.DOCX_EXT.equalsIgnoreCase(ext)
+                || DocFormats.ODT_TYPE.equals(act.getMimeType())
+                || DocFormats.DOC_TYPE.equals(act.getMimeType())
+                || DocFormats.DOCX_TYPE.equals(act.getMimeType())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Launches an external editor to edit a document, if editing of the document is supported.
+     *
+     * @param act the document act
+     */
+    public void externalEdit(DocumentAct act) {
+        if (canExternalEdit(act)) {
+            String documentURL = ServletHelper.getContextURL() + "/document/" + act.getId() + "/" + act.getFileName();
+            String url = ServletHelper.getRedirectURI("externaledit?") + documentURL;
+            ApplicationInstance.getActive().enqueueCommand(new BrowserOpenWindowCommand(url, "", ""));
+        }
     }
 }

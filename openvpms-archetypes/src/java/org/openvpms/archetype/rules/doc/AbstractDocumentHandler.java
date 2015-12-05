@@ -113,27 +113,27 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Document create(String name, InputStream stream, String mimeType, int size) {
-        byte[] buffer = new byte[1024];
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        OutputStream output = getOutputStream(bytes);
-        int read = 0;
-        int length;
         CRC32 checksum = new CRC32();
-        try {
-            while ((length = stream.read(buffer)) != -1) {
-                checksum.update(buffer, 0, length);
-                output.write(buffer, 0, length);
-                read += length;
-            }
-            if (size != -1 && read != size) {
-                throw new DocumentException(ReadError, name);
-            }
-            output.close();
-        } catch (IOException exception) {
-            throw new DocumentException(ReadError, exception, name);
-        }
-        byte[] data = bytes.toByteArray();
+        byte[] data = getContent(name, stream, size, checksum);
         return create(name, data, mimeType, size, checksum.getValue());
+    }
+
+    /**
+     * Updates a {@link Document} from a stream.
+     *
+     * @param document the document to update
+     * @param stream   a stream representing the new document content
+     * @param mimeType the mime type of the document. May be {@code null}
+     * @param size     the size of stream, or {@code -1} if the size is not known
+     */
+    @Override
+    public void update(Document document, InputStream stream, String mimeType, int size) {
+        CRC32 checksum = new CRC32();
+        byte[] content = getContent(document.getName(), stream, size, checksum);
+        if (mimeType == null) {
+            mimeType = document.getMimeType();
+        }
+        update(document, document.getName(), content, mimeType, size, checksum.getValue());
     }
 
     /**
@@ -218,7 +218,7 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
 
     /**
      * Returns a stream to write the document to.
-     * <p/>
+     * <p>
      * If compression is enabled, this returns an {@link DeflaterOutputStream}, otherwise it returns the stream
      * unchanged.
      *
@@ -231,7 +231,7 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
 
     /**
      * Returns a stream to read the document from.
-     * <p/>
+     * <p>
      * If compression is enabled, this returns an {@link InflaterInputStream}, otherwise it returns the stream
      * unchanged.
      *
@@ -261,6 +261,38 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
      */
     protected IArchetypeService getService() {
         return service;
+    }
+
+    /**
+     * Outputs the content of a stream into a byte array, using the stream returned by
+     * {@link #getOutputStream(OutputStream)}.
+     *
+     * @param name     the document name, for error reporting
+     * @param stream   a stream representing the document content
+     * @param size     the size of stream, or {@code -1} if the size is not known
+     * @param checksum updated with the uncompressed document CRC32 checksum
+     * @return the
+     */
+    private byte[] getContent(String name, InputStream stream, int size, CRC32 checksum) {
+        byte[] buffer = new byte[1024];
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        OutputStream output = getOutputStream(bytes);
+        int read = 0;
+        int length;
+        try {
+            while ((length = stream.read(buffer)) != -1) {
+                checksum.update(buffer, 0, length);
+                output.write(buffer, 0, length);
+                read += length;
+            }
+            if (size != -1 && read != size) {
+                throw new DocumentException(ReadError, name);
+            }
+            output.close();
+        } catch (IOException exception) {
+            throw new DocumentException(ReadError, exception, name);
+        }
+        return bytes.toByteArray();
     }
 
 }
