@@ -16,6 +16,7 @@
 
 package org.openvpms.archetype.rules.workflow;
 
+import org.joda.time.Period;
 import org.openvpms.archetype.rules.act.DefaultActCopyHandler;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -26,6 +27,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -49,6 +51,7 @@ import org.openvpms.component.system.common.query.RelationalOp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -58,6 +61,11 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class AppointmentRules {
+
+    /**
+     * Appointment reminder job configuration.
+     */
+    protected static final String APPOINTMENT_REMINDER_JOB = "entity.jobAppointmentReminder";
 
     /**
      * The archetype service.
@@ -144,7 +152,7 @@ public class AppointmentRules {
      *
      * @param schedule the schedule
      * @return the default appointment type, or the the first appointment type
-     *         if there is no default, or {@code null} if none is found
+     * if there is no default, or {@code null} if none is found
      * @throws OpenVPMSException for any error
      */
     public Entity getDefaultAppointmentType(Entity schedule) {
@@ -250,6 +258,51 @@ public class AppointmentRules {
         return (Act) copier.apply(appointment).get(0);
     }
 
+    /**
+     * Determines if automatic reminders are enabled for a schedule.
+     *
+     * @param schedule the schedule. May be {@code null}
+     * @return {@code true} if reminders are enabled for the schedule
+     */
+    public boolean isScheduleRemindersEnabled(Entity schedule) {
+        if (schedule != null) {
+            IMObjectBean bean = new IMObjectBean(schedule, service);
+            return bean.getBoolean("sendReminders");
+        }
+        return false;
+    }
+
+    /**
+     * Returns the period from the current time when no appointment reminder should be sent.
+     *
+     * @return the period, or {@code null} if appointment reminders haven't been configured
+     */
+    public Period getNoReminderPeriod() {
+        Period result = null;
+        IMObject object = null;
+        object = getAppointmentReminderJob();
+        if (object != null) {
+            IMObjectBean bean = new IMObjectBean(object, service);
+            int period = bean.getInt("noReminder");
+            DateUnits units = DateUnits.fromString(bean.getString("noReminderUnits"));
+            if (period > 0 && units != null) {
+                result = units.toPeriod(period);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the appointment reminder job configuration, if one is present.
+     *
+     * @return the configuration, or {@code null} if none exists
+     */
+    protected IMObject getAppointmentReminderJob() {
+        ArchetypeQuery query = new ArchetypeQuery(APPOINTMENT_REMINDER_JOB, true, true);
+        query.setMaxResults(1);
+        Iterator<IMObject> iterator = new IMObjectQueryIterator<>(service, query);
+        return (iterator.hasNext()) ? iterator.next() : null;
+    }
 
     /**
      * Returns the schedule slot size in minutes.

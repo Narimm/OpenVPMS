@@ -325,3 +325,48 @@ INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, 
             AND l.arch_short_name = 'entityLink.scheduleLocation')
   GROUP BY schedule.entity_id
   HAVING count(location.entity_id) = 1;
+
+#
+# Set up a default entity.documentTemplateSMSAppointment, if one isn't present
+#
+INSERT INTO entities (version, linkId, arch_short_name, arch_version, name, description, active)
+  SELECT
+    1,
+    UUID(),
+    'entity.documentTemplateSMSAppointment',
+    '1.0',
+    'Default Appointment Reminder SMS Template',
+    '<patient>''s appointment at <location> is confirmed for <date/time>. Call us on <phone> if you need to change the appointment',
+    1
+  FROM dual
+  WHERE NOT exists(
+      SELECT *
+      FROM entities e
+      WHERE e.arch_short_name = 'entity.documentTemplateSMSAppointment');
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    e.entity_id,
+    'expressionType',
+    'string',
+    'XPATH'
+  FROM entities e
+  WHERE e.arch_short_name = 'entity.documentTemplateSMSAppointment' AND NOT exists(SELECT *
+                                                                                   FROM entity_details d
+                                                                                   WHERE d.entity_id = e.entity_id AND
+                                                                                         d.name = 'expressionType');
+
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    e.entity_id,
+    'expression',
+    'string',
+    'concat(expr:if(expr:var(''patient.name'') != '''', concat(expr:var(''patient.name''), ''&quot;s''), ''Your''),
+                     '' appointment at '' , $location.name,'' is confirmed for '', date:formatDate($appointment.startTime, ''short''),
+                     '' @ '', date:formatTime($appointment.startTime, ''short''), $nl,
+                     ''Call us on '', party:getTelephone($location), '' if you need to change the appointment'')'
+  FROM entities e
+  WHERE e.arch_short_name = 'entity.documentTemplateSMSAppointment' AND NOT exists(SELECT *
+                                                                                   FROM entity_details d
+                                                                                   WHERE d.entity_id = e.entity_id AND
+                                                                                         d.name = 'expression');
