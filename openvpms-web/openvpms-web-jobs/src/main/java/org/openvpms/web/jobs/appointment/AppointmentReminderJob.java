@@ -20,6 +20,7 @@ import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.joda.time.Period;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeService;
@@ -111,22 +112,12 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
     /**
      * The interval prior to an appointment when reminders can be sent.
      */
-    private final int fromInterval;
-
-    /**
-     * The from interval units.
-     */
-    private final DateUnits fromUnits;
+    private final Period fromPeriod;
 
     /**
      * The interval prior to an appointment when reminders should no longer be sent.
      */
-    private final int toInteval;
-
-    /**
-     * The to interval units.
-     */
-    private final DateUnits toUnits;
+    private final Period toPeriod;
 
     /**
      * Determines if reminding should stop.
@@ -137,6 +128,16 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
      * Used to send messages to users on completion or failure.
      */
     private final JobCompletionNotifier notifier;
+
+    /**
+     * Determines the minimum appointment start time.
+     */
+    private Date minStartTime;
+
+    /**
+     * Determines the maximum appointment start time.
+     */
+    private Date maxStartTime;
 
     /**
      * The total no. of reminders processed.
@@ -163,8 +164,6 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
      * The logger.
      */
     private static final Log log = LogFactory.getLog(AppointmentReminderJob.class);
-    private Date from;
-    private Date to;
 
     /**
      * Constructs an {@link AppointmentReminderJob}.
@@ -188,10 +187,8 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
         this.locationRules = locationRules;
         this.evaluator = evaluator;
         IMObjectBean bean = new IMObjectBean(configuration, archetypeService);
-        fromInterval = bean.getInt("smsFrom");
-        fromUnits = DateUnits.fromString(bean.getString("smsFromUnits", "WEEKS"));
-        toInteval = bean.getInt("smsTo");
-        toUnits = DateUnits.fromString(bean.getString("smsToUnits", "DAYS"));
+        fromPeriod = getPeriod(bean, "smsFrom", "smsFromUnits", DateUnits.WEEKS);
+        toPeriod = getPeriod(bean, "smsTo", "smsToUnits", DateUnits.DAYS);
         notifier = new JobCompletionNotifier(archetypeService);
     }
 
@@ -241,16 +238,17 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
             throw new IllegalStateException("No Appointment Reminder SMS Templates have been configured");
         }
         NamedQuery query = new NamedQuery("AppointmentReminderJob.getReminders", "id");
-        from = getStartDate();
-        to = DateRules.getDate(DateRules.getDate(from, fromInterval, fromUnits), -toInteval, toUnits);
+        Date date = getStartDate();
+        minStartTime = DateRules.plus(date, toPeriod);
+        maxStartTime = DateRules.plus(date, fromPeriod);
 
         if (log.isInfoEnabled()) {
-            log.info("Sending reminders for appointments between " + DateFormatter.formatDateTime(from)
-                     + " and " + DateFormatter.formatDateTime(to));
+            log.info("Sending reminders for appointments between " + DateFormatter.formatDateTime(minStartTime)
+                     + " and " + DateFormatter.formatDateTime(maxStartTime));
         }
 
-        query.setParameter("from", from);
-        query.setParameter("to", to);
+        query.setParameter("from", minStartTime);
+        query.setParameter("to", maxStartTime);
         int pageSize = getPageSize();
         query.setMaxResults(pageSize);
         // pull in count results at a time. Note that sending updates the appointment, which affects paging, so the
@@ -501,9 +499,9 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
                 subject = Messages.format("appointmentreminder.subject.success", configuration.getName(), sent);
             }
         }
-        if (from != null && to != null) {
-            text.append(Messages.format("appointmentreminder.period", DateFormatter.formatDateTime(from),
-                                        DateFormatter.formatDateTime(to)));
+        if (minStartTime != null && maxStartTime != null) {
+            text.append(Messages.format("appointmentreminder.period", DateFormatter.formatDateTime(minStartTime),
+                                        DateFormatter.formatDateTime(maxStartTime)));
             text.append("\n");
         }
         text.append(Messages.format("appointmentreminder.sent", sent, total));
@@ -521,5 +519,23 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
             }
         }
         notifier.send(users, subject, reason, text.toString());
+    }
+
+    /**
+     * Helper to return a {@code Period} for an inverval and units node.
+     *
+     * @param bean         the bean
+     * @param intervalName the interval node name
+     * @param unitsName    the interval units node name
+     * @param defaultUnits the default units, if none is present
+     * @return the corresponding period
+     */
+    private Period getPeriod(IMObjectBean bean, String intervalName, String unitsName, DateUnits defaultUnits) {
+        int interval = bean.getInt(intervalName);
+        DateUnits units = DateUnits.fromString(bean.getString(unitsName));
+        if (units == null) {
+            units = defaultUnits;
+        }
+        return units.toPeriod(interval);
     }
 }

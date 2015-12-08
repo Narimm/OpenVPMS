@@ -783,5 +783,13 @@
           name="Document name - supplier full name - today's date"
           description="Valid for supplier documents only"
           expression="concat($file, ' - ', party:getPartyFullName($supplier), ' - ', date:format(java.util.Date.new(), 'd MMM yyyy'))"/>
-
+    <data id="ART1" archetype="entity.documentTemplateSMSAppointment"
+          name="Default Appointment Reminder SMS Template"
+          description="&lt;patient&gt;'s appointment at &lt;location&gt; is confirmed for &lt;date/time&gt;. Call us on &lt;phone&gt; if you need to change the appointment"
+          expressionType="XPATH"
+          expression="concat(expr:if(expr:var('patient.name') != '', concat(expr:var('patient.name'), '&quot;s'), 'Your'),
+                     ' appointment at ' , $location.name,' is confirmed for ', date:formatDate($appointment.startTime, 'short'),
+                     ' @ ', date:formatTime($appointment.startTime, 'short'), $nl,
+                     'Call us on ', party:getTelephone($location), ' if you need to change the appointment')"/>
+    <data archetype="entityLink.organisationSMSAppointment" source="id:OP1" target="id:ART1"/>
 </archetype>
