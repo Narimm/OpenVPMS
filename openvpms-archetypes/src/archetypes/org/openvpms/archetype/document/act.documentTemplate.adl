@@ -29,5 +29,7 @@
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
+        <node name="document" path="/document" minCardinality="0" maxCardinality="1"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference"/>
     </archetype>
 </archetypes>

@@ -19,6 +19,8 @@ package org.openvpms.web.workspace.admin.template;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.query.QueryBrowser;
+import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.component.workspace.ResultSetCRUDWorkspace;
 
 
@@ -35,6 +37,18 @@ public class DocumentTemplateWorkspace extends ResultSetCRUDWorkspace<Entity> {
     public DocumentTemplateWorkspace(Context context) {
         super("admin", "documentTemplate", context);
         setArchetypes(Entity.class, DocumentArchetypes.DOCUMENT_TEMPLATE, "entity.documentTemplateSMS*");
+    }
+
+    /**
+     * Creates a new CRUD window.
+     *
+     * @return a new CRUD window
+     */
+    @Override
+    protected CRUDWindow<Entity> createCRUDWindow() {
+        QueryBrowser<Entity> browser = getBrowser();
+        return new DocumentTemplateCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet(),
+                                              getContext(), getHelpContext());
     }
 
 }

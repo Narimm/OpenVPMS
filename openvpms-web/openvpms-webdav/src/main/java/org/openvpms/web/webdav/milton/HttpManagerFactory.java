@@ -62,9 +62,10 @@ public class HttpManagerFactory {
          */
         @Override
         protected void initWebdavProtocol() {
-            setWebDavProtocol(new WebDAVProtocol(handlerHelper, resourceTypeHelper, webdavResponseHandler, propertySources,
-                                                 quotaDataAccessor, buildPatchSetter(), initPropertyAuthoriser(),
-                                                 eTagGenerator, urlAdapter, resourceHandlerHelper, userAgentHelper(),
+            setWebDavProtocol(new WebDAVProtocol(handlerHelper, resourceTypeHelper, webdavResponseHandler,
+                                                 propertySources, quotaDataAccessor, buildPatchSetter(),
+                                                 initPropertyAuthoriser(), eTagGenerator, urlAdapter,
+                                                 resourceHandlerHelper, userAgentHelper(),
                                                  propFindRequestFieldParser(), propFindPropertyBuilder(),
                                                  displayNameFormatter, enableTextContentProperty));
         }
