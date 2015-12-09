@@ -19,12 +19,17 @@ import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
 import org.apache.commons.io.FilenameUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.echo.servlet.ServletHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -83,6 +88,17 @@ public class DocumentActActions extends ActActions<DocumentAct> {
     }
 
     /**
+     * Determines if a document associated with a template can be edited externally by OpenOffice.
+     *
+     * @param template the document template
+     * @return {@code true} if the associated document can be edited
+     */
+    public boolean canExternalEdit(Entity template) {
+        DocumentAct act = getDocumentAct(template);
+        return act != null && canExternalEdit(act);
+    }
+
+    /**
      * Launches an external editor to edit a document, if editing of the document is supported.
      *
      * @param act the document act
@@ -93,5 +109,32 @@ public class DocumentActActions extends ActActions<DocumentAct> {
             String url = ServletHelper.getRedirectURI("externaledit?") + documentURL;
             ApplicationInstance.getActive().enqueueCommand(new BrowserOpenWindowCommand(url, "", ""));
         }
+    }
+
+    /**
+     * Launches an external editor to edit a document associated with a template, if editing of the document is
+     * supported.
+     *
+     * @param template the document template
+     */
+    public void externalEdit(Entity template) {
+        DocumentAct act = getDocumentAct(template);
+        if (act != null) {
+            externalEdit(act);
+        }
+    }
+
+    /**
+     * Returns the document act associated the template
+     *
+     * @return the document act, or {@code null} if none exists
+     */
+    private DocumentAct getDocumentAct(Entity template) {
+        DocumentAct result = null;
+        if (TypeHelper.isA(template, DocumentArchetypes.DOCUMENT_TEMPLATE)) {
+            DocumentTemplate documentTemplate = new DocumentTemplate(template, ServiceHelper.getArchetypeService());
+            result = documentTemplate.getDocumentAct();
+        }
+        return result;
     }
 }

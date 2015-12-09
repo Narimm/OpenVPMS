@@ -114,6 +114,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
         buttons.setEnabled(PRINT_ID, enable);
         boolean enableRefresh = enable && canRefresh();
         buttons.setEnabled(REFRESH_ID, enableRefresh);
+        buttons.setEnabled(EXTERNAL_EDIT_ID, enable && getActions().canExternalEdit(getObject()));
     }
 
     /**

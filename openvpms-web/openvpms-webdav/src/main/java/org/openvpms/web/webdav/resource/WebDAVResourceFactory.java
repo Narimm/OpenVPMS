@@ -170,10 +170,12 @@ public class WebDAVResourceFactory implements ResourceFactory {
         if (shortNames == null || shortNames.length == 0) {
             Set<String> result = new HashSet<>();
             for (ArchetypeDescriptor descriptor : service.getArchetypeDescriptors()) {
-                Class clazz = descriptor.getClazz();
-                if (clazz != null && DocumentAct.class.isAssignableFrom(clazz)) {
-                    if (descriptor.getNodeDescriptor("document") != null) {
-                        result.add(descriptor.getType().getShortName());
+                if (descriptor.isPrimary()) {
+                    Class clazz = descriptor.getClazz();
+                    if (clazz != null && DocumentAct.class.isAssignableFrom(clazz)) {
+                        if (descriptor.getNodeDescriptor("document") != null) {
+                            result.add(descriptor.getType().getShortName());
+                        }
                     }
                 }
             }
