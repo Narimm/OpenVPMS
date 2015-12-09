@@ -15,16 +15,13 @@
   -->
 
 <archetypes>
-    <archetype name="party.patientpet.1.0" latest="true"
-               type="org.openvpms.component.business.domain.im.party.Party"
+    <archetype name="party.patientpet.1.0" latest="true" type="org.openvpms.component.business.domain.im.party.Party"
                displayName="Patient (Pet)">
-        <node name="id" path="/id"
-              type="java.lang.Long" readOnly="true"/>
+        <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
         <node name="name" path="/name" type="java.lang.String" minCardinality="1" maxLength="100">
             <assertion name="propercase"/>
         </node>
-        <node name="description" type="java.lang.String"
-              path="/description" hidden="true" derived="true"
+        <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
               derivedValue="concat(openvpms:lookup(.,'sex'), expr:concatIf(' ', /details/colour), ' ',
                             openvpms:lookup(.,'breed'), expr:concatIf(' (',party:identities(),')'))"/>
         <node name="species" path="/details/species" type="java.lang.String" minCardinality="1">
@@ -36,14 +33,12 @@
         <node name="breed" path="/details/breed" type="java.lang.String">
             <assertion name="lookup">
                 <property name="type" value="targetLookup"/>
-                <property name="relationship"
-                          value="lookupRelationship.speciesBreed"/>
+                <property name="relationship" value="lookupRelationship.speciesBreed"/>
                 <property name="value" value="/details/species"/>
             </assertion>
         </node>
         <node name="newBreed" path="/details/newBreed" type="java.lang.String" minCardinality="0"/>
-        <node name="colour" path="/details/colour" type="java.lang.String"
-              maxLength="30">
+        <node name="colour" path="/details/colour" type="java.lang.String" maxLength="30">
             <assertion name="propercase"/>
         </node>
         <node name="sex" path="/details/sex" type="java.lang.String">
@@ -55,34 +50,24 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="desexed" path="/details/desexed" type="java.lang.Boolean"
-              defaultValue="false()"/>
-        <node name="dateOfBirth" path="/details/dateOfBirth"
-              type="java.util.Date" minCardinality="0"/>
-        <node name="age" type="java.lang.String"
-              path="/details/age" derived="true"
+        <node name="desexed" path="/details/desexed" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="dateOfBirth" path="/details/dateOfBirth" type="java.util.Date" minCardinality="0"/>
+        <node name="age" type="java.lang.String" path="/details/age" derived="true"
               derivedValue="party:getPatientAge()"/>
-        <node name="deceased" path="/details/deceased" type="java.lang.Boolean"
-              defaultValue="false()"/>
-        <node name="deceasedDate" path="/details/deceasedDate"
-              type="java.util.Date" minCardinality="0"/>
-        <node name="active" path="/active" type="java.lang.Boolean"
-              defaultValue="true()"/>
-        <node name="createdDate" path="/details/createdDate" type="java.util.Date"
-              minCardinality="0" defaultValue="java.util.Date.new()" hidden="true"/>
-        <node name="customers" path="/targetEntityRelationships"
-              type="java.util.HashSet" baseName="EntityRelationship"
-              minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.patient*">
+        <node name="deceased" path="/details/deceased" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="deceasedDate" path="/details/deceasedDate" type="java.util.Date" minCardinality="0"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="createdDate" path="/details/createdDate" type="java.util.Date" minCardinality="0"
+              defaultValue="java.util.Date.new()" hidden="true"/>
+        <node name="customers" path="/targetEntityRelationships" type="java.util.HashSet" baseName="EntityRelationship"
+              minCardinality="0" maxCardinality="*" filter="entityRelationship.patient*">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.patientOwner"/>
+                        <property name="shortName" value="entityRelationship.patientOwner"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.patientLocation"/>
+                        <property name="shortName" value="entityRelationship.patientLocation"/>
                     </propertyMap>
                 </propertyList>
             </assertion>
@@ -90,22 +75,18 @@
                 <errorMessage>Duplicate active customer relationship</errorMessage>
             </assertion>
         </node>
-        <node name="identities" path="/identities"
-              type="java.util.HashSet" baseName="Identity" minCardinality="0"
+        <node name="identities" path="/identities" type="java.util.HashSet" baseName="Identity" minCardinality="0"
               maxCardinality="*">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityIdentity.alias"/>
+                        <property name="shortName" value="entityIdentity.microchip"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityIdentity.microchip"/>
+                        <property name="shortName" value="entityIdentity.petTag"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityIdentity.petTag"/>
+                        <property name="shortName" value="entityIdentity.alias"/>
                     </propertyMap>
                     <!-- For jurisdictions that use rabies tags, uncomment the following -->
                     <!--
@@ -116,48 +97,22 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="referrals" path="/entityRelationships"
-              type="java.util.HashSet" baseName="EntityRelationship"
-              minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.referred*">
+        <node name="referrals" path="/entityRelationships" type="java.util.HashSet" baseName="EntityRelationship"
+              minCardinality="0" maxCardinality="*" filter="entityRelationship.referred*">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.referredFrom"/>
+                        <property name="shortName" value="entityRelationship.referredFrom"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.referredTo"/>
+                        <property name="shortName" value="entityRelationship.referredTo"/>
                     </propertyMap>
                 </propertyList>
             </assertion>
         </node>
-        <node name="discounts" path="/entityRelationships"
-              type="java.util.HashSet" baseName="EntityRelationship"
-              minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.discountPatient">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.discountPatient"/>
-                    </propertyMap>
-                </propertyList>
-            </assertion>
-        </node>
-        <node name="customFields" path="/entityRelationships"
-              type="java.util.HashSet" baseName="EntityRelationship"
-              minCardinality="0" maxCardinality="1"
-              filter="entityRelationship.customPatientFields">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.customPatientFields"/>
-                    </propertyMap>
-                </propertyList>
-            </assertion>
-        </node>
+        <node name="discounts" path="/entityRelationships" type="java.util.HashSet" baseName="EntityRelationship"
+              minCardinality="0" maxCardinality="*" filter="entityRelationship.discountPatient"/>
+        <node name="customFields" path="/entityRelationships" type="java.util.HashSet" baseName="EntityRelationship"
+              minCardinality="0" maxCardinality="1" filter="entityRelationship.customPatientFields"/>
     </archetype>
 </archetypes>

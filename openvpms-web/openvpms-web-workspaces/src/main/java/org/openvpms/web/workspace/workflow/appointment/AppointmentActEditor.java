@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.workflow.appointment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
+import org.joda.time.Period;
 import org.openvpms.archetype.i18n.time.DateDurationFormatter;
 import org.openvpms.archetype.i18n.time.DurationFormatter;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -29,7 +30,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.bound.BoundCheckBox;
@@ -128,14 +128,14 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     private boolean scheduleReminders;
 
     /**
-     * Determines if the customer can receive SMS messages.
-     */
-    private boolean smsCustomer;
-
-    /**
      * The appointment duration.
      */
     private Label duration = LabelFactory.create();
+
+    /**
+     * Determines if the sendReminder checkbox should be enabled.
+     */
+    private Period noReminder;
 
     /**
      * The send reminder flag.
@@ -190,7 +190,8 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         Entity appointmentType = (Entity) getParticipant("appointmentType");
         Entity schedule = getSchedule();
         smsPractice = SMSHelper.isSMSEnabled(getLayoutContext().getContext().getPractice());
-        scheduleReminders = isScheduleRemindersEnabled(schedule);
+        scheduleReminders = rules.isScheduleRemindersEnabled(schedule);
+        noReminder = rules.getNoReminderPeriod();
 
         if (appointmentType == null) {
             // set the appointment type to the default for the schedule
@@ -220,11 +221,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         addStartEndTimeListeners();
         updateRelativeDate();
         updateDuration();
-        if (act.isNew()) {
-            updateSendReminderForCustomer();
-        } else {
-            smsCustomer = isCustomerSMSEnabled(getCustomer());
-        }
+        updateSendReminder(act.isNew());
     }
 
     /**
@@ -396,6 +393,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         }
         updateRelativeDate();
         updateDuration();
+        updateSendReminder(sendReminder.isSelected());
     }
 
     /**
@@ -420,7 +418,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
 
     /**
      * Invoked when the customer changes. Sets the patient to null if no relationship exists between the two.
-     * <p>
+     * <p/>
      * The alerts will be updated.
      */
     @Override
@@ -429,7 +427,9 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         editor.removeModifiableListener(patientListener);
         super.onCustomerChanged();
         editor.addModifiableListener(patientListener);
-        updateSendReminderForCustomer();
+        updateSendReminder(true);
+        getProperty(REMINDER_SENT).setValue(null);
+        getProperty(REMINDER_ERROR).setValue(null);
         updateAlerts();
     }
 
@@ -466,8 +466,8 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         if (schedule != null) {
             slotSize = rules.getSlotSize((Party) schedule);
         }
-        scheduleReminders = isScheduleRemindersEnabled(schedule);
-        updateSendReminder();
+        scheduleReminders = rules.isScheduleRemindersEnabled(schedule);
+        updateSendReminder(true);
         return editor;
     }
 
@@ -678,55 +678,32 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     }
 
     /**
-     * Determines if schedule reminders are enabled.
-     *
-     * @param schedule the schedule. May be {@code null}
-     * @return {@code true} if reminders are enabled for the schedule
-     */
-    private boolean isScheduleRemindersEnabled(Entity schedule) {
-        if (schedule != null) {
-            IMObjectBean bean = new IMObjectBean(schedule);
-            return bean.getBoolean("sendReminders");
-        }
-        return false;
-    }
-
-    /**
-     * Determines if the customer can receive SMS messages.
-     *
-     * @param customer the customer. May be {@code null}
-     * @return {@code true} if the customer can receive SMS messages
-     */
-    private boolean isCustomerSMSEnabled(Party customer) {
-        return SMSHelper.canSMS(customer);
-    }
-
-    /**
-     * Updates the enabled status of the send reminder flag.
-     */
-    private void updateSendReminder() {
-        boolean enabled = smsPractice && scheduleReminders && smsCustomer;
-        sendReminder.setEnabled(enabled);
-    }
-
-    /**
-     * Updates the sendReminder flag when the customer changes.
+     * Updates the send reminder flag, based on the practice, schedule and customer.
      * <p/>
      * If SMS is disabled for the practice, schedule or customer, the flag is toggled off and disabled.
      * <p/>
-     * If not, it is enabled, and toggled on.
+     * If not, it is enabled.
+     *
+     * @param select if {@code true} and reminders may be sent, select the flag, otherwise leave it
      */
-    private void updateSendReminderForCustomer() {
-        smsCustomer = isCustomerSMSEnabled(getCustomer());
-        updateSendReminder();
-        if (sendReminder.isEnabled() && smsCustomer) {
-            sendReminder.setSelected(true);
-        } else {
+    private void updateSendReminder(boolean select) {
+        Date startTime = getStartTime();
+        Date now = new Date();
+        boolean enabled = smsPractice && scheduleReminders && noReminder != null &&
+                          startTime != null && startTime.after(now) && SMSHelper.canSMS(getCustomer());
+        if (!enabled) {
             sendReminder.setSelected(false);
         }
+        sendReminder.setEnabled(enabled);
+        if (enabled && select) {
+            if (getObject().isNew()) {
+                // for new appointments only select the reminder if the start time is after the no reminder period
+                Date to = DateRules.plus(now, noReminder);
+                select = startTime.after(to);
+            }
+            sendReminder.setSelected(select);
+        }
     }
-
-
 
     private class AppointmentLayoutStrategy extends AbstractLayoutStrategy {
 
@@ -738,16 +715,15 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
             addComponent(new ComponentState(getStartTimeEditor()));
             addComponent(new ComponentState(getEndTimeEditor()));
             ArchetypeNodes archetypeNodes = getArchetypeNodes();
+            archetypeNodes.excludeIfEmpty(REMINDER_SENT, REMINDER_ERROR);
             if (!smsPractice || !scheduleReminders) {
-                archetypeNodes.exclude(SEND_REMINDER, REMINDER_SENT, REMINDER_ERROR);
+                archetypeNodes.exclude(SEND_REMINDER);
             } else {
-                archetypeNodes.excludeIfEmpty(REMINDER_SENT, REMINDER_ERROR);
-
-                BoundDateTimeField reminderSent = BoundDateTimeFieldFactory.create(getProperty(REMINDER_SENT));
-                reminderSent.setStyleName(Styles.EDIT);
                 addComponent(new ComponentState(sendReminder, sendReminder.getProperty()));
-                addComponent(new ComponentState(reminderSent));
             }
+            BoundDateTimeField reminderSent = BoundDateTimeFieldFactory.create(getProperty(REMINDER_SENT));
+            reminderSent.setStyleName(Styles.EDIT);
+            addComponent(new ComponentState(reminderSent));
         }
 
         /**
@@ -799,7 +775,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
 
         /**
          * Returns the default focus component.
-         * <p>
+         * <p/>
          * This implementation returns the customer component.
          *
          * @param components the components
