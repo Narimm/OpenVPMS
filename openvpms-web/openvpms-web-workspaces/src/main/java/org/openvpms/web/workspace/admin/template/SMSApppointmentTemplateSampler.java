@@ -48,6 +48,7 @@ import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.appointment.reminder.AppointmentReminderEvaluator;
+import org.openvpms.web.workspace.workflow.appointment.reminder.AppointmentReminderException;
 
 import java.util.Date;
 
@@ -149,9 +150,11 @@ public class SMSApppointmentTemplateSampler {
             } else {
                 status.setText(null);
             }
-        } catch (Throwable exception) {
+        } catch (AppointmentReminderException exception) {
             value = null;
-            status.setText(exception.getMessage());
+            String message = (exception.getCause() != null) ? exception.getCause().getMessage()
+                                                            : exception.getMessage();
+            status.setText(message);
         }
         messageProperty.setValue(value);
     }

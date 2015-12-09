@@ -24,7 +24,7 @@
         <node name="host" path="/details/host" type="java.lang.String" minCardinality="1"/>
         <node name="port" path="/details/port" type="java.lang.Integer" minCardinality="1" defaultValue="25"/>
         <node name="username" path="/details/username" type="java.lang.String" minCardinality="0"/>
-        <node name="password" path="/details/mailPassword" type="java.lang.String" minCardinality="0"/>
+        <node name="password" path="/details/password" type="java.lang.String" minCardinality="0"/>
         <node name="security" displayName="Connection Security" path="/details/security" type="java.lang.String"
               minCardinality="0">
             <assertion name="lookup.local">

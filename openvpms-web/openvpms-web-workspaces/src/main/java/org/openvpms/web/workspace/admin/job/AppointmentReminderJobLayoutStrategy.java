@@ -35,9 +35,40 @@ import org.openvpms.web.echo.style.Styles;
 public class AppointmentReminderJobLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
+     * The SMS From node.
+     */
+    public static final String SMS_FROM = "smsFrom";
+
+    /**
+     * The SMS From Units node.
+     */
+    public static final String SMS_FROM_UNITS = "smsFromUnits";
+
+    /**
+     * The SMS To node.
+     */
+    public static final String SMS_TO = "smsTo";
+
+    /**
+     * The SMS To Units node.
+     */
+    public static final String SMS_TO_UNITS = "smsToUnits";
+
+    /**
+     * The No Reminder node.
+     */
+    public static final String NO_REMINDER = "noReminder";
+
+    /**
+     * The No Reminder Units node.
+     */
+    public static final String NO_REMINDER_UNITS = "noReminderUnits";
+
+    /**
      * The nodes to render. The units are excluded as they are rendered with their corresponding interval.
      */
-    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude("smsFromUnits", "smsToUnits");
+    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude(SMS_FROM_UNITS, SMS_TO_UNITS,
+                                                                             NO_REMINDER_UNITS);
 
     /**
      * Constructs an {@link AppointmentReminderJobLayoutStrategy}.
@@ -59,8 +90,9 @@ public class AppointmentReminderJobLayoutStrategy extends AbstractLayoutStrategy
      */
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-        addComponent(getInterval("smsFrom", "smsFromUnits", object, properties, context));
-        addComponent(getInterval("smsTo", "smsToUnits", object, properties, context));
+        addComponent(getInterval(SMS_FROM, SMS_FROM_UNITS, object, properties, context));
+        addComponent(getInterval(SMS_TO, SMS_TO_UNITS, object, properties, context));
+        addComponent(getInterval(NO_REMINDER, NO_REMINDER_UNITS, object, properties, context));
         return super.apply(object, properties, parent, context);
     }
 

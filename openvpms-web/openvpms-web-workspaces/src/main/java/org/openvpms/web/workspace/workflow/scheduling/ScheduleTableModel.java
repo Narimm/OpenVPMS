@@ -698,7 +698,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     protected Component createLabelWithNotes(String text, String notes, boolean sendReminder, Date reminderSent,
                                              String reminderError) {
         Component result = createLabelWithNotes(text, notes);
-        if (sendReminder) {
+        if (sendReminder || reminderSent != null || reminderError != null) {
             if (!(result instanceof Row)) {
                 result = RowFactory.create(Styles.CELL_SPACING, result);
             }

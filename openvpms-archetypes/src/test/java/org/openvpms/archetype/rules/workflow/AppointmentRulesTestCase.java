@@ -16,6 +16,7 @@
 
 package org.openvpms.archetype.rules.workflow;
 
+import org.joda.time.Period;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -25,10 +26,12 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 
@@ -38,6 +41,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -289,6 +293,37 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link AppointmentRules#isScheduleRemindersEnabled(Entity)}.
+     */
+    @Test
+    public void testIsScheduleRemindersEnabled() {
+        Entity schedule = ScheduleTestHelper.createSchedule(TestHelper.createLocation());
+        assertFalse(rules.isScheduleRemindersEnabled(schedule));
+
+        IMObjectBean bean = new IMObjectBean(schedule);
+        bean.setValue("sendReminders", true);
+
+        assertTrue(rules.isScheduleRemindersEnabled(schedule));
+
+        assertFalse(rules.isScheduleRemindersEnabled(null));
+    }
+
+    /**
+     * Tests the {@link AppointmentRules#getNoReminderPeriod()}.
+     */
+    @Test
+    public void testGetNoReminderPeriod() {
+        final Entity job = (Entity) create(AppointmentRules.APPOINTMENT_REMINDER_JOB);
+        AppointmentRules rules = new AppointmentRules(getArchetypeService()) {
+            @Override
+            protected IMObject getAppointmentReminderJob() {
+                return job;
+            }
+        };
+        assertEquals(Period.days(2), rules.getNoReminderPeriod());
+    }
+
+    /**
      * Helper to create an <em>act.customerAppointment</em>.
      *
      * @param startTime the act start time
@@ -296,10 +331,8 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      * @param schedule  the schedule
      * @return a new act
      */
-    protected Act createAppointment(Date startTime, Date endTime,
-                                    Party schedule) {
-        return ScheduleTestHelper.createAppointment(startTime, endTime,
-                                                    schedule);
+    protected Act createAppointment(Date startTime, Date endTime, Party schedule) {
+        return ScheduleTestHelper.createAppointment(startTime, endTime, schedule);
     }
 
     /**
