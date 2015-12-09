@@ -29,28 +29,24 @@
         <jar href="org.eclipse.swt.win32.win32.x86_64-${swt.version}.jar"/>
     </resources>
 
-    <resources os="Linux" arch="ppc">
-        <jar href="swt-gtk-linux-ppc.jar"/>
+    <resources os="Linux" arch="x86">
+        <jar href="org.eclipse.swt.gtk.linux.x86-${swt.version}.jar"/>
     </resources>
 
     <resources os="Linux" arch="x86_64">
-        <jar href="swt-gtk-linux-x86_64.jar"/>
+        <jar href="org.eclipse.swt.gtk.linux.x86_64-${swt.version}.jar"/>
     </resources>
 
     <resources os="Linux" arch="amd64">
-        <jar href="swt-gtk-linux-x86_64.jar"/>
+        <jar href="org.eclipse.swt.gtk.linux.x86_64-${swt.version}.jar"/>
     </resources>
 
-    <resources os="Linux">
-        <jar href="swt-gtk-linux-x86.jar"/>
+    <resources os="Mac" arch="x86">
+        <jar href="org.eclipse.swt.cocoa.macosx-${swt.version}.jar"/>
     </resources>
 
-    <resources os="SunOS" arch="sparc">
-        <jar href="swt-gtk-solaris-sparc.jar"/>
-    </resources>
-
-    <resources os="SunOS" arch="x86">
-        <jar href="swt-gtk-solaris-x86.jar"/>
+    <resources os="Mac" arch="x86_64">
+        <jar href="org.eclipse.swt.cocoa.macosx.x86_64-${swt.version}.jar"/>
     </resources>
 
     <application-desc main-class="org.openvpms.web.webdav.launch.EditorLauncher">
