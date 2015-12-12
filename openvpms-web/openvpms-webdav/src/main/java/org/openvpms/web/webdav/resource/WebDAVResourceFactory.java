@@ -1,7 +1,6 @@
 package org.openvpms.web.webdav.resource;
 
 import io.milton.common.Path;
-import io.milton.http.LockManager;
 import io.milton.http.ResourceFactory;
 import io.milton.resource.Resource;
 import org.apache.commons.lang.StringUtils;
@@ -41,7 +40,7 @@ public class WebDAVResourceFactory implements ResourceFactory {
     /**
      * The lock manager.
      */
-    private final LockManager lockManager;
+    private final ResourceLockManager lockManager;
 
     /**
      * The document archetypes that may be edited.
@@ -54,9 +53,10 @@ public class WebDAVResourceFactory implements ResourceFactory {
      * @param contextPath the servlet context path
      * @param service     the archetype service
      * @param handlers    the document handlers
+     * @param lockManager the lock manager
      */
     public WebDAVResourceFactory(String contextPath, IArchetypeService service, DocumentHandlers handlers,
-                                 LockManager lockManager) {
+                                 ResourceLockManager lockManager) {
         this.service = service;
         this.handlers = handlers;
         this.lockManager = lockManager;

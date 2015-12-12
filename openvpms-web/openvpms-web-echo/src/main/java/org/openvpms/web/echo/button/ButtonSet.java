@@ -201,7 +201,7 @@ public class ButtonSet implements KeyStrokeHandler {
 
     /**
      * Adds a button.
-     * <p/>
+     * <p>
      * Note that for {@link ShortcutButton} instances, the {@link ShortcutButton#getActionCommand()} must
      * return non-null in order for keystroke events to be triggered on the appropriate button.
      *
@@ -222,7 +222,7 @@ public class ButtonSet implements KeyStrokeHandler {
 
     /**
      * Adds a button at the specified position.
-     * <p/>
+     * <p>
      * Note that for {@link ShortcutButton} instances, the {@link ShortcutButton#getActionCommand()} must
      * return non-null in order for keystroke events to be triggered on the appropriate button.
      *
@@ -391,6 +391,15 @@ public class ButtonSet implements KeyStrokeHandler {
      */
     public Component getContainer() {
         return container;
+    }
+
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group. May be {@code null}
+     */
+    public FocusGroup getFocusGroup() {
+        return focusGroup;
     }
 
     /**

@@ -14,7 +14,7 @@
  * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.admin.hl7;
+package org.openvpms.web.component.workspace;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.web.echo.help.HelpContext;

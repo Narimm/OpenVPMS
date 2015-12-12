@@ -22,6 +22,7 @@ import org.openvpms.web.workspace.admin.archetype.ArchetypeWorkspace;
 import org.openvpms.web.workspace.admin.group.GroupWorkspace;
 import org.openvpms.web.workspace.admin.hl7.HL7Workspace;
 import org.openvpms.web.workspace.admin.lookup.LookupWorkspace;
+import org.openvpms.web.workspace.admin.system.SystemWorkspace;
 import org.openvpms.web.workspace.admin.template.DocumentTemplateWorkspace;
 import org.openvpms.web.workspace.admin.user.UserWorkspace;
 
@@ -34,7 +35,7 @@ import org.openvpms.web.workspace.admin.user.UserWorkspace;
 public class AdminWorkspaces extends AbstractWorkspaces {
 
     /**
-     * Constructs an {@code AdminWorkspaces}.
+     * Constructs an {@link AdminWorkspaces}.
      *
      * @param context the context
      */
@@ -52,5 +53,6 @@ public class AdminWorkspaces extends AbstractWorkspaces {
         addWorkspace(new AuthorityWorkspace(context));
         addWorkspace(new ArchetypeWorkspace(context));
         addWorkspace(new StyleSheetWorkspace(context));
+        addWorkspace(new SystemWorkspace(context));
     }
 }

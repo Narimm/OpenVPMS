@@ -217,7 +217,7 @@ public class LockHandler implements ExistingEntityHandler {
      */
     private void respondSuccess(LockResult result, Request request, Response response) {
         response.setStatus(Response.Status.SC_OK);
-        String lock = LockHelper.serialise(result.getLockToken(), request.getAbsoluteUrl());
+        String lock = LockHelper.serialiseLockResponse(result.getLockToken(), request.getAbsoluteUrl());
         if (log.isDebugEnabled()) {
             log.debug("Lock response: " + lock);
         }

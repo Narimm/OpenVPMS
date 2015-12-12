@@ -10,6 +10,7 @@ import io.milton.http.webdav.DisplayNameFormatter;
 import io.milton.http.webdav.PropFindPropertyBuilder;
 import io.milton.http.webdav.PropFindRequestFieldParser;
 import io.milton.http.webdav.PropPatchSetter;
+import io.milton.http.webdav.PropertyMap;
 import io.milton.http.webdav.ResourceTypeHelper;
 import io.milton.http.webdav.UserAgentHelper;
 import io.milton.http.webdav.WebDavProtocol;
@@ -37,6 +38,7 @@ public class WebDAVProtocol extends WebDavProtocol {
      * The unlock handler.
      */
     private final UnlockHandler unlockHandler;
+
 
     /**
      * Constructs a {@link WebDAVProtocol}.
@@ -69,6 +71,9 @@ public class WebDAVProtocol extends WebDavProtocol {
               propertyBuilder, displayNameFormatter, enableTextContentProperty);
         lockHandler = new LockHandler(responseHandler, resourceHandlerHelper);
         unlockHandler = new UnlockHandler(responseHandler, resourceHandlerHelper);
+        PropertyMap properties = getPropertyMap();
+        properties.add(new LockDiscoveryProperty());
+        properties.add(new SupportedLockProperty());
     }
 
     /**
@@ -84,4 +89,5 @@ public class WebDAVProtocol extends WebDavProtocol {
         result.addAll(super.getHandlers());
         return result;
     }
+
 }

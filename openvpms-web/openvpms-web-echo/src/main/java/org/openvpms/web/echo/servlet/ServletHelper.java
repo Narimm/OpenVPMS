@@ -54,13 +54,8 @@ public class ServletHelper {
      * @return the server URL or {@code null} if there is no active connection
      */
     public static String getServerURL() {
-        String url = null;
-        Connection connection = WebRenderServlet.getActiveConnection();
-        if (connection != null) {
-            HttpServletRequest request = connection.getRequest();
-            url = getServerURL(request);
-        }
-        return url;
+        HttpServletRequest request = getRequest();
+        return (request != null) ? getServerURL(request) : null;
     }
 
     /**
@@ -85,9 +80,8 @@ public class ServletHelper {
      */
     public static String getContextURL() {
         String url = null;
-        Connection connection = WebRenderServlet.getActiveConnection();
-        if (connection != null) {
-            HttpServletRequest request = connection.getRequest();
+        HttpServletRequest request = getRequest();
+        if (request != null) {
             url = getServerURL() + request.getContextPath();
         }
         return url;
@@ -100,11 +94,8 @@ public class ServletHelper {
      * @return a URI to redirect to the servlet
      */
     public static String getRedirectURI(String servlet) {
-        Connection connection = WebRenderServlet.getActiveConnection();
-        if (connection != null) {
-            return getRedirectURI(connection.getRequest(), servlet);
-        }
-        return servlet;
+        HttpServletRequest request = getRequest();
+        return (request != null) ? getRedirectURI(request, servlet) : servlet;
     }
 
     /**
@@ -125,6 +116,16 @@ public class ServletHelper {
     }
 
     /**
+     * Returns the current request.
+     *
+     * @return the current request, or {@code null} if there is no current request
+     */
+    public static HttpServletRequest getRequest() {
+        Connection connection = WebRenderServlet.getActiveConnection();
+        return (connection != null) ? connection.getRequest() : null;
+    }
+
+    /**
      * Returns the no. of instances of a particular echo2 application for
      * the current http session.
      *
@@ -134,15 +135,14 @@ public class ServletHelper {
     public static int getApplicationInstanceCount(String servlet) {
         String instance = "Echo2UserInstance:/" + servlet;
         int count = 0;
-        Connection connection = WebRenderServlet.getActiveConnection();
-        if (connection != null) {
-            HttpSession session = connection.getRequest().getSession();
+        HttpServletRequest request = getRequest();
+        if (request != null) {
+            HttpSession session = request.getSession();
             Enumeration attributes = session.getAttributeNames();
             while (attributes.hasMoreElements()) {
                 String name = (String) attributes.nextElement();
                 if (name.startsWith(instance)) {
-                    if (session.getAttribute(name)
-                            instanceof ContainerInstance) {
+                    if (session.getAttribute(name) instanceof ContainerInstance) {
                         ++count;
                     }
                 }

@@ -43,7 +43,7 @@ import java.util.Map;
  *
  * @author Tim Anderson
  */
-class DocumentResource implements GetableResource, ReplaceableResource, PropFindableResource, LockableResource {
+class DocumentResource implements GetableResource, ReplaceableResource, PropFindableResource, LockableResource, IMObjectResource {
 
     /**
      * The document name.
@@ -104,8 +104,7 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
      */
     @Override
     public String getUniqueId() {
-        // use the document identifier and version as the unique identifier.
-        return Long.toString(reference.getId()) + "-" + getState().version;
+        return reference.getArchetypeId().getShortName() + "-" + reference.getId();
     }
 
     /**
@@ -370,6 +369,26 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
     @Override
     public LockToken getCurrentLock() {
         return lockManager.getCurrentToken(this);
+    }
+
+    /**
+     * Returns the object reference.
+     *
+     * @return the object reference
+     */
+    @Override
+    public IMObjectReference getReference() {
+        return reference;
+    }
+
+    /**
+     * Returns the object version.
+     *
+     * @return the version
+     */
+    @Override
+    public long getVersion() {
+        return getState().version;
     }
 
     /**
