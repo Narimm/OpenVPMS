@@ -16,41 +16,55 @@ public class LockHelper {
     /**
      * Serialises a lock token to XML.
      *
-     * @param token the lock token
-     * @param uri   the URL that the lock applies to
+     * @param lock the lock token
+     * @param uri  the URL that the lock applies to
      * @return the serialised token
      */
-    public static String serialise(LockToken token, String uri) {
+    public static String serialiseLockResponse(LockToken lock, String uri) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         XmlWriter writer = new XmlWriter(out);
         writer.writeXMLHeader();
-        writer.open("D:prop  xmlns:D=\"DAV:\"");
+        String prefix = "D";
+        writer.open(prefix, "prop xmlns:D=\"DAV:\"");
         writer.newLine();
-        writer.open("D:lockdiscovery");
-        writer.newLine();
-        writer.open("D:activelock");
-        writer.newLine();
-        writer.writeProperty(null, "D:locktype", "<D:" + token.info.type.toString().toLowerCase() + "/>");
-        writer.writeProperty(null, "D:lockscope", "<D:" + token.info.scope.toString().toLowerCase() + "/>");
-        writer.writeProperty(null, "D:depth", getDepth(token.info.depth));
-        writer.writeProperty(null, "D:owner", token.info.lockedByUser);
-        Long seconds = token.timeout.getSeconds();
-        if (seconds != null && seconds > 0) {
-            writer.writeProperty(null, "D:timeout", "Second-" + seconds);
-        }
-        XmlWriter.Element lockToken = writer.begin("D:locktoken").open();
-        writer.writeProperty(null, "D:href", "opaquelocktoken:" + token.tokenId);
-        lockToken.close();
-
-        XmlWriter.Element lockRoot = writer.begin("D:lockroot").open();
-        writer.writeProperty(null, "D:href", uri);
-        lockRoot.close();
-
-        writer.close("D:activelock");
-        writer.close("D:lockdiscovery");
-        writer.close("D:prop");
+        writeLockDiscovery(lock, prefix, uri, writer);
+        writer.close(prefix, "prop");
         writer.flush();
         return out.toString();
+    }
+
+    /**
+     * Writes a D:lockdiscovery element to a {@code XmlWriter}
+     *
+     * @param lock   the lock to write. May be {@code null}
+     * @param uri    the URL that the lock applies to
+     * @param writer the writer to write to
+     */
+    public static void writeLockDiscovery(LockToken lock, String prefix, String uri, XmlWriter writer) {
+        writer.open(prefix, "lockdiscovery");
+        if (lock != null) {
+            writer.open(prefix, "activelock");
+            writer.writeProperty(prefix, "locktype",
+                                 "<" + prefix + ":" + lock.info.type.toString().toLowerCase() + "/>");
+            writer.writeProperty(prefix, "lockscope",
+                                 "<" + prefix + ":" + lock.info.scope.toString().toLowerCase() + "/>");
+            writer.writeProperty(prefix, "depth", getDepth(lock.info.depth));
+            writer.writeProperty(prefix, "owner", lock.info.lockedByUser);
+            Long seconds = lock.timeout.getSeconds();
+            if (seconds != null && seconds > 0) {
+                writer.writeProperty(prefix, "timeout", "Second-" + seconds);
+            }
+            XmlWriter.Element lockToken = writer.begin(prefix, "locktoken").open();
+            writer.writeProperty(prefix, "href", "opaquelocktoken:" + lock.tokenId);
+            lockToken.close();
+
+            XmlWriter.Element lockRoot = writer.begin(prefix, "lockroot").open();
+            writer.writeProperty(prefix, "href", uri);
+            lockRoot.close();
+
+            writer.close(prefix, "activelock");
+        }
+        writer.close(prefix, "lockdiscovery");
     }
 
     /**

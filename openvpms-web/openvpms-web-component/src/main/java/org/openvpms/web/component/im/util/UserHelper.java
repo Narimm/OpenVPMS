@@ -41,4 +41,19 @@ public class UserHelper {
         }
         return false;
     }
+
+    /**
+     * Returns the name for a user, given their login name.
+     *
+     * @param loginName the login name. May be {@code null}
+     * @return the name, or {@code loginName} if the user doesn't exist
+     */
+    public static String getName(String loginName) {
+        String result = null;
+        if (loginName != null) {
+            User user = ServiceHelper.getBean(UserRules.class).getUser(loginName);
+            result = user != null ? user.getName() : loginName;
+        }
+        return result;
+    }
 }

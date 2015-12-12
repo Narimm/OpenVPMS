@@ -22,6 +22,7 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.workspace.AbstractCRUDWindow;
 import org.openvpms.web.component.workspace.BrowserCRUDWindow;
 import org.openvpms.web.component.workspace.CRUDWindow;
+import org.openvpms.web.component.workspace.TabComponent;
 import org.openvpms.web.echo.help.HelpContext;
 
 /**

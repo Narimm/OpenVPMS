@@ -13,6 +13,7 @@ import io.milton.resource.Resource;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 import java.io.IOException;
@@ -26,7 +27,8 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class DocumentActResource implements CollectionResource, PropFindableResource, PutableResource {
+public class DocumentActResource implements CollectionResource, PropFindableResource, PutableResource,
+        IMObjectResource {
 
     /**
      * The document act.
@@ -107,12 +109,12 @@ public class DocumentActResource implements CollectionResource, PropFindableReso
      * behaviour can be changed by injecting an alternative EtagGenerator instance into
      * the HttpManagerBuilder
      *
-     * @return - a string which uniquely identifies this resource. This will be
+     * @return a string which uniquely identifies this resource. This will be
      * used in the ETag header field, and affects caching of resources.
      */
     @Override
     public String getUniqueId() {
-        return "act-" + name;
+        return act.getArchetypeId().getShortName() + "-" + act.getId();
     }
 
     /**
@@ -154,11 +156,6 @@ public class DocumentActResource implements CollectionResource, PropFindableReso
      * <p>
      * The auth given as a parameter will be null if authentication failed. The
      * auth associated with the request will still exist
-     *
-     * @param request
-     * @param method
-     * @param auth
-     * @return - true to permit the request
      */
     @Override
     public boolean authorise(Request request, Request.Method method, Auth auth) {
@@ -246,6 +243,26 @@ public class DocumentActResource implements CollectionResource, PropFindableReso
     public Resource createNew(String newName, InputStream inputStream, Long length, String contentType)
             throws IOException, ConflictException, NotAuthorizedException, BadRequestException {
         throw new NotAuthorizedException();
+    }
+
+    /**
+     * Returns the object reference.
+     *
+     * @return the object reference
+     */
+    @Override
+    public IMObjectReference getReference() {
+        return act.getObjectReference();
+    }
+
+    /**
+     * Returns the object version.
+     *
+     * @return the version
+     */
+    @Override
+    public long getVersion() {
+        return act.getVersion();
     }
 
     /**
