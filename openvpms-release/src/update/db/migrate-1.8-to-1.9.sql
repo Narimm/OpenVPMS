@@ -245,7 +245,7 @@ INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, 
   WHERE NOT exists(
       SELECT *
       FROM entity_links l
-      WHERE l.source_id = t.location_id);
+      WHERE l.source_id = t.location_id and l.arch_short_name = 'entityLink.organisationMailServer');
 
 #
 # Link the practice to the first mail server
