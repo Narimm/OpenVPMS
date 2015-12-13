@@ -31,6 +31,13 @@
     <packaging>bundle</packaging>
     <name>OpenVPMS Archetypes</name>
 
+    <!-- ========================================================================== -->
+    <!-- Debugging notes:                                                           -->
+    <!-- . p6spy can be enabled using:                                              -->
+    <!--   -Djdbc.driverClassName=com.p6spy.engine.spy.P6SpyDriver                  -->
+    <!--   -Djdbc.url=jdbc:p6spy:mysql://localhost:3306/openvpms-1_8                -->
+    <!-- ========================================================================== -->
+
     <build>
         <sourceDirectory>src/java</sourceDirectory>
         <testSourceDirectory>src/test/java</testSourceDirectory>
@@ -98,6 +105,12 @@
                 <directory>${basedir}/src/test/resources</directory>
                 <includes>
                     <include>*.odt</include>
+                </includes>
+            </testResource>
+            <testResource>
+                <directory>${basedir}/src/test/resources</directory>
+                <includes>
+                    <include>*.properties</include>
                 </includes>
             </testResource>
         </testResources>

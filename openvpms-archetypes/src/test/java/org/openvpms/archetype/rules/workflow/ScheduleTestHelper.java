@@ -185,8 +185,7 @@ public class ScheduleTestHelper extends TestHelper {
      * @param schedule  the schedule
      * @return a new act
      */
-    public static Act createAppointment(Date startTime, Date endTime,
-                                        Party schedule) {
+    public static Act createAppointment(Date startTime, Date endTime, Entity schedule) {
         Party customer = TestHelper.createCustomer();
         Party patient = TestHelper.createPatient();
         return createAppointment(startTime, endTime, schedule, customer, patient);
