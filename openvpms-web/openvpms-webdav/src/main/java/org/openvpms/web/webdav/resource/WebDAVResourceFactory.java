@@ -6,14 +6,10 @@ import io.milton.resource.Resource;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * A {@code ResourceFactory} for {@link DocumentActResource} and {@link DocumentResource}.
@@ -45,7 +41,8 @@ public class WebDAVResourceFactory implements ResourceFactory {
     /**
      * The document archetypes that may be edited.
      */
-    private String[] shortNames;
+    private final EditableDocuments documents;
+
 
     /**
      * Constructs a {@link WebDAVResourceFactory}.
@@ -56,10 +53,11 @@ public class WebDAVResourceFactory implements ResourceFactory {
      * @param lockManager the lock manager
      */
     public WebDAVResourceFactory(String contextPath, IArchetypeService service, DocumentHandlers handlers,
-                                 ResourceLockManager lockManager) {
+                                 ResourceLockManager lockManager, EditableDocuments documents) {
         this.service = service;
         this.handlers = handlers;
         this.lockManager = lockManager;
+        this.documents = documents;
 
         if (!contextPath.endsWith("/")) {
             contextPath += "/";
@@ -120,7 +118,7 @@ public class WebDAVResourceFactory implements ResourceFactory {
         DocumentActResource result = null;
         try {
             if (!StringUtils.isEmpty(id)) {
-                ArchetypeQuery query = new ArchetypeQuery(getShortNames(), true, true);
+                ArchetypeQuery query = new ArchetypeQuery(documents.getArchetypes(), true, true);
                 query.add(Constraints.eq("id", Long.valueOf(id)));
                 IMObjectQueryIterator<DocumentAct> iter = new IMObjectQueryIterator<>(service, query);
                 if (iter.hasNext()) {
@@ -161,26 +159,4 @@ public class WebDAVResourceFactory implements ResourceFactory {
         return Path.path(path).getParts();
     }
 
-    /**
-     * Returns the supported document act archetype short names.
-     *
-     * @return the document act archetype short names
-     */
-    private synchronized String[] getShortNames() {
-        if (shortNames == null || shortNames.length == 0) {
-            Set<String> result = new HashSet<>();
-            for (ArchetypeDescriptor descriptor : service.getArchetypeDescriptors()) {
-                if (descriptor.isPrimary()) {
-                    Class clazz = descriptor.getClazz();
-                    if (clazz != null && DocumentAct.class.isAssignableFrom(clazz)) {
-                        if (descriptor.getNodeDescriptor("document") != null) {
-                            result.add(descriptor.getType().getShortName());
-                        }
-                    }
-                }
-            }
-            shortNames = result.toArray(new String[result.size()]);
-        }
-        return shortNames;
-    }
 }

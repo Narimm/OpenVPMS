@@ -12,7 +12,7 @@
     <artifactId>openvpms-webdav-launcher</artifactId>
 
     <packaging>jar</packaging>
-    <name>WebDAV Launcher</name>
+    <name>WebDAV Editor Launcher</name>
 
     <dependencies>
         <dependency>
@@ -54,10 +54,6 @@
         </repository>
     </repositories>
 
-    <properties>
-        <swt.version>4.4</swt.version>
-    </properties>
-
     <build>
         <plugins>
             <plugin>
@@ -71,7 +67,7 @@
                         </manifest>
                         <manifestEntries>
                             <Permissions>all-permissions</Permissions>
-                            <Application-Name>OpenVPMS WebDAV Launcher</Application-Name>
+                            <Application-Name>OpenVPMS Editor Launcher</Application-Name>
                         </manifestEntries>
                     </archive>
                 </configuration>
