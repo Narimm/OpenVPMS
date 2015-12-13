@@ -6,6 +6,7 @@ import io.milton.http.values.SupportedLocksValueWriter;
 import io.milton.http.values.ValueWriter;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.web.webdav.resource.EditableDocuments;
 import org.openvpms.web.webdav.resource.ResourceLockManager;
 import org.openvpms.web.webdav.resource.WebDAVResourceFactory;
 
@@ -35,16 +36,24 @@ public class HttpManagerFactory {
     private final ResourceLockManager lockManager;
 
     /**
+     * The document archetypes that may be edited.
+     */
+    private final EditableDocuments documents;
+
+    /**
      * Constructs a {@link HttpManagerFactory}.
      *
      * @param service     the archetype service
      * @param handlers    the document handlers
      * @param lockManager the WebDAV lock manager
+     * @param documents   the document archetypes that may be edited
      */
-    public HttpManagerFactory(IArchetypeService service, DocumentHandlers handlers, ResourceLockManager lockManager) {
+    public HttpManagerFactory(IArchetypeService service, DocumentHandlers handlers, ResourceLockManager lockManager,
+                              EditableDocuments documents) {
         this.service = service;
         this.handlers = handlers;
         this.lockManager = lockManager;
+        this.documents = documents;
     }
 
     /**
@@ -63,7 +72,7 @@ public class HttpManagerFactory {
 
         public Builder(String contextPath) {
             setEnabledJson(false);
-            setResourceFactory(new WebDAVResourceFactory(contextPath, service, handlers, lockManager));
+            setResourceFactory(new WebDAVResourceFactory(contextPath, service, handlers, lockManager, documents));
             seteTagGenerator(new IMObjectResourceETagGenerator());
 
             // insert the various lock property writers. These need to go before the ToStringValueWriter which is the

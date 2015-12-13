@@ -17,7 +17,6 @@ package org.openvpms.web.component.workspace;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
-import org.apache.commons.io.FilenameUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
@@ -26,10 +25,10 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.echo.servlet.ServletHelper;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.webdav.resource.EditableDocuments;
 
 
 /**
@@ -73,16 +72,9 @@ public class DocumentActActions extends ActActions<DocumentAct> {
      * @return {@code true} if the document can be edited
      */
     public boolean canExternalEdit(DocumentAct act) {
-        if (canEdit(act) && act.getDocument() != null) {
-            String ext = FilenameUtils.getExtension(act.getFileName());
-            if (DocFormats.ODT_EXT.equalsIgnoreCase(ext)
-                || DocFormats.DOC_EXT.equalsIgnoreCase(ext)
-                || DocFormats.DOCX_EXT.equalsIgnoreCase(ext)
-                || DocFormats.ODT_TYPE.equals(act.getMimeType())
-                || DocFormats.DOC_TYPE.equals(act.getMimeType())
-                || DocFormats.DOCX_TYPE.equals(act.getMimeType())) {
-                return true;
-            }
+        if (canEdit(act)) {
+            EditableDocuments documents = ServiceHelper.getBean(EditableDocuments.class);
+            return documents.canEdit(act);
         }
         return false;
     }
