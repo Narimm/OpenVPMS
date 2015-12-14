@@ -77,8 +77,10 @@ public class PatientInformationServiceImpl implements PatientInformationService 
         Collection<Connector> senders = services.getConnections(context.getLocation());
         for (Connector connector : senders) {
             HL7Mapping config = connector.getMapping();
-            Message message = factory.createAdmit(context, config);
-            queue(message, connector, config, user);
+            if (config.sendADT()) {
+                Message message = factory.createAdmit(context, config);
+                queue(message, connector, config, user);
+            }
         }
     }
 
@@ -97,13 +99,15 @@ public class PatientInformationServiceImpl implements PatientInformationService 
         Collection<Connector> senders = services.getConnections(context.getLocation());
         for (Connector connector : senders) {
             HL7Mapping config = connector.getMapping();
-            Message message;
-            if (config.sendCancelAdmit()) {
-                message = factory.createCancelAdmit(context, config);
-            } else {
-                message = factory.createDischarge(context, config);
+            if (config.sendADT()) {
+                Message message;
+                if (config.sendCancelAdmit()) {
+                    message = factory.createCancelAdmit(context, config);
+                } else {
+                    message = factory.createDischarge(context, config);
+                }
+                queue(message, connector, config, user);
             }
-            queue(message, connector, config, user);
         }
     }
 
@@ -118,8 +122,10 @@ public class PatientInformationServiceImpl implements PatientInformationService 
         Collection<Connector> senders = services.getConnections(context.getLocation());
         for (Connector connector : senders) {
             HL7Mapping config = connector.getMapping();
-            Message message = factory.createDischarge(context, config);
-            queue(message, connector, config, user);
+            if (config.sendADT()) {
+                Message message = factory.createDischarge(context, config);
+                queue(message, connector, config, user);
+            }
         }
     }
 
@@ -134,9 +140,11 @@ public class PatientInformationServiceImpl implements PatientInformationService 
         Collection<Connector> senders = services.getConnections(context.getLocation());
         for (Connector connector : senders) {
             HL7Mapping config = connector.getMapping();
-            if (config.sendUpdatePatient()) {
-                Message message = factory.createUpdate(context, config);
-                queue(message, connector, config, user);
+            if (config.sendADT()) {
+                if (config.sendUpdatePatient()) {
+                    Message message = factory.createUpdate(context, config);
+                    queue(message, connector, config, user);
+                }
             }
         }
     }

@@ -245,7 +245,7 @@ INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, 
   WHERE NOT exists(
       SELECT *
       FROM entity_links l
-      WHERE l.source_id = t.location_id);
+      WHERE l.source_id = t.location_id and l.arch_short_name = 'entityLink.organisationMailServer');
 
 #
 # Link the practice to the first mail server
@@ -370,3 +370,20 @@ INSERT INTO entity_details (entity_id, name, type, value)
                                                                                    FROM entity_details d
                                                                                    WHERE d.entity_id = e.entity_id AND
                                                                                          d.name = 'expression');
+
+#
+# Update entity.HL7Mapping* to include a sendADT node for OVPMS-1704 Add support to enable/disable ADT messages for
+# IDEXX.
+# This only applies to sites that have installed a pre-release version of OpenVPMS 1.9
+#
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    e.entity_id,
+    'sendADT',
+    'boolean',
+    'true'
+  FROM entities e
+  WHERE e.arch_short_name in ('entity.HL7Mapping', 'entity.HL7MappingCubex', 'entity.HL7MappingIDEXX') AND NOT exists(SELECT *
+                                                                                   FROM entity_details d
+                                                                                   WHERE d.entity_id = e.entity_id AND
+                                                                                         d.name = 'sendADT');

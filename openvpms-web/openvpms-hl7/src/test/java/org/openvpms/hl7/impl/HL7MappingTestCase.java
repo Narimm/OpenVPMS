@@ -40,6 +40,7 @@ public class HL7MappingTestCase extends ArchetypeServiceTest {
     public void testDefaults() {
         Entity object = (Entity) getArchetypeService().create(HL7Archetypes.MAPPING);
         HL7Mapping mapping = HL7Mapping.create(object, getArchetypeService());
+        assertTrue(mapping.sendADT());
         assertTrue(mapping.sendUpdatePatient());
         assertTrue(mapping.sendCancelAdmit());
         assertTrue(mapping.getPopulatePID3());
@@ -62,6 +63,7 @@ public class HL7MappingTestCase extends ArchetypeServiceTest {
     public void testCubexMapping() {
         Entity object = (Entity) getArchetypeService().create(HL7Archetypes.CUBEX_MAPPING);
         HL7Mapping mapping = HL7Mapping.create(object, getArchetypeService());
+        assertTrue(mapping.sendADT());
         assertTrue(mapping.sendUpdatePatient());
         assertTrue(mapping.sendCancelAdmit());
         assertFalse(mapping.getPopulatePID3());
@@ -84,6 +86,7 @@ public class HL7MappingTestCase extends ArchetypeServiceTest {
     public void testIDEXXMapping() {
         Entity object = (Entity) getArchetypeService().create(HL7Archetypes.IDEXX_MAPPING);
         HL7Mapping mapping = HL7Mapping.create(object, getArchetypeService());
+        assertTrue(mapping.sendADT());
         assertFalse(mapping.sendUpdatePatient());
         assertFalse(mapping.sendCancelAdmit());
         assertTrue(mapping.getPopulatePID3());

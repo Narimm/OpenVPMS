@@ -34,6 +34,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.openvpms.archetype.test.TestHelper.getDatetime;
 
 
 /**
@@ -127,6 +128,55 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies that appointments that intersect the query date range are returned.
+     */
+    @Test
+    public void testDateRanges() {
+        Date from = getDatetime("2015-01-03 10:30:00");
+        Date to = getDatetime("2015-01-03 12:30:00");
+        Party location = TestHelper.createLocation();
+        Party schedule1 = ScheduleTestHelper.createSchedule(location);
+        Party schedule2 = ScheduleTestHelper.createSchedule(location);
+
+        // create some appointments before the query range
+        createAppointment(schedule1, "2015-01-01 10:00:00", "2015-01-01 10:30:00");
+        createAppointment(schedule1, "2015-01-02 11:00:00", "2015-01-03 10:30:00");
+        createAppointment(schedule1, "2015-01-03 10:00:00", "2015-01-03 10:30:00");
+
+        // create some appointments that intersect the query range
+        Act act0 = createAppointment(schedule1, "2015-01-01 10:30:00", "2015-01-04 12:30:00"); // overlaps start,end
+        Act act1 = createAppointment(schedule1, "2015-01-03 10:00:00", "2015-01-03 11:00:00"); // intersect start
+        Act act2 = createAppointment(schedule1, "2015-01-03 10:30:00", "2015-01-03 11:00:00"); // at start
+        Act act3 = createAppointment(schedule1, "2015-01-03 10:30:00", "2015-01-03 12:30:00"); // equals start,end
+        Act act4 = createAppointment(schedule1, "2015-01-03 11:00:00", "2015-01-03 12:00:00"); // between
+        Act act5 = createAppointment(schedule1, "2015-01-03 12:00:00", "2015-01-03 12:30:00"); // at end
+        Act act6 = createAppointment(schedule1, "2015-01-03 12:00:00", "2015-01-03 13:00:00"); // intersect end
+
+        // create some appointments after the query range
+        createAppointment(schedule1, "2015-01-03 12:30:00", "2015-01-03 13:30:00");
+        createAppointment(schedule1, "2015-01-03 12:30:00", "2015-01-04 10:30:00");
+        createAppointment(schedule1, "2015-01-04 10:00:00", "2015-01-04 10:30:00");
+
+        // create some appointments that intersect the range, but for a different schedule
+        createAppointment(schedule2, "2015-01-01 10:30:00", "2015-01-04 12:30:00"); // overlaps start,end
+        createAppointment(schedule2, "2015-01-03 10:00:00", "2015-01-03 11:00:00"); // intersect start
+        createAppointment(schedule2, "2015-01-03 10:30:00", "2015-01-03 11:00:00"); // at start
+
+        AppointmentQuery query = new AppointmentQuery(schedule1, from, to, getArchetypeService());
+        IPage<ObjectSet> page = query.query();
+        List<ObjectSet> appointments = page.getResults();
+        assertEquals(7, appointments.size());
+
+        assertEquals(act0.getObjectReference(), appointments.get(0).get(ScheduleEvent.ACT_REFERENCE));
+        assertEquals(act1.getObjectReference(), appointments.get(1).get(ScheduleEvent.ACT_REFERENCE));
+        assertEquals(act2.getObjectReference(), appointments.get(2).get(ScheduleEvent.ACT_REFERENCE));
+        assertEquals(act3.getObjectReference(), appointments.get(3).get(ScheduleEvent.ACT_REFERENCE));
+        assertEquals(act4.getObjectReference(), appointments.get(4).get(ScheduleEvent.ACT_REFERENCE));
+        assertEquals(act5.getObjectReference(), appointments.get(5).get(ScheduleEvent.ACT_REFERENCE));
+        assertEquals(act6.getObjectReference(), appointments.get(6).get(ScheduleEvent.ACT_REFERENCE));
+    }
+
+    /**
      * Helper to remove any seconds from a time, as the database may not
      * store them.
      *
@@ -135,6 +185,20 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
      */
     private Date getTimestamp(Date timestamp) {
         return DateUtils.truncate(timestamp, Calendar.SECOND);
+    }
+
+    /**
+     * Helper to create an appointment.
+     *
+     * @param schedule the schedule
+     * @param from     the appointment start time
+     * @param to       the appointment end time
+     * @return a new appointment
+     */
+    private Act createAppointment(Entity schedule, String from, String to) {
+        Act appointment = ScheduleTestHelper.createAppointment(getDatetime(from), getDatetime(to), schedule);
+        save(appointment);
+        return appointment;
     }
 
 }

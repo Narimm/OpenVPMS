@@ -28,6 +28,11 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 public class HL7Mapping {
 
     /**
+     * Determines if admit/discharge/transfer messages should be sent.
+     */
+    private boolean sendADT = true;
+
+    /**
      * Determines if ADT A08 (Update Patient Information) should be sent.
      */
     private boolean sendUpdatePatient = true;
@@ -97,6 +102,24 @@ public class HL7Mapping {
      */
     public HL7Mapping() {
 
+    }
+
+    /**
+     * Determines if ADT messages should be sent.
+     *
+     * @return {@code true} if ADT messages should be sent
+     */
+    public boolean sendADT() {
+        return sendADT;
+    }
+
+    /**
+     * Determines if ADT messages should be sent.
+     *
+     * @param sendADT if {@code true} send ADT messages
+     */
+    public void setSendADT(boolean sendADT) {
+        this.sendADT = sendADT;
     }
 
     /**
@@ -343,6 +366,7 @@ public class HL7Mapping {
     public static HL7Mapping create(Entity mapping, IArchetypeService service) {
         IMObjectBean bean = new IMObjectBean(mapping, service);
         HL7Mapping result = new HL7Mapping();
+        result.setSendADT(bean.getBoolean("sendADT", true));
         result.setSendUpdatePatient(bean.getBoolean("sendUpdatePatient", true));
         result.setSendCancelAdmit(bean.getBoolean("sendCancelAdmit", true));
 
