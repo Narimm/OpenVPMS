@@ -19,6 +19,7 @@ import io.milton.resource.LockableResource;
 import io.milton.resource.PropFindableResource;
 import io.milton.resource.ReplaceableResource;
 import org.apache.commons.io.IOUtils;
+import org.joda.time.DateTime;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -76,6 +77,11 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
     private State cachedState;
 
     /**
+     * Date used to base modification timestamps on, required due to lack of modified date on the document
+     */
+    private final Date baseDate;
+
+    /**
      * Constructs a {@link DocumentResource}.
      *
      * @param name        the document name
@@ -83,14 +89,16 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
      * @param service     the archetype service
      * @param handlers    the document handlers
      * @param lockManager the lock manager
+     * @param baseDate    date used to base modification timestamps on, due to lack of modified date on the document
      */
     public DocumentResource(String name, IMObjectReference reference, IArchetypeService service,
-                            DocumentHandlers handlers, LockManager lockManager) {
+                            DocumentHandlers handlers, LockManager lockManager, Date baseDate) {
         this.name = name;
         this.reference = reference;
         this.handlers = handlers;
         this.service = service;
         this.lockManager = lockManager;
+        this.baseDate = baseDate;
     }
 
     /**
@@ -181,7 +189,7 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
      */
     @Override
     public Date getModifiedDate() {
-        return null;
+        return getState().modified;
     }
 
     /**
@@ -244,7 +252,6 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
         }
     }
 
-
     /**
      * How many seconds to allow the content to be cached for, or null if caching is not allowed
      * <p>
@@ -254,7 +261,7 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
      * be editing content, as opposed to non-logged in users who are just viewing the site.
      */
     public Long getMaxAgeSeconds(Auth auth) {
-        return 60L;
+        return 60 * 60L;
     }
 
     /**
@@ -317,11 +324,12 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
         synchronized (this) {
             cachedState.size = size;
             cachedState.version = document.getVersion();
+            updateModified();
         }
     }
 
     public Date getCreateDate() {
-        return null;
+        return baseDate;
     }
 
     /**
@@ -410,9 +418,23 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
                 cachedState.version = set.getLong("doc.version");
                 cachedState.mimeType = set.getString("doc.mimeType");
                 cachedState.size = set.getLong("doc.size");
+                updateModified();
             }
         }
         return cachedState;
+    }
+
+    /**
+     * Updates the document modified date.
+     * <p>
+     * Note that this simply adds {@code version} seconds to the modified state.
+     */
+    private void updateModified() {
+        if (cachedState.version == 0) {
+            cachedState.modified = baseDate;
+        } else {
+            cachedState.modified = new DateTime(baseDate).plusSeconds((int) cachedState.version).toDate();
+        }
     }
 
     /**
@@ -428,5 +450,6 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
         long version;
         String mimeType;
         long size;
+        Date modified;
     }
 }

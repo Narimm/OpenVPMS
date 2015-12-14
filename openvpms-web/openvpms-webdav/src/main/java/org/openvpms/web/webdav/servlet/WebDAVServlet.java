@@ -1,8 +1,11 @@
 package org.openvpms.web.webdav.servlet;
 
 import io.milton.http.HttpManager;
+import io.milton.http.Response;
 import io.milton.servlet.ServletRequest;
 import io.milton.servlet.ServletResponse;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.web.webdav.milton.HttpManagerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -13,6 +16,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Enumeration;
 
 /**
  * Servlet to allow editing of OpenOffice/Word documents in OpenVPMS via WebDAV.
@@ -25,6 +29,11 @@ public class WebDAVServlet extends HttpServlet {
      * The http manager.
      */
     private HttpManager httpManager;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(WebDAVServlet.class);
 
     /**
      * Initialise the servlet.
@@ -61,12 +70,31 @@ public class WebDAVServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        if (log.isDebugEnabled()) {
+            StringBuilder builder = new StringBuilder();
+            builder.append("WebDAV request: ").append(request.getMethod()).append(" ").append(request.getRequestURL());
+            Enumeration<String> headers = request.getHeaderNames();
+            while (headers.hasMoreElements()) {
+                String name = headers.nextElement();
+                builder.append("\n header: ").append(name).append("=").append(request.getHeader(name));
+            }
+            log.debug(builder.toString());
+        }
         try {
             httpManager.process(new ServletRequest(request, getServletContext()), new ServletResponse(response));
         } finally {
             response.getOutputStream().flush();
             response.flushBuffer();
         }
+        if (log.isDebugEnabled()) {
+            StringBuilder builder = new StringBuilder();
+            Response.Status status = ServletResponse.Status.fromCode(response.getStatus());
+            builder.append("WebDAV response: ").append(request.getMethod()).append(" ").append(
+                    request.getRequestURL()).append(" - ").append(status);
+            for (String name : response.getHeaderNames()) {
+                builder.append("\n header: ").append(name).append("=").append(response.getHeader(name));
+            }
+            log.debug(builder.toString());
+        }
     }
-
 }

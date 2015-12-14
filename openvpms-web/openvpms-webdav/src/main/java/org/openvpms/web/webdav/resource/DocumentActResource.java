@@ -11,6 +11,7 @@ import io.milton.resource.PropFindableResource;
 import io.milton.resource.PutableResource;
 import io.milton.resource.Resource;
 import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTime;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -61,20 +62,27 @@ public class DocumentActResource implements CollectionResource, PropFindableReso
     private final LockManager lockManager;
 
     /**
-     * Constructs a  {@link DocumentActResource}.
+     * Date used to base modification timestamps on, required due to lack of modified date on the document
+     */
+    private final Date baseDate;
+
+    /**
+     * Constructs a {@link DocumentActResource}.
      *
      * @param act         the document act
      * @param service     the archetype service
      * @param handlers    the document handlers
      * @param lockManager the lock manager
+     * @param baseDate    date used to base modification timestamps on, due to lack of modified date on the act
      */
     public DocumentActResource(DocumentAct act, IArchetypeService service, DocumentHandlers handlers,
-                               LockManager lockManager) {
+                               LockManager lockManager, Date baseDate) {
         this.act = act;
         name = Long.toString(act.getId());
         this.service = service;
         this.handlers = handlers;
         this.lockManager = lockManager;
+        this.baseDate = baseDate;
     }
 
     /**
@@ -194,7 +202,7 @@ public class DocumentActResource implements CollectionResource, PropFindableReso
      */
     @Override
     public Date getModifiedDate() {
-        return null;
+        return new DateTime(baseDate).plusSeconds((int) act.getVersion()).toDate();
     }
 
     /**
@@ -272,7 +280,8 @@ public class DocumentActResource implements CollectionResource, PropFindableReso
      */
     private synchronized Resource getDocument() {
         if (resource == null && act.getDocument() != null) {
-            resource = new DocumentResource(act.getFileName(), act.getDocument(), service, handlers, lockManager);
+            resource = new DocumentResource(act.getFileName(), act.getDocument(), service, handlers, lockManager,
+                                            baseDate);
         }
         return resource;
     }
