@@ -16,11 +16,6 @@
 
 package org.openvpms.web.workspace.admin.hl7;
 
-import echopointng.TabbedPane;
-import nextapp.echo2.app.Column;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.SplitPane;
-import nextapp.echo2.app.event.ChangeEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.hl7.util.HL7Archetypes;
@@ -31,15 +26,10 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
-import org.openvpms.web.component.workspace.AbstractWorkspace;
 import org.openvpms.web.component.workspace.DefaultCRUDWindow;
-import org.openvpms.web.echo.event.ChangeListener;
-import org.openvpms.web.echo.factory.ColumnFactory;
-import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.factory.SplitPaneFactory;
-import org.openvpms.web.echo.factory.TabbedPaneFactory;
+import org.openvpms.web.component.workspace.TabComponent;
+import org.openvpms.web.component.workspace.TabbedWorkspace;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.tabpane.ObjectTabPaneModel;
 import org.openvpms.web.resource.i18n.Messages;
 
@@ -49,61 +39,13 @@ import org.openvpms.web.resource.i18n.Messages;
  *
  * @author Tim Anderson
  */
-public class HL7Workspace extends AbstractWorkspace<IMObject> {
+public class HL7Workspace extends TabbedWorkspace<IMObject> {
 
     /**
-     * Manages services and connections tabs.
-     */
-    private TabbedPane pane;
-
-    /**
-     * The tab pane model.
-     */
-    private ObjectTabPaneModel<TabComponent> model;
-
-    /**
-     * The container for the tabbed pane and the buttons.
-     */
-    private SplitPane container;
-
-    /**
-     * The split pane style.
-     */
-    private static final String STYLE = "SplitPaneWithButtonRow";
-
-    /**
-     * Constructs an {@code UserWorkspace}.
+     * Constructs an {@link HL7Workspace}.
      */
     public HL7Workspace(Context context) {
         super("admin", "hl7", context);
-    }
-
-    /**
-     * Invoked when the workspace is displayed.
-     */
-    @Override
-    public void show() {
-        TabComponent tab = model.getObject(pane.getSelectedIndex());
-        if (tab != null) {
-            tab.show();
-        }
-    }
-
-    /**
-     * Returns the help context.
-     *
-     * @return the help context
-     */
-    @Override
-    public HelpContext getHelpContext() {
-        HelpContext result = null;
-        if (model != null && pane != null) {
-            TabComponent tab = model.getObject(pane.getSelectedIndex());
-            if (tab != null) {
-                result = tab.getHelpContext();
-            }
-        }
-        return (result == null) ? super.getHelpContext() : result;
     }
 
     /**
@@ -117,63 +59,15 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
     }
 
     /**
-     * Lays out the component.
-     * <p/>
-     * This renders a heading using {@link #createHeading}.
+     * Adds tabs to the tabbed pane.
      *
-     * @return the component
+     * @param model the tabbed pane model
      */
     @Override
-    protected Component doLayout() {
-        SplitPane root = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, STYLE);
-        container = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP, STYLE);
-        Component heading = super.doLayout();
-        model = createTabModel();
-        pane = TabbedPaneFactory.create(model);
-        pane.getSelectionModel().addChangeListener(new ChangeListener() {
-            @Override
-            public void onChange(ChangeEvent event) {
-                onTabSelected(model.getObject(pane.getSelectedIndex()));
-            }
-        });
-        onTabSelected(model.getObject(0));
-
-        root.add(heading);
-        root.add(this.container);
-        return root;
-    }
-
-    /**
-     * Invoked when a tab is selected.
-     *
-     * @param tab the tab
-     */
-    private void onTabSelected(TabComponent tab) {
-        if (tab != null) {
-            container.removeAll();
-            Component buttons = tab.getButtons();
-            if (buttons != null) {
-                container.add(buttons);
-            } else {
-                container.add(LabelFactory.create());
-            }
-            container.add(pane);
-            tab.show();
-        }
-    }
-
-    /**
-     * Creates a new tab model.
-     *
-     * @return the tab model
-     */
-    private ObjectTabPaneModel<TabComponent> createTabModel() {
-        Column wrapper = ColumnFactory.create(Styles.INSET_Y);
-        ObjectTabPaneModel<TabComponent> result = new ObjectTabPaneModel<>(wrapper);
-        addServiceBrowser(result);
-        addConnectorBrowser(result);
-        addMappingBrowser(result);
-        return result;
+    protected void addTabs(ObjectTabPaneModel<TabComponent> model) {
+        addServiceBrowser(model);
+        addConnectorBrowser(model);
+        addMappingBrowser(model);
     }
 
     /**
@@ -224,27 +118,4 @@ public class HL7Workspace extends AbstractWorkspace<IMObject> {
         addTab("admin.hl7.mappings", model, new HL7BrowserCRUDWindow<>(browser, window));
     }
 
-    /**
-     * Creates a help sub-topic.
-     *
-     * @param topic the sub-topic
-     * @return a new help context
-     */
-    private HelpContext subtopic(String topic) {
-        return super.getHelpContext().subtopic(topic);
-    }
-
-    /**
-     * Helper to add a tab to the tab pane.
-     *
-     * @param name  the tab name
-     * @param model the tab model
-     * @param tab   the component
-     */
-    private void addTab(String name, ObjectTabPaneModel<TabComponent> model, TabComponent tab) {
-        int index = model.size();
-        int shortcut = index + 1;
-        String text = "&" + shortcut + " " + Messages.get(name);
-        model.addTab(tab, text, tab.getComponent());
-    }
 }

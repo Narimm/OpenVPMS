@@ -31,7 +31,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executors;
@@ -43,7 +46,7 @@ import static org.apache.commons.collections4.map.AbstractReferenceMap.Reference
 
 /**
  * Monitors HTTP sessions, forcing idle sessions to expire.
- * <p/>
+ * <p>
  * This is required as echo2 asynchronous tasks keep sessions alive, such that web.xml {@code <session-timeout/>}
  * has no effect.
  *
@@ -85,6 +88,43 @@ public class SessionMonitor implements DisposableBean {
      * The logger.
      */
     private static final Log log = LogFactory.getLog(SessionMonitor.class);
+
+    /**
+     * Represents a user session.
+     */
+    public static class Session {
+
+        private final String name;
+
+        private final String host;
+
+        private final Date loggedIn;
+
+        private final Date lastAccessed;
+
+        public Session(String name, String host, Date loggedIn, Date lastAccessed) {
+            this.name = name;
+            this.host = host;
+            this.loggedIn = loggedIn;
+            this.lastAccessed = lastAccessed;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getHost() {
+            return host;
+        }
+
+        public Date getLoggedIn() {
+            return loggedIn;
+        }
+
+        public Date getLastAccessed() {
+            return lastAccessed;
+        }
+    }
 
     /**
      * Constructs an {@link SessionMonitor}.
@@ -204,6 +244,22 @@ public class SessionMonitor implements DisposableBean {
      */
     public void setAutoLogout(int time) {
         setAutoLogoutMS(time * DateUtils.MILLIS_PER_MINUTE);
+    }
+
+    /**
+     * Returns the current sessions.
+     *
+     * @return the current sessions
+     */
+    public List<Session> getSessions() {
+        List<Session> result = new ArrayList<>();
+        for (Monitor monitor : new ArrayList<>(monitors.values())) {
+            Session session = monitor.getSession();
+            if (session != null) {
+                result.add(session);
+            }
+        }
+        return result;
     }
 
     /**
@@ -424,6 +480,28 @@ public class SessionMonitor implements DisposableBean {
         }
 
         /**
+         * Returns the session details.
+         *
+         * @return the session details, or {@code null} if the session hasn't been fully established, or is
+         * destroyed
+         */
+        public Session getSession() {
+            Session result = null;
+            String name = user;
+            HttpSession httpSession = session.get();
+            if (user != null && httpSession != null) {
+                try {
+                    Date created = new Date(httpSession.getCreationTime());
+                    Date lastAccessed = new Date(lastAccessedTime);
+                    result = new Session(name, address, created, lastAccessed);
+                } catch (IllegalStateException ignore) {
+                    // do nothing - session has been invalidated
+                }
+            }
+            return result;
+        }
+
+        /**
          * Destroys the monitor.
          */
         public void destroy() {
@@ -515,6 +593,7 @@ public class SessionMonitor implements DisposableBean {
 
             HttpSession httpSession = session.get();
             if (httpSession != null) {
+                session.clear();
                 httpSession.invalidate();
                 if (log.isInfoEnabled()) {
                     log.info("Invalidated session for user=" + user + ", address=" + address);

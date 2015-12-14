@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
@@ -40,5 +40,20 @@ public class UserHelper {
             return rules.isAdministrator(user);
         }
         return false;
+    }
+
+    /**
+     * Returns the name for a user, given their login name.
+     *
+     * @param loginName the login name. May be {@code null}
+     * @return the name, or {@code loginName} if the user doesn't exist
+     */
+    public static String getName(String loginName) {
+        String result = null;
+        if (loginName != null) {
+            User user = ServiceHelper.getBean(UserRules.class).getUser(loginName);
+            result = user != null ? user.getName() : loginName;
+        }
+        return result;
     }
 }
