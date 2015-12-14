@@ -377,6 +377,15 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies that the $nl variable is evaluates as a new line.
+     */
+    @Test
+    public void testNewLines(){
+        MacroTestHelper.createMacro("newlinetest", "concat('a', $nl, 'b')");
+        assertEquals("a\nb", macros.run("newlinetest", new Object()));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
