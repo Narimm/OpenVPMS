@@ -37,7 +37,7 @@ import java.util.List;
 
 /**
  * Browser that contains other browsers, with each browser selected by a tab.
- * <p/>
+ * <p>
  * The tabs and content are rendered in a split pane so that tabs don't scroll if the content is too
  * large to fit on screen.
  *
@@ -263,7 +263,7 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
 
     /**
      * Returns the browser state.
-     * <p/>
+     * <p>
      * This implementation always returns {@code null}.
      *
      * @return {@code null}
@@ -274,7 +274,7 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
 
     /**
      * Sets the browser state.
-     * <p/>
+     * <p>
      * This implementation is a bo-op.
      *
      * @param state the state
@@ -301,7 +301,7 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
 
     /**
      * Invoked when a browser is selected.
-     * <p/>
+     * <p>
      * This notifies any registered listener.
      *
      * @param selected the selected index
@@ -313,7 +313,11 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
         Browser<T> browser = model.getObject(selected);
         if (browser != null) {
             container.add(browser.getComponent());
-
+        }
+        if (listener != null) {
+            listener.onBrowserChanged();
+        }
+        if (browser != null) {
             // select the first available act, if any
             if (browser.getSelected() == null) {
                 List<T> objects = browser.getObjects();
@@ -323,17 +327,14 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
                 }
             }
         }
-        if (listener != null) {
-            listener.onBrowserChanged();
-        }
     }
 
     /**
      * Queries a browser, preserving the selected object if possible.
-     * <p/>
+     * <p>
      * Note that this suppresses events for all but the current browser, to avoid events from one browser triggering
      * behaviour in another.
-     * <p/>
+     * <p>
      * TODO - ideally each tab would be treated independently, and refreshed when displayed.
      *
      * @param browser the browser

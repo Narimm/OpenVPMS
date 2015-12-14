@@ -25,7 +25,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 
 /**
  * An editor for <em>party.organisationSchedule</em>.
- * <p/>
+ * <p>
  * This defaults the location to the current practice location for new schedules.
  *
  * @author Tim Anderson

@@ -65,5 +65,6 @@ public class VisitCRUDWindow extends PatientHistoryCRUDWindow {
         buttons.add(createEditButton());
         buttons.add(createDeleteButton());
         buttons.add(createPrintButton());
+        buttons.add(createExternalEditButton());
     }
 }

@@ -191,6 +191,17 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
     }
 
     /**
+     * Enables/disables the buttons.
+     */
+    protected void enableButtons() {
+        ButtonSet set = getButtons();
+        IMObjectEditor editor = getEditor();
+        set.setEnabled(APPLY_ID, editor != null);
+        set.setEnabled(PREVIOUS_ID, iter.lastIndex() > 0);
+        set.setEnabled(NEXT_ID, iter.hasNext());
+    }
+
+    /**
      * Checks the editor to see if is modified, and if so, displays a confirmation dialog prompting to save or revert
      * changes, or to cancel the operation.
      *
@@ -354,17 +365,6 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
                 viewer.setSelectionPath(path);
             }
         }
-    }
-
-    /**
-     * Enables/disables the buttons.
-     */
-    private void enableButtons() {
-        ButtonSet set = getButtons();
-        IMObjectEditor editor = getEditor();
-        set.setEnabled(APPLY_ID, editor != null);
-        set.setEnabled(PREVIOUS_ID, iter.lastIndex() > 0);
-        set.setEnabled(NEXT_ID, iter.hasNext());
     }
 
 }

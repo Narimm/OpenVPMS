@@ -26,8 +26,6 @@ import nextapp.echo2.webcontainer.ContainerContext;
 import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
 import nextapp.echo2.webcontainer.command.BrowserRedirectCommand;
 import nextapp.echo2.webrender.ClientConfiguration;
-import nextapp.echo2.webrender.Connection;
-import nextapp.echo2.webrender.WebRenderServlet;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.openvpms.archetype.rules.practice.LocationRules;
@@ -58,7 +56,6 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 
 
@@ -470,12 +467,8 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     private void configureSessionExpirationURL() {
         ContainerContext context = (ContainerContext) getContextProperty(
                 ContainerContext.CONTEXT_PROPERTY_NAME);
-        Connection connection = WebRenderServlet.getActiveConnection();
-        if (context != null && connection != null) {
-            HttpServletRequest request = connection.getRequest();
-            String url = request.getRequestURL().toString();
-            url = url.substring(0, url.length() - request.getRequestURI().length());
-            url = url + ServletHelper.getRedirectURI("login");
+        if (context != null) {
+            String url = ServletHelper.getServerURL() + ServletHelper.getRedirectURI("login");
             ClientConfiguration config = new ClientConfiguration();
             config.setProperty(ClientConfiguration.PROPERTY_SESSION_EXPIRATION_URI, url);
             config.setProperty(ClientConfiguration.PROPERTY_SESSION_EXPIRATION_MESSAGE,
