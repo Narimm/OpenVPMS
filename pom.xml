@@ -496,7 +496,7 @@
             </dependency>
             <dependency>
                 <groupId>javax.servlet</groupId>
-                <artifactId>servlet-api</artifactId>
+                <artifactId>javax.servlet-api</artifactId>
                 <version>${javax.servlet.version}</version>
                 <scope>provided</scope>
             </dependency>
@@ -719,7 +719,7 @@
         <poi.version>3.7</poi.version>
         <javassist.version>3.4.GA</javassist.version>
         <javax.mail.version>1.4.4</javax.mail.version>
-        <javax.servlet.version>2.5</javax.servlet.version>
+        <javax.servlet.version>3.0.1</javax.servlet.version>
         <joda.time.version>1.6.2</joda.time.version>
         <jdom.version>1.0</jdom.version>
         <jsap.version>2.0a</jsap.version>

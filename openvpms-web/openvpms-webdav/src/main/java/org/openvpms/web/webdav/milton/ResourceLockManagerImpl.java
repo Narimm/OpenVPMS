@@ -121,6 +121,21 @@ public class ResourceLockManagerImpl extends SimpleLockManager implements Resour
     }
 
     /**
+     * Returns the current lock for a resource.
+     *
+     * @param resource the resource
+     * @return the current lock, or {@code null} if the resource is not locked
+     */
+    @Override
+    public LockToken getCurrentToken(LockableResource resource) {
+        LockToken result = super.getCurrentToken(resource);
+        if (result != null && result.isExpired()) {
+            result = null;
+        }
+        return result;
+    }
+
+    /**
      * Registers the lock on a resource.
      *
      * @param resource the resource

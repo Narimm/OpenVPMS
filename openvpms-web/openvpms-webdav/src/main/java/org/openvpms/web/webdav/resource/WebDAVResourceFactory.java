@@ -11,6 +11,8 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 
+import java.util.Date;
+
 /**
  * A {@code ResourceFactory} for {@link DocumentActResource} and {@link DocumentResource}.
  *
@@ -43,6 +45,10 @@ public class WebDAVResourceFactory implements ResourceFactory {
      */
     private final EditableDocuments documents;
 
+    /**
+     *
+     */
+    private Date baseDate = new Date();
 
     /**
      * Constructs a {@link WebDAVResourceFactory}.
@@ -122,7 +128,7 @@ public class WebDAVResourceFactory implements ResourceFactory {
                 query.add(Constraints.eq("id", Long.valueOf(id)));
                 IMObjectQueryIterator<DocumentAct> iter = new IMObjectQueryIterator<>(service, query);
                 if (iter.hasNext()) {
-                    result = new DocumentActResource(iter.next(), service, handlers, lockManager);
+                    result = new DocumentActResource(iter.next(), service, handlers, lockManager, baseDate);
                 }
             }
         } catch (NumberFormatException ignore) {
