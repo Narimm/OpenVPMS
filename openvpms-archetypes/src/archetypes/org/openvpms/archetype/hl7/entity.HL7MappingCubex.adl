@@ -23,6 +23,8 @@
         <node name="description" type="java.lang.String" path="/description" minCardinality="0"
               defaultValue="'Use this mapping for HL7 connections to Cubex'"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="sendADT" displayName="Send Admit/Discharge/Transfer" path="/details/sendADT"
+              type="java.lang.Boolean" defaultValue="true()" readOnly="true"/>
         <node name="sendUpdatePatient" displayName="Send Update Patient (ADT A08)" path="/details/sendUpdatePatient"
               type="java.lang.Boolean" defaultValue="true()" readOnly="true"/>
         <node name="sendCancelAdmit" displayName="Send Cancel Admit (ADT A11)" path="/details/sendCancelAdmit"

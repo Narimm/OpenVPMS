@@ -16,14 +16,17 @@
 
 package org.openvpms.hl7.impl;
 
+import ca.uhn.hl7v2.model.Message;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientInformationService;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests the {@link PatientInformationServiceImpl}.
@@ -136,4 +139,23 @@ public class PatientInformationServiceImplTestCase extends AbstractServiceTest {
         checkMessage(expected);
     }
 
+    /**
+     * Verifies that when {@link HL7Mapping#sendADT()} is {@code false}, no ADT messages are sent.
+     */
+    @Test
+    public void testDisableADT() {
+        service = new PatientInformationServiceImpl(getArchetypeService(), getLookupService(), getEventServices(),
+                                                    getDispatcher()) {
+            @Override
+            protected void queue(Message message, Connector connector, HL7Mapping config, User user) {
+                fail("No ADT Message should be queued");
+            }
+        };
+        getSender().getMapping().setSendADT(false);
+        PatientContext patient = getContext();
+        service.admitted(patient, user);
+        service.admissionCancelled(patient, user);
+        service.updated(patient, user);
+        service.discharged(patient, user);
+    }
 }
