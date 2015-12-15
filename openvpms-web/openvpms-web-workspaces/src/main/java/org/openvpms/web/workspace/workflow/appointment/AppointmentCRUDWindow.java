@@ -676,7 +676,11 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     private void paste(Act appointment, Entity schedule, Date startTime, int duration, AppointmentSeriesState series,
                        boolean copy, RepeatExpression expression, RepeatCondition condition) {
         HelpContext edit = createEditTopic(appointment);
-        DefaultLayoutContext context = new DefaultLayoutContext(getContext(), edit);
+        LocalContext localContext = LocalContext.copy(getContext());
+        localContext.setCustomer(null);          // make sure customer, patient, and clinician aren't inherited
+        localContext.setPatient(null);           // if they aren't populated
+        localContext.setClinician(null);
+        DefaultLayoutContext context = new DefaultLayoutContext(localContext, edit);
         AppointmentActEditor editor = new AppointmentActEditor(appointment, null, series != null, context);
         EditDialog dialog = edit(editor, null);  // NOTE: need to update the start time after dialog is created
         editor.setSchedule(schedule);            //       See AppointmentEditDialog.timesModified().

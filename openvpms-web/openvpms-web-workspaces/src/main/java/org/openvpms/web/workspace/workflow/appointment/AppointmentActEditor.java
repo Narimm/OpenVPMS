@@ -184,8 +184,10 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     public AppointmentActEditor(Act act, IMObject parent, boolean editSeries, LayoutContext context) {
         super(act, parent, context);
         rules = ServiceHelper.getBean(AppointmentRules.class);
-        initParticipant("schedule", context.getContext().getSchedule());
-        initParticipant("customer", context.getContext().getCustomer());
+        if (act.isNew()) {
+            initParticipant("schedule", context.getContext().getSchedule());
+            initParticipant("customer", context.getContext().getCustomer());
+        }
 
         Entity appointmentType = (Entity) getParticipant("appointmentType");
         Entity schedule = getSchedule();
