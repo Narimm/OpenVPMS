@@ -22,7 +22,6 @@ import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -49,18 +48,12 @@ public class OrderItemEditorTestCase extends AbstractSupplierStockItemEditorTest
     private LayoutContext context;
 
     /**
-     * Box unit-of-measure
-     */
-    private Lookup box;
-
-    /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
         super.setUp();
         context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
-        box = TestHelper.getLookup("lookup.uom", "BOX");
     }
 
     /**

@@ -20,6 +20,7 @@ import echopointng.DateChooser;
 import echopointng.DateField;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
@@ -151,10 +152,9 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
 
 
     /**
-     * Constructs a new <tt>CustomerBalanceQuery</tt> .
+     * Constructs a {@link CustomerBalanceQuery}.
      *
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
     public CustomerBalanceQuery() {
         super(new String[]{"party.customer*"}, ObjectSet.class);
@@ -180,7 +180,7 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
      * Determines if customers with both overdue and non-overdue balances
      * are being queried.
      *
-     * @return <tt>true</tt> if customers with both overdue and non-overdue
+     * @return {@code true} if customers with both overdue and non-overdue
      *         balances are being queried.
      */
     public boolean queryAllBalances() {
@@ -190,8 +190,8 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
     /**
      * Determines if customers with overdue balances are being queried.
      *
-     * @return <tt>true</tt> if customers with overdue balances are being
-     *         queried, <tt>false</tt> if customers with outstanding balances are being
+     * @return {@code true} if customers with overdue balances are being
+     *         queried, {@code false} if customers with outstanding balances are being
      *         queried
      */
     public boolean queryOverduebalances() {
@@ -315,7 +315,7 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
      * @return all objects matching the criteria
      */
     public List<ObjectSet> getObjects() {
-        List<ObjectSet> sets = new ArrayList<ObjectSet>();
+        List<ObjectSet> sets = new ArrayList<>();
         try {
             CustomerBalanceSummaryQuery query;
             int selected = balanceType.getSelectedIndex();
@@ -367,18 +367,27 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
     /**
      * Creates the result set.
      *
-     * @param sort the sort criteria. May be <code>null</code>
+     * @param sort the sort criteria. May be {@code null}
      * @return a new result set
      */
     protected ResultSet<ObjectSet> createResultSet(SortConstraint[] sort) {
-        return new ListResultSet<ObjectSet>(getObjects(), getMaxResults());
+        return new ListResultSet<>(getObjects(), getMaxResults());
+    }
+
+    /**
+     * Returns the preferred height of the query when rendered.
+     *
+     * @return the preferred height, or {@code null} if it has no preferred height
+     */
+    @Override
+    public Extent getHeight() {
+        return getHeight(3);
     }
 
     /**
      * Returns the selected account type.
      *
-     * @return the selected lookup, or <tt>null</tt> to indicate all account
-     *         types
+     * @return the selected lookup, or {@code null} to indicate all account types
      */
     private Lookup getAccountType() {
         return accountType.getSelected();
@@ -421,7 +430,7 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
     class BalanceTypeListCellRenderer extends AbstractListCellRenderer<String> {
 
         /**
-         * Constructs a new <tt>BalanceTypeListCellRenderer</tt>.
+         * Constructs a new {@code BalanceTypeListCellRenderer}.
          */
         public BalanceTypeListCellRenderer() {
             super(String.class);
@@ -431,7 +440,7 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
          * Renders an object.
          *
          * @param list   the list component
-         * @param object the object to render. May be <tt>null</tt>
+         * @param object the object to render. May be {@code null}
          * @param index  the object index
          * @return the rendered object
          */
@@ -444,9 +453,9 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
          * Determines if an object represents 'All'.
          *
          * @param list   the list component
-         * @param object the object. May be <tt>null</tt>
+         * @param object the object. May be {@code null}
          * @param index  the object index
-         * @return <code>true</code> if the object represents 'All'.
+         * @return {@code true} if the object represents 'All'.
          */
         protected boolean isAll(Component list, String object, int index) {
             return index == ALL_BALANCE_INDEX;
@@ -456,9 +465,9 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
          * Determines if an object represents 'None'.
          *
          * @param list   the list component
-         * @param object the object. May be <tt>null</tt>
+         * @param object the object. May be {@code null}
          * @param index  the object index
-         * @return <code>true</code> if the object represents 'None'.
+         * @return {@code true} if the object represents 'None'.
          */
         protected boolean isNone(Component list, String object, int index) {
             return false;
