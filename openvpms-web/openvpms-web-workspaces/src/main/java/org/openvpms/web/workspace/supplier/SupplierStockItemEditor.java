@@ -19,12 +19,15 @@ package org.openvpms.web.workspace.supplier;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductSupplier;
+import org.openvpms.archetype.rules.supplier.DeliveryProcessor;
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
@@ -34,14 +37,15 @@ import java.math.BigDecimal;
 
 
 /**
- * An editor for supplier orders and deliveries, that:
+ * An editor for supplier orders, deliveries and returns, that:
  * <ul>
  * <li>calculates tax.</li>
- * <li>defaults values to the the associated
- * {@link ProductSupplier ProductSupplier} for the selected product and
+ * <li>defaults values to the the associated {@link ProductSupplier} for the selected product and
  * supplier.</li>
- * <li>updates the {@link ProductSupplier ProductSupplier} on save, creating
- * one if none exists.
+ * <li>for orders and returns, updates the {@link ProductSupplier} on save, creating one if none exists.<br/>
+ * NOTE: deliveries are excluded from this as deliveries update the relationship when finalised via the
+ * {@link DeliveryProcessor}. Updating within the save would prevent the party.organisationPractice
+ * ignoreListPriceDecreases flag from working.
  * </li>
  * </ul>
  *
@@ -221,12 +225,16 @@ public abstract class SupplierStockItemEditor extends SupplierActItemEditor {
      */
     @Override
     protected void doSave() {
-        if (getObject().isNew()) {
+        Act object = getObject();
+        if (object.isNew()) {
             getComponent(); // ensure the component has been laid out
             ProductParticipationEditor editor = getProductEditor();
             Party supplier = editor.getSupplier();
             Product product = editor.getEntity();
-            if (supplier != null && product != null) {
+            if (supplier != null && product != null && !TypeHelper.isA(object, SupplierArchetypes.DELIVERY_ITEM)) {
+                // don't update the product-supplier relationship for deliveries. This is handled when the delivery
+                // is finalised by DeliveryProcessor in order to avoid auto-updating prices when
+                // ignoreListPriceDecreases is true.
                 checkProductSupplier(product, supplier);
             }
         }

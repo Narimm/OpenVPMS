@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -65,6 +65,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
     public void setUp() {
         super.setUp();
         rules = new ProductRules(getArchetypeService());
+        setIgnoreListPriceDecreases(false);
     }
 
     /**
@@ -373,6 +374,77 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
     }
 
     /**
+     * Verifies that when the party.organisationPractice ignoreListPriceDecreases node is {@code true}, auto-price
+     * updates are disabled if the delivery list price is less than the existing list price.
+     */
+    @Test
+    public void testIgnoreListPriceDecreases() {
+        Product product = getProduct();
+        BigDecimal initialCost = BigDecimal.ZERO;
+        BigDecimal initialPrice = BigDecimal.ONE;
+
+        // add a new price
+        ProductPrice price = (ProductPrice) create("productPrice.unitPrice");
+        IMObjectBean priceBean = new IMObjectBean(price);
+        priceBean.setValue("cost", initialCost);
+        priceBean.setValue("markup", BigDecimal.valueOf(100));
+        priceBean.setValue("price", initialPrice);
+        product.addProductPrice(price);
+        save(product);
+
+        // create a product-supplier relationship.
+        int packageSize = 20;
+        ProductSupplier ps = createProductSupplier();
+        ps.setPackageSize(packageSize);
+        ps.setAutoPriceUpdate(true);
+        ps.save();
+
+        // post a delivery, and verify prices update
+        BigDecimal unitPrice1 = new BigDecimal("10.00");
+        BigDecimal quantity = BigDecimal.ONE;
+        BigDecimal listPrice1 = new BigDecimal("20.00");
+
+        Act delivery1 = createDelivery(quantity, packageSize, unitPrice1, listPrice1);
+        delivery1.setStatus(ActStatus.POSTED);
+        save(delivery1);
+
+        checkPrice(product, new BigDecimal("1.00"), new BigDecimal("2.00"));
+
+        // now disable price updates for decreases in list price
+        setIgnoreListPriceDecreases(true);
+
+        // post another delivery
+        BigDecimal listPrice2 = new BigDecimal("15.00");
+        Act delivery2 = createDelivery(quantity, packageSize, BigDecimal.TEN, listPrice2);
+        delivery2.setStatus(ActStatus.POSTED);
+        save(delivery2);
+
+        // verify that the price hasn't updated
+        checkPrice(product, new BigDecimal("1.00"), new BigDecimal("2.00"));
+
+        // post another delivery, increasing the list price
+        BigDecimal listPrice3 = new BigDecimal("30.00");
+        Act delivery3 = createDelivery(quantity, packageSize, BigDecimal.TEN, listPrice3);
+        delivery3.setStatus(ActStatus.POSTED);
+        save(delivery3);
+
+        // verify that the price has updated
+        checkPrice(product, new BigDecimal("1.50"), new BigDecimal("3.00"));
+
+        // now enable price updates for decreases in list price
+        setIgnoreListPriceDecreases(false);
+
+        // post another delivery
+        BigDecimal listPrice4 = new BigDecimal("20.00");
+        Act delivery4 = createDelivery(quantity, packageSize, BigDecimal.TEN, listPrice4);
+        delivery4.setStatus(ActStatus.POSTED);
+        save(delivery4);
+
+        // verify that the price has updated
+        checkPrice(product, new BigDecimal("1.00"), new BigDecimal("2.00"));
+    }
+
+    /**
      * Verifies that batches are created when a delivery is finalised.
      */
     @Test
@@ -548,6 +620,17 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
             bean.setNodeParticipant("manufacturer", manufacturer);
         }
         return item;
+    }
+
+    /**
+     * Sets the ignoreListPriceDecreases node on the practice.
+     *
+     * @param ignore if {@code true}, ignore list price decreases
+     */
+    private void setIgnoreListPriceDecreases(boolean ignore) {
+        IMObjectBean bean = new IMObjectBean(getPractice());
+        bean.setValue("ignoreListPriceDecreases", ignore);
+        bean.save();
     }
 
 }

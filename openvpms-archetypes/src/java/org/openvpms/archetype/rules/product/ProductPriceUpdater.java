@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -209,6 +209,23 @@ public class ProductPriceUpdater {
     }
 
     /**
+     * Returns the practice.
+     *
+     * @return the practice
+     * @throws ArchetypeServiceException    for any archetype service error
+     * @throws ProductPriceUpdaterException if there is no practice
+     */
+    public Party getPractice() {
+        if (practice == null) {
+            practice = practiceRules.getPractice();
+            if (practice == null) {
+                throw new ProductPriceUpdaterException(NoPractice);
+            }
+        }
+        return practice;
+    }
+
+    /**
      * Determines if the prices associated with a product should be updated.
      *
      * @param product the product
@@ -340,23 +357,6 @@ public class ProductPriceUpdater {
             service.save(result);
         }
         return result;
-    }
-
-    /**
-     * Returns the practice.
-     *
-     * @return the practice
-     * @throws ArchetypeServiceException    for any archetype service error
-     * @throws ProductPriceUpdaterException if there is no practice
-     */
-    private Party getPractice() {
-        if (practice == null) {
-            practice = practiceRules.getPractice();
-            if (practice == null) {
-                throw new ProductPriceUpdaterException(NoPractice);
-            }
-        }
-        return practice;
     }
 
     /**
