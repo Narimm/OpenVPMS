@@ -109,10 +109,10 @@
     </bean>
 
     <!--  Configure the security advisor -->
-    <bean id='securityAdvisor'
+    <bean id="securityAdvisor"
           class="org.openvpms.component.business.service.security.OpenVPMSMethodSecurityInterceptor">
-        <property name='authenticationManager' ref='guiAuthenticationManager'/>
-        <property name='accessDecisionManager' ref='accessDecisionManager'/>
+        <property name="authenticationManager" ref="guiAuthenticationManager"/>
+        <property name="accessDecisionManager" ref="accessDecisionManager"/>
         <property name="securityMetadataSource" ref="archSecurityMetaDataSource"/>
     </bean>
 
@@ -127,16 +127,10 @@
 
     <!--  Define the access decision manager for authorization -->
     <bean id="accessDecisionManager" class="org.springframework.security.access.vote.AffirmativeBased">
-        <constructor-arg name="decisionVoters">
-            <list>
-                <ref bean="archetypeAwareVoter"/>
-            </list>
+        <constructor-arg>
+            <bean class="org.openvpms.component.business.service.security.ArchetypeAwareVoter"/>
         </constructor-arg>
     </bean>
-
-    <!--  Use the standard role vote -->
-    <bean id="archetypeAwareVoter" class="org.openvpms.component.business.service.security.ArchetypeAwareVoter"/>
-
 
 </beans>
 

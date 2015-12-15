@@ -11,15 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.delivery;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.product.ProductRules;
-import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierTestHelper;
 import org.openvpms.archetype.test.TestHelper;
@@ -30,10 +30,12 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.test.AbstractAppTest;
+import org.openvpms.web.workspace.supplier.AbstractSupplierStockItemEditorTest;
 
 import java.math.BigDecimal;
 
@@ -47,16 +49,39 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Tim Anderson
  */
-public class DeliveryItemEditorTestCase extends AbstractAppTest {
+public class DeliveryItemEditorTestCase extends AbstractSupplierStockItemEditorTest {
+
+    /**
+     * The layout context.
+     */
+    private LayoutContext context;
+
+    /**
+     * 'Each' unit-of-measure.
+     */
+    private Lookup each;
+
+    /**
+     * Box unit-of-measure
+     */
+    private Lookup box;
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        super.setUp();
+        context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
+        each = TestHelper.getLookup("lookup.uom", "EACH");
+        box = TestHelper.getLookup("lookup.uom", "BOX");
+    }
 
     /**
      * Tests validation.
      */
     @Test
     public void testValidation() {
-        DefaultLayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
-        Lookup each = TestHelper.getLookup("lookup.uom", "EACH");
-
         Act delivery = (Act) create(SupplierArchetypes.DELIVERY);
         FinancialAct item = (FinancialAct) create(SupplierArchetypes.DELIVERY_ITEM);
         DeliveryItemEditor editor = new DeliveryItemEditor(item, delivery, context);
@@ -84,31 +109,12 @@ public class DeliveryItemEditorTestCase extends AbstractAppTest {
      */
     @Test
     public void testProductUpdateForManualDelivery() {
-        DefaultLayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
-        Lookup each = TestHelper.getLookup("lookup.uom", "EACH");
-        Lookup box = TestHelper.getLookup("lookup.uom", "BOX");
         Act delivery = (Act) create(SupplierArchetypes.DELIVERY);
         Party supplier = TestHelper.createSupplier();
         Product product = TestHelper.createProduct();
-        ProductRules productRules = ServiceHelper.getBean(ProductRules.class);
-        ProductSupplier productSupplier = productRules.createProductSupplier(product, supplier);
-        productSupplier.setReorderCode("A1");
-        productSupplier.setPackageSize(2);
-        productSupplier.setPackageUnits(box.getCode());
-        productSupplier.setNettPrice(BigDecimal.TEN);
-        productSupplier.setListPrice(BigDecimal.TEN);
-        save(product, supplier);
+        createProductSupplier(product, supplier, "A1", 2, box.getCode(), BigDecimal.TEN, BigDecimal.TEN);
 
-        FinancialAct item = (FinancialAct) create(SupplierArchetypes.DELIVERY_ITEM);
-        ActBean bean = new ActBean(item);
-        bean.setValue("reorderCode", "B1");
-        bean.setValue("packageSize", 1);
-        bean.setValue("packageUnits", each.getCode());
-        bean.setValue("quantity", 10);
-        bean.setValue("unitPrice", 12);
-        bean.setValue("listPrice", 12);
-        bean.setValue("tax", 12);
-        bean.addNodeParticipation("author", TestHelper.createUser());
+        FinancialAct item = createDeliveryItem();
 
         DeliveryItemEditor editor = new DeliveryItemEditor(item, delivery, context);
         editor.setSupplier(supplier);
@@ -131,34 +137,18 @@ public class DeliveryItemEditorTestCase extends AbstractAppTest {
      */
     @Test
     public void testProductUpdateForESCIDelivery() {
-        DefaultLayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
-        Lookup each = TestHelper.getLookup("lookup.uom", "EACH");
-        Lookup box = TestHelper.getLookup("lookup.uom", "BOX");
         Act delivery = (Act) create(SupplierArchetypes.DELIVERY);
         Party supplier = TestHelper.createSupplier();
         Product product = TestHelper.createProduct();
-        ProductRules productRules = ServiceHelper.getBean(ProductRules.class);
-        ProductSupplier productSupplier = productRules.createProductSupplier(product, supplier);
-        productSupplier.setReorderCode("A1");
-        productSupplier.setPackageSize(2);
-        productSupplier.setPackageUnits(box.getCode());
-        productSupplier.setNettPrice(BigDecimal.TEN);
-        productSupplier.setListPrice(BigDecimal.TEN);
-        save(product, supplier);
+        createProductSupplier(product, supplier, "A1", 2, box.getCode(), BigDecimal.TEN, BigDecimal.TEN);
 
         FinancialAct item = (FinancialAct) create(SupplierArchetypes.DELIVERY_ITEM);
         ActBean bean = new ActBean(item);
         bean.setValue("supplierInvoiceLineId", "1");
-        bean.setValue("reorderCode", "B1");
-        bean.setValue("packageSize", 1);
-        bean.setValue("packageUnits", each.getCode());
-        bean.setValue("quantity", 10);
-        bean.setValue("unitPrice", 12);
-        bean.setValue("listPrice", 12);
-        bean.setValue("tax", 12);
-        bean.addNodeParticipation("author", TestHelper.createUser());
-
         DeliveryItemEditor editor = new DeliveryItemEditor(item, delivery, context);
+        editor.setAuthor(TestHelper.createUser());
+        editor.setUnitPrice(new BigDecimal(12));
+        populate(editor, product, supplier, BigDecimal.TEN, "B1", 1, each.getCode(), new BigDecimal(12));
         editor.setSupplier(supplier);
         editor.setStockLocation(SupplierTestHelper.createStockLocation());
         assertTrue(editor.isValid());
@@ -173,4 +163,86 @@ public class DeliveryItemEditorTestCase extends AbstractAppTest {
         checkEquals(new BigDecimal("12"), editor.getUnitPrice());
         checkEquals(new BigDecimal("12"), editor.getListPrice());
     }
+
+    /**
+     * Verifies that saving a delivery item doesn't create or update the product-supplier relationship.
+     */
+    @Test
+    public void testSupplierRelationshipNotCreatedOrUpdatedForDelivery() {
+        ProductRules productRules = ServiceHelper.getBean(ProductRules.class);
+        Act delivery = (Act) create(SupplierArchetypes.DELIVERY);
+        Party supplier = TestHelper.createSupplier();
+        Product product = TestHelper.createProduct();
+        Party stockLocation = SupplierTestHelper.createStockLocation();
+
+        FinancialAct item1 = createDeliveryItem();
+
+        DeliveryItemEditor editor1 = new DeliveryItemEditor(item1, delivery, context);
+        editor1.setSupplier(supplier);
+        editor1.setStockLocation(stockLocation);
+        editor1.setProduct(product);
+        assertTrue(SaveHelper.save(editor1));
+
+        // verify no product-supplier relationship has been created
+        product = get(product);
+        supplier = get(supplier);
+        assertTrue(productRules.getProductSuppliers(product, supplier).isEmpty());
+
+        // now add a product-supplier relationship
+        createProductSupplier(product, supplier, "A1", 2, box.getCode(), BigDecimal.TEN, BigDecimal.TEN);
+
+        // create a new item, and verify it doesn't update the product-supplier relationship
+        FinancialAct item2 = createDeliveryItem();
+        DeliveryItemEditor editor2 = new DeliveryItemEditor(item2, delivery, context);
+        editor2.setSupplier(supplier);
+        editor2.setStockLocation(stockLocation);
+        editor2.setProduct(product);
+        editor2.setListPrice(new BigDecimal("20"));
+        assertTrue(SaveHelper.save(editor2));
+
+        // verify the product-supplier relationship hasn't changed
+        checkProductSupplier(product, supplier, "A1", 2, box.getCode(), BigDecimal.TEN);
+    }
+
+    /**
+     * Verifies that for new return items, a product-supplier relationship is created if none already exists.
+     */
+    @Test
+    public void testCreateProductSupplierRelationship() {
+        Act deliveryReturn = (Act) create(SupplierArchetypes.RETURN);
+        FinancialAct item = (FinancialAct) create(SupplierArchetypes.RETURN_ITEM);
+        DeliveryItemEditor editor = new DeliveryItemEditor(item, deliveryReturn, context);
+        checkCreateProductSupplierRelationship(editor);
+    }
+
+    /**
+     * Verifies that for new return items, the product-supplier relationship is updated if it is different.
+     */
+    @Test
+    public void testUpdateProductSupplierRelationship() {
+        Act deliveryReturn = (Act) create(SupplierArchetypes.RETURN);
+        FinancialAct item = (FinancialAct) create(SupplierArchetypes.RETURN_ITEM);
+        DeliveryItemEditor editor = new DeliveryItemEditor(item, deliveryReturn, context);
+        checkUpdateProductSupplierRelationship(editor);
+    }
+
+    /**
+     * Creates a pre-populated delivery item.
+     *
+     * @return a new delivery item
+     */
+    private FinancialAct createDeliveryItem() {
+        FinancialAct item = (FinancialAct) create(SupplierArchetypes.DELIVERY_ITEM);
+        ActBean bean = new ActBean(item);
+        bean.setValue("reorderCode", "B1");
+        bean.setValue("packageSize", 1);
+        bean.setValue("packageUnits", each.getCode());
+        bean.setValue("quantity", 10);
+        bean.setValue("unitPrice", 12);
+        bean.setValue("listPrice", 12);
+        bean.setValue("tax", 12);
+        bean.addNodeParticipation("author", TestHelper.createUser());
+        return item;
+    }
+
 }

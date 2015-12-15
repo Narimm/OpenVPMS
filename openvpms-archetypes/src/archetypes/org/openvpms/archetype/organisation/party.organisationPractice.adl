@@ -88,6 +88,8 @@
               minCardinality="0" maxCardinality="1" defaultValue="false()"/>
         <node name="showProductTypeDuringCharging" path="/details/showProductTypeDuringCharging"
               type="java.lang.Boolean" minCardinality="0" maxCardinality="1" defaultValue="false()"/>
+        <node name="ignoreListPriceDecreases" path="/details/ignoreListPriceDecreases"
+              type="java.lang.Boolean" minCardinality="0" maxCardinality="1" defaultValue="false()"/>
         <node name="contacts" path="/contacts"
               type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
             <assertion name="archetypeRange">

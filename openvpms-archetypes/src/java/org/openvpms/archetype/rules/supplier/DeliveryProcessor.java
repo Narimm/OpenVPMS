@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -95,18 +95,17 @@ public class DeliveryProcessor {
     /**
      * The set of objects to save on completion.
      */
-    private Set<IMObject> toSave = new LinkedHashSet<IMObject>();
+    private Set<IMObject> toSave = new LinkedHashSet<>();
 
     /**
      * Cache of orders that need to have their delivery statuses re-evaluated.
      */
-    Map<IMObjectReference, Act> orders = new HashMap<IMObjectReference, Act>();
+    Map<IMObjectReference, Act> orders = new HashMap<>();
 
     /**
      * Cache of order item statuses.
      */
-    Map<IMObjectReference, DeliveryStatus> statuses
-            = new HashMap<IMObjectReference, DeliveryStatus>();
+    Map<IMObjectReference, DeliveryStatus> statuses = new HashMap<>();
 
     /**
      * The archetype service.
@@ -128,9 +127,15 @@ public class DeliveryProcessor {
      */
     private Party stockLocation;
 
+    /**
+     * If {@code true}, don't update prices if the list price is less than the existing list price
+     * for the product-supplier relationship.
+     */
+    private final boolean ignoreListPriceDecreases;
+
 
     /**
-     * Constructs an {@link DeliveryProcessor}.
+     * Constructs a {@link DeliveryProcessor}.
      *
      * @param act        the delivery/return act
      * @param service    the archetype service
@@ -144,6 +149,8 @@ public class DeliveryProcessor {
         ProductPriceRules priceRules = new ProductPriceRules(service, lookups);
         PracticeRules practiceRules = new PracticeRules(service, currencies);
         priceUpdater = new ProductPriceUpdater(priceRules, practiceRules, service);
+        IMObjectBean bean = new IMObjectBean(priceUpdater.getPractice(), service);
+        ignoreListPriceDecreases = bean.getBoolean("ignoreListPriceDecreases");
     }
 
     /**
@@ -180,8 +187,7 @@ public class DeliveryProcessor {
      * @param service   the archetype service
      * @return the delivery status of the order item
      */
-    public static DeliveryStatus getDeliveryStatus(FinancialAct orderItem,
-                                                   IArchetypeService service) {
+    public static DeliveryStatus getDeliveryStatus(FinancialAct orderItem, IArchetypeService service) {
         IMObjectBean bean = new IMObjectBean(orderItem, service);
         BigDecimal quantity = bean.getBigDecimal("quantity", BigDecimal.ZERO);
         BigDecimal received = bean.getBigDecimal("receivedQuantity", BigDecimal.ZERO);
@@ -290,8 +296,7 @@ public class DeliveryProcessor {
      * @param packageSize   the size of the package
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private void updateStockQuantity(Product product, Party stockLocation,
-                                     BigDecimal quantity, int packageSize) {
+    private void updateStockQuantity(Product product, Party stockLocation, BigDecimal quantity, int packageSize) {
         EntityBean bean = new EntityBean(product, service);
         if (bean.hasNode("stockLocations")) {
             Predicate predicate = AndPredicate.getInstance(isActiveNow(), RefEquals.getTargetEquals(stockLocation));
@@ -319,22 +324,16 @@ public class DeliveryProcessor {
      * Updates the <em>receivedQuantity</em> node of an order item.
      *
      * @param orderItem   the order item
-     * @param quantity    the quantity in the delivery/return. If return, the
-     *                    quantity will be negative
+     * @param quantity    the quantity in the delivery/return. If return, the quantity will be negative
      * @param packageSize the size of the package
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private void updateReceivedQuantity(FinancialAct orderItem,
-                                        BigDecimal quantity,
-                                        int packageSize) {
+    private void updateReceivedQuantity(FinancialAct orderItem, BigDecimal quantity, int packageSize) {
         ActBean bean = new ActBean(orderItem, service);
-        BigDecimal received = bean.getBigDecimal(
-                "receivedQuantity");
+        BigDecimal received = bean.getBigDecimal("receivedQuantity");
         BigDecimal cancelled = bean.getBigDecimal("cancelledQuantity");
         BigDecimal orderQuantity = orderItem.getQuantity();
-        DeliveryStatus oldStatus = DeliveryStatus.getStatus(orderQuantity,
-                                                            received,
-                                                            cancelled);
+        DeliveryStatus oldStatus = DeliveryStatus.getStatus(orderQuantity, received, cancelled);
 
         int orderedPackSize = bean.getInt("packageSize");
         if (packageSize != orderedPackSize && orderedPackSize != 0) {
@@ -349,9 +348,7 @@ public class DeliveryProcessor {
         bean.setValue("receivedQuantity", received);
         toSave.add(orderItem);
 
-        DeliveryStatus newStatus = DeliveryStatus.getStatus(orderQuantity,
-                                                            received,
-                                                            cancelled);
+        DeliveryStatus newStatus = DeliveryStatus.getStatus(orderQuantity, received, cancelled);
 
         // cache the order item's delivery status
         statuses.put(orderItem.getObjectReference(), newStatus);
@@ -404,8 +401,8 @@ public class DeliveryProcessor {
     /**
      * Returns the delivery status of an order item.
      *
-     * @param ref a reference to the order item. May be <tt>null</tt>
-     * @return the delivery staus of the item, or <tt>null</tt> if none is found
+     * @param ref a reference to the order item. May be {@code null}
+     * @return the delivery staus of the item, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     private DeliveryStatus getDeliveryStatus(IMObjectReference ref) {
@@ -428,15 +425,12 @@ public class DeliveryProcessor {
      * The order is cached in {@link #orders}.
      *
      * @param bean the bean wrapping the order item
-     * @return the order associated with the item, or <tt>null</tt> if none is
-     *         found
+     * @return the order associated with the item, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     private Act loadOrder(ActBean bean) {
         Act order = null;
-        List<ActRelationship> relationships
-                = bean.getRelationships(
-                SupplierArchetypes.ORDER_ITEM_RELATIONSHIP);
+        List<ActRelationship> relationships = bean.getRelationships(SupplierArchetypes.ORDER_ITEM_RELATIONSHIP);
         if (!relationships.isEmpty()) {
             IMObjectReference ref = relationships.get(0).getSource();
             order = orders.get(ref);
@@ -454,7 +448,7 @@ public class DeliveryProcessor {
      * Retrieves an act given its reference.
      *
      * @param ref the act reference
-     * @return the act, or <tt>null</tt> if none is found
+     * @return the act, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     private FinancialAct getAct(IMObjectReference ref) {
@@ -466,14 +460,12 @@ public class DeliveryProcessor {
     }
 
     /**
-     * Updates an <em>entityRelationship.productSupplier</em> from an
-     * <em>act.supplierDeliveryItem</em>, if required.
+     * Updates an <em>entityRelationship.productSupplier</em> from an <em>act.supplierDeliveryItem</em>, if required.
      *
      * @param product          the product
      * @param deliveryItemBean a bean wrapping the delivery item
      */
-    private void updateProductSupplier(Product product,
-                                       ActBean deliveryItemBean) {
+    private void updateProductSupplier(Product product, ActBean deliveryItemBean) {
         int size = deliveryItemBean.getInt("packageSize");
         String units = deliveryItemBean.getString("packageUnits");
         String reorderCode = deliveryItemBean.getString("reorderCode");
@@ -482,6 +474,7 @@ public class DeliveryProcessor {
         BigDecimal nettPrice = deliveryItemBean.getBigDecimal("unitPrice");
         ProductSupplier ps = rules.getProductSupplier(product, supplier, reorderCode, size, units);
         boolean save = true;
+        boolean skipUpdate = false;
         if (ps == null) {
             // no product-supplier relationship, so create a new one
             ps = rules.createProductSupplier(product, supplier);
@@ -499,6 +492,10 @@ public class DeliveryProcessor {
                    || !ObjectUtils.equals(ps.getReorderCode(), reorderCode)
                    || !ObjectUtils.equals(ps.getReorderDescription(), reorderDesc)) {
             // properties are different to an existing relationship
+            if (ignoreListPriceDecreases && listPrice != null && ps.getListPrice() != null
+                && listPrice.compareTo(ps.getListPrice()) < 0) {
+                skipUpdate = true;
+            }
             ps.setPackageSize(size);
             ps.setPackageUnits(units);
             ps.setReorderCode(reorderCode);
@@ -508,7 +505,7 @@ public class DeliveryProcessor {
         } else {
             save = false;
         }
-        if (ps.isAutoPriceUpdate() && supplier.isActive()) {
+        if (!skipUpdate && ps.isAutoPriceUpdate() && supplier.isActive()) {
             // only update prices if the supplier is active
             updateUnitPrices(product, ps);
         }
@@ -525,13 +522,10 @@ public class DeliveryProcessor {
      * @param product         the product
      * @param productSupplier the product supplier
      */
-    private void updateUnitPrices(Product product,
-                                  ProductSupplier productSupplier) {
-        List<ProductPrice> prices
-                = priceUpdater.update(product, productSupplier, false);
+    private void updateUnitPrices(Product product, ProductSupplier productSupplier) {
+        List<ProductPrice> prices = priceUpdater.update(product, productSupplier, false);
         toSave.addAll(prices);
     }
-
 
 }
 
