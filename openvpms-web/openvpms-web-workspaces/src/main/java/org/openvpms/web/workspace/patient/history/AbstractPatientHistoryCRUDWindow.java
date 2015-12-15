@@ -16,10 +16,13 @@
 
 package org.openvpms.web.workspace.patient.history;
 
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
@@ -30,9 +33,14 @@ import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.RelationshipHelper;
 import org.openvpms.web.component.im.util.IMObjectCreator;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.workspace.AbstractCRUDWindow;
+import org.openvpms.web.component.workspace.DocumentActActions;
+import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
+import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -52,6 +60,17 @@ public class AbstractPatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> im
      * The current <em>act.patientClinicalEvent</em>.
      */
     private Act event;
+
+
+    /**
+     * Determines the operations that can be performed on document acts.
+     */
+    private final DocumentActActions documentActions = new DocumentActActions();
+
+    /**
+     * External edit button identifier.
+     */
+    private static final String EXTERNAL_EDIT_ID = "button.externaledit";
 
     /**
      * Constructs a {@link AbstractPatientHistoryCRUDWindow}.
@@ -97,6 +116,41 @@ public class AbstractPatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> im
                             "patient.record.create.investigation.message", "newInvestigation");
         } else {
             super.onCreated(object);
+        }
+    }
+
+    /**
+     * Enables/disables the buttons that require an object to be selected.
+     *
+     * @param buttons the button set
+     * @param enable  determines if buttons should be enabled
+     */
+    @Override
+    protected void enableButtons(ButtonSet buttons, boolean enable) {
+        super.enableButtons(buttons, enable);
+        buttons.setEnabled(EXTERNAL_EDIT_ID, enable && documentActions.canExternalEdit(getObject()));
+    }
+
+    /**
+     * Creates a button to externally edit a a document.
+     *
+     * @return a new button
+     */
+    protected Button createExternalEditButton() {
+        return ButtonFactory.create(EXTERNAL_EDIT_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onExternalEdit();
+            }
+        });
+    }
+
+    /**
+     * Launches an external editor to edit a document, if external editing of the document is supported.
+     */
+    protected void onExternalEdit() {
+        Act object = IMObjectHelper.reload(getObject());
+        if (object instanceof DocumentAct) {
+            documentActions.externalEdit((DocumentAct) object);
         }
     }
 

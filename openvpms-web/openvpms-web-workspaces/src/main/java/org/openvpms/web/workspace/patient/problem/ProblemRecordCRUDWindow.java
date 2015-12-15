@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.problem;
@@ -151,10 +151,10 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
                 Iterable<Act> summary = new ProblemHierarchyIterator(query, filter);
                 DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_PROBLEM,
                                                                                      context);
-                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(summary, locator, context);
+                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<>(summary, locator, context);
                 String title = Messages.get("patient.record.problem.print");
                 HelpContext help = getHelpContext().topic(PatientArchetypes.CLINICAL_PROBLEM + "/print");
-                InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, context, help);
+                InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<>(title, printer, context, help);
                 iPrinter.setMailContext(getMailContext());
                 iPrinter.print();
             } catch (OpenVPMSException exception) {
@@ -172,6 +172,7 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
         buttons.add(createPrintButton());
+        buttons.add(createExternalEditButton());
     }
 
     /**
@@ -197,8 +198,8 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
             // problem is selected, so display all of the possible event item archetypes
             String[] shortNames = getShortNames(PatientArchetypes.CLINICAL_PROBLEM_ITEM,
                                                 PatientArchetypes.CLINICAL_PROBLEM);
-            archetypes = new Archetypes<Act>(shortNames, archetypes.getType(), PatientArchetypes.CLINICAL_NOTE,
-                                             archetypes.getDisplayName());
+            archetypes = new Archetypes<>(shortNames, archetypes.getType(), PatientArchetypes.CLINICAL_NOTE,
+                                          archetypes.getDisplayName());
         }
         super.onCreate(archetypes);
     }
@@ -296,7 +297,7 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         query.add(join("patient").add(eq("entity", patient)));
         query.add(Constraints.sort("startTime", false));
         query.setMaxResults(1);
-        IMObjectQueryIterator<Act> iterator = new IMObjectQueryIterator<Act>(query);
+        IMObjectQueryIterator<Act> iterator = new IMObjectQueryIterator<>(query);
         return (iterator.hasNext()) ? iterator.next() : null;
     }
 
