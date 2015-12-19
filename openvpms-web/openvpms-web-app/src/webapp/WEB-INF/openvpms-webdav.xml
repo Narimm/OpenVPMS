@@ -19,6 +19,16 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
+    <bean name="documentSessionManager" class="org.openvpms.web.webdav.milton.DocumentSessionManager">
+        <constructor-arg ref="editableDocuments"/>
+
+        <!-- The maximum number of concurrent sessions, before the oldest sessions are forcibly removed -->
+        <constructor-arg name="maxSessions" value="2000"/>
+
+        <!-- The time in minutes for a WebDAV session to be inactive, before passwords are prompted for -->
+        <constructor-arg name="timeToLive" value="60"/>
+    </bean>
+
     <bean name="lockManager" class="org.openvpms.web.webdav.milton.ResourceLockManagerImpl"/>
 
     <bean name="editableDocuments" class="org.openvpms.web.webdav.resource.EditableDocuments">
@@ -39,10 +49,10 @@
     </bean>
 
     <bean class="org.openvpms.web.webdav.milton.HttpManagerFactory">
+        <constructor-arg ref="documentSessionManager"/>
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="documentHandlers"/>
         <constructor-arg ref="lockManager"/>
-        <constructor-arg ref="editableDocuments"/>
     </bean>
 
 </beans>

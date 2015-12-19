@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.web.workspace.admin.system;
 
 
@@ -47,7 +63,7 @@ import java.util.List;
 
 /**
  * Browser for WebDAV locks managed by the {@link ResourceLockManager}.
- * <p>
+ * <p/>
  * This allows locks to be administratively deleted.
  *
  * @author Tim Anderson
@@ -167,7 +183,7 @@ public class WebDAVLockBrowser extends AbstractTabComponent {
      */
     private void onQuery() {
         refresh();
-        if (locks.getTable().getObjects().isEmpty()) {
+        if (!locks.getTable().getObjects().isEmpty()) {
             FocusHelper.setFocus(locks.getTable());
         }
     }
@@ -201,7 +217,9 @@ public class WebDAVLockBrowser extends AbstractTabComponent {
         }
     }
 
-
+    /**
+     * Refreshes the locks table.
+     */
     private void refresh() {
         locks.setResultSet(getLocks());
     }
@@ -219,7 +237,8 @@ public class WebDAVLockBrowser extends AbstractTabComponent {
             set = new FilteredResultSet<ResourceLock>(set) {
                 @Override
                 protected void filter(ResourceLock object, List<ResourceLock> results) {
-                    if (contains(object.getUser(), query) || contains(object.getName(), query)) {
+                    if (contains(object.getUser(), query) || contains(object.getName(), query)
+                        || contains(UserHelper.getName(object.getUser()), query)) {
                         results.add(object);
                     }
                 }
@@ -229,33 +248,39 @@ public class WebDAVLockBrowser extends AbstractTabComponent {
                 }
             };
         }
-        set.sort(new SortConstraint[]{LockTableModel.getSortOnName(true)});
+        set.sort(new SortConstraint[]{LockTableModel.getSortOnLogin(true)});
         return set;
     }
 
     private static class LockTableModel extends AbstractIMTableModel<ResourceLock> {
 
         /**
+         * The login name column index.
+         */
+        private static final int LOGIN_INDEX = 0;
+
+        /**
          * The user column index.
          */
-        private static final int USER_INDEX = 0;
+        private static final int USER_INDEX = 1;
 
         /**
          * The resource name column index.
          */
-        private static final int RESOURCE_INDEX = 1;
+        private static final int RESOURCE_INDEX = 2;
 
         /**
          * The expiry date column index.
          */
-        private static final int EXPIRY_DATE_INDEX = 2;
+        private static final int EXPIRY_DATE_INDEX = 3;
 
         /**
          * Constructs a {@link LockTableModel}.
          */
         public LockTableModel() {
             TableColumnModel model = new DefaultTableColumnModel();
-            model.addColumn(createTableColumn(USER_INDEX, "admin.system.webdav.lock.user"));
+            model.addColumn(createTableColumn(LOGIN_INDEX, "admin.system.login"));
+            model.addColumn(createTableColumn(USER_INDEX, "admin.system.user"));
             model.addColumn(createTableColumn(RESOURCE_INDEX, "admin.system.webdav.lock.resource"));
             model.addColumn(createTableColumn(EXPIRY_DATE_INDEX, "admin.system.webdav.lock.expiry"));
             setTableColumnModel(model);
@@ -273,6 +298,9 @@ public class WebDAVLockBrowser extends AbstractTabComponent {
         protected Object getValue(ResourceLock object, TableColumn column, int row) {
             Object result = null;
             switch (column.getModelIndex()) {
+                case LOGIN_INDEX:
+                    result = object.getUser();
+                    break;
                 case USER_INDEX:
                     result = UserHelper.getName(object.getUser());
                     break;
@@ -296,6 +324,9 @@ public class WebDAVLockBrowser extends AbstractTabComponent {
         public SortConstraint[] getSortConstraints(int column, boolean ascending) {
             SortConstraint sort = null;
             switch (column) {
+                case LOGIN_INDEX:
+                    sort = getSortOnLogin(ascending);
+                    break;
                 case USER_INDEX:
                     sort = new VirtualNodeSortConstraint("user", ascending, new Transformer() {
                         @Override
@@ -306,18 +337,23 @@ public class WebDAVLockBrowser extends AbstractTabComponent {
                     });
                     break;
                 case RESOURCE_INDEX:
-                    sort = getSortOnName(ascending);
+                    sort = new VirtualNodeSortConstraint("resource", ascending, new Transformer() {
+                        @Override
+                        public Object transform(Object input) {
+                            return ((ResourceLock) input).getName();
+                        }
+                    });
                     break;
             }
             return (sort != null) ? new SortConstraint[]{sort} : null;
         }
 
-        public static SortConstraint getSortOnName(boolean ascending) {
+        public static SortConstraint getSortOnLogin(boolean ascending) {
             SortConstraint sort;
-            sort = new VirtualNodeSortConstraint("resource", ascending, new Transformer() {
+            sort = new VirtualNodeSortConstraint("login", ascending, new Transformer() {
                 @Override
                 public Object transform(Object input) {
-                    return ((ResourceLock) input).getName();
+                    return ((ResourceLock) input).getUser();
                 }
             });
             return sort;

@@ -20,53 +20,31 @@ import io.milton.http.Auth;
 import io.milton.http.LockManager;
 import io.milton.http.Request;
 import io.milton.http.exceptions.BadRequestException;
-import io.milton.http.exceptions.ConflictException;
 import io.milton.http.exceptions.NotAuthorizedException;
 import io.milton.resource.CollectionResource;
 import io.milton.resource.PropFindableResource;
-import io.milton.resource.PutableResource;
 import io.milton.resource.Resource;
 import org.apache.commons.lang.StringUtils;
-import org.joda.time.DateTime;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.webdav.session.Session;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 /**
- * A resource that models a document act and document as a collection with one child resource.
+ * A resource used to associate a URL with a {@link Session}.
  *
  * @author Tim Anderson
  */
-public class DocumentActResource implements CollectionResource, PropFindableResource, PutableResource,
-        IMObjectResource {
-
-    /**
-     * The document act.
-     */
-    private final DocumentAct act;
+public class SessionResource implements CollectionResource, PropFindableResource {
 
     /**
      * The session.
      */
     private final Session session;
-
-    /**
-     * The document name. This uses the act identifier to uniquely identify the act.
-     */
-    private final String name;
-
-    /**
-     * The document resource. This is lazily created.
-     */
-    private DocumentResource resource;
 
     /**
      * The archetype service.
@@ -84,29 +62,28 @@ public class DocumentActResource implements CollectionResource, PropFindableReso
     private final LockManager lockManager;
 
     /**
-     * Date used to base modification timestamps on, required due to lack of modified date on the document
+     * The document resource. This is lazily created.
      */
-    private final Date baseDate;
+    private DocumentActResource resource;
 
     /**
-     * Constructs a {@link DocumentActResource}.
+     * Constructs a {@link SessionResource}.
      *
-     * @param act         the document act
      * @param session     the session
      * @param service     the archetype service
      * @param handlers    the document handlers
      * @param lockManager the lock manager
-     * @param baseDate    date used to base modification timestamps on, due to lack of modified date on the act
      */
-    public DocumentActResource(DocumentAct act, Session session, IArchetypeService service, DocumentHandlers handlers,
-                               LockManager lockManager, Date baseDate) {
-        this.act = act;
+    public SessionResource(Session session, IArchetypeService service, DocumentHandlers handlers,
+                           LockManager lockManager) {
         this.session = session;
-        name = Long.toString(act.getId());
         this.service = service;
         this.handlers = handlers;
         this.lockManager = lockManager;
-        this.baseDate = baseDate;
+    }
+
+    public Session getSession() {
+        return session;
     }
 
     /**
@@ -117,7 +94,7 @@ public class DocumentActResource implements CollectionResource, PropFindableReso
      */
     @Override
     public Resource child(String childName) {
-        return StringUtils.equals(act.getFileName(), childName) ? getDocument() : null;
+        return StringUtils.equals(Long.toString(session.getDocumentAct().getId()), childName) ? getChildResource() : null;
     }
 
     /**
@@ -129,8 +106,8 @@ public class DocumentActResource implements CollectionResource, PropFindableReso
      */
     @Override
     public List<? extends Resource> getChildren() throws NotAuthorizedException, BadRequestException {
-        Resource document = getDocument();
-        return document != null ? Collections.singletonList(document) : Collections.<Resource>emptyList();
+        Resource act = getChildResource();
+        return act != null ? Collections.singletonList(act) : Collections.<Resource>emptyList();
     }
 
     /**
@@ -146,7 +123,7 @@ public class DocumentActResource implements CollectionResource, PropFindableReso
      */
     @Override
     public String getUniqueId() {
-        return act.getArchetypeId().getShortName() + "-" + act.getId();
+        return session.getSessionId();
     }
 
     /**
@@ -160,7 +137,7 @@ public class DocumentActResource implements CollectionResource, PropFindableReso
      */
     @Override
     public String getName() {
-        return name;
+        return session.getSessionId();
     }
 
     /**
@@ -226,7 +203,7 @@ public class DocumentActResource implements CollectionResource, PropFindableReso
      */
     @Override
     public Date getModifiedDate() {
-        return new DateTime(baseDate).plusSeconds((int) act.getVersion()).toDate();
+        return session.getCreated();
     }
 
     /**
@@ -254,58 +231,20 @@ public class DocumentActResource implements CollectionResource, PropFindableReso
      */
     @Override
     public Date getCreateDate() {
-        return act.getActivityStartTime();
+        return session.getCreated();
     }
 
     /**
-     * Create a new resource, or overwrite an existing one
+     * Returns the document act resource.
      *
-     * @param newName     the name to create within the collection. E.g. myFile.txt
-     * @param inputStream the data to populate the resource with
-     * @param length      the length of the data
-     * @param contentType the content type of the data being uploaded.
-     *                    This can be a list, such as "image/pjpeg,image/jpeg". It is the responsibility of the
-     *                    application to create a resource which also represents those content types, or a subset
-     * @return a reference to the new resource
-     * @throws IOException
-     * @throws ConflictException
-     * @throws NotAuthorizedException
+     * @return the document act resource. May be {@code null}
      */
-    @Override
-    public Resource createNew(String newName, InputStream inputStream, Long length, String contentType)
-            throws IOException, ConflictException, NotAuthorizedException, BadRequestException {
-        throw new NotAuthorizedException();
-    }
-
-    /**
-     * Returns the object reference.
-     *
-     * @return the object reference
-     */
-    @Override
-    public IMObjectReference getReference() {
-        return act.getObjectReference();
-    }
-
-    /**
-     * Returns the object version.
-     *
-     * @return the version
-     */
-    @Override
-    public long getVersion() {
-        return act.getVersion();
-    }
-
-    /**
-     * Returns the document resource.
-     *
-     * @return the document resource. May be {@code null}
-     */
-    private synchronized Resource getDocument() {
-        if (resource == null && act.getDocument() != null) {
-            resource = new DocumentResource(act.getFileName(), session, act.getDocument(), service, handlers,
-                                            lockManager);
+    private synchronized Resource getChildResource() {
+        if (resource == null) {
+            DocumentAct act = (DocumentAct) service.get(session.getDocumentAct());
+            if (act != null) {
+                resource = new DocumentActResource(act, session, service, handlers, lockManager, session.getCreated());
+            }
         }
         return resource;
     }
