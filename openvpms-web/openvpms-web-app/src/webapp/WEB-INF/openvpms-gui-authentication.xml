@@ -61,6 +61,14 @@
         <security:custom-filter ref="digestFilter" after="BASIC_AUTH_FILTER"/>
     </security:http>
 
+    <!-- enable this to debug webstart -->
+    <!--security:http pattern="/externaledit/**" create-session="stateless"
+                   access-decision-manager-ref="authenticatedVoterAccessDecisionManager"
+                   authentication-manager-ref="guiAuthenticationManager">
+        <security:http-basic/>
+        <security:intercept-url pattern='/**' access='IS_AUTHENTICATED_FULLY'/>
+    </security:http-->
+
 
     <security:http entry-point-ref="guiAuthenticationEntryPoint"
                    access-decision-manager-ref="authenticatedVoterAccessDecisionManager"
