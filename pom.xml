@@ -455,6 +455,11 @@
                 <version>${spring.security.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-web</artifactId>
+                <version>${spring.security.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.version}</version>
@@ -622,9 +627,9 @@
             </snapshots>
         </repository>
         <repository>
-            <id>ibiblio</id>
-            <name>ibiblio</name>
-            <url>http://mirrors.ibiblio.org/pub/mirrors/maven2</url>
+            <id>maven-central</id>
+            <name>Maven Central Repository</name>
+            <url>https://repo1.maven.org/maven2</url>
             <snapshots>
                 <enabled>false</enabled>
                 <checksumPolicy>fail</checksumPolicy>
