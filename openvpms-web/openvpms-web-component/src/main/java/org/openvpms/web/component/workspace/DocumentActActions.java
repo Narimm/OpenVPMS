@@ -13,6 +13,7 @@
  *
  * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.workspace;
 
 import nextapp.echo2.app.ApplicationInstance;
@@ -28,7 +29,9 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.echo.servlet.ServletHelper;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.webdav.milton.DocumentSessionManager;
 import org.openvpms.web.webdav.resource.EditableDocuments;
+import org.openvpms.web.webdav.session.Session;
 
 
 /**
@@ -97,7 +100,9 @@ public class DocumentActActions extends ActActions<DocumentAct> {
      */
     public void externalEdit(DocumentAct act) {
         if (canExternalEdit(act)) {
-            String documentURL = ServletHelper.getContextURL() + "/document/" + act.getId() + "/" + act.getFileName();
+            DocumentSessionManager sessions = ServiceHelper.getBean(DocumentSessionManager.class);
+            Session session = sessions.create(act);
+            String documentURL = ServletHelper.getContextURL() + "/document" + session.getPath();
             String url = ServletHelper.getRedirectURI("externaledit?") + documentURL;
             ApplicationInstance.getActive().enqueueCommand(new BrowserOpenWindowCommand(url, "", ""));
         }

@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.web.webdav.milton;
 
 import io.milton.config.HttpManagerBuilder;
@@ -6,9 +22,9 @@ import io.milton.http.values.SupportedLocksValueWriter;
 import io.milton.http.values.ValueWriter;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.webdav.resource.EditableDocuments;
 import org.openvpms.web.webdav.resource.ResourceLockManager;
 import org.openvpms.web.webdav.resource.WebDAVResourceFactory;
+import org.openvpms.web.webdav.session.SessionManager;
 
 import javax.servlet.ServletContext;
 import java.util.List;
@@ -19,6 +35,11 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class HttpManagerFactory {
+
+    /**
+     * The sessions.
+     */
+    private final SessionManager sessions;
 
     /**
      * The archetype service.
@@ -36,24 +57,19 @@ public class HttpManagerFactory {
     private final ResourceLockManager lockManager;
 
     /**
-     * The document archetypes that may be edited.
-     */
-    private final EditableDocuments documents;
-
-    /**
      * Constructs a {@link HttpManagerFactory}.
      *
+     * @param sessions    the session manager
      * @param service     the archetype service
      * @param handlers    the document handlers
      * @param lockManager the WebDAV lock manager
-     * @param documents   the document archetypes that may be edited
      */
-    public HttpManagerFactory(IArchetypeService service, DocumentHandlers handlers, ResourceLockManager lockManager,
-                              EditableDocuments documents) {
+    public HttpManagerFactory(SessionManager sessions, IArchetypeService service, DocumentHandlers handlers,
+                              ResourceLockManager lockManager) {
+        this.sessions = sessions;
         this.service = service;
         this.handlers = handlers;
         this.lockManager = lockManager;
-        this.documents = documents;
     }
 
     /**
@@ -71,8 +87,9 @@ public class HttpManagerFactory {
     private class Builder extends HttpManagerBuilder {
 
         public Builder(String contextPath) {
+            setEnableCookieAuth(false);   // cookies aren't supported by OpenOffice
             setEnabledJson(false);
-            setResourceFactory(new WebDAVResourceFactory(contextPath, service, handlers, lockManager, documents));
+            setResourceFactory(new WebDAVResourceFactory(contextPath, sessions, service, handlers, lockManager));
             seteTagGenerator(new IMObjectResourceETagGenerator());
 
             // insert the various lock property writers. These need to go before the ToStringValueWriter which is the

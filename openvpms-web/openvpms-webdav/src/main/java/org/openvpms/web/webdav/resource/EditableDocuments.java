@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.web.webdav.resource;
 
 import org.apache.commons.io.FilenameUtils;
@@ -8,6 +24,9 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.report.DocFormats;
 
 import java.util.HashSet;
@@ -19,6 +38,11 @@ import java.util.Set;
  * @author Tim Anderson
  */
 public class EditableDocuments {
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
 
     /**
      * The document archetypes that may be edited.
@@ -33,10 +57,11 @@ public class EditableDocuments {
     /**
      * Constructs a {@link EditableDocuments}.
      *
-     * @param service    the archetype short names
+     * @param service    the archetype service
      * @param archetypes the archetype short names
      */
     public EditableDocuments(IArchetypeService service, String[] archetypes) {
+        this.service = service;
         this.shortNames = getShortNames(archetypes, service);
     }
 
@@ -66,6 +91,19 @@ public class EditableDocuments {
                    || DocFormats.DOCX_TYPE.equals(act.getMimeType());
         }
         return false;
+    }
+
+    /**
+     * Returns an editable document act.
+     *
+     * @param id the act identifier
+     * @return the corresponding act, or {@code null} if it does not exist or is not editable
+     */
+    public DocumentAct getDocumentAct(long id) {
+        ArchetypeQuery query = new ArchetypeQuery(shortNames, false, true);
+        query.add(Constraints.eq("id", id));
+        IMObjectQueryIterator<DocumentAct> iterator = new IMObjectQueryIterator<>(service, query);
+        return (iterator.hasNext()) ? iterator.next() : null;
     }
 
     /**

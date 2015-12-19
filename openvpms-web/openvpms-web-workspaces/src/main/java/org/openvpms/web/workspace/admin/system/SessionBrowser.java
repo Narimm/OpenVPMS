@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.web.workspace.admin.system;
 
 import nextapp.echo2.app.Component;
@@ -171,7 +187,8 @@ public class SessionBrowser extends AbstractTabComponent {
             set = new FilteredResultSet<SessionMonitor.Session>(set) {
                 @Override
                 protected void filter(SessionMonitor.Session object, List<SessionMonitor.Session> results) {
-                    if (contains(object.getName(), query) || contains(object.getHost(), query)) {
+                    if (contains(object.getName(), query) || contains(object.getHost(), query)
+                        || contains(UserHelper.getName(object.getName()), query)) {
                         results.add(object);
                     }
                 }
@@ -181,13 +198,13 @@ public class SessionBrowser extends AbstractTabComponent {
                 }
             };
         }
-        set.sort(new SortConstraint[]{SessionTableModel.getSortOnName(true)});
+        set.sort(new SortConstraint[]{SessionTableModel.getSortOnLogin(true)});
         return set;
     }
 
     /**
      * Reloads the log4j configuration file.
-     * <p>
+     * <p/>
      * Note that this is only here for lack of another place to put it.
      */
     private void onReloadLog() {
@@ -202,31 +219,37 @@ public class SessionBrowser extends AbstractTabComponent {
     private static class SessionTableModel extends AbstractIMTableModel<SessionMonitor.Session> {
 
         /**
+         * The login name column index.
+         */
+        private static final int LOGIN_INDEX = 0;
+
+        /**
          * The user column index.
          */
-        private static final int USER_INDEX = 0;
+        private static final int USER_INDEX = 1;
 
         /**
          * The host column index.
          */
-        private static final int HOST_INDEX = 1;
+        private static final int HOST_INDEX = 2;
 
         /**
          * The logged in date/time index.
          */
-        private static final int LOGGED_IN_INDEX = 2;
+        private static final int LOGGED_IN_INDEX = 3;
 
         /**
          * The last accessed date/time index.
          */
-        private static final int LAST_ACCESSED_INDEX = 3;
+        private static final int LAST_ACCESSED_INDEX = 4;
 
         /**
          * Constructs a {@link SessionTableModel}.
          */
         public SessionTableModel() {
             TableColumnModel model = new DefaultTableColumnModel();
-            model.addColumn(createTableColumn(USER_INDEX, "admin.system.session.user"));
+            model.addColumn(createTableColumn(LOGIN_INDEX, "admin.system.login"));
+            model.addColumn(createTableColumn(USER_INDEX, "admin.system.user"));
             model.addColumn(createTableColumn(HOST_INDEX, "admin.system.session.host"));
             model.addColumn(createTableColumn(LOGGED_IN_INDEX, "admin.system.session.loggedin"));
             model.addColumn(createTableColumn(LAST_ACCESSED_INDEX, "admin.system.session.lastaccessed"));
@@ -245,6 +268,9 @@ public class SessionBrowser extends AbstractTabComponent {
         protected Object getValue(SessionMonitor.Session object, TableColumn column, int row) {
             Object result = null;
             switch (column.getModelIndex()) {
+                case LOGIN_INDEX:
+                    result = object.getName();
+                    break;
                 case USER_INDEX:
                     result = UserHelper.getName(object.getName());
                     break;
@@ -272,8 +298,17 @@ public class SessionBrowser extends AbstractTabComponent {
         public SortConstraint[] getSortConstraints(int column, boolean ascending) {
             SortConstraint sort = null;
             switch (column) {
+                case LOGIN_INDEX:
+                    sort = getSortOnLogin(ascending);
+                    break;
                 case USER_INDEX:
-                    sort = getSortOnName(ascending);
+                    sort = new VirtualNodeSortConstraint("user", ascending, new Transformer() {
+                        @Override
+                        public Object transform(Object input) {
+                            String login = ((SessionMonitor.Session) input).getName();
+                            return UserHelper.getName(login);
+                        }
+                    });
                     break;
                 case HOST_INDEX:
                     sort = new VirtualNodeSortConstraint("host", ascending, new Transformer() {
@@ -287,7 +322,7 @@ public class SessionBrowser extends AbstractTabComponent {
             return (sort != null) ? new SortConstraint[]{sort} : null;
         }
 
-        public static SortConstraint getSortOnName(boolean ascending) {
+        public static SortConstraint getSortOnLogin(boolean ascending) {
             SortConstraint sort;
             sort = new VirtualNodeSortConstraint("name", ascending, new Transformer() {
                 @Override

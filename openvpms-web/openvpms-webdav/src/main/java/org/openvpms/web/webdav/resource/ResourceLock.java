@@ -1,7 +1,24 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.web.webdav.resource;
 
 import io.milton.http.LockToken;
 import io.milton.resource.LockableResource;
+import org.joda.time.DateTime;
 
 /**
  * Represents a lock on a resource.
@@ -78,5 +95,30 @@ public class ResourceLock {
      */
     public String getUser() {
         return user;
+    }
+
+    /**
+     * Determines if the lock has expired.
+     *
+     * @return {@code true} if the lock has expired
+     */
+    public boolean isExpired() {
+        return token.isExpired();
+    }
+
+    /**
+     * Returns the time when a lock expires.
+     *
+     * @return the time, in milliseconds
+     */
+    public long getExpirationTime() {
+        long result;
+        Long seconds = token.timeout.getSeconds();
+        if (seconds != null) {
+            result = new DateTime(token.getFrom()).plusSeconds(seconds.intValue()).getMillis();
+        } else {
+            result = Long.MAX_VALUE;
+        }
+        return result;
     }
 }

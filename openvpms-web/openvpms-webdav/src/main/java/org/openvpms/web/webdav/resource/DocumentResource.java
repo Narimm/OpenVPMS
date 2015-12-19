@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.web.webdav.resource;
 
 import io.milton.common.ContentTypeUtils;
@@ -29,6 +45,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
+import org.openvpms.web.webdav.session.Session;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,13 +55,18 @@ import java.util.Map;
 
 /**
  * Represents a WebDAV document that may be retrieved and replaced.
- * <p>
+ * <p/>
  * Note that this doesn't handle any authentication. It assumes that authentication is handled before any operations
  * are performed.
  *
  * @author Tim Anderson
  */
 class DocumentResource implements GetableResource, ReplaceableResource, PropFindableResource, LockableResource, IMObjectResource {
+
+    /**
+     * The session.
+     */
+    private final Session session;
 
     /**
      * The document name.
@@ -77,33 +99,28 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
     private State cachedState;
 
     /**
-     * Date used to base modification timestamps on, required due to lack of modified date on the document
-     */
-    private final Date baseDate;
-
-    /**
      * Constructs a {@link DocumentResource}.
      *
      * @param name        the document name
+     * @param session     the session
      * @param reference   the document reference
      * @param service     the archetype service
      * @param handlers    the document handlers
      * @param lockManager the lock manager
-     * @param baseDate    date used to base modification timestamps on, due to lack of modified date on the document
      */
-    public DocumentResource(String name, IMObjectReference reference, IArchetypeService service,
-                            DocumentHandlers handlers, LockManager lockManager, Date baseDate) {
+    public DocumentResource(String name, Session session, IMObjectReference reference, IArchetypeService service,
+                            DocumentHandlers handlers, LockManager lockManager) {
         this.name = name;
+        this.session = session;
         this.reference = reference;
         this.handlers = handlers;
         this.service = service;
         this.lockManager = lockManager;
-        this.baseDate = baseDate;
     }
 
     /**
      * Returning a null value is allowed, and disables the ETag field.
-     * <p>
+     * <p/>
      * If a unique id is returned it will be combined with the modified date (if available)
      * to produce an ETag which identifies this version of this resource.
      *
@@ -117,7 +134,7 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
 
     /**
      * Note that this name MUST be consistent with URL resolution in your ResourceFactory
-     * <p>
+     * <p/>
      * If they aren't consistent Milton will generate a different href in PropFind
      * responses then what clients have request and this will cause either an
      * error or no resources to be displayed
@@ -131,7 +148,7 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
 
     /**
      * Check the given credentials, and return a relevant object if accepted.
-     * <p>
+     * <p/>
      * Returning null indicates credentials were not accepted.
      *
      * @param user     the user name provided by the user's agent
@@ -146,12 +163,12 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
     /**
      * Return true if the current user is permitted to access this resource using
      * the specified method.
-     * <p>
+     * <p/>
      * Note that the current user may be determined by the Auth associated with
      * the request, or by a separate, application specific, login mechanism such
      * as a session variable or cookie based system. This method should correctly
      * interpret all such mechanisms
-     * <p>
+     * <p/>
      * The auth given as a parameter will be null if authentication failed. The
      * auth associated with the request will still exist
      */
@@ -162,7 +179,7 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
 
     /**
      * Return the security realm for this resource. Just any string identifier.
-     * <p>
+     * <p/>
      * This will be used to construct authorization challenges and will be used
      * on Digest authentication to construct the expected response.
      */
@@ -176,13 +193,13 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
      * The date and time that this resource, or any part of this resource, was last
      * modified. For dynamic rendered resources this should consider everything
      * which will influence its output.
-     * <p>
+     * <p/>
      * Resources for which no such date can be calculated should return null.
-     * <p>
+     * <p/>
      * This field, if not null, is used to reply to conditional GETs (ie GET with
      * if-modified-since). If the modified-since argument is later then the modified
      * date then we return a 304 - Not Modified.
-     * <p>
+     * <p/>
      * Although nulls are explicitly allowed by milton, certain client applications
      * might require modified dates for file browsing. For example, the command line
      * client on Vista doesn't work properly if this is null.
@@ -195,9 +212,9 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
     /**
      * Determine if a redirect is required for this request, and if so return the URL to redirect to.
      * May be absolute or relative.
-     * <p>
+     * <p/>
      * Called after authorization check but before any method specific processing
-     * <p>
+     * <p/>
      * Return null for no redirect
      */
     public String checkRedirect(Request request) {
@@ -209,14 +226,14 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
      * should assume that bytes are being physically transmitted and that headers
      * have already been committed, although this might not be the case with
      * all web containers.
-     * <p>
+     * <p/>
      * This method will be used to serve GET requests, and also to generate
      * content following POST requests (if they have not redirected)
-     * <p>
+     * <p/>
      * The Range argument is not-null for partial content requests. In this case
      * implementations should (but are not required) to only send the data
      * range requested.
-     * <p>
+     * <p/>
      * The contentType argument is that which was resolved by negotiation in
      * the getContentType method. HTTP allows a given resource to have multiple
      * representations on the same URL. For example, a data series could be retrieved
@@ -254,7 +271,7 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
 
     /**
      * How many seconds to allow the content to be cached for, or null if caching is not allowed
-     * <p>
+     * <p/>
      * The provided auth object allows this method to determine an appropriate caching
      * time depending on authenticated context. For example, in a CMS in might
      * be appropriate to have a short expiry time for logged in users who might
@@ -267,21 +284,21 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
     /**
      * Given a comma separated listed of preferred content types acceptable for a client,
      * return one content type which is the best.
-     * <p>
+     * <p/>
      * Returns the most preferred  MIME type. E.g. text/html, image/jpeg, etc
-     * <p>
+     * <p/>
      * Must be IANA registered
-     * <p>
+     * <p/>
      * accepts is the accepts header. Eg: Accept: text/*, text/html, text/html;level=1
-     * <p>
+     * <p/>
      * See - http://www.iana.org/assignments/media-types/ for a list of content types
      * See - http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html for details about the accept header
-     * <p>
+     * <p/>
      * See here for a fun discussion of using content type and accepts for XHTML -
      * http://stackoverflow.com/questions/348736/is-writing-self-closing-tags-for-elements-not-traditionally-empty-bad-practice
-     * <p>
+     * <p/>
      * If you can't handle accepts interpretation, just return a single content type - E.g. text/html
-     * <p>
+     * <p/>
      * But typically you should do something like this:
      * <PRE>
      * String mime = ContentTypeUtils.findContentTypes( this.file );
@@ -310,8 +327,8 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
      * @param length the length, or {@code null} if the length is unknown
      * @throws BadRequestException if the document no longer exists
      */
-    public void replaceContent(InputStream in, Long length) throws BadRequestException {
-        Document document = getDocument();
+    public void replaceContent(final InputStream in, final Long length) throws BadRequestException {
+        final Document document = getDocument();
         if (document == null) {
             // ConflictException (HTTP 409) should only be used if a subsequent request would succeed
             throw new BadRequestException("Document " + reference + " no longer exists");
@@ -329,7 +346,7 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
     }
 
     public Date getCreateDate() {
-        return baseDate;
+        return session.getCreated();
     }
 
     /**
@@ -426,14 +443,14 @@ class DocumentResource implements GetableResource, ReplaceableResource, PropFind
 
     /**
      * Updates the document modified date.
-     * <p>
+     * <p/>
      * Note that this simply adds {@code version} seconds to the modified state.
      */
     private void updateModified() {
         if (cachedState.version == 0) {
-            cachedState.modified = baseDate;
+            cachedState.modified = session.getCreated();
         } else {
-            cachedState.modified = new DateTime(baseDate).plusSeconds((int) cachedState.version).toDate();
+            cachedState.modified = new DateTime(session.getCreated()).plusSeconds((int) cachedState.version).toDate();
         }
     }
 
