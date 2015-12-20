@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemDocumentLinker;
 import org.openvpms.archetype.rules.finance.tax.TaxRuleException;
 import org.openvpms.archetype.rules.math.MathRules;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.stock.StockRules;
@@ -291,8 +292,8 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         investigations = createCollectionEditor(INVESTIGATIONS, act);
         reminders = createCollectionEditor(REMINDERS, act);
 
-        rules = ServiceHelper.getBean(StockRules.class);
-        reminderRules = ServiceHelper.getBean(ReminderRules.class);
+        rules = new StockRules(getCachingService());
+        reminderRules = new ReminderRules(getCachingService(), ServiceHelper.getBean(PatientRules.class));
         quantityListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 onQuantityChanged();

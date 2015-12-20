@@ -34,7 +34,6 @@ import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.PagedIMTable;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
@@ -287,7 +286,7 @@ class BatchReferenceEditor extends AbstractPropertyEditor implements IMObjectRef
         IMObjectReference reference = (IMObjectReference) property.getValue();
         Entity object = null;
         if (reference != null) {
-            object = (Entity) IMObjectHelper.getObject(reference, property.getArchetypeRange(), context.getContext());
+            object = (Entity) context.getCache().get(reference);
         }
         return object;
     }

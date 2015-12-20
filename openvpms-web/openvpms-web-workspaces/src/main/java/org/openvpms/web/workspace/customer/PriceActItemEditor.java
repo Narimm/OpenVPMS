@@ -27,8 +27,11 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.CachingReadOnlyArchetypeService;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -103,6 +106,11 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      */
     private final CustomerTaxRules taxRules;
 
+    /**
+     * Caching read-only archetype service.
+     */
+    private final IArchetypeService cachingService;
+
 
     /**
      * Constructs a {@link PriceActItemEditor}.
@@ -115,10 +123,11 @@ public abstract class PriceActItemEditor extends ActItemEditor {
         super(act, parent, context);
 
         practice = context.getContext().getPractice();
-        priceRules = ServiceHelper.getBean(ProductPriceRules.class);
-        taxRules = new CustomerTaxRules(practice, ServiceHelper.getArchetypeService(),
-                                        ServiceHelper.getLookupService());
-        discountRules = ServiceHelper.getBean(DiscountRules.class);
+        cachingService = new CachingReadOnlyArchetypeService(context.getCache(), ServiceHelper.getArchetypeService());
+        ILookupService lookups = ServiceHelper.getLookupService();
+        priceRules = new ProductPriceRules(cachingService, lookups);
+        taxRules = new CustomerTaxRules(practice, cachingService, lookups);
+        discountRules = new DiscountRules(cachingService, lookups);
         currency = ServiceHelper.getBean(PracticeRules.class).getCurrency(practice);
 
         Product product = getProduct();
@@ -127,7 +136,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
 
         Property fixedPrice = getProperty("fixedPrice");
 
-        fixedEditor = new FixedPriceEditor(fixedPrice, getPricingGroup(), currency);
+        fixedEditor = new FixedPriceEditor(fixedPrice, getPricingGroup(), currency, priceRules);
         fixedEditor.setProduct(product, serviceRatio);
     }
 
@@ -486,6 +495,15 @@ public abstract class PriceActItemEditor extends ActItemEditor {
                 group.setFocus();
             }
         }
+    }
+
+    /**
+     * Returns a read-only archetype service, backed by a cache.
+     *
+     * @return a caching archetype service
+     */
+    protected IArchetypeService getCachingService() {
+        return cachingService;
     }
 
     /**
