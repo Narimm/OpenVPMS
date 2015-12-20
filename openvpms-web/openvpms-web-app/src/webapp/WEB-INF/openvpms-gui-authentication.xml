@@ -88,10 +88,10 @@
 
     <!-- bean id="skipLoginFilter" class="org.openvpms.web.servlet.SkipLoginFilter"/--> <!-- TODO -->
 
-    <bean name="guiAuthenticationManager" class="org.springframework.security.authentication.ProviderManager">
+    <bean id="guiAuthenticationManager" class="org.springframework.security.authentication.ProviderManager">
         <constructor-arg>
             <list>
-                <ref local="guiAuthenticationProvider"/>
+                <ref bean="guiAuthenticationProvider"/>
             </list>
         </constructor-arg>
     </bean>

@@ -44,7 +44,6 @@ import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
-import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -94,11 +93,6 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     private FocusGroup focus;
 
     /**
-     * Price rules, used to select fixed prices associated with the product.
-     */
-    private ProductPriceRules rules;
-
-    /**
      * The selected fixed price.
      */
     private ProductPrice price;
@@ -114,6 +108,11 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     private final Currency currency;
 
     /**
+     * Price rules, used to select fixed prices associated with the product.
+     */
+    private final ProductPriceRules rules;
+
+    /**
      * The service ratio.
      */
     private BigDecimal serviceRatio = ONE;
@@ -124,11 +123,13 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
      * @param property     the fixed price property
      * @param pricingGroup the pricing group. May be {@code null}
      * @param currency     the practice currency, used to round prices
+     * @param rules        the product price rules
      */
-    public FixedPriceEditor(Property property, Lookup pricingGroup, Currency currency) {
+    public FixedPriceEditor(Property property, Lookup pricingGroup, Currency currency, ProductPriceRules rules) {
         super(property);
         this.pricingGroup = new PricingGroup(pricingGroup);
         this.currency = currency;
+        this.rules = rules;
 
         date = new Date();
 
@@ -235,9 +236,6 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
         Component component = field;
         Component table = null;
         if (product != null) {
-            if (rules == null) {
-                rules = ServiceHelper.getBean(ProductPriceRules.class);
-            }
             List<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, date, pricingGroup);
             if (!prices.isEmpty()) {
                 table = createPriceTable(prices).getComponent();

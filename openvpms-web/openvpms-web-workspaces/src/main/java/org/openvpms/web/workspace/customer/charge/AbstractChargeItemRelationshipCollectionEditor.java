@@ -23,6 +23,8 @@ import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.CachingReadOnlyArchetypeService;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.UserPreferences;
 import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.DefaultCollectionResultSetFactory;
@@ -77,8 +79,10 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
     public AbstractChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context,
                                                           CollectionResultSetFactory factory) {
         super(property, act, context, factory);
-        doseManager = new DoseManager(ServiceHelper.getBean(PatientRules.class),
-                                      ServiceHelper.getBean(ProductRules.class));
+        IArchetypeService service = new CachingReadOnlyArchetypeService(context.getCache(),
+                                                                        ServiceHelper.getArchetypeService());
+        ProductRules rules = new ProductRules(service);
+        doseManager = new DoseManager(ServiceHelper.getBean(PatientRules.class), rules);
     }
 
     /**
