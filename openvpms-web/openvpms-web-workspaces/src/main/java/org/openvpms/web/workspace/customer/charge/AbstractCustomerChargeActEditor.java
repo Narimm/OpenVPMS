@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -623,8 +623,8 @@ public abstract class AbstractCustomerChargeActEditor extends FinancialActEditor
         ActRelationshipCollectionEditor items = getItems();
         List<Act> reminders = new ArrayList<>();
         for (IMObjectEditor editor : items.getEditors()) {
-            if (editor instanceof DefaultCustomerChargeActItemEditor) {
-                DefaultCustomerChargeActItemEditor charge = (DefaultCustomerChargeActItemEditor) editor;
+            if (editor instanceof CustomerChargeActItemEditor) {
+                CustomerChargeActItemEditor charge = (CustomerChargeActItemEditor) editor;
                 for (Act reminder : charge.getReminders()) {
                     if (reminder.isNew()) {
                         reminders.add(reminder);
