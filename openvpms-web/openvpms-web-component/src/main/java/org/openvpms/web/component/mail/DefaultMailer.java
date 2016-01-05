@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
 
+import org.openvpms.web.component.service.CurrentLocationMailService;
 import org.openvpms.web.system.ServiceHelper;
 
 
@@ -32,7 +33,7 @@ public class DefaultMailer extends AbstractMailer {
      * @param context the mail context
      */
     public DefaultMailer(MailContext context) {
-        super(context, ServiceHelper.getMailSender(), ServiceHelper.getDocumentHandlers());
+        super(context, ServiceHelper.getBean(CurrentLocationMailService.class), ServiceHelper.getDocumentHandlers());
     }
 
 }

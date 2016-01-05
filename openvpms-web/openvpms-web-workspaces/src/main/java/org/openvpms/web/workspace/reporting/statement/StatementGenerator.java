@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -33,6 +33,7 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.component.service.PracticeMailService;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -168,8 +169,8 @@ class StatementGenerator extends AbstractStatementGenerator {
             processor.addListener(printer);
             printer.setUpdatePrinted(false);
         } else {
-            StatementEmailProcessor mailer = new StatementEmailProcessor(ServiceHelper.getMailSender(), practice,
-                                                                         context);
+            StatementEmailProcessor mailer = new StatementEmailProcessor(
+                    ServiceHelper.getBean(PracticeMailService.class), practice, context);
             processor.addListener(new StatementDelegator(printer, mailer));
         }
     }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.sms;
@@ -47,6 +47,7 @@ import org.openvpms.web.component.property.ModifiableListeners;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
+import org.openvpms.web.component.service.PracticeMailService;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -304,8 +305,8 @@ class EmailSMSSampler extends AbstractModifiable {
         if (isValid()) {
             MailTemplate template = templateFactory.getTemplate(config);
             MailMessageFactory factory = new TemplatedMailMessageFactory(template);
-            MailConnectionFactory connectionFactory = new MailConnectionFactory(ServiceHelper.getMailSender(),
-                                                                                factory);
+            MailConnectionFactory connectionFactory = new MailConnectionFactory(
+                    ServiceHelper.getBean(PracticeMailService.class), factory);
             Connection connection = connectionFactory.createConnection();
             connection.send(sms.getPhone(), sms.getMessage());
         }
