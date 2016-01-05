@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <jnlp spec="1.6+" codebase="$$codebase">
@@ -61,7 +61,7 @@
         <jar href="org.eclipse.swt.cocoa.macosx.x86_64-${swt.version}.jar"/>
     </resources>
 
-    <resources os="Mac OS X" arch="x86">
+    <resources os="Mac OS X" arch="i386">
         <jar href="org.eclipse.swt.cocoa.macosx-${swt.version}.jar"/>
     </resources>
 
