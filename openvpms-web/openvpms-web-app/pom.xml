@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -280,9 +280,9 @@
             <scope>provided</scope> <!-- copied to the webstart dir -->
         </dependency>
         <dependency>
-            <groupId>org.codehaus.mojo.webstart</groupId>
+            <groupId>org.codehaus.mojo</groupId>
             <artifactId>webstart-jnlp-servlet</artifactId>
-            <version>1.0-6.0.02_ea_b02.2</version>
+            <version>1.0-beta-6</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
