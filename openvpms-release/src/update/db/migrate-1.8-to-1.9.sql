@@ -71,8 +71,8 @@ INSERT INTO ideal_critical_qty (id, idealQty, criticalQty)
     JOIN entity_relationship_details idealQty
       ON r.entity_relationship_id = idealQty.entity_relationship_id
          AND idealQty.name = 'idealQty'
-         AND idealQty.value < criticalQty.value
-  WHERE r.arch_short_name = 'entityRelationship.productStockLocation';
+  WHERE r.arch_short_name = 'entityRelationship.productStockLocation'
+        AND cast(idealQty.value AS DECIMAL(18, 3)) < cast(criticalQty.value AS DECIMAL(18, 3));
 
 UPDATE entity_relationships r
   JOIN ideal_critical_qty i
