@@ -50,12 +50,12 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-sms</artifactId>
-            <version>${pom.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-web-app</artifactId>
-            <version>${pom.version}</version>
+            <version>${project.version}</version>
             <type>war</type>
         </dependency>
         <dependency>
@@ -65,7 +65,7 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-etl-plugin</artifactId>
-            <version>${pom.version}</version>
+            <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
@@ -97,14 +97,14 @@
                         <artifactItem>
                             <groupId>org.openvpms</groupId>
                             <artifactId>openvpms-archetypes</artifactId>
-                            <version>${pom.version}</version>
+                            <version>${project.version}</version>
                             <outputDirectory>target/archetypes</outputDirectory>
                             <includes>org/**/*.adl,org/**/*.xml</includes>
                         </artifactItem>
                         <artifactItem>
                             <groupId>org.openvpms</groupId>
                             <artifactId>openvpms-sms</artifactId>
-                            <version>${pom.version}</version>
+                            <version>${project.version}</version>
                             <outputDirectory>target/archetypes</outputDirectory>
                             <includes>org/**/*.adl</includes>
                         </artifactItem>
@@ -203,7 +203,7 @@
                 <!-- load archetypes -->
                 <groupId>org.openvpms</groupId>
                 <artifactId>openvpms-archetype-maven-plugin</artifactId>
-                <version>${pom.version}</version>
+                <version>${project.version}</version>
                 <configuration>
                     <dir>target/archetypes/org/openvpms</dir>
                     <assertionTypes>target/archetypes/org/openvpms/archetype/assertionTypes.xml</assertionTypes>
