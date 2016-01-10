@@ -1,4 +1,4 @@
-OpenVPMS ${pom.version} (${buildNumber}) Release
+OpenVPMS ${project.version} (${buildNumber}) Release
 ===============================================================================
 
 For installation instructions see:
