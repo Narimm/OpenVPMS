@@ -245,7 +245,7 @@ INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, 
   WHERE NOT exists(
       SELECT *
       FROM entity_links l
-      WHERE l.source_id = t.location_id and l.arch_short_name = 'entityLink.organisationMailServer');
+      WHERE l.source_id = t.location_id AND l.arch_short_name = 'entityLink.organisationMailServer');
 
 #
 # Link the practice to the first mail server
@@ -383,7 +383,35 @@ INSERT INTO entity_details (entity_id, name, type, value)
     'boolean',
     'true'
   FROM entities e
-  WHERE e.arch_short_name in ('entity.HL7Mapping', 'entity.HL7MappingCubex', 'entity.HL7MappingIDEXX') AND NOT exists(SELECT *
-                                                                                   FROM entity_details d
-                                                                                   WHERE d.entity_id = e.entity_id AND
-                                                                                         d.name = 'sendADT');
+  WHERE e.arch_short_name IN ('entity.HL7Mapping', 'entity.HL7MappingCubex', 'entity.HL7MappingIDEXX') AND
+        NOT exists(SELECT *
+                   FROM entity_details d
+                   WHERE d.entity_id = e.entity_id AND
+                         d.name = 'sendADT');
+#
+# Update entity.productDose to include a quantity node for OVPMS-1677 Add dose number to product dosing
+#
+# This only applies to sites that have installed a pre-release version of OpenVPMS 1.9
+#
+INSERT INTO entity_details (entity_id, name, type, value)
+  SELECT
+    e.entity_id,
+    'quantity',
+    'big-decimal',
+    '1.00'
+  FROM entities e
+  WHERE e.arch_short_name = 'entity.productDose' AND
+        NOT exists(SELECT *
+                   FROM entity_details d
+                   WHERE d.entity_id = e.entity_id AND d.name = 'quantity');
+
+#
+# Rename roundType -> roundTo as per the entity.productDose archetype
+#
+UPDATE entity_details d
+  JOIN entities e
+    ON d.entity_id = e.entity_id
+       AND e.arch_short_name = "entity.productDose"
+       AND d.name = "roundType"
+SET d.name = "roundTo";
+

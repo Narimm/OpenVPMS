@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -148,9 +148,12 @@ public class ProductRules {
             if (match != null) {
                 BigDecimal converted = weight.convert(matchUnits);
                 BigDecimal rate = match.getBigDecimal("rate", BigDecimal.ZERO);
+                BigDecimal quantity = match.getBigDecimal("quantity", BigDecimal.ONE);
                 int places = match.getInt("roundTo");
-                if (!isZero(concentration) && !isZero(rate)) {
-                    result = converted.multiply(rate).divide(concentration, places, RoundingMode.HALF_UP);
+                if (!isZero(concentration) && !isZero(rate) && !isZero(quantity)) {
+                    // math here is (rate (per weight unit) * concentration (per dispensing unit)) * quantity
+                    result = converted.multiply(rate).divide(concentration, places, RoundingMode.HALF_UP)
+                            .multiply(quantity);
                 }
             }
         }

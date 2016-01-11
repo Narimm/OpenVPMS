@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -54,7 +54,13 @@
                 <errorMessage>Value must be > 0.0</errorMessage>
             </assertion>
         </node>
-        <node name="roundTo" path="/details/roundType" type="java.lang.Integer" minCardinality="1" defaultValue="2">
+        <node name="quantity" path="/details/quantity" type="java.math.BigDecimal" minCardinality="1"
+              defaultValue="1">
+            <assertion name="positive">
+                <errorMessage>Value must be > 0.0</errorMessage>
+            </assertion>
+        </node>
+        <node name="roundTo" path="/details/roundTo" type="java.lang.Integer" minCardinality="1" defaultValue="2">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="0" value="0"/>

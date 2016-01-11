@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -54,6 +54,11 @@ public class ProductDoseTableModel extends DescriptorTableModel<IMObject> {
      * The rate index.
      */
     private static final int RATE_INDEX = WEIGHT_INDEX + 1;
+
+    /**
+     * The quantity index.
+     */
+    private static final int QUANTITY_INDEX = RATE_INDEX + 1;
 
 
     /**
@@ -118,6 +123,7 @@ public class ProductDoseTableModel extends DescriptorTableModel<IMObject> {
         model.addColumn(createColumn(SPECIES_INDEX, ProductArchetypes.DOSE, "species"));
         model.addColumn(createTableColumn(WEIGHT_INDEX, "product.weight"));
         model.addColumn(new DescriptorTableColumn(RATE_INDEX, "rate", archetypes));
+        model.addColumn(new DescriptorTableColumn(QUANTITY_INDEX, "quantity", archetypes));
         return model;
     }
 
