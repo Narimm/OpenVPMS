@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -311,6 +311,27 @@ public class NodeDescriptorTestCase {
         archetype.getNodeDescriptor("firstName");
         assertEquals("The customer's first name", archetype.getNodeDescriptor("firstName").getDescription());
         assertEquals("The customer's surname", archetype.getNodeDescriptor("lastName").getDescription());
+    }
+
+    /**
+     * Tests derived values.
+     */
+    @Test
+    public void testDerivedValue() {
+        Party party = new Party();
+        party.getDetails().put("firstName", "J");
+        party.getDetails().put("lastName", "Bloggs");
+
+        NodeDescriptor descriptor = new NodeDescriptor();
+        descriptor.setPath("/name");
+        descriptor.setType(String.class.getName());
+        descriptor.setDerived(true);
+        descriptor.setDerivedValue("concat(/details/firstName, ' ',/details/lastName)");
+        assertEquals("J Bloggs", descriptor.getValue(party));
+
+        // verifies that if the derived value is null, getValue() returns null
+        descriptor.setDerivedValue(null);
+        assertNull(descriptor.getValue(party));
     }
 
     /**
