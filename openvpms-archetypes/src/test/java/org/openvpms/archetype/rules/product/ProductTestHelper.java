@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -81,14 +81,16 @@ public class ProductTestHelper {
     /**
      * Creates an <em>entity.productDose</em> rounding to 2 decimal places.
      *
-     * @param species       the species. May be {@code null}
-     * @param minWeight     the minimum weight, inclusive
-     * @param maxWeight     the maximum weight, exclusive
-     * @param rate          the rate
+     * @param species   the species. May be {@code null}
+     * @param minWeight the minimum weight, inclusive
+     * @param maxWeight the maximum weight, exclusive
+     * @param rate      the rate
+     * @param quantity  the quantity
      * @return a new dose
      */
-    public static Entity createDose(Lookup species, BigDecimal minWeight, BigDecimal maxWeight, BigDecimal rate) {
-        return createDose(species, minWeight, maxWeight, rate, 2);
+    public static Entity createDose(Lookup species, BigDecimal minWeight, BigDecimal maxWeight, BigDecimal rate,
+                                    BigDecimal quantity) {
+        return createDose(species, minWeight, maxWeight, rate, quantity, 2);
     }
 
     /**
@@ -98,11 +100,11 @@ public class ProductTestHelper {
      * @param minWeight the minimum weight, inclusive
      * @param maxWeight the maximum weight, exclusive
      * @param rate      the rate
-     * @param roundTo   the no. of decimal places to round to
-     * @return a new dose
+     * @param quantity  the quantity
+     * @param roundTo   the no. of decimal places to round to  @return a new dose
      */
     public static Entity createDose(Lookup species, BigDecimal minWeight, BigDecimal maxWeight, BigDecimal rate,
-                                    int roundTo) {
+                                    BigDecimal quantity, int roundTo) {
         Entity dose = (Entity) TestHelper.create(ProductArchetypes.DOSE);
         IMObjectBean bean = new IMObjectBean(dose);
         if (species != null) {
@@ -111,6 +113,7 @@ public class ProductTestHelper {
         bean.setValue("minWeight", minWeight);
         bean.setValue("maxWeight", maxWeight);
         bean.setValue("rate", rate);
+        bean.setValue("quantity", quantity);
         bean.setValue("roundTo", roundTo);
         return dose;
     }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -404,7 +404,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Product product = createProduct(ProductArchetypes.MEDICATION, fixedCost, fixedPrice, unitCost, unitPrice);
         IMObjectBean bean = new IMObjectBean(product);
         bean.setValue("concentration", BigDecimal.ONE);
-        Entity dose = ProductTestHelper.createDose(null, BigDecimal.ZERO, BigDecimal.TEN, BigDecimal.ONE);
+        Entity dose = ProductTestHelper.createDose(null, BigDecimal.ZERO, BigDecimal.TEN, BigDecimal.ONE,
+                                                   BigDecimal.ONE);
         ProductTestHelper.addDose(product, dose);
 
         PatientTestHelper.createWeight(patient, new Date(), new BigDecimal("4.2"), WeightUnits.KILOGRAMS);
