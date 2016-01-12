@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008-2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -22,10 +22,11 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -34,8 +35,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -173,7 +174,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @return a new order
      */
     protected FinancialAct createOrder(Party supplier, Party stockLocation, FinancialAct... orderItems) {
-        List<Act> toSave = new ArrayList<Act>();
+        List<Act> toSave = new ArrayList<>();
         ActBean bean = createAct(SupplierArchetypes.ORDER, supplier, stockLocation);
         BigDecimal total = BigDecimal.ZERO;
         for (FinancialAct item : orderItems) {
@@ -290,7 +291,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
         ActBean bean = createAct(SupplierArchetypes.DELIVERY);
         BigDecimal amount = BigDecimal.ZERO;
         BigDecimal tax = BigDecimal.ZERO;
-        List<Act> toSave = new ArrayList<Act>();
+        List<Act> toSave = new ArrayList<>();
         toSave.add(bean.getAct());
         for (FinancialAct deliveryItem : deliveryItems) {
             bean.addRelationship(SupplierArchetypes.DELIVERY_ITEM_RELATIONSHIP, deliveryItem);
@@ -522,12 +523,13 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
     protected void checkProductStockLocationRelationship(BigDecimal quantity) {
         product = get(product);
         EntityBean bean = new EntityBean(product);
-        EntityRelationship relationship = bean.getRelationship(stockLocation);
+        List<IMObjectRelationship> values = bean.getValues("stockLocations", RefEquals.getTargetEquals(stockLocation),
+                                                           IMObjectRelationship.class);
         if (quantity == null) {
-            assertNull(relationship);
+            assertTrue(values.isEmpty());
         } else {
-            assertNotNull(relationship);
-            IMObjectBean relBean = new IMObjectBean(relationship);
+            assertEquals(1, values.size());
+            IMObjectBean relBean = new IMObjectBean(values.get(0));
             checkEquals(quantity, relBean.getBigDecimal("quantity"));
         }
     }

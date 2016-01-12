@@ -74,9 +74,9 @@
 	cast(min(ppd.value) as decimal(18,3)) as cost
 from entities e
 join products p on e.entity_id = p.product_id
-join entity_relationships s on s.source_id = e.entity_id
-	and s.arch_short_name = "entityRelationship.productStockLocation"
-join entity_relationship_details d2 on s.entity_relationship_id = d2.entity_relationship_id
+join entity_links s on s.source_id = e.entity_id
+	and s.arch_short_name = "entityLink.productStockLocation"
+join entity_link_details d2 on s.id = d2.id
 	and d2.name = "quantity"
 join entities sl on sl.entity_id = s.target_id
 left join entity_relationships r on e.entity_id = r.target_id

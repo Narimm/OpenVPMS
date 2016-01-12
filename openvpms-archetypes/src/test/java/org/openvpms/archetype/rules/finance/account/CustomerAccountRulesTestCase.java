@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -31,8 +31,8 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -43,7 +43,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -206,7 +206,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     public void testGetBalanceForChargesInvoiceAndPayment() {
         BigDecimal amount = new BigDecimal(100);
         List<FinancialAct> invoice = createChargesInvoice(amount);
-        List<FinancialAct> payment = Arrays.asList(createPayment(amount));
+        List<FinancialAct> payment = Collections.singletonList(createPayment(amount));
         checkCalculateBalanceForSameAmount(invoice, payment);
     }
 
@@ -218,7 +218,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     public void testGetBalanceForChargesCounterAndPayment() {
         BigDecimal amount = new BigDecimal(100);
         List<FinancialAct> counter = createChargesCounter(amount);
-        List<FinancialAct> payment = Arrays.asList(createPayment(amount));
+        List<FinancialAct> payment = Collections.singletonList(createPayment(amount));
         checkCalculateBalanceForSameAmount(counter, payment);
     }
 
@@ -242,8 +242,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     @Test
     public void testGetBalanceForRefundAndPayment() {
         BigDecimal amount = new BigDecimal(100);
-        List<FinancialAct> refund = Arrays.asList(createRefund(amount));
-        List<FinancialAct> payment = Arrays.asList(createPayment(amount));
+        List<FinancialAct> refund = Collections.singletonList(createRefund(amount));
+        List<FinancialAct> payment = Collections.singletonList(createPayment(amount));
         checkCalculateBalanceForSameAmount(refund, payment);
     }
 
@@ -254,8 +254,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     @Test
     public void testGetBalanceForDebitAndCreditAdjust() {
         BigDecimal amount = new BigDecimal(100);
-        List<FinancialAct> debit = Arrays.asList(createDebitAdjust(amount));
-        List<FinancialAct> credit = Arrays.asList(createCreditAdjust(amount));
+        List<FinancialAct> debit = Collections.singletonList(createDebitAdjust(amount));
+        List<FinancialAct> credit = Collections.singletonList(createCreditAdjust(amount));
         checkCalculateBalanceForSameAmount(debit, credit);
     }
 
@@ -266,8 +266,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     @Test
     public void testGetBalanceForInitialBalanceAndBadDebt() {
         BigDecimal amount = new BigDecimal(100);
-        List<FinancialAct> debit = Arrays.asList(createInitialBalance(amount));
-        List<FinancialAct> credit = Arrays.asList(createBadDebt(amount));
+        List<FinancialAct> debit = Collections.singletonList(createInitialBalance(amount));
+        List<FinancialAct> credit = Collections.singletonList(createBadDebt(amount));
         checkCalculateBalanceForSameAmount(debit, credit);
     }
 
@@ -962,7 +962,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         Product product = getProduct();
         ProductTestHelper.addDemographicUpdate(product, "patient.entity", "party:setPatientDesexed(.)");
 
-        EntityRelationship stock = initStockQuantity(new BigDecimal("10"));
+        IMObjectRelationship stock = initStockQuantity(new BigDecimal("10"));
 
         // create the invoice
         List<FinancialAct> invoice1 = createChargesInvoice(new BigDecimal(100));
@@ -983,7 +983,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
                                                            TestHelper.createProduct());
         Act item2 = invoice2.get(1);
 
-        List<IMObject> toSave = new ArrayList<IMObject>();
+        List<IMObject> toSave = new ArrayList<>();
         toSave.addAll(invoice1);
         toSave.add(medication);
         toSave.add(investigation);
@@ -1088,7 +1088,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         ActBean itemBean = new ActBean(item);
         itemBean.addNodeRelationship("reminders", reminder);
         assertEquals(1, item.getSourceActRelationships().size());
-        List<IMObject> toSave = new ArrayList<IMObject>();
+        List<IMObject> toSave = new ArrayList<>();
         toSave.addAll(invoiceActs);
         toSave.add(reminder);
         save(toSave);
@@ -1244,7 +1244,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         BigDecimal total = ZERO;
         List<ActRelationship> allocations = bean.getValues(
                 "allocation", ActRelationship.class);
-        List<FinancialAct> matches = new ArrayList<FinancialAct>();
+        List<FinancialAct> matches = new ArrayList<>();
         for (ActRelationship relationship : allocations) {
             if (act.isCredit()) {
                 assertEquals(act.getObjectReference(),
@@ -1298,7 +1298,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     private void checkReverseCharge(List<FinancialAct> acts, String shortName, String itemShortName) {
         BigDecimal quantity = new BigDecimal("10");
-        EntityRelationship relationship = initStockQuantity(quantity);
+        IMObjectRelationship relationship = initStockQuantity(quantity);
 
         // save the charge
         save(acts);
@@ -1321,9 +1321,9 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * Initialises the quantity for the product and stock location.
      *
      * @param quantity the quantity
-     * @return the <em>entityRelationship.productStockLocation</em> relationship
+     * @return the <em>entityLink.productStockLocation</em> relationship
      */
-    private EntityRelationship initStockQuantity(BigDecimal quantity) {
+    private IMObjectRelationship initStockQuantity(BigDecimal quantity) {
         Product product = get(getProduct());
         Party stockLocation = get(getStockLocation());
         return ProductTestHelper.setStockQuantity(product, stockLocation, quantity);
@@ -1332,10 +1332,10 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     /**
      * Verifies the quantity of stock matches that expected.
      *
-     * @param relationship the <em>entityRelationship.productStockLocation</em>
+     * @param relationship the <em>entityLink.productStockLocation</em>
      * @param expected     the expected quantity
      */
-    private void checkStock(EntityRelationship relationship, BigDecimal expected) {
+    private void checkStock(IMObjectRelationship relationship, BigDecimal expected) {
         relationship = get(relationship);
         assertNotNull(relationship);
         IMObjectBean bean = new IMObjectBean(relationship);

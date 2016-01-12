@@ -20,7 +20,6 @@ import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -253,20 +252,20 @@ public class ProductTestHelper {
      * @param product       the product
      * @param stockLocation the stock location
      * @param quantity      the quantity
-     * @return the <em>entityRelationship.productStockLocation</em> relationship
+     * @return the <em>entityLink.productStockLocation</em> relationship
      */
-    public static EntityRelationship setStockQuantity(Product product, Party stockLocation, BigDecimal quantity) {
+    public static IMObjectRelationship setStockQuantity(Product product, Party stockLocation, BigDecimal quantity) {
         EntityBean bean = new EntityBean(product);
-        List<EntityRelationship> stockLocations = bean.getNodeRelationships("stockLocations");
-        EntityRelationship relationship;
+        List<IMObjectRelationship> stockLocations = bean.getValues("stockLocations", IMObjectRelationship.class);
+        IMObjectRelationship relationship;
         if (stockLocations.isEmpty()) {
-            relationship = bean.addNodeRelationship("stockLocations", stockLocation);
+            relationship = bean.addNodeTarget("stockLocations", stockLocation);
         } else {
             relationship = stockLocations.get(0);
         }
         IMObjectBean relBean = new IMObjectBean(relationship);
         relBean.setValue("quantity", quantity);
-        TestHelper.save(product, stockLocation);
+        save(product);
         return relationship;
     }
 
