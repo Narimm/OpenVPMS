@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -142,7 +142,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
                 case "entityRelationship.worklistDocumentTemplate":
                     checkCreate(shortName, ScheduleTemplateRelationshipEditor.class);
                     break;
-                case "entityRelationship.productStockLocation":
+                case "entityLink.productStockLocation":
                     checkCreate(shortName, ProductStockLocationEditor.class);
                     break;
                 default:

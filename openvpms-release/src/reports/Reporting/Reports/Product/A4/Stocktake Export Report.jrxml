@@ -76,9 +76,9 @@ left join entity_relationships r on e.entity_id = r.target_id and r.arch_short_n
 left join entities pt on r.source_id = pt.entity_id
 left join entity_details d on d.entity_id = e.entity_id and d.name = "sellingUnits"
 left join lookups l on l.code = d.value and l.arch_short_name = "lookup.uom"
-left outer join entity_relationships s on s.source_id = e.entity_id and s.arch_short_name = "entityRelationship.productStockLocation"
-left join entity_relationship_details d2 on s.entity_relationship_id = d2.entity_relationship_id and d2.name = "quantity"
-left join entity_relationship_details d3 on s.entity_relationship_id = d3.entity_relationship_id and d3.name = "section"
+left outer join entity_links s on s.source_id = e.entity_id and s.arch_short_name = "entityLink.productStockLocation"
+left join entity_link_details d2 on s.id = d2.id and d2.name = "quantity"
+left join entity_link_details d3 on s.id = d3.id and d3.name = "section"
 left join entities sl on sl.entity_id = s.target_id
 left join entity_classifications ec on ec.entity_id = e.entity_id
 left join lookups lpg on lpg.lookup_id = ec.lookup_id
@@ -437,7 +437,7 @@ Note that prior to importing, you must remove the information and explanation li
 You MUST select one and only one Stock Location (because the import facility requires that all products imported have the same Stock Location).
 The output is ordered by Stock Location, then Section, then Product Name.
 
-Note that the Section facility is of no use unless you are using a version of the entityRelationship.productStockLocation archetype with the section field uncommented.
+Note that the Section facility is of no use unless you are using a version of the entityLink.productStockLocation archetype with the section field uncommented.
 
 NOTE NOTE NOTE: enter the actual quantities counted in the 'New Quantity' column. You can enter remarks in the remarks column - this and the Section and Product Group columns will be ignored when the data is imported.
 

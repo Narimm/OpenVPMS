@@ -93,10 +93,10 @@ select
   ifnull(cancelledqty.value,0) as cancelledQty,
   cast(orderpacksize.value as signed) as orderSize
 from entities product
-    join entity_relationships productStock on product.entity_id = productStock.source_id and productStock.arch_short_name = "entityRelationship.productStockLocation"
-    left outer join entity_relationship_details currentqty on currentqty.entity_relationship_id = productStock.entity_relationship_id  and currentqty.name = "quantity"
-    left outer join entity_relationship_details idealqty on idealqty.entity_relationship_id = productStock.entity_relationship_id  and idealqty.name = "idealQty"
-    left outer join entity_relationship_details criticalqty on criticalqty.entity_relationship_id = productStock.entity_relationship_id  and criticalqty.name = "criticalQty"
+    join entity_links productStock on product.entity_id = productStock.source_id and productStock.arch_short_name = "entityLink.productStockLocation"
+    left outer join entity_link_details currentqty on currentqty.id = productStock.id  and currentqty.name = "quantity"
+    left outer join entity_link_details idealqty on idealqty.id = productStock.id  and idealqty.name = "idealQty"
+    left outer join entity_link_details criticalqty on criticalqty.id = productStock.id  and criticalqty.name = "criticalQty"
     left outer join entities stockLocation on stockLocation.entity_id = productStock.target_id
     left outer join entity_classifications productgroup on productgroup.entity_id = product.entity_id
     left outer join lookups grouplookup on grouplookup.lookup_id = productgroup.lookup_id
@@ -154,10 +154,10 @@ select
   0 as cancelledQty,
   cast(packageSize.value as signed) as orderSize
 from entities product
-    join entity_relationships productStock on product.entity_id = productStock.source_id and productStock.arch_short_name = "entityRelationship.productStockLocation"
-    left outer join entity_relationship_details currentqty on currentqty.entity_relationship_id = productStock.entity_relationship_id  and currentqty.name = "quantity"
-    left outer join entity_relationship_details idealqty on idealqty.entity_relationship_id = productStock.entity_relationship_id  and idealqty.name = "idealQty"
-    left outer join entity_relationship_details criticalqty on criticalqty.entity_relationship_id = productStock.entity_relationship_id  and criticalqty.name = "criticalQty"
+    join entity_links productStock on product.entity_id = productStock.source_id and productStock.arch_short_name = "entityLink.productStockLocation"
+    left outer join entity_link_details currentqty on currentqty.id = productStock.id  and currentqty.name = "quantity"
+    left outer join entity_link_details idealqty on idealqty.id = productStock.id  and idealqty.name = "idealQty"
+    left outer join entity_link_details criticalqty on criticalqty.id = productStock.id  and criticalqty.name = "criticalQty"
     join entities stockLocation on stockLocation.entity_id = productStock.target_id
     left outer join entity_classifications productgroup on productgroup.entity_id = product.entity_id
     left outer join lookups grouplookup on grouplookup.lookup_id = productgroup.lookup_id

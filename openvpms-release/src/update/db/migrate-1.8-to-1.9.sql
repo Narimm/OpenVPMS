@@ -50,7 +50,7 @@ DROP TABLE new_authorities;
 
 #
 # Ensure idealQty >= criticalQty for OVPMS-1678 Add validation to idealQty and criticalQty nodes of
-# entityRelationship.productStockLocation
+# entityLink.productStockLocation
 #
 DROP TABLE IF EXISTS ideal_critical_qty;
 CREATE TEMPORARY TABLE ideal_critical_qty (
@@ -71,7 +71,7 @@ INSERT INTO ideal_critical_qty (id, idealQty, criticalQty)
     JOIN entity_relationship_details idealQty
       ON r.entity_relationship_id = idealQty.entity_relationship_id
          AND idealQty.name = 'idealQty'
-  WHERE r.arch_short_name = 'entityRelationship.productStockLocation'
+  WHERE r.arch_short_name = 'entityLink.productStockLocation'
         AND cast(idealQty.value AS DECIMAL(18, 3)) < cast(criticalQty.value AS DECIMAL(18, 3));
 
 UPDATE entity_relationships r
@@ -415,3 +415,65 @@ UPDATE entity_details d
        AND d.name = "roundType"
 SET d.name = "roundTo";
 
+
+#
+# Replace entityRelationship.productStockLocation with entityLink.productStockLocation
+# for OVPMS-1570 Replace entity relationships between products and stock locations with an entity link
+#
+INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, description, active_start_time,
+                          active_end_time, sequence, source_id, target_id)
+  SELECT
+    version,
+    linkId,
+    'entityLink.productStockLocation',
+    '1.0',
+    name,
+    description,
+    active_start_time,
+    active_end_time,
+    sequence,
+    source_id,
+    target_id
+  FROM entity_relationships r
+  WHERE r.arch_short_name = 'entityRelationship.productStockLocation'
+        AND NOT exists(SELECT *
+                       FROM entity_links l
+                       WHERE l.source_id = r.source_id
+                             AND l.target_id = r.target_id
+                             AND (l.active_start_time = r.active_start_time OR
+                                  (l.active_start_time IS NULL AND l.active_start_time IS NULL))
+                             AND (l.active_end_time = r.active_end_time OR
+                                  (l.active_end_time IS NULL AND l.active_end_time IS NULL))
+                             AND l.arch_short_name = 'entityLink.productStockLocation');
+
+INSERT INTO entity_link_details (id, name, type, value)
+  SELECT
+    l.id,
+    d.name,
+    d.type,
+    d.value
+  FROM entity_relationships r
+    JOIN entity_relationship_details d
+      ON r.entity_relationship_id = d.entity_relationship_id
+    JOIN entity_links l
+      ON l.arch_short_name = 'entityLink.productStockLocation'
+         AND l.source_id = r.source_id AND l.target_id = r.target_id
+         AND (l.active_start_time = r.active_start_time
+              OR (l.active_start_time IS NULL AND l.active_start_time IS NULL))
+         AND (l.active_end_time = r.active_end_time
+              OR (l.active_end_time IS NULL AND l.active_end_time IS NULL))
+  WHERE r.arch_short_name = 'entityRelationship.productStockLocation'
+        AND NOT exists(SELECT *
+                       FROM entity_link_details ld
+                       WHERE ld.id = l.id AND ld.name = d.name);
+
+# Remove the old relationships
+DELETE d
+FROM entity_relationship_details d
+  JOIN entity_relationships r
+    ON d.entity_relationship_id = r.entity_relationship_id
+WHERE r.arch_short_name = 'entityRelationship.productStockLocation';
+
+DELETE r
+FROM entity_relationships r
+WHERE r.arch_short_name = 'entityRelationship.productStockLocation';

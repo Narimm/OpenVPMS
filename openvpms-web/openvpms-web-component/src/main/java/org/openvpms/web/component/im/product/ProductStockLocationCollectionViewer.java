@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -30,28 +28,24 @@ import org.openvpms.web.component.property.CollectionProperty;
 
 
 /**
- * Viewer for collections of <em>entityRelationship.productStockLocation</em>.
+ * Viewer for collections of <em>entityLink.productStockLocation</em>.
  * <p/>
- * Hides any inactive relationships if the 'hide inactive' checkbox is
- * selected.
+ * Hides any inactive relationships if the 'hide inactive' checkbox is selected.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2008-03-19 07:02:38Z $
+ * @author Tim Anderson
  */
 public class ProductStockLocationCollectionViewer
     extends RelationshipCollectionViewer {
 
     /**
-     * Constructs a new <tt>ProductStockLocationCollectionViewer</tt>.
+     * Constructs a {@link ProductStockLocationCollectionViewer}.
      *
      * @param property the collection to view
      * @param parent   the parent object
-     * @param context  the layout context. May be <tt>null</tt>
+     * @param context  the layout context. May be {@code null}
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public ProductStockLocationCollectionViewer(CollectionProperty property,
-                                                Entity parent,
-                                                LayoutContext context) {
+    public ProductStockLocationCollectionViewer(CollectionProperty property, Entity parent, LayoutContext context) {
         super(property, parent, context);
     }
 
@@ -62,12 +56,10 @@ public class ProductStockLocationCollectionViewer
      * @return a new table model
      */
     @Override
-    protected IMTableModel<RelationshipState> createTableModel(
-        LayoutContext context) {
+    protected IMTableModel<RelationshipState> createTableModel(LayoutContext context) {
         String[] shortNames = getProperty().getArchetypeRange();
-        IMTableModel<IMObjectRelationship> model
-            = new ProductStockLocationTableModel(shortNames, context,
-                                                 parentIsSource());
+        IMTableModel<IMObjectRelationship> model = new ProductStockLocationTableModel(shortNames, context,
+                                                                                      parentIsSource());
         return new DelegatingRelationshipStateTableModel(model, context);
     }
 }

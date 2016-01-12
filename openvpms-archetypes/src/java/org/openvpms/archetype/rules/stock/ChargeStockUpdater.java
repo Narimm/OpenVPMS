@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.stock;
@@ -19,11 +19,10 @@ package org.openvpms.archetype.rules.stock;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.math.MathRules;
-import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -36,6 +35,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.openvpms.archetype.rules.product.ProductArchetypes.MEDICATION;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.MERCHANDISE;
 import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_LOCATION_PARTICIPATION;
 
 
@@ -50,7 +51,7 @@ public class ChargeStockUpdater {
     /**
      * The set of objects to save on completion.
      */
-    private Set<IMObject> toSave = new LinkedHashSet<IMObject>();
+    private Set<IMObject> toSave = new LinkedHashSet<>();
 
     /**
      * The archetype service.
@@ -158,16 +159,13 @@ public class ChargeStockUpdater {
                                        boolean credit) {
         Party location = stock.getLocation();
         Product product = stock.getProduct();
-        if (location != null && product != null
-            && TypeHelper.isA(product, ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE)) {
+        if (location != null && product != null && TypeHelper.isA(product, MEDICATION, MERCHANDISE)) {
             if (!credit) {
                 quantity = quantity.negate();
             }
-            EntityRelationship relationship
-                    = rules.getStockRelationship(product, location);
+            IMObjectRelationship relationship = rules.getStockRelationship(product, location);
             if (relationship == null) {
-                List<IMObject> objects = rules.calcStock(product, location,
-                                                         quantity);
+                List<IMObject> objects = rules.calcStock(product, location, quantity);
                 toSave.addAll(objects);
             } else {
                 rules.calcStock(relationship, quantity);
@@ -184,8 +182,7 @@ public class ChargeStockUpdater {
      */
     private void removeCharge(FinancialAct act) {
         ActBean bean = new ActBean(act, service);
-        for (FinancialAct item
-                : bean.getNodeActs("items", FinancialAct.class)) {
+        for (FinancialAct item : bean.getNodeActs("items", FinancialAct.class)) {
             removeChargeItem(item);
         }
     }

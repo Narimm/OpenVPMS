@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -22,7 +22,7 @@ import org.openvpms.web.component.im.relationship.RelationshipDescriptorTableMod
 
 
 /**
- * Table model for <em>entityRelationship.productStockLocation</em>
+ * Table model for <em>entityLink.productStockLocation</em>
  * relationships.
  *
  * @author Tim Anderson

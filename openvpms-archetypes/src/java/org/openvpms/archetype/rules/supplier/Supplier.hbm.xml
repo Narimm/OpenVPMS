@@ -13,7 +13,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <!DOCTYPE hibernate-mapping PUBLIC
@@ -70,8 +70,8 @@
                 o.receivedQty as receivedQty,
                 o.cancelledQty as cancelledQty
         from    entities product
-        join    entity_relationships productStock on product.entity_id = productStock.source_id
-                    and productStock.arch_short_name = "entityRelationship.productStockLocation"
+        join    entity_links productStock on product.entity_id = productStock.source_id
+                    and productStock.arch_short_name = "entityLink.productStockLocation"
                     and productStock.target_id = :stockLocationId
                     and (productStock.active_start_time is null or productStock.active_start_time <= now())
                     and (productStock.active_end_time is null or productStock.active_end_time > now())
@@ -98,20 +98,20 @@
                 and (productSupplier.preferred < productSupplier2.preferred 
                     or (productSupplier.preferred = productSupplier2.preferred 
                         and productSupplier.entity_relationship_id > productSupplier2.entity_relationship_id))
-        left join entity_relationship_details supplier
-                    on supplier.entity_relationship_id = productStock.entity_relationship_id
+        left join entity_link_details supplier
+                    on supplier.id = productStock.id
                     and supplier.name = "supplier"
         left join entity_relationship_details preferred
                     on preferred.entity_relationship_id = productSupplier.entity_relationship_id
                     and preferred.name = "preferred"
-        left join entity_relationship_details quantity
-                    on quantity.entity_relationship_id = productStock.entity_relationship_id
+        left join entity_link_details quantity
+                    on quantity.id = productStock.id
                     and quantity.name = "quantity"
-        left join entity_relationship_details idealQty
-                    on idealQty.entity_relationship_id = productStock.entity_relationship_id
+        left join entity_link_details idealQty
+                    on idealQty.id = productStock.id
                     and idealQty.name = "idealQty"
-        left join entity_relationship_details criticalQty
-                    on criticalQty.entity_relationship_id = productStock.entity_relationship_id
+        left join entity_link_details criticalQty
+                    on criticalQty.id = productStock.id
                     and criticalQty.name = "criticalQty"
         left join entity_relationship_details packageSize
                     on packageSize.entity_relationship_id = productSupplier.entity_relationship_id

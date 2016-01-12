@@ -11,14 +11,22 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.stock;
 
 import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.functor.RefEquals;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 
 /**
@@ -36,5 +44,25 @@ public abstract class AbstractStockTest extends ArchetypeServiceTest {
     protected Party createStockLocation() {
         return ProductTestHelper.createStockLocation();
     }
+
+    /**
+     * Returns the stock for at a location for a product.
+     *
+     * @param location the location
+     * @param product  the product
+     * @return the stock count
+     */
+    protected BigDecimal getStock(Party location, Product product) {
+        product = get(product);
+        EntityBean prodBean = new EntityBean(product);
+        List<IMObjectRelationship> values = prodBean.getValues("stockLocations", RefEquals.getTargetEquals(location),
+                                                               IMObjectRelationship.class);
+        if (!values.isEmpty()) {
+            IMObjectBean relBean = new IMObjectBean(values.get(0));
+            return relBean.getBigDecimal("quantity");
+        }
+        return BigDecimal.ZERO;
+    }
+
 
 }

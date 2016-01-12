@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -69,7 +69,7 @@ import static org.openvpms.component.business.service.archetype.functor.IsActive
  * <li>the <em>entityRelationship.productSupplier</em> associated with
  * the product and supplier, if the item is a delivery</li>
  * <li>the <em>quantity</em> node of the
- * <em>entityRelationship.productStockLocation</em> associated with the
+ * <em>entityLink.productStockLocation</em> associated with the
  * product and stock location</li>
  * </ol>
  * If an order item changes status, the delivery status of the parent
@@ -287,7 +287,7 @@ public class DeliveryProcessor {
     /**
      * Updates the quantity of a product at a stock location.
      * <p/>
-     * If no <em>entityRelationship.productStockLocation</em> exists for the
+     * If no <em>entityLink.productStockLocation</em> exists for the
      * product and stock  location, one will be created.
      *
      * @param product       the product
@@ -300,16 +300,14 @@ public class DeliveryProcessor {
         EntityBean bean = new EntityBean(product, service);
         if (bean.hasNode("stockLocations")) {
             Predicate predicate = AndPredicate.getInstance(isActiveNow(), RefEquals.getTargetEquals(stockLocation));
-            IMObjectRelationship relationship = bean.getNodeRelationship("stockLocations", predicate);
+            IMObjectRelationship relationship = (IMObjectRelationship) bean.getValue("stockLocations", predicate);
             if (relationship == null) {
-                relationship = bean.addRelationship("entityRelationship.productStockLocation", stockLocation);
+                relationship = bean.addNodeTarget("stockLocations", stockLocation);
                 toSave.add(product);
-                toSave.add(stockLocation);
             } else {
                 toSave.add(relationship);
             }
-            BigDecimal units
-                    = quantity.multiply(BigDecimal.valueOf(packageSize));
+            BigDecimal units = quantity.multiply(BigDecimal.valueOf(packageSize));
             IMObjectBean relBean = new IMObjectBean(relationship, service);
             BigDecimal stockQuantity = relBean.getBigDecimal("quantity");
             stockQuantity = stockQuantity.add(units);
