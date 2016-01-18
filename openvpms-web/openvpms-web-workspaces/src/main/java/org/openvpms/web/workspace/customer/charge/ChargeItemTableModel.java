@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -308,7 +308,7 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
         Product product = (Product) cache.get(bean.getNodeParticipantRef(PRODUCT));
         if (product != null) {
             IMObjectBean productBean = new IMObjectBean(product);
-            IMObjectReference type = productBean.getNodeSourceObjectRef("type");
+            IMObjectReference type = productBean.getNodeTargetObjectRef("type");
             if (type != null) {
                 return new IMObjectReferenceViewer(type, null, context.getContext()).getComponent();
             }

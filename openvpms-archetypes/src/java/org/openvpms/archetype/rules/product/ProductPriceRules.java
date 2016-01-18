@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -37,7 +37,6 @@ import org.openvpms.component.business.service.archetype.functor.IsActiveRelatio
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -73,12 +72,6 @@ public class ProductPriceRules {
      */
     private final IArchetypeService service;
 
-    /**
-     * The lookup service.
-     */
-    private final ILookupService lookups;
-
-
     private static final int PARTIAL_MATCH = 1;
 
     private static final int EXACT_MATCH = 2;
@@ -87,11 +80,9 @@ public class ProductPriceRules {
      * Constructs a {@link ProductPriceRules}.
      *
      * @param service the archetype service
-     * @param lookups the lookup service
      */
-    public ProductPriceRules(IArchetypeService service, ILookupService lookups) {
+    public ProductPriceRules(IArchetypeService service) {
         this.service = service;
-        this.lookups = lookups;
     }
 
     /**
@@ -396,7 +387,7 @@ public class ProductPriceRules {
      *
      * @param price the price
      * @return the maximum discount for the product price, or {@code 100} if there is no maximum discount associated
-     *         with the price.
+     * with the price.
      */
     public BigDecimal getMaxDiscount(ProductPrice price) {
         IMObjectBean bean = new IMObjectBean(price, service);
@@ -441,7 +432,7 @@ public class ProductPriceRules {
     public BigDecimal getServiceRatio(Product product, Party location) {
         BigDecimal ratio = BigDecimal.ONE;
         IMObjectBean bean = new IMObjectBean(product, service);
-        IMObjectReference productType = bean.getNodeSourceObjectRef("type");
+        IMObjectReference productType = bean.getNodeTargetObjectRef("type");
         if (productType != null) {
             IMObjectBean locationBean = new IMObjectBean(location, service);
             Predicate predicate = AndPredicate.getInstance(isActiveNow(), getTargetEquals(productType));
@@ -501,7 +492,7 @@ public class ProductPriceRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     private BigDecimal getTaxRate(Product product, Party practice) {
-        TaxRules rules = new TaxRules(practice, service, lookups);
+        TaxRules rules = new TaxRules(practice, service);
         return getRate(rules.getTaxRate(product));
     }
 
@@ -670,7 +661,7 @@ public class ProductPriceRules {
          *
          * @param price the price
          * @return {@code 0} if it doesn't match, {@link #PARTIAL_MATCH} if it is a partial match on group,
-         *         {@link #EXACT_MATCH} if it is an exact match on group
+         * {@link #EXACT_MATCH} if it is an exact match on group
          */
         public int matches(ProductPrice price) {
             int result = 0;

@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.tax;
 
 import org.openvpms.archetype.rules.math.MathRules;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -26,21 +26,11 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint;
-import org.openvpms.component.system.common.query.NodeSelectConstraint;
-import org.openvpms.component.system.common.query.ObjectRefConstraint;
-import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
-import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 
 
 /**
@@ -61,28 +51,15 @@ public class TaxRules {
     private final IArchetypeService service;
 
     /**
-     * The lookup service.
-     */
-    private final ILookupService lookups;
-
-    /**
-     * The tax type lookup short name.
-     */
-    private static final String TAX_TYPE = "lookup.taxType";
-
-
-    /**
      * Constructs a {@link TaxRules}.
      *
      * @param practice the practice, for default tax classifications
      * @param service  the archetype service
-     * @param lookups  the lookup service
      */
-    public TaxRules(Party practice, IArchetypeService service, ILookupService lookups) {
+    public TaxRules(Party practice, IArchetypeService service) {
         IMObjectBean bean = new IMObjectBean(practice, service);
         practiceTaxRates = Collections.unmodifiableList(bean.getValues("taxes", Lookup.class));
         this.service = service;
-        this.lookups = lookups;
     }
 
     /**
@@ -135,9 +112,9 @@ public class TaxRules {
      * Returns a list of taxes for a product.
      * <p/>
      * If the product has no taxType classifications, it returns any taxType classifications for the
-     * entity.productTypes associated with the product.
+     * entity.productType associated with the product.
      * <p/>
-     * If there are no taxType classifications associated with the product * types, returns any taxType classifications
+     * If there are no taxType classifications associated with the product type, returns any taxType classifications
      * associated with the practice.
      *
      * @param product the product
@@ -146,11 +123,11 @@ public class TaxRules {
      */
     public Collection<Lookup> getProductTaxRates(Product product) {
         EntityBean bean = new EntityBean(product, service);
-        Collection<Lookup> taxes = new HashSet<Lookup>();
+        Collection<Lookup> taxes = new HashSet<>();
         taxes.addAll(bean.getValues("taxes", Lookup.class));
         if (taxes.isEmpty()) {
-            List<IMObjectReference> productTypes = bean.getNodeSourceEntityRefs("type");
-            for (IMObjectReference productType : productTypes) {
+            Entity productType = bean.getNodeTargetEntity("type");
+            if (productType != null) {
                 taxes.addAll(getProductTypeTaxRates(productType));
             }
         }
@@ -198,33 +175,13 @@ public class TaxRules {
     /**
      * Returns any tax rates associated with an <em>entity.productType</em>.
      *
-     * @param productType the product type reference
+     * @param productType the product type
      * @return a list of tax rates associated with the product type
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private Collection<Lookup> getProductTypeTaxRates(
-            IMObjectReference productType) {
-        List<Lookup> result = new ArrayList<Lookup>();
-
-        // query an lookup.taxType lookups associated with the product type
-        ShortNameConstraint taxType = new ShortNameConstraint("l", TAX_TYPE, true, true);
-        ObjectRefConstraint prodType = new ObjectRefConstraint("productType", productType);
-        prodType.add(new CollectionNodeConstraint("taxes", taxType));
-        ArchetypeQuery query = new ArchetypeQuery(prodType);
-        query.add(new NodeSelectConstraint("l", "code"));
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        ObjectSetQueryIterator iter = new ObjectSetQueryIterator(service, query);
-
-        while (iter.hasNext()) {
-            // use the lookup service to retrieve any lookups
-            ObjectSet set = iter.next();
-            String code = set.getString("l.code");
-            Lookup lookup = lookups.getLookup(TAX_TYPE, code);
-            if (lookup != null) {
-                result.add(lookup);
-            }
-        }
-        return result;
+    private Collection<Lookup> getProductTypeTaxRates(Entity productType) {
+        IMObjectBean bean = new IMObjectBean(productType, service);
+        return bean.getValues("taxes", Lookup.class);
     }
 
 }

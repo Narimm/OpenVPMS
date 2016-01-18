@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.discount;
@@ -19,7 +19,6 @@ package org.openvpms.archetype.rules.finance.discount;
 import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -403,12 +402,9 @@ public class DiscountRules {
         if (bean.hasNode("discounts")) {
             discounts.addAll(bean.getNodeTargetEntityRefs("discounts", date));
             if (bean.hasNode("type")) {
-                List<EntityRelationship> types = bean.getValues("type", EntityRelationship.class);
-                for (EntityRelationship relationship : types) {
-                    IMObjectReference srcRef = relationship.getSource();
-                    if (srcRef != null) {
-                        discounts.addAll(getProductTypeDiscounts(srcRef, date, discountGroups));
-                    }
+                IMObjectReference type = bean.getNodeTargetObjectRef("type");
+                if (type != null) {
+                    discounts.addAll(getProductTypeDiscounts(type, date, discountGroups));
                 }
             }
         }

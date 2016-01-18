@@ -94,7 +94,7 @@ public class StockExportResultSet extends AbstractEntityResultSet<ObjectSet> {
                                                                 stockLocation.getObjectReference())));
 
         if (productType != null) {
-            query.add(join("type").add(eq("source", productType.getObjectReference())));
+            query.add(join("type").add(eq("target", productType)));
         }
         if (incomeType != null) {
             query.add(join("classifications", shortName("incomeType", "lookup.productIncomeType"))

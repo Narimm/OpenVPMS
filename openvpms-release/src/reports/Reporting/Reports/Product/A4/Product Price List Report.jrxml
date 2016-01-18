@@ -80,10 +80,10 @@
 	ul.name as unitPricingGroup
 from products p
 join entities e on p.product_id = e.entity_id and e.active = 1
-left join entity_relationships r
-       on e.entity_id = r.target_id and r.arch_short_name = "entityRelationship.productTypeProduct"
+left join entity_links r
+       on e.entity_id = r.source_id and r.arch_short_name = "entityLink.productType"
 left join entities pt
-       on r.source_id = pt.entity_id
+       on r.target_id = pt.entity_id
 left join entity_details d1 on d1.entity_id = e.entity_id and d1.name = "sellingUnits"
 left join lookups uom on uom.arch_short_name = "lookup.uom" and uom.code = d1.value
 left join product_prices f on p.product_id = f.product_id and f.arch_short_name = "productPrice.fixedPrice"

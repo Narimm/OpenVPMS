@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.discount;
@@ -448,7 +448,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         // now expire the product type discount by setting the end time of the
         // discount relationship, and verify the discount no longer applies
         EntityBean bean = new EntityBean(product);
-        Entity productType = bean.getNodeSourceEntity("type");
+        Entity productType = bean.getNodeTargetEntity("type");
         bean = new EntityBean(productType);
         EntityRelationship r = bean.getRelationship(discount10);
         r.setActiveEndTime(new Date(now.getTime() - 1000));
@@ -495,7 +495,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         // now expire the product type discount by setting the end time of the
         // discount relationship, and verify the discount no longer applies
         EntityBean bean = new EntityBean(product);
-        Entity productType = bean.getNodeSourceEntity("type");
+        Entity productType = bean.getNodeTargetEntity("type");
         bean = new EntityBean(productType);
         EntityRelationship r = bean.getRelationship(costDiscount0);
         r.setActiveEndTime(new Date(now.getTime() - 1000));
@@ -886,12 +886,11 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      */
     private Product createProductWithProductTypeDiscount(String shortName, Entity discount) {
         Product product = createProduct(shortName);
-        Entity type = (Entity) create("entity.productType");
+        Entity type = (Entity) create(ProductArchetypes.PRODUCT_TYPE);
         type.setName("DiscountRulesTestCase-entity" + type.hashCode());
         addDiscount(type, discount, null);
-        EntityBean typeBean = new EntityBean(type);
-        typeBean.addRelationship("entityRelationship.productTypeProduct", product);
-        save(type);
+        EntityBean bean = new EntityBean(product);
+        bean.addNodeTarget("type", type);
         save(product);
         return product;
     }
@@ -912,7 +911,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
             shortName = "entityRelationship.discountCustomer";
         } else if (bean.isA("party.patientpet")) {
             shortName = "entityRelationship.discountPatient";
-        } else if (bean.isA("entity.productType")) {
+        } else if (bean.isA(ProductArchetypes.PRODUCT_TYPE)) {
             shortName = "entityRelationship.discountProductType";
         } else {
             fail("Invalid entity for discounts: " + entity.getArchetypeId());

@@ -96,8 +96,8 @@ from acts parent join act_relationships r on parent.act_id = r.source_id
     LEFT OUTER JOIN `entities` l ON pl.`entity_id` = l.`entity_id`
     left outer join entity_classifications productgroup on productgroup.entity_id = product.entity_id
     left outer join lookups grouplookup on grouplookup.lookup_id = productgroup.lookup_id
-    left outer join entity_relationships rpt on rpt.target_id = product.entity_id and rpt.arch_short_name = "entityRelationship.productTypeProduct"
-    left outer join entities producttype on producttype.entity_id = rpt.source_id
+    left outer join entity_links rpt on rpt.source_id = product.entity_id and rpt.arch_short_name = "entityLink.productType"
+    left outer join entities producttype on producttype.entity_id = rpt.target_id
 where parent.activity_start_time between $P{startDate} and date_add($P{endDate}, INTERVAL "23:59:59" HOUR_SECOND)
     and product.name like concat(ifnull($P{productName},""),"%")
     and customer.name like concat(ifnull($P{customerName},""),"%")

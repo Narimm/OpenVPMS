@@ -31,8 +31,8 @@
                 <property name="source" value="lookup.uom"/>
             </assertion>
         </node>
-        <node name="type" path="/targetEntityRelationships" type="java.util.HashSet" baseName="EntityRelationship"
-              minCardinality="0" maxCardinality="1" filter="entityRelationship.productTypeProduct"/>
+        <node name="type" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="0" maxCardinality="1" filter="entityLink.productType"/>
         <node name="pharmacy" displayName="Pharmacy" path="/entityLinks"
               type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="1"
               filter="entityLink.productPharmacy"/>
@@ -68,11 +68,7 @@
         </node>
         <node name="suppliers" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.productSupplier">
-            <assertion name="uniqueEntityRelationship">
-                <errorMessage>Duplicate active product supplier relationship</errorMessage>
-            </assertion>
-        </node>
+              filter="entityRelationship.productSupplier"/>
         <node name="stockLocations" path="/entityLinks"
               type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="*"
               filter="entityLink.productStockLocation">

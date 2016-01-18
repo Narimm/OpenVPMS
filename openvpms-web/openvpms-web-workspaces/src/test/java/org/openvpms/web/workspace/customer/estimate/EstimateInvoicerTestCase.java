@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -99,7 +99,7 @@ public class EstimateInvoicerTestCase extends AbstractCustomerChargeActEditorTes
         BigDecimal amount3 = quantity3.multiply(price3);
         BigDecimal amount4 = quantity4.multiply(price4);
 
-        TaxRules taxRules = new TaxRules(context.getContext().getPractice(), getArchetypeService(), getLookupService());
+        TaxRules taxRules = new TaxRules(context.getContext().getPractice(), getArchetypeService());
         BigDecimal tax1 = taxRules.calculateTax(amount1, product1, true);
         BigDecimal tax2 = taxRules.calculateTax(amount2, product2, true);
         BigDecimal tax3 = taxRules.calculateTax(amount3, product3, true);

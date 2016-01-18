@@ -49,8 +49,8 @@ from acts parent join act_relationships r on parent.act_id = r.source_id
     join financial_acts f on f.financial_act_id = child.act_id
     left join participations pl ON parent.act_id = pl.act_id and pl.arch_short_name = 'participation.location'
     left join entities l ON pl.entity_id = l.entity_id
-    left join entity_relationships rpt on rpt.target_id = product.entity_id and rpt.arch_short_name = 'entityRelationship.productTypeProduct'
-    left join entities producttype on producttype.entity_id = rpt.source_id
+    left join entity_links rpt on rpt.source_id = product.entity_id and rpt.arch_short_name = 'entityLink.productType'
+    left join entities producttype on producttype.entity_id = rpt.target_id
 where parent.activity_start_time between  $P{DateFrom} and DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
         and parent.arch_short_name like 'act.customerAccountCharges%'
 group by location, producttype.name
