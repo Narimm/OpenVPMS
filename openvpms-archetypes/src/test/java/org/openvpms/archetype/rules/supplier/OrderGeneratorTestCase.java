@@ -71,7 +71,7 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
         Party practice = (Party) create(PracticeArchetypes.PRACTICE);
         gst = TestHelper.createTaxType(BigDecimal.TEN);
         practice.addClassification(gst);
-        taxRules = new TaxRules(practice, getArchetypeService(), getLookupService());
+        taxRules = new TaxRules(practice, getArchetypeService());
     }
 
     /**

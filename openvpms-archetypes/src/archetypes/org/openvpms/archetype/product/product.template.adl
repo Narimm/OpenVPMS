@@ -26,9 +26,8 @@
         <node name="printedName" path="/details/printedName" type="java.lang.String" minCardinality="0"/>
         <node name="printAggregate" path="/details/printAggregate" type="java.lang.Boolean" defaultValue="false()"
               minCardinality="0"/>
-        <node name="type" path="/targetEntityRelationships"
-              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="1"
-              filter="entityRelationship.productTypeProduct"/>
+        <node name="type" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="0" maxCardinality="1" filter="entityLink.productType"/>
         <node name="templateOnly" displayName="Use only in Templates" path="/details/templateOnly"
               type="java.lang.Boolean" defaultValue="false()"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>

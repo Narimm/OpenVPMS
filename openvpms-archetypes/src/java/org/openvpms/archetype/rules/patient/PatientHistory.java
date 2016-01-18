@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -75,7 +75,7 @@ public class PatientHistory {
      */
     public Iterable<Act> getMedication(Party patient) {
         ArchetypeQuery query = createMedicationQuery(patient);
-        return new IterableIMObjectQuery<Act>(service, query);
+        return new IterableIMObjectQuery<>(service, query);
     }
 
     /**
@@ -116,12 +116,12 @@ public class PatientHistory {
         if (productTypeName != null) {
             // Original query. In MySQL 5.1 and 5.5, this uses the wrong index, resulting in very slow queries
             // query.add(join("product").add(join("entity").add(join("type").add(
-            // join("source").add(eq("name", productTypeName))))));
+            // join("target").add(eq("name", productTypeName))))));
 
             // New version, that uses a correlated sub-query.
             query.add(join("product", "p1"));
             query.add(exists(
-                    subQuery(PRODUCTS, "p2").add(join("type").add(join("source").add(eq("name", productTypeName)).add(
+                    subQuery(PRODUCTS, "p2").add(join("type").add(join("target").add(eq("name", productTypeName)).add(
                             idEq("p1.entity", "p2"))))));
         }
 
@@ -134,7 +134,7 @@ public class PatientHistory {
                 query.add(gte("startTime", from));
             }
         }
-        return new IterableIMObjectQuery<Act>(service, query);
+        return new IterableIMObjectQuery<>(service, query);
     }
 
     /**

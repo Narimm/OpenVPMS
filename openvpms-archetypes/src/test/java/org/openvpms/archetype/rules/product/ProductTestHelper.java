@@ -72,9 +72,9 @@ public class ProductTestHelper {
      * @param productType the product type
      */
     public static void addProductType(Product product, Entity productType) {
-        EntityBean bean = new EntityBean(productType);
-        bean.addRelationship("entityRelationship.productTypeProduct", product);
-        TestHelper.save(productType, product);
+        EntityBean bean = new EntityBean(product);
+        bean.addNodeTarget("type", productType);
+        bean.save();
     }
 
     /**

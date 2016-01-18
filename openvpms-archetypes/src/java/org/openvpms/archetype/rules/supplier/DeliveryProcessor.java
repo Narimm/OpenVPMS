@@ -146,7 +146,7 @@ public class DeliveryProcessor {
         this.act = act;
         this.service = service;
         this.rules = new ProductRules(service);
-        ProductPriceRules priceRules = new ProductPriceRules(service, lookups);
+        ProductPriceRules priceRules = new ProductPriceRules(service);
         PracticeRules practiceRules = new PracticeRules(service, currencies);
         priceUpdater = new ProductPriceUpdater(priceRules, practiceRules, service);
         IMObjectBean bean = new IMObjectBean(priceUpdater.getPractice(), service);

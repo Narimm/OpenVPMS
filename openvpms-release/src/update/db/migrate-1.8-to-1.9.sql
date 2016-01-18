@@ -477,3 +477,66 @@ WHERE r.arch_short_name = 'entityRelationship.productStockLocation';
 DELETE r
 FROM entity_relationships r
 WHERE r.arch_short_name = 'entityRelationship.productStockLocation';
+
+#
+# Replace entityRelationship.productTypeProduct with entityLink.productType for
+# OVPMS-1567 Replace entity relationship between products and product types with an entity link
+#
+INSERT INTO entity_links (version, linkId, arch_short_name, arch_version, name, description, active_start_time,
+                          active_end_time, sequence, source_id, target_id)
+  SELECT
+    version,
+    linkId,
+    'entityLink.productType',
+    '1.0',
+    name,
+    description,
+    active_start_time,
+    active_end_time,
+    sequence,
+    target_id,
+    source_id
+  FROM entity_relationships r
+  WHERE r.arch_short_name = 'entityRelationship.productTypeProduct'
+        AND NOT exists(
+      SELECT *
+      FROM entity_links l
+      WHERE l.source_id = r.target_id
+            AND l.target_id = r.source_id
+            AND
+            (l.active_start_time = r.active_start_time OR (l.active_start_time IS NULL AND l.active_start_time IS NULL))
+            AND (l.active_end_time = r.active_end_time OR (l.active_end_time IS NULL AND l.active_end_time IS NULL))
+            AND l.arch_short_name = 'entityLink.productType');
+
+INSERT INTO entity_link_details (id, name, type, value)
+  SELECT
+    l.id,
+    d.name,
+    d.type,
+    d.value
+  FROM entity_relationships r
+    JOIN entity_relationship_details d
+      ON r.entity_relationship_id = d.entity_relationship_id
+    JOIN entity_links l
+      ON l.arch_short_name = 'entityLink.productType'
+         AND l.source_id = r.target_id AND l.target_id = r.source_id
+         AND
+         (l.active_start_time = r.active_start_time OR (l.active_start_time IS NULL AND l.active_start_time IS NULL))
+         AND (l.active_end_time = r.active_end_time OR (l.active_end_time IS NULL AND l.active_end_time IS NULL))
+  WHERE r.arch_short_name = 'entityRelationship.productTypeProduct'
+        AND NOT exists(
+      SELECT *
+      FROM entity_link_details ld
+      WHERE ld.id = l.id AND ld.name = d.name);
+
+# Remove the old relationships
+DELETE d
+FROM entity_relationship_details d
+  JOIN entity_relationships r
+    ON d.entity_relationship_id = r.entity_relationship_id
+WHERE r.arch_short_name = 'entityRelationship.productTypeProduct';
+
+DELETE r
+FROM entity_relationships r
+WHERE r.arch_short_name = 'entityRelationship.productTypeProduct';
+

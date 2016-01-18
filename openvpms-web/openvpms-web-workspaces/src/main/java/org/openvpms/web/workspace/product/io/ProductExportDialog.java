@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.io;
@@ -89,8 +89,8 @@ public class ProductExportDialog extends BrowserDialog<Product> {
         super(Messages.get("product.export.title"), BUTTONS, false, help);
         setStyleName("ProductImportExportDialog");
         rules = ServiceHelper.getBean(ProductPriceRules.class);
-        taxRules = new TaxRules(context.getContext().getPractice(), ServiceHelper.getArchetypeService(),
-                                ServiceHelper.getLookupService());
+        taxRules = new TaxRules(context.getContext().getPractice(), ServiceHelper.getArchetypeService()
+        );
         ProductExportQuery query = new ProductExportQuery(context);
         PagedProductPricesTableModel model = new PagedProductPricesTableModel();
         Browser<Product> browser = new DefaultIMObjectTableBrowser<Product>(query, model, context);

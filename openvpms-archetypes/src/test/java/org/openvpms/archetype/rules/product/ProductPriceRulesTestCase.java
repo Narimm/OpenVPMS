@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -373,7 +373,7 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
     @Before
     public void setUp() {
         practice = createPractice();
-        rules = new ProductPriceRules(getArchetypeService(), getLookupService());
+        rules = new ProductPriceRules(getArchetypeService());
         IMObjectBean bean = new IMObjectBean(practice);
         Currencies currencies = new Currencies(getArchetypeService(), getLookupService());
         currency = currencies.getCurrency(bean.getString("currency"));

@@ -87,10 +87,10 @@
 from   entities e
 inner join products p
        on e.entity_id = p.product_id
-left join entity_relationships r
-       on e.entity_id = r.target_id and r.arch_short_name = "entityRelationship.productTypeProduct"
+left join entity_links r
+       on e.entity_id = r.source_id and r.arch_short_name = "entityLink.productType"
 left join entities pt
-       on r.source_id = pt.entity_id
+       on r.target_id = pt.entity_id
 left join product_prices p1
        on p1.product_id = p.product_id
 left join product_price_details d1
