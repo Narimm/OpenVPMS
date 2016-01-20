@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -39,7 +39,7 @@ import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.relationship.MultipleEntityRelationshipCollectionEditor;
+import org.openvpms.web.component.im.relationship.MultipleEntityLinkCollectionEditor;
 import org.openvpms.web.component.im.relationship.RelationshipCollectionEditor;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -121,7 +121,7 @@ public class ProductEditor extends AbstractIMObjectEditor {
         CollectionProperty stock = getCollectionProperty(STOCK_LOCATIONS);
         if (suppliers != null && stock != null) {
             RelationshipCollectionEditor stockLocations
-                    = new MultipleEntityRelationshipCollectionEditor(stock, object, getLayoutContext()) {
+                    = new MultipleEntityLinkCollectionEditor(stock, object, getLayoutContext()) {
                 @Override
                 protected IMObjectEditor createEditor(IMObject object, LayoutContext context) {
                     IMObjectEditor editor = super.createEditor(object, context);
