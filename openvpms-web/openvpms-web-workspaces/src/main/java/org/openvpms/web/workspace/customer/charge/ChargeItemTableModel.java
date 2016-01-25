@@ -109,7 +109,12 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
     /**
      * Used to access the product type name node from a charge/estimate item.
      */
-    private static final String PRODUCT_TYPE = "product.entity.type.source.name";
+    private static final String PRODUCT_TYPE = "product.entity.type.target.name";
+
+    /**
+     * The id node name
+     */
+    private static final String ITEM_ID = "id";
 
     /**
      * The start time node name.
@@ -228,11 +233,13 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
         if (column == productTypeIndex) {
             return new SortConstraint[]{new VirtualNodeSortConstraint(PRODUCT_TYPE, ascending),
-                                        new NodeSortConstraint(START_TIME, false)};
+                                        new NodeSortConstraint(START_TIME, false),
+                                        new NodeSortConstraint(ITEM_ID, true)};
         } else if (column == templateIndex) {
             return new SortConstraint[]{new NodeSortConstraint(TEMPLATE, ascending),
                                         new VirtualNodeSortConstraint(PRODUCT_TYPE, ascending),
-                                        new NodeSortConstraint(START_TIME, false)};
+                                        new NodeSortConstraint(START_TIME, false),
+                                        new NodeSortConstraint(ITEM_ID, true)};
         }
         return super.getSortConstraints(column, ascending);
     }
@@ -355,7 +362,7 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
      *
      * @param column the column
      * @param show   if {@code true}, show it, otherwise hide it
-     * @param after the model index of the column to place the column after, if its being shown
+     * @param after  the model index of the column to place the column after, if its being shown
      * @param model  the model
      * @return {@code show}
      */

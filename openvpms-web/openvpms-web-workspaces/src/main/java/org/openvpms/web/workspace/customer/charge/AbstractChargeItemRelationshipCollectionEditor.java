@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -117,10 +117,13 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
      * @return a new table model
      */
     @Override
+    @SuppressWarnings("unchecked")
     protected IMTableModel<IMObject> createTableModel(LayoutContext context) {
         context = new DefaultLayoutContext(context);
         context.setComponentFactory(new TableComponentFactory(context));
-        return new ChargeItemTableModel<>(getCollectionPropertyEditor().getArchetypeRange(), context);
+        ChargeItemTableModel model = new ChargeItemTableModel(getCollectionPropertyEditor().getArchetypeRange(),
+                                                              context);
+        return (IMTableModel) model;
     }
 
     /**
@@ -182,7 +185,7 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
      * @return the model
      */
     private ChargeItemTableModel getModel() {
-        IMTableModel<IMObject> model = getTable().getModel().getModel();
+        IMTableModel model = getTable().getModel().getModel();
         return (ChargeItemTableModel) model;
     }
 }

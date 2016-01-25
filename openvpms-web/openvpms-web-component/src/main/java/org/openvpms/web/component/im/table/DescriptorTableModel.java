@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.FilterHelper;
@@ -51,6 +52,10 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      */
     private final LayoutContext context;
 
+    /**
+     * The archetypes used to create the column model. May be {@code null}
+     */
+    private List<ArchetypeDescriptor> archetypes;
 
     /**
      * Constructs a {@link DescriptorTableModel}.
@@ -135,6 +140,18 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
             DescriptorTableColumn column = getColumn(name);
             if (column != null && column.isSortable()) {
                 result.add(column.createSortConstraint(ascending));
+            } else if (column == null && archetypes != null) {
+                // node is not present in the table. If it exists in each of the archetypes, add it as a sort constraint
+                boolean found = true;
+                for (ArchetypeDescriptor archetype : archetypes) {
+                    if (archetype.getNodeDescriptor(name) == null) {
+                        found = false;
+                        break;
+                    }
+                }
+                if (found) {
+                    result.add(new NodeSortConstraint(name, ascending));
+                }
             }
         }
         return result;
@@ -205,6 +222,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * @return a new column model
      */
     protected TableColumnModel createColumnModel(List<ArchetypeDescriptor> archetypes, LayoutContext context) {
+        this.archetypes = archetypes;
         List<String> names = getNodeNames(archetypes, context);
         TableColumnModel columns = new DefaultTableColumnModel();
 
@@ -264,7 +282,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * @param name      the node name
      * @param columns   the columns to add to
      * @return the new column, or {@code null} if the node is not found in
-     *         the archetypes
+     * the archetypes
      */
     protected TableColumn addColumn(ArchetypeDescriptor archetype, String name, TableColumnModel columns) {
         return addColumn(Collections.singletonList(archetype), name, getNextModelIndex(columns), columns);
