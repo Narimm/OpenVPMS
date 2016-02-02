@@ -11,22 +11,24 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.math;
+
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
 /**
  * A weight value and the units it is expressed in.
- * <p>
+ * <p/>
  * Weights have an optional date, indicating when the weight was taken.
  *
  * @author Tim Anderson
  */
-public class Weight {
+public class Weight implements Comparable<Weight> {
 
     /**
      * Zero weight.
@@ -54,7 +56,7 @@ public class Weight {
      * @param weight the weight
      */
     public Weight(int weight) {
-        this(BigDecimal.valueOf(weight), WeightUnits.KILOGRAMS);
+        this(weight, WeightUnits.KILOGRAMS);
     }
 
     /**
@@ -74,6 +76,16 @@ public class Weight {
      */
     public Weight(BigDecimal weight, WeightUnits units) {
         this(weight, units, null);
+    }
+
+    /**
+     * Constructs a {@link Weight}.
+     *
+     * @param weight the weight
+     * @param units  the weight units
+     */
+    public Weight(int weight, WeightUnits units) {
+        this(BigDecimal.valueOf(weight), units);
     }
 
     /**
@@ -145,6 +157,16 @@ public class Weight {
     }
 
     /**
+     * Converts the weight to the specified units.
+     *
+     * @param to the units to convert to
+     * @return the converted weight
+     */
+    public Weight to(WeightUnits to) {
+        return new Weight(convert(to), to, date);
+    }
+
+    /**
      * Determines if the weight falls between the specified values.
      *
      * @param lower the lower bound, inclusive
@@ -155,6 +177,44 @@ public class Weight {
     public boolean between(BigDecimal lower, BigDecimal upper, WeightUnits units) {
         BigDecimal converted = convert(units);
         return lower.compareTo(converted) <= 0 && upper.compareTo(converted) > 0;
+    }
+
+    /**
+     * Compares this object with the specified object for order.  Returns a negative integer, zero, or a positive
+     * integer as this object is less than, equal to, or greater than the specified object.
+     * <p/>
+     * NOTE: this does not compare dates.
+     *
+     * @param o the object to be compared.
+     * @return a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than
+     * the specified object.
+     */
+    @Override
+    public int compareTo(Weight o) {
+        BigDecimal converted = o.convert(units);
+        return weight.compareTo(converted);
+    }
+
+    /**
+     * Indicates whether some other object is "equal to" this one.
+     * <p/>
+     * NOTE: this does not compare dates.
+     *
+     * @return {@code true} if this object is the same as the obj argument; {@code false} otherwise.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Weight && compareTo((Weight) obj) == 0;
+    }
+
+    /**
+     * Returns a hash code value for the object.
+     *
+     * @return a hash code value for this object.
+     */
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(weight).append(units).hashCode();
     }
 
     /**

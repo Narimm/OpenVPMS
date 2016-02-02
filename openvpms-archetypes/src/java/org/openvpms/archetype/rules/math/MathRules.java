@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.math;
@@ -19,6 +19,7 @@ package org.openvpms.archetype.rules.math;
 import org.apache.commons.lang.ObjectUtils;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 
 import static java.math.BigDecimal.ROUND_HALF_UP;
@@ -59,6 +60,11 @@ public class MathRules {
      * One gram in pounds.
      */
     public static final BigDecimal ONE_GRAM_IN_POUNDS = BigDecimal.ONE.divide(ONE_POUND_IN_GRAMS, 8, ROUND_HALF_UP);
+
+    /**
+     * MathContext for weight calculations.
+     */
+    private static final MathContext WEIGHT = new MathContext(8, RoundingMode.HALF_UP);
 
     /**
      * Rounds a value to the default no. of decimal places.
@@ -155,9 +161,9 @@ public class MathRules {
             }
         } else if (from == WeightUnits.POUNDS) {
             if (to == WeightUnits.KILOGRAMS) {
-                return weight.multiply(ONE_POUND_IN_KILOS);
+                return weight.multiply(ONE_POUND_IN_KILOS, WEIGHT);
             } else if (to == WeightUnits.GRAMS) {
-                return weight.multiply(ONE_POUND_IN_GRAMS);
+                return weight.multiply(ONE_POUND_IN_GRAMS, WEIGHT);
             }
         } else {
             throw new IllegalArgumentException("Unsupported weight units for argument 'from': " + from);
