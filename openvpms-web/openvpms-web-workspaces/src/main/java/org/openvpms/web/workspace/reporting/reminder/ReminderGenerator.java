@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -330,20 +330,6 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     }
 
     /**
-     * Creates a new reminder list processor.
-     *
-     * @param reminders  the reminders
-     * @param statistics the reminder statistics
-     * @param context    the context
-     * @param help       the help context
-     * @return a new list processor
-     */
-    protected ReminderListProcessor createListProcessor(List<List<ReminderEvent>> reminders, Statistics statistics,
-                                                        Context context, HelpContext help) {
-        return new ReminderListProcessor(reminders, statistics, context, help);
-    }
-
-    /**
      * Returns the SMS service.
      *
      * @return the SMS service
@@ -465,6 +451,18 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      * @return a new processor
      */
     protected ReminderBatchProcessor createExportProcessor(List<List<ReminderEvent>> reminders) {
+        return createExportProcessor(reminders, statistics);
+    }
+
+    /**
+     * Creates a new export processor.
+     *
+     * @param reminders  the reminders to export
+     * @param statistics the statistics
+     * @return a new processor
+     */
+    protected ReminderExportProcessor createExportProcessor(List<List<ReminderEvent>> reminders,
+                                                            Statistics statistics) {
         return new ReminderExportProcessor(reminders, statistics);
     }
 
@@ -476,6 +474,20 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      */
     protected ReminderBatchProcessor createListProcessor(List<List<ReminderEvent>> reminders) {
         return createListProcessor(reminders, statistics, context, help);
+    }
+
+    /**
+     * Creates a new reminder list processor.
+     *
+     * @param reminders  the reminders
+     * @param statistics the reminder statistics
+     * @param context    the context
+     * @param help       the help context
+     * @return a new list processor
+     */
+    protected ReminderListProcessor createListProcessor(List<List<ReminderEvent>> reminders, Statistics statistics,
+                                                        Context context, HelpContext help) {
+        return new ReminderListProcessor(reminders, statistics, context, help);
     }
 
     /**

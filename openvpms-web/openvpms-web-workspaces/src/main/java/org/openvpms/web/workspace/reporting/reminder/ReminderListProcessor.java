@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -178,4 +178,12 @@ public class ReminderListProcessor extends AbstractReminderBatchProcessor {
         super.notifyError(exception);
     }
 
+    /**
+     * Returns the context.
+     *
+     * @return the context
+     */
+    protected Context getContext() {
+        return context;
+    }
 }
