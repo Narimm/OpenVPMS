@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.math;
@@ -21,6 +21,7 @@ import org.junit.Test;
 import java.math.BigDecimal;
 
 import static java.math.BigDecimal.valueOf;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.math.WeightUnits.GRAMS;
@@ -89,5 +90,23 @@ public class WeightTestCase {
         assertTrue(kg.between(valueOf(2), valueOf(3), POUNDS));
         assertFalse(kg.between(valueOf(0), valueOf(2.20462), POUNDS));
         assertTrue(kg.between(valueOf(2.20462), valueOf(3), POUNDS));
+    }
+
+    /**
+     * Tests the {@link Weight#compareTo(Weight)} method.
+     */
+    @Test
+    public void testCompareTo() {
+        Weight kg = new Weight(BigDecimal.ONE, KILOGRAMS);
+        assertEquals(0, kg.compareTo(kg));
+
+        Weight lb = kg.to(POUNDS);
+        assertEquals(POUNDS, lb.getUnits());
+        assertEquals(0, kg.compareTo(lb));
+        assertEquals(0, lb.compareTo(kg));
+
+        Weight kg2 = new Weight(2, KILOGRAMS);
+        assertEquals(-1, lb.compareTo(kg2));
+        assertEquals(1, kg2.compareTo(lb));
     }
 }

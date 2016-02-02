@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -19,12 +19,14 @@ package org.openvpms.archetype.rules.patient;
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
+import org.apache.commons.jxpath.JXPathContext;
 import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.MergeException;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -35,11 +37,13 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.IsA;
 import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -547,6 +551,15 @@ public class PatientRules {
         Act act = getWeightAct(patient);
         if (act != null) {
             weight = getWeight(act);
+        } else {
+            NodeDescriptor node = DescriptorHelper.getNode(PatientArchetypes.PATIENT_WEIGHT, "weightUnits", service);
+            if (node != null && node.getDefaultValue() != null) {
+                JXPathContext context = JXPathHelper.newContext(new Object());
+                Object units = context.getValue(node.getDefaultValue());
+                if (units != null) {
+                    weight = new Weight(BigDecimal.ZERO, WeightUnits.valueOf(units.toString()));
+                }
+            }
         }
         return weight;
     }
