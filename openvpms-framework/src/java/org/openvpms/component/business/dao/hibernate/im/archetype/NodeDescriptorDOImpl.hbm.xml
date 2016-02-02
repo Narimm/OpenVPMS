@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <!DOCTYPE hibernate-mapping PUBLIC
         "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
@@ -34,9 +34,9 @@
         <property name="type" column="type" type="string" not-null="true"/>
         <property name="path" column="path" type="string" not-null="true"/>
         <property name="baseName" column="base_name" type="string"/>
-        <property name="defaultValue" column="default_value" type="string"/>
+        <property name="defaultValue" column="default_value" type="string" length="5000"/>
         <property name="filter" column="filter" type="string"/>
-        <property name="derivedValue" column="derived_value" type="string"/>
+        <property name="derivedValue" column="derived_value" type="string" length="5000"/>
         <property name="readOnly" column="is_readonly" type="boolean"/>
         <property name="hidden" column="is_hidden" type="boolean"/>
         <property name="derived" column="is_derived" type="boolean"/>

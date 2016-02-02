@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
     <archetype name="descriptor.node.1.0" latest="true"
@@ -36,10 +36,10 @@
         <node name="maxLength" path="/maxLength"
               type="java.lang.Integer"/>
         <node name="defaultValue" path="/defaultValue"
-              type="java.lang.String"/>
+              type="java.lang.String" maxLength="5000"/>
         <node name="derived" path="/derived" type="java.lang.Boolean"/>
         <node name="derivedValue" path="/derivedValue"
-              type="java.lang.String"/>
+              type="java.lang.String" maxLength="5000"/>
         <node name="hidden" path="/hidden" type="java.lang.Boolean"/>
         <node name="readOnly" path="/readOnly" type="java.lang.Boolean"/>
         <node name="assertionDescriptors" path="/assertionDescriptors"

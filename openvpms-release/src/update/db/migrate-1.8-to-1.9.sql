@@ -540,3 +540,25 @@ DELETE r
 FROM entity_relationships r
 WHERE r.arch_short_name = 'entityRelationship.productTypeProduct';
 
+#
+# OBF-239 Increase length of node_descriptors defaultValue and derivedValue fields
+#
+DELIMITER $$
+CREATE PROCEDURE OBF239_modify_node_descriptors()
+  BEGIN
+    DECLARE _count INT;
+    SET _count = (SELECT count(*)
+                  FROM INFORMATION_SCHEMA.COLUMNS
+                  WHERE
+                    TABLE_NAME = "node_descriptors" AND TABLE_SCHEMA = DATABASE() AND COLUMN_NAME = "default_value" AND
+                    CHARACTER_MAXIMUM_LENGTH < 5000);
+    IF _count = 1
+    THEN
+      ALTER TABLE node_descriptors MODIFY default_value VARCHAR(5000);
+      ALTER TABLE node_descriptors MODIFY derived_value VARCHAR(5000);
+    END IF;
+  END $$
+DELIMITER ;
+
+CALL OBF239_modify_node_descriptors();
+DROP PROCEDURE OBF239_modify_node_descriptors;
