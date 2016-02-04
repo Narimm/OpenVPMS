@@ -54,7 +54,7 @@
                 <errorMessage>Value must be > 0.0</errorMessage>
             </assertion>
         </node>
-        <node name="quantity" path="/details/quantity" type="java.math.BigDecimal" minCardinality="1"
+        <node name="quantity" displayName="No. of Doses" path="/details/quantity" type="java.math.BigDecimal" minCardinality="1"
               defaultValue="1">
             <assertion name="positive">
                 <errorMessage>Value must be > 0.0</errorMessage>
