@@ -361,7 +361,7 @@ INSERT INTO entity_details (entity_id, name, type, value)
     e.entity_id,
     'expression',
     'string',
-    'concat(expr:if(expr:var(''patient.name'') != '''', concat(expr:var(''patient.name''), ''&quot;s''), ''Your''),
+    'concat(expr:if(expr:var(''patient.name'') != '''', concat(expr:var(''patient.name''), ''&apos;s''), ''Your''),
                      '' appointment at '' , $location.name,'' is confirmed for '', date:formatDate($appointment.startTime, ''short''),
                      '' @ '', date:formatTime($appointment.startTime, ''short''), $nl,
                      ''Call us on '', party:getTelephone($location), '' if you need to change the appointment'')'
