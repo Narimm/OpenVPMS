@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -43,8 +43,7 @@ import static org.openvpms.archetype.rules.supplier.SupplierArchetypes.SUPPLIER_
 /**
  * Tests the {@link SupplierRules} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class SupplierRulesTestCase extends AbstractSupplierTest {
 
@@ -118,20 +117,18 @@ public class SupplierRulesTestCase extends AbstractSupplierTest {
         Product product1 = TestHelper.createProduct();
         Product product2 = TestHelper.createProduct();
 
-        ProductSupplier rel1
-                = productRules.createProductSupplier(product1, supplier);
-        ProductSupplier rel2
-                = productRules.createProductSupplier(product2, supplier);
+        ProductSupplier rel1 = productRules.createProductSupplier(product1, supplier);
+        ProductSupplier rel2 = productRules.createProductSupplier(product2, supplier);
+        save(supplier, product1, product2);
 
-        List<ProductSupplier> relationships
-                = rules.getProductSuppliers(supplier);
+        List<ProductSupplier> relationships = rules.getProductSuppliers(supplier);
         assertEquals(2, relationships.size());
         assertTrue(relationships.contains(rel1));
         assertTrue(relationships.contains(rel2));
 
-        // deactivate one of the relationships, and verify it is no longer
-        // returned
+        // deactivate one of the relationships, and verify it is no longer returned
         deactivateRelationship(rel1);
+        save(product1, supplier);
 
         relationships = rules.getProductSuppliers(supplier);
         assertEquals(1, relationships.size());
